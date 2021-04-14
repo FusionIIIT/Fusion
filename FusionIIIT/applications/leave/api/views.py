@@ -279,3 +279,255 @@ def leave_offline_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_type_api(request,c_id):
+    try: 
+        obj = LeaveType.objects.get(id = c_id) 
+    except LeaveType.DoesNotExist: 
+        return Response({'message': 'The Leave Type does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Type deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveTypeSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_count_api(request,c_id):
+    try: 
+        obj = LeaveCount.objects.get(id = c_id) 
+    except LeaveCount.DoesNotExist: 
+        return Response({'message': 'The Leave Count does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Count deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveCountSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_api(request,c_id):
+    try: 
+        obj = Leave.objects.get(id = c_id) 
+    except Leave.DoesNotExist: 
+        return Response({'message': 'The Leave does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_replacement_segment_api(request,c_id):
+    try: 
+        obj = ReplacementSegment.objects.get(id = c_id) 
+    except ReplacementSegment.DoesNotExist: 
+        return Response({'message': 'The Replacement Segment does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Replacement Segment deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.ReplacementSegmentSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_replacement_segment_offline_api(request,c_id):
+    try: 
+        obj = ReplacementSegmentOffline.objects.get(id = c_id) 
+    except ReplacementSegmentOffline.DoesNotExist: 
+        return Response({'message': 'The Replacement Segment Offline does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Replacement Segment Offline deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.ReplacementSegmentOfflineSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_segment_api(request,c_id):
+    try: 
+        obj = LeaveSegment.objects.get(id = c_id) 
+    except LeaveSegment.DoesNotExist: 
+        return Response({'message': 'The Leave Segment does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Segment deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveSegmentSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_segment_offline_api(request,c_id):
+    try: 
+        obj = LeaveSegmentOffline.objects.get(id = c_id) 
+    except LeaveSegmentOffline.DoesNotExist: 
+        return Response({'message': 'The Leave Segment Offline does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Segment Offline deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveSegmentOfflineSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_request_api(request,c_id):
+    try: 
+        obj = LeaveRequest.objects.get(id = c_id) 
+    except LeaveRequest.DoesNotExist: 
+        return Response({'message': 'The Leave Request does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Request deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveRequestSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_administrators_api(request,c_id):
+    try: 
+        obj = LeaveAdministrators.objects.get(id = c_id) 
+    except LeaveAdministrators.DoesNotExist: 
+        return Response({'message': 'The Leave Administrators does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Administrators deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveAdministratorsSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_migration_api(request,c_id):
+    try: 
+        obj = LeaveMigration.objects.get(id = c_id) 
+    except LeaveMigration.DoesNotExist: 
+        return Response({'message': 'The Leave Migration does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Migration deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveMigrationSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_restricted_holiday_api(request,c_id):
+    try: 
+        obj = RestrictedHoliday.objects.get(id = c_id) 
+    except RestrictedHoliday.DoesNotExist: 
+        return Response({'message': 'The Restricted Holiday does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Restricted Holiday deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.RestrictedHolidaySerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_closed_holiday_api(request,c_id):
+    try: 
+        obj = ClosedHoliday.objects.get(id = c_id) 
+    except ClosedHoliday.DoesNotExist: 
+        return Response({'message': 'The Closed Holiday does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Closed Holiday deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.ClosedHolidaySerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_vacation_holiday_api(request,c_id):
+    try: 
+        obj = VacationHoliday.objects.get(id = c_id) 
+    except VacationHoliday.DoesNotExist: 
+        return Response({'message': 'The Vacation Holiday does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Vacation Holiday deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.VacationHolidaySerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_leave_offline_api(request,c_id):
+    try: 
+        obj = LeaveOffline.objects.get(id = c_id) 
+    except LeaveOffline.DoesNotExist: 
+        return Response({'message': 'The Leave Offline does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        obj.delete()
+        return Response({'message': 'Leave Offline deleted'},status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = serializers.LeaveOfflineSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
