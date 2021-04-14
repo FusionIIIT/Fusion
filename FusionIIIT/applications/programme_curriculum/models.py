@@ -30,6 +30,9 @@ class Programme(models.Model):
     def __str__(self):
         return str(self.category + " - "+ self.name)
 
+    def get_curriculums_objects(self):
+        return Curriculum.objects.filter(programme=self.id)
+
 class Discipline(models.Model):
     name = models.CharField(max_length=100, null=False, unique=True, blank=False)
     programmes = models.ManyToManyField(Programme)
@@ -53,6 +56,9 @@ class Curriculum(models.Model):
     def __str__(self):
         return str(self.name + " v" + str(self.version))
 
+    def get_semesters_objects(self):
+        return Semester.objects.filter(curriculum=self.id).order_by('semester_no')
+
 class Semester(models.Model):
     curriculum = models.ForeignKey(Curriculum, null=False, on_delete=models.CASCADE)
     semester_no = models.IntegerField(null=False)
@@ -62,6 +68,9 @@ class Semester(models.Model):
     
     def __str__(self):
         return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
+
+    def get_courseslots_objects(self):
+        return CourseSlot.objects.filter(semester=self.id).order_by("id")
 
 class Course(models.Model):
     code = models.CharField(max_length=10, null=False, unique=True, blank=False)

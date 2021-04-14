@@ -1,3 +1,4 @@
+from django.http import request
 from django.shortcuts import render, HttpResponse
 import itertools
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot
@@ -7,10 +8,7 @@ def main_page(request):
     """ display the main page """
     return render(request, 'programme_curriculum/test.html')
 
-# def admin_page(request):
-#     return HttpResponse()
-
-def view_programes(request):
+def view_all_programmes(request):
     """ views all programmes, both working and obselete curriculums of all programmes """
 
     ug = Programme.objects.filter(category='UG')
@@ -20,43 +18,55 @@ def view_programes(request):
     for (ug, pg, phd) in itertools.zip_longest(ug, pg, phd, fillvalue=""):
         programmes.append([ug, pg, phd])
 
-    return render(request,'programme_curriculum/',{'programmes':programmes})
+    return render(request, 'programme_curriculum/', {programmes})
 
 
-def view_programme_curriculums(request, programme_id):
+def view_curriculums_of_a_programme(programme_id):
     """ views all the curriculums of a specfic programme """
 
-    working_curriculums = Curriculum.objects.filter(programme = programme_id).filter(working_curriculum=1)
-    past_curriculums = Curriculum.objects.filter(programme = programme_id).filter(working_curriculum=0)
-    return render(request,'programme_curriculum/',{'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums})
+    program = Programme.objects.get(id=programme_id)
+    curriculums = Programme.get_curriculums_objects(program)
+    working_curriculums = curriculums.filter(working_curriculum=1)
+    past_curriculums = curriculums.filter(working_curriculum=0)
+
+    return render(request,'programme_curriculum/', {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums})
 
 
-def view_working_curriculums(request, programme_id):
-    """ views all the working curriculums of a specfic programme """
+def view_all_working_curriculums(request):
+    """ views all the working curriculums offered by the institute """
     
-    curriculums = Curriculum.objects.filter(programme = programme_id).filter(working_curriculum=1)
+    curriculums = Curriculum.objects.filter(working_curriculum=1)
     return render(request,'programme_curriculum/',{'curriculums':curriculums})
 
 
-def view_curriculum_semesters(request, curriculum_id):
+def view_working_curriculums_of_a_program(request, programme_id):
+    """ views all the working curriculums of a specfic programme """
+    
+    program = Programme.objects.get(id=programme_id)
+    working_curriculums = Programme.get_curriculums_objects(program).filter(working_curriculum=1)
+    return render(request,'programme_curriculum/',{'program': program, 'working_curriculums':working_curriculums})
+
+
+def view_semesters_of_a_curriculum(request, curriculum_id):
     """ gets all the semesters of a specfic curriculum """
 
-    semesters = Semester.objects.filter(curriculum = curriculum_id).order_by("semester_no")
+    curriculum = Curriculum.objects.get(id=curriculum_id)
+    semesters = Curriculum.get_semesters_objects(curriculum)
     course_slots = []
     for sem in semesters:
-        course_slots.append(CourseSlot.objects.filter(semester=sem.id).order_by("id"))
-    return semesters
+        course_slots.append([Semester.get_courseslots_objects(sem)])
+    return render(request, 'programme_curriculum/', {'curriculum': curriculum, 'semesters': semesters, 'course_slots': course_slots})
 
 
-def view_a_curriculum_semester(request, semester_id):
+def view_a_semester_of_a_curriculum(request, semester_id):
     """ views a specfic semester of a specfic curriculum """
 
-    semester = Semester.objects.filter(id = semester_id)
-    course_slots = Semester.objects.filter(id=semester_id).order_by("id")
+    semester = Semester.objects.get(id=semester_id)
+    course_slots = Semester.get_courseslots_objects(semester)
     courses = []
-    for cs in course_slots:
-        courses.append(CourseSlot.get_courses_objects(cs))
-    return HttpResponse()
+    for course_slot in course_slots:
+        courses.append(CourseSlot.get_courses_objects(course_slot))
+    return render(request, 'programme_curriculum/', {'semesters': semester, 'course_slots': course_slots, 'courses': courses})
 
 
 def view_curriculum_courses(request, curriculum_id):
@@ -72,8 +82,9 @@ def view_semester_course_slots(request, semester_id):
     return HttpResponse()
 
 def view_a_course(request, course_id):
-    """ views all the curriculums of a specfic program """
-    return HttpResponse()
+    """ views the details of a Course """
+    course = Course.objects.get(id=course_id)
+    return render(request, 'programme_curriculum/', {'course': course})
 
 
 
