@@ -5,7 +5,7 @@ from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, 
 # Create your views here.
 def main_page(request):
     """ display the main page """
-    return HttpResponse()
+    return render(request, 'programme_curriculum/test.html')
 
 # def admin_page(request):
 #     return HttpResponse()
