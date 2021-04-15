@@ -16,6 +16,7 @@ def main_page(request):
 				})
 
 
+#view to add income
 def add_income(request):
 	if(request.method == 'POST'):
 		source = request.POST.get('income_source')
