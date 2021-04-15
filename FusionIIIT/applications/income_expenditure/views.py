@@ -15,7 +15,7 @@ def main_page(request):
 					'income_history':income_history,
 				})
 
-	
+
 def add_income(request):
 	if(request.method == 'POST'):
 		source = request.POST.get('income_source')
