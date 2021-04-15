@@ -36,3 +36,6 @@ def add_income(request):
 		new_i.save()
 	else:
 	return redirect('main-page')
+
+
+
