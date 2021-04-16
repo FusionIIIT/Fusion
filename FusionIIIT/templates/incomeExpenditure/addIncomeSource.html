@@ -5,7 +5,7 @@
 
     
 <div class="ui vertical segment">
-    <form id="add_income_source_form" action='/incomeExpenditure/addIncomeSource/'>{% csrf_token %}
+    <form id="add_income_source_form" method="POST" action='/income-expenditure/addIncomeSource/'>{% csrf_token %}
         <div class="ui form" style="border: black" >
 
             <div class="field">          
@@ -15,7 +15,7 @@
 
         </div><br>
         <div class="ui divider"></div><br>
-        <center> <button class="ui primary button">Add</button></center>
+        <center> <button class="ui primary button" type="submit">Add</button></center>
     </form>
 </div>
 
@@ -23,7 +23,7 @@
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
 $(function() {
-    $("#add_expenditure_type_form").submit(function(event) {
+    $("#add_income_source_form").submit(function(event) {
 
         event.preventDefault();
         var friendForm = $(this);
