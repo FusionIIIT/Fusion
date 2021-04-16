@@ -37,12 +37,7 @@ def add_income(request):
 						granted_by = granted_by
 						)
 		new_i.save()
-<<<<<<< HEAD
 	return redirect('main-page')
-=======
-	else:
-		return redirect('main-page')
->>>>>>> 25e9c4f7960a3062fb02464c7b56af79ce9ac1b9
 
 def add_income_source(request):
 	if(request.method == 'POST'):
