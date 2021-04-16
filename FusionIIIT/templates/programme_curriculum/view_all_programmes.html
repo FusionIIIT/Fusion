@@ -1,0 +1,43 @@
+{% extends 'programme_curriculum/common.html' %}
+
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+            style="max-width: 320px;">
+        
+        <a class="active item" href="{% url 'programme_curriculum:view_all_programmes' %}"><B>Programmes</B>
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="top">
+    <h1>Programmes</h1>
+</div>
+<table class="styled-table-widder">
+    <thead>
+        <tr style="text-align: center;">
+            <th>UG: Under Graduate</th>
+            <th>PG: Post Graduate</th>
+            <th>PHD: Doctor of Philosophy</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for program_list in programmes %}
+            <tr>
+            {% for program in program_list %}
+                    <td><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' program.id %}">{{ program.name }}</a></td>
+            {% endfor %}
+            </tr>
+        {% empty %}
+            <tr><td colspan="3">No Programmes Avaliable</td><tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

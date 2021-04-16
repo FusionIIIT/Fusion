@@ -8,6 +8,13 @@ app_name = 'programme_curriculum'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.main_page),
+    path('programmes/', views.view_all_programmes, name='view_all_programmes'),
+    path('working_curriculums/', views.view_all_working_curriculums, name='view_all_working_curriculums'),
+    path('curriculums/<programme_id>/', views.view_curriculums_of_a_programme, name='view_curriculums_of_a_programme'),
+    path('curriculum_semesters/<curriculum_id>/', views.view_semesters_of_a_curriculum, name='view_semesters_of_a_curriculum'),
+    path('semester/<semester_id>/', views.view_a_semester_of_a_curriculum, name='view_a_semester_of_a_curriculum'),
+    path('courses/', views.view_all_courses, name='view_all_courses'),
+    path('course/<course_id>/', views.view_a_course, name='view_a_course'),
     # url(r'', views.programme_curriculum, name='programme_curriculum'),
     # path('programme',views.programme, name='program_and_curriculum_management'),
     # url(r'^programme/$', views.programme, name='programme'),

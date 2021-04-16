@@ -1,0 +1,42 @@
+{% extends 'programme_curriculum/common.html' %}
+
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+            style="max-width: 320px;">
+        
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="top">
+    <h1>{{ curriculum.name }}</h1>
+</div>
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for semester in semesters %}
+            <th><a href="{% url 'programme_curriculum:view_all_courses' %}">Semester {{ semester.semester_no }}</a></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for course_slot in course_slots %}
+            <tr>
+                {% for slot in course_slot %}
+                <th></th>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

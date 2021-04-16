@@ -80,7 +80,7 @@ class Course(models.Model):
     tutorial_hours = IntegerField(null=True)
     pratical_hours = IntegerField(null=True)
     discussion_hours = IntegerField(null=True)
-    tproject_hours = IntegerField(null=True)
+    project_hours = IntegerField(null=True)
     syllabus = models.TextField()
     evaluation_schema = models.TextField()
     ref_books = models.TextField()

@@ -1,0 +1,77 @@
+{% extends 'programme_curriculum/common.html' %}
+
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+            style="max-width: 320px;">
+        
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="top"> 
+    <h1>{{ course.name }}</h1>
+</div>
+<table class="styled-table-widder">
+    <thead>
+        <tr style="text-align: center;">
+            <th>Course Code</th>
+            <th style="background-color: white; color: black;">{{ course.code }}</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>Course Name</th>
+            <th style="background-color: white; color: black;">{{ course.name }}</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>Contact hours</th>
+            <th style="background-color: white; color: black;">
+                <ul>
+                    <li>Lecture: {{ course.lecture_hours }}</li>
+                    <li>Tutorial: {{ course.tutorial_hours }}</li>
+                    <li>Lab: {{ course.pratical_hours }}</li>
+                    <li>Discussion: {{ course.discussion_hours }}</li>
+                    <li>Project: {{ course.project_hours }}</li>
+                </ul>
+            </th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>Credits</th>
+            <th style="background-color: white; color: black;">{{ course.credit }}</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>Syllabus</th>
+            <th style="background-color: white; color: black;">{{ course.syllabus }}</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>Evaluation Schema</th>
+            <th style="background-color: white; color: black;">
+                {{ course.evaluation_schema }}
+            </th>
+        </tr>
+    </thead>
+    <thead>
+        <tr style="text-align: center;">
+            <th>References & Book</th>
+            <th style="background-color: white; color: black;">{{ course.ref_books }}</th>
+        </tr>
+    </thead> 
+</table>
+{% endblock %}
