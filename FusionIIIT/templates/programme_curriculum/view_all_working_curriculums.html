@@ -31,7 +31,7 @@
     <tbody>
         {% for curriculum in curriculums %}
             <tr>
-                <td><a href="">{{ curriculum.name }}</a></td>
+                <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                 <td>{{ curriculum.version }}</td>
                 <td>{{ curriculum.no_of_semester }}</td>
             </tr>

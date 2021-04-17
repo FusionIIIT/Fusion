@@ -1,0 +1,11 @@
+{% extends 'programme_curriculum/acad_admin/common.html' %}
+
+{% block content %}
+    <form class="ui large form" method="POST">
+    {% csrf_token %}
+        {{ form.as_p }}
+        <td></td>
+        <td><input class="ui large right floated primary button" type="Submit" name="Submit"></td>
+    </form>
+
+{% endblock %}

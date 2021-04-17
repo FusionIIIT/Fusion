@@ -23,9 +23,9 @@
 <table class="styled-table-widder">
     <thead>
         <tr style="text-align: center;">
-            <th>UG: Under Graduate</th>
-            <th>PG: Post Graduate</th>
-            <th>PHD: Doctor of Philosophy</th>
+            <th colspan="2">UG: Under Graduate</th>
+            <th colspan="2">PG: Post Graduate</th>
+            <th colspan="2">PHD: Doctor of Philosophy</th>
         </tr>
     </thead>
     <tbody>
@@ -34,7 +34,9 @@
             {% for program in program_list %}
                     {% if program != "" %}
                     <td><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' program.id %}">{{ program.name }}</a></td>
+                    <td class=""><button class="ui small floated primary button"><a href="">edit</a></button></td>
                     {% else %}
+                    <td></td>
                     <td></td>
                     {% endif %}
             {% endfor %}

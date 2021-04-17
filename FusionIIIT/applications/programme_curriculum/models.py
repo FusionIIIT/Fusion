@@ -1,7 +1,7 @@
 from django.db import models
 import datetime
 
-from django.db.models.fields import IntegerField
+from django.db.models.fields import IntegerField, PositiveIntegerField
 
 # Create your models here.
 
@@ -46,9 +46,9 @@ class Discipline(models.Model):
 class Curriculum(models.Model):
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    version = models.IntegerField(default=1, null=False)
+    version = models.PositiveIntegerField(default=1, null=False)
     working_curriculum = models.BooleanField(default=True, null=False)
-    no_of_semester = models.IntegerField(default=1, null=False)
+    no_of_semester = models.PositiveIntegerField(default=1, null=False)
 
     class Meta:
         unique_together = ('name', 'version',)
@@ -61,7 +61,7 @@ class Curriculum(models.Model):
 
 class Semester(models.Model):
     curriculum = models.ForeignKey(Curriculum, null=False, on_delete=models.CASCADE)
-    semester_no = models.IntegerField(null=False)
+    semester_no = models.PositiveIntegerField(null=False)
 
     class Meta:
         unique_together = ('curriculum', 'semester_no',)
@@ -75,12 +75,12 @@ class Semester(models.Model):
 class Course(models.Model):
     code = models.CharField(max_length=10, null=False, unique=True, blank=False)
     name = models.CharField(max_length=100, null=False, unique=True, blank=False)
-    credit = models.IntegerField(default=0, null=False, blank=False)
-    lecture_hours = IntegerField(null=True)
-    tutorial_hours = IntegerField(null=True)
-    pratical_hours = IntegerField(null=True)
-    discussion_hours = IntegerField(null=True)
-    project_hours = IntegerField(null=True)
+    credit = models.PositiveIntegerField(default=0, null=False, blank=False)
+    lecture_hours = PositiveIntegerField(null=True, )
+    tutorial_hours = PositiveIntegerField(null=True)
+    pratical_hours = PositiveIntegerField(null=True)
+    discussion_hours = PositiveIntegerField(null=True)
+    project_hours = PositiveIntegerField(null=True)
     syllabus = models.TextField()
     evaluation_schema = models.TextField()
     ref_books = models.TextField()
@@ -94,11 +94,11 @@ class Course(models.Model):
 class Batch(models.Model):
     name = models.CharField(max_length=50, null=False, unique=True, blank=False)
     discipline = models.ForeignKey(Discipline, null=False, on_delete=models.CASCADE)
-    year = models.IntegerField(default=datetime.date.today().year, null=False)
+    year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
     curriculum = models.ForeignKey(Curriculum, null=True, on_delete=models.SET_NULL)
 
     class Meta:
-        unique_together = ('discipline', 'year',)
+        unique_together = ('name', 'discipline', 'year',)
 
     def __str__(self):
         return str(self.name)

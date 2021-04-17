@@ -15,6 +15,16 @@ urlpatterns = [
     path('semester/<semester_id>/', views.view_a_semester_of_a_curriculum, name='view_a_semester_of_a_curriculum'),
     path('courses/', views.view_all_courses, name='view_all_courses'),
     path('course/<course_id>/', views.view_a_course, name='view_a_course'),
+    
+    path('admin_add_programme/', views.add_programme_form, name='add_programme_form'),
+    path('admin_add_discipline/', views.add_discipline_form, name='add_discipline_form'),
+    path('admin_add_curriculum/', views.add_curriculum_form, name='add_curriculum_form'),
+    path('admin_add_course', views.add_course_form, name='add_course_form'),
+    path('admin_update_course/<course_id>', views.update_course_form, name='update_course_form'),
+
+
+    # path('admin_add_programme/', views.add_programme, name='add_programme'),
+    
     # url(r'', views.programme_curriculum, name='programme_curriculum'),
     # path('programme',views.programme, name='program_and_curriculum_management'),
     # url(r'^programme/$', views.programme, name='programme'),

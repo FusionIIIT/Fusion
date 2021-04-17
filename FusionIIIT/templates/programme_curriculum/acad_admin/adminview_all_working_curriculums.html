@@ -7,7 +7,7 @@
         <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+        <a class="active item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}"><B>Curriculums</B>
             <i class="right floated chevron right icon"></i>
         </a>
         <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
@@ -18,32 +18,28 @@
 
 {% block content %}
 <div class="top">
-    <h1>Semester {{ semester.semester_no }}</h1>
+    <h1>Curriculums</h1>
 </div>
-
-{% for slot in course_slots %}
-<table class="styled-table">
+<table  class="styled-table-widder">
     <thead>
-        <tr><th colspan="3">{{ slot.name }}</th></tr>
         <tr>
-            <th>Course Code</th>
-            <th>Course Name</th>
-            <th>Credits</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>No. of Semester</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-            {% for course in slot.courses.all %}
+        {% for curriculum in curriculums %}
             <tr>
-                <td><a href="{% url 'programme_curriculum:view_a_course' course.id %}">{{ course.code }}</a></td>
-                <td>{{ course.name }}</td>
-                <td>{{ course.credit }}</td>
+                <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
+                <td>{{ curriculum.version }}</td>
+                <td>{{ curriculum.no_of_semester }}</td>
+                <td class="button"><a href="">EDIT</a></td>
             </tr>
-            {% empty %}
-                <tr><td colspan="3">No Courses Avaliable</td><tr>
-            {% endfor %}
+        {% empty %}
+            <tr><td colspan="3">No Courses Avaliable</td><tr>
+        {% endfor %}
     </tbody>
 </table>
-{% endfor %}
-
-
 {% endblock %}

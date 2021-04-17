@@ -26,6 +26,7 @@
             <th>Name</th>
             <th>Version</th>
             <th>No. of Semester</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -34,6 +35,7 @@
                 <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                 <td>{{ curriculum.version }}</td>
                 <td>{{ curriculum.no_of_semester }}</td>
+                <td class="button"><a href="">EDIT</a></td>
             </tr>
         {% empty %}
             <tr><td colspan="3">No Curriculum Avaliable</td><tr>
@@ -49,6 +51,7 @@
             <th>Name</th>
             <th>Version</th>
             <th>No. of Semester</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -57,6 +60,7 @@
                 <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                 <td>{{ curriculum.version }}</td>
                 <td>{{ curriculum.no_of_semester }}</td>
+                <td class="button"><a href="">EDIT</a></td>
             </tr>
         {% empty %}
             <tr><td colspan="3">No Curriculum Avaliable</td><tr>

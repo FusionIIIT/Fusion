@@ -3,7 +3,11 @@ from django.shortcuts import render, HttpResponse
 import itertools
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot
 
-# Create your views here.
+from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm
+
+
+# ------------all-user-functions---------------#
+
 def main_page(request):
     """ display the main page """
     return render(request, 'programme_curriculum/mainpage.html')
@@ -50,6 +54,7 @@ def view_all_working_curriculums(request):
 def view_semesters_of_a_curriculum(request, curriculum_id):
     """ gets all the semesters of a specfic curriculum """
 
+# logic need to added - imcomplete 
     curriculum = Curriculum.objects.get(id=curriculum_id)
     semesters = Curriculum.get_semesters_objects(curriculum)
     course_slots = []
@@ -63,10 +68,10 @@ def view_a_semester_of_a_curriculum(request, semester_id):
 
     semester = Semester.objects.get(id=semester_id)
     course_slots = Semester.get_courseslots_objects(semester)
-    courses = []
-    for course_slot in course_slots:
-        courses.append(CourseSlot.get_courses_objects(course_slot))
-    return render(request, 'programme_curriculum/view_a_semester_of_a_curriculum.html', {'semesters': semester, 'course_slots': course_slots, 'courses': courses})
+    # courses_list = []
+    # for course_slot in course_slots:
+    #     courses_list.append([CourseSlot.get_courses_objects(course_slot)])
+    return render(request, 'programme_curriculum/view_a_semester_of_a_curriculum.html', {'semesters': semester, 'course_slots': course_slots})
 
 
 # def view_curriculum_courses(request, curriculum_id):
@@ -90,6 +95,88 @@ def view_a_course(request, course_id):
     """ views the details of a Course """
     course = Course.objects.get(id=course_id)
     return render(request, 'programme_curriculum/view_a_course.html', {'course': course})
+
+
+# ------------Acad-Admin-functions---------------#
+
+# def add_programme(request):
+#     if request.method == "POST":
+#         Category = request.POST.get('category')
+#         Title = request.POST.get('title')
+#         programme = Programme(category=Category, title=Title)
+#         programme.save()       
+#     return render(request,'add_programme.html')
+
+def add_discipline_form(request):
+    form = DisciplineForm()
+    if request.method == 'POST':
+        form = DisciplineForm(request.POST)  
+        if form.is_valid():
+            form.save()
+    return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
+
+def add_programme_form(request):
+    form = ProgrammeForm()
+    if request.method == 'POST':
+        form = ProgrammeForm(request.POST)  
+        if form.is_valid():
+            form.save()
+    return render(request,'programme_curriculum/acad_admin/add_programme_form.html',{'form':form})
+
+def add_curriculum_form(request):
+    form = CurriculumForm()
+    if request.method == 'POST':
+        form = CurriculumForm(request.POST)  
+        if form.is_valid():
+            no_of_semester = form.cleaned_data['no_of_semester']
+            print(form)
+            print(no_of_semester)
+            form.save()
+            curriculum = Curriculum.objects.all().last()
+            for semester_no in range(1, no_of_semester+1):
+                NewSemester = Semester(curriculum, semester_no)
+                NewSemester.save()
+
+    return render(request, 'programme_curriculum/acad_admin/add_curriculum_form.html',{'form':form})
+
+def add_course_form(request):
+    form = CourseForm()
+    if request.method == 'POST':
+        form = CourseForm(request.POST)  
+        if form.is_valid():
+            form.save()
+    return render(request,'programme_curriculum/acad_admin/add_course_form.html',{'form':form})
+
+
+def update_course_form(request,course_id):
+    course = Course.objects.get(id=course_id)
+    form = CourseForm(instance=course)
+    if request.method == 'POST':
+        form = CourseForm(request.POST, instance=course)  
+        if form.is_valid():
+            form.save()
+    return render(request,'programme_curriculum/acad_admin/add_course_form.html',{'course':course, 'form':form})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -133,14 +220,6 @@ def view_a_course(request, course_id):
 # def courses(request,cour_id):
 #     course_detail = CourseDetails.objects.filter(id = cour_id)
 #     return render(request,'programme_curriculum/courses.html',{'Course_detail':course_detail})
-
-# # def add_programme(request):
-# #     if request.method == "POST":
-# #         Category = request.POST.get('category')
-# #         Title = request.POST.get('title')
-# #         programme = ProgrammeList(category=Category, title=Title)
-# #         programme.save()       
-# #     return render(request,'add_programme.html')
 
 # def add_programme(request):
 #     form = ProgrammeForm()

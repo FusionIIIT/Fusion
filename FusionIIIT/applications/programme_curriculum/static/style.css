@@ -99,6 +99,10 @@ section
     text-align: center;
     padding: 0%;
 }
+.styled-table tbody td .button, .styled-table-widder tbody td .button{
+    text-align: center;
+    padding: 0%;
+}
 /* .styled-table tbody th{
     padding: 15px 20px;
 }

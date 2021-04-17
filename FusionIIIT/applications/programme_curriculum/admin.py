@@ -6,7 +6,7 @@ from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, 
 # admin.site.site_header = "Programme and Curriculum Management"
 
 class ProgrammeAdmin(admin.ModelAdmin):
-    list_display = ('category', 'name',)
+    list_display = ('name', 'category',)
     list_filter = ('category',)
 
 class DisciplineAdmin(admin.ModelAdmin):
