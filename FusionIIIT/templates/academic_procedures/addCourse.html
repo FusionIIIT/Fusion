@@ -12,11 +12,11 @@
     <div class="ui vertical segment">
         {% if adc_date_flag %}
                 {% if final_registration_flag %}
-                    {% if details.cpi >= 8.0 %}
+                    {% if details.cpi >= 6.0 %}
                         {% if add_courses_options %}
-                            <form id='add_course_form' action='/academic-procedures/register/' > {% csrf_token %}
-                                <input type="text" hidden="true" id="course_count" value="{{added_course_count}}">
+                            <form id='add_course_form' action='/academic-procedures/addCourse/' > {% csrf_token %}
                                 <input type="text" hidden="true" id="credit_count" value="{{current_credits}}">
+                                <input type="text" hidden="true" id="req_credit_count" value="{{ requested_credits }}">
                                 <h5></h5>
                                 <table class="ui very basic collapsing celled sortable table"
                                         style="padding-left: 2.5%;
@@ -89,38 +89,35 @@
 $(function() {
     $("#add_course_form").submit(function(event) {
 
-        var credits = parseInt(document.getElementById("credit_count").value);
-        var count = parseInt(document.getElementById("course_count").value);
+        console.log('hello1');
+        var credits = parseInt(document.getElementById("credit_count").value) + parseInt(document.getElementById("req_credit_count").value);
         var checkboxing = document.getElementById("mycheck");
         var test =0;
         for(var i=0; i<mycheck.length;i++){
             if(mycheck[i].checked==true){
                 credits = credits + parseInt(mycheck[i].getAttribute("data-valuetwo"));
-                count =count+1;
                 test =test+1;
             }
         } 
-
-        if (count >= 3){
-            alert("You Can't add more than 2 courses in one semester");
-            window.location = "/academic-procedures/main/" ;  
-        }else if(credits >= 27 ){
+        console.log('hello2');
+        if(credits >= 27 ){
             alert("You Can not earn more than 26 credits in one semester");
             window.location = "/academic-procedures/main/" ;           
         }else if(test ==0 ){
             alert("please Select a course");
             window.location = "/academic-procedures/main/" ;           
         }else{
+        console.log('hello3');
         event.preventDefault();
         var friendForm = $(this);
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
-            alert('Course Added Successfully');
+            alert('Request Sent Successfully');
             window.location = "/academic-procedures/main/";
         });
         posting.fail(function(data) {
-            alert('Filed to add course, some error occured');
+            alert('Failed to add course, some error occured');
             window.location = "/academic-procedures/main/";
         });
         }

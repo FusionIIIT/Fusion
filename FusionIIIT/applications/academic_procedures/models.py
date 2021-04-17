@@ -150,7 +150,7 @@ class CourseRequested(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'AddCourses'
+        db_table = 'CourseRequested'
 
 
 class Thesis(models.Model):
