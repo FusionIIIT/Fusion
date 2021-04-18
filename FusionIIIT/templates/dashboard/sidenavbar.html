@@ -72,11 +72,11 @@
                             <h4>Feeds Module</h4>
                         </a>
 
-
+                        {% if user.extrainfo.user_type != 'student' %}
                         <a class="item" href="{% url 'hr2:hr2' %}">
                             <h4>HR2 Module</h4>
                         </a>
-
+                        {% endif %}
 
 
 
