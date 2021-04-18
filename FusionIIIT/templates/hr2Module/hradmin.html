@@ -56,8 +56,8 @@ Module
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
 
-            <a class="active item" data-tab="first">Pending approval</a>
-            <a class="item" data-tab="second">Approved details</a>
+            <a class="active item" data-tab="first">Employees</a>
+
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">
@@ -146,25 +146,35 @@ Module
                                 <!-- <div class="description">
                                     status
                                 </div> -->
-                                <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
-                                    <div class="ui right floated blue button notif-status" id="notif-status">
-                                        <div id="notif-sp">Edit</div>
-                                    </div>
-                                </a>
 
-                                <a href="{%url 'hr2:viewEmployeeDetails' emp.id %}">
-                                    <div class="ui right floated blue button notif-status" id="notif-status">
-                                        <div id="notif-sp">View</div>
-                                    </div>
-                                </a>
+                                <div class="two wide column">
+                                    <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Edit personal details</div>
+                                        </div>
+                                    </a>
 
-                                <!-- <div class="ui right floated button notif-status" id="notif-status">
+                                    <a href="{%url 'hr2:viewEmployeeDetails' emp.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">View</div>
+                                        </div>
+                                    </a>
+
+
+
+
+                                    <a href="{%url 'hr2:editServiceBook' emp.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Edit E-ServiceBook</div>
+                                        </div>
+                                    </a>
+                                    <!-- <div class="ui right floated button notif-status" id="notif-status">
                                     <div id="notif-sp">Mark as Unread</div>
                                 </div> -->
 
+                                </div>
+
                             </div>
-
-
 
 
 
@@ -206,9 +216,7 @@ Module
             </div>
 
         </div>
-        <div class="ui bottom attached tab segment" data-tab="second">
-            approved details will be shown here
-        </div>
+
     </div>
 
     {% comment %}The central-rail segment ends here!{% endcomment %}

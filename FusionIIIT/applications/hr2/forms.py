@@ -1,5 +1,9 @@
 from django import forms
-from .models import Employee,EmpConfidentialDetails
+from .models import Employee,EmpConfidentialDetails, ForeignService
+
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 
 class EditDetailsForm(forms.ModelForm):
@@ -10,7 +14,7 @@ class EditDetailsForm(forms.ModelForm):
                   'cast', 'home_state', 'home_district', 'height', 'date_of_joining', 'designation','blood_group']
     
         widgets = {
-            'my_date': forms.DateInput(attrs={'type': 'date'})
+            'date_of_joining':DateInput()
         }
     
     def __init__(self, *args, **kwargs):
@@ -28,6 +32,19 @@ class EditConfidentialDetailsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
        super(EditConfidentialDetailsForm, self).__init__(*args, **kwargs)
 
-                
+
+# forms.DateInput(attrs={'class': 'datepicker'})
+
+class EditServiceBookForm(forms.ModelForm):
+
+    class Meta:
+        model = ForeignService
+        fields = ['extra_info', 'start_date', 'end_date', 'job_title', 'organisation',
+                  'description', 'salary_source', 'designation','service_type']
+        widgets = {'start_date': DateInput(),'end_date':DateInput()}
+
+    def __init__(self, *args, **kwargs):
+       super(EditServiceBookForm, self).__init__(*args, **kwargs)
+             
 
 
