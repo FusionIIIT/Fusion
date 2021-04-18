@@ -100,3 +100,32 @@ def view_employee_details(request,id):
         context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info,'appraisalForm':appraisal_form}
         return render(request,template,context)
 
+def edit_employee_servicebook(request,id):
+        """ Views for edit Service Book details"""
+        template='hr2Module/editServiceBook.html'
+
+        try:
+               employee = ExtraInfo.objects.get(pk=id)
+        except:
+                raise Http404("Post does not exist")
+
+        
+
+        if request.method == "POST":
+                form = EditServiceBookForm(request.POST, request.FILES)
+             
+
+                
+                if form.is_valid():
+                        form.save()
+                        messages.success(request, "Employee Service Book details edited successfully")
+                else:
+
+                        pass
+
+
+        form = EditServiceBookForm(initial={'extra_info': employee.id})
+        context = {'form': form,'employee':employee
+               }
+
+        return render(request,template, context)

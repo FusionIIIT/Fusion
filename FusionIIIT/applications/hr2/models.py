@@ -1,4 +1,3 @@
-
 from django.db import models
 from applications.globals.models import ExtraInfo
 
