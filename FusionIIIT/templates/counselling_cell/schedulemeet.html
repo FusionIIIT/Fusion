@@ -5,11 +5,11 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="feedback">
-            New FAQ
+            Schedule Meeting
         </a>
 
         <a class="item" data-tab="viewfeedback">
-            Read FAQs
+            Meetings
         </a>
 
        
@@ -25,33 +25,46 @@
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="ui header">
-                        New FAQ form :
+                        New Meeting form :
                     </div>
 
                     <br>
 
-                    <div class="two fields">
-
-                        <div class="two fields">
-                            <div class="twelve wide field">
-                                <label>Category*</label>
-                                <select class="ui dropdown" name="category" id="category">
-                                    {% for category in categories %}
-                                    <option value={{category.category_id}}>{{category.category}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                        </div>
+                   <div class="field" >
+                        <label>Serial No.*</label>
+                        <textarea rows="1" id="Serial No." name="Serial No." required="true"></textarea>
                     </div>
+
+
+            <div class="two fields">
+                
+                <div class="field">
+                    <label>Schedule Date*</label>
+                    <!-- <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i> -->
+                            <input  name="date" type="date" placeholder="Date" required="true" id="date">
+                        <!-- </div>
+                    </div> -->
+                </div>
+            </div>    
+
+                <div class="field">
+                    <label>Time*</label>
+                    <input name="time" type="time" required="true" id="time">
+                </div>
+
+
+
+
                    
                     <div class="field">
-                        <label>Question*</label>
+                        <label>Venue</label>
                         <textarea rows="2" id="question" name="question" required="true"></textarea>
                     </div>
                     
                     <div class="field">
-                        <label>Answer*</label>
+                        <label>Invitees</label>
                         <textarea rows="5" id="answer" name="answer" required="true"></textarea>
                     </div>
                     
@@ -80,13 +93,13 @@
                 <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> -->
             <div class="item">
                 <div class="right floated content">
-                    <a class="header">{{faq.counselling_category}}</a>
+                    <a class="header">{{faq.category}}</a>
                 </div>
                 <div class="description">
                     <div class="header">Question {{forloop.counter}} : </div>
-                    <h2 class="ui header">{{faq.counselling_question}}</h1>
+                    <h2 class="ui header">{{faq.question}}</h1>
                     <div class="header">Answer {{forloop.counter}} :</div>
-                    <h3 class="ui header">{{faq.counselling_answer}}</h3>
+                    <h3 class="ui header">{{faq.answer}}</h3>
                 </div> 
                 
             </div>
@@ -160,91 +173,8 @@
             }
         return false;
     }
-    const counsellor=()=>{
-            check = 1;
-                $.ajax({
-                    type: 'POST',
-                    url: 'appoint_student_counsellors/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'username': $("#student").val(),
-                        'position': "student_coordinator",
-                    },
-                    success: function (data) {
-                        if (data.status) {
-
-                            // var monthNames = ["January", "February", "March", "April", "May", "June",
-                            //                   "July", "August", "September", "October", "November", "December"];
-                            // var name = $("#user_name").text();
-                            // var today_date = new Date();
-                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
-                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
-                            //         "<a class='header'>" + name + "</a>" +
-                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
-                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
-                            //     "<span class='meta'>" + t_date + "</span></div></div>");
-
-                            alert("Data Inserted Successfully");
-
-                            // document.getElementById('student ').value = "";
-                            $("#coordinator").load(location.href + " #coordinator>*", "");
-
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-                        $("#coordinator").load(location.href + " #coordinator>*", "");
-                    }
-                });
-            
-        return false;
-    }
-    const studentGuide=()=>{
-            check = 1;
-                $.ajax({
-                    type: 'POST',
-                    url: 'appoint_student_counsellors/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'username': $("#student_guide").val(),
-                        'position': "student_guide",
-                    },
-                    success: function (data) {
-                        if (data.status) {
-
-                            // var monthNames = ["January", "February", "March", "April", "May", "June",
-                            //                   "July", "August", "September", "October", "November", "December"];
-                            // var name = $("#user_name").text();
-                            // var today_date = new Date();
-                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
-                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
-                            //         "<a class='header'>" + name + "</a>" +
-                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
-                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
-                            //     "<span class='meta'>" + t_date + "</span></div></div>");
-
-                            alert("Data Inserted Successfully");
-
-                            // document.getElementById('student ').value = "";
-                            $("#coordinator").load(location.href + " #coordinator>*", "");
-
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-                        $("#coordinator").load(location.href + " #coordinator>*", "");
-                    }
-                });
-            
-        return false;
-    }
     
 
 
 </script>
 {% endblock %}
-
-
-
