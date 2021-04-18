@@ -63,6 +63,17 @@ Counselling cell
         <div class="ui tab segment" data-tab="second">
             {% block leaveRequest %}
             {% include 'counselling_cell/teamdet.html' %}
+
+            {% block appoint_coordinators %}
+            {% include 'counselling_cell/appoint_coordinators.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="third">
+            {% block appoint_student_guide %}
+            {% include 'counselling_cell/student_guide.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
