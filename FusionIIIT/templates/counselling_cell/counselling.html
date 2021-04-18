@@ -86,24 +86,25 @@ Counselling cell
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixth">
-            {% block nonvegfood %}
-            {% include 'messModule/nonvegfood.html' %}
+            {% block schedule_meeting %}
+            {% include 'counselling_cell/schedulemeet.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="seventh">
-            {% block respondtoleave %}
-            {% include 'messModule/respondtorequests.html' %}
+            {% block team_details %}
+            {% include 'counselling_cell/teamdet.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
+
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="eighth">
-            {% block changemenu %}
-            {% include 'messModule/changemenu.html' %}
+            {% block Issues %}
+            {% include 'counselling_cell/issues.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}

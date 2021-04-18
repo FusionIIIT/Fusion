@@ -30,7 +30,7 @@ from applications.academic_information.models import Student,ExtraInfo
 # extra_info = ExtraInfo.objects.get(user=user)
 # student = Student.objects.get(id=extra_info)
 # print(extra_info.user_type)
-StudentCounsellingTeam.objects.filter(student=)
+# StudentCounsellingTeam.objects.filter(student=)
 # category = CounsellingIssueCategory(category_id="others",category="Others")
 # category.save()
 # faq = CounsellingIssueCategory.objects.all()
