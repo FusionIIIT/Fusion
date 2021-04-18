@@ -26,6 +26,10 @@
             Announcements
         </a>
 
+        <a class="item" data-tab="Request">
+            Requests
+        </a>
+
     </div>
 {% comment %}
     <div class="ui pointing secondary menu">
@@ -147,20 +151,20 @@
                                 </thead>
 
                                 {% for fcu in fac_list.cse_f %}
-                                <tr>
-                                    {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
-                                    <td>{{ fcu.id }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
-                                    <!-- <td>{{ fcu.title }}</td> -->
-                                    <td>{{ fcu.sex }}</td>
-                                    <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
-                                    <td>{{ fcu.phone_no }}</td>
-                                    {% comment %} <td>{{ fcu.user_type }}</td>
-                                    <td>{{ fcu.department.name }}</td>
-                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
-                                    {% endwith %}
-                                </tr>
+                                    <tr>
+                                        {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
+                                        <td>{{ fcu.id }}</td>
+                                        <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+                                        <!-- <td>{{ fcu.title }}</td> -->
+                                        <td>{{ fcu.sex }}</td>
+                                        <td>{{ fcu.date_of_birth }}</td>
+                                        <td>{{ fcu.address }}</td>
+                                        <td>{{ fcu.phone_no }}</td>
+                                        {% comment %} <td>{{ fcu.user_type }}</td>
+                                        <td>{{ fcu.department.name }}</td>
+                                        <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                                        {% endwith %}
+                                    </tr>
 
                                 {% endfor %}
 
@@ -313,6 +317,62 @@
         </div>
     </div>
 
+    <div class="ui tab" data-tab="Request">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <div class="ui pointing secondary menu">
+                            <a class="active item" data-tab="file-request">
+                                File Requests
+                            </a>
+                            
+                            <a class="item" data-tab="request-history">
+                                Request History
+                            </a>
 
+
+                        </div>
+
+                        <div class="ui active tab" data-tab="file-request">
+                            <div class="ui vertical segment">
+                                <div class="content">
+                                    <div class="description">
+                                        <span>
+                                            {% with fac_list.cse_f as faculty %}
+                                                {% block file-requests %}
+                                                    {% include "department/file_request.html" %}
+                                                {% endblock %}
+                                            {% endwith %}
+                                        </span>
+                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="request-history">
+                            <div class="ui vertical segment">
+                                <div class="content">
+                                    <div class="description">
+                                        <span>
+                                            {% block request_history %}
+                                                {% include "department/request_history.html" %}
+                                            {% endblock %}
+                                        </span>
+                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </span>
+                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
 
 {% endblock %}

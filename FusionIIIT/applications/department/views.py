@@ -15,7 +15,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from applications.eis.models import (faculty_about, emp_research_projects)
 from notification.views import  complaint_system_notif
 
-from .models import Announcements
+from .models import SpecialRequest, Announcements
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -52,6 +52,14 @@ def browse_announcements():
 
     return context
 
+def get_make_request(user_id):
+    req = SpecialRequest.objects.filter(request_maker=user_id)
+    return req
+
+def get_to_request(username):
+    req = SpecialRequest.objects.filter(request_receiver=username)
+    return req
+
 @login_required(login_url='/accounts/login')
 def dep_main(request):
     """
@@ -69,6 +77,12 @@ def dep_main(request):
 
     """
     user = request.user
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    ann_maker_id = user_info.id
+    user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+
+    requests_made = get_make_request(user_info)
     
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
     student = request.user.holds_designations.filter(designation__name='student').exists()
@@ -79,13 +93,38 @@ def dep_main(request):
         user_designation = "faculty"
     elif student:
         user_designation = "student"
+
+    if request.method == 'POST':
+        request_type = request.POST.get('request_type', '')
+        request_to = request.POST.get('request_to', '')
+        request_details = request.POST.get('request_details', '')
+        upload_request = request.FILES.get('upload_request')
+        request_date = date.today()
+        print("request_maker", user_info)
+        print("request_type", request_type)
+        print("request_to", request_to)
+        print("request_details", request_details)
+        print("request_date", request_date)
+
+        obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
+                                                    request_date=request_date,
+                                                    brief=request_type,
+                                                    request_details=request_details,
+                                                    upload_request=upload_request,
+                                                    status="Pending",
+                                                    remarks="--",
+                                                    request_receiver=request_to
+                                                    )
+    
     if user_designation == "student":
         return render(request,"department/index.html", {"announcements":context,
-                                                        "fac_list" : context_f})
+                                                        "fac_list" : context_f,
+                                                        "requests_made" : requests_made
+                                                    })
     elif(str(user.extrainfo.user_type)=='faculty'):
-        return file_request(request)
+        return HttpResponseRedirect("facView")
 
-def file_request(request):
+def faculty_view(request):
     """
     This function is contains data for Requests and Announcement Related methods.
     Data is added to Announcement Table using this function.
@@ -103,6 +142,7 @@ def file_request(request):
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
     ann_maker_id = user_info.id
+    requests_received = get_to_request(usrnm)
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
         programme = request.POST.get('programme', '')
@@ -122,12 +162,13 @@ def file_request(request):
 
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
-                                                            "announcements":context
+                                                            "announcements":context,
+                                                            "request_to":requests_received
                                                         })
 
 
 @login_required(login_url='/accounts/login')
-def All_Students(request,bid):
+def all_students(request,bid):
     """
     This function is used to Return data of Faculties Department-Wise.
 
@@ -427,15 +468,18 @@ def faculty():
         cse_f - Stores data of faculties from CSE Department
         ece_f - Stores data of faculties from ECE Department
         me_f - Stores data of faculties from ME Department
+        sm_f - Stores data of faculties from ME Department
         context_f - Stores all above variables in Dictionary
 
     """
     cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
+    sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
     context_f = {
         "cse_f" : cse_f,
         "ece_f" : ece_f,
         "me_f" : me_f,
+        "sm_f" : sm_f
     }
     return context_f

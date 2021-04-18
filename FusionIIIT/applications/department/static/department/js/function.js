@@ -48,11 +48,12 @@ function announce(event)
 
 function request(event)
     {
-    var department= $('input[name="Department"]').val();
-    var location = $('input[name="Location"]').val();
+    var request_type= $('input[name="request_type"]').val();
+    var request_to = $('input[name="request_to"]').val();
     var request_details =  $('input[name="request_details"]').val();
     var upload_request=$('input[name="upload_request"]').val();
-    if(department=="" || location=="" || request_details =="" )
+
+    if(request_type=="" || request_to=="" || request_details =="" )
     {
         alert("Please fill all the details!");
         return;
@@ -64,8 +65,8 @@ function request(event)
             type : 'POST',
             url : '.',
             data : {
-                'department' : department,
-                'location' : location,
+                'request_type' : request_type,
+                'request_to' : request_to,
                 'request_details' : request_details,
                 'upload_request' : upload_request,
             },
@@ -73,7 +74,7 @@ function request(event)
 
                 alert("Request successfully made!!");
                 setTimeout(function() {
-            window.location.replace('http://localhost:8000/dep/file_request/');
+            window.location.replace('http://localhost:8000/dep/');
         }, 1500);
 
             },
@@ -83,5 +84,9 @@ function request(event)
             }
         });
     }
+};
+
+function editStatus(event){
+    alert("working but dont know what to do");
 };
 
