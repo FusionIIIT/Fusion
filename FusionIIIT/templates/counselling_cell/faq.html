@@ -160,6 +160,86 @@
             }
         return false;
     }
+    const counsellor=()=>{
+            check = 1;
+                $.ajax({
+                    type: 'POST',
+                    url: 'appoint_student_counsellors/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'username': $("#student").val(),
+                        'position': "student_coordinator",
+                    },
+                    success: function (data) {
+                        if (data.status) {
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            // document.getElementById('student ').value = "";
+                            $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        return false;
+    }
+    const studentGuide=()=>{
+            check = 1;
+                $.ajax({
+                    type: 'POST',
+                    url: 'appoint_student_counsellors/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'username': $("#student_guide").val(),
+                        'position': "student_guide",
+                    },
+                    success: function (data) {
+                        if (data.status) {
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            // document.getElementById('student ').value = "";
+                            $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        return false;
+    }
     
 
 
