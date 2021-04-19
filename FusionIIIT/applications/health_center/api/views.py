@@ -215,6 +215,20 @@ def compounder_request_api(request):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif 'medicineadd' in request.data and request.method =='POST':
+            stock = serializers.StockSerializer(data=request.data)
+            if stock.is_valid():
+                stock.save()
+            else:
+                return Response(stock.errors,status=status.HTTP_400_BAD_REQUEST)
+            request.data['medicine_id'] = (Stock.objects.get(medicine_name=request.data['medicine_name'])).id
+            expiry = serializers.ExpirySerializer(data=request.data)
+            if expiry.is_valid():
+                expiry.save()
+            else:
+                return Response(expiry.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(stock.data,status=status.HTTP_201_CREATED)
 
         elif 'stockadd' in request.data and request.method == 'POST':
             serializer = serializers.ExpirySerializer(data=request.data)
