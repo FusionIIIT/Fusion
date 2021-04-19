@@ -23,16 +23,17 @@
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
 
+                <!-- Input Field For Specific Field Knowledge -->
                 <label for="specific_field_knowledge"><b>Specific Field Knowledge:</b></label><br><br>
                 <textarea id="specific_field_knowledge" name="specific_field_knowledge" rows="3" cols="30"></textarea><br><br>
+                <!-- Input Field For Current Research Element -->
                 <label for="current_research_interest"><b>Current Research Interest:</b></label><br><br>
                 <textarea id="current_research_interest" name="current_research_interest" rows="3" cols="30"></textarea><br><br><br>
 
-                <hr  style="height:5px;background-color:#333;">
+                <hr style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
-                <!-- <p>1.1 &emsp;&emsp;<u>Teaching</u></p> -->
 
+                <!-- CSS Style for HTML Table -->
                 <style>
                 	* { font: 17px Calibri; }
                     table { width: 70%; }
@@ -42,13 +43,16 @@
                     th {background-color:#f1f1c1}
                 </style>
 
+
+
+                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+
                 <body>
 
-                  <!--
-                  Table for CoursesInstructed
-                  -->
+                  <!--Table for CoursesInstructed-->
                     <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
-                    <table>  <!-- the container to add the TABLE -->
+
+                    <table>
                       <tr>
                         <th>Semester</th>
                         <th>Course-Name</th>
@@ -64,14 +68,9 @@
                     </table>
                   <!-- End of Table CoursesInstructed -->
 
-                  <!--
-                  Table for NewCoursesOffered
-                  -->
-
+                  <!-- Table for NewCoursesOffered  -->
                     <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                    <!-- <div id="new_courses"></div>   the container to add the TABLE
-                    <p><input type="button" value="Add New Course" onclick="javascript:addRowNewCourses()"/></p> -->
-                    <table>  <!-- the container to add the TABLE -->
+                    <table>
                       <tr>
                         <th>Course-Name</th>
                         <th>Course Number</th>
@@ -80,15 +79,11 @@
                         <th>Semester</th>
                       </tr>
                     </table>
-
                 <!-- End of Table NewCoursesOffered -->
 
-                <!--
-                  Table for NewCourseMaterial
-                -->
+
+                <!--Table for New Courses/Laboratory experiments Introduced and Taught-->
                   <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                  <!-- <div id="new_courses_material"></div>  the container to add the TABLE
-                  <p><input type="button" value="Add New Course Material" onclick="javascript:addRowNewCoursesMaterial()"/></p> -->
                   <table>
                     <tr>
                       <th>Course-Name</th>
@@ -98,22 +93,15 @@
                       <th>Web/Public</th>
                     </tr>
                   </table>
-                <!-- End of Table NewCourseMaterial -->
-
-                <!-- {% for em in user_courses %}
-                <h2>{{em}}</h2>
-                {% endfor %} -->
-
+                <!-- End of Table New Courses/Laboratory experiments Introduced and Taught -->
 
 
                 <hr style="height:5px;background-color:#333;">
                 <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
-                <!--
-                  Table for NewCourseMaterial
-                -->
+
+                <!--Table for Thesis/Research Supervision-->
                   <h3>2.1 &emsp; Thesis/Research Supervision</h3>
-                  <!-- <div id="thesis"></div>  the container to add the TABLE
-                  <p><input type="button" value="Add Thesis/Research Supervision" onclick="javascript:addThesis()"/></p> -->
+
                   <table>
                     <tr>
                       <th>Name of Student (MTech/PhD)</th>
@@ -130,14 +118,12 @@
                       </tr>
                     {% endfor %}
                   </table>
-                <!-- End of Table NewCourseMaterial -->
+                <!-- End of Table Thesis/Research Supervision -->
 
-                <!--
-                  Table for NewCourseMaterial
-                -->
+
+                <!--Table for Sponsored Research and Consultancy Projects-->
                   <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
-                  <!-- <div id="sponsored_projects"></div>  <!-- the container to add the TABLE
-                  <p><input type="button" value="Add applicant_sponsored_projects" onclick="javascript:addSponsoredProjects()"/></p> -->
+
                   <table>
                     <tr>
                       <th>Title Of Project</th>
@@ -147,6 +133,7 @@
                       <th>Status(Completed / Submitted / In progress)</th>
                       <th>Remarks</th>
                     </tr>
+
                     {% for object in consultancy_projects %}
                       <tr>
                         <td>{{object.title}}</td>
@@ -155,6 +142,7 @@
                         <td>{{object.duration}}</td>
                       </tr>
                     {% endfor %}
+
                     {% for object in research_projects %}
                       <tr>
                         <td>{{object.title}}</td>
@@ -164,12 +152,13 @@
                         <td>{{object.status}}</td>
                       </tr>
                     {% endfor %}
+
                   </table>
                   <br><br>
-                <!-- End of Table NewCourseMaterial -->
+                <!-- End of Table Sponsored Research and Consultancy Projects -->
+
 
                 <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
-                <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
                 <br>
                 <table>
                   {% for object in patents %}
@@ -209,7 +198,6 @@
 
 
                 <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
-                <!-- <textarea name="publications" rows="2" cols="30" placeholder="Journal, Conference, Book, Book Chapter, Technical Report, etc."></textarea> -->
                 <br>
                 <table>
                   {% for object in publications %}
@@ -241,7 +229,6 @@
                 <textarea name="conferences_meeting_attended" rows="2" cols="30"></textarea>
                 <br><br>
                 <label for="conferences_meeting_organized"><h3>2.6 &emsp; Conferences Organized:</h3></label>
-                <!-- <textarea name="conferences_meeting_organized" rows="2" cols="30"></textarea> -->
                 <br>
                 <table>
                   <tr>

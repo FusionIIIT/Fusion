@@ -321,13 +321,8 @@ class SponsoredProjects(models.Model):
 class AppraisalRequest(models.Model):
     """ Stores the appraisal request info of the user related to :model:'establishment.Appraisal' """
     appraisal=models.ForeignKey(Appraisal, related_name='appraisal_tracking', on_delete=models.CASCADE)
-<<<<<<< HEAD
-    hod = models.ForeignKey(User, related_name='hod', on_delete=models.CASCADE, null=True, blank=True)
-    director = models.ForeignKey(User, related_name='director', on_delete=models.CASCADE, null=True, blank=True)
-=======
     hod = models.ForeignKey(User, related_name='hod', on_delete=models.CASCADE,null=True)
     director = models.ForeignKey(User, related_name='director', on_delete=models.CASCADE,null=True)
->>>>>>> upstream/master
     remark_hod = models.CharField(max_length=50, blank=True, null=True)
     remark_director = models.CharField(max_length=50, blank=True, null=True)
     status_hod = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)

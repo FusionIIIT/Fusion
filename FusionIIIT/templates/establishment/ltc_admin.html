@@ -21,7 +21,7 @@
 
 
 <!--
-pending ltc applications 
+pending ltc applications
 -->
 <div class="ui active tab segment" data-tab="ltcone">
     <div class="content">
@@ -43,7 +43,7 @@ pending ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal assign_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -70,10 +70,10 @@ pending ltc applications
                                         {% for app2 in ltc_availed_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -86,10 +86,10 @@ pending ltc applications
                                         {% for app2 in ltc_to_avail_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -102,10 +102,10 @@ pending ltc applications
                                         {% for app2 in dependent_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                             <td>
@@ -121,21 +121,21 @@ pending ltc applications
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
+                                    {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.assign_status %} 
+                                        {% render_field app.assign_form.assign_status %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %} 
+                                        {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %} 
+                                        {% render_field app.assign_form.reviewer_design3 %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.assign_form.remarks %}
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
@@ -159,7 +159,7 @@ pending ltc applications
 
 
 <!--
-under_review ltc applications 
+under_review ltc applications
 -->
 <div class="ui tab segment" data-tab="ltctwo">
     <div class="content">
@@ -183,7 +183,7 @@ under_review ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal view_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -209,10 +209,10 @@ under_review ltc applications
                                         {% for app2 in ltc_availed_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -225,10 +225,10 @@ under_review ltc applications
                                         {% for app2 in ltc_to_avail_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -241,10 +241,10 @@ under_review ltc applications
                                         {% for app2 in dependent_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                             <td>
@@ -289,10 +289,10 @@ under_review ltc applications
                                         {% for app2 in ltc_availed_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -305,10 +305,10 @@ under_review ltc applications
                                         {% for app2 in ltc_to_avail_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -321,10 +321,10 @@ under_review ltc applications
                                         {% for app2 in dependent_under_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                             <td>
@@ -340,21 +340,21 @@ under_review ltc applications
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
+                                    {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.status %} 
+                                        {% render_field app.assign_form.status %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %} 
+                                        {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %} 
+                                        {% render_field app.assign_form.reviewer_design3 %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.assign_form.remarks %}
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
@@ -376,7 +376,7 @@ under_review ltc applications
 </div>
 
 <!--
-reviewed ltc applications 
+reviewed ltc applications
 -->
 <div class="ui tab segment" data-tab="ltcfive">
     <div class="content">
@@ -399,7 +399,7 @@ reviewed ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal assign_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -426,10 +426,10 @@ reviewed ltc applications
                                         {% for app2 in ltc_availed_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -442,10 +442,10 @@ reviewed ltc applications
                                         {% for app2 in ltc_to_avail_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -458,10 +458,10 @@ reviewed ltc applications
                                         {% for app2 in dependent_pending %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                             <td>
@@ -477,18 +477,18 @@ reviewed ltc applications
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
-                                    
+                                    {% render_field app.assign_form.app_id %}
+
                                     <div class="field">
                                         Remarks from Director : {{ app.tracking_info.remarks }}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.accept_status%} 
+                                        {% render_field app.assign_form.accept_status%}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.assign_form.remarks %}
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
@@ -514,7 +514,7 @@ reviewed ltc applications
 
 
 <!--
-archived ltc applications 
+archived ltc applications
 -->
 <div class="ui tab segment" data-tab="ltcthree">
     <div class="content">
@@ -535,7 +535,7 @@ archived ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal view_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -561,10 +561,10 @@ archived ltc applications
                                         {% for app2 in ltc_availed_archive %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -577,10 +577,10 @@ archived ltc applications
                                         {% for app3 in ltc_to_avail_archive %}
                                         {% if app3.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app3.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app3.age }}
                                             </td>
                                         </tr>
@@ -593,13 +593,13 @@ archived ltc applications
                                         {% for app4 in dependent_archive %}
                                         {% if app4.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app4.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app4.age }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app4.depend }}
                                             </td>
                                         </tr>
@@ -642,35 +642,35 @@ archived ltc applications
                             <form class="ui large form" method="post" enctype="multipart/form-data" id="form_new">
                                 {% csrf_token %}
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.username %} 
+                                    {% render_field ltc_new_eligible_user_form.username %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.joining_date %} 
+                                    {% render_field ltc_new_eligible_user_form.joining_date %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.current_block_size %} 
+                                    {% render_field ltc_new_eligible_user_form.current_block_size %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.total_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.total_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_availed %} 
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_availed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_availed %} 
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_availed %}
                                 </div>
                                 <br>
                                 <button type="submit" name="ltc_new_eligible_user" class="ui large primary button">
@@ -706,7 +706,7 @@ archived ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal edit-user-{{user_object.user}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -719,35 +719,35 @@ archived ltc applications
                                     {% csrf_token %}
                                     <!-- NOTE: THIS USERNAME IS EDITABLE BY USER, IT HAS TO BE CHANGED -->
                                     <div class="field">
-                                        {% render_field user_object.edit_form.username %} 
+                                        {% render_field user_object.edit_form.username %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.joining_date %} 
+                                        {% render_field user_object.edit_form.joining_date %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.current_block_size %} 
+                                        {% render_field user_object.edit_form.current_block_size %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.total_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.total_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.hometown_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.hometown_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.elsewhere_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.elsewhere_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.hometown_ltc_availed %} 
+                                        {% render_field user_object.edit_form.hometown_ltc_availed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.elsewhere_ltc_availed %} 
+                                        {% render_field user_object.edit_form.elsewhere_ltc_availed %}
                                     </div>
                                     <br>
                                     <div class="ui buttons">

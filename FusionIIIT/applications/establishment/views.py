@@ -20,6 +20,9 @@ def initial_checks(request):
 
 
 def is_admin(request):
+    """
+        function to check if the user has designation "admin".
+    """
     return request.user == Establishment_variables.objects.select_related('est_admin').first().est_admin
 
 
@@ -27,6 +30,9 @@ def is_eligible(request):
     return True
 
 def is_hod(request):
+    """
+        function to check if the user has designation "HOD".
+    """
     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
     designation = user_dsg[0].designation.name
     if("HOD" in designation):
@@ -34,6 +40,9 @@ def is_hod(request):
     return False
 
 def is_registrar(request):
+    """
+        function to check if the user has designation "Registrar".
+    """
     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
     designation = user_dsg[0].designation.name
     if("Registrar" in designation):
@@ -41,6 +50,9 @@ def is_registrar(request):
     return False
 
 def is_director(request):
+    """
+        function to check if the user has designation "Director".
+    """
      user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
      designation = user_dsg[0].designation.name
      if("Director" in designation):
@@ -48,6 +60,9 @@ def is_director(request):
      return False
 
 def is_cpda(dictx):
+    """
+        function to check if the application is CPDA.
+    """
     for key in dictx.keys():
         if 'cpda' in key:
             return True
@@ -55,6 +70,9 @@ def is_cpda(dictx):
 
 
 def is_ltc(dictx):
+    """
+        function to check if the application is LTC.
+    """
     for key in dictx.keys():
         if 'ltc' in key:
             return True
@@ -62,6 +80,9 @@ def is_ltc(dictx):
 
 
 def is_appraisal(dictx):
+    """
+        function to check if the application is Appraisal.
+    """
     for key in dictx.keys():
         if 'appraisal' in key:
             return True
@@ -184,7 +205,7 @@ def handle_ltc_admin(request):
             if(application.is_hometown_or_elsewhere=='elsewhere' and eligible_ltc_user.elsewhere_ltc_availed<eligible_ltc_user.elsewhere_ltc_allowed):
                 eligible_ltc_user.elsewhere_ltc_availed+=1
                 eligible_ltc_user.hometown_ltc_availed+=1
-            
+
             eligible_ltc_user.save()
             application.save()
             # add notif
@@ -514,7 +535,7 @@ def handle_cpda_eligible(request):
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
-    
+
     elif 'cpda_reject' in request.POST:
         app_id = request.POST.get('app_id')
         # verify that app_id is not changed, ie untampered
@@ -550,12 +571,12 @@ def handle_ltc_eligible(request):
         phone_number = request.POST.get('phone_number')
         travel_mode = request.POST.get('travel_mode')
 
-        
+
         requested_advance = request.POST.get('requested_advance')
 
         status = 'requested'
         timestamp = datetime.now()
-        
+
         eligible_ltc_user=Ltc_eligible_user.objects.get(user=applicant)
         ret = relativedelta(datetime.today().date(), eligible_ltc_user.date_of_joining)
         ret=ret.years + ret.months/12 + ret.days/365
@@ -593,7 +614,7 @@ def handle_ltc_eligible(request):
                                     name = name,
                                     age = age
                     )
-            
+
                     count += 1
             # ltc_to_avail
             count = 1
@@ -607,7 +628,7 @@ def handle_ltc_eligible(request):
                                     name = name,
                                     age = age
                     )
-            
+
                     count += 1
 
             # Dependents
@@ -624,7 +645,7 @@ def handle_ltc_eligible(request):
                                     age = age,
                                     depend = depend
                     )
-            
+
                     count += 1
 
 
@@ -643,22 +664,38 @@ def handle_ltc_eligible(request):
         application = Ltc_application.objects.get(id=app_id)
         application.tracking_info.remarks = review_comment
         application.tracking_info.review_status = 'reviewed'
-        #if(application.is_hometown_or_elsewhere=='hometown')     
+        #if(application.is_hometown_or_elsewhere=='hometown')
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
 
 
+
 def handle_appraisal(request):
+    """
+        This function is used to handle various requests in the
+        Appraisal module.
+
+        request: HttpRequest object that contains metadata of
+                 Appraisal requests.
+    """
+
+
+    # Condition to handle the Appraisal Request generated from
+    # the faculty end by submitting a form.
     if 'appraisal_request' in request.POST:
+
         applicant = request.user
 
+        # Query to find the designation of the user
         user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
         designation = user_dsg[0].designation
 
+        # Query to find the department/discipline of the user
         user_dep = list(ExtraInfo.objects.filter(user=request.user))
         discipline = user_dep[0].department
 
+        # handling form data
         knowledge_field = request.POST.get('specific_field_knowledge')
         research_interest = request.POST.get('current_research_interest')
         status = 'requested'
@@ -675,7 +712,7 @@ def handle_appraisal(request):
 
         faculty_comments = request.POST.get('faculty_comments')
 
-
+        # Creating Appraisal Object
         application = Appraisal.objects.create(
                 applicant = applicant,
                 designation = designation,
@@ -695,133 +732,7 @@ def handle_appraisal(request):
         )
 
 
-        # # CoursesInstructed
-        # count = 1
-        # while(1):
-        #     semester = request.POST.get('Semester'+str(count))
-        #     course_name = request.POST.get('Course-Name'+str(count))
-        #     course_num = request.POST.get('Course Number'+str(count))
-        #     lecture_hrs_wk = request.POST.get('Lecture (Hours/week)'+str(count))
-        #     tutorial_hrs_wk = request.POST.get('Tutorial (Hours/week)'+str(count))
-        #     lab_hrs_wk = request.POST.get('Lab (Hours/week)'+str(count))
-        #     reg_students = request.POST.get('Number of Registered Students'+str(count))
-        #     if(semester == None):
-        #         break
-        #
-        #     course = CoursesInstructed.objects.create(
-        #                 appraisal = application,
-        #                 semester = semester,
-        #                 course_name = course_name,
-        #                 course_num = course_num,
-        #                 lecture_hrs_wk = lecture_hrs_wk,
-        #                 tutorial_hrs_wk = tutorial_hrs_wk,
-        #                 lab_hrs_wk = lab_hrs_wk,
-        #                 reg_students = reg_students,
-        #                 co_instructor = None
-        #     )
-        #
-        #     count += 1
-        #
-        #
-        #     # NewCoursesOffered
-        #     count = 1
-        #     while(1):
-        #         course_name = request.POST.get('Course-Name1.1.2'+str(count))
-        #         course_num = request.POST.get('Course Number1.1.2'+str(count))
-        #         UGorPG = request.POST.get('UG/PG1.1.2'+str(count))
-        #         tutorial_hrs_wk = request.POST.get('Tutorial (Hours/week)1.1.2'+str(count))
-        #         year = request.POST.get('YEAR1.1.2'+str(count))
-        #         semester = request.POST.get('Semester1.1.2'+str(count))
-        #         if(semester == None):
-        #             break
-        #
-        #         new_course = NewCoursesOffered.objects.create(
-        #                         appraisal = application,
-        #                         course_name = course_name,
-        #                         course_num = course_num,
-        #                         ug_or_pg = UGorPG,
-        #                         tutorial_hrs_wk = tutorial_hrs_wk,
-        #                         year = year,
-        #                         semester = semester
-        #         )
-        #
-        #         count += 1
-        #
-        #
-        #     # NewCourseMaterial
-        #     count = 1
-        #     while(1):
-        #         course_name = request.POST.get('Course-Name' + '1.1.3' + str(count))
-        #         course_num = request.POST.get('Course Number' + '1.1.3' + str(count))
-        #         ug_or_pg = request.POST.get('UG/PG' + '1.1.3' + str(count))
-        #         activity_type = request.POST.get('Type of Activity' + '1.1.3' + str(count))
-        #         availiability = request.POST.get('Web/Public' + '1.1.3' + str(count))
-        #         if(course_num == None):
-        #             break
-        #
-        #         new_courses_material = NewCourseMaterial.objects.create(
-        #                                 appraisal = application,
-        #                                 course_name = course_name,
-        #                                 course_num = course_num,
-        #                                 ug_or_pg = ug_or_pg,
-        #                                 activity_type = activity_type,
-        #                                 availiability = availiability
-        #         )
-        #
-        #         count += 1
-        #
-        #
-        #     # ThesisResearchSupervision
-        #     count = 1
-        #     while(1):
-        #         stud_name = request.POST.get('Name of Student (MTech/PhD)' + '2.1' + str(count))
-        #         thesis_title = request.POST.get('Title Of Thesis / Thesis Topic' + '2.1' + str(count))
-        #         year = request.POST.get('Year' + '2.1' + str(count))
-        #         semester = request.POST.get('Semester' + '2.1' + str(count))
-        #         status = request.POST.get('Status(Completed / Submitted / In progress)' + '2.1' + str(count))
-        #         co_supervisors = request.POST.get('Co-Supervisors' + '2.1' + str(count))
-        #         if(semester == None):
-        #             break
-        #
-        #         new_thesis_research = ThesisResearchSupervision.objects.create(
-        #                                 appraisal = application,
-        #                                 stud_name = stud_name,
-        #                                 thesis_title = thesis_title,
-        #                                 year = year,
-        #                                 semester = semester,
-        #                                 status = status,
-        #                                 co_supervisors = co_supervisors
-        #         )
-        #
-        #         count += 1
-        #
-        #
-        #     # SponsoredProjects
-        #     count = 1
-        #     while(1):
-        #         project_title = request.POST.get('Title Of Project' + '2.2' + str(count))
-        #         sponsoring_agency = request.POST.get('Sponsoring Agency / Organization' + '2.2' + str(count))
-        #         funding = request.POST.get('Project Funding (Rs.)' + '2.2' + str(count))
-        #         duration = request.POST.get('Project Duration' + '2.2' + str(count))
-        #         co_investigators = request.POST.get('Co-investigators(if-any)' + '2.2' + str(count))
-        #         status = request.POST.get('Status(Completed / Submitted / In progress)' + '2.2' + str(count))
-        #         remarks = request.POST.get('Remarks' + '2.2' + str(count))
-        #         if(funding == None):
-        #             break
-        #
-        #         new_sponsored_projects = SponsoredProjects.objects.create(
-        #                                     appraisal = application,
-        #                                     project_title = project_title,
-        #                                     sponsoring_agency = sponsoring_agency,
-        #                                     funding = funding,
-        #                                     duration = duration,
-        #                                     co_investigators = co_investigators,
-        #                                     status = status,
-        #                                     remarks = remarks
-        #         )
-        #
-        #         count += 1
-
+        # Finding the user with designation "HOD" of the department to which the applicant belongs.
         user_info = ExtraInfo.objects.filter(user = applicant)
         user_info = user_info[0]
 
@@ -840,10 +751,12 @@ def handle_appraisal(request):
         holds_designation = HoldsDesignation.objects.filter(designation = designation[0])
         hod = holds_designation[0].user
 
+        # Finding the user with designation "Director"
         designation = Designation.objects.filter(name = 'Director')
         holds_designation = HoldsDesignation.objects.filter(designation = designation[0])
         director = holds_designation[0].user
 
+        # Creating AppraisalRequest Object to track the application
         appraisal_request = AppraisalRequest.objects.create(
                 appraisal = application,
                 hod = hod,
@@ -853,6 +766,8 @@ def handle_appraisal(request):
         messages.success(request, 'Appraisal Request sent successfully!')
 
 
+    # Condition to handle the Appraisal Review Request generated from
+    # the HOD end by reviewing a application.
     if 'hod_appraisal_review' in request.POST:
         app_id = int(request.POST.get('app_id'))
         review_comment = request.POST.get('remarks_hod')
@@ -865,6 +780,8 @@ def handle_appraisal(request):
         appraisal_track.save()
         messages.success(request, 'Review submitted successfully!')
 
+    # Condition to handle the Appraisal Review Request generated from
+    # the Director end by reviewing a application.
     if 'director_appraisal_review' in request.POST:
         app_id = int(request.POST.get('app_id'))
         review_comment = request.POST.get('remarks_director')
@@ -895,10 +812,10 @@ def generate_cpda_eligible_lists(request):
                     .exclude(status='approved')
                     .exclude(status='adjustments_pending')
                     .order_by('-request_timestamp'))
-    
+
     to_review_apps = (Cpda_application.objects
                     .select_related('applicant')
-                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id=1) | 
+                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id=1) |
                             Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id=2) |
                             Q(tracking_info__reviewer_id3=request.user,tracking_info__current_reviewer_id=3))
                     .exclude(status='rejected')
@@ -906,13 +823,13 @@ def generate_cpda_eligible_lists(request):
                     .exclude(status='approved')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
-    
+
     reviewed_apps= (Cpda_application.objects.select_related('applicant')
-                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id__gte=2) | 
-                            Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id__gte=3) | 
+                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id__gte=2) |
+                            Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id__gte=3) |
                             Q(tracking_info__reviewer_id3=request.user,tracking_info__current_reviewer_id__gte=4))
                     .order_by('-request_timestamp'))
-    
+
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
@@ -927,7 +844,7 @@ def generate_cpda_eligible_lists(request):
                     .filter(applicant=request.user)
                     .exclude(status='requested')
                     .aggregate(total_advance=Sum('requested_advance')))
-    
+
     if advance_took['total_advance']:
         advance_taken=advance_took['total_advance']
         advance_avail=300000-advance_took['total_advance']
@@ -936,7 +853,7 @@ def generate_cpda_eligible_lists(request):
         advance_avail=300000
     today_date=date.today()
     block_period=str(2018+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
-    
+
     hod=is_hod(request)
     registrar=is_registrar(request)
     director=is_director(request)
@@ -968,8 +885,8 @@ def generate_ltc_eligible_lists(request):
         ltc_info['total_ltc_remaining'] = ltc_queryset.first().total_ltc_remaining()
         ltc_info['hometown_ltc_remaining'] = ltc_queryset.first().hometown_ltc_remaining()
         ltc_info['elsewhere_ltc_remaining'] = ltc_queryset.first().elsewhere_ltc_remaining()
-        
-        
+
+
         if(float(ltc_info['years_of_job'])<1):
             ltc_info['eligible']=False
             less_than_1_year=True
@@ -1004,7 +921,7 @@ def generate_ltc_eligible_lists(request):
     depend_review = (Dependent.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
-    
+
     response = {
         'ltc_info': ltc_info,
         'ltc_to_review_apps': to_review_apps,
@@ -1029,7 +946,9 @@ def generate_ltc_eligible_lists(request):
 
 
 def generate_appraisal_lists(request):
-
+    """
+        Generating JSON object to get data from the front-end.
+    """
     response = {}
 
     user_courses = []
@@ -1049,7 +968,7 @@ def generate_appraisal_lists(request):
     events = emp_event_organized.objects.filter(user = request.user)
 
     active_apps = (Appraisal.objects.select_related('applicant').filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp'))
-   
+
     archive_apps = Appraisal.objects.select_related('applicant').filter(applicant=request.user).exclude(status='requested').order_by('-timestamp')
     request_active = (AppraisalRequest.objects.select_related('appraisal').filter(appraisal__applicant=request.user).filter(appraisal__status='requested'))
     request_archived = (AppraisalRequest.objects.select_related('appraisal').filter(appraisal__applicant=request.user).exclude(appraisal__status='requested'))
@@ -1075,7 +994,10 @@ def generate_appraisal_lists(request):
 
 
 def generate_appraisal_lists_hod(request):
-
+    """
+        Generating JSON object to get data from the front-end for user
+        with designation "HOD".
+    """
     response = {}
     review_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'accepted')
     reviewed_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'pending')
@@ -1111,6 +1033,10 @@ def generate_appraisal_lists_hod(request):
 
 
 def generate_appraisal_lists_director(request):
+    """
+        Generating JSON object to get data from the front-end for user
+        with designation "Director".
+    """
     response = {}
     review_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'pending').exclude(status_director = 'rejected').exclude(status_director = 'accepted')
     reviewed_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_director = 'pending')
@@ -1178,9 +1104,11 @@ def establishment(request):
         response.update(generate_ltc_eligible_lists(request))
         response.update(generate_appraisal_lists(request))
 
+    # If user has designation "HOD"
     if is_hod(request):
         response.update(generate_appraisal_lists_hod(request))
 
+    # If user has designation "Director"
     if is_director(request):
         response.update(generate_appraisal_lists_director(request))
 
