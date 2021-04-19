@@ -1,0 +1,50 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block title %}
+     HR1 Module
+{% endblock %}
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+            <div class="ui divider"></div>
+            
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+
+
+        
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class=" wide column"> 
+            <a href='establishment/cpda/'>CPDA</a>
+            <a href='establishment/ltc/'>LTC</a>
+            <a href='establishment/appraisal/'>Appraisal</a>
+            <a href='/leave/'>Leave</a>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+        {% comment %}The right-margin segment!{% endcomment %}
+       <!-- <div class="column"></div>-->
+    </div>
+
+    {% comment %}The grid ends here!{% endcomment %}
+{% endblock %}

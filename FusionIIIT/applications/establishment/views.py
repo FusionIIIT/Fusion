@@ -67,6 +67,9 @@ def is_appraisal(dictx):
             return True
     return False
 
+def leave(request):
+    print('hello')
+    #redirect('leave/leave.html')
 
 def handle_cpda_admin(request):
     app_id = request.POST.get('app_id')
@@ -1148,34 +1151,56 @@ def generate_appraisal_lists_director(request):
 
 @login_required(login_url='/accounts/login')
 def establishment(request):
+    return render(request, 'establishment/hr1.html')
+
+
+@login_required(login_url='/accounts/login')
+def cpda(request):
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
     response.update(initial_checks(request))
     if is_admin(request) and request.method == "POST":
-        if is_cpda(request.POST):
             handle_cpda_admin(request)
-        if is_ltc(request.POST):
-            handle_ltc_admin(request)
-
-
+        
     if is_eligible(request) and request.method == "POST":
-        if is_cpda(request.POST):
             handle_cpda_eligible(request)
-        elif is_ltc(request.POST):
-            handle_ltc_eligible(request)
-        elif(is_appraisal(request.POST)):
-            handle_appraisal(request)
-    #
-    # ############################################################################
-    #
+
     if is_admin(request):
         response.update(generate_cpda_admin_lists(request))
-        response.update(generate_ltc_admin_lists(request))
-        return render(request, 'establishment/establishment.html', response)
+        return render(request, 'establishment/cpda_admin.html', response)
 
     if is_eligible(request):
         response.update(generate_cpda_eligible_lists(request))
-        response.update(generate_ltc_eligible_lists(request))
+
+    response.update({'cpda':True,'ltc':False,'appraisal':False,'leave':False}) 
+      
+    return render(request, 'establishment/hr1_form.html', response)
+
+
+@login_required(login_url='/accounts/login')
+def ltc(request):
+    response = {}
+    # Check if establishment variables exist, if not create some fields or ask for them
+    response.update(initial_checks(request))
+    if is_admin(request) and request.method == "POST":
+        handle_ltc_admin(request)
+
+    if is_eligible(request) and request.method == "POST":
+        handle_ltc_eligible(request)
+
+    response.update({'cpda':False,'ltc':True,'appraisal':False,'leave':False})
+    return render(request, 'establishment/hr1_form.html', response)
+
+
+@login_required(login_url='/accounts/login')
+def appraisal(request):
+    response = {}
+    # Check if establishment variables exist, if not create some fields or ask for them
+    response.update(initial_checks(request))
+    if is_eligible(request) and request.method == "POST":
+        handle_appraisal(request)
+
+    if is_eligible(request):
         response.update(generate_appraisal_lists(request))
 
     if is_hod(request):
@@ -1184,4 +1209,6 @@ def establishment(request):
     if is_director(request):
         response.update(generate_appraisal_lists_director(request))
 
-    return render(request, 'establishment/establishment.html', response)
+    response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
+    
+    return render(request, 'establishment/hr1_form.html', response)
