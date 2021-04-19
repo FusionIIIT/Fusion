@@ -161,25 +161,25 @@ class Ltc_tracking(models.Model):
     class Meta:
         db_table = 'Ltc Tracking'
 
-class Ltc_availed(models.Model): 
+class Ltc_availed(models.Model):
     ltc = models.ForeignKey(Ltc_application, related_name='ltcAvailed',
                                     on_delete=models.CASCADE)
     name=models.CharField(max_length=30)
     age=models.IntegerField(blank=True, null=True)
 
-class Ltc_to_avail(models.Model): 
+class Ltc_to_avail(models.Model):
     ltc = models.ForeignKey(Ltc_application, related_name='ltcToAvail',
                                     on_delete=models.CASCADE)
     name=models.CharField(max_length=30)
     age=models.IntegerField(blank=True, null=True)
 
-class Dependent(models.Model): 
+class Dependent(models.Model):
     ltc = models.ForeignKey(Ltc_application, related_name='Dependent',
                                     on_delete=models.CASCADE)
     name=models.CharField(max_length=30)
     age=models.IntegerField(blank=True, null=True)
     depend=models.CharField(max_length=30)
-    
+
 
 class Ltc_eligible_user(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)

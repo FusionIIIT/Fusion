@@ -17,12 +17,12 @@
 
 
 <!--
-.o88b. d8888b. d8888b.  .d8b.       d8888b. d88888b  .d88b.  db    db d88888b .d8888. d888888b 
-d8P  Y8 88  `8D 88  `8D d8' `8b      88  `8D 88'     .8P  Y8. 88    88 88'     88'  YP `~~88~~' 
-8P      88oodD' 88   88 88ooo88      88oobY' 88ooooo 88    88 88    88 88ooooo `8bo.      88    
-8b      88~~~   88   88 88~~~88      88`8b   88~~~~~ 88    88 88    88 88~~~~~   `Y8b.    88    
-Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     db   8D    88    
-`Y88P' 88      Y8888D' YP   YP      88   YD Y88888P  `Y88'Y8 ~Y8888P' Y88888P `8888Y'    YP    
+.o88b. d8888b. d8888b.  .d8b.       d8888b. d88888b  .d88b.  db    db d88888b .d8888. d888888b
+d8P  Y8 88  `8D 88  `8D d8' `8b      88  `8D 88'     .8P  Y8. 88    88 88'     88'  YP `~~88~~'
+8P      88oodD' 88   88 88ooo88      88oobY' 88ooooo 88    88 88    88 88ooooo `8bo.      88
+8b      88~~~   88   88 88~~~88      88`8b   88~~~~~ 88    88 88    88 88~~~~~   `Y8b.    88
+Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     db   8D    88
+`Y88P' 88      Y8888D' YP   YP      88   YD Y88888P  `Y88'Y8 ~Y8888P' Y88888P `8888Y'    YP
 -->
 <div class="ui bottom attached tab segment active" data-tab="cpdaone">
     <div class="content">
@@ -30,11 +30,11 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
                 <div class="field">
-                    {% render_field cpda_form.pf_number %} 
+                    {% render_field cpda_form.pf_number %}
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field cpda_form.purpose %} 
+                    {% render_field cpda_form.purpose %}
                 </div>
                 <br>
                 <div class="field">
@@ -54,7 +54,7 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field cpda_form.declaration %} 
+                    {% render_field cpda_form.declaration %}
                 </div>
                 <br>
                 <button type="submit" name="cpda_request" class="ui large primary button">
@@ -67,12 +67,12 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
 
 
 <!--
-.o88b. d8888b. d8888b.  .d8b.        .d8b.   .o88b. d888888b d888888b db    db d88888b 
-d8P  Y8 88  `8D 88  `8D d8' `8b      d8' `8b d8P  Y8 `~~88~~'   `88'   88    88 88'     
-8P      88oodD' 88   88 88ooo88      88ooo88 8P         88       88    Y8    8P 88ooooo 
-8b      88~~~   88   88 88~~~88      88~~~88 8b         88       88    `8b  d8' 88~~~~~ 
-Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  88.     
-`Y88P' 88      Y8888D' YP   YP      YP   YP  `Y88P'    YP    Y888888P    YP    Y88888P 
+.o88b. d8888b. d8888b.  .d8b.        .d8b.   .o88b. d888888b d888888b db    db d88888b
+d8P  Y8 88  `8D 88  `8D d8' `8b      d8' `8b d8P  Y8 `~~88~~'   `88'   88    88 88'
+8P      88oodD' 88   88 88ooo88      88ooo88 8P         88       88    Y8    8P 88ooooo
+8b      88~~~   88   88 88~~~88      88~~~88 8b         88       88    `8b  d8' 88~~~~~
+Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  88.
+`Y88P' 88      Y8888D' YP   YP      YP   YP  `Y88P'    YP    Y888888P    YP    Y88888P
 -->
 <div class="ui tab segment" data-tab="cpdatwo">
     <div class="content">
@@ -85,15 +85,15 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                             {% if app.status == 'requested' or app.status == 'adjustments_pending' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
                                     <div class="meta">Review Status : {{app.tracking_info.review_status}} by
-                                        {% if app.tracking_info.current_reviwerid == 1 %} 
+                                        {% if app.tracking_info.current_reviwerid == 1 %}
                                             {{app.tracking_info.reviewer_id.first_name}} ({{app.tracking_info.reviewer_design}})
-                                        {% elif app.tracking_info.current_reviwerid == 2 %} 
+                                        {% elif app.tracking_info.current_reviwerid == 2 %}
                                             {{app.tracking_info.reviewer_id2.first_name}} ({{app.tracking_info.reviewer_design2}})
-                                        {% else %} 
+                                        {% else %}
                                             {{app.tracking_info.reviewer_id3.first_name}} ({{app.tracking_info.reviewer_design3}})
                                         {% endif %}
                                     </div>
-                                        
+
                                 {% endif %}
                             {% endif %}
                             <div class="meta">
@@ -139,17 +139,17 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                                 </div>
                                 {% endcomment %}
 
-                                {% render_field billform.app_id %} 
+                                {% render_field billform.app_id %}
                                 <div class="field">
-                                    {% render_field billform.adjustment_amount %} 
+                                    {% render_field billform.adjustment_amount %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field billform.bills %} 
+                                    {% render_field billform.bills %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field billform.total_bills_amount %} 
+                                    {% render_field billform.total_bills_amount %}
                                 </div>
                                 <br>
                                 <button type="submit" name="cpda_adjust" class="ui large primary button">
@@ -158,15 +158,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                             </form>
                             </div>
                         </div>
-                        <!-- <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                            <div class="ui positive right labeled icon button">
-                                Submit Bills
-                                <i class="checkmark icon"></i>
-                            </div>
-                        </div> -->
+
                     </div>
                 {% endfor %}
             </div>
@@ -175,12 +167,12 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
 </div>
 
 <!--
-.o88b. d8888b. d8888b.  .d8b.        .d8b.  d8888b.  .o88b. db   db d888888b db    db d88888b 
-d8P  Y8 88  `8D 88  `8D d8' `8b      d8' `8b 88  `8D d8P  Y8 88   88   `88'   88    88 88'     
-8P      88oodD' 88   88 88ooo88      88ooo88 88oobY' 8P      88ooo88    88    Y8    8P 88ooooo 
-8b      88~~~   88   88 88~~~88      88~~~88 88`8b   8b      88~~~88    88    `8b  d8' 88~~~~~ 
-Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `8bd8'  88.     
- `Y88P' 88      Y8888D' YP   YP      YP   YP 88   YD  `Y88P' YP   YP Y888888P    YP    Y88888P 
+.o88b. d8888b. d8888b.  .d8b.        .d8b.  d8888b.  .o88b. db   db d888888b db    db d88888b
+d8P  Y8 88  `8D 88  `8D d8' `8b      d8' `8b 88  `8D d8P  Y8 88   88   `88'   88    88 88'
+8P      88oodD' 88   88 88ooo88      88ooo88 88oobY' 8P      88ooo88    88    Y8    8P 88ooooo
+8b      88~~~   88   88 88~~~88      88~~~88 88`8b   8b      88~~~88    88    `8b  d8' 88~~~~~
+Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `8bd8'  88.
+ `Y88P' 88      Y8888D' YP   YP      YP   YP 88   YD  `Y88P' YP   YP Y888888P    YP    Y88888P
 -->
 <div class="ui tab segment" data-tab="cpdathree">
     <div class="content">
@@ -194,7 +186,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
-                            
+
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_cpda-{{app.id}}').modal('show')">
                                     View
@@ -202,7 +194,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal view_cpda-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -218,7 +210,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label><br>
                                 <label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label><br>
                                 <label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label><br>
-                                
+
                                 {% if app.status == 'finished' %}
                                     <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
                                     <label>No. of Bills : {{ app.bills_attached }}</label><br>
@@ -294,9 +286,9 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label><br>
                                 <label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label><br>
                                 <label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label><br>
-                                {% render_field app.reviewform.app_id %} 
+                                {% render_field app.reviewform.app_id %}
                                 <div class="field">
-                                    {% render_field app.reviewform.remarks %} 
+                                    {% render_field app.reviewform.remarks %}
                                 </div>
                                 <br>
                                 <button type="submit" name="cpda_review" class="ui large primary button">
@@ -308,15 +300,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                             </form>
                             </div>
                         </div>
-                        <!-- <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                            <div class="ui positive right labeled icon button">
-                                Submit Bills
-                                <i class="checkmark icon"></i>
-                            </div>
-                        </div> -->
+
                     </div>
                 {% endfor %}
             </div>
@@ -339,11 +323,11 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <div class="meta">Requested Adjustment Amount : ₹ {{app.adjustment_amount}}</div>
                             {% endif %}
                             <div class="meta"> Purpose : {{app.purpose}}</div>
-                            
+
                                 <div class="meta"><label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label></div>
                                 <div class="meta"><label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label></div>
                                 <div class="meta"><label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label></div><br>
-                            
+
                         </div>
                     </div>
                 {% endfor %}

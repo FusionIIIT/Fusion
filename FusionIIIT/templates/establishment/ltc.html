@@ -27,7 +27,7 @@
     <div class="content">
         <div class="description">
             <h2>
-                You are {% if not ltc_info.eligible %}<u>not</u>{% endif %} eligible for 
+                You are {% if not ltc_info.eligible %}<u>not</u>{% endif %} eligible for
                 availing LTC.
             </h2>
             {% if lessthan1year %}
@@ -47,12 +47,12 @@
 
 
 <!--
-   LTC        d8888b. d88888b  .d88b.  db    db d88888b .d8888. d888888b 
-   LTC        88  `8D 88'     .8P  Y8. 88    88 88'     88'  YP `~~88~~' 
-   LTC        88oobY' 88ooooo 88    88 88    88 88ooooo `8bo.      88    
-   LTC        88`8b   88~~~~~ 88    88 88    88 88~~~~~   `Y8b.    88    
-   LTC        88 `88. 88.     `8P  d8' 88b  d88 88.     db   8D    88    
-   LTC        88   YD Y88888P  `Y88'Y8 ~Y8888P' Y88888P `8888Y'    YP    
+   LTC        d8888b. d88888b  .d88b.  db    db d88888b .d8888. d888888b
+   LTC        88  `8D 88'     .8P  Y8. 88    88 88'     88'  YP `~~88~~'
+   LTC        88oobY' 88ooooo 88    88 88    88 88ooooo `8bo.      88
+   LTC        88`8b   88~~~~~ 88    88 88    88 88~~~~~   `Y8b.    88
+   LTC        88 `88. 88.     `8P  d8' 88b  d88 88.     db   8D    88
+   LTC        88   YD Y88888P  `Y88'Y8 ~Y8888P' Y88888P `8888Y'    YP
 -->
 
 {% if ltc_info.eligible %}
@@ -152,12 +152,12 @@
 
 
 <!--
-      LTC      .d8b.   .o88b. d888888b d888888b db    db d88888b 
-      LTC     d8' `8b d8P  Y8 `~~88~~'   `88'   88    88 88'     
-      LTC     88ooo88 8P         88       88    Y8    8P 88ooooo 
-      LTC     88~~~88 8b         88       88    `8b  d8' 88~~~~~ 
-      LTC     88   88 Y8b  d8    88      .88.    `8bd8'  88.     
-      LTC     YP   YP  `Y88P'    YP    Y888888P    YP    Y88888P 
+      LTC      .d8b.   .o88b. d888888b d888888b db    db d88888b
+      LTC     d8' `8b d8P  Y8 `~~88~~'   `88'   88    88 88'
+      LTC     88ooo88 8P         88       88    Y8    8P 88ooooo
+      LTC     88~~~88 8b         88       88    `8b  d8' 88~~~~~
+      LTC     88   88 Y8b  d8    88      .88.    `8bd8'  88.
+      LTC     YP   YP  `Y88P'    YP    Y888888P    YP    Y88888P
 -->
 <div class="ui tab segment" data-tab="ltctwo">
     <div class="content">
@@ -211,10 +211,10 @@
                                     {% for app2 in ltc_availed_active %}
                                     {% if app2.ltc == app %}
                                     <tr>
-                                        <td> 
+                                        <td>
                                             {{ app2.name }}
                                         </td>
-                                        <td> 
+                                        <td>
                                             {{ app2.age }}
                                         </td>
                                     </tr>
@@ -227,10 +227,10 @@
                                     {% for app2 in ltc_to_avail_active %}
                                     {% if app2.ltc == app %}
                                     <tr>
-                                        <td> 
+                                        <td>
                                             {{ app2.name }}
                                         </td>
-                                        <td> 
+                                        <td>
                                             {{ app2.age }}
                                         </td>
                                     </tr>
@@ -243,13 +243,13 @@
                                     {% for app2 in dependent_active %}
                                     {% if app2.ltc == app %}
                                     <tr>
-                                        <td> 
+                                        <td>
                                             {{ app2.name }}
                                         </td>
-                                        <td> 
+                                        <td>
                                             {{ app2.age }}
-                                        </td>                                           </td>
-                                        <td> 
+                                        </td>
+                                        <td>
                                             {{ app2.depend }}
                                         </td>
                                     </tr>
@@ -275,12 +275,12 @@
 
 
 <!--
-        LTC      .d8b.  d8888b.  .o88b. db   db d888888b db    db d88888b 
-        LTC     d8' `8b 88  `8D d8P  Y8 88   88   `88'   88    88 88'     
-        LTC     88ooo88 88oobY' 8P      88ooo88    88    Y8    8P 88ooooo 
-        LTC     88~~~88 88`8b   8b      88~~~88    88    `8b  d8' 88~~~~~ 
-        LTC     88   88 88 `88. Y8b  d8 88   88   .88.    `8bd8'  88.     
-        LTC     YP   YP 88   YD  `Y88P' YP   YP Y888888P    YP    Y88888P 
+        LTC      .d8b.  d8888b.  .o88b. db   db d888888b db    db d88888b
+        LTC     d8' `8b 88  `8D d8P  Y8 88   88   `88'   88    88 88'
+        LTC     88ooo88 88oobY' 8P      88ooo88    88    Y8    8P 88ooooo
+        LTC     88~~~88 88`8b   8b      88~~~88    88    `8b  d8' 88~~~~~
+        LTC     88   88 88 `88. Y8b  d8 88   88   .88.    `8bd8'  88.
+        LTC     YP   YP 88   YD  `Y88P' YP   YP Y888888P    YP    Y88888P
 -->
 <div class="ui tab segment" data-tab="ltcthree">
     <div class="content">
@@ -301,7 +301,7 @@
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal view_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -327,10 +327,10 @@
                                         {% for app2 in ltc_availed_archived %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -343,10 +343,10 @@
                                         {% for app2 in ltc_to_avail_archived %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -359,13 +359,13 @@
                                         {% for app2 in dependent_archived %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.depend }}
                                             </td>
                                         </tr>
@@ -504,10 +504,10 @@
                                         {% for app2 in ltc_availed_review %}
                                         {% if app2.ltc == app %}
                                         <tr>
-                                            <td> 
+                                            <td>
                                                 {{ app2.name }}
                                             </td>
-                                            <td> 
+                                            <td>
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
@@ -520,10 +520,10 @@
                                             {% for app2 in ltc_to_avail_review %}
                                             {% if app2.ltc == app %}
                                             <tr>
-                                                <td> 
+                                                <td>
                                                     {{ app2.name }}
                                                 </td>
-                                                <td> 
+                                                <td>
                                                     {{ app2.age }}
                                                 </td>
                                             </tr>
@@ -536,13 +536,13 @@
                                             {% for app2 in dependent_review %}
                                             {% if app2.ltc == app %}
                                             <tr>
-                                                <td> 
+                                                <td>
                                                     {{ app2.name }}
                                                 </td>
-                                                <td> 
+                                                <td>
                                                     {{ app2.age }}
                                                 </td>
-                                                <td> 
+                                                <td>
                                                     {{ app2.depend }}
                                                 </td>
                                             </tr>
@@ -560,9 +560,9 @@
 
                                 <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
 
-                                {% render_field app.reviewform.app_id %} 
+                                {% render_field app.reviewform.app_id %}
                                 <div class="field">
-                                    {% render_field app.reviewform.remarks %} 
+                                    {% render_field app.reviewform.remarks %}
                                 </div>
                                 <br>
                                 <button type="submit" name="ltc_review" class="ui large primary button">
@@ -571,15 +571,7 @@
                             </form>
                             </div>
                         </div>
-                        <!-- <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                            <div class="ui positive right labeled icon button">
-                                Submit Bills
-                                <i class="checkmark icon"></i>
-                            </div>
-                        </div> -->
+    
                     </div>
                 {% endfor %}
             </div>
