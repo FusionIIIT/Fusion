@@ -11,7 +11,7 @@
 
 <center><b>Final Registration</b></center>
     <div class="ui vertical segment">
-        {% if True %}
+        {% if frd %}
             {% if final_registration_flag == True %}
                 <p style="color:red"><CENTER>  You have already registered for this semester!!! </CENTER></p>
                  <center><a id="viewbtn1" class="btn" onclick="view1()" style="display: inline;">View Courses</a>
@@ -209,7 +209,7 @@
                     
                     
                     
-                    <form id='payment' action='/academic-procedures/success' method="POST">{% csrf_token %}
+                    <form id='payment' action='/academic-procedures/final_registration/' method="POST">{% csrf_token %}
 
 
 
