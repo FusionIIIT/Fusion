@@ -51,7 +51,7 @@ class HallCaretaker(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall + self.staff
+        return str(self.hall) + '  (' + str(self.staff.id.user.username) + ')'
 
 
 class HallWarden(models.Model):
@@ -59,7 +59,7 @@ class HallWarden(models.Model):
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall + self.faculty
+        return str(self.hall) + '  (' + str(self.faculty.id.user.username) + ')'
     
 
 class GuestRoomDetail(models.Model):
