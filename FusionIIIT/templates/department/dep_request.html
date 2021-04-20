@@ -3,7 +3,7 @@
 
 
 {% block title %}
-    Department - Request
+    Department - Faculty View
 {% endblock %}
 
 
@@ -47,12 +47,7 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="third" id="request">
-                        Make Request
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="fourth" id="request_status">
+                    <a class="item" data-tab="third" id="request_status">
                         Request Status
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -90,16 +85,8 @@
                 </div>
                 {% comment %}See announcement{% endcomment %}
             
-                {% comment %}File a request section!{% endcomment %}
-                <div class="ui tab segment" data-tab="third">
-                    {% block file-requests %}
-                        {% include "department/file_request.html" %}  
-                    {% endblock %}
-                </div>
-                {% comment %}File a request section!{% endcomment %}
-
                 {% comment %}status of request!{% endcomment %}
-                <div class="ui tab segment" data-tab="fourth">
+                <div class="ui tab segment" data-tab="third">
                     {% block request_status %}
                         {% include "department/request_status.html" %} 
                     {% endblock %}

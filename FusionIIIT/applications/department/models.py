@@ -5,12 +5,6 @@ from datetime import date
 # Create your models here.
 from applications.globals.models import ExtraInfo
   
-# class Receiver(models.Model):    
-#     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return '{} - {}'.format(self.id, self.user.username)
-
 class SpecialRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     request_date = models.DateTimeField(default=date.today())

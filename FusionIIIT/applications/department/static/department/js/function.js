@@ -33,7 +33,7 @@ function announce(event)
 
                     alert("Announcement successfully made!!");
                     setTimeout(function() {
-                window.location.replace('http://localhost:8000/dep/file_request/');
+                window.location.reload();
             }, 1500);
 
                     
@@ -51,7 +51,6 @@ function request(event)
     var request_type= $('input[name="request_type"]').val();
     var request_to = $('input[name="request_to"]').val();
     var request_details =  $('input[name="request_details"]').val();
-    var upload_request=$('input[name="upload_request"]').val();
 
     if(request_type=="" || request_to=="" || request_details =="" )
     {
@@ -68,13 +67,12 @@ function request(event)
                 'request_type' : request_type,
                 'request_to' : request_to,
                 'request_details' : request_details,
-                'upload_request' : upload_request,
             },
             success : function (data){
 
                 alert("Request successfully made!!");
                 setTimeout(function() {
-            window.location.replace('http://localhost:8000/dep/');
+            window.location.reload();
         }, 1500);
 
             },

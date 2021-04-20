@@ -17,9 +17,6 @@
                                 <th>Maker</th>
                                 <th>Brief &nbsp</th>
                                 <th>Details &nbsp</th>
-                                {% comment %} <th>Status</th>
-                                <th>Remarks</th> {% endcomment %}
-                                <th>File</th>
                                 <th>Status</th>
 
 
@@ -32,11 +29,11 @@
                                     <td class="row-dat">{{ stu.request_maker.user }}</td>
                                     <td class="row-data">{{ stu.brief }}</td>
                                     <td class="row-data">{{ stu.request_details }}</td>
-                                    {% comment %} <td>{{ stu.status }}</td>
-                                    <td>{{ stu.remarks }}</td> {% endcomment %}
-                                    <td class="row-data">{{ stu.upload_request }}</td>
-                                    <td><button style="border: none; display: block;" class="ui inverted right floated small red button" onlclick="editStatus()">Approve/Deny</button></td>
-                                    
+                                    {% if stu.status == "Approved" or stu.status == "Denied" %}
+                                        <td> {{stu.status}} </td>
+                                    {% else %}
+                                        <td><a data="{{ stu.id }}" class="ui button green approve"> Approve </a> <a data="{{ stu.id }}" class="ui button red deny"> Deny </a></td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                             
@@ -56,13 +53,57 @@
             </div>
         </div>
     </div>
-    
+    <script type="text/javascript">
+        $('.approve').on('click', function(e){
+            e.preventDefault();
+            //var d = window.confirm('Are you sure, you want to cancel the application?');
+            var remark = prompt("Please add extra remark");
 
-{% endblock %}
+            if(remark == null || remark == ""){
+                remark = "No remarks";
+            }
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/dep/approved/',
+                data: {
+                    'id':id,
+                    'remark' : remark
+                },
+                success: function(data) {
+                    alert("Success");
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                },
+                error: function(data, err) {
+                    alert("Error");
+                }
+            });
+        });
+        $('.deny').on('click', function(e){
+            e.preventDefault();
+            var remark = "Request Denied";
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/dep/deny/',
+                data: {
+                    'id':id,
+                    'remark' : remark
+                },
+                success: function(data) {
+                    alert("Success");
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                },
+                error: function(data, err) {
+                    alert("Error");
+                }
+            });
+        });
 
-{% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+    </script>
+
 {% endblock %}

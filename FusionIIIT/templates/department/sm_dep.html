@@ -195,6 +195,16 @@
                                         <td>{{ stu.upload_announcement }}</td>
                                     </tr>
                                 {% endfor %}
+                                {% for stu in announcements.all %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        <td>{{ stu.upload_announcement }}</td>
+                                    </tr>
+                                {% endfor %}
 
                             </table>
                             {% comment %} {% endif %} {% endcomment %}

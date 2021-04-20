@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
@@ -53,10 +53,24 @@ def browse_announcements():
     return context
 
 def get_make_request(user_id):
+    """
+    This function is used to get requests for maker
+
+    @variables:
+        req - Contains request queryset
+
+    """
     req = SpecialRequest.objects.filter(request_maker=user_id)
     return req
 
 def get_to_request(username):
+    """
+    This function is used to get requests for the receiver
+
+    @variables:
+        req - Contains request queryset
+
+    """
     req = SpecialRequest.objects.filter(request_receiver=username)
     return req
 
@@ -98,19 +112,12 @@ def dep_main(request):
         request_type = request.POST.get('request_type', '')
         request_to = request.POST.get('request_to', '')
         request_details = request.POST.get('request_details', '')
-        upload_request = request.FILES.get('upload_request')
         request_date = date.today()
-        print("request_maker", user_info)
-        print("request_type", request_type)
-        print("request_to", request_to)
-        print("request_details", request_details)
-        print("request_date", request_date)
 
         obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
                                                     request_date=request_date,
                                                     brief=request_type,
                                                     request_details=request_details,
-                                                    upload_request=upload_request,
                                                     status="Pending",
                                                     remarks="--",
                                                     request_receiver=request_to
@@ -483,3 +490,35 @@ def faculty():
         "sm_f" : sm_f
     }
     return context_f
+
+def approved(request):
+    """
+    This function is used to approve requests.
+
+    @variables:
+        request_id - Contains ID of the request to be updated
+        remark - Contains Remarks added by the user while Approving the status
+
+    """
+    if request.method == 'POST':
+        request_id = request.POST.get('id')
+        remark = request.POST.get('remark')
+        SpecialRequest.objects.filter(id=request_id).update(status="Approved", remarks=remark)
+    request.method = ''
+    return redirect('/dep/facView/')
+
+def deny(request):
+    """
+    This function is used to deny requests.
+
+    @variables:
+        request_id - Contains ID of the request to be updated
+        remark - Contains Remarks added by the user while Denying the status
+
+    """
+    if request.method == 'POST':
+        request_id = request.POST.get('id')
+        remark = request.POST.get('remark')
+        SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
+    request.method = ''
+    return redirect('/dep/facView/')
