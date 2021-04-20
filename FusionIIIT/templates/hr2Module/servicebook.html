@@ -178,10 +178,6 @@ Module
                             </div>
                         </div>
                     </div>
-                    {% endfor%}
-
-
-
                 </div>
             </div>
 
@@ -598,31 +594,219 @@ Module
                                             <td>department</td>
                                             <td>{{user.extrainfo.department}}</td>
                                         </tr>
+                              
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    
+
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>Projects:-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>PI/CO-PI</td>
+                                            <td>Title of Paper</td>
+                                            <td>Funding Agency</td>
+                                            <td>Other Details</td>
+                                            <td>Action</td>                                               
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- thesis supervision -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>Thesis supervision:-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>Student</td>
+                                            <td>Title</td>
+                                            <td>Year</td>
+                                            <td>Supervisor</td>
+                                            <td>Action</td>                                               
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- events organized -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>events Organized:-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>Role</td>
+                                            <td>Sponsoring Agency</td>
+                                            <td>Venue</td>
+                                            <td>start Date</td>
+                                            <td>End Date</td>
+                                            <td>Type</td>                                               
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- visits -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>Visits:-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>Country</td>
+                                            <td>Place</td>
+                                            <td>From</td>
+                                            <td>To</td>
+                                            <td>Purpose</td>                                              
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- conference -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>Conference :-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>Role</td>
+                                            <td>Conference Name</td>
+                                            <td>Venue</td>
+                                            <td>Start date</td>
+                                            <td>End Date</td>
+                                                                                          
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Achievements -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        					
+                                        <th>Achievement :-</th>
+                                        <tr>
+                                            <td>Sr.</td>
+                                            <td>Achievement</td>
+                                            <td>Title</td>
+                                            <td>Date</td>
+                                                                                          
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Social Connectivity -->
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
                                         <th>Social Connectivity:-</th>
                                         <tr>
                                             <td>linkdin</td>
                                             <td>{{user.faculty_about.linkedin}}</td>                                            
                                         </tr>
+                                        <!-- {% for project in emp_research_project%} -->
+                                        <!-- <th>research project</th>
+                                        <tr>
+                                            <td>connectivity</td>
+                                            <td>{user.extra_info.ptype}</td>
+                                        </tr> -->
+                                        <!-- {% endfor%} -->
                                         <tr>
                                             <td>github</td>
                                             <td>{{user.faculty_about.github}}</td>                                            
                                         </tr>
 
-                                      
-
-
                                     </tbody>
                                 </table>
-
-
-
-
-
                             </div>
                         </div>
                     </div>
                     {% endfor%}
+                    {% endfor%}
 
+                    
 
 
                 </div>
