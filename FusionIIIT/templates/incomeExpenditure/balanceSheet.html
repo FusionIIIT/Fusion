@@ -7,13 +7,9 @@
     <select class="ui dropdown" >
         <option value="">Select Financial Year</option>
 
-        <option value="2020">2020</option>
-        <option value="2019">2019</option>
-        <option value="2018">2018</option>
-        <option value="2017">2017</option>
-        <option value="2016">2016</option>
-        <option value="2015">2015</option>
-        <option value="2014">2014</option>
+        {% for year in fin_years %}
+         <option  value = {{year}}>{{year}}</option>
+        {% endfor %}
     </select>
 <button class="ui large primary button right floated"> Submit</button>
 </form>    
@@ -29,11 +25,11 @@ $(function() {
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
-            alert('Thesis Topic Successfully Submitted');
+           
             window.location = "/income-expenditure/main/";
         });
         posting.fail(function(data) {
-            alert('Failed to add');
+           
             window.location = "/income-expenditure/main/";
         });
     });
