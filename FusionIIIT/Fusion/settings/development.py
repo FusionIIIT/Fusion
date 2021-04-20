@@ -14,8 +14,8 @@ DATABASES = {
         # 'USER': 'fusion_admin',
         # 'PASSWORD': 'hello123',
         'HOST': 'localhost',
-        'USER': 'FUSION',
-        'PASSWORD': '0000',
+        'USER': 'Fusion',
+        'PASSWORD': '123456',
     }
 }
 
