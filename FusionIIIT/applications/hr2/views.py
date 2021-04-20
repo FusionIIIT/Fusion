@@ -84,6 +84,8 @@ def service_book(request):
         deputation_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "DEPUTATION").order_by('-start_date')
         other_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "OTHER").order_by('-start_date')
         appraisal_form = EmpAppraisalForm.objects.filter(extra_info = extra_info).order_by('-year')
+        # test
+        # emp_projects = emp_research_projects.objects.filter(extra_info = extra_info)
         template = 'hr2Module/servicebook.html'
         context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'appraisalForm':appraisal_form}
         return render(request,template,context)
