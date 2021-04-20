@@ -13,7 +13,6 @@ from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
-from notification.views import  complaint_system_notif
 
 from .models import SpecialRequest, Announcements
 from jsonschema import validate
