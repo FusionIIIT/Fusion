@@ -1,80 +1,70 @@
 {% load static %}
-{% block complainthistory %}
 
 {% comment %}The tab menu starts here!{% endcomment %}
 
 
-<div class="ui active tab" data-tab="complainthistory">
     
-    <div class="ui vertical segment">
-        {% if sthesis_flag %}
-        <B>You can only have one thesis per semester</B>
-        {% else %}  
-        <form id="add_thesis_form" action='/academic-procedures/addThesis/'>{% csrf_token %}
-            <div class="ui form" style="border: black" > 
-                    <div class="field">
-                        <select class="ui dropdown" name="curr_id">
-                            <option value="">Income Source</option>
-                            {% for i in currently_registered %}
-                            <option value="{{ i.curriculum_id }}">{{i.course_code}}</option>>
-                            {% endfor%}
-                        </select>
-                    </div>
-                <div class="two fields">          
-                    <input placeholder="Amount" name='Amount' required="true" type="number"><br>                
+<div class="ui vertical segment">
+    
+    <form id="add_income_form" method='POST' action='/income-expenditure/addIncome/'>{% csrf_token %}
+        <div class="ui form" style="border: black" > 
+
+            <div class="field">
+                <select class="ui dropdown" name="income_source">
+                    <option value="">Income Source</option>
+                    {% for i in income_sources %}
+                        <option value="{{ i.id }}">{{ i }}</option>>
+                    {% endfor%}
+                </select>
+            </div>
+
+            <div class="field">          
+                <input placeholder="Amount" name='amount' required="true" type="number"><br>            
+            </div>
+
+            <div class="two fields">
+                <div class = "field">
+                    <input name = "date_recieved" required="true" type="date">
                 </div>
-                <div class="two fields">
-                    <div class = "field">
-                        <input placeholder =" " name = "date" required="true" type="date">
-                    </div>
-                    
-                    <div class = "field">
-                        <input placeholder ="Choose File " name = "reciept"  type="file">
-                    </div>
+                <div class = "field">
+                    <input placeholder ="Choose File" name = "income_receipt"  type="file">
                 </div>
-               
-                <div class="two fields">
-                    <div class = "field">
-                        <input placeholder ="Granted By " name = "granted_by"  type="text">
-                    </div>
-                    
-                    <div class = "field">
-                        <input placeholder ="Source Account " name = "source_account"  type="text">
-                    </div>
+            </div>
+           
+            <div class="two fields">
+                <div class = "field">
+                    <input placeholder ="Granted By" name = "granted_by"  type="text">
                 </div>
                 
-                <br>
+            </div>
+            
+            <br>
 
-                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                <input type="text" name='by' value="st" hidden="True">
-
-            </div><br>
-            <div class="ui divider"></div><br>
-            <center> <button class="ui primary button">Add Income</button></center>
-        </form>
-        {% endif %}
-    </div>
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type='submit'>Add Income</button></center>
+    </form>
 </div>
-{% endblock %}
 
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
 $(function() {
-    $("#add_thesis_form").submit(function(event) {
+    $("#add_income_form").submit(function(event) {
 
         event.preventDefault();
         var friendForm = $(this);
 
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        var posting = $.post(friendForm.attr('action'), friendForm.serialize());
         posting.done(function(data) {
-            alert('Thesis Topic Successfully Submitted');
+            alert('New Income added succesfully');
             window.location = "/income-expenditure/main/";
         });
         posting.fail(function(data) {
-            alert('Failed to add');
+            alert('Failed to add income');
             window.location = "/income-expenditure/main/";
         });
     });
 });
 </script>
+

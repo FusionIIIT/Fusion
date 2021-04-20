@@ -1,41 +1,28 @@
 {% load static %}
-{% block complainthistory %}
 
 {% comment %}The tab menu starts here!{% endcomment %}
-
-
-<div class="ui tab segment " data-tab="balance_sheet">
     
-    <div class=" field" style="border : 0">
-            
-                <select class="ui dropdown" >
-                    <option value="">Select Financial Year</option>
-                    
-                    <option value="2020">2020</option>
-                    <option value="2019">2019</option>
-                    <option value="2018">2018</option>
-                    <option value="2017">2017</option>
-                    <option value="2016">2016</option>
-                    <option value="2015">2015</option>
-                    <option value="2014">2014</option>
-                </select>
-                <input class="ui primary button" type="button" value="Submit" style="float: right;">
-            
-    </div>
-    <div>
-        {%comment%}
-            add analytics here
-        {%endcomment%}
-    </div>
+<div class="field" style="border : 0">
+        
+    <select class="ui dropdown" >
+        <option value="">Select Financial Year</option>
 
+        <option value="2020">2020</option>
+        <option value="2019">2019</option>
+        <option value="2018">2018</option>
+        <option value="2017">2017</option>
+        <option value="2016">2016</option>
+        <option value="2015">2015</option>
+        <option value="2014">2014</option>
+    </select>
+    <input class="ui primary button" type="button" value="Download" style="float: right;">
+        
 </div>
-{% endblock %}
-
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
 $(function() {
-    $("#add_thesis_form").submit(function(event) {
+    $("#balance_sheet_form").submit(function(event) {
 
         event.preventDefault();
         var friendForm = $(this);
