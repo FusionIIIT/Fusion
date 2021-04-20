@@ -3,46 +3,46 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
     
-    <div class="ui vertical segment">
-        <form id="add_expenditure_form" action='/incomeExpenditure/addExpenditure/'>{% csrf_token %}
-            <div class="ui form" style="border: black" > 
+<div class="ui vertical segment">
+    <form id="add_expenditure_form" action='/income-expenditure/addExpenditure/' method="POST">{% csrf_token %}
+        <div class="ui form" style="border: black" > 
 
-                <div class="field">
-                    <select class="ui dropdown" name="spend_on">
-                        <option value="">Spent On</option>
-                        {% for i in expenditure_types %}
-                        <option value="{{ i.id }}">{{ i }}</option>>
-                        {% endfor%}
-                    </select>
-                </div>
+            <div class="field">
+                <select class="ui dropdown" name="spent_on">
+                    <option value="">Spent On</option>
+                    {% for i in expenditure_types %}
+                    <option value="{{ i.id }}">{{ i }}</option>
+                    {% endfor%}
+                </select>
+            </div>
 
-                <div class="field">          
-                    <input placeholder="Amount" name='amount' required="true" type="number"><br>            
-                </div>
+            <div class="field">          
+                <input placeholder="Amount" name='amount' required="true" type="number"><br>            
+            </div>
 
-                <div class="two fields">
-                    <div class = "field">
-                        <input  name = "date_spent" required="true" type="date">
-                    </div>
-                    
-                    <div class = "field">
-                        <input placeholder ="Choose File" name = "expenditure_receipt"  type="file">
-                    </div>
-                </div>
-               
-                <div class="two fields">
-                    <div class = "field">
-                        <input placeholder ="Granted To (Dept. or Account or Person )" name = "granted_to"  type="text">
-                    </div>
+            <div class="two fields">
+                <div class = "field">
+                    <input  name = "date_spent" required="true" type="date">
                 </div>
                 
-                <br>
+                <div class = "field">
+                    <input placeholder ="Choose File" name = "expenditure_receipt"  type="file">
+                </div>
+            </div>
+            
+            <div class="two fields">
+                <div class = "field">
+                    <input placeholder ="Granted To (Dept. or Account or Person )" name = "granted_to"  type="text">
+                </div>
+            </div>
+            
+            <br>
 
-            </div><br>
-            <div class="ui divider"></div><br>
-            <center> <button class="ui primary button">Add Expenditure</button></center>
-        </form>
-    </div>
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type='submit'>Add Expenditure</button></center>
+    </form>
+</div>
 
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
