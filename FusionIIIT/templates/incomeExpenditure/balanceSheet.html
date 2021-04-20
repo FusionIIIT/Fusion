@@ -25,11 +25,11 @@ $(function() {
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
-            alert('Thesis Topic Successfully Submitted');
+           
             window.location = "/income-expenditure/main/";
         });
         posting.fail(function(data) {
-            alert('Failed to add');
+           
             window.location = "/income-expenditure/main/";
         });
     });

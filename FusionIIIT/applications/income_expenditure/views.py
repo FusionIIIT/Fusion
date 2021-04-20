@@ -61,9 +61,12 @@ def main_page(request):
 
 
 	income_history = Income.objects.all()
+	income_history = income_history[::-1]
 	income_sources = IncomeSource.objects.all()
 	expenditure_types = ExpenditureType.objects.all()
 	expenditure_history = Expenditure.objects.all()
+	expenditure_history = expenditure_history[::-1]
+
 	return render(
 				request,
 				'../templates/incomeExpenditure/ie.html',
@@ -101,7 +104,7 @@ def add_income(request):
 
 def add_expenditure(request):
 	if(request.method == 'POST'):
-		spent_on = request.POST.get('spend_on')
+		spent_on = request.POST.get('spent_on')
 		spent_on = ExpenditureType.objects.filter(id=spent_on).first()
 
 		amount = request.POST.get('amount')

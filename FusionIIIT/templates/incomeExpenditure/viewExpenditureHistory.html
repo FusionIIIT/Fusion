@@ -3,47 +3,7 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 <div class="ui vertical segment">
-      <table class="ui very basic collapsing celled sortable table"
-           style="padding-left: 2.5%;
-                  padding-right: 2.5%;
-                  padding-top: 1%;
-                  padding-bottom: 1.5%;
-                  margin: auto;">
-
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Granted To</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Receipt</th>
-          </tr>
-        </thead>
-
-        <tbody>
-            {% for items in expenditure_history %}
-              <tr>
-                <td>{{forloop.counter}}.</td>
-                    <td>
-                      {{ items.granted_to }}
-                    </td>
-                    <td>
-                        {{ items.spent_on }}
-                    </td>
-                    <td>
-                        {{ items.date_added }}
-                    </td>
-                    <td>
-                        {{ items.amount }}
-                    </td>
-                    <td>
-                        <a href="">view</a>
-                    </td>
-              </tr>
-            {% endfor %}
-        </tbody>
-    </table> --->
+      
      {% for items in expenditure_history %} 
     
     <div class="card" style = "margin-bottom: 5%;

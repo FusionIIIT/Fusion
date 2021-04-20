@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import datetime
 
 
 class ExpenditureType(models.Model):
@@ -11,7 +12,7 @@ class ExpenditureType(models.Model):
 class Expenditure(models.Model):
 	spent_on = models.ForeignKey(ExpenditureType, related_name="expenditureType", on_delete=models.PROTECT)
 	amount = models.IntegerField()
-	date_added = models.DateTimeField(auto_now_add=True)
+	date_added = models.DateField()
 	granted_to = models.CharField(max_length=100)
 	expenditure_receipt = models.FileField( upload_to = 'iemodule/expenditure_receipts')
 
@@ -28,7 +29,7 @@ class Income(models.Model):
 	source = models.ForeignKey(IncomeSource, related_name="incomeSource", on_delete=models.PROTECT)
 	amount = models.IntegerField()
 	source_account = models.CharField( max_length=100,null=True)
-	date_added = models.DateTimeField(auto_now_add=True)
+	date_added = models.DateField()
 	granted_by = models.CharField(max_length=100, blank=True)
 	receipt = models.FileField(blank=True, upload_to = 'iemodule/income_receipts')
 
