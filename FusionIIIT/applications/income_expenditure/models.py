@@ -36,3 +36,10 @@ class Income(models.Model):
 	def __str__(self):
 		return str(self.amount)
 
+class FixedAttributes(models.Model):
+	attribute = models.CharField(max_length=100)
+	value = models.IntegerField(default=0)
+
+	def __str__(self):
+		return str(self.value)
+

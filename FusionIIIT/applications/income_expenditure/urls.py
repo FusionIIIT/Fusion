@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^deleteExpenditureHistory/',views.del_expenditure,name='del-expenditure'),
     url(r'^deleteIncomeHistory/',views.del_income,name='del-income'),
     url(r'^balanceSheet_pdf/',views.balanceSheet,name='balance-sheet'),
+    url(r'^updateFixedValues/',views.updateFixedValues,name='fixed-values'),
 ]

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 
@@ -18,8 +18,9 @@ matplotlib.use('Agg')
 import io
 import urllib, base64
 
+fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
-# Create your views here.
+
 def main_page(request):
 	
 	plt.plot(range(10))
@@ -66,6 +67,14 @@ def main_page(request):
 	expenditure_types = ExpenditureType.objects.all()
 	expenditure_history = Expenditure.objects.all()
 	expenditure_history = expenditure_history[::-1]
+	fixed_attributes = FixedAttributes.objects.all()
+
+	if len(fixed_attributes) == 0:
+		for i in fixed_attributes_list:
+			entry = FixedAttributes(attribute=i)
+			entry.save()
+		fixed_attributes = FixedAttributes.objects.all()
+
 
 	return render(
 				request,
@@ -77,7 +86,9 @@ def main_page(request):
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
 					'income_details':result,
-					'data':uri
+					'data':uri,
+					'fixedDetails':fixed_attributes,
+
 				})
 
 
@@ -141,6 +152,16 @@ def add_expenditure_type(request):
 		new_e.save()
 	return redirect('main-page')
 
+def updateFixedValues(request):
+	if(request.method == 'POST'):
+		for i in fixed_attributes_list:
+			update_ob = FixedAttributes.objects.get(attribute=i)
+			up_val = request.POST.get(i)
+			update_ob.value = up_val
+			update_ob.save()
+
+	return redirect('main-page') 
+
 # def income_pie_chart(request):
 #     income_labels = []
 #     income_data = []
@@ -187,6 +208,10 @@ def render_to_pdf(template_src, context_dict={}):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
+
+
+
+
 
 
 
