@@ -4,14 +4,14 @@
 
     
     <div class="ui vertical segment">
-        <form id="add_expenditure_form" method="POST" action='/income-expenditure/addExpenditure/'>{% csrf_token %}
+        <form id="add_expenditure_form" action='/income-expenditure/addExpenditure/' method="POST">{% csrf_token %}
             <div class="ui form" style="border: black" > 
 
                 <div class="field">
-                    <select class="ui dropdown" name="spend_on">
+                    <select class="ui dropdown" name="spent_on">
                         <option value="">Spent On</option>
                         {% for i in expenditure_types %}
-                        <option value="{{ i.id }}">{{ i }}</option>>
+                        <option value="{{ i.id }}">{{ i }}</option>
                         {% endfor%}
                     </select>
                 </div>

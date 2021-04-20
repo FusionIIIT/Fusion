@@ -4,9 +4,31 @@ from .models import (ExpenditureType, Expenditure, IncomeSource, Income)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 
-# Create your views here.
+from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
+from django.template.loader import get_template
+from io import BytesIO
+from xhtml2pdf import pisa
 
+from django.http import HttpResponse
+import matplotlib.pyplot as plt
+import io
+import urllib, base64
+
+
+# Create your views here.
 def main_page(request):
+	
+	plt.plot(range(10))
+	fig = plt.gcf()
+	buf = io.BytesIO()
+	fig.savefig(buf,format='png')
+	buf.seek(0)
+	string = base64.b64encode(buf.read())
+	uri = urllib.parse.quote(string)
+
+
+
 	pres_year = timezone.now().year
 	fin_years = []
 	for fin_year in range(pres_year,2016,-1):
@@ -49,6 +71,7 @@ def main_page(request):
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
 					'income_details':result,
+					'data':uri
 				})
 
 
@@ -93,6 +116,7 @@ def add_expenditure(request):
 		new_e.save()
 	return redirect('main-page')
 
+
 def add_income_source(request):
 	if(request.method == 'POST'):
 		source = request.POST.get('income_source')
@@ -124,3 +148,64 @@ def add_expenditure_type(request):
 #         'income_labels': income_labels,
 #         'income_data': income_data,
 #     })
+
+
+
+def del_expenditure(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		Expenditure.objects.get(id=ex_id).delete()
+
+	return redirect('main-page')
+
+def del_income(request):
+	if(request.method == 'POST'):
+		in_id = request.POST.get('id')
+		Income.objects.get(id=in_id).delete()
+
+	return redirect('main-page')
+
+def balanceSheet(request):
+	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html')
+	if pdf:
+		response = HttpResponse(pdf,content_type='application/pdf')
+		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
+		return response
+	return HttpResponse('PDF could not be generated')
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html  = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+
+
+
+# def getimage(request):
+# 	global uri
+
+# 	return redirect('main-page')
+# Construct the graph
+# x = arange(0, 2*pi, 0.01)
+# s = cos(x)**2
+# plot(x, s)
+
+# xlabel('xlabel(X)')
+# ylabel('ylabel(Y)')
+# title('Simple Graph!')
+# grid(True)
+
+# # Store image in a string buffer
+# buffer = StringIO.StringIO()
+# canvas = pylab.get_current_fig_manager().canvas
+# canvas.draw()
+# pilImage = PIL.Image.fromstring("RGB", canvas.get_width_height(), canvas.tostring_rgb())
+# pilImage.save(buffer, "PNG")
+# pylab.close()
+
+# # Send buffer in a http response the the browser with the mime type image/png set
+# return HttpResponse(buffer.getvalue(), mimetype="image/png")

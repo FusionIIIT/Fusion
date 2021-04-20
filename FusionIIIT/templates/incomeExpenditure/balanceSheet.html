@@ -3,7 +3,7 @@
 {% comment %}The tab menu starts here!{% endcomment %}
     
 <div class="field" style="border : 0">
-        
+    <form action="/income-expenditure/balanceSheet_pdf/" method="POST"> {%csrf_token%}
     <select class="ui dropdown" >
         <option value="">Select Financial Year</option>
 
@@ -11,8 +11,8 @@
          <option  value = {{year}}>{{year}}</option>
         {% endfor %}
     </select>
-    <input class="ui primary button" type="button" value="Download" style="float: right;">
-        
+<button class="ui large primary button right floated"> Submit</button>
+</form>    
 </div>
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
