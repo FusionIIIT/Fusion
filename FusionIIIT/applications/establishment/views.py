@@ -34,6 +34,8 @@ def is_hod(request):
         function to check if the user has designation "HOD".
     """
     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+    if(len(user_dsg)==0):
+        return False
     designation = user_dsg[0].designation.name
     if("HOD" in designation):
         return True
@@ -44,6 +46,8 @@ def is_registrar(request):
         function to check if the user has designation "Registrar".
     """
     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+    if(len(user_dsg)==0):
+        return False
     designation = user_dsg[0].designation.name
     if("Registrar" in designation):
         return True
@@ -53,11 +57,13 @@ def is_director(request):
     """
         function to check if the user has designation "Director".
     """
-     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
-     designation = user_dsg[0].designation.name
-     if("Director" in designation):
+    user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+    if(len(user_dsg)==0):
+        return False
+    designation = user_dsg[0].designation.name
+    if("Director" in designation):
          return True
-     return False
+    return False
 
 def is_cpda(dictx):
     """
@@ -88,11 +94,10 @@ def is_appraisal(dictx):
             return True
     return False
 
-def leave(request):
-    print('hello')
-    #redirect('leave/leave.html')
-
 def handle_cpda_admin(request):
+    """
+        Function handles the request of assigning/re-assigning reviewers of CPDA Application.
+    """
     app_id = request.POST.get('app_id')
     status = request.POST.get('assign_status')
     status_accept=request.POST.get('accept_status')
@@ -107,23 +112,21 @@ def handle_cpda_admin(request):
         status=status_accept
     if status == 'requested' or status == 'adjustments_pending':
         if reviewer and reviewer2 and reviewer3 and designation and app_id:
-            # assign the app to the reviewer
+            # assign the applicaiton to the reviewers
             reviewer_id = User.objects.get(username=reviewer)
             reviewer_id2 = User.objects.get(username=reviewer2)
             reviewer_id3 = User.objects.get(username=reviewer3)
             reviewer_design = Designation.objects.filter(name=designation)
             reviewer_design2 = Designation.objects.filter(name=designation2)
             reviewer_design3 = Designation.objects.filter(name=designation3)
-            # check if the reviewer holds the given designation, if not show error
+            # Getting reviewer designation
             if reviewer_design:
                 reviewer_design = reviewer_design[0]
             if reviewer_design2:
                 reviewer_design2 = reviewer_design2[0]
             if reviewer_design3:
                 reviewer_design3 = reviewer_design3[0]
-            # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
-            #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
-            # else:
+            
             application = Cpda_application.objects.select_related('applicant').get(id=app_id)
             application.tracking_info.current_reviewer_id=1
             application.tracking_info.reviewer_id = reviewer_id
@@ -153,13 +156,14 @@ def handle_cpda_admin(request):
         application = Cpda_application.objects.select_related('applicant').get(id=app_id)
         application.status = status
         application.save()
-
-
         # add notif
         messages.success(request, 'Status updated successfully!')
 
 
 def handle_ltc_admin(request):
+    """
+        Function handles the request of assigning/re-assigning reviewers of LTC Application.
+    """
     if 'ltc_assign_form' in request.POST:
         app_id = request.POST.get('app_id')
         status = request.POST.get('assign_status')
@@ -174,20 +178,15 @@ def handle_ltc_admin(request):
                 # assign the app to the reviewer
                 reviewer_id = User.objects.get(username=reviewer)
                 reviewer_design = Designation.objects.filter(name=designation)
-
-                # check if the reviewer holds the given designation, if not show error
+                # Getting reviewer designation
                 if reviewer_design:
                     reviewer_design = reviewer_design[0]
-                # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
-                #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
-                # else:
                 application = Ltc_application.objects.select_related('applicant').get(id=app_id)
                 application.tracking_info.reviewer_id = reviewer_id
                 application.tracking_info.reviewer_design = reviewer_design
                 application.tracking_info.remarks = remarks
                 application.tracking_info.review_status = 'under_review'
                 application.tracking_info.save()
-
                 # add notif
                 messages.success(request, 'Reviewer assigned successfully!')
 
@@ -289,7 +288,9 @@ def handle_ltc_admin(request):
 
 
 def generate_cpda_admin_lists(request):
-
+    """
+        Function retrieves the admin information and related unreviewed,approved and archived CPDA applications.
+    """
     # only requested and adjustment_pending
     unreviewed_apps = (Cpda_application.objects
                 .select_related('applicant')
@@ -352,7 +353,6 @@ def generate_cpda_admin_lists(request):
         'cpda_approved_apps': approved_apps,
         'cpda_archived_apps': archived_apps
     }
-    print('pending ',pending_apps)
     return response
 
 
@@ -1077,23 +1077,30 @@ def generate_appraisal_lists_director(request):
 
 @login_required(login_url='/accounts/login')
 def establishment(request):
+    """
+        Renders HR1 home page.
+    """
     return render(request, 'establishment/hr1.html')
 
 
 @login_required(login_url='/accounts/login')
 def cpda(request):
+    """
+        Function handles generation and submission of CPDA form.
+    """
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
     response.update(initial_checks(request))
+    # Submission of CPDA Form
     if is_admin(request) and request.method == "POST":
             handle_cpda_admin(request)
         
     if is_eligible(request) and request.method == "POST":
             handle_cpda_eligible(request)
 
+    # Genration of CPDA Form
     if is_admin(request):
         response.update(generate_cpda_admin_lists(request))
-        return render(request, 'establishment/cpda_admin.html', response)
 
     if is_eligible(request):
         response.update(generate_cpda_eligible_lists(request))
@@ -1102,24 +1109,37 @@ def cpda(request):
       
     return render(request, 'establishment/hr1_form.html', response)
 
-
 @login_required(login_url='/accounts/login')
 def ltc(request):
+    """
+        Function handles generation and submission of LTC form.
+    """
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
     response.update(initial_checks(request))
+
+    # Submission of LTC Form
     if is_admin(request) and request.method == "POST":
         handle_ltc_admin(request)
 
     if is_eligible(request) and request.method == "POST":
         handle_ltc_eligible(request)
+    
+    # Genration of LTC Form
+    if is_admin(request):
+        response.update(generate_ltc_admin_lists(request))
+
+    if is_eligible(request):
+        response.update(generate_ltc_eligible_lists(request))
 
     response.update({'cpda':False,'ltc':True,'appraisal':False,'leave':False})
     return render(request, 'establishment/hr1_form.html', response)
 
-
 @login_required(login_url='/accounts/login')
 def appraisal(request):
+    """
+        Function handles generation and submission of Appraisal form.
+    """
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
     response.update(initial_checks(request))
