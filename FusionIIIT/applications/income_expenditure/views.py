@@ -11,7 +11,10 @@ from io import BytesIO
 from xhtml2pdf import pisa
 
 from django.http import HttpResponse
+
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 import io
 import urllib, base64
 
