@@ -74,6 +74,7 @@ Module
             <a class="item" data-tab="second">Deputation</a>
             <a class="item" data-tab="third">Other</a>
             <a class="item" data-tab="fourth">Appraisal form</a>
+            <a class="item" data-tab="fifth">full e-service book</a>
 
 
         </div>
@@ -511,6 +512,124 @@ Module
 
         </div>
 
+        <!--......................... testing............................ -->
+        <div class="ui bottom attached active tab segment" data-tab="fifth">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    {% if not lienServiceBooks %}
+                    No entry found
+                    {% endif%}
+
+                    {% for serviceBook in lienServiceBooks%}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <th>Personal Details:-</th>
+                                        <tr>
+                                            <td>ID</td>
+                                            <td>{{serviceBook.extra_info.user.id}}</td>                                            
+                                        </tr>
+                                        <tr>
+                                            <td>Title</td>
+                                            <td>{{user.extrainfo.title}}</td>                                            
+                                        </tr>
+                                        <tr>
+                                            <td>Type</td>
+                                            <td>{{user.extrainfo.user_type}}</td>                                            
+                                        </tr>
+                                        <tr>
+                                            <td>Name</td>
+                                            <td>{{serviceBook.extra_info.user.first_name}}
+                                                {{serviceBook.extra_info.user.last_name}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>email</td>
+                                            <td>{{serviceBook.extra_info.user.email}}</td>
+
+                                        </tr>
+
+                                        <tr>
+                                            <td>Gender</td>
+                                            <td>{{user.extrainfo.sex}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>date_of_birth</td>
+                                            <td>{{user.extrainfo.date_of_birth}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>address</td>
+                                            <td>{{user.extrainfo.address}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>Phone number</td>
+                                            
+                                            <td>{{user.extrainfo.phone_no}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>contact</td>
+                                            <td>{{user.faculty_about.contact}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Date Of joining</td>
+                                            <td>{{user.faculty_about.doj}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>department</td>
+                                            <td>{{user.extrainfo.department}}</td>
+                                        </tr>
+                                        <th>Social Connectivity:-</th>
+                                        <tr>
+                                            <td>linkdin</td>
+                                            <td>{{user.faculty_about.linkedin}}</td>                                            
+                                        </tr>
+                                        <tr>
+                                            <td>github</td>
+                                            <td>{{user.faculty_about.github}}</td>                                            
+                                        </tr>
+
+                                      
+
+
+                                    </tbody>
+                                </table>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
+
+
+
+                </div>
+            </div>
+
+        </div>
+        <!-- end testing  -->
 
     </div>
 
