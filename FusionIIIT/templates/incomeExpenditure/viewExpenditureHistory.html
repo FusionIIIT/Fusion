@@ -3,7 +3,7 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 <div class="ui vertical segment">
-      <!---<table class="ui very basic collapsing celled sortable table"
+      -<table class="ui very basic collapsing celled sortable table"
            style="padding-left: 2.5%;
                   padding-right: 2.5%;
                   padding-top: 1%;
@@ -43,28 +43,6 @@
               </tr>
             {% endfor %}
         </tbody>
-    </table> --->
-    {% comment %} {% for items in expenditure_history %} {% endcomment %}
-    
-    <div class="card" style = "    margin-bottom: 5%;
-    border-style: groove;
-    padding: 2%;">
-      <div class="card-header">
-        Granted to : <!--{{items.granted_to}-->
-      </div>
-      <div class="card-body">
-        <h5 class="card-title">Purpose :<!---- {{items.spent_on}}--></h5>
-        <p class="card-text">Date added : <!--{{items.date_added}}-->
-          <br>
-          Amount :<!---- {{item.amount}}-->
-        </p>
-        <a href="#" class="btn btn-primary" style="border: groove;
-        padding: 1%;">Delete</a>
-      </div>
-      </div>
-
-      
-
-
+    </table> 
     
 </div>

@@ -4,7 +4,7 @@
 
     
     <div class="ui vertical segment">
-        <form id="add_expenditure_form" action='/incomeExpenditure/addExpenditure/'>{% csrf_token %}
+        <form id="add_expenditure_form" method="POST" action='/income-expenditure/addExpenditure/'>{% csrf_token %}
             <div class="ui form" style="border: black" > 
 
                 <div class="field">
