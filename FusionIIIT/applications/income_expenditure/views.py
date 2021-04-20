@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import (ExpenditureType, Expenditure, IncomeSource, Income)
-
+from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
+from django.template.loader import get_template
+from io import BytesIO
+from xhtml2pdf import pisa
 # Create your views here.
 
 def main_page(request):
@@ -94,3 +98,20 @@ def del_income(request):
 		Income.objects.get(id=in_id).delete()
 
 	return redirect('main-page')
+
+def balanceSheet(request):
+	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html')
+	if pdf:
+		response = HttpResponse(pdf,content_type='application/pdf')
+		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
+		return response
+	return HttpResponse('PDF could not be generated')
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html  = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
