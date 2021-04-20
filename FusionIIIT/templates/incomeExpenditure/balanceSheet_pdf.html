@@ -19,6 +19,9 @@ table, th, td {
   border: 1px solid black;
   border-collapse: collapse;
 }
+td,th{
+    height: 25px;
+}
     </style>
     
 </head>
@@ -30,7 +33,14 @@ table, th, td {
           <th>Current Year</th> 
           
         </tr>
+        {% for item in fixedDetails %}
         <tr>
+            <td>{{item.attribute}}</td>
+            <td>{{item.value}}</td>
+            
+          </tr>
+          {% endfor %}
+        <!--<tr>
           <td>Corpus Fund / Capital Fund</td>
           <td></td>
           
@@ -85,7 +95,7 @@ table, th, td {
         <tr>
             <td><b>TOTAL:</b></td>
             <td></td>
-        </tr>
+        </tr> -->
       </table>
       <br>
       <br>

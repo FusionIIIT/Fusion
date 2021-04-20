@@ -36,7 +36,8 @@ def main_page(request):
 	pres_year = timezone.now().year
 	fin_years = []
 	for fin_year in range(pres_year,2016,-1):
-		fin_years.append(fin_year)
+		year = str(fin_year)+'-'+str(fin_year-1)
+		fin_years.append(year)
 
 	# income_labels = []
 	# income_data = []
@@ -193,7 +194,10 @@ def del_income(request):
 	return redirect('main-page')
 
 def balanceSheet(request):
-	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html')
+	fixed_attributes = FixedAttributes.objects.all()
+	 
+	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,})
+	
 	if pdf:
 		response = HttpResponse(pdf,content_type='application/pdf')
 		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
