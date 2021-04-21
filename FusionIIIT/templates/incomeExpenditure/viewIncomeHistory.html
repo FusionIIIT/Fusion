@@ -50,16 +50,15 @@
     <div class="card" style = "    margin-bottom: 5%;
     border-style: groove;
     padding: 2%;">
-      <div class="card-header">
-        Granted by : {{items.granted_by}}
-      </div>
       <div class="card-body">
         <h5 class="card-title">Purpose : {{items.source}} </h5>
         <p class="card-text">Date added : {{items.date_added}}
           <br>
-          Amount :{{items.amount}}
+          Amount : {{items.amount}}
           <br>
-          Receipt : {{items.receipt}}
+          Remarks: {{items.remarks}}
+          <br>
+          Receipt : <a href="#">view</a>
         </p>
         <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
           <input hidden  name = 'id' value="{{ items.id }}">

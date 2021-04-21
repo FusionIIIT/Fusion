@@ -10,36 +10,18 @@ from django.template.loader import get_template
 from io import BytesIO
 from xhtml2pdf import pisa
 
-from django.http import HttpResponse
-
-import matplotlib
-import matplotlib.pyplot as plt
-matplotlib.use('Agg')
-import io
-import urllib, base64
-from django.db.models import Min
+from django.db.models import Min,Max
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
 
 def main_page(request):
-	
-	plt.plot(range(10))
-	fig = plt.gcf()
-	buf = io.BytesIO()
-	fig.savefig(buf,format='png')
-	buf.seek(0)
-	string = base64.b64encode(buf.read())
-	uri = urllib.parse.quote(string)
-
-
 
 	pres_date = timezone.now()
 	fin_years = []
 	if len(Income.objects.all()):
 		min_date_ob = Income.objects.all().aggregate(Min('date_added'))
 	
-
 		pres_year,min_year = None,None
 		if min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month < 4 :
 			pres_year = pres_date.year + 1
@@ -61,27 +43,35 @@ def main_page(request):
 			year = str(fin_year)+'-'+str(fin_year-1)
 			fin_years.append(year)
 
-	# income_labels = []
-	# income_data = []
 
-	# income_details = {}
+	inc_fin_years = []
+	exp_fin_years = []
 
-	# for year in fin_years:
-	temp = Income.objects.filter(date_added__year = 2021)
-	result = (temp
-		.values('source')
-		.annotate(amount=Sum('amount'))
-		.order_by('-amount')
-		)
-	for each in result:
-		each['source'] = IncomeSource.objects.get(id=each['source']).income_source
-		# income_details[year] = result
+	min_date_in = Income.objects.all().aggregate(Min('date_added'))
+	max_date_in = Income.objects.all().aggregate(Max('date_added'))
+	mini_year = min_date_in['date_added__min'].year
+	maxi_year = max_date_in['date_added__max'].year
 
+	if min_date_in['date_added__min'].month < 4:
+		mini_year-=1
+	if max_date_in['date_added__max'].month < 4:
+		maxi_year-=1
 
-	# income = Income.objects.order_by('-amount')[:5]
-	# for each in income:
-	#     income_labels.append(each.source.income_source)
-	#     income_data.append(each.amount)
+	for fin_year in range(maxi_year, mini_year-1, -1):
+		inc_fin_years.append(fin_year)
+
+	min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
+	max_date_exp = Expenditure.objects.all().aggregate(Max('date_added'))
+	mini_year = min_date_exp['date_added__min'].year
+	maxi_year = max_date_exp['date_added__max'].year
+
+	if min_date_exp['date_added__min'].month < 4:
+		mini_year-=1
+	if max_date_exp['date_added__max'].month < 4:
+		maxi_year-=1
+
+	for fin_year in range(maxi_year, mini_year-1, -1):
+		exp_fin_years.append(fin_year)
 
 
 	income_history = Income.objects.all()
@@ -130,12 +120,11 @@ def main_page(request):
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
-					'income_details':result,
-					'data':uri,
 					'fixedDetails':fixed_attributes,
 					'min_date':min_date,
 					'max1_date':max_date,
-
+					'inc_fin_years':inc_fin_years,
+					'exp_fin_years':exp_fin_years,
 				})
 
 
@@ -181,28 +170,6 @@ def add_expenditure(request):
 	return redirect('main-page')
 
 
-"""
-
-def add_income_source(request):
-	if(request.method == 'POST'):
-		source = request.POST.get('income_source')
-		new_i = IncomeSource(
-						income_source = source,
-						)
-		new_i.save()
-	return redirect('main-page')
-
-def add_expenditure_type(request):
-	if(request.method == 'POST'):
-		e_type = request.POST.get('expenditure_type')
-		new_e = ExpenditureType(
-						expenditure_type = e_type,
-						)
-		new_e.save()
-	return redirect('main-page')
-
-"""
-
 def add_income_source():
 	income_sources = ['Academic Reciepts','Grants / Subsidies','Income From Investment','Interest Earned','Other Income','Prior Period Income']
 	if len(IncomeSource.objects.all()):
@@ -229,22 +196,7 @@ def updateFixedValues(request):
 			update_ob.value = up_val
 			update_ob.save()
 
-	return redirect('main-page') 
-
-# def income_pie_chart(request):
-#     income_labels = []
-#     income_data = []
-
-#     income = Income.objects.order_by('-amount')[:5]
-#     for each in income:
-#         income_labels.append(each.income_source)
-#         income_data.append(each.amount)
-
-#     return render(request, 'pie_chart.html', {
-#         'income_labels': income_labels,
-#         'income_data': income_data,
-#     })
-
+	return redirect('main-page')
 
 
 def del_expenditure(request):
@@ -282,33 +234,64 @@ def render_to_pdf(template_src, context_dict={}):
     return None
 
 
+def view_income_stats(request):
+	if(request.method == 'POST'):
+		year = request.POST.get('year')
 
+		start_date = year + "-04-01";
+		end_date = str(int(year)+1) + "-03-31";
 
+		fin_year = year + " - " + str(int(year)+1)
+		temp = Income.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result = (temp
+			.values('source')
+			.annotate(amount=Sum('amount'))
+			.order_by('-amount')
+			)
+		income_labels = []
+		income_data = []
+		for each in result:
+			each['source'] = IncomeSource.objects.get(id=each['source']).income_source
+		for each in result:
+			income_labels.append(each['source'])
+			income_data.append(each['amount'])
+		return render(
+						request,
+						'../templates/incomeExpenditure/viewIncomeStats.html',
+						{
+							'income_data':income_data,
+							'income_labels':income_labels,
+							'fin_year':fin_year,
+						})
 
+def view_expenditure_stats(request):
+	if(request.method == 'POST'):
+		year = request.POST.get('year')
 
+		start_date = year + "-04-01";
+		end_date = str(int(year)+1) + "-03-31";
 
-
-# def getimage(request):
-# 	global uri
-
-# 	return redirect('main-page')
-# Construct the graph
-# x = arange(0, 2*pi, 0.01)
-# s = cos(x)**2
-# plot(x, s)
-
-# xlabel('xlabel(X)')
-# ylabel('ylabel(Y)')
-# title('Simple Graph!')
-# grid(True)
-
-# # Store image in a string buffer
-# buffer = StringIO.StringIO()
-# canvas = pylab.get_current_fig_manager().canvas
-# canvas.draw()
-# pilImage = PIL.Image.fromstring("RGB", canvas.get_width_height(), canvas.tostring_rgb())
-# pilImage.save(buffer, "PNG")
-# pylab.close()
-
-# # Send buffer in a http response the the browser with the mime type image/png set
-# return HttpResponse(buffer.getvalue(), mimetype="image/png")
+		fin_year = year + " - " + str(int(year)+1)
+		temp = Expenditure.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result = (temp
+			.values('spent_on')
+			.annotate(amount=Sum('amount'))
+			.order_by('-amount')
+			)
+		expenditure_labels = []
+		expenditure_data = []
+		for each in result:
+			each['spent_on'] = ExpenditureType.objects.get(id=each['spent_on']).expenditure_type
+		for each in result:
+			expenditure_labels.append(each['spent_on'])
+			expenditure_data.append(each['amount'])
+		return render(
+						request,
+						'../templates/incomeExpenditure/viewExpenditureStats.html',
+						{
+							'expenditure_data':expenditure_data,
+							'expenditure_labels':expenditure_labels,
+							'fin_year':fin_year,
+						})
