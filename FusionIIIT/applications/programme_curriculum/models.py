@@ -30,10 +30,18 @@ class Programme(models.Model):
     def __str__(self):
         return str(self.category + " - "+ self.name)
 
+    @property
+    def curriculums(self):
+        return Curriculum.objects.filter(programme=self.id)
+
     def get_curriculums_objects(self):
         return Curriculum.objects.filter(programme=self.id)
 
+    @property
     def get_discipline_objects(self):
+        return Discipline.objects.filter(programmes=self.id)
+
+    def disciplines(self):
         return Discipline.objects.filter(programmes=self.id)
 
 class Discipline(models.Model):
@@ -42,6 +50,10 @@ class Discipline(models.Model):
     
     def __str__(self):
         return str(self.name)
+
+    @property
+    def batches(self):
+        return Batch.objects.filter(discipline=self.id)
 
     def get_batch_objects(self):
         return Batch.objects.filter(discipline=self.id)
@@ -59,11 +71,20 @@ class Curriculum(models.Model):
     def __str__(self):
         return str(self.name + " v" + str(self.version))
 
+    @property
+    def batches(self):
+        return Batch.objects.filter(curriculum=self.id)
+
     def get_batches(self):
         return Batch.objects.filter(curriculum=self.id)
 
+    @property
+    def semesters(self):
+        return Semester.objects.filter(curriculum=self.id).order_by('semester_no')
+
     def get_semesters_objects(self):
         return Semester.objects.filter(curriculum=self.id).order_by('semester_no')
+
 
 class Semester(models.Model):
     curriculum = models.ForeignKey(Curriculum, null=False, on_delete=models.CASCADE)
@@ -74,6 +95,10 @@ class Semester(models.Model):
     
     def __str__(self):
         return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
+
+    @property
+    def courseslots(self):
+        return CourseSlot.objects.filter(semester=self.id).order_by("id")
 
     def get_courseslots_objects(self):
         return CourseSlot.objects.filter(semester=self.id).order_by("id")
@@ -87,6 +112,7 @@ class Course(models.Model):
     pratical_hours = PositiveIntegerField(null=True)
     discussion_hours = PositiveIntegerField(null=True)
     project_hours = PositiveIntegerField(null=True)
+    pre_requisits = models.TextField(null=True)
     syllabus = models.TextField()
     evaluation_schema = models.TextField()
     ref_books = models.TextField()
@@ -96,6 +122,10 @@ class Course(models.Model):
     
     def __str__(self):
         return str(self.code + " - " +self.name)
+
+    @property
+    def courseslots(self):
+        return CourseSlot.objects.filter(courses=self.id)
 
     def get_courseslots_objects(self):
         return CourseSlot.objects.filter(courses=self.id)
