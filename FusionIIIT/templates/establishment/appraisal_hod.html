@@ -341,7 +341,7 @@
             {% for app in appraisal_active_apps %}
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status}}</div>
+                      <div class="header">Status : {{app.status|title}}</div>
                       <div class="meta">
                           <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
                       </div>
@@ -363,7 +363,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status }}</label><br>
+                          <label>Status : {{ app.status|title }}</label><br>
                           <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
                           <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">
@@ -641,7 +641,7 @@
             {% for app in appraisal_archive_apps %}
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status}}</div>
+                      <div class="header">Status : {{app.status|title}}</div>
                               <div class="meta">
                                   <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
                               </div>
@@ -663,7 +663,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status }}</label><br>
+                          <label>Status : {{ app.status|title }}</label><br>
                           <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
                           <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">

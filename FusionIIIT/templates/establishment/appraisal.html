@@ -324,7 +324,7 @@
 
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status}}</div>
+                      <div class="header">Status : {{app.status|title}}</div>
                       {% for app2 in appraisal_requests_active %}
                         {% if app2.appraisal == app %}
                       <div class="meta">
@@ -350,7 +350,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status }}</label><br>
+                          <label>Status : {{ app.status|title }}</label><br>
                           <label>HOD Remarks: {{app2.remark_hod}}</label><br>
                           <label>Director Remarks: {{app2.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">
@@ -630,7 +630,7 @@
             {% for app in appraisal_archive_apps %}
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status}}</div>
+                      <div class="header">Status : {{app.status|title }}</div>
                         {% for app2 in appraisal_requests_archived %}
                           {% if app2.appraisal == app %}
                               <div class="meta">
@@ -654,7 +654,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status }}</label><br>
+                          <label>Status : {{ app.status|title }}</label><br>
                           <label>HOD Remarks: {{app2.remark_hod}}</label><br>
                           <label>Director Remarks: {{app2.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">

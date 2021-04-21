@@ -31,7 +31,7 @@ pending ltc applications
                 {% if app.tracking_info.review_status == 'to_assign' %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -52,7 +52,7 @@ pending ltc applications
                         <div class="content">
                             <div class="description">
                                 <!-- Add condition if it's requested or adj_pending -->
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -168,7 +168,7 @@ under_review ltc applications
                 {% for app in ltc_under_review_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -191,7 +191,7 @@ under_review ltc applications
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -271,7 +271,7 @@ under_review ltc applications
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -386,7 +386,7 @@ reviewed ltc applications
                 {% if app.tracking_info.review_status == 'reviewed' %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -408,7 +408,7 @@ reviewed ltc applications
                         <div class="content">
                             <div class="description">
                                 <!-- Add condition if it's requested or adj_pending -->
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -523,7 +523,7 @@ archived ltc applications
                 {% for app in ltc_archived_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -543,7 +543,7 @@ archived ltc applications
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>

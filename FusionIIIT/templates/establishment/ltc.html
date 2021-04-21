@@ -173,7 +173,7 @@
                 {% for app in ltc_active_apps %}
                     <div class="item">
                         <div class="content">
-                            <div class="header">Status : {{app.status}}</div>
+                            <div class="header">Status : {{app.status|title}}</div>
                             {% if app.status == 'requested' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
                                     <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}} ({{app.tracking_info.reviewer_design}})</div>
@@ -200,7 +200,7 @@
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -296,7 +296,7 @@
                 {% for app in ltc_archive_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -316,7 +316,7 @@
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
                                 <label>Is leave required : {{ app.is_leave_required }}</label><br>
@@ -441,7 +441,7 @@
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>Status : {{ app.status }}</label>
+                                        <label>Status : {{ app.status|title }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
