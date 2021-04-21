@@ -42,3 +42,10 @@ class FixedAttributes(models.Model):
 	def __str__(self):
 		return str(self.value)
 
+class BalanceSheet(models.Model):
+	balanceSheet = models.FileField()
+	date_added = models.CharField(max_length=10)
+
+	def __str__(self):
+		return str(self.date_added)
+

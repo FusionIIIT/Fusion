@@ -4,7 +4,7 @@
     
 <div class="field" style="border : 0">
     <form action="/income-expenditure/balanceSheet_pdf/" method="POST"> {%csrf_token%}
-    <select class="ui dropdown" >
+    <select class="ui dropdown" name="fin_year" >
         <option value="">Select Financial Year</option>
 
         {% for year in fin_years %}

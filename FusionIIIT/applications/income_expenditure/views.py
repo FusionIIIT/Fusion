@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 
@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.template.loader import get_template
 from io import BytesIO
 from xhtml2pdf import pisa
+from django.core.files import File
 
 from django.http import HttpResponse
 
@@ -61,12 +62,9 @@ def main_page(request):
 			year = str(fin_year)+'-'+str(fin_year-1)
 			fin_years.append(year)
 
-	# income_labels = []
-	# income_data = []
 
-	# income_details = {}
+	  
 
-	# for year in fin_years:
 	temp = Income.objects.filter(date_added__year = 2021)
 	result = (temp
 		.values('source')
@@ -75,13 +73,7 @@ def main_page(request):
 		)
 	for each in result:
 		each['source'] = IncomeSource.objects.get(id=each['source']).income_source
-		# income_details[year] = result
-
-
-	# income = Income.objects.order_by('-amount')[:5]
-	# for each in income:
-	#     income_labels.append(each.source.income_source)
-	#     income_data.append(each.amount)
+	
 
 
 	income_history = Income.objects.all()
@@ -181,27 +173,7 @@ def add_expenditure(request):
 	return redirect('main-page')
 
 
-"""
 
-def add_income_source(request):
-	if(request.method == 'POST'):
-		source = request.POST.get('income_source')
-		new_i = IncomeSource(
-						income_source = source,
-						)
-		new_i.save()
-	return redirect('main-page')
-
-def add_expenditure_type(request):
-	if(request.method == 'POST'):
-		e_type = request.POST.get('expenditure_type')
-		new_e = ExpenditureType(
-						expenditure_type = e_type,
-						)
-		new_e.save()
-	return redirect('main-page')
-
-"""
 
 def add_income_source():
 	income_sources = ['Academic Reciepts','Grants / Subsidies','Income From Investment','Interest Earned','Other Income','Prior Period Income']
@@ -231,20 +203,6 @@ def updateFixedValues(request):
 
 	return redirect('main-page') 
 
-# def income_pie_chart(request):
-#     income_labels = []
-#     income_data = []
-
-#     income = Income.objects.order_by('-amount')[:5]
-#     for each in income:
-#         income_labels.append(each.income_source)
-#         income_data.append(each.amount)
-
-#     return render(request, 'pie_chart.html', {
-#         'income_labels': income_labels,
-#         'income_data': income_data,
-#     })
-
 
 
 def del_expenditure(request):
@@ -261,16 +219,49 @@ def del_income(request):
 
 	return redirect('main-page')
 
-def balanceSheet(request):
+def balanceSheet_table():
 	fixed_attributes = FixedAttributes.objects.all()
 	 
 	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,})
+	curr_year = timezone.now().date().year
+	fin_year = str(curr_year-1)+'-'+str(curr_year) if timezone.now().date().month < 4 else str(curr_year)+'-'+str(curr_year+1)
 	
-	if pdf:
+	if len(BalanceSheet.objects.filter(date_added=fin_year)):
+		update_balanceSheet = BalanceSheet.objects.get(date_added=fin_year)
+		update_balanceSheet.balanceSheet = File(BytesIO(pdf.content))
+		update_balanceSheet.save()
+
+	else:  
+		new = BalanceSheet(
+			balanceSheet = File(BytesIO(pdf.content)),
+			date_added=fin_year,
+
+		)
+		new.save()
+	
+	
+
+
+def balanceSheet(request):
+	#fixed_attributes = FixedAttributes.objects.all()
+	
+	#pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,})
+	#curr_year = timezone.now().date().year
+	
+	 
+	
+	#if pdf:
+	#	response = HttpResponse(pdf,content_type='application/pdf')
+	#	response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
+		
+	#	return response
+	#return HttpResponse('PDF could not be generated')
+
+	if request.method =='POST' :
+		fin_year = request.POST.get('fin_year')
+		balance_sheet_ob = BalanceSheet.objects.filter(date_added=fin_year)
 		response = HttpResponse(pdf,content_type='application/pdf')
-		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
-		return response
-	return HttpResponse('PDF could not be generated')
+
 
 def render_to_pdf(template_src, context_dict={}):
     template = get_template(template_src)
@@ -288,27 +279,3 @@ def render_to_pdf(template_src, context_dict={}):
 
 
 
-# def getimage(request):
-# 	global uri
-
-# 	return redirect('main-page')
-# Construct the graph
-# x = arange(0, 2*pi, 0.01)
-# s = cos(x)**2
-# plot(x, s)
-
-# xlabel('xlabel(X)')
-# ylabel('ylabel(Y)')
-# title('Simple Graph!')
-# grid(True)
-
-# # Store image in a string buffer
-# buffer = StringIO.StringIO()
-# canvas = pylab.get_current_fig_manager().canvas
-# canvas.draw()
-# pilImage = PIL.Image.fromstring("RGB", canvas.get_width_height(), canvas.tostring_rgb())
-# pilImage.save(buffer, "PNG")
-# pylab.close()
-
-# # Send buffer in a http response the the browser with the mime type image/png set
-# return HttpResponse(buffer.getvalue(), mimetype="image/png")
