@@ -61,9 +61,6 @@ Counselling cell
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="second">
-            {% block leaveRequest %}
-            {% include 'counselling_cell/teamdet.html' %}
-
             {% block appoint_coordinators %}
             {% include 'counselling_cell/appoint_coordinators.html' %}
             {% endblock %}
@@ -80,16 +77,16 @@ Counselling cell
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="twentyfirst">
+        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
-            {% include 'counselling_cell/issues.html' %}
+            {% include 'messModule/views.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="twenty">
-            {% block nonvegfood %}
+        <div class="ui tab segment" data-tab="sixth">
+            {% block schedule_meeting %}
             {% include 'counselling_cell/schedulemeet.html' %}
             {% endblock %}
         </div>
@@ -97,16 +94,17 @@ Counselling cell
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="seventh">
-            {% block respondtoleave %}
-            {% include 'messModule/respondtorequests.html' %}
+            {% block team_details %}
+            {% include 'counselling_cell/teamdet.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
+
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="eighth">
-            {% block changemenu %}
-            {% include 'messModule/changemenu.html' %}
+            {% block Issues %}
+            {% include 'counselling_cell/issues.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}

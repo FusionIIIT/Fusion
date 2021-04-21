@@ -1,7 +1,7 @@
 {#{% extends 'globals/base.html'%}#}
 {% load static %}
 {#{% block body %}#}
-{% block teamdet %}
+{% block team_details %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="feedback">
@@ -163,7 +163,7 @@
 {% endblock %}
 {#{% endblock %}#}
 
-{% block javascript %}
+{% comment %} {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
  <script>
@@ -228,7 +228,7 @@
 
 
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}
 
 
 
