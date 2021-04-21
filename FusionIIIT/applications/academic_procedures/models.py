@@ -2,7 +2,8 @@ import datetime
 
 from django.db import models
 
-from applications.academic_information.models import Course, Student, Curriculum
+from applications.academic_information.models import Course, Student, Curriculum, Courses, Semester, Students
+from applications.academic_information.models import Course as Courses, Semester, Student as Students
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -111,46 +112,6 @@ class MinimumCredits(models.Model):
 #
 #
 #
-class StudentRegistrationCheck(models.Model):
-    student = models.ForeignKey(Student, on_delete = models.CASCADE)
-    pre_registration_flag = models.BooleanField(default = False)
-    final_registration_flag = models.BooleanField(default = False)
-    semester = models.IntegerField(default=1)
-
-    class Meta:
-        db_table = 'StudentRegistrationCheck'
-        
-
-class InitialRegistrations(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    semester = models.IntegerField()
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    batch = models.IntegerField(default =datetime.datetime.now().year )
-
-    class Meta:
-        db_table = 'InitialRegistrations'
-    
-    def __str__(self):
-        return str(self.curr_id) + "-" + str(self.student_id)
-
-
-class FinalRegistrations(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    semester = models.IntegerField()
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    batch = models.IntegerField(default =datetime.datetime.now().year )
-    verified = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = 'FinalRegistrations'
-
-
-class CourseRequested(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'CourseRequested'
 
 
 class Thesis(models.Model):
@@ -189,13 +150,6 @@ class ThesisTopicProcess(models.Model):
     def __str__(self):
         return str(self.thesis_topic) + " " + str(self.student_id)
 
-
-class FeePayment(models.Model):
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    semester = models.IntegerField(default= 1)
-    batch = models.IntegerField(default= 2016)
-    mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
-    transaction_id = models.CharField(max_length = 40)
 
 class TeachingCreditRegistration(models.Model):
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
@@ -256,3 +210,59 @@ class Bonafide(models.Model):
 
     class Meta:
         db_table = 'Bonafide'
+
+
+class StudentRegistrationChecks(models.Model):
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+    pre_registration_flag = models.BooleanField(default=False)
+    final_registration_flag = models.BooleanField(default=False)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'StudentRegistrationChecks'
+
+
+class InitialRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'InitialRegistration'
+
+
+class FinalRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'FinalRegistration'
+
+
+class CourseRequested(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'CourseRequested'
+
+class FeePayments(models.Model):
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
+    transaction_id = models.CharField(max_length = 40)
+
+    class Meta:
+        db_table = 'FeePayments'
+
+
+class course_registration(models.Model):
+    student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    # grade = models.CharField(max_length=10)
+
+    class Meta:
+        db_table = 'course_registration'

@@ -55,14 +55,14 @@ var registered_students = parseInt(document.getElementById("registered_students"
 var i;
         $('.reg-approve').on('click', function(e){
             var id = $(this).attr('data-2');
-            var roll = $(this).attr('data-1');
-            var curriculum_id = $(this).attr('data-3');
+            var student_id = $(this).attr('data-1');
+            var course_id = $(this).attr('data-3');
             $.ajax({
                 type: 'post',
                 url: '/academic-procedures/verify_addCourse/',
                 data: {
-                    roll: roll,
-                    curriculum_id: curriculum_id,
+                    student_id: student_id,
+                    course_id: course_id,
                     status_req: 'accept',
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
@@ -84,14 +84,14 @@ var i;
         });
         $('.reg-disapprove').on('click', function(e){
             var id = $(this).attr('data-2');
-            var roll = $(this).attr('data-1');
-            var curriculum_id = $(this).attr('data-3');
+            var student_id = $(this).attr('data-1');
+            var course_id = $(this).attr('data-3');
             $.ajax({
                 type: 'post',
                 url: '/academic-procedures/verify_addCourse/',
                 data: {
-                    roll: roll,
-                    curriculum_id: curriculum_id,
+                    student_id: student_id,
+                    course_id: course_id,
                     status_req: 'reject',
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
