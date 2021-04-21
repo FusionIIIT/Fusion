@@ -142,21 +142,22 @@ def handle_cpda_admin(request):
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
 
-            # add notif
+            # notify
             messages.success(request, 'Reviewer assigned successfully!')
 
 
         else:
             errors = "Please specify a reviewer and their designation."
+            # notify error
             messages.error(request, errors)
 
     elif app_id:
         # update the status of app
-        # verify that app_id is not changed, ie untampered
         application = Cpda_application.objects.select_related('applicant').get(id=app_id)
         application.status = status
         application.save()
-        # add notif
+
+        # notify
         messages.success(request, 'Status updated successfully!')
 
 
@@ -357,7 +358,9 @@ def generate_cpda_admin_lists(request):
 
 
 def generate_ltc_admin_lists(request):
-
+    """
+        Function retrieves the admin information and related unreviewed,approved and archived LTC applications.
+    """
     # only requested and adjustment_pending
     unreviewed_apps = (Ltc_application.objects
                 .select_related('applicant')
@@ -466,6 +469,9 @@ def generate_ltc_admin_lists(request):
 
 
 def handle_cpda_eligible(request):
+    """
+        Function handles cpda functionalities- CPDA request,adjustments,review and rejection of CPDA applications.
+    """
     if 'cpda_request' in request.POST:
         applicant = request.user
         pf_number = request.POST.get('pf_number')
@@ -557,6 +563,9 @@ def handle_cpda_eligible(request):
 
 
 def handle_ltc_eligible(request):
+    """
+        Function handles LTC functionalities- LTC request and review of LTC applications.
+    """
     if 'ltc_request' in request.POST:
         applicant = request.user
 
@@ -801,6 +810,9 @@ def handle_appraisal(request):
 
 
 def generate_cpda_eligible_lists(request):
+    """
+        Function retrieves the eligible user information and related unreviewed,approved and archived CPDA applications.
+    """
     active_apps = (Cpda_application.objects
                     .select_related('applicant')
                     .filter(applicant=request.user)
@@ -878,6 +890,9 @@ def generate_cpda_eligible_lists(request):
 
 
 def generate_ltc_eligible_lists(request):
+    """
+        Function retrieves the eligible user information and related unreviewed,approved and archived LTC applications.
+    """
     ltc_info = {}
     ltc_queryset = Ltc_eligible_user.objects.select_related('user').filter(user=request.user)
     ltc_info['eligible'] = ltc_queryset.exists()

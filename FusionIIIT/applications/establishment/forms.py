@@ -23,9 +23,12 @@ class Ltc_Form(forms.Form):
     basic_pay = forms.IntegerField(label='Basic Pay', min_value=0, required=True)
 
     is_leave_req = forms.ChoiceField(label='Is leave required for LTC ?', choices=Constants.LTC_LEAVE, required=True)
-    leave_start = forms.DateField(label='Leave Start Date')
-    leave_end = forms.DateField(label='Leave End Date')
-    family_departure_date = forms.DateField(label='Family Departure Date')
+    leave_start = forms.DateField(label='Leave Start Date', 
+                    widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
+    leave_end = forms.DateField(label='Leave End Date', 
+                    widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
+    family_departure_date = forms.DateField(label='Family Departure Date', 
+                    widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
     leave_nature = forms.CharField(label='Leave Nature')
     purpose = forms.CharField(label='Purpose', widget=forms.TextInput, required=True)
     leave_type = forms.ChoiceField(label='Whether L.T.C. is desired for going to home town or elsewhere?', choices=Constants.LTC_TYPE)
@@ -45,9 +48,12 @@ class Ltc_Form(forms.Form):
 class Assign_Form(forms.Form):
     app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
     status = forms.ChoiceField(choices=(Constants.STATUS))
-    reviewer_id = forms.CharField(label="Reviewer ID 1", required=False)
-    reviewer_id2 = forms.CharField(label="Reviewer ID 2", required=False)
-    reviewer_id3 = forms.CharField(label="Reviewer ID 3", required=False)
+    reviewer_id = forms.CharField(label="Reviewer ID 1", required=False, 
+                    widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    reviewer_id2 = forms.CharField(label="Reviewer ID 2", required=False, 
+                    widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    reviewer_id3 = forms.CharField(label="Reviewer ID 3", required=False, 
+                    widget=forms.TextInput(attrs={'placeholder': 'Username'}))
     reviewer_design = forms.CharField(label="Reviewer Designation 1", required=False,initial='HOD')
     reviewer_design2 = forms.CharField(label="Reviewer Designation 2", required=False,initial='Registrar')
     reviewer_design3 = forms.CharField(label="Reviewer Designation 3", required=False,initial='Director')
