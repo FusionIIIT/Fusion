@@ -11,6 +11,12 @@
     <a class="item" data-tab="cpdathree">
         Archived
     </a>
+    <a class="item" data-tab="cpdafour">
+        Review
+    </a>
+    <a class="item" data-tab="cpdafive">
+        Reviewed
+    </a>
 </div>
 
 
@@ -85,9 +91,9 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                             {% if app.status == 'requested' or app.status == 'adjustments_pending' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
                                     <div class="meta">Review Status : {{app.tracking_info.review_status}} by
-                                        {% if app.tracking_info.current_reviewerid == 1 %}
+                                        {% if app.tracking_info.current_reviwerid == 1 %}
                                             {{app.tracking_info.reviewer_id.first_name}} ({{app.tracking_info.reviewer_design}})
-                                        {% elif app.tracking_info.current_reviewerid == 2 %}
+                                        {% elif app.tracking_info.current_reviwerid == 2 %}
                                             {{app.tracking_info.reviewer_id2.first_name}} ({{app.tracking_info.reviewer_design2}})
                                         {% else %}
                                             {{app.tracking_info.reviewer_id3.first_name}} ({{app.tracking_info.reviewer_design3}})
@@ -300,7 +306,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                             </form>
                             </div>
                         </div>
-
+    
                     </div>
                 {% endfor %}
             </div>
