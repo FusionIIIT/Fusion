@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 import io
 import urllib, base64
+from django.db.models import Min
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
@@ -33,9 +34,28 @@ def main_page(request):
 
 
 
-	pres_year = timezone.now().year
+	pres_date = timezone.now()
 	fin_years = []
-	for fin_year in range(pres_year,2016,-1):
+	min_date_ob = Income.objects.all().aggregate(Min('date_added'))
+
+	pres_year,min_year = None,None
+	if min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month < 4 :
+		pres_year = pres_date.year + 1
+		min_year  = pres_date.year - 1
+	elif min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month >= 4:
+		pres_year = pres_date.year + 1
+		min_year = pres_date.year
+	else:
+		pres_year = pres_date.year + 1
+		if min_date_ob['date_added__min'].month < 4 :
+			min_year = min_date_ob['date_added__min'].year - 1
+		else:
+			min_year = min_date_ob['date_added__min'].year
+
+
+
+
+	for fin_year in range(pres_year,min_year,-1):
 		year = str(fin_year)+'-'+str(fin_year-1)
 		fin_years.append(year)
 
@@ -69,6 +89,21 @@ def main_page(request):
 	expenditure_history = Expenditure.objects.all()
 	expenditure_history = expenditure_history[::-1]
 	fixed_attributes = FixedAttributes.objects.all()
+	
+	
+	current_financial_year_ob = timezone.now()
+	month = str(current_financial_year_ob.month)
+	month = '0' + month if len(month) == 1 else month
+	day = str(current_financial_year_ob.day)
+	day = '0' + month if len(day) == 1 else day 
+	if current_financial_year_ob.month < 4 :
+		 
+		max_date = str(current_financial_year_ob.year)+'-'+month+'-'+day
+		min_date = str(current_financial_year_ob.year - 1)+'-04-01'
+	else:
+		max_date = str(current_financial_year_ob.year)+'-'+month+'-'+day
+		min_date = str(current_financial_year_ob.year)+'-04-01'
+
 
 	if len(fixed_attributes) == 0:
 		for i in fixed_attributes_list:
@@ -89,6 +124,8 @@ def main_page(request):
 					'income_details':result,
 					'data':uri,
 					'fixedDetails':fixed_attributes,
+					'min_date':min_date,
+					'max1_date':max_date,
 
 				})
 
