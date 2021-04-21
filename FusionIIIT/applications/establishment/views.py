@@ -676,7 +676,6 @@ def handle_ltc_eligible(request):
         application = Ltc_application.objects.get(id=app_id)
         application.tracking_info.remarks = review_comment
         application.tracking_info.review_status = 'reviewed'
-        #if(application.is_hometown_or_elsewhere=='hometown')
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
