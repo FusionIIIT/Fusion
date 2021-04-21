@@ -23,7 +23,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
-from applications.academic_information.models import (Course as Courses, Programme, Batch, Discipline, CourseSlot, Semester)
+from applications.programme_curriculum.models import (Course as Courses, Programme, Batch, Discipline, CourseSlot, Semester)
 
 
 from applications.academic_procedures.views import acad_proced_global_context
