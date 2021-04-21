@@ -49,4 +49,5 @@ urlpatterns = [
     url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
+    url(r'^hr2/', include('applications.hr2.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
