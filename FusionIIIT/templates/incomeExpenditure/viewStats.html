@@ -3,69 +3,38 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 
-    
-<div id="view_stats" class="field" style="border : 0">
-    
-    <canvas id="pie-chart"></canvas>
-    <select class="ui dropdown" >
-        <option value="">Select Financial Year</option>
+<form method='POST' action='/income-expenditure/viewIncomeStats/' target="_blank">{% csrf_token %}
+  <div id="view_stats" class="field" style="border : 0">
+     <h2>View Income Stats</h2><br>
+      <select class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
 
-       {% for year in fin_years %}
-        <option  value = {{year}}>{{year}}</option>
-       {% endfor %}
-       
-    </select>
-    <img src="data:image/png;base64,{{data}}" alt="" height="250", widht="250">
-    <button class="ui primary button" style="float: right;" onclick="new_function()">Submit</button>
-        
+         {% for year in inc_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;">Get Stats</button>
 </div>
+</form>
 
+<br>
+<br>
+<br>
 
+<form method='POST' action='/income-expenditure/viewExpenditureStats/' target="_blank">{% csrf_token %}
+      <div id="view_stats" class="field" style="border : 0">
+        <h2>View Expenditure Stats</h2><br>
+      <select class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
 
-
+         {% for year in exp_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
+  </div>
+</form>
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-{%comment%}
-{% block content %}
-<h1>Pie Chart Population</h1>
- <div id="container" style="width: 75%;">
-    <canvas id="pie-chart"></canvas>
- </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script><script>
-    var year = "2021";
-
-    var i;
-    var income_details = "{{income_details}}";
-    alert("{{income_details}}");
-    var income_data = [];
-    var income_labels = [];
-    for (i = 0; i < income_details[year].length; i++) {
-        income_data.push(income_details[year][i]['amount']);
-        income_labels.push(income_details[year][i]['source']);
-    }
-
-    
-    var config = {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: income_data,
-          backgroundColor: [
-            '#ff0000', '#0000ff', '#ff0080', '#73ffff'
-          ],
-          label: 'Income Data'
-        }],
-        labels: income_labels,
-      },
-      options: {
-        responsive: true
-      }
-    };
- 
-    window.onload = function() {
-      var ctx = document.getElementById('pie-chart').getContext('2d');
-      window.myPie = new Chart(ctx, config);
-    };
-  </script>
-{% endblock %}
-{%endcomment%}
