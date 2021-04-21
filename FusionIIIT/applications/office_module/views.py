@@ -29,12 +29,12 @@ from django.template.defaulttags import register
 
 
 def officeOfDeanRSPC(request):
-    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
-    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
-    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
-    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project=Project_Registration.objects.all()
+    project1=Project_Extension.objects.all()
+    project2=Project_Closure.objects.all()
+    project3=Project_Reallocation.objects.all()
 
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+    design = HoldsDesignation.objects.filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -62,7 +62,7 @@ def _req_history(req):
     """
     Return requisition history: All tracking rows that are associated with the passet requisition
     """
-    return Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=req.assign_file)
+    return Tracking.objects.filter(file_id=req.assign_file)
 
 _pnd_deslist={
             'Civil_JE': 'Junior Engg. (Civil)',
@@ -94,18 +94,18 @@ def officeOfDeanPnD(request):
                 outgoing assignments. Allows performing actions on incoming assignments.
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
 
 
-    
+
     holds=HoldsDesignation.objects.filter(working=user)
-    designations=[d.designation for d in HoldsDesignation.objects.select_related('user','designation','working').filter(working=user)]
+    designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
 
     # handle createassignment POST request
     if 'createassign' in request.POST:
         print("createassign", request)
         req_id=request.POST.get('req_id')
-        requisition=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
+        requisition=Requisitions.objects.get(pk=req_id)
         description=request.POST.get('description')
         upload_file=request.FILES.get('estimate')
         sender_design=None
@@ -115,13 +115,13 @@ def officeOfDeanPnD(request):
                 if requisition.department != "civil":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Civil_AE")
+                receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
                 #fdate = datetime.dat
             elif str(hold.designation.name)=="Electrical_JE":
                 if requisition.department != "electrical":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Electrical_AE")
+                receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
                 #fdate = datetime.datetime.now().date()
         if not sender_design:
             return HttpResponse('Unauthorized', status=401)
@@ -156,11 +156,11 @@ def officeOfDeanPnD(request):
     # kept in the database for record-keeping reasons.
     elif 'delete_requisition' in request.POST:
         print('delete requisition')
-        hold = HoldsDesignation.objects.select_related('user','designation','working').get(working=user,designation__name__in=_pnd_deslist)
+        hold = HoldsDesignation.objects.get(working=user, designation__name__in=_pnd_deslist)
         if hold:
             req_id=request.POST.get('req_id')
             try:
-                req = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
+                req = Requisitions.objects.get(pk=req_id)
                 office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
                 req.tag = 1 # tag = 1 implies the requisition has been deleted
                 req.save()
@@ -170,19 +170,19 @@ def officeOfDeanPnD(request):
             return HttpResponse('Unauthorized', status=401)
 
     # Requisitions that *don't* have as assignment
-    req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=True, tag=0)
+    req=Requisitions.objects.filter(assign_file__isnull=True, tag=0)
     # all requisitions
-    all_req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(tag=0)
+    all_req=Requisitions.objects.filter(tag=0)
     # list of all requisitions that have an assignment
-    assigned_req=list(Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=False).select_related())
+    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for incoming tracking files
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receiver_id=user).filter(is_read=False)]
+            for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for outgoing tracking files
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id__user=user)]
+            for f in Tracking.objects.filter(current_id__user=user)]
     # history of assignment, list of pair of (requisition, history list)
     assign_history=[(r, _req_history(r)) for r in assigned_req]
 
@@ -200,7 +200,7 @@ def officeOfDeanPnD(request):
             # this way all history is generated
             passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
             # the last date the requisition was sent
-            last_date = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=r.assign_file).last().receive_date
+            last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
             # map with readable titles from deslist
             passed = [pndReadableDesignation(d) for d in passed]
             req_history.append((r, passed, last_date))
@@ -249,7 +249,7 @@ def submitRequest(request):
         Endpoint used to create requisition
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     fdate = datetime.datetime.now().date()
     dept=request.POST.get('department')
     building = request.POST.get('building')
@@ -273,16 +273,16 @@ def action(request):
     """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     req_id=request.POST.get('req_id')
-    requisition = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
+    requisition = Requisitions.objects.get(pk=req_id)
     description=request.POST.get('description')
     upload_file=request.FILES.get('estimate')
-    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
+    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
     
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
-    current_hold_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user=user).get(designation=current_design)
+    current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
     # prev_design = track.current_design.designation
     # prev_hold_design = track.current_design
     
@@ -309,7 +309,7 @@ def action(request):
     if 'Send' in request.POST:
         sent_design=request.POST.get('sent_design')
         sent_design = Designation.objects.get(name=sent_design)
-        sent_hold_design = HoldsDesignation.objects.select_related('user','designation','working').get(designation=sent_design)
+        sent_hold_design = HoldsDesignation.objects.get(designation=sent_design)
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -391,12 +391,12 @@ def frequest(request):
 
 
 def eisModulenew(request):
-    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
-    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
-    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
-    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project=Project_Registration.objects.all()
+    project1=Project_Extension.objects.all()
+    project2=Project_Closure.objects.all()
+    project3=Project_Reallocation.objects.all()
 
-    design = HoldsDesignation.objects.select_related('user','designation','working').filter(working=request.user)
+    design = HoldsDesignation.objects.filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -427,7 +427,7 @@ def officeOfRegistrar(request):
     for atrack in archive_track:
         archive_view[atrack] = atrack.track_id.file_id
 
-    director_track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
+    director_track = Tracking.objects.filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
     director_view = {}
     for track in director_track:
         if not Registrar_response.objects.filter(track_id = track):
@@ -491,9 +491,9 @@ def officeOfRegistrar_forward_submit(request):
                 return HttpResponse("Cannot find user")
             receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
             current_id = request.user.extrainfo
-            current_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user = request.user)[0]
-            t_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
-            up_file = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
+            current_design = HoldsDesignation.objects.filter(user = request.user)[0]
+            t_id = Tracking.objects.get(id = track_id)
+            up_file = Tracking.objects.get(id = track_id)
             remarks = ""
 
             Tracking.objects.create(
@@ -504,7 +504,7 @@ def officeOfRegistrar_forward_submit(request):
                         receiver_id=receiver_id,
                         remarks=remarks,
                     )
-            rr = Registrar_response(track_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
+            rr = Registrar_response(track_id = Tracking.objects.get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
             rr.save()
             messages.success(request,'File sent successfully')
             return HttpResponse('File sent successfully')
@@ -520,11 +520,11 @@ def officeOfRegistrar_view_file(request, id):
     """
     #file = get_object_or_404(File, id=id)
     
-    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=id)
+    track = Tracking.objects.get(id=id)
     file = track.file_id
-    extrainfo = ExtraInfo.objects.select_related('user','department').all()
-    holdsdesignations = HoldsDesignation.objects.select_related('user','designation','working').all()
-    designations = HoldsDesignation.objects.select_related('user','designation','working').filter(user=request.user)
+    extrainfo = ExtraInfo.objects.all()
+    holdsdesignations = HoldsDesignation.objects.all()
+    designations = HoldsDesignation.objects.filter(user=request.user)
 
     context = {
         'designations':designations,
@@ -570,7 +570,7 @@ def project_register(request):
 
     """Project Fields added"""
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     project_title = request.POST.get('project_title')
     sponsored_agency = ""
     sponsored_agency = request.POST.get('sponsored_agency')
@@ -728,13 +728,13 @@ def project_extension(request):
     project_id = request.POST.get('project_id')
     # ob = get_object_or_404(Project_Registration, pk=project_id)
     try:
-        ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
+        ob = Project_Registration.objects.get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob.PI_id.id:
         # date = ob.start_date
@@ -822,13 +822,13 @@ def project_closure(request):
     """Project closure conditions added"""
     project_id = request.POST.get('project_id')
     try:
-        extrainfo1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
+        extrainfo1 = Project_Registration.objects.get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == extrainfo1.PI_id.id:
         completion_date = request.POST.get('date')
@@ -917,12 +917,12 @@ def project_reallocation(request):
     """Project reallocation details added"""
     project_id = request.POST.get('project_id')
     try:
-        ob1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
+        ob1 = Project_Registration.objects.get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob1.PI_id.id:
         # applied_date = request.POST.get('applied_date')
@@ -965,7 +965,7 @@ def project_reallocation_permission(request):
         for id in id_list:
             obj = get_object_or_404(Project_Reallocation, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
-                ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=obj.project_id.id)
+                ob = Project_Registration.objects.get(pk=obj.project_id.id)
                 pf = int(ob.PI_id.id)
                 title = ob.project_title
                 ptype = ob.project_type
@@ -1034,7 +1034,7 @@ def closure_details(request, pr_id):
 def hod_action(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=id)
+        obj=Project_Registration.objects.get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1056,7 +1056,7 @@ def hod_closure(request):
 def hod_extension(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
+        obj=Project_Extension.objects.get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1067,7 +1067,7 @@ def hod_extension(request):
 def hod_allocation(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
+        obj=Project_Reallocation.objects.get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1078,7 +1078,7 @@ def hod_allocation(request):
 
 
 def pdf(request,pr_id):
-    obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=pr_id)
+    obj=Project_Registration.objects.get(pk=pr_id)
     return render(request,"officeModule/officeOfDeanRSPC/view_details.html",{"obj":obj})
 
 
@@ -1146,7 +1146,7 @@ def newordershod(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.HOD_approve_tag = 1
             obj.director_approve_tag = 0
             obj.save()
@@ -1167,7 +1167,7 @@ def newordersregistrar(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
             obj.director_approve_tag = 1
             obj.save()
@@ -1188,7 +1188,7 @@ def newordersregistrar2(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
             obj.save()
             print("work done")
@@ -1209,7 +1209,7 @@ def newordersdirector(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.director_approve_tag = 1
             obj.save()
             print("work done")
@@ -1228,7 +1228,7 @@ def newordersdirectorview(request):
         objid = request.POST.get('id')
         print(objid)
     try:
-        obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+        obj = apply_for_purchase.objects.get(id = objid)
         context ={"data":obj}
         print(context)
         return HttpResponse("abhi iska template nahi bana hai")
@@ -1243,7 +1243,7 @@ def newordersPO(request):
         objid = request.POST.get('id')
         print(objid)
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.gem_tag=-1
             obj.save()
         except apply_for_purchase.DoesNotExist:
@@ -1255,7 +1255,7 @@ def newordersPOonGem(request):
         objid = request.POST.get('id')
         print(objid)
         try:
-            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
+            obj = apply_for_purchase.objects.get(id = objid)
             obj.gem_tag=1
             obj.save()
         except apply_for_purchase.DoesNotExist:
@@ -1273,9 +1273,9 @@ def apply_purchase(request):
 #    user=ExtraInfo.objects.get(user=user)
     current_user = get_object_or_404(User, username=request.user.username)
     #print(current_user)
-    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     #print(user_details)
-    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
     #print(user_type)
     usertype=str.split(str(user_type))
     #print(usertype)
@@ -1362,9 +1362,9 @@ def apply_purchase(request):
 def add_items(request):
     current_user = get_object_or_404(User, username=request.user.username)
     print(current_user)
-    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     print(user_details)
-    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
     print(user_type)
     usertype=str.split(str(user_type))
     print(usertype)
@@ -1415,7 +1415,7 @@ def after_purchase(request):
         file_no=request.POST.get('file_no')
         amount=request.POST.get('amount')
         invoice=request.POST.get('invoice')
-        apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(id=file_no).update(amount=amount, invoice=invoice)
+        apply_for_purchase.objects.filter(id=file_no).update(amount=amount, invoice=invoice)
 
         return render(request, "officeModule/officeOfPurchaseOfficer/after_purchase.html",{})
     else:
@@ -1427,9 +1427,9 @@ def officeOfPurchaseOfficer(request):
     context={}
     current_user = get_object_or_404(User, username=request.user.username)
     #print(current_user)
-    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     #print(user_details)
-    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
     #print(user_type)
     usertype=str.split(str(user_type))
     print(usertype)
@@ -1495,27 +1495,27 @@ def officeOfPurchaseOfficer(request):
             #render appropritate templates as per the actor like approvalHOD2 or approvalRegistrar2 etc
             #this is working through user_type not utype
             if(user_type=="HOD" or per_user=="pkhanna"):
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=0).order_by('-id')
                 context={'alldata':alldata}
                 print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=1,registrar_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0).order_by('-id')
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
                 print(alldata)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
                 print("entered purchase officer section")
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(director_approve_tag=1,gem_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(director_approve_tag=1,gem_tag=0).order_by('-id')
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
                 #context = {'alldata':alldata,'alldata2':alldata2}SS
 
@@ -1527,19 +1527,19 @@ def officeOfPurchaseOfficer(request):
 
         elif "approved_orders" in request.POST:
             if(user_type=="HOD" or per_user=="pkhanna"):
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=1).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1).order_by('-id')
                 context={'alldata':alldata}
                 #print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedHOD.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(registrar_approve_tag=1,expected_cost__lte = 50000).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(registrar_approve_tag=1,expected_cost__lte = 50000).order_by('-id')
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=1).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=1).order_by('-id')
                 #print(alldata)
                 context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedDirector.html",context=context)
@@ -1552,14 +1552,14 @@ def officeOfPurchaseOfficer(request):
         elif "checked_orders" in request.POST:
             if(user_type == "PurchaseOfficer" or user_type == "purchseofficer"):
                 #print("in checked orders")
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(director_approve_tag=1).exclude(gem_tag=0)
+                alldata = apply_for_purchase.objects.filter(director_approve_tag=1).exclude(gem_tag=0)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/checkedpurchaseofficer.html",context=context)
 
         elif "forwarded_orders" in request.POST:
             if(user_type == "Registrar" or user_type == "DeputyRegistrar"):
                 #print("in checked orders")
-                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
                 context = {'alldata':alldata,'des':user_type}
 
                 return render(request, "officeModule/officeOfPurchaseOfficer/forwardedRegistrar.html",context=context)
@@ -1595,11 +1595,11 @@ def officeOfPurchaseOfficer(request):
 
         elif "item_search" in request.POST:
             srch = request.POST['item_name']
-            # print("this is the itemset")
-            # print(srch)
+            print("this is the itemset")
+            print(srch)
             #match = stock.objects.filter(Q(item_name__icontains=srch))
             match = stock.objects.filter(item_name=srch)
-            # print(match)
+            print(match)
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'match':match})
 
         elif "vendor_search" in request.POST:
@@ -1608,19 +1608,19 @@ def officeOfPurchaseOfficer(request):
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'matchv':matchv})
 
         elif "viewhistory" in request.POST:
-            alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(indentor_name = user_details)
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
             print(alldata)
             return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content1.html",{'alldata':alldata})
 
         elif "viewstatus" in request.POST:
-            alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(indentor_name = user_details)
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
             print(alldata)
             return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content2.html",{'alldata':alldata})
 
 
         elif "purchase_search" in request.POST:
             pr = request.POST['file']
-            phmatch = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(Q(id=pr))
+            phmatch = apply_for_purchase.objects.filter(Q(id=pr))
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'phmatch':phmatch})
         '''elif "delete_item" in request.POST:
             a = request.POST.getlist('box')
@@ -1633,7 +1633,7 @@ def officeOfPurchaseOfficer(request):
         #this is the manage store and vendors section
         p=vendor.objects.all()
         q=stock.objects.all()
-        ph=apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').all()
+        ph=apply_for_purchase.objects.all()
 
     return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'p':p,'q':q,'ph':ph,'utype':utype,'utype2':utype2,'utype3':utype3,'des':user_type})
 
@@ -1701,8 +1701,8 @@ def edit1(request):
 def directorOffice(request):
      if request.user.is_authenticated:
         user_name=get_object_or_404(User,username=request.user.username)
-        user=ExtraInfo.objects.select_related('user','department').all().filter(user=user_name).first()
-        holds=HoldsDesignation.objects.select_related('user','designation','working').filter(user=user.user)
+        user=ExtraInfo.objects.all().filter(user=user_name).first()
+        holds=HoldsDesignation.objects.filter(user=user.user)
         deslist1=['Director']
         if user.user_type == 'faculty': 
             context={ }
@@ -1710,41 +1710,41 @@ def directorOffice(request):
 
 #function gets the count of faculties department wise and top scoring students yearwise and department wise
 def viewProfile(request):
-    faculty = Faculty.objects.select_related('id__user','id__department').all()
-    student = Student.objects.select_related('id__user','id__department').all()
-    staff = Staff.objects.select_related('id__user','id__department').all()
+    faculty = Faculty.objects.all()
+    student = Student.objects.all()
+    staff = Staff.objects.all()
 
-    cs = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'CSE').count()
-    ec = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'ECE').count()
-    me = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'ME').count()
-    des = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'DESIGN').count()
-    ns = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'NATURAL SCIENCE').count()
+    cs = Faculty.objects.all().filter(id__department__name = 'CSE').count()
+    ec = Faculty.objects.all().filter(id__department__name = 'ECE').count()
+    me = Faculty.objects.all().filter(id__department__name = 'ME').count()
+    des = Faculty.objects.all().filter(id__department__name = 'DESIGN').count()
+    ns = Faculty.objects.all().filter(id__department__name = 'NATURAL SCIENCE').count()
     #Top students of each year
-    top_2017_cse = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2017', id__department__name = 'CSE').order_by('-cpi')[:3]
+    top_2017_cse = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'CSE').order_by('-cpi')[:3]
     
 
     top_2016_cse = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'CSE').order_by('-cpi')[:3]
     
 
-    top_2015_cse = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2015', id__department__name = 'CSE').order_by('-cpi')[:3]
+    top_2015_cse = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'CSE').order_by('-cpi')[:3]
     
-    top_2017_me = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2017', id__department__name = 'ME').order_by('-cpi')[:3]
+    top_2017_me = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ME').order_by('-cpi')[:3]
     
-    top_2016_me = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2016', id__department__name = 'ME').order_by('-cpi')[:3]
+    top_2016_me = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ME').order_by('-cpi')[:3]
     
-    top_2015_me = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2015', id__department__name = 'ME').order_by('-cpi')[:3]
+    top_2015_me = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ME').order_by('-cpi')[:3]
     
-    top_2017_ece = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2017', id__department__name = 'ECE').order_by('-cpi')[:3]
+    top_2017_ece = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ECE').order_by('-cpi')[:3]
    
-    top_2016_ece = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2016', id__department__name = 'ECE').order_by('-cpi')[:3]
+    top_2016_ece = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ECE').order_by('-cpi')[:3]
     
-    top_2015_ece = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2015', id__department__name = 'ECE').order_by('-cpi')[:3]
+    top_2015_ece = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ECE').order_by('-cpi')[:3]
     
-    top_2017_design = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2017', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    top_2017_design = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'DESIGN').order_by('-cpi')[:3]
     
-    top_2016_design = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2016', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    top_2016_design = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'DESIGN').order_by('-cpi')[:3]
     
-    top_2015_design = Student.objects.select_related('id__user','id__department').filter(id__id__startswith = '2015', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    top_2015_design = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'DESIGN').order_by('-cpi')[:3]
     
     all_counts = [cs,ec,me,des,ns]
     
@@ -1817,7 +1817,7 @@ def viewProfile(request):
 # function for displaying projects under office module
 def viewOngoingProjects(request):
 
-    project = Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
+    project = Project_Registration.objects.all()
     #title + type
     project_details = []
 
@@ -1878,13 +1878,13 @@ def viewMeetings(request):
 # function for faculty information department wise 
 def viewFacProfile(request):
 
-    faculty = Faculty.objects.select_related('id__user','id__department').all()
+    faculty = Faculty.objects.all()
 
-    csfaculty = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'CSE')
-    ecefaculty = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'ECE')
-    mefaculty = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'ME')
-    desfaculty = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'DESIGN')
-    nsfaculty = Faculty.objects.select_related('id__user','id__department').all().filter(id__department__name = 'NATURAL SCIENCE')
+    csfaculty = Faculty.objects.all().filter(id__department__name = 'CSE')
+    ecefaculty = Faculty.objects.all().filter(id__department__name = 'ECE')
+    mefaculty = Faculty.objects.all().filter(id__department__name = 'ME')
+    desfaculty = Faculty.objects.all().filter(id__department__name = 'DESIGN')
+    nsfaculty = Faculty.objects.all().filter(id__department__name = 'NATURAL SCIENCE')
 
     cse_faculty = []
     for x in csfaculty:
@@ -1931,7 +1931,7 @@ def viewFacProfile(request):
 # function for staff information department wise 
 def viewStaffProfile(request):
 
-    staff_detail = Staff.objects.select_related('id__user','id__department').all()
+    staff_detail = Staff.objects.all()
 
     staff = []
 
@@ -1940,7 +1940,7 @@ def viewStaffProfile(request):
         staff.append(x.id.user.first_name + ' ' + x.id.user.last_name)
         staff.append(x.id.department.name)
 
-    acad=Staff.objects.select_related('id__user','id__department').all().filter(Q(id__department__name='Academics') | Q(id__department__name='NATURAL SCIENCE') | Q(id__department__name='CSE')| Q(id__department__name='ECE')| Q(id__department__name='ME') | Q(id__department__name='DESIGN') | Q(id__department__name='MECHATRONICS') | Q(id__department__name='Workshop') | Q (id__department__name='Computer Centre') )
+    acad=Staff.objects.all().filter(Q(id__department__name='Academics') | Q(id__department__name='NATURAL SCIENCE') | Q(id__department__name='CSE')| Q(id__department__name='ECE')| Q(id__department__name='ME') | Q(id__department__name='DESIGN') | Q(id__department__name='MECHATRONICS') | Q(id__department__name='Workshop') | Q (id__department__name='Computer Centre') )
 
     academic = []
     for x in acad:
@@ -1949,7 +1949,7 @@ def viewStaffProfile(request):
         academic.append(x.id.department.name)        
 
 
-    admin = Staff.objects.select_related('id__user','id__department').all().filter(Q(id__department__name='General Administration') | Q(id__department__name='Finance and Accounts') |  Q(id__department__name='Purchase and Store') | Q(id__department__name='Registrar Office') | Q(id__department__name='Security and Central Mess') )
+    admin = Staff.objects.all().filter(Q(id__department__name='General Administration') | Q(id__department__name='Finance and Accounts') |  Q(id__department__name='Purchase and Store') | Q(id__department__name='Registrar Office') | Q(id__department__name='Security and Central Mess') )
 
     administration = []
 
@@ -1959,7 +1959,7 @@ def viewStaffProfile(request):
         administration.append(x.id.department.name)
 
 
-    place =  Staff.objects.select_related('id__user','id__department').all().filter(Q(id__department__name='Placement Cell') )    
+    place =  Staff.objects.all().filter(Q(id__department__name='Placement Cell') )    
     placement = []
     for x in place:
         placement.append(x.id.id)
@@ -1967,14 +1967,14 @@ def viewStaffProfile(request):
         placement.append(x.id.department.name)  
 
 
-    offc=Staff.objects.select_related('id__user','id__department').all().filter(Q(id__department__name='Student Affairs') | Q(id__department__name='Office of The Dean P&D') | Q(id__department__name='Directorate') | Q(id__department__name='Office of The Dean R&D')  )
+    offc=Staff.objects.all().filter(Q(id__department__name='Student Affairs') | Q(id__department__name='Office of The Dean P&D') | Q(id__department__name='Directorate') | Q(id__department__name='Office of The Dean R&D')  )
     office =[] 
     for x in offc:
         office.append(x.id.id)
         office.append(x.id.user.first_name + ' ' + x.id.user.last_name)
         office.append(x.id.department.name)  
 
-    other=Staff.objects.select_related('id__user','id__department').all().filter(Q(id__department__name='Establishment & P&S') | Q(id__department__name='IWD') | Q(id__department__name='F&A & GA') | Q(id__department__name='Establishment, RTI and Rajbhasha') | Q(id__department__name='Establishment')  )
+    other=Staff.objects.all().filter(Q(id__department__name='Establishment & P&S') | Q(id__department__name='IWD') | Q(id__department__name='F&A & GA') | Q(id__department__name='Establishment, RTI and Rajbhasha') | Q(id__department__name='Establishment')  )
     others =[]
     for x in other:
         others.append(x.id.id)
@@ -1992,7 +1992,7 @@ def viewStudentProfile(request):
 
     print("in the function")
 
-    student = Student.objects.select_related('id__user','id__department').all()
+    student = Student.objects.all()
 
     student_detail=[]
 
@@ -2011,9 +2011,9 @@ def viewStudentProfile(request):
         yr = year[2:4]
         print(yr)
         if programme in ('M.Tech','M.Des','PhD'):
-            studentsearch = Student.objects.select_related('id__user','id__department').all().filter(id__id__startswith = yr, id__department__name = department ).filter(programme=programme)
+            studentsearch = Student.objects.all().filter(id__id__startswith = yr, id__department__name = department ).filter(programme=programme)
         else:
-            studentsearch = Student.objects.select_related('id__user','id__department').all().filter(id__id__startswith = year, programme = programme, id__department__name = department)
+            studentsearch = Student.objects.all().filter(id__id__startswith = year, programme = programme, id__department__name = department)
             
         print(studentsearch)
         
@@ -2066,8 +2066,8 @@ def meeting(request):
         for x in members:
             splitted_name = str(x).split(' ')
             u = User.objects.get(first_name = splitted_name[0], last_name = splitted_name[1])
-            e = ExtraInfo.objects.select_related('user','department').get(user = u.id)
-            f = Faculty.objects.select_related('id__user','id__department').get(id = e.id)
+            e = ExtraInfo.objects.get(user = u.id)
+            f = Faculty.objects.get(id = e.id)
             Member.objects.create(
                 meeting_id=meeting_id,
                 member_id=f
@@ -2079,7 +2079,7 @@ def meeting(request):
 #function to fill the dropdown choices of faculty in meeting form
 def meeting_dropdown(request):
     if request.is_ajax():
-        fac = Faculty.objects.select_related('id__user','id__department').all()
+        fac = Faculty.objects.all();
         faculty =[]
         for x in fac:
             faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
@@ -2125,11 +2125,11 @@ def planMeetings(request):
 #function for displaying HODs of different departments
 def viewHOD(request):
     #designation name has been used as is stored in database
-    cse_hod = HoldsDesignation.objects.select_related('user','designation','working').all().filter(designation__name="CSE HOD")
-    ece_hod = HoldsDesignation.objects.select_related('user','designation','working').all().filter(designation__name="HOD (ECE)")
-    me_hod = HoldsDesignation.objects.select_related('user','designation','working').all().filter(designation__name="HOD (ME)")
-    ns_hod = HoldsDesignation.objects.select_related('user','designation','working').all().filter(designation__name="HOD (NS)")
-    des_hod = HoldsDesignation.objects.select_related('user','designation','working').all().filter(designation__name="HOD (DESIGN)")
+    cse_hod = HoldsDesignation.objects.all().filter(designation__name="CSE HOD")
+    ece_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (ECE)")
+    me_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (ME)")
+    ns_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (NS)")
+    des_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (DESIGN)")
 
     print("inside hod")
 
@@ -2168,18 +2168,18 @@ def viewHOD(request):
 
 
 def officeOfDeanAcademics(request):
-    student= Student.objects.all()
-    instructor= Instructor.objects.all()
-    spi=Spi.objects.select_related('student_id__id__user','student_id__id__department').all()
-    grades=Grades.objects.all()
-    course=Course.objects.all()
-    thesis=Thesis.objects.all()
-    minutes=Meeting.objects.all().filter(minutes_file="")
-    final_minutes=Meeting.objects.all().exclude(minutes_file="")
-    hall_allotment=hostel_allotment.objects.all()
-    assistantship=Assistantship.objects.all()
-    mcm=Mcm.objects.all()
-    designation = HoldsDesignation.objects.select_related('user','designation','working').all().filter(working=request.user)
+    student=Student.objects.all();
+    instructor=Instructor.objects.all();
+    spi=Spi.objects.all();
+    grades=Grades.objects.all();
+    course=Course.objects.all();
+    thesis=Thesis.objects.all();
+    minutes=Meeting.objects.all().filter(minutes_file="");
+    final_minutes=Meeting.objects.all().exclude(minutes_file="");
+    hall_allotment=hostel_allotment.objects.all();
+    assistantship=Assistantship.objects.all();
+    mcm=Mcm.objects.all();
+    designation = HoldsDesignation.objects.all().filter(working=request.user)
     all_designation=[]
     for i in designation:
         all_designation.append(str(i.designation))

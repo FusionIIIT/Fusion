@@ -34,24 +34,25 @@ def viewcourses(request):
     '''
     user = request.user
 
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
+    extrainfo = ExtraInfo.objects.get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        print(extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
-        register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
+        register = Register.objects.filter(student_id=student, semester=semester(roll))  #info of registered student
         courses = collections.OrderedDict()   #courses in which student is registerd
         for reg in register:   #info of the courses
-            instructor = Curriculum_Instructor.objects.select_related().get(course_id=reg.course_id)
+            instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
             courses[reg] = instructor
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
 
                        'extrainfo': extrainfo})
     else:   #if the user is lecturer
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)   #get info of the instructor
         curriculum_list = []
         for x in instructor:
-            c = Curriculum.objects.select_related().get(curriculum_id = x.curriculum_id.curriculum_id)
+            c = Curriculum.objects.get(curriculum_id = x.curriculum_id.curriculum_id)
             curriculum_list.append(c)
 
 
@@ -68,16 +69,16 @@ def course(request, course_code):
     desc: Home page for each courses for Student/Faculty
     '''
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
 
         #info about courses he is registered in
-        curriculum = Curriculum.objects.select_related('course_id').get(course_code=course_code)
+        curriculum = Curriculum.objects.get(course_code=course_code)
         course = curriculum.course_id
         #instructor of the course
-        instructor = Curriculum_Instructor.objects.select_related().get(curriculum_id=curriculum)
+        instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
         #course material uploaded by the instructor
         # videos = CourseVideo.objects.filter(course_id=course)
         videos = []
@@ -162,12 +163,12 @@ def course(request, course_code):
 
                 videos.append(video_data)
             # print(videos)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
-        quiz = Quiz.objects.select_related().filter(course_id=course)
-        assignment = Assignment.objects.select_related().filter(course_id=course)
+        slides = CourseDocuments.objects.filter(course_id=course)
+        quiz = Quiz.objects.filter(course_id=course)
+        assignment = Assignment.objects.filter(course_id=course)
         student_assignment = []
         for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
+            sa = StudentAssignment.objects.filter(assignment_id=assi, student_id=student)
             student_assignment.append(sa)
         '''
         marks to store the marks of quizes of student
@@ -179,7 +180,7 @@ def course(request, course_code):
         marks_pk = []
         #quizzes details
         for q in quiz:
-            qs = QuizResult.objects.select_related().filter(quiz_id=q, student_id=student)
+            qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
             qs_pk = qs.values_list('quiz_id', flat=True)
             if q.end_time > timezone.now():
                 quizs.append(q)
@@ -187,11 +188,11 @@ def course(request, course_code):
                 marks.append(qs[0])
                 marks_pk.append(qs_pk[0])
         lec = 0
-        comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
+        comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
         for comment in comments:
-            fr = ForumReply.objects.select_related().filter(forum_reply=comment)
-            fr1 = ForumReply.objects.select_related().filter(forum_ques=comment)
+            fr = ForumReply.objects.filter(forum_reply=comment)
+            fr1 = ForumReply.objects.filter(forum_ques=comment)
             if not fr:
                 answers[comment] = fr1
         return render(request, 'coursemanagement/viewcourse.html',
@@ -210,10 +211,10 @@ def course(request, course_code):
                        'curriculum': curriculum})
 
     else:
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
-                registered_students = Register.objects.select_related('student_id').filter(curr_id = ins.curriculum_id.curriculum_id)
+                registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
                 students = {}
                 test_marks = {}
                 for x in registered_students:
@@ -221,28 +222,33 @@ def course(request, course_code):
                 #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
                 #     for x in stored_marks:
                 #         test_marks[x.id] = (x.mid.r_id,x.exam_type,x.marks)
+                print(students)
                     #marks_id.append(x.curr_id)
                     #print(stored_marks)
                     #for x in stored_marks:
                     #    print(x)
+                print(test_marks)
 
                 curriculum = ins.curriculum_id
                 course = ins.curriculum_id.course_id
-                result_topics = Topics.objects.select_related().filter(course_id = course)
+                result_topics = Topics.objects.filter(course_id = course)
                 if (len(list(result_topics))!=0):
                     topics = result_topics
                 else:
                     topics = None
+                print(curriculum)
                 present_attendance = {}
         total_attendance=None
         for x in registered_students:
-            a = Student_attendance.objects.select_related().filter(student_id=x.student_id , instructor_id = ins)
+            a = Student_attendance.objects.filter(student_id=x.student_id , instructor_id = ins)
             total_attendance = len(a)
             count =0
             for row in a:
                 if(row.present):
                     count += 1
             present_attendance[x.student_id.id.id] = count
+            print("ejghkj"+ str(count))
+        print(present_attendance)
 
         lec = 1
 
@@ -271,6 +277,7 @@ def course(request, course_code):
         results1 = p.json()['items']
 
         for result in results1:
+            print(results)
             videos_list.append(result['snippet']['resourceId']['videoId'])
 
         videos_params = {
@@ -289,29 +296,29 @@ def course(request, course_code):
             }
 
             videos.append(video_data)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
-        quiz = Quiz.objects.select_related().filter(course_id=course)
+        slides = CourseDocuments.objects.filter(course_id=course)
+        quiz = Quiz.objects.filter(course_id=course)
         marks = []
         quizs = []
-        assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment = Assignment.objects.filter(course_id=course)
         student_assignment = []
         for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
+            sa = StudentAssignment.objects.filter(assignment_id=assi)
             student_assignment.append(sa)
         for q in quiz:
-            qs = QuizResult.objects.select_related().filter(quiz_id=q)
+            qs = QuizResult.objects.filter(quiz_id=q)
             if q.end_time > timezone.now():
                 quizs.append(q)
             if len(qs) != 0:
                 marks.append(qs)
-        comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
+        comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
         for comment in comments:
-            fr = ForumReply.objects.select_related().filter(forum_reply=comment)
-            fr1 = ForumReply.objects.select_related().filter(forum_ques=comment)
+            fr = ForumReply.objects.filter(forum_reply=comment)
+            fr1 = ForumReply.objects.filter(forum_ques=comment)
             if not fr:
                 answers[comment] = fr1
-        qb = QuestionBank.objects.select_related().filter(instructor_id=extrainfo, course_id=course)
+        qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
         return render(request, 'coursemanagement/viewcourse.html',
                       {'instructor': instructor,
                        'extrainfo': extrainfo,
@@ -338,9 +345,9 @@ def course(request, course_code):
 #when student uploads the assignment's solution
 @login_required
 def upload_assignment(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "student":
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        student = Student.objects.get(id=extrainfo)
         try:
             #all details of the assignment
             doc = request.FILES.get('img')    #the images in the assignment
@@ -375,9 +382,9 @@ def upload_assignment(request, course_code):
 # when faculty uploads the slides, ppt
 @login_required
 def add_document(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":  #user should be faculty only
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)  #get the course information
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)  #get the course information
 
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -417,17 +424,17 @@ def add_document(request, course_code):
 def delete(request, course_code):
     data_type = request.POST.get('type')
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     #get the course and user information first
 
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
 
     if extrainfo.user_type == 'student':
-        curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)
+        curriculum_details = Curriculum.objects.filter(course_code=course_code)
         course = curriculum_details
         course1 = curriculum_details[0].course_id
         curriculum1 = course[0]
@@ -439,17 +446,17 @@ def delete(request, course_code):
         video.delete()
     #to delete slides/documents
     elif data_type == 'slide':
-        slide = CourseDocuments.objects.select_related().get(pk=pk, course_id=course)
+        slide = CourseDocuments.objects.get(pk=pk, course_id=course)
         path = slide.document_url
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
-        stu_assi = StudentAssignment.objects.select_related().get(pk=pk)
+        stu_assi = StudentAssignment.objects.get(pk=pk)
         path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
-        lec_assi = Assignment.objects.select_related().get(pk=pk)
+        lec_assi = Assignment.objects.get(pk=pk)
         path = lec_assi.assignment_url
         lec_assi.delete()
     cmd = "rm "+path
@@ -460,10 +467,10 @@ def delete(request, course_code):
 # to upload videos related to the course
 @login_required
 def add_videos(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     #only faculty can add the videos
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
@@ -502,17 +509,17 @@ def add_videos(request, course_code):
 @login_required
 def forum(request, course_code):
     # take care of sem
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "student":
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
-        course = Course.objects.select_related().get(course_id=course_code, sem=semester(roll))
+        course = Course.objects.get(course_id=course_code, sem=semester(roll))
     else:
-        instructor = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
-    comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
+    comments = Forum.objects.filter(course_id=course).order_by('comment_time')
     instructor = Curriculum_Instructor.objects.get(course_id=course)
     if instructor.instructor_id.user.pk == request.user.pk:
         lec = 1
@@ -520,8 +527,8 @@ def forum(request, course_code):
         lec = 0
     answers = collections.OrderedDict()
     for comment in comments:
-        fr = ForumReply.objects.select_related().filter(forum_reply=comment)
-        fr1 = ForumReply.objects.select_related().filter(forum_ques=comment)
+        fr = ForumReply.objects.filter(forum_reply=comment)
+        fr1 = ForumReply.objects.filter(forum_ques=comment)
         if not fr:
             answers[comment] = fr1
     context = {'course': course, 'answers': answers, 'Lecturer': lec}
@@ -530,29 +537,29 @@ def forum(request, course_code):
 
 @login_required
 def ajax_reply(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "student":
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
 
-        curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
+        curriculum_details = Curriculum.objects.filter(course_code=course_code)  #curriculum id
         #print(curriculum_details[0].course_id)
         #print(Curriculum.objects.values_list('curriculum_id'))
         course =  curriculum_details[0].course_id
        # course = Course.objects.get(course_id=course_code, sem=semester(roll))
     else:
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-    ex = ExtraInfo.objects.select_related().get(user=request.user)
+    ex = ExtraInfo.objects.get(user=request.user)
     f = Forum(
         course_id=course,
         commenter_id=ex,
         comment=request.POST.get('reply')
     )
     f.save()
-    ques = Forum.objects.select_related().get(pk=request.POST.get('question'))
+    ques = Forum.objects.get(pk=request.POST.get('question'))
     fr = ForumReply(
         forum_ques=ques,
         forum_reply=f
@@ -566,22 +573,22 @@ def ajax_reply(request, course_code):
 
 @login_required
 def ajax_new(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "student":
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         #course = Course.objects.get(course_id=course_code, sem=semester(roll))
-        curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
+        curriculum_details = Curriculum.objects.filter(course_code=course_code)  #curriculum id
         #print(curriculum_details[0].course_id)
         #print(Curriculum.objects.values_list('curriculum_id'))
         course =  curriculum_details[0].course_id
     else:
 
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-    ex = ExtraInfo.objects.select_related().get(user=request.user)
+    ex = ExtraInfo.objects.get(user=request.user)
     f = Forum(
         course_id=course,
         commenter_id=ex,
@@ -598,15 +605,15 @@ def ajax_new(request, course_code):
 
 @login_required
 def ajax_remove(request, course_code):
-    f = Forum.objects.select_related().get(
+    f = Forum.objects.get(
         pk=request.POST.get('question')
     )
-    fr = ForumReply.objects.select_related().filter(
+    fr = ForumReply.objects.filter(
         forum_reply=f
     )
 
     if not fr:
-        fr1 = ForumReply.objects.select_related().filter(
+        fr1 = ForumReply.objects.filter(
             forum_ques=f
         )
         for x in fr1:
@@ -622,9 +629,9 @@ def ajax_remove(request, course_code):
 
 @login_required
 def add_assignment(request, course_code):                 #from faculty side
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
@@ -642,6 +649,7 @@ def add_assignment(request, course_code):                 #from faculty side
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
+        print(request.POST.get('myDate'))
         uploaded_file_url = full_path + filename + file_extenstion
         assign = Assignment(
             course_id=course,
@@ -658,18 +666,18 @@ def add_assignment(request, course_code):                 #from faculty side
 @login_required
 def edit_bank(request, course_code, qb_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-        qb = QuestionBank.objects.select_related().filter(id=qb_code)
-        topics = Topics.objects.select_related().filter(course_id=course)
+        qb = QuestionBank.objects.filter(id=qb_code)
+        topics = Topics.objects.filter(course_id=course)
         Topic = {}
         if qb:
-            questions = Question.objects.select_related().filter(question_bank=qb[0]).values_list('topic', flat=True)
+            questions = Question.objects.filter(question_bank=qb[0]).values_list('topic', flat=True)
             counter = dict(collections.Counter(questions))
             for topic in topics:
                 if topic.pk in counter.keys():
@@ -690,9 +698,9 @@ def edit_bank(request, course_code, qb_code):
 @login_required
 def create_bank(request, course_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
@@ -703,9 +711,9 @@ def create_bank(request, course_code):
 @login_required
 def create_topic(request, course_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
@@ -717,30 +725,30 @@ def create_topic(request, course_code):
 @login_required
 def remove_bank(request, course_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-        qb = QuestionBank.objects.select_related().get(id=request.POST.get('pk'))
+        qb = QuestionBank.objects.get(id=request.POST.get('pk'))
         qb.delete()
-        qb = QuestionBank.objects.select_related().filter(instructor_id=extrainfo, course_id=course)
+        qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
         data = {'message': "Removed", 'numberof_qbs': len(qb)}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 @login_required
 def remove_topic(request, course_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-        topic = Topics.objects.select_related().get(id=request.POST.get('pk'))
+        topic = Topics.objects.get(id=request.POST.get('pk'))
         topic.delete()
-        n_topics = Topics.objects.select_related().filter(course_id=course)
+        n_topics = Topics.objects.filter(course_id=course)
         data = {'message': "Removed", 'numberof_topics': len(n_topics)}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -748,13 +756,13 @@ def remove_topic(request, course_code):
 @login_required
 def add_question(request, course_id, qb_code, topic_id):
     user = request.user
-    course = Course.objects.select_related().get(pk=course_id)
-    curriculum = Curriculum.objects.select_related().get(course_id=course)
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id=course)
     course_code = curriculum.course_code
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        qb = QuestionBank.objects.select_related().filter(pk=qb_code)
-        topic = Topics.objects.select_related().get(id=request.POST.get('topic'))
+        qb = QuestionBank.objects.filter(pk=qb_code)
+        topic = Topics.objects.get(id=request.POST.get('topic'))
         try:
             filename, file_extenstion = os.path.splitext(request.FILES['image'].name)
             image = request.FILES['image']
@@ -792,9 +800,9 @@ def add_question(request, course_id, qb_code, topic_id):
 @login_required
 def remove_question(request, course_code, qb_code, topic_id):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        question = Question.objects.select_related().get(pk=request.POST.get('pk'))
+        question = Question.objects.get(pk=request.POST.get('pk'))
         question.delete()
         data = {'message': 'question deleted'}
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -803,16 +811,16 @@ def remove_question(request, course_code, qb_code, topic_id):
 @login_required
 def edit_qb_topics(request, course_code, qb_code, topic_id):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
-        qb = QuestionBank.objects.select_related().filter(pk=qb_code)
-        topic = Topics.objects.select_related().get(id=topic_id)
-        questions = Question.objects.select_related().filter(question_bank=qb[0], topic=topic)
+        qb = QuestionBank.objects.filter(pk=qb_code)
+        topic = Topics.objects.get(id=topic_id)
+        questions = Question.objects.filter(question_bank=qb[0], topic=topic)
         context = {
             'Lecturer': lec,
             'questionbank': qb[0],
@@ -826,21 +834,22 @@ def edit_qb_topics(request, course_code, qb_code, topic_id):
 @login_required
 def quiz(request, quiz_id):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
         # student = Student.objects.get(id=extrainfo)
-        quiz = Quiz.objects.select_related().get(pk=quiz_id)
+        quiz = Quiz.objects.get(pk=quiz_id)
         length = quiz.number_of_question
         rules = quiz.rules
         rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
-        ques_pk = QuizQuestion.objects.select_related().filter(quiz_id=quiz).values_list('pk', flat=True)
+        ques_pk = QuizQuestion.objects.filter(quiz_id=quiz).values_list('pk', flat=True)
+        print(len(list(ques_pk)), length)
         try:
             random_ques_pk = random.sample(list(ques_pk), length)
         except:
             random_ques_pk = ques_pk
         shuffed_questions = []
         for x in random_ques_pk:
-            shuffed_questions.append(QuizQuestion.objects.select_related().get(pk=x))
+            shuffed_questions.append(QuizQuestion.objects.get(pk=x))
         end = quiz.end_time
         now = timezone.now() + datetime.timedelta(hours=5.5)
         diff = end-now
@@ -859,12 +868,12 @@ def quiz(request, quiz_id):
 @login_required
 def ajax_q(request, quiz_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
-    student = Student.objects.select_related('id').get(id=extrainfo)
+    extrainfo = ExtraInfo.objects.get(user=user)
+    student = Student.objects.get(id=extrainfo)
     q = request.POST.get('question')
-    question = Question.objects.select_related().get(pk=q)
-    quiz_id = Quiz.objects.select_related().get(pk=quiz_code)
-    ques = QuizQuestion.objects.select_related().get(question=question, quiz_id=quiz_id)
+    question = Question.objects.get(pk=q)
+    quiz_id = Quiz.objects.get(pk=quiz_code)
+    ques = QuizQuestion.objects.get(question=question, quiz_id=quiz_id)
 
     ans = int(request.POST.get('answer'))
     lead = StudentAnswer.objects.filter(quiz_id=quiz_id, question_id=ques, student_id=student)
@@ -881,10 +890,10 @@ def ajax_q(request, quiz_code):
 
 @login_required
 def submit(request, quiz_code):
-    ei = ExtraInfo.objects.select_related().get(user=request.user)
-    student = Student.objects.select_related().get(id=ei)
-    quiz = Quiz.objects.select_related().get(pk=quiz_code)
-    stu_ans = StudentAnswer.objects.select_related('question_id__quiz_id').filter(student_id=student, quiz_id=quiz)
+    ei = ExtraInfo.objects.get(user=request.user)
+    student = Student.objects.get(id=ei)
+    quiz = Quiz.objects.get(pk=quiz_code)
+    stu_ans = StudentAnswer.objects.filter(student_id=student, quiz_id=quiz)
     score = 0
     for s_ans in stu_ans:
         if s_ans.question_id.question.answer == s_ans.choice:
@@ -904,10 +913,10 @@ def submit(request, quiz_code):
 
 @login_required
 def create_quiz(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
 
     if extrainfo.user_type == 'faculty':
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 curriculum = ins.curriculum_id
@@ -955,6 +964,7 @@ def create_quiz(request, course_code):
                 d_hour=hours,
                 d_minute=minutes,
                             )
+            # print "Done"
             return redirect('/ocms/' + course_code + '/edit_quiz/' + str(obj.pk))
         if form.errors:
             errors = form.errors
@@ -967,10 +977,10 @@ def create_quiz(request, course_code):
 
 @login_required
 def edit_quiz_details(request, course_code, quiz_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         x = request.POST.get('number')
-        quiz = Quiz.objects.select_related().get(pk=quiz_code)
+        quiz = Quiz.objects.get(pk=quiz_code)
         if x == 'edit1':
             st_time = request.POST.get('starttime')
             st_date = request.POST.get('startdate_month') + " " + request.POST.get('startdate_day')
@@ -1005,17 +1015,17 @@ def edit_quiz_details(request, course_code, quiz_code):
 
 @login_required
 def edit_quiz(request, course_code, quiz_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         lec = 1
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 curriculum = ins.curriculum_id
                 course = ins.curriculum_id.course_id
         # errors = None
-        quiz = Quiz.objects.select_related().get(pk=quiz_code)
-        questions = QuizQuestion.objects.select_related('question').filter(quiz_id=quiz)
+        quiz = Quiz.objects.get(pk=quiz_code)
+        questions = QuizQuestion.objects.filter(quiz_id=quiz)
         topic_list = []
         for q in questions:
             topic_list.append(q.question.topic)
@@ -1026,8 +1036,8 @@ def edit_quiz(request, course_code, quiz_code):
         description = [z.encode('ascii', 'ignore') for z in description.split('/')]
         rules = quiz.rules
         rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
-        questionbank = QuestionBank.objects.select_related().filter(instructor_id=extrainfo, course_id=course)
-        topic = Topics.objects.select_related().filter(course_id=course)
+        questionbank = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
+        topic = Topics.objects.filter(course_id=course)
         return render(request, 'coursemanagement/editcontest.html',
                       {'details': quiz, 'questionbank': questionbank, 'topics': topic,
                        'course': course, 'lecturer': lec, 'form': form,
@@ -1040,21 +1050,21 @@ def edit_quiz(request, course_code, quiz_code):
 @login_required
 def edit_quiz_topic(request, course_code, quiz_code, topic_id):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
-        quiz_question = QuizQuestion.objects.select_related('question').filter(quiz_id=quiz_code)
+        quiz_question = QuizQuestion.objects.filter(quiz_id=quiz_code)
         quest = []
-        quiz = Quiz.objects.select_related().get(pk=quiz_code)
+        quiz = Quiz.objects.get(pk=quiz_code)
         for q in quiz_question:
             if str(q.question.topic.pk) == topic_id:
                 quest.append(q.question)
 
-        topic = Topics.objects.select_related().get(id=topic_id)
+        topic = Topics.objects.get(id=topic_id)
         return render(request, 'coursemanagement/topicwisequiz.html',
                       {'Lecturer': lec, 'questions': quest,
                        'quiz': quiz, 'topic': topic, 'course': course})
@@ -1063,10 +1073,10 @@ def edit_quiz_topic(request, course_code, quiz_code, topic_id):
 @login_required
 def remove_quiz_question(request, course_code, quiz_code, topic_id):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        question = Question.objects.select_related().get(pk=request.POST.get('pk'))
-        question_remove = QuizQuestion.objects.select_related().get(question=question, quiz_id=quiz_code)
+        question = Question.objects.get(pk=request.POST.get('pk'))
+        question_remove = QuizQuestion.objects.get(question=question, quiz_id=quiz_code)
         question_remove.delete()
         data = {'message': 'question deleted'}
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -1074,17 +1084,17 @@ def remove_quiz_question(request, course_code, quiz_code, topic_id):
 
 @login_required
 def add_question_topicwise(request, course_code, quiz_id):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
         ques_bank = request.POST.get('qbank')
-        quiz = Quiz.objects.select_related().get(pk=quiz_id)
+        quiz = Quiz.objects.get(pk=quiz_id)
         topic = request.POST.get('topic')
-        questions = Question.objects.select_related().filter(question_bank=ques_bank, topic=topic)
-        questions_already_present = QuizQuestion.objects.select_related().filter(quiz_id=quiz_id)
+        questions = Question.objects.filter(question_bank=ques_bank, topic=topic)
+        questions_already_present = QuizQuestion.objects.filter(quiz_id=quiz_id)
         question_already_present = []
         for ques in questions_already_present:
             question_already_present.append(ques.question)
@@ -1093,6 +1103,7 @@ def add_question_topicwise(request, course_code, quiz_id):
             for question in questions:
                 if question not in question_already_present:
                     temp.append(question)
+                print('x')
             questions = temp
         context = {
                     'questions': questions,
@@ -1104,15 +1115,15 @@ def add_question_topicwise(request, course_code, quiz_id):
 
 @login_required
 def add_questions_to_quiz(request, course_id, quiz_id):
-    course = Course.objects.select_related().get(pk=course_id)
-    curriculum = Curriculum.objects.select_related().get(course_id = course)
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id = course)
     course_code = curriculum.course_code
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         questions_selected = request.POST.getlist('questions_selected')
-        quiz = Quiz.objects.select_related().get(pk=quiz_id)
+        quiz = Quiz.objects.get(pk=quiz_id)
         for questions in questions_selected:
-            question = Question.objects.select_related().get(pk=int(questions))
+            question = Question.objects.get(pk=int(questions))
             QuizQuestion.objects.create(
                 quiz_id=quiz,
                 question=question
@@ -1122,14 +1133,14 @@ def add_questions_to_quiz(request, course_id, quiz_id):
 
 @login_required
 def preview_quiz(request, course_code, quiz_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-    quiz = Quiz.objects.select_related().get(pk=quiz_code)
-    questions = QuizQuestion.objects.select_related().filter(quiz_id=quiz)
+    quiz = Quiz.objects.get(pk=quiz_code)
+    questions = QuizQuestion.objects.filter(quiz_id=quiz)
 
     total_marks = 0
     for q in questions:
@@ -1137,6 +1148,7 @@ def preview_quiz(request, course_code, quiz_code):
     rules = quiz.rules
     rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
 
+    print(total_marks)
     context = {
         'contest': quiz,
         'course': course,
@@ -1149,8 +1161,8 @@ def preview_quiz(request, course_code, quiz_code):
 
 @login_required
 def remove_quiz(request, course_code):
-    quiz = Quiz.objects.select_related().get(pk=request.POST.get('pk'))
-    quizQuestion = QuizQuestion.objects.select_related().filter(quiz_id=quiz)
+    quiz = Quiz.objects.get(pk=request.POST.get('pk'))
+    quizQuestion = QuizQuestion.objects.filter(quiz_id=quiz)
     for q in quizQuestion:
         q.delete()
     quiz.delete()
@@ -1159,7 +1171,7 @@ def remove_quiz(request, course_code):
 
 @login_required
 def ajax_assess(request, course_code):
-    sa = StudentAssignment.objects.select_related().get(pk=request.POST.get('pk'))
+    sa = StudentAssignment.objects.get(pk=request.POST.get('pk'))
     sa.score = request.POST.get('marks')
     sa.save()
     return HttpResponse("Marks uploaded")
@@ -1167,7 +1179,7 @@ def ajax_assess(request, course_code):
 
 @login_required
 def ajax_feedback(request, course_code):
-    sa = StudentAssignment.objects.select_related().get(pk=request.POST.get('pk'))
+    sa = StudentAssignment.objects.get(pk=request.POST.get('pk'))
     sa.feedback = request.POST.get('feedback')
     sa.save()
 #    print(sa,"qwerty")
@@ -1176,7 +1188,7 @@ def ajax_feedback(request, course_code):
 #For adding objective assignments for practice
 @login_required
 def create_practice_contest(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
 
     if extrainfo.user_type == 'faculty':
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
@@ -1206,7 +1218,7 @@ def create_practice_contest(request, course_code):
 
 @login_required
 def edit_practice_contest(request, course_code, practice_contest_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         lec = 1
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
@@ -1237,10 +1249,10 @@ def edit_practice_contest(request, course_code, practice_contest_code):
 
 @login_required
 def edit_practice_details(request, course_code,practice_contest_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         x = request.POST.get('number')
-        practice_contest = Practice.objects.select_related().get(pk=practice_contest_code)
+        practice_contest = Practice.objects.get(pk=practice_contest_code)
 
         if x == 'edit1':
             number = request.POST.get('number_of_questions')
@@ -1259,12 +1271,12 @@ def edit_practice_details(request, course_code,practice_contest_code):
 
 @login_required
 def add_questions_to_practice_contest(request, course_code, practice_contest_id):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         questions_selected = request.POST.getlist('questions_selected')
-        quiz = Quiz.objects.select_related().get(pk=quiz_id)
+        quiz = Quiz.objects.get(pk=quiz_id)
         for questions in questions_selected:
-            question = Question.objects.select_related().get(pk=int(questions))
+            question = Question.objects.get(pk=int(questions))
             PracticeQuestion.objects.create(
                 quiz_id=quiz,
                 question=question
@@ -1273,9 +1285,9 @@ def add_questions_to_practice_contest(request, course_code, practice_contest_id)
 
 def add_practice_question(request, course_code, practice_contest_code):
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        prac_question = PracticeQuestion.objects.select_related().filter(pk=practice_contest_code)
+        prac_question = PracticeQuestion.objects.filter(pk=practice_contest_code)
      #   topic = Topics.objects.get(id=request.POST.get('topic'))
         try:
             filename, file_extenstion = os.path.splitext(request.FILES['image'].name)
@@ -1358,8 +1370,10 @@ def add_practice_question(request, course_code, practice_contest_code):
 @csrf_protect
 @login_required
 def get_exam_data(request,course_code):   #it is store the type of exam helpful in storing the marks
+    print("exam data")
     exam_name = request.POST['exam_name']
     data = serializers.serialize('json', StoreMarks.objects.filter(exam_type=exam_name))
+    print(data)
     return HttpResponse(data, content_type='application/json')
 
 
@@ -1368,11 +1382,12 @@ def get_exam_data(request,course_code):   #it is store the type of exam helpful 
 def submit_attendance(request, course_code):
 
     user = request.user
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
 
     if extrainfo.user_type == 'faculty':   #only faculty can change the attendance of the students
-        instructor_old = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)
+        instructor_old = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
     for x in instructor_old:
+        print(x.instructor_id)
         instructor = x
 
     if request.method == 'POST':
@@ -1384,6 +1399,7 @@ def submit_attendance(request, course_code):
             date =  request.POST['date']
 
 
+            print(date)
             #mark the attendance according to the student roll no.
             all_students = request.POST.getlist('Roll')
             present_students = request.POST.getlist('Present_absent')
@@ -1391,7 +1407,7 @@ def submit_attendance(request, course_code):
 
             for student in all_students:
 
-                s_id = Student.objects.select_related().get(id = student)
+                s_id = Student.objects.get(id = student)
                 present = False
                 if student in present_students:
                     present = True

@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse,JsonResponse
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
+from applications.globals.models import Faculty,ExtraInfo
 import django. utils. timezone as timezone
 from django.views.generic import (
     ListView,
@@ -24,6 +25,7 @@ from .handlers import (
     add_student_counsellors
 )
 from applications.academic_information.models import Student,ExtraInfo
+from applications.counselling_cell.models import FacultyCounsellingTeam
 # Create your views here.
 
 # user = User.objects.filter(username=2017167).first()
@@ -39,17 +41,21 @@ def counselling_cell(request):
     year = timezone.now().year
     third_year_students = Student.objects.filter(batch=year-3)
     second_year_students = Student.objects.filter(batch=year-2)
+    first_year_students = Student.objects.filter(batch=year-1)
     faqs = CounsellingFAQ.objects.all()
     categories = CounsellingIssueCategory.objects.all()
     student_coordinators = StudentCounsellingTeam.objects.filter(student_position="student_coordinator")
     student_guide = StudentCounsellingTeam.objects.filter(student_position="student_guide")
+    faculty_counsellor = FacultyCounsellingTeam.objects.filter(faculty_position="faculty_counsellor")
     context = {
         "faqs":faqs,
         "categories":categories,
         "third_year_students":third_year_students,
         "second_year_students":second_year_students,
+        "first_year_students":first_year_students,
         "student_counsellors":student_coordinators,
-        "student_guide":student_guide
+        "student_guide":student_guide,
+        "faculty_counsellor":faculty_counsellor
     }
     return render(request, "counselling_cell/counselling.html",context)
     

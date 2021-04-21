@@ -145,14 +145,6 @@ class FinalRegistrations(models.Model):
         db_table = 'FinalRegistrations'
 
 
-class CourseRequested(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'CourseRequested'
-
-
 class Thesis(models.Model):
     reg_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)

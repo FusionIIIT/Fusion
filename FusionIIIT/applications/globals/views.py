@@ -29,6 +29,7 @@ from .models import *
 
 def index(request):
     context = {}
+    print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
@@ -705,7 +706,7 @@ def dashboard(request):
     user=request.user
     notifs=request.user.notifications.all()
     name = request.user.first_name +"_"+ request.user.last_name
-    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
+    desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
     roll_ = []
     for i in b :
@@ -743,14 +744,14 @@ def profile(request, username=None):
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
     if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
-    current = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user, designation__name="student"))
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
-                status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
-                status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
                 if form.is_valid():
@@ -769,7 +770,7 @@ def profile(request, username=None):
                 age = request.POST.get('age')
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
-                extrainfo_obj = ExtraInfo.objects.select_related('user','department').get(user=user)
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
                 extrainfo_obj.date_of_birth = age
                 extrainfo_obj.address = address
@@ -778,7 +779,7 @@ def profile(request, username=None):
                 profile = get_object_or_404(ExtraInfo, Q(user=user))
             if 'picsubmit' in request.POST:
                 form = AddProfile(request.POST, request.FILES)
-                extrainfo_obj = ExtraInfo.objects.select_related('user','department').get(user=user)
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.profile_picture = form.cleaned_data["pic"]
                 extrainfo_obj.save()
             if 'skillsubmit' in request.POST:
@@ -789,6 +790,7 @@ def profile(request, username=None):
                     try:
                         skill_id = Skill.objects.get(skill=skill)
                     except Exception as e:
+                        print(e)
                         skill_id = Skill.objects.create(skill=skill)
                         skill_id.save()
                     has_obj = Has.objects.create(unique_id=student,
@@ -882,37 +884,38 @@ def profile(request, username=None):
                     experience_obj.save()
             if 'deleteskill' in request.POST:
                 hid = request.POST['deleteskill']
-                hs = Has.objects.select_related('skill_id','unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Has.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deleteedu' in request.POST:
                 hid = request.POST['deleteedu']
-                hs = Education.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Education.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deletecourse' in request.POST:
                 hid = request.POST['deletecourse']
-                hs = Course.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Course.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deleteexp' in request.POST:
                 hid = request.POST['deleteexp']
-                hs = Experience.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Experience.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deletepro' in request.POST:
                 hid = request.POST['deletepro']
-                hs = Project.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Project.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deleteach' in request.POST:
                 hid = request.POST['deleteach']
-                hs = Achievement.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Achievement.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deletepub' in request.POST:
                 hid = request.POST['deletepub']
-                hs = Publication.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Publication.objects.get(Q(pk=hid))
                 hs.delete()
             if 'deletepat' in request.POST:
                 hid = request.POST['deletepat']
-                hs = Patent.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
+                hs = Patent.objects.get(Q(pk=hid))
                 hs.delete()
 
+        print('profile age----\n\n\n', profile.date_of_birth)
         form = AddEducation(initial={})
         form1 = AddProfile(initial={})
         form10 = AddSkill(initial={})
@@ -923,14 +926,14 @@ def profile(request, username=None):
         form7 = AddPatent(initial={})
         form8 = AddExperience(initial={})
         form14 = AddProfile()
-        skills = Has.objects.select_related('skill_id','unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        education = Education.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        course = Course.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        experience = Experience.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        project = Project.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        achievement = Achievement.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        publication = Publication.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
-        patent = Patent.objects.select_related('unique_id__id__user','unique_id__id__department').filter(Q(unique_id=student))
+        skills = Has.objects.filter(Q(unique_id=student))
+        education = Education.objects.filter(Q(unique_id=student))
+        course = Course.objects.filter(Q(unique_id=student))
+        experience = Experience.objects.filter(Q(unique_id=student))
+        project = Project.objects.filter(Q(unique_id=student))
+        achievement = Achievement.objects.filter(Q(unique_id=student))
+        publication = Publication.objects.filter(Q(unique_id=student))
+        patent = Patent.objects.filter(Q(unique_id=student))
         context = {'user': user, 'profile': profile, 'skills': skills,
                    'educations': education, 'courses': course, 'experiences': experience,
                    'projects': project, 'achievements': achievement, 'publications': publication,
@@ -962,7 +965,7 @@ def logout_view(request):
 
 @login_required(login_url=LOGIN_URL)
 def feedback(request):
-    feeds = Feedback.objects.select_related('user').all().order_by("rating").exclude(user=request.user)
+    feeds = Feedback.objects.all().order_by("rating").exclude(user=request.user)
     if feeds.count() > 5:
         feeds = feeds[:5]
     rated = []
@@ -971,8 +974,9 @@ def feedback(request):
     feeds = zip(feeds, rated)
     if request.method == "POST":
         try:
-            feedback = Feedback.objects.select_related('user').get(user=request.user)
+            feedback = Feedback.objects.get(user=request.user)
         except Exception as e:
+            print(e)
             feedback = None
         if feedback:
             form = WebFeedbackForm(request.POST or None, instance=feedback)
@@ -1008,9 +1012,10 @@ def feedback(request):
     if Feedback.objects.all().count() > 0:
         rating = rating/Feedback.objects.all().count()
     try:
-        feedback = Feedback.objects.select_related('user').get(user=request.user)
+        feedback = Feedback.objects.get(user=request.user)
         form = WebFeedbackForm(instance=feedback)
     except Exception as e:
+        print(e)
         form = WebFeedbackForm()
         context = {"form": form, "rating": rating, "feeds": feeds}
         return render(request, "globals/feedback.html", context)
@@ -1042,20 +1047,21 @@ def issue(request):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
-            openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-            closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+            openissue = Issue.objects.filter(closed=False)
+            closedissue = Issue.objects.filter(closed=True)
             form = IssueForm()
             context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
             return render(request, "globals/issue.html", context)
-        openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-        closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+        openissue = Issue.objects.filter(closed=False)
+        closedissue = Issue.objects.filter(closed=True)
         form = IssueForm(request.POST)
         context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
         return render(request, "globals/issue.html", context)
-    openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-    closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+    openissue = Issue.objects.filter(closed=False)
+    closedissue = Issue.objects.filter(closed=True)
     form = IssueForm()
     context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
     return render(request, "globals/issue.html", context)
@@ -1078,6 +1084,7 @@ def view_issue(request, id):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
             form = IssueForm(instance=issue)

@@ -25,12 +25,12 @@
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="ui header">
-                        Select Student Coordinators from Pre Final Year Batch:
+                        Upload The list of coordinators:
                     </div>
 
                     <br>
 
-                    <div class="two fields">
+                    {% comment %} <div class="two fields">
 
                         <div class="two fields">
                             <div class="twelve wide field">
@@ -42,7 +42,11 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> {% endcomment %}
+                    <div class = "field">
+                      <label for="file">Attach Files(Excel format)</label>
+                      <input type="file" id="file" name="myfile" accept=".csv, .xlsx, .xls" >
+                </div>
                 
                     <div class="field">
                         <label><br></label>

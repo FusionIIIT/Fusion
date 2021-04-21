@@ -141,7 +141,7 @@
         <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
         <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
             {% for faq in faqs %}
-                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> -->
             <div class="item">
                 <div class="right floated content">
                     <a class="header">{{faq.category}}</a>
@@ -163,7 +163,7 @@
 {% endblock %}
 {#{% endblock %}#}
 
-{% block javascript %}
+{% comment %} {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
  <script>
@@ -228,7 +228,7 @@
 
 
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}
 
 
 

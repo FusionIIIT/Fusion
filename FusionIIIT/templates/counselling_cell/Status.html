@@ -3,16 +3,12 @@
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="current">
+        <a class="active item" data-tab="History">
             Current Status
-        </a>
-
-        <a class="item" data-tab="history">
-            History
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="current">
+    <div class="ui active tab" data-tab="History">
         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <div class="ui header">
                 Status of issues :
@@ -151,7 +147,7 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="history">
+    {% comment %} <div class="ui tab" data-tab="history">
         <div class="ui vertical segment">
             <div class="ui header">
                 Previous details of issues
@@ -205,6 +201,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    {% comment %} </div> {% endcomment %} 
 
 {%  endblock %} 
