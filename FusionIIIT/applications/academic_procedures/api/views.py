@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from applications.academic_information.models import Curriculum
+from applications.academic_procedures.models import ThesisTopicProcess
 from applications.globals.models import HoldsDesignation, Designation, ExtraInfo
 
 from applications.academic_procedures.views import (get_user_semester, get_acad_year,
@@ -299,3 +300,105 @@ def academic_procedures_student(request):
             # 'faculty_list' : faculty_list
         }
         return Response(data=resp, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def add_thesis(request):
+    current_user = request.user
+    profile = current_user.extrainfo
+    if profile.user_type == 'student':
+        if not 'thesis_topic' in request.data:
+            return Response({'error':'Thesis topic is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not 'research_area' in request.data:
+            return Response({'error':'Research area is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if 'supervisor_id' in request.data:
+            try:
+                supervisor_faculty = User.objects.get(username=request.data['supervisor_id'])
+                supervisor_faculty = supervisor_faculty.extrainfo
+                request.data['supervisor_id'] = supervisor_faculty
+            except:
+                return Response({'error':'Wrong supervisor id. User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error':'supervisor id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if 'co_supervisor_id' in request.data:
+            try:
+                co_supervisor_faculty = User.objects.get(username=request.data['co_supervisor_id'])
+                co_supervisor_faculty = co_supervisor_faculty.extrainfo
+                request.data['co_supervisor_id'] = co_supervisor_faculty
+            except:
+                return Response({'error':'Wrong co_supervisor id. User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            co_supervisor_faculty = None
+        if 'curr_id' in request.data:
+            curr_id = None
+        student = profile.student
+        request.data['student_id'] = profile
+        request.data['submission_by_student'] = True
+        serializer = serializers.ThesisTopicProcessSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error':'Cannot add thesis'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def approve_thesis(request, id):
+    current_user = request.user
+    profile = current_user.extrainfo
+    if profile.user_type == 'faculty':
+        try:
+            thesis = ThesisTopicProcess.objects.get(id=id)
+        except:
+            return Response({'error':'This thesis does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        if 'member1' in request.data:
+            try:
+                user1 = User.objects.get(username=request.data['member1'])
+                member1 = user1.extrainfo
+                request.data['member1'] = member1
+            except:
+                return Response({'error':'Wrong username of member 1. User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error':'Member 1 is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if 'member2' in request.data:
+            try:
+                user2 = User.objects.get(username=request.data['member2'])
+                member2 = user2.extrainfo
+                request.data['member2'] = member2
+            except:
+                return Response({'error':'Wrong username of member 2. User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error':'Member 2 is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if 'member3' in request.data:
+            try:
+                user3 = User.objects.get(username=request.data['member3'])
+                member3 = user3.extrainfo
+                request.data['member3'] = member3
+            except:
+                return Response({'error':'Wrong username of member 3. User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            member3 = None
+        if not 'approval' in request.data:
+            return Response({'error':'Approval value is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data['approval'] != 'yes' and request.data['approval'] != 'no':
+            return Response({'error':'Wrong approval value provided. Approval value should be yes or no'}, status=status.HTTP_400_BAD_REQUEST)
+        if request.data['approval'] == 'yes':
+            request.data.pop('approval', None)
+            request.data['pending_supervisor'] = False
+            request.data['approval_supervisor'] = True
+            request.data['forwarded_to_hod'] = True
+            request.data['pending_hod'] = True
+        else:
+            request.data.pop('approval', None)
+            request.data['pending_supervisor'] = False
+            request.data['approval_supervisor'] = False
+            request.data['forwarded_to_hod'] = False
+            request.data['pending_hod'] = False
+        serializer = serializers.ThesisTopicProcessSerializer(thesis, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error':'Cannot approve thesis'}, status=status.HTTP_400_BAD_REQUEST)
