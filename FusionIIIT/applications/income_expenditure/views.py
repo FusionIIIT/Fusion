@@ -36,28 +36,30 @@ def main_page(request):
 
 	pres_date = timezone.now()
 	fin_years = []
-	min_date_ob = Income.objects.all().aggregate(Min('date_added'))
+	if len(Income.objects.all()):
+		min_date_ob = Income.objects.all().aggregate(Min('date_added'))
+	
 
-	pres_year,min_year = None,None
-	if min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month < 4 :
-		pres_year = pres_date.year + 1
-		min_year  = pres_date.year - 1
-	elif min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month >= 4:
-		pres_year = pres_date.year + 1
-		min_year = pres_date.year
-	else:
-		pres_year = pres_date.year + 1
-		if min_date_ob['date_added__min'].month < 4 :
-			min_year = min_date_ob['date_added__min'].year - 1
+		pres_year,min_year = None,None
+		if min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month < 4 :
+			pres_year = pres_date.year + 1
+			min_year  = pres_date.year - 1
+		elif min_date_ob['date_added__min'].year == pres_date.year and min_date_ob['date_added__min'].month >= 4:
+			pres_year = pres_date.year + 1
+			min_year = pres_date.year
 		else:
-			min_year = min_date_ob['date_added__min'].year
+			pres_year = pres_date.year + 1
+			if min_date_ob['date_added__min'].month < 4 :
+				min_year = min_date_ob['date_added__min'].year - 1
+			else:
+				min_year = min_date_ob['date_added__min'].year
 
 
 
 
-	for fin_year in range(pres_year,min_year,-1):
-		year = str(fin_year)+'-'+str(fin_year-1)
-		fin_years.append(year)
+		for fin_year in range(pres_year,min_year,-1):
+			year = str(fin_year)+'-'+str(fin_year-1)
+			fin_years.append(year)
 
 	# income_labels = []
 	# income_data = []
@@ -84,11 +86,18 @@ def main_page(request):
 
 	income_history = Income.objects.all()
 	income_history = income_history[::-1]
-	income_sources = IncomeSource.objects.all()
-	expenditure_types = ExpenditureType.objects.all()
+
 	expenditure_history = Expenditure.objects.all()
 	expenditure_history = expenditure_history[::-1]
+
 	fixed_attributes = FixedAttributes.objects.all()
+
+	add_income_source()
+	add_expenditure_type()
+
+
+	income_sources = IncomeSource.objects.all()
+	expenditure_types = ExpenditureType.objects.all()
 	
 	
 	current_financial_year_ob = timezone.now()
@@ -139,14 +148,14 @@ def add_income(request):
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_recieved')
 		receipt = request.POST.get('income_receipt')
-		granted_by = request.POST.get('granted_by')
+		remarks = request.POST.get('remarks')
 
 		new_i = Income(
 						source = source,
 						amount = amount,
 						date_added = date,
 						receipt = receipt,
-						granted_by = granted_by
+						remarks = remarks
 						)
 		new_i.save()
 	return redirect('main-page')
@@ -159,18 +168,20 @@ def add_expenditure(request):
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
 		receipt = request.POST.get('expenditure_receipt')
-		granted_to = request.POST.get('granted_to')
+		remarks = request.POST.get('remarks')
 
 		new_e = Expenditure(
 						spent_on = spent_on,
 						amount = amount,
 						date_added = date,
 						expenditure_receipt = receipt,
-						granted_to = granted_to,
+						remarks = remarks,
 						)
 		new_e.save()
 	return redirect('main-page')
 
+
+"""
 
 def add_income_source(request):
 	if(request.method == 'POST'):
@@ -189,6 +200,26 @@ def add_expenditure_type(request):
 						)
 		new_e.save()
 	return redirect('main-page')
+
+"""
+
+def add_income_source():
+	income_sources = ['Academic Reciepts','Grants / Subsidies','Income From Investment','Interest Earned','Other Income','Prior Period Income']
+	if len(IncomeSource.objects.all()):
+		return
+	else:
+		for i in income_sources:
+			new_source = IncomeSource(income_source = i,)
+			new_source.save()
+
+def add_expenditure_type():
+	expenditure_types = ['Staff Payments & Benefits','Establishment Expenses','Academic Expenses','Administrative and General Expenses','Transportation Expenses','Repairs & Maintainance','Other Expenses','Prior Perios Expenses']
+	if len(ExpenditureType.objects.all()):
+		return
+	else:
+		for i in expenditure_types:
+			new_type = ExpenditureType(expenditure_type = i,)
+			new_type.save()
 
 def updateFixedValues(request):
 	if(request.method == 'POST'):
