@@ -1518,7 +1518,7 @@ def get_sem_courses(sem_id, batch):
     courses = []
     course_slots = CourseSlot.objects.all().filter(semester_id = sem_id)
     for slot in course_slots:
-        if batch in slot.for_batches.all():
+        if batch in slot.for_batches():
             courses.append(slot.courses.all())
     return courses
 
