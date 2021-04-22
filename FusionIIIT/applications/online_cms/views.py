@@ -1435,16 +1435,9 @@ def usercourse(request, course_code):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)  # get the type of user
     if extrainfo.user_type == 'student':  # if student is using
-        print(extrainfo)
-        student = Student.objects.get(id=extrainfo)
-        register = Register.objects.filter(student_id=student)
-        courses = collections.OrderedDict()  # courses in which student is registerd
-        for reg in register:  # info of the courses
-            # instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
-            instructor = Curriculum_Instructor.objects.filter(curriculum_id=reg.curr_id)
-            for inst in instructor:
-                courses[inst] = inst
-        return render(request, "online_cms/course_new.html",{'courses': courses})
+        courseid = Curriculum.objects.get(course_code=course_code)
+        classes = OnlineClasses.objects.filter(course_id=courseid.course_id)
+        return render(request, "online_cms/course_new.html",{'classes': classes})
 
     if extrainfo.user_type == 'faculty':
         if request.method == 'POST':
@@ -1466,10 +1459,8 @@ def usercourse(request, course_code):
             return JsonResponse(data)
 
         else:
-            print(extrainfo)
-            faculty = Faculty.objects.get(id=extrainfo)
             courseid = Curriculum.objects.get(course_code = course_code)
-            meetings = Curriculum_Instructor.objects.filter(curriculum_id=courseid)
+            meetings =  OnlineClasses.objects.filter(course_id = courseid.course_id)
             return render(request, "online_cms/course_new.html",{'meetings': meetings})
 
 
