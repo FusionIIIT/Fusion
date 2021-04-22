@@ -1,0 +1,124 @@
+{% load static %}
+{% block uploadURL %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="uploadurl">
+            Upload Meeting URL
+        </a>
+
+    </div>
+
+    {% comment %}the upload meeting url tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="uploadurl">
+        <div class="ui vertical segment">
+            <form class="ui form"  method="POST"  style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+
+                  <div class="field">
+                    <label>Topic</label><p id="top"></p>
+                    <div class="ui fluid input">
+                        <textarea id="topic" class="ui textarea" rows="2" name="topic" required="true"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                  <label>Date</label>
+                              <input type="date" placeholder="Select" id="date" name="date">
+                              <p id="dte"></p>
+                              <label>From Time</label>
+                              <input type="time" placeholder="Select" id="from_time" name="from_time">
+                              <p id="from_time"></p>
+                              <label>To Time</label>
+                              <input type="time" placeholder="Select" id="to_time" name="to_time">
+                              <p id="to_time"></p>
+              </div>
+
+
+                <div class="field">
+                    <label>URL</label><p id="url"></p>
+                    <div class="ui fluid input">
+                        <textarea id="meetinglink" class="ui textarea" rows="2" name="meetinglink" required="true"></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+                      <input type="submit" id="submiturl" name="Submit" value="Submit" class="ui small right floated primary button" />
+                    </div>
+
+                </div>
+            </form>
+          <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+          <script type="text/javascript">
+
+
+
+             function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+
+
+
+
+
+                $('#submiturl').on('click',function(e){
+                     e.preventDefault();
+
+                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
+                     var today = new Date(new Date());
+                     var now = today.getHours();
+
+                     if(trimfield(document.getElementById("meetinglink").value) == '')
+                       {
+                       $('#url').html('*Please fill out the Meeting URL!');
+                       document.getElementById("meetinglink").focus();
+                        }
+
+                     else if(trimfield(document.getElementById("topic").value) == '')
+                       {
+                       $('#top').html('*Please fill out Topic');
+                       document.getElementById("topic").focus();
+                        }
+
+                     else{
+                     $.ajax({
+                     type:'post',
+                     url:'/ocms/'+course_code+'/',
+                     data: {
+                     csrfmiddlewaretoken: '{{ csrf_token }}',
+                     topic:$("#top").val(),
+                     date:$("#date").val(),
+                     meetinglink:$("#meetinglink").val(),
+                     uploadlink:$("#submiturl").val(),
+                     },
+                     success: function(data){
+                        var dte = new Date(data.dt);
+                        dte.setHours(0, 0, 0, 0);
+
+                         alert("class scheduled")
+                         document.getElementById("top").value=""
+                         document.getElementById("date").value=""
+                         document.getElementById("meetinglink").value=" "
+                         $('#url').html('');
+                         window.location.reload();
+                         $('#app_dte').html('');
+
+                   }
+                  });
+                    }
+                });
+
+              </script>
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the upload meeting tab ends here {% endcomment %}
+
+
+{% endblock %}

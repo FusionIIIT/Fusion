@@ -1,0 +1,90 @@
+{% load static %}
+{% block meeting %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    
+
+    <div class="ui pointing secondary menu ">
+        <a class="active item" data-tab="meeting">
+            Scheduled Classes
+        </a>
+
+    </div>
+
+    <div class="ui active tab " data-tab="meeting">
+        <div class="ui vertical segment" style="overflow-y: auto";>
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 0.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide column">
+                        Date
+                    </th>
+                    <th class="four wide column">
+                        Topic
+                    </th>
+
+                    <th>
+                        Start Time
+                    </th>
+
+                    <th>
+                        End Time
+                    </th>
+
+                    <th class="five wide column">
+                        Class URL
+                    </th>
+
+                    <th class="one wide column">
+                        Delete URL
+                    </th>
+
+                </tr>
+                </thead>
+
+
+                <tbody>
+                {% for meeting in meetings %}
+                <tr>
+                    <td>
+                        {{ meeting.curriculum_id }}
+                    </td>
+
+                    <td>
+                        {{ meeting.curriculum_id }}
+                    </td>
+
+                    <td>
+                        {{ meeting.curriculum_id }}
+                    </td>
+
+                    <td>
+                        {{ meeting.curriculum_id}}
+                    </td>
+
+                    <td style="color:blue">
+                        <i>{{ meeting.curriculum_id }}</i>
+                    </td>
+
+                    <td style="color:red" >
+
+                        <h4><strong>DELETE</strong></h4>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+            <br>
+            <div class="ui divider"></div>
+
+    </div>
+    </div>
+{% endblock %}
