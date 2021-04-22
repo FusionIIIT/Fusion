@@ -111,9 +111,23 @@ def view_employee_details(request,id):
         lien_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "LIEN").order_by('-start_date')
         deputation_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "DEPUTATION").order_by('-start_date')
         other_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "OTHER").order_by('-start_date')
-        appraisal_form = EmpAppraisalForm.objects.filter(extra_info = extra_info).order_by('-year')        
+        appraisal_form = EmpAppraisalForm.objects.filter(extra_info = extra_info).order_by('-year') 
+
+        pf = extra_info.id
+        empprojects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
+        visits = emp_visits.objects.filter(pf_no=pf).order_by('-entry_date')
+        conferences = emp_confrence_organised.objects.filter(pf_no=pf).order_by('-date_entry')
+        awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
+        thesis = emp_mtechphd_thesis.objects.filter(pf_no=pf).order_by('-date_entry')
+
         template = 'hr2Module/viewdetails.html'
-        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info,'appraisalForm':appraisal_form
+        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info,
+        'appraisalForm':appraisal_form,
+        'empproject':empprojects,
+        'visits':visits,
+        'conferences':conferences,
+        'awards':awards,
+        'thesis':thesis,
        }
         return render(request,template,context)
 

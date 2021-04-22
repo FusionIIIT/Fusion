@@ -13,9 +13,14 @@ DATABASES = {
         # 'HOST': '172.27.16.216',
         # 'USER': 'fusion_admin',
         # 'PASSWORD': 'hello123',
-        'HOST': 'localhost',
-        'USER': 'Fusion',
-        'PASSWORD': '123456',
+
+        'HOST': '172.27.16.216',
+        'USER': 'fusion_admin',
+        'PASSWORD': 'hello123',
+
+        # 'HOST': 'localhost',
+        # 'USER': 'Fusion',
+        # 'PASSWORD': '123456',
     }
 }
 

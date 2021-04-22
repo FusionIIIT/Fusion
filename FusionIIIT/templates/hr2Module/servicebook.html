@@ -509,7 +509,7 @@ Module
 
         </div>
 
-        <!--......................... testing............................ -->
+
         <div class="ui bottom attached tab segment" data-tab="fifth">
             <div id="textSegmentDiv">
 
@@ -522,10 +522,6 @@ Module
 
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
 
-                    {% if not lienServiceBooks %}
-                    No entry found
-                    {% endif%}
-
                     <div>
                         <div class="ui one cards" style="padding: 2px;">
                             <div class="ui blue card" id="noti">
@@ -533,11 +529,10 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
-                                            <tr>
-                                            </tr>
+                                            <th>Personal Details:-</th>
                                         </thead>
                                         <tbody>
-                                            <th>Personal Details:-</th>
+
                                             <tr>
                                                 <td>ID</td>
                                                 <td>{{user.id}}</td>
@@ -608,13 +603,6 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
-                                            <tr>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-
-
                                             <th>Projects:-</th>
                                             <tr>
                                                 <td>Sr.</td>
@@ -624,6 +612,12 @@ Module
                                                 <td>Financila Outlay</td>
                                                 <td>Status</td>
                                             </tr>
+                                        </thead>
+                                        <tbody>
+
+
+
+
 
                                             {% if not empproject %}
 
@@ -681,6 +675,11 @@ Module
                                         <tbody>
 
 
+                                            {% if not visits %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
                                             {% for f_visit in visits %}
                                             <tr>
                                                 <td>{{ forloop.counter }}</td>
@@ -725,6 +724,11 @@ Module
                                         </thead>
                                         <tbody>
 
+
+                                            {% if not conferences %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
 
 
                                             {% for e in conferences %}
@@ -776,6 +780,12 @@ Module
                                         </thead>
                                         <tbody>
 
+
+                                            {% if not thesis %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
                                             {% for mtech in thesis %}
                                             <tr>
                                                 <td id="s{{ forloop.counter }}Z">
@@ -821,6 +831,11 @@ Module
                                         <tbody>
 
 
+
+                                            {% if not awards %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
 
 
                                             {% for award in awards %}
