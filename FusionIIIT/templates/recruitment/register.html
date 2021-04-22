@@ -1,0 +1,43 @@
+{% extends "account/base.html" %}
+{%block content%}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static semanticui %}
+<div class="content">
+  <img class="ui rounded centered small image"
+    src="{% static 'globals/img/user.png' %}"
+    style="margin-top: -27.5%; margin-left: 27.5%;"
+    alt="User Image" >
+  <div class="ui huge centered header">
+      Register
+  </div>  
+</div>
+
+<div class="content">
+  <form method="POST" class="ui form" style="margin-top: 2.5%;margin-bottom: 2.5%;" action="">
+    {% csrf_token %}
+    {% for field in form %}
+    <p>
+      {{ field.label_tag }}<br>
+      {{ field }}
+      {% if field.help_text %}
+        <small style="color: grey">{{ field.help_text }}</small>
+      {% endif %}
+      {% for error in field.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+    </p>
+    {% endfor %}
+    
+    <div class="field">
+      <button class="ui fluid large primary button" type="submit">Register</button>
+    </div>
+    
+  </form>
+
+  <!-- <div class="ui divider"><center style="margin-top: -0.5em;">OR</center></div> -->
+  
+</div>
+
+{% endblock %}
+
