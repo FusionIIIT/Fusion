@@ -85,28 +85,21 @@
                         <tr>
                             <th>Course Code</th>
                             <th>Name Of the Course</th>
-                            {% ifequal extrainfo.designation|stringformat:"s" "student" %}
-                            <th>Instructor</th> {% endifequal %}
+                            {% comment %}{% ifequal extrainfo.designation|stringformat:"s" "student" %}{% endcomment %}
+                            <th>Instructor</th> {% comment %}{% endifequal %}{% endcomment %}
+
                         </tr>
                     </thead>
                     <tbody>
-                        {% ifequal extrainfo.designation|stringformat:"s" "student" %} {% for course,instructor in courses.items %}
+                         {% for course,instructor in courses.items %}
                         <tr>
-                            <td><a href="{{course.course_id.course_id}}">{{course.course_id.course_name}}</a></td>
-                            <td>{{course.course_id.course_id}}</td>
+                            <td style="color:blue"><a href="{{course.curriculum_id.course_code}}">{{course.curriculum_id.course_code}}</a></td>
+                            <td>{{course.curriculum_id.course_id}}</td>
                             <td>{{instructor.instructor_id.user.username}}</td>
-                        </tr>
-                        {% endfor %} {% else %} 
-                        {% for curriculum in curriculum_list %}
-                        <tr>
-                            <!-- <td><a href="{{ins.course_id.course_id}}">{{ins.course_id.course_name}}</a></td> -->
-                            <td><a href={{curriculum.course_code}}>{{curriculum.course_code}}</a></td>
-                            <td>{{curriculum.course_id}}</td>
 
                         </tr>
-                        {% endfor %}
-                        {% endifequal %}
-                       
+                             {% endfor %}
+
                     </tbody>
                 </table>
 
