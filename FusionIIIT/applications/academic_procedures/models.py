@@ -262,7 +262,7 @@ class course_registration(models.Model):
     student_id = models.ForeignKey(Students, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    # grade = models.CharField(max_length=10)
+    grade = models.CharField(max_length=10)
 
     class Meta:
         db_table = 'course_registration'
