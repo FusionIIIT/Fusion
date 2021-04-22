@@ -2,7 +2,6 @@ from django.db import models
 
 from applications.globals.models import ExtraInfo
 
-
 class Constants:
     HOLIDAY_TYPE = (
         ('restricted', 'restricted'),
