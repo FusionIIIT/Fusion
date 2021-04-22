@@ -815,7 +815,7 @@ def generatexlsheet(request):
         
     try:
         batch = request.POST['batch']
-        curr_key = Curriculum.objects.get(course_code = request.POST['course'])
+        curr_key = Curriculum.objects.all().filter(course_code = request.POST['course'])[0]
         course = curr_key.course_id
         obj = Register.objects.all().filter(curr_id = curr_key).filter(year=batch)
     except Exception as e:
@@ -1057,7 +1057,7 @@ def add_new_profile(request):
         profiles=request.FILES['profiles']
         excel = xlrd.open_workbook(file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(6,sheet.nrows):
+        for i in range(sheet.nrows):
             roll_no=int(sheet.cell(i,0).value)
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
