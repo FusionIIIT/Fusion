@@ -2,8 +2,6 @@ from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot
 
-# admin.site.site_title = "Programme and Curriculum Management"
-# admin.site.site_header = "Programme and Curriculum Management"
 
 class ProgrammeAdmin(admin.ModelAdmin):
     list_display = ('name', 'category',)
@@ -30,7 +28,7 @@ class BatchAdmin(admin.ModelAdmin):
 
 class CourseSlotAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', 'semester', 'course_slot_info',)
-    list_filter = ('semester', 'type', 'for_batches', 'courses',)
+    list_filter = ('semester', 'type', 'courses',)
 
 
 # Register your models here.

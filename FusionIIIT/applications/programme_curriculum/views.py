@@ -15,11 +15,19 @@ from applications.globals.models import (DepartmentInfo, Designation,
 
 @login_required(login_url='/accounts/login')
 def programme_curriculum(request):
+    """
+    This function is used to Differenciate acadadmin and all other user.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        user_details - Gets the information about the logged in user.
+        des - Gets the designation about the looged in user.
+    """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
-        # obj = Student.objects.get(id = user_details.id)
-        # print(obj.programme)
         return HttpResponseRedirect('/programme_curriculum/mainpage/')
     elif str(request.user) == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_mainpage')
@@ -30,24 +38,44 @@ def programme_curriculum(request):
 
 
 def main_page(request):
-    """ display the main page """
+    """
+    This function is used to display the main page of programme_curriculum
+
+    @param:
+        request - contains metadata about the requested page
+
+    """
     return render(request, 'programme_curriculum/mainpage.html')
 
 def view_all_programmes(request):
-    """ views all programmes, both working and obselete curriculums of all programmes """
-
+    """
+    This function is used to display all the programmes offered by the institute.
+    @variables:
+        ug - UG programmes
+        pg - PG programmes
+        phd - PHD programmes 
+    """
     ug = Programme.objects.filter(category='UG')
     pg = Programme.objects.filter(category='PG')
     phd = Programme.objects.filter(category='PHD')
-    programmes = []
-    for (ug, pg, phd) in itertools.zip_longest(ug, pg, phd, fillvalue=""):
-        programmes.append([ug, pg, phd])
 
-    return render(request, 'programme_curriculum/view_all_programmes.html', {'programmes': programmes})
+
+    return render(request, 'programme_curriculum/view_all_programmes.html', {'ug': ug, 'pg': pg, 'phd': phd})
 
 
 def view_curriculums_of_a_programme(request, programme_id):
-    """ views all the curriculums of a specfic programme """
+    """
+    This function is used to Display Curriculum of a specific Programmes.
+
+    @param:
+        programme_id - Id of a specific programme
+        
+    @variables:
+        curriculums - Curriculums of a specific programmes
+        batches - List of batches for curriculums
+        working_curriculum - Curriculums that are affective
+        past_curriculum - Curriculums thet are obsolete
+    """
 
     program = Programme.objects.get(id=programme_id)
     curriculums = Programme.get_curriculums_objects(program)
@@ -67,37 +95,25 @@ def view_all_working_curriculums(request):
     return render(request,'programme_curriculum/view_all_working_curriculums.html',{'curriculums':curriculums})
 
 
-# def view_working_curriculums_of_a_program(request, programme_id):
-#     """ views all the working curriculums of a specfic programme """
-    
-#     program = Programme.objects.get(id=programme_id)
-#     working_curriculums = Programme.get_curriculums_objects(program).filter(working_curriculum=1)
-#     return render(request,'programme_curriculum/view_working_curriculums_of_a_program.html',{'program': program, 'working_curriculums':working_curriculums})
-
 
 def view_semesters_of_a_curriculum(request, curriculum_id):
-    """ gets all the semesters of a specfic curriculum """
+    """
+    This function is used to Display all Semester of a Curriculum.
+
+    @param:
+        curriculum_id - Id of a specific curriculum
+        
+    @variables:
+        transpose_semester_slots - semester_slots 2D list is transpose for viewing in HTML <table>.
+        semester_credits - Total Credits for each semester.
+    """
 
     curriculum = Curriculum.objects.get(id=curriculum_id)
     semesters = Curriculum.get_semesters_objects(curriculum)
     semester_slots = []
-    # print('----')
     for sem in semesters:
         a = list(Semester.get_courseslots_objects(sem))
         semester_slots.append(a)
-        # print (a)
-
-    
-    # print(curriculum)
-    # print(semesters)
-    # print('----')
-    print(semester_slots)
-    print('----')
-    # print(transpose_semester_slots)
-    # for course_slots in semester_slots:
-    #     for slot in course_slots:
-    #         print(slot)
-
 
     max_length = 0
     for course_slots in semester_slots:
@@ -105,16 +121,22 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
 
     for course_slots in semester_slots:
         course_slots += [""] * (max_length - len(course_slots))
-    
-    print(semester_slots)
+
+    semester_credits = []
+
+    for semester in semesters:
+        credits_sum = 0
+        for course_slot in semester.courseslots:
+            max_credit = 0
+            courses = course_slot.courses.all()
+            for course in courses:
+                max_credit = max(max_credit, course.credit)
+            credits_sum = credits_sum + max_credit
+        semester_credits.append(credits_sum)
     
     transpose_semester_slots = list(zip(*semester_slots))
 
-    print('----')
-
-    print(transpose_semester_slots)
-    
-    return render(request, 'programme_curriculum/view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots})
+    return render(request, 'programme_curriculum/view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits})
 
 
 def view_a_semester_of_a_curriculum(request, semester_id):
@@ -122,33 +144,21 @@ def view_a_semester_of_a_curriculum(request, semester_id):
 
     semester = Semester.objects.get(id=semester_id)
     course_slots = Semester.get_courseslots_objects(semester)
-    # courses_list = []
-    # for course_slot in course_slots:
-    #     courses_list.append([CourseSlot.get_courses_objects(course_slot)])
-    return render(request, 'programme_curriculum/view_a_semester_of_a_curriculum.html', {'semesters': semester, 'course_slots': course_slots})
 
+    return render(request, 'programme_curriculum/view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
 
-# def view_curriculum_courses(request, curriculum_id):
-#     """ views all the courses offered by a specfic program """
-#     return HttpResponse()
-
-# def view_semester_courses(request, semester_id):
-#     """ views all the courses offered by a specfic semester """
-#     return HttpResponse()
-
-# def view_semester_course_slots(request, semester_id):
-#     """ views all the course slots of a specfic semester """
-#     return HttpResponse()
 
 def view_a_courseslot(request, courseslot_id):
     """ view a course slot """
     course_slot = CourseSlot.objects.get(id=courseslot_id)
     return render(request, 'programme_curriculum/view_a_courseslot.html', {'course_slot': course_slot})
 
+
 def view_all_courses(request):
     """ views all the course slots of a specfic semester """
     courses = Course.objects.all()
     return render(request, 'programme_curriculum/view_all_courses.html', {'courses': courses})
+
 
 def view_a_course(request, course_id):
     """ views the details of a Course """
@@ -156,12 +166,36 @@ def view_a_course(request, course_id):
     return render(request, 'programme_curriculum/view_a_course.html', {'course': course})
 
 
+def view_all_discplines(request):
+    """ views the details of a Course """
+
+    disciplines = Discipline.objects.all()
+    return render(request, 'programme_curriculum/view_all_disciplines.html', {'disciplines': disciplines})
+
+
+def view_all_batches(request):
+    """ views the details of a Course """
+
+    batches = Batch.objects.all()
+    return render(request, 'programme_curriculum/view_all_batches.html', {'batches': batches})
+
+
+
+
+
+
+
 # ------------Acad-Admin-functions---------------#
 
 @login_required(login_url='/accounts/login')
 def admin_main_page(request):
-    """ display the main page """
+    """
+    This function is used to display the main page of programme_curriculum for acadadmin
 
+    @param:
+        request - contains metadata about the requested page
+
+    """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -173,8 +207,13 @@ def admin_main_page(request):
 
 @login_required(login_url='/accounts/login')
 def admin_view_all_programmes(request):
-    """ views all programmes, both working and obselete curriculums of all programmes """
-    
+    """
+    This function is used to display all the programmes offered by the institute.
+    @variables:
+        ug - UG programmes
+        pg - PG programmes
+        phd - PHD programmes 
+    """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -185,16 +224,24 @@ def admin_view_all_programmes(request):
     ug = Programme.objects.filter(category='UG')
     pg = Programme.objects.filter(category='PG')
     phd = Programme.objects.filter(category='PHD')
-    programmes = []
-    for (ug, pg, phd) in itertools.zip_longest(ug, pg, phd, fillvalue=""):
-        programmes.append([ug, pg, phd])
 
-    return render(request, 'programme_curriculum/acad_admin/admin_view_all_programmes.html', {'programmes': programmes})
+    return render(request, 'programme_curriculum/acad_admin/admin_view_all_programmes.html', {'ug': ug, 'pg': pg, "phd": phd})
+
 
 @login_required(login_url='/accounts/login')
 def admin_view_curriculums_of_a_programme(request, programme_id):
-    """ views all the curriculums of a specfic programme """
-    
+    """
+    This function is used to Display Curriculum of a specific Programmes.
+
+    @param:
+        programme_id - Id of a specific programme
+        
+    @variables:
+        curriculums - Curriculums of a specific programmes
+        batches - List of batches for curriculums
+        working_curriculum - Curriculums that are affective
+        past_curriculum - Curriculums thet are obsolete
+    """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -208,6 +255,7 @@ def admin_view_curriculums_of_a_programme(request, programme_id):
     past_curriculums = curriculums.filter(working_curriculum=0)
 
     return render(request,'programme_curriculum/acad_admin/admin_view_curriculums_of_a_programme.html', {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums})
+
 
 @login_required(login_url='/accounts/login')
 def admin_view_all_working_curriculums(request):
@@ -224,45 +272,16 @@ def admin_view_all_working_curriculums(request):
     return render(request,'programme_curriculum/acad_admin/admin_view_all_working_curriculums.html',{'curriculums':curriculums})
 
 
-# def view_working_curriculums_of_a_program(request, programme_id):
-#     """ views all the working curriculums of a specfic programme """
-    
-#     program = Programme.objects.get(id=programme_id)
-#     working_curriculums = Programme.get_curriculums_objects(program).filter(working_curriculum=1)
-#     return render(request,'programme_curriculum/acad_admin/admin_view_working_curriculums_of_a_program.html',{'program': program, 'working_curriculums':working_curriculums})
-
 @login_required(login_url='/accounts/login')
 def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     """ gets all the semesters of a specfic curriculum """
 
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/mainpage/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    
-
     curriculum = Curriculum.objects.get(id=curriculum_id)
     semesters = Curriculum.get_semesters_objects(curriculum)
     semester_slots = []
-    # print('----')
     for sem in semesters:
         a = list(Semester.get_courseslots_objects(sem))
         semester_slots.append(a)
-        # print (a)
-
-    
-    # print(curriculum)
-    # print(semesters)
-    # print('----')
-    print(semester_slots)
-    print('----')
-    # print(transpose_semester_slots)
-    # for course_slots in semester_slots:
-    #     for slot in course_slots:
-    #         print(slot)
-
 
     max_length = 0
     for course_slots in semester_slots:
@@ -270,20 +289,38 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
 
     for course_slots in semester_slots:
         course_slots += [""] * (max_length - len(course_slots))
-    
-    print(semester_slots)
+
+    semester_credits = []
+
+    for semester in semesters:
+        credits_sum = 0
+        for course_slot in semester.courseslots:
+            max_credit = 0
+            courses = course_slot.courses.all()
+            for course in courses:
+                max_credit = max(max_credit, course.credit)
+            credits_sum = credits_sum + max_credit
+        semester_credits.append(credits_sum)
+
+    print (semester_credits)
     
     transpose_semester_slots = list(zip(*semester_slots))
 
-    print('----')
+    return render(request, 'programme_curriculum/acad_admin/admin_view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits})
 
-    print(transpose_semester_slots)
-    return render(request, 'programme_curriculum/acad_admin/admin_view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots})
 
 @login_required(login_url='/accounts/login')
 def admin_view_a_semester_of_a_curriculum(request, semester_id):
-    """ views a specfic semester of a specfic curriculum """
+    """
+    This function is used to Display all Semester of a Curriculum.
 
+    @param:
+        curriculum_id - Id of a specific curriculum
+        
+    @variables:
+        transpose_semester_slots - semester_slots 2D list is transpose for viewing in HTML <table>.
+        semester_credits - Total Credits for each semester.
+    """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -293,23 +330,10 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
     
     semester = Semester.objects.get(id=semester_id)
     course_slots = Semester.get_courseslots_objects(semester)
-    # courses_list = []
-    # for course_slot in course_slots:
-    #     courses_list.append([CourseSlot.get_courses_objects(course_slot)])
-    return render(request, 'programme_curriculum/acad_admin/admin_view_a_semester_of_a_curriculum.html', {'semesters': semester, 'course_slots': course_slots})
+
+    return render(request, 'programme_curriculum/acad_admin/admin_view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
 
 
-# def view_curriculum_courses(request, curriculum_id):
-#     """ views all the courses offered by a specfic program """
-#     return HttpResponse()
-
-# def view_semester_courses(request, semester_id):
-#     """ views all the courses offered by a specfic semester """
-#     return HttpResponse()
-
-# def view_semester_course_slots(request, semester_id):
-#     """ views all the course slots of a specfic semester """
-#     return HttpResponse()
 
 @login_required(login_url='/accounts/login')
 def admin_view_a_courseslot(request, courseslot_id):
@@ -325,6 +349,7 @@ def admin_view_a_courseslot(request, courseslot_id):
     course_slot = CourseSlot.objects.get(id=courseslot_id)
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_courseslot.html', {'course_slot': course_slot})
 
+
 @login_required(login_url='/accounts/login')
 def admin_view_all_courses(request):
     """ views all the course slots of a specfic semester """
@@ -338,6 +363,7 @@ def admin_view_all_courses(request):
     
     courses = Course.objects.all()
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_courses.html', {'courses': courses})
+
 
 @login_required(login_url='/accounts/login')
 def admin_view_a_course(request, course_id):
@@ -368,9 +394,6 @@ def admin_view_all_discplines(request):
     disciplines = Discipline.objects.all()
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_disciplines.html', {'disciplines': disciplines})
 
-    # return HttpResponse('Under Construction!')
-
-
 
 @login_required(login_url='/accounts/login')
 def admin_view_all_batches(request):
@@ -386,15 +409,9 @@ def admin_view_all_batches(request):
     batches = Batch.objects.all()
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_batches.html', {'batches': batches})
 
-    # return HttpResponse('Under Construction!')
-
-
-
-
 
 @login_required(login_url='/accounts/login')
 def add_discipline_form(request):
-
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -410,9 +427,8 @@ def add_discipline_form(request):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Added Discipline successful")
-                return HttpResponse("Upload successful.")    
+                return HttpResponseRedirect('/programme_curriculum/mainpage/')    
     return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
-
 
 
 @login_required(login_url='/accounts/login')
@@ -434,11 +450,8 @@ def edit_discipline_form(request, discipline_id):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Updated "+ discipline.name +" successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_disciplines/" + str(discipline.name) + "/")  
+                return HttpResponseRedirect("/programme_curriculum/admin_disciplines/")  
     return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
-
-
-
 
 
 @login_required(login_url='/accounts/login')
@@ -487,13 +500,15 @@ def edit_programme_form(request, programme_id):
     return render(request, 'programme_curriculum/acad_admin/add_programme_form.html',{'form':form, 'submitbutton': submitbutton})
 
 
-
-
-
-
 @login_required(login_url='/accounts/login')
 def add_curriculum_form(request):
-
+    """
+    This function is used to add Curriculum and Semester into Curriculum and Semester table.
+        
+    @variables:
+        no_of_semester - Get number of Semesters from form.
+        NewSemester - For initializing a new semester.
+    """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -507,13 +522,13 @@ def add_curriculum_form(request):
         if request.method == 'POST':
             form = CurriculumForm(request.POST)  
             if form.is_valid():
-                no_of_semester = form.cleaned_data['no_of_semester']
-                print(form)
-                print(no_of_semester)
                 form.save()
+                no_of_semester = int(form.cleaned_data['no_of_semester'])
+                # print(form)
+                # print(no_of_semester)
                 curriculum = Curriculum.objects.all().last()
                 for semester_no in range(1, no_of_semester+1):
-                    NewSemester = Semester(curriculum, semester_no)
+                    NewSemester = Semester(curriculum=curriculum,semester_no=semester_no)
                     NewSemester.save()
                 messages.success(request, "Added successful")
                 return HttpResponseRedirect('/programme_curriculum/admin_mainpage')
@@ -523,7 +538,14 @@ def add_curriculum_form(request):
 
 @login_required(login_url='/accounts/login')
 def edit_curriculum_form(request, curriculum_id):
-
+    """
+    This function is used to edit Curriculum and Semester into Curriculum and Semester table.
+        
+    @variables:
+        no_of_semester - Get number of Semesters from form.
+        OldSemester - For Removing dropped Semester.
+        NewSemester - For initializing a new semester.
+    """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
@@ -531,24 +553,44 @@ def edit_curriculum_form(request, curriculum_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    # INCOMPLETE
     curriculum = Curriculum.objects.get(id=curriculum_id)
+
     form = CurriculumForm(instance=curriculum)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
             form = CurriculumForm(request.POST, instance=curriculum)
             if form.is_valid():
-                form_no_of_semester = form.cleaned_data['no_of_semester']
-                print(curriculum)
                 form.save()
-                if(curriculum.no_of_semester < form_no_of_semester):
-                    for semester_no in range(max(1, curriculum.no_of_semester), form_no_of_semester+1):
-                        NewSemester = Semester(curriculum, semester_no)
-                        print(NewSemester)
-                        # NewSemester.save()
+                no_of_semester = int(form.cleaned_data['no_of_semester'])
+                old_no_of_semester = Semester.objects.filter(curriculum=curriculum).count()
+                if(old_no_of_semester != no_of_semester):
+                    
+                    if(old_no_of_semester > no_of_semester):
+                        for semester_no in range(no_of_semester+1, old_no_of_semester+1):
+                            try:
+                                OldSemester = Semester.objects.filter(curriculum=curriculum).filter(semester_no=semester_no)
+                                OldSemester.delete()
+                            except:
+                                print("Failed to remove old semester")
+                                
+                                
+                    elif(old_no_of_semester < no_of_semester):
+                        for semester_no in range(max(1, old_no_of_semester), no_of_semester+1):
+                            try:
+                                NewSemester = Semester(curriculum=curriculum,semester_no=semester_no)
+                                NewSemester.save()
+                            except:
+                                print("Failed to add new semester")            
+
+                print("Old No of Semesters - " + str(old_no_of_semester))
+                print("Entered No of Semesters - " + str(no_of_semester))
+                print("Current No of Semesters (after operation) - " + str(Semester.objects.filter(curriculum=curriculum).count()))
+                messages.success(request, "Updated "+ curriculum.name +" successful")
+                return HttpResponseRedirect('/programme_curriculum/admin_mainpage')
 
     return render(request, 'programme_curriculum/acad_admin/add_curriculum_form.html',{'form':form,  'submitbutton': submitbutton})
+
 
 @login_required(login_url='/accounts/login')
 def add_course_form(request):
@@ -568,12 +610,13 @@ def add_course_form(request):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Added successful")
-                # return HttpResponseRedirect("/programme_curriculum/admin_course/")
+                return HttpResponseRedirect("/programme_curriculum/admin_course/")
 
     return render(request,'programme_curriculum/acad_admin/add_course_form.html',{'form':form})
 
+
 @login_required(login_url='/accounts/login')
-def update_course_form(request,course_id):
+def update_course_form(request, course_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -596,7 +639,6 @@ def update_course_form(request,course_id):
     return render(request,'programme_curriculum/acad_admin/add_course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton})
 
 
-
 @login_required(login_url='/accounts/login')
 def add_courseslot_form(request):
     
@@ -607,20 +649,20 @@ def add_courseslot_form(request):
     elif str(request.user) == "acadadmin" :
         pass
     
-    form = CourseForm()
+    form = CourseSlotForm()
     submitbutton= request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
-            form = CourseForm(request.POST)
+            form = CourseSlotForm(request.POST)
             if form.is_valid():
                 form.save()
                 messages.success(request, "Added Course Slot successful")
                 return HttpResponseRedirect('/programme_curriculum/admin_mainpage/')
     return render(request, 'programme_curriculum/acad_admin/add_courseslot_form.html',{'form':form, 'submitbutton': submitbutton})
-    # return HttpResponse('Under Construction!')
+
 
 @login_required(login_url='/accounts/login')
-def edit_courselot_form(request, courseslot_id):
+def edit_courseslot_form(request, courseslot_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -630,11 +672,11 @@ def edit_courselot_form(request, courseslot_id):
         pass
     
     courseslot = CourseSlot.objects.get(id=courseslot_id)
-    form = CourseForm(instance=courseslot)
+    form = CourseSlotForm(instance=courseslot)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
-            form = CourseForm(request.POST, instance=courseslot)  
+            form = CourseSlotForm(request.POST, instance=courseslot)  
             if form.is_valid():
                 form.save()
                 messages.success(request, "Updated"+ courseslot.name +"successful")
@@ -642,7 +684,6 @@ def edit_courselot_form(request, courseslot_id):
 
     return render(request,'programme_curriculum/acad_admin/add_courseslot_form.html',{'courseslot':courseslot, 'form':form, 'submitbutton':submitbutton})
 
-    # return HttpResponse('Under Construction!')
 
 @login_required(login_url='/accounts/login')
 def add_batch_form(request):
@@ -665,7 +706,6 @@ def add_batch_form(request):
                 return HttpResponseRedirect('/programme_curriculum/admin_batches/')
     return render(request, 'programme_curriculum/acad_admin/add_batch_form.html',{'form':form, 'submitbutton': submitbutton})
     
-    # return HttpResponse('Under Construction!')
 
 @login_required(login_url='/accounts/login')
 def edit_batch_form(request, batch_id):
@@ -689,54 +729,3 @@ def edit_batch_form(request, batch_id):
                 return HttpResponseRedirect("/programme_curriculum/admin_batches/")  
 
     return render(request,'programme_curriculum/acad_admin/add_batch_form.html',{'batch':batch, 'form':form, 'submitbutton':submitbutton})
-    
-    # return HttpResponse('Under Construction!')
-
-@login_required(login_url='/accounts/login')
-def add_semester_form(request):
-    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/mainpage/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    
-    
-    return HttpResponse('Site Under Construction!')
-
-@login_required(login_url='/accounts/login')
-def edit_semesters_form(request):
-    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/mainpage/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    
-    
-    return HttpResponse('Site Under Construction!')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
