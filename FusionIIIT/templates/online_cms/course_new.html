@@ -1,0 +1,136 @@
+<!--HTML file for course functions access-->
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Courses
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                {% if user.extrainfo.user_type == 'faculty' %}
+                <a class="active item" data-tab="first">
+                    Classes
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Upload Class URL
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% else %}
+
+                <a class="active item" data-tab="first">
+                    My Classes
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Course Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Assignment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Course Videos
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Attendence
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% endif %}
+
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+            {% if user.extrainfo.user_type != 'faculty' %}
+                {% comment %}The ... start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block joinclass %}
+                    {%  include 'online_cms/join_class.html' %}
+                {%  endblock %}
+            </div>
+                {% comment %}The ... end here!{% endcomment %}
+            {% else %}
+
+                {% comment %}The ... start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block classes %}
+                    {%  include 'online_cms/meetings.html' %}
+                {%  endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="second">
+                {% block startclass %}
+                    {%  include 'online_cms/start_class.html' %}
+                {%  endblock %}
+            </div>
+
+            {% comment %}The ... end here!{% endcomment %}
+            {% endif %}
+
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}
