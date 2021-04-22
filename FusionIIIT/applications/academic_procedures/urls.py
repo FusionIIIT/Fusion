@@ -37,7 +37,14 @@ urlpatterns = [
     url(r'^test_ret/$', views.test_ret),
     url(r'^acad_person/addCourse_list$', views.addCourse_list, name='addcourselist'),
     url(r'^verify_addCourse/$', views.verify_addCourse, name='verifyaddcourse'),
-    
-    
+    url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
+    url(r'^ACF/$', views.ACF, name='ACF'),
+    url(r'^MTSGF/$', views.MTSGF),
+    url(r'^PHDPE/$', views.PHDPE),
+    url(r'^update_assistantship/$', views.update_assistantship),
+    url(r'^update_mtechsg/$', views.update_mtechsg),
+    url(r'^update_phdform/$' , views.update_phdform),
+    url(r'^update_dues/$' , views.update_dues),
+    url(r'^dues_pdf/$' , views.dues_pdf),
 
 ]
