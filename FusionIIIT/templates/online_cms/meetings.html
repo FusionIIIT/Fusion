@@ -41,9 +41,6 @@
                         Class URL
                     </th>
 
-                    <th class="one wide column">
-                        Delete URL
-                    </th>
 
                 </tr>
                 </thead>
@@ -53,29 +50,25 @@
                 {% for meeting in meetings %}
                 <tr>
                     <td>
-                        {{ meeting.curriculum_id }}
+                        {{ meeting.class_date }}
                     </td>
 
                     <td>
-                        {{ meeting.curriculum_id }}
+                        {{ meeting.description }}
                     </td>
 
                     <td>
-                        {{ meeting.curriculum_id }}
+                        {{ meeting.start_time }}
                     </td>
 
                     <td>
-                        {{ meeting.curriculum_id}}
+                        {{ meeting.end_time}}
                     </td>
 
                     <td style="color:blue">
-                        <i>{{ meeting.curriculum_id }}</i>
+                        <i>{{ meeting.upload_url }}</i>
                     </td>
 
-                    <td style="color:red" >
-
-                        <h4><strong>DELETE</strong></h4>
-                    </td>
 
                 </tr>
                 {% endfor %}
