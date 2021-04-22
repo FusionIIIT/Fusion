@@ -37,6 +37,8 @@ def main_page(request):
 
 	pres_date = timezone.now()
 	fin_years = []
+	inc_fin_years = []
+	exp_fin_years = []
 	if len(Income.objects.all()):
 		min_date_ob = Income.objects.all().aggregate(Min('date_added'))
 	
@@ -62,7 +64,7 @@ def main_page(request):
 			fin_years.append(year)
 
 	if len(Income.objects.all()):
-		inc_fin_years = []
+		
 		
 
 		min_date_in = Income.objects.all().aggregate(Min('date_added'))
@@ -79,7 +81,7 @@ def main_page(request):
 			inc_fin_years.append(fin_year)
 
 	if len(Expenditure.objects.all()):
-		exp_fin_years = []
+		
 		min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
 		max_date_exp = Expenditure.objects.all().aggregate(Max('date_added'))
 		mini_year = min_date_exp['date_added__min'].year
@@ -172,7 +174,7 @@ def add_income(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_recieved')
-		receipt = request.Files.get('income_receipt')
+		receipt = request.POST.get('income_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_i = Income(
@@ -208,7 +210,7 @@ def add_expenditure(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
-		receipt = request.FILES.get('expenditure_receipt')
+		receipt = request.POST.get('expenditure_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_e = Expenditure(
