@@ -155,6 +155,8 @@ def handle_cpda_admin(request):
         # update the status of app
         application = Cpda_application.objects.select_related('applicant').get(id=app_id)
         application.status = status
+        if(application.tracking_info.review_status=='reviewed' and status=='approved'):
+            application.status= 'finished'
         application.save()
 
         # notify
