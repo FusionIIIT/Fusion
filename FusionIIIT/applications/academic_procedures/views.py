@@ -1259,11 +1259,15 @@ def add_courses(request):
             for i in range(1, count+1):
                 i = str(i)
                 choice = "choice["+i+"]"
-                course_id = Courses.objects.get(id = request.POST.get(choice))
-                p = CourseRequested(
-                    course_id = course_id,
-                    student_id = current_user
-                    )
+                try:
+                    course_id = Courses.objects.get(id = request.POST.get(choice))
+                    p = CourseRequested(
+                        course_id = course_id,
+                        student_id = current_user
+                        )
+                    reg_curr.append(p)
+                except Exception as e:
+                    continue
                 reg_curr.append(p)
             CourseRequested.objects.bulk_create(reg_curr)
             return HttpResponseRedirect('/academic-procedures/main')
