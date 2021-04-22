@@ -8,7 +8,7 @@ urlpatterns = [
     url(r'^register/', views.register, name='register'),
     url(r'^pre_registration/', views.pre_registration, name='pre_register'),
     url(r'^final_registration/', views.final_registration, name='final_register'),
-    url(r'^addCourse/', views.register, name='addCourse'),
+    url(r'^addCourse/', views.add_courses, name='addCourse'),
     url(r'^drop_course/', views.drop_course, name='drop_course'),
     url(r'^branch-change/', views.approve_branch_change, name='branch_change'),
     url(r'^brach-change-request/', views.branch_change_request, name='branch_change_request'),
@@ -35,6 +35,8 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$',views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
+    url(r'^acad_person/addCourse_list$', views.addCourse_list, name='addcourselist'),
+    url(r'^verify_addCourse/$', views.verify_addCourse, name='verifyaddcourse'),
     
     
 
