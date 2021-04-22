@@ -41,38 +41,39 @@ def main_page(request):
 
 
 		for fin_year in range(pres_year,min_year,-1):
-			year = str(fin_year)+'-'+str(fin_year-1)
+			year = str(fin_year-1)+'-'+str(fin_year)
 			fin_years.append(year)
 
+	if len(Income.objects.all()):
+		inc_fin_years = []
+		exp_fin_years = []
 
-	inc_fin_years = []
-	exp_fin_years = []
+		min_date_in = Income.objects.all().aggregate(Min('date_added'))
+		max_date_in = Income.objects.all().aggregate(Max('date_added'))
+		mini_year = min_date_in['date_added__min'].year
+		maxi_year = max_date_in['date_added__max'].year
 
-	min_date_in = Income.objects.all().aggregate(Min('date_added'))
-	max_date_in = Income.objects.all().aggregate(Max('date_added'))
-	mini_year = min_date_in['date_added__min'].year
-	maxi_year = max_date_in['date_added__max'].year
+		if min_date_in['date_added__min'].month < 4:
+			mini_year-=1
+		if max_date_in['date_added__max'].month < 4:
+			maxi_year-=1
 
-	if min_date_in['date_added__min'].month < 4:
-		mini_year-=1
-	if max_date_in['date_added__max'].month < 4:
-		maxi_year-=1
+		for fin_year in range(maxi_year, mini_year-1, -1):
+			inc_fin_years.append(fin_year)
 
-	for fin_year in range(maxi_year, mini_year-1, -1):
-		inc_fin_years.append(fin_year)
+	if len(Expenditure.objects.all()):
+		min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
+		max_date_exp = Expenditure.objects.all().aggregate(Max('date_added'))
+		mini_year = min_date_exp['date_added__min'].year
+		maxi_year = max_date_exp['date_added__max'].year
 
-	min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
-	max_date_exp = Expenditure.objects.all().aggregate(Max('date_added'))
-	mini_year = min_date_exp['date_added__min'].year
-	maxi_year = max_date_exp['date_added__max'].year
+		if min_date_exp['date_added__min'].month < 4:
+			mini_year-=1
+		if max_date_exp['date_added__max'].month < 4:
+			maxi_year-=1
 
-	if min_date_exp['date_added__min'].month < 4:
-		mini_year-=1
-	if max_date_exp['date_added__max'].month < 4:
-		maxi_year-=1
-
-	for fin_year in range(maxi_year, mini_year-1, -1):
-		exp_fin_years.append(fin_year)
+		for fin_year in range(maxi_year, mini_year-1, -1):
+			exp_fin_years.append(fin_year)
 
 
 	income_history = Income.objects.all()
@@ -148,6 +149,7 @@ def add_income(request):
 						remarks = remarks
 						)
 		new_i.save()
+		balanceSheet_table() 
 	return redirect('main-page')
 
 def add_expenditure(request):
@@ -168,6 +170,7 @@ def add_expenditure(request):
 						remarks = remarks,
 						)
 		new_e.save()
+		balanceSheet_table()
 	return redirect('main-page')
 
 
@@ -196,6 +199,7 @@ def updateFixedValues(request):
 			up_val = request.POST.get(i)
 			update_ob.value = up_val
 			update_ob.save()
+			balanceSheet_table()
 
 	return redirect('main-page')
 
@@ -204,6 +208,7 @@ def del_expenditure(request):
 	if(request.method == 'POST'):
 		ex_id = request.POST.get('id')
 		Expenditure.objects.get(id=ex_id).delete()
+		balanceSheet_table()
 
 	return redirect('main-page')
 
@@ -211,20 +216,50 @@ def del_income(request):
 	if(request.method == 'POST'):
 		in_id = request.POST.get('id')
 		Income.objects.get(id=in_id).delete()
+		balanceSheet_table()
 
 	return redirect('main-page')
 
 def balanceSheet_table():
 	fixed_attributes = FixedAttributes.objects.all()
+
+
+	income_type_ob = IncomeSource.objects.all()
+	income_ob = Income.objects.all()
+	result=(income_ob.values('source').annotate(amount=Sum('amount')).order_by('source'))
+	income_dic={}
+	for each in result:
+		income_dic[IncomeSource.objects.get(id=each['source']).income_source]=each['amount']
+	incomeSum = sum(income_dic.values())
+	
+	expenditure_type_ob = ExpenditureType.objects.all()
+	expenditure_ob = Expenditure.objects.all()
+	result=(expenditure_ob.values('spent_on').annotate(amount=Sum('amount')).order_by('spent_on'))
+	expenditure_dic={}
+	for each in result:
+		expenditure_dic[ExpenditureType.objects.get(id=each['spent_on']).expenditure_type]=each['amount']
+	expenditureSum=sum(expenditure_dic.values())
+
+
+	balance = incomeSum - expenditureSum
+
+    	
+
+
 	 
-	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,})
+	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,'incomeDetails':income_dic,'incomeTypes':income_type_ob,'expenditureDetails':expenditure_dic,'expenditureTypes':expenditure_type_ob,'incomeSum':incomeSum,'expenditureSum':expenditureSum,'balance':balance,})
+	
 	curr_year = timezone.now().date().year
 	fin_year = str(curr_year-1)+'-'+str(curr_year) if timezone.now().date().month < 4 else str(curr_year)+'-'+str(curr_year+1)
+	filename = 'Balance_sheet{}.pdf'.format(fin_year)
+
+	
 	
 	if len(BalanceSheet.objects.filter(date_added=fin_year)):
 		update_balanceSheet = BalanceSheet.objects.get(date_added=fin_year)
-		update_balanceSheet.balanceSheet = File(BytesIO(pdf.content))
-		update_balanceSheet.save()
+		#update_balanceSheet.balanceSheet = File(BytesIO(pdf.content))
+		#update_balanceSheet.save()
+		update_balanceSheet.balanceSheet.save(filename,File(BytesIO(pdf.content)))
 
 	else:  
 		new = BalanceSheet(
@@ -232,30 +267,24 @@ def balanceSheet_table():
 			date_added=fin_year,
 
 		)
-		new.save()
+		new.balanceSheet.save(filename,File(BytesIO(pdf.content)))
+		#new.save()
 	
 	
 
 
 def balanceSheet(request):
-	#fixed_attributes = FixedAttributes.objects.all()
 	
-	#pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,})
-	#curr_year = timezone.now().date().year
-	
-	 
-	
-	#if pdf:
-	#	response = HttpResponse(pdf,content_type='application/pdf')
-	#	response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
-		
-	#	return response
-	#return HttpResponse('PDF could not be generated')
+
+
 
 	if request.method =='POST' :
 		fin_year = request.POST.get('fin_year')
-		balance_sheet_ob = BalanceSheet.objects.filter(date_added=fin_year)
-		response = HttpResponse(pdf,content_type='application/pdf')
+		print(fin_year)
+		balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)
+		response = HttpResponse(balance_sheet_ob.balanceSheet,content_type='application/pdf')
+		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
+		return response
 
 
 def render_to_pdf(template_src, context_dict={}):

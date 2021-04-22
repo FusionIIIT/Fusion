@@ -40,62 +40,7 @@ td,th{
             
           </tr>
           {% endfor %}
-        <!--<tr>
-          <td>Corpus Fund / Capital Fund</td>
-          <td></td>
-          
-        </tr>
-        <tr>
-          <td>Designated / Embarked / Endowment Funds</td>
-          <td></td>
-          
-        </tr>
-        <tr>
-          <td>Current Liabilities and Provisions</td>
-          <td></td>
-          
-        </tr>
-        <tr>
-            <td><b>Total:</b>
-            </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td >&nbsp;</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td> <b>APPLICATION OF FUNDS</b></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Fixed Assets</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Tangible Assets</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Intangible Assets</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Capital Works-In-Progress</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Investments</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Loans,Advances & Deposits</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td><b>TOTAL:</b></td>
-            <td></td>
-        </tr> -->
+       
       </table>
       <br>
       <br>
@@ -110,36 +55,41 @@ td,th{
           <td></td>
           
         </tr>
+        
+        
+        
+        {% for type in incomeTypes %}
+        
         <tr>
-          <td>Academic Receipts</td>
-          <td></td>
-          
-        </tr>
-        <tr>
-          <td>Grants / Subsidies</td>
-          <td></td>
-          
-        </tr>
-        <tr>
-            <td>Income from Investment
+            <td>
+                {{ type.income_source }}
             </td>
-            <td></td>
+            {% if type.income_source in incomeDetails %}
+            <td>
+                
+
+                {% for key,value in incomeDetails.items %}
+                {% if key == type.income_source %}
+                    {{value}}
+                {% endif %}
+                {% endfor %}
+
+                
+            </td>
+            {% else %}
+            <td>
+                0
+            </td>
+            {% endif %}
         </tr>
-        <tr>
-            <td >Interest Earned</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Other Incomes</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Prior Period Income</td>
-            <td></td>
-        </tr>
+        {% endfor %}
+        
+
+
+
         <tr>
             <td><b>Total (A):</b></td>
-            <td></td>
+            <td>{{ incomeSum }}</td>
         </tr>
         <tr>
             <td >&nbsp;</td>
@@ -149,41 +99,36 @@ td,th{
             <td><b>B. EXPENDITURE:</b></td>
             <td></td>
         </tr>
+        
+        {% for type in expenditureTypes %}
+        
         <tr>
-            <td>Staff Payments & Benefits</td>
-            <td></td>
+            <td>
+                {{ type.expenditure_type }}
+            </td>
+            {% if type.expenditure_type in expenditureDetails %}
+            <td>
+                
+
+                {% for key,value in expenditureDetails.items %}
+                {% if key == type.expenditure_type %}
+                    {{value}}
+                {% endif %}
+                {% endfor %}
+
+                
+            </td>
+            {% else %}
+            <td>
+                0
+            </td>
+            {% endif %}
         </tr>
-        <tr>
-            <td>Establishment Expenses</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Academic Expenses</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Administrative and General Expenses</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Transportation Expenses</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Repairs & Maintenance</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Other Expenses</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Prior Period Expenses</td>
-            <td></td>
-        </tr>
+        {% endfor %}
+
         <tr>
             <td><b>Total (B):</b></td>
-            <td></td>
+            <td>{{ expenditureSum }}</td>
         </tr>
         <tr>
             <td >&nbsp;</td>
@@ -191,7 +136,7 @@ td,th{
         </tr>
         <tr>
             <td><b>C. Balance being excess of Income over Expenditure (A-B) : </b></td>
-            <td></td>
+            <td>{{ balance }}</td>
         </tr>
       </table>
       <br>
