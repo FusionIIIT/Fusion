@@ -40,7 +40,7 @@
                                                     <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
                                                 </td>
                                                 <td>
-                                                    <input name="choice" id="mycheck" type="checkbox" value="{{ items.id }}" data-valuetwo="{{items.credit}}">
+                                                    <input  class = "choice1" name="choice" id="mycheck" type="checkbox" value="{{ items.id }}" data-valuetwo="{{items.credit}}">
                                                     <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                                                 </td>
                                             </tr>
@@ -52,7 +52,7 @@
                         <div class="ui divider"></div>
                         <center><button class="ui negative basic button">Drop Course(s)</button></center></form>
                     {% else %}
-                        <B> YOU HAVE NOT REGISTERED YET</B>
+                        <B> No Courses to drop</B>
                     {% endif %}
                 {% else %}
                     <B><center>You need to complete Registration process first</center></B>
@@ -71,11 +71,13 @@ $(function() {
     $("#drop_courses").submit(function(event) {
 
         var credits = parseInt(document.getElementById("cr_count").value);
-        var checkboxing = document.getElementById("mycheck");
+        var checkboxing = document.getElementsByClassName("choice1");
         var test =0;
-        for(var i=0; i<mycheck.length;i++){
-            if(mycheck[i].checked==true){
-                credits = credits - parseInt(mycheck[i].getAttribute("data-valuetwo"));
+        console.log(checkboxing)
+        for(var i=0; i<checkboxing.length;i++){
+            console.log(checkboxing)
+            if(checkboxing[i].checked==true){
+                credits = credits - parseInt(checkboxing[i].getAttribute("data-valuetwo"));
                 test =test+1;
             }
         }
