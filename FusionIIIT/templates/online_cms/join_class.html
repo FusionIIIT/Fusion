@@ -47,27 +47,27 @@
 
 
                 <tbody>
-                {% for course,instructor in courses.items %}
+                {% for class in classes %}
                 <tr>
             
                     <td>
-                        {{ course.curriculum_id.course_code }}
+                        {{ class.class_date }}
                     </td>
 
                     <td>
-                        {{ course.curriculum_id.course_code }}
+                        {{ class.description }}
                     </td>
 
                     <td>
-                        {{ instructor.instructor_id.user.username }}
+                        {{ class.start_time }}
                     </td>
 
                     <td>
-                        {{ instructor.instructor_id.user.username}}
+                        {{ class.end_time}}
                     </td>
 
                     <td style="color:blue">
-                        <i>{{ course.curriculum_id.course_id }}</i>
+                        <i>{{ class.upload_url }}</i>
                     </td>
 
                 </tr>
