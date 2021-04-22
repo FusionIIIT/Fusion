@@ -1094,6 +1094,8 @@ def add_new_profile(request):
             discipline = Discipline.objects.all().filter(name = dept).first()
             batch = Batch.objects.all().filter(year = batch_year, discipline = discipline).first()
 
+            department = DepartmentInfo.objects.all().filter(name = dept).first()
+            
             user = User.objects.create_user(
                 username=roll_no,
                 password='hello123',
