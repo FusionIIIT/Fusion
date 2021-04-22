@@ -327,8 +327,8 @@ def generate_cpda_admin_lists(request):
 
         # if status is adjustments_pending:to_assign/reviewed
         else:
-            temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
-            temp.fields["status"]._choices = [
+            temp = Assign_Form(initial={'assign_status': 'adjustments_pending', 'app_id': app.id})
+            temp.fields["assign_status"]._choices = [
                 ('adjustments_pending', 'Adjustments Pending'),
                 ('finished', 'Finished')
             ]
