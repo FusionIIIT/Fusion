@@ -6,7 +6,8 @@ app_name = 'online_cms'
 urlpatterns = [
 
     url(r'^$', views.viewcourses, name='viewcourses'),
-    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
+    #me url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.usercourse, name='course'),
     # url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_marks$', views.edit_marks, name='edit_marks'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/get_exam_data$', views.get_exam_data, name='get_exam_data'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/forum$', views.forum,
