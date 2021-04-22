@@ -19,9 +19,9 @@
           Amount : {{items.amount}}
           <br>
           Remarks : {{items.remarks}}
-          <br>
+         <!---- <br>
           Receipt : <a href="#">view</a>
-          <br>
+          <br>-->
         </p>
         <form action="/income-expenditure/deleteExpenditureHistory/" method="POST" id="del_expenditure">{% csrf_token %}
         <input hidden type="text" name = 'id' value="{{ items.id }}">

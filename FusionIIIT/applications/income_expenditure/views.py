@@ -15,6 +15,23 @@ from django.db.models import Min,Max
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
+'''
+    
+            Parameters:
+                    
+					income_history (queryset) - queryset of income objects
+					expenditure_history (queryset) - queryset of expenditure objects
+					income_sources (queryset) - queryset of income_source objects
+					expenditure_types (queryset) - queryset of expenditure type objects
+					fixed_attributes (list) - list of fixed attributes
+					inc_fin_years (list) - Contains years present in income table
+                    exp_fin_years  (list) - Contains years present in expenditure table
+                    mini_year  (int) - min_year of which data is present
+                    maxi_year  (int) - max_year of which data is present
+            
+'''
+
+
 
 def main_page(request):
 
@@ -130,6 +147,22 @@ def main_page(request):
 				})
 
 
+
+
+'''
+    to add new income
+            Parameters:
+                    source  (string) - From where the income is coming
+                    amount (int) - contains amount received
+                    date  (date) - date of income
+                    receipt  (file) - contains receipt
+                    remarks  (string) - remarks or detailed explanation.(if any)
+            
+'''
+
+
+
+
 #view to add income
 def add_income(request):
 	if(request.method == 'POST'):
@@ -138,7 +171,7 @@ def add_income(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_recieved')
-		receipt = request.POST.get('income_receipt')
+		receipt = request.Files.get('income_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_i = Income(
@@ -148,9 +181,24 @@ def add_income(request):
 						receipt = receipt,
 						remarks = remarks
 						)
+		
 		new_i.save()
 		balanceSheet_table() 
 	return redirect('main-page')
+
+
+
+
+'''
+    to add a new expense
+            Parameters:
+                    spent_on  (string) - Contains on whic the expenditure is made
+                    amount (int) - Contains the amount spent
+                    date  (date) - date of expense
+                    receipt  (file) - contains receipt
+                    remarks  (string) - Remarks or detailed explanation.
+            
+'''
 
 def add_expenditure(request):
 	if(request.method == 'POST'):
@@ -159,7 +207,7 @@ def add_expenditure(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
-		receipt = request.POST.get('expenditure_receipt')
+		receipt = request.FILES.get('expenditure_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_e = Expenditure(
@@ -174,6 +222,13 @@ def add_expenditure(request):
 	return redirect('main-page')
 
 
+'''
+	used to maintain fixed list of income sources
+            Parameters:
+                    income_sources (list) - list of income sources
+'''
+
+
 def add_income_source():
 	income_sources = ['Academic Reciepts','Grants / Subsidies','Income From Investment','Interest Earned','Other Income','Prior Period Income']
 	if len(IncomeSource.objects.all()):
@@ -182,6 +237,12 @@ def add_income_source():
 		for i in income_sources:
 			new_source = IncomeSource(income_source = i,)
 			new_source.save()
+
+'''
+	used to maintain fixed list of expenditure types
+        Parameters:
+                    expenditure_types (list) - list of expenditure types
+'''
 
 def add_expenditure_type():
 	expenditure_types = ['Staff Payments & Benefits','Establishment Expenses','Academic Expenses','Administrative and General Expenses','Transportation Expenses','Repairs & Maintainance','Other Expenses','Prior Perios Expenses']
@@ -203,6 +264,12 @@ def updateFixedValues(request):
 
 	return redirect('main-page')
 
+'''
+	delete's an expense
+        Parameters:
+			id : (int) - id of the expense to be deleted
+'''
+
 
 def del_expenditure(request):
 	if(request.method == 'POST'):
@@ -212,6 +279,14 @@ def del_expenditure(request):
 
 	return redirect('main-page')
 
+
+'''
+	delete's an income
+        Parameters:
+			id : (int) - id of the income to be deleted
+'''
+
+
 def del_income(request):
 	if(request.method == 'POST'):
 		in_id = request.POST.get('id')
@@ -219,6 +294,21 @@ def del_income(request):
 		balanceSheet_table()
 
 	return redirect('main-page')
+
+
+'''
+	download's balancesheet
+        Parameters:
+			fixed_attributes : (list) - contains list of fixed attributes
+			income_dic : {dict} - contains the names and amount of each income source
+			expenditure_dic : {dict} - contains the names and amount of each expenditure type
+			incomeSum : {int} - total sum of income
+			expenditureSum : {int} - total sum of expenses
+			balance : {int} 
+			filename : {string} - name of the balance sheet
+'''
+
+
 
 def balanceSheet_table():
 	fixed_attributes = FixedAttributes.objects.all()
@@ -280,7 +370,6 @@ def balanceSheet(request):
 
 	if request.method =='POST' :
 		fin_year = request.POST.get('fin_year')
-		print(fin_year)
 		balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)
 		response = HttpResponse(balance_sheet_ob.balanceSheet,content_type='application/pdf')
 		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
@@ -295,6 +384,15 @@ def render_to_pdf(template_src, context_dict={}):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
+
+'''
+	to view income stats
+        Parameters:
+			income_labels : (list) - contains the names of each income source
+			income_data : {list} - stores the sum of each source 
+			fin_year : {string} - contains financial year
+			
+'''
 
 
 def view_income_stats(request):
@@ -327,6 +425,16 @@ def view_income_stats(request):
 							'income_labels':income_labels,
 							'fin_year':fin_year,
 						})
+
+'''
+	to view expenditure stats
+        Parameters:
+			expenditure_labels : (list) - contains the list of expenditure types
+			expenditure_data : {list} - stores the sum of each type
+			fin_year : {string} - contains the financial year
+			
+'''
+
 
 def view_expenditure_stats(request):
 	if(request.method == 'POST'):

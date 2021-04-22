@@ -3,47 +3,7 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 <div class="ui vertical segment">
-   <!----   <table class="ui very basic collapsing celled sortable table"
-           style="padding-left: 2.5%;
-                  padding-right: 2.5%;
-                  padding-top: 1%;
-                  padding-bottom: 1.5%;
-                  margin: auto;">
-
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Granted By</th>
-            <th>Source</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Receipt</th>
-          </tr>
-        </thead>
-
-        <tbody>
-            {% for items in income_history %}
-              <tr>
-                <td>{{forloop.counter}}.</td>
-                    <td>
-                      {{ items.granted_by }}
-                    </td>
-                    <td>
-                        {{ items.source }}
-                    </td>
-                    <td>
-                        {{ items.date_added }}
-                    </td>
-                    <td>
-                        {{ items.amount }}
-                    </td>
-                    <td>
-                        <a href="">view</a>
-                    </td>
-              </tr>
-            {% endfor %}
-        </tbody>
-    </table>  --->
+   
     
     {% for items in income_history %} 
     
@@ -57,8 +17,8 @@
           Amount : {{items.amount}}
           <br>
           Remarks: {{items.remarks}}
-          <br>
-          Receipt : <a href="#">view</a>
+         <!---- <br>
+          Receipt : <a href="#">view</a> -->
         </p>
         <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
           <input hidden  name = 'id' value="{{ items.id }}">
