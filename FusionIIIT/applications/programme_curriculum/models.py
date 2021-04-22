@@ -144,11 +144,15 @@ class Batch(models.Model):
 
 class CourseSlot(models.Model):
     semester = models.ForeignKey(Semester, null=False, on_delete=models.CASCADE)
-    name = name = models.CharField(max_length=100, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
     type = models.CharField(max_length=70, choices=COURSESLOT_TYPE_CHOICES, null=False)
-    for_batches = models.ManyToManyField(Batch)
+    # for_batches = models.ManyToManyField(Batch)
     course_slot_info = models.TextField(null=True)
     courses = models.ManyToManyField(Course)
 
     def __str__(self):
         return str(Semester.__str__(self.semester) + ", " + self.name + ", id = " + str(self.id))
+
+    @property
+    def for_batches(self):
+        return ((Semester.objects.get(id=self.semester.id)).curriculum).batches
