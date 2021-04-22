@@ -1,11 +1,12 @@
+  
 import datetime
-
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
 
 
 class emp_visits(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.CharField(max_length=20)
     v_type = models.IntegerField(default = 1)
     country = models.CharField(max_length=500, default=" ")
@@ -24,12 +25,14 @@ class emp_visits(models.Model):
 
 
 class emp_techtransfer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     details = models.CharField(max_length=500, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
 
 class emp_session_chair(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     name = models.CharField(max_length=500, default=" ")
     event = models.TextField(max_length=2500, default=" ")
@@ -50,6 +53,7 @@ class emp_session_chair(models.Model):
 
 
 class emp_research_projects(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     ptype = models.CharField(max_length=100, default="Research")
     pi = models.CharField(max_length=1000, default=" ")
@@ -74,6 +78,7 @@ class emp_research_projects(models.Model):
 
 
 class emp_research_papers(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     R_TYPE_CHOICES = (
         ('Journal', 'Journal'),
@@ -124,6 +129,7 @@ class emp_research_papers(models.Model):
 
 
 class emp_published_books(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     PTYPE_TYPE_CHOICES = (
         ('Book', 'Book'),
@@ -147,6 +153,7 @@ class emp_published_books(models.Model):
 
 
 class emp_patents(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     p_no = models.CharField(max_length=150)
     title = models.CharField(max_length=1500)
@@ -173,6 +180,7 @@ class emp_patents(models.Model):
 
 
 class emp_mtechphd_thesis(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     degree_type = models.IntegerField(default=1)
     title = models.CharField(max_length=250)
@@ -195,6 +203,7 @@ class emp_mtechphd_thesis(models.Model):
 
 
 class emp_keynote_address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     KEYNOTE_TYPE_CHOICES = (
         ('Keynote', 'Keynote'),
@@ -223,6 +232,7 @@ class emp_keynote_address(models.Model):
 
 
 class emp_expert_lectures(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     LECTURE_TYPE_CHOICES = (
         ('Expert Lecture', 'Expert Lecture'),
@@ -247,6 +257,7 @@ class emp_expert_lectures(models.Model):
 
 
 class emp_event_organized(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     TYPE_CHOICES = (
         ('Training Program', 'Training Program'),
@@ -274,6 +285,7 @@ class emp_event_organized(models.Model):
 
 
 class emp_consultancy_projects(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     consultants = models.CharField(max_length=150)
     title = models.CharField(max_length=1000)
@@ -289,6 +301,7 @@ class emp_consultancy_projects(models.Model):
 
 
 class emp_confrence_organised(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     name = models.CharField(max_length=500)
     venue = models.CharField(max_length=500)
@@ -318,6 +331,7 @@ class emp_confrence_organised(models.Model):
 
 
 class emp_achievement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField(default=1)
     A_TYPE_CHOICES = (
         ('Award', 'Award'),
@@ -347,8 +361,9 @@ class emp_achievement(models.Model):
     def get_absolute_url(self):
         return reverse('eis:profile')
 
+
 class faculty_about(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     about = models.TextField(max_length=1000)
     doj = models.DateField(default=datetime.datetime.now)
     education = models.TextField(max_length=500)

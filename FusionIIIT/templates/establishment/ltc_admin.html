@@ -8,6 +8,9 @@
     <a class="item" data-tab="ltctwo">
         Under Review
     </a>
+    <a class="item" data-tab="ltcfive">
+        Reviewed
+    </a>
     <a class="item" data-tab="ltcthree">
         Archived
     </a>
@@ -18,29 +21,30 @@
 
 
 <!--
-pending ltc applications 
+pending ltc applications
 -->
 <div class="ui active tab segment" data-tab="ltcone">
     <div class="content">
         <div class="description">
             <div class="ui items">
                 {% for app in ltc_pending_apps %}
+                {% if app.tracking_info.review_status == 'to_assign' %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
                             <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.assign-{{app.id}}').modal('show')">
+                                <button class="ui large primary button" onclick="$('.ui.modal.assign_ltc-{{app.id}}').modal('show')">
                                     Assign
                                 </button>
                             </div>
                         </div>
                     </div>
-                
-                    <div class="ui modal assign-{{app.id}}">
+
+                    <div class="ui modal assign_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
                             Assign reviewer
@@ -48,42 +52,90 @@ pending ltc applications
                         <div class="content">
                             <div class="description">
                                 <!-- Add condition if it's requested or adj_pending -->
-                                <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                            <td>
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
 
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
+                                    {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.status %} 
+                                        {% render_field app.assign_form.assign_status %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %} 
+                                        {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %} 
+                                        {% render_field app.assign_form.reviewer_design3 %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.assign_form.remarks %}
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
@@ -98,6 +150,7 @@ pending ltc applications
                             </div>
                         </div>
                     </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -106,7 +159,7 @@ pending ltc applications
 
 
 <!--
-under_review ltc applications 
+under_review ltc applications
 -->
 <div class="ui tab segment" data-tab="ltctwo">
     <div class="content">
@@ -115,46 +168,94 @@ under_review ltc applications
                 {% for app in ltc_under_review_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
                             <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                                <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
                                 </button>
-                                <button class="ui large primary button" onclick="$('.ui.modal.assign-{{app.id}}').modal('show')">
+                                <button class="ui large primary button" onclick="$('.ui.modal.assign_ltc-{{app.id}}').modal('show')">
                                     Re-assign
                                 </button>
                             </div>
                         </div>
                     </div>
-                
-                    <div class="ui modal view-{{app.id}}">
+
+                    <div class="ui modal view_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
                             View ltc
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                            <td>
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
                         <div class="actions">
@@ -163,49 +264,97 @@ under_review ltc applications
                             </div>
                         </div>
                     </div>
-                    <div class="ui modal assign-{{app.id}}">
+                    <div class="ui modal assign_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
                             Re-assign reviewer
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_under_review %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                            <td>
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
 
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
+                                    {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.status %} 
+                                        {% render_field app.assign_form.status %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %} 
+                                        {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %} 
+                                        {% render_field app.assign_form.reviewer_design3 %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.assign_form.remarks %}
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
@@ -227,7 +376,145 @@ under_review ltc applications
 </div>
 
 <!--
-archived ltc applications 
+reviewed ltc applications
+-->
+<div class="ui tab segment" data-tab="ltcfive">
+    <div class="content">
+        <div class="description">
+            <div class="ui items">
+                {% for app in ltc_pending_apps %}
+                {% if app.tracking_info.review_status == 'reviewed' %}
+                    <div class="item">
+                        <div class="content">
+                            <a class="header">Status : {{app.status|title}}</a>
+                            <div class="meta">
+                                <span>Requested Advance : ₹ {{app.requested_advance}}</span>
+                            </div>
+                            <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Remarks by Reviewer : {{app.tracking_info.remarks}}</div>
+                            <div>
+                                <button class="ui large primary button" onclick="$('.ui.modal.assign_ltc-{{app.id}}').modal('show')">
+                                    Approve/Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui modal assign_ltc-{{app.id}}">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Assign reviewer
+                        </div>
+                        <div class="content">
+                            <div class="description">
+                                <!-- Add condition if it's requested or adj_pending -->
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_pending %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                            <td>
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
+
+                                <!-- Add form here -->
+                                <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
+                                    {% csrf_token %}
+                                    {% render_field app.assign_form.app_id %}
+
+                                    <div class="field">
+                                        Remarks from Director : {{ app.tracking_info.remarks }}
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field app.assign_form.accept_status%}
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field app.assign_form.remarks %}
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="ltc_assign_form" class="ui large primary button">
+                                        Approve/Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <div class="ui black deny button">
+                                Cancel
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--
+archived ltc applications
 -->
 <div class="ui tab segment" data-tab="ltcthree">
     <div class="content">
@@ -236,43 +523,91 @@ archived ltc applications
                 {% for app in ltc_archived_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <a class="header">Status : {{app.status|title}}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
                             <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                                <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
                                 </button>
                             </div>
                         </div>
                     </div>
-                
-                    <div class="ui modal view-{{app.id}}">
+
+                    <div class="ui modal view_ltc-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
                             View ltc
                         </div>
                         <div class="content">
                             <div class="description">
-                                <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_archive %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app2.name }}
+                                            </td>
+                                            <td>
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app3 in ltc_to_avail_archive %}
+                                        {% if app3.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app3.name }}
+                                            </td>
+                                            <td>
+                                                {{ app3.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app4 in dependent_archive %}
+                                        {% if app4.ltc == app %}
+                                        <tr>
+                                            <td>
+                                                {{ app4.name }}
+                                            </td>
+                                            <td>
+                                                {{ app4.age }}
+                                            </td>
+                                            <td>
+                                                {{ app4.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
                         <div class="actions">
@@ -307,35 +642,35 @@ archived ltc applications
                             <form class="ui large form" method="post" enctype="multipart/form-data" id="form_new">
                                 {% csrf_token %}
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.username %} 
+                                    {% render_field ltc_new_eligible_user_form.username %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.joining_date %} 
+                                    {% render_field ltc_new_eligible_user_form.joining_date %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.current_block_size %} 
+                                    {% render_field ltc_new_eligible_user_form.current_block_size %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.total_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.total_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_allowed %} 
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_allowed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_availed %} 
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_availed %}
                                 </div>
                                 <br>
                                 <div class="field">
-                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_availed %} 
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_availed %}
                                 </div>
                                 <br>
                                 <button type="submit" name="ltc_new_eligible_user" class="ui large primary button">
@@ -371,7 +706,7 @@ archived ltc applications
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="ui modal edit-user-{{user_object.user}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -384,35 +719,35 @@ archived ltc applications
                                     {% csrf_token %}
                                     <!-- NOTE: THIS USERNAME IS EDITABLE BY USER, IT HAS TO BE CHANGED -->
                                     <div class="field">
-                                        {% render_field user_object.edit_form.username %} 
+                                        {% render_field user_object.edit_form.username %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.joining_date %} 
+                                        {% render_field user_object.edit_form.joining_date %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.current_block_size %} 
+                                        {% render_field user_object.edit_form.current_block_size %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.total_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.total_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.hometown_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.hometown_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.elsewhere_ltc_allowed %} 
+                                        {% render_field user_object.edit_form.elsewhere_ltc_allowed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.hometown_ltc_availed %} 
+                                        {% render_field user_object.edit_form.hometown_ltc_availed %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field user_object.edit_form.elsewhere_ltc_availed %} 
+                                        {% render_field user_object.edit_form.elsewhere_ltc_availed %}
                                     </div>
                                     <br>
                                     <div class="ui buttons">

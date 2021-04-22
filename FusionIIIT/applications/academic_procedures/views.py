@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from django.db.models import Max
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -25,8 +25,9 @@ from applications.globals.models import (DepartmentInfo, Designation,
 
 from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRegistrationCheck,
                      MinimumCredits, Register, Thesis, FinalRegistrations, ThesisTopicProcess,
-                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues, CourseRequested)
-
+                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, 
+                     MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
+                     PhDProgressExamination,CourseRequested)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 
@@ -86,7 +87,8 @@ def academic_procedures_faculty(request):
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-
+    fac_id = user_details
+    fac_name = user_details.user.first_name + " " + user_details.user.last_name
     if str(des.designation) == "student":
         return HttpResponseRedirect('/academic-procedures/main/')
 
@@ -111,7 +113,16 @@ def academic_procedures_faculty(request):
         approved_thesis_request_list = thesis_supervision_request_list.filter(approval_supervisor = True)
         pending_thesis_request_list = thesis_supervision_request_list.filter(pending_supervisor = True)
         faculty_list = get_faculty_list()
+        assistantship_request_list = AssistantshipClaim.objects.all()
+        ta_approved_assistantship_request_list = AssistantshipClaim.objects.all().filter(ta_supervisor_remark=True)
+        thesis_approved_assistantship_request_list = AssistantshipClaim.objects.all().filter(thesis_supervisor_remark=True)
+        approved_assistantship_request_list = ta_approved_assistantship_request_list | thesis_approved_assistantship_request_list
+        mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
+        phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
         courses_list = Curriculum_Instructor.objects.select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
+        dues = Dues.objects.all()
+        stu = Student.objects.all()
+        r = range(4)
         return render(
                         request,
                          '../templates/academic_procedures/academicfac.html' ,
@@ -123,6 +134,15 @@ def academic_procedures_faculty(request):
                             'approved_thesis_request_list' : approved_thesis_request_list,
                             'faculty_list' : faculty_list,
                             'courses_list' : courses_list,
+                            'fac_id': fac_id,
+                            'fac_name' : fac_name,
+                            'assistantship_request_list' : assistantship_request_list,
+                            'approved_assistantship_request_list' : approved_assistantship_request_list,
+                            'mtechseminar_request_list' : mtechseminar_request_list,
+                            'phdprogress_request_list' : phdprogress_request_list,
+                            'dues' : dues,
+                            'r' : r,
+                            'stu' : stu,
                          })
     else:
         HttpResponse("user not found")
@@ -304,8 +324,8 @@ def academic_procedures_student(request):
             teaching_credit_registration_course = Curriculum.objects.all().select_related().filter(batch = 2016, sem =6)
 
         # Dues Check
-
-        lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
+        #Initializing all due with -1 value , since generating no due certificate requires total due=0 
+        lib_d, pc_d, hos_d, mess_d, acad_d = -1, -1, -1, -1, -1
         if student_flag:
             try:
 
@@ -338,6 +358,10 @@ def academic_procedures_student(request):
                 ab += len(absents)
             attendence.append((i,pr,pr+ab))
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
+
+        
+           
+        
 
         # Branch Change Form save
         if request.method=='POST':
@@ -416,6 +440,54 @@ def academic_procedures_student(request):
         return HttpResponse('user not found')
 
 
+def dues_pdf(request):
+    template = get_template('academic_procedures/dues_pdf.html')
+    current_user = get_object_or_404(User, username=request.user.username)
+
+    user_details = ExtraInfo.objects.get(id = request.user)
+    des = HoldsDesignation.objects.all().filter(user = request.user).first()
+
+    name = ExtraInfo.objects.all().filter(id=request.user.username)[0].user
+   
+    if str(des.designation) == "student":
+        obj = Student.objects.get(id = user_details.id)
+    
+        context = {
+            'student_id' : request.user.username,
+            'degree' : obj.programme.upper(),
+            'name' : name.first_name +" "+ name.last_name,
+            'branch' : get_user_branch(user_details),
+            
+        }
+        pdf = render_to_pdf('academic_procedures/dues_pdf.html',context)
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=Bonafide.pdf' 
+            return response
+        return HttpResponse("PDF could not be generated")
+
+
+def facultyData(request):
+	current_value = request.POST['current_value']
+	try:
+		# students =ExtraInfo.objects.all().filter(user_type = "student")
+		faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		facultyNames = []
+		for i in faculty:
+			name = i.user.first_name + " " + i.user.last_name
+			if current_value != "":
+				Lowname = name.lower()
+				Lowcurrent_value = current_value.lower()
+				if Lowcurrent_value in Lowname:
+					facultyNames.append(name)
+			else:
+				facultyNames.append(name)
+        
+		print(facultyNames)
+		faculty = json.dumps(facultyNames)
+		return HttpResponse(faculty)
+	except Exception as e:
+		return HttpResponse("error")
 
 
 
@@ -2740,4 +2812,241 @@ def Bonafide_form(request):
 #         form = BonafideForm()
 
 #     return render(request, 'bonafide.html', {'form': form})
+@login_required
+def ACF(request):
+    if request.method == 'POST':
+            stu = Student.objects.get(id=request.user.username)
+            month = request.POST.get('month')
+            year= request.POST.get('year') 
+            account = request.POST.get('bank_account')
+            thesis = request.POST.get('thesis_supervisor')
+            ta = request.POST.get('ta_supervisor')
+            appli = request.POST.get('applicability')
+            FACUL1 = None
+            FACUL2 = None
+            message = ""
+            faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
+            res = "error"
+            for j in range(2):
+             for i in faculties:
+                 checkName = i.user.first_name + " " + i.user.last_name
+                 if j==0 and ta == checkName:
+                    res = "success"
+                    FACUL1 = i
+                 elif j==1 and thesis == checkName:
+                    res = "success"
+                    FACUL2 = i
+
+             if (res == "error"):
+                message = message + "The entered faculty incharge does not exist"
+                content = {
+                      'status' : res,
+                      'message' : message
+                } 
+                content = json.dumps(content) 
+                return HttpResponse(content)
+               
+            print( month)
+            faculty_inc1 = get_object_or_404(Faculty, id = FACUL1)
+            faculty_inc2 = get_object_or_404(Faculty, id = FACUL2)
+            acf = AssistantshipClaim(student=stu,month=month, year=year, bank_account=account, thesis_supervisor=faculty_inc2, ta_supervisor=faculty_inc1, applicability= appli)
+            acf.save()
+            message= message + "Form submitted succesfully"
+            content = {
+            'status' : res,
+            'message' : message
+            } 
+            print (message)
+            content = json.dumps(content)
+            return HttpResponse(content)
+
+
+def update_assistantship(request):
+    if request.method == 'POST':
+        r = request.POST.get('remark')
+        i = request.POST.get('obj_id')
+        user = ExtraInfo.objects.get(user = request.user)
+        assistantship_object = AssistantshipClaim.objects.get(id = i)
+
+        if user == assistantship_object.ta_supervisor.id and r == "Satisfactory":
+            assistantship_object.ta_supervisor_remark=True
+        elif user == assistantship_object.ta_supervisor.id and r == "Unsatisfactory":
+            assistantship_object.ta_supervisor_remark=False
+        if user == assistantship_object.thesis_supervisor.id and r == "Satisfactory":
+            assistantship_object.thesis_supervisor_remark=True 
+        elif r == "Unsatisfactory" :
+            assistantship_object.thesis_supervisor_remark=False
+        
+        assistantship_object.save()
+    return HttpResponseRedirect('/academic-procedures/main/')
+        
+
+            
+
+@login_required
+def MTSGF(request):
+    if request.method == 'POST':
+        stu= Student.objects.get(id=request.user.username)
+        theme = request.POST.get('theme_of_work')
+        date = request.POST.get('date')
+        place = request.POST.get('place')
+        time = request.POST.get('time')
+        work = request.POST.get('workdone')
+        contribution = request.POST.get('specificcontri')
+        future = request.POST.get('futureplan')
+        report = request.POST.get('briefreport')
+        publication_submitted = request.POST.get('publicationsubmitted')
+        publication_accepted = request.POST.get('publicationaccepted')
+        paper_presented = request.POST.get('paperpresented')
+        paper_under_review = request.POST.get('paperunderreview')
+
+        form=MTechGraduateSeminarReport(student=stu, theme_of_work=theme, date=date, place=place, time=time, work_done_till_previous_sem=work,
+                                        specific_contri_in_cur_sem=contribution, future_plan=future, brief_report=report, publication_submitted=publication_submitted, 
+                                        publication_accepted=publication_accepted, paper_presented=paper_presented, papers_under_review=paper_under_review)
+        form.save()
+        message= "Form submitted succesfully"
+        res="success"
+        content = {
+            'status' : res,
+            'message' : message
+        } 
+        print (message)
+        content = json.dumps(content)
+        return HttpResponse(content)
+
+
+@login_required
+def PHDPE(request):
+    if request.method == 'POST':
+        stu= Student.objects.get(id=request.user.username)
+        theme = request.POST.get('theme_of_work')
+        dateandtime = request.POST.get('date')
+        place = request.POST.get('place')
+        work = request.POST.get('workdone')
+        contribution = request.POST.get('specificcontri')
+        future = request.POST.get('futureplan')
+        uploadfile = request.POST.get('Attachments')
+        paper_submitted = request.POST.get('papersubmitted')
+        paper_published = request.POST.get('paperaccepted')
+        paper_presented = request.POST.get('paperpresented')
+        
+
+        form=PhDProgressExamination(student=stu, theme=theme, seminar_date_time=dateandtime, place=place, work_done=work,
+                                        specific_contri_curr_semester=contribution, future_plan=future,details=uploadfile, 
+                                        papers_published=paper_published, presented_papers=paper_presented,papers_submitted=paper_submitted)
+        form.save()
+        message= "Form submitted succesfully"
+        res="success"
+        content = {
+            'status' : res,
+            'message' : message
+        } 
+        print (message)
+        content = json.dumps(content)
+        return HttpResponse(content)
+
+
+def update_mtechsg(request):
+    if request.method == 'POST':
+        i = request.POST.get('obj_id')
+        ql=request.POST.get('quality')
+        qn=request.POST.get('quantity')
+        gr=request.POST.get('grade')
+        pr=request.POST.get('panel_report')
+        sg=request.POST.get('suggestion')
+        
+        mtech_object=MTechGraduateSeminarReport.objects.get(id = i)
+        
+        mtech_object.quality_of_work=ql
+        mtech_object.quantity_of_work=qn
+        mtech_object.Overall_grade=gr
+        mtech_object.panel_report=pr
+        mtech_object.suggestion=sg
+        mtech_object.save()
+    return HttpResponseRedirect('/academic-procedures/main/')
+
+        
+
+def update_phdform(request):
+    if request.method == 'POST':
+        i = request.POST.get('obj_id')
+        ql = request.POST.get('quality')
+        qn = request.POST.get('quantity')
+        gr = request.POST.get('grade')
+        continuationa = request.POST.get('continuationa')
+        enhancementa = request.POST.get('enhancementa')
+        completionperiod =  request.POST.get('completionperiod')
+        pr = request.POST.get('pr')
+        annualp = request.POST.get('annualp')
+        sugg = request.POST.get('sugg')
+
+        phd_object = PhDProgressExamination.objects.get(id = i)
+
+        phd_object.quality_of_work=ql
+        phd_object.quantity_of_work=qn
+        phd_object.Overall_grade=gr
+        phd_object.continuation_enhancement_assistantship=continuationa
+        phd_object.enhancement_assistantship=enhancementa
+        phd_object.completion_period=completionperiod
+        phd_object.panel_report=pr
+        phd_object.annual_progress_seminar=annualp
+        phd_object.commments=sugg
+        phd_object.save()
+        print("saved")
+    return HttpResponseRedirect('/academic-procedures/main/')
+
+
+def update_dues(request):
+    if request.method == "POST":
+        i = request.POST.get('obj_id')
+        md =int(request.POST.get('md'))
+        hd = int(request.POST.get('hd'))
+        ld = int(request.POST.get('ld'))
+        pd = int(request.POST.get('pd'))
+        ad = int(request.POST.get('ad'))
+        
+        dues_object = Dues.objects.get(id = i)
+        message = ""
+        if md < 0 and -1*md > dues_object.mess_due :
+            message = message + "Subtracting more value than existing mess due<br>"
+        if hd < 0 and -1*hd > dues_object.hostel_due :
+            message = message + "Subtracting more value than existing hostel due<br>" 
+        if ld < 0 and -1*ld > dues_object.library_due :
+            message = message + "Subtracting more value than existing library due<br>" 
+        if pd < 0 and -1*pd > dues_object.placement_cell_due :
+            message = message + "Subtracting more value than existing placement cell due<br>"
+        if ad < 0 and -1*ad > dues_object.mess_due :
+            message = message + "Subtracting more value than existing academic due<br>"
+        
+        print(message)
+        
+
+        if (not message):
+            message = "success"
+
     
+
+        if message != "success":
+            content = json.dumps(message)
+            return HttpResponse(content)
+
+         
+
+        md += dues_object.mess_due
+        hd += dues_object.hostel_due
+        ld += dues_object.library_due
+        pd += dues_object.placement_cell_due
+        ad += dues_object.academic_due
+
+        dues_object.mess_due = md
+        dues_object.hostel_due = hd
+        dues_object.library_due = ld
+        dues_object.placement_cell_due = pd
+        dues_object.academic_due = ad
+
+        dues_object.save()
+        print(message)
+        content = json.dumps(message)
+        return HttpResponse(content)
+
+
