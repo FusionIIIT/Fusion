@@ -26,17 +26,6 @@ class CourseVideo(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.video_name)
 
-#Audios added by the faculty and can be downloaded by students
-class CourseAudio(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField(auto_now=True)
-    description = models.CharField(max_length=100)
-    audio_name = models.CharField(max_length=40)
-    audio_url = models.CharField(max_length=100, null=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.course_id, self.audio_name)
-
 #For storing the questions topic wise
 class Topics(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -74,7 +63,7 @@ class Question(models.Model):
     #         self.options2, self.options3, self.options4,
     #         self.options5, self.answer)
 
-#details of quiz are stored
+ #details of quiz are stored
 class Quiz(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     quiz_name = models.CharField(max_length=20)
@@ -105,36 +94,36 @@ class QuizQuestion(models.Model):
             self.pk, self.question)
 
 #the details of practice quiz (objective assignment)---- under development
-#class Practice(models.Model):
-#   course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-#    prac_quiz_name = models.CharField(max_length=20)
-#    negative_marks = models.FloatField(default=0)
-#    number_of_question = models.IntegerField(default=0)
-#    description = models.TextField(max_length=1000)
-#    total_score = models.IntegerField(default=0)
+class Practice(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    prac_quiz_name = models.CharField(max_length=20)
+    negative_marks = models.FloatField(default=0)
+    number_of_question = models.IntegerField(default=0)
+    description = models.TextField(max_length=1000)
+    total_score = models.IntegerField(default=0)
 
-#    def __str__(self):
-#        return '{} - {} - {} - {} - {}'.format(
-#                self.pk, self.course_id,
-#                self.negative_marks)
+    def __str__(self):
+        return '{} - {} - {} - {} - {}'.format(
+                self.pk, self.course_id,
+                self.negative_marks)
 
 #the details of questions for the practice quiz (objective assignment) 
-#class PracticeQuestion(models.Model):
-#    prac_quiz_id = models.ForeignKey(Practice, on_delete=models.CASCADE)
-#    question = models.TextField(max_length=1000)
-#    options1 = models.CharField(null=True, max_length=100)
-#    options2 = models.CharField(null=True, max_length=100)
-#    options3 = models.CharField(null=True, max_length=100)
-#    options4 = models.CharField(null=True, max_length=100)
-#    options5 = models.CharField(null=True, max_length=100)
-#    answer = models.IntegerField()
-#    image = models.TextField(max_length=1000, null=True)
+class PracticeQuestion(models.Model):
+    prac_quiz_id = models.ForeignKey(Practice, on_delete=models.CASCADE)
+    question = models.TextField(max_length=1000)
+    options1 = models.CharField(null=True, max_length=100)
+    options2 = models.CharField(null=True, max_length=100)
+    options3 = models.CharField(null=True, max_length=100)
+    options4 = models.CharField(null=True, max_length=100)
+    options5 = models.CharField(null=True, max_length=100)
+    answer = models.IntegerField()
+    image = models.TextField(max_length=1000, null=True)
 
-#    def __str__(self):
-#        return '{} - {} - {} - {} - {} - {} - {} - {} - {}'.format(
-#            self.pk, self.quiz_id, self.options1,
-#            self.options2, self.options3, self.options4,
-#            self.options5, self.answer, self.announcement)
+    def __str__(self):
+        return '{} - {} - {} - {} - {} - {} - {} - {} - {}'.format(
+            self.pk, self.quiz_id, self.options1,
+            self.options2, self.options3, self.options4,
+            self.options5, self.answer, self.announcement)
 
 #answer given by the student in the quiz is stored here to check properly the answers
 class StudentAnswer(models.Model):
@@ -215,5 +204,19 @@ class ForumReply(models.Model):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
 
 
+#online class URLs to join meetings
+class OnlineClasses(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    description = models.TextField(max_length=1000)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    class_date = models.DateField()
+    upload_url = models.TextField(max_length=200)
 
-# we are working on online classes database we will add it later.
+    def __str__(self):
+        return '{} - {} - {}'.format(self.pk, self.course_id, self.class_date)
+
+
+
+
+
