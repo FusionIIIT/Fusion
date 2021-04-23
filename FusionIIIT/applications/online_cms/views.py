@@ -1421,10 +1421,10 @@ def usercourse(request, course_code):
     The function is use for course content
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)  # get the type of user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)  # get the type of user
 
-    courseid = Curriculum.objects.get(course_code=course_code)
-    classes = OnlineClasses.objects.filter(course_id=courseid.course_id)
+    courseid = Curriculum.objects.select_related().get(course_code=course_code)
+    classes = OnlineClasses.objects.select_related().filter(course_id=courseid.course_id)
 
     if extrainfo.user_type == 'faculty':
         if request.method == 'POST':
