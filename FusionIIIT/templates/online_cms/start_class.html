@@ -1,0 +1,65 @@
+{% load static %}
+{% block uploadURL %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="uploadurl">
+            Upload Meeting URL
+        </a>
+
+    </div>
+
+    {% comment %}the upload meeting url tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="uploadurl">
+        <div class="ui vertical segment">
+            <form class="ui form"  method="POST"  style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+            
+              <div class="field">
+                <label>Topic:</label>
+                <div class="ui large input">
+                    <input placeholder="Topic Name" name="topicName">
+                </div>
+            </div>
+
+            <div class="field">
+              <label>Date:</label>
+              <div class="ui large input">
+                <input type="date" placeholder="Select" id="date" name="date">
+              </div>
+          </div>
+
+          <div class="field">
+            <label>Start Time:</label>
+            <div class="ui large input">
+                <input type="time" placeholder="Start Time" name="StartTime">
+            </div>
+        </div>
+
+        <div class="field">
+          <label>End Time:</label>
+          <div class="ui large input">
+              <input type="time" placeholder="End Time" name="EndTime">
+          </div>
+      </div>
+
+          <div class="field">
+            <label>URL:</label>
+            <div class="ui large input">
+                <input type="url" placeholder="Class URL" name="ClassURL">
+            </div>
+        </div>
+               
+        <button class="ui large primary button right floated" onclick="request()">
+          Submit
+        </button>
+
+        <div class="extra segment"></div>
+
+            </form>
+          
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the upload meeting tab ends here {% endcomment %}
+
+
+{% endblock %}
