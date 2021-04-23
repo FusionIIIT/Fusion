@@ -1,0 +1,50 @@
+{% load static %}
+{% block cancelbooking %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="cancelbooking">
+        Cancel Booking
+    </a>
+</div>
+<div class="ui active tab" data-tab="cancelbooking">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+        <form class="ui large form">
+            <div id="cancelbooking">
+
+                  <div class="two fields">
+                    <div class="field">
+                        <label>Arrival Date:</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Arrival Time:</label>
+                        <input placeholder="time" type="text">
+                    </div>
+                </div>
+
+                <div class="field">
+                 <label> reason</label>
+                      <div class="ui fluid input">
+                        <textarea class="ui textarea" rows="2"></textarea>
+                      </div>
+             </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <div class="ui large primary button right floated">
+                       Cancel
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

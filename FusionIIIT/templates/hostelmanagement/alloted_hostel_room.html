@@ -1,0 +1,243 @@
+{% block alloted_hostel_room %}
+<div class="ui pointing secondary menu">
+  <a class="item active" data-tab="hall1">
+    Hall 1
+  </a>
+  <a class="item" data-tab="hall3">
+    Hall 3
+  </a>
+  <a class="item" data-tab="hall4">
+    Hall 4
+  </a>
+  {% comment %} <a class="item" data-tab="add_student">
+    Add Student
+  </a> {% endcomment %}
+    {% ifequal user.extrainfo.user_type "staff"%}
+    <a class="item" data-tab="hall_upload">
+        Upload File
+    </a>
+    {% endifequal %}
+
+    {% ifequal user.extrainfo.user_type "faculty"%}
+    <a class="item" data-tab="hall_upload">
+        Upload File
+    </a>
+    {% endifequal %}
+</div>
+
+
+<div class="ui active tab" data-tab="hall1" >
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+        {% block hall1 %}
+            {% include 'hostelmanagement/hall1.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+
+<div class="ui tab" data-tab="hall3">
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+        {% block hall3 %}
+            {% include 'hostelmanagement/hall3.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+
+<div class="ui tab" data-tab="hall4">
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+            {% block hall4 %}
+                {% include 'hostelmanagement/hall4.html' %}
+            {% endblock %}
+        
+    </div>
+</div>
+
+
+{% comment %} <div class="ui tab" data-tab="add_student">
+    <div class="ui vertical segment">
+        {% block add_student %}
+            {% include 'hostelmanagement/add_student.html' %}
+        {% endblock %}
+    </div>
+</div> {% endcomment %}
+
+    <div class="ui tab" data-tab="hall_upload">
+        <div class="ui vertical segment">
+            {% block hall_upload %}
+                {% include 'hostelmanagement/hall_upload.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+{% comment %} <div class="ui active tab" data-tab="hall1">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            Roll No
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Program
+        </th>
+
+        <th class="four wide column">
+            Room No
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td>
+            {{hall_1_student.id}}
+        </td>
+
+        <td>
+            {{hall_1_student.id.user.username}}
+        </td>
+
+        <td>
+            {{hall_1_student.programme}}
+        </td>
+
+        <td>
+            {{hall_1_student.room_no}}
+        </td>
+
+    </tr>
+
+    </tbody>
+</table>
+        </div>
+    </div>
+
+<div class="ui active tab" data-tab="hall1">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            Roll No
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Program
+        </th>
+
+        <th class="four wide column">
+            Room No
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td>
+            {{hall_3_student.id}}
+        </td>
+
+        <td>
+            {{hall_3_student.id.user.username}}
+        </td>
+
+        <td>
+            {{hall_3_student.programme}}
+        </td>
+
+        <td>
+            {{hall_3_student.room_no}}
+        </td>
+
+    </tr>
+
+    </tbody>
+</table>
+        </div>
+    </div>
+
+<div class="ui active tab" data-tab="hall1">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            Roll No
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Program
+        </th>
+
+        <th class="four wide column">
+            Room No
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td>
+            {{hall_4_student.id}}
+        </td>
+
+        <td>
+            {{hall_4_student.id.user.username}}
+        </td>
+
+        <td>
+            {{hall_4_student.programme}}
+        </td>
+
+        <td>
+            {{hall_4_student.room_no}}
+        </td>
+
+    </tr>
+
+    </tbody>
+</table>
+        </div>
+    </div> {% endcomment %}
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+
+{% endblock %}

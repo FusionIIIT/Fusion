@@ -1,0 +1,108 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="roomstatus">
+            Room Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="roomstatus">
+        <div class="ui vertical segment">
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+                    <th rowspan="2">Room-No.</th>
+                    <th rowspan="2">Floor</th>
+                    <th colspan="4">Room Status</th>
+                </tr>
+
+                <tr>
+                    <th class="three wide">Empty</th>
+                    <th class="three wide">Occupied</th>
+                    <th class="three wide">Under Maintainence</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>
+                        AR - 0898
+                    </td>
+
+                    <td>
+                        A
+                    </td>
+
+                    <td>
+                        <i class="large green checkmark icon"></i>
+                    </td>
+
+                    <td>
+
+                    </td>
+
+                    <td>
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        AR - 0898
+                    </td>
+
+                    <td>
+                        A
+                    </td>
+
+                    <td>
+
+                    </td>
+
+                    <td>
+
+                    </td>
+
+                    <td>
+                        <i class="large green checkmark icon"></i>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        AR - 0898
+                    </td>
+
+                    <td>
+                        A
+                    </td>
+
+                    <td>
+
+                    </td>
+
+                    <td>
+                        <i class="large green checkmark icon"></i>
+                    </td>
+
+                    <td>
+
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="extra content">
+            <br>
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Processing &ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Declined
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
