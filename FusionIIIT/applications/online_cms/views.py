@@ -37,17 +37,17 @@ def viewcourses(request):
     '''
     user = request.user
 
-    extrainfo = ExtraInfo.objects.get(user=user)  #get the type of user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
         print(extrainfo)
-        student = Student.objects.get(id=extrainfo)
+        student = Student.objects.select_related().get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
         #me register = Register.objects.filter(student_id=student, semester=semester(roll))  #info of registered student
-        register = Register.objects.filter(student_id=student)
+        register = Register.objects.select_related().filter(student_id=student)
         courses = collections.OrderedDict()   #courses in which student is registerd
         for reg in register:   #info of the courses
             #instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
-            instructor = Curriculum_Instructor.objects.filter(curriculum_id=reg.curr_id)
+            instructor = Curriculum_Instructor.objects.select_related().filter(curriculum_id=reg.curr_id)
             for inst in instructor:
                 courses[inst] = inst
 
@@ -57,10 +57,10 @@ def viewcourses(request):
                        'extrainfo': extrainfo})
 
     else:   #if the user is lecturer
-        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)   #get info of the instructor
+        instructor = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)   #get info of the instructor
         curriculum_list = []
         for x in instructor:
-            c = Curriculum.objects.get(curriculum_id = x.curriculum_id.curriculum_id)
+            c = Curriculum.objects.select_related().get(curriculum_id = x.curriculum_id.curriculum_id)
             curriculum_list.append(c)
 
         return render(request, 'coursemanagement/coursemanagement1.html',
