@@ -1,0 +1,83 @@
+{% load static %}
+{% block feedback %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    
+
+    <div class="ui pointing secondary menu ">
+        <a class="active item" data-tab="feedback">
+            Scheduled Classes
+        </a>
+
+    </div>
+
+    <div class="ui active tab " data-tab="feedback">
+        <div class="ui vertical segment" style="overflow-y: auto";>
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 0.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Date
+                    </th>
+
+                    <th class="four wide column">
+                        Topic
+                    </th>
+
+                    <th>
+                        Start Time
+                    </th>
+
+                    <th>
+                        End Time
+                    </th>
+
+                    <th class="five wide column">
+                        Class URL
+                    </th>
+
+                </tr>
+                </thead>
+
+
+                <tbody>
+                {% for class in classes %}
+                <tr>
+            
+                    <td>
+                        {{ class.class_date }}
+                    </td>
+
+                    <td>
+                        {{ class.description }}
+                    </td>
+
+                    <td>
+                        {{ class.start_time }}
+                    </td>
+
+                    <td>
+                        {{ class.end_time}}
+                    </td>
+
+                    <td style="color:blue">
+                        <a href= "{{ class.upload_url }}"><i>{{ class.upload_url }}</i></a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+            <br>
+            <div class="ui divider"></div>
+
+    </div>
+    </div>
+{% endblock %}
