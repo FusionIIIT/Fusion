@@ -307,6 +307,5 @@ def AssistantshipClaim_notify(sender,recipient,message,month,year):
 
     url = 'academic-procedures:academic_procedures'
     module = 'Assistantship Request'
-    print("hello")
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=message)
 
