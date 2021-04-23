@@ -186,6 +186,9 @@ under_review cpda applications
                                 <label>PF Number : {{ app.pf_number }}</label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                                 <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Reviewer1 : {{app.tracking_info.reviewer_id.first_name}}</label><br>
+                                <label>Reviewer2 : {{app.tracking_info.reviewer_id2.first_name}}</label><br>
+                                <label>Reviewer3 : {{app.tracking_info.reviewer_id3.first_name}}</label><br>
                                 {% if app.status == 'finished' %}
                                     <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
                                     <label>No. of Bills : {{ app.bills_attached }}</label><br>
@@ -224,7 +227,7 @@ under_review cpda applications
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %} 
                                     <div class="field">
-                                        {% render_field app.assign_form.status %} 
+                                        {% render_field app.assign_form.assign_status %} 
                                     </div>
                                     <br>
                                     <div class="field">
