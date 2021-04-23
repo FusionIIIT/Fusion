@@ -1,0 +1,53 @@
+{% block hall1 %}
+{% comment %} <table class="ui fixed sortable celled table"> {% endcomment %}
+<table class="ui fixed sortable table">
+    <thead>
+    <tr>
+        <th class="four wide">Staff Name</th>
+        <th class="four wide">Caretaker/Gaurd</th>
+        <th class="three wide">Day</th>
+        <th class="three wide">Start Time</th>
+        <th class="three wide">End Time</th>
+        {% if user in hall_caretaker%}
+            <th class="two wide">Delete</th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for staff in hall1_staff %}
+    <tr>
+        <td>
+            {{ staff.staff_id.id.user.first_name }} {{ staff.staff_id.id.user.last_name }}
+        </td>
+
+        <td>
+            {{ staff.staff_type }}
+        </td>
+
+        <td>
+            {{ staff.day }}
+        </td>
+
+        <td>
+            {{ staff.start_time }}
+        </td>
+
+        <td>
+            {{ staff.end_time }}
+        </td>
+        {% if user in hall_caretaker%}
+            <td>
+                <form method="post"  action="{% url 'hostelmanagement:staff_delete_schedule' %}" class="ui form" role="form">
+                {% csrf_token %}
+                <button name="dlt_schedule" value="{{ staff.staff_id.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                    <i class="delete red icon"></i>
+                </button>
+                </form>
+            </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

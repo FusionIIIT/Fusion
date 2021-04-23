@@ -1,0 +1,28 @@
+{% block all_notices %}
+    
+    
+    {% for notice in all_notice %}
+        <div class="ui blue tertiary raised segment">
+            <h2 class="ui center aligned header">{{notice.head_line|truncatechars_html:50}}</h2>
+            <h4 style="text-align:right;">{{notice.posted_by.user.first_name}} {{notice.posted_by.user.last_name}} - {{notice.posted_by.user.username}}</h4>
+
+            <div class="ui styled accordion">
+                <div class="title">
+                        <i class="dropdown icon"></i>
+                        More
+                    </div>
+
+                
+                <div class="content">
+                    <h3>Description</h3>
+                    <h4 class="transition hidden">{{notice.description}}</h4>
+                    <h4 class="ui dividing header"><a href="..\media\{{notice.content}}">Content Link</a></h4>
+                </div>
+                
+            </div>
+        </div>
+    {% endfor %}
+   
+    
+
+{% endblock %}
