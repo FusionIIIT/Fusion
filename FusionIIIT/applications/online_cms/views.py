@@ -5,6 +5,9 @@ import collections
 import json
 import os
 import random
+from datetime import date
+from datetime import time
+from datetime import timezone
 import subprocess
 import datetime
 import requests
@@ -34,26 +37,31 @@ def viewcourses(request):
     '''
     user = request.user
 
-    extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
+    extrainfo = ExtraInfo.objects.get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
-        student = Student.objects.select_related('id').get(id=extrainfo)
+        print(extrainfo)
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
-        register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
+        #me register = Register.objects.filter(student_id=student, semester=semester(roll))  #info of registered student
+        register = Register.objects.filter(student_id=student)
         courses = collections.OrderedDict()   #courses in which student is registerd
         for reg in register:   #info of the courses
-            instructor = Curriculum_Instructor.objects.select_related().get(course_id=reg.course_id)
-            courses[reg] = instructor
+            #instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
+            instructor = Curriculum_Instructor.objects.filter(curriculum_id=reg.curr_id)
+            for inst in instructor:
+                courses[inst] = inst
+
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
 
                        'extrainfo': extrainfo})
+
     else:   #if the user is lecturer
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)   #get info of the instructor
         curriculum_list = []
         for x in instructor:
-            c = Curriculum.objects.select_related().get(curriculum_id = x.curriculum_id.curriculum_id)
+            c = Curriculum.objects.get(curriculum_id = x.curriculum_id.curriculum_id)
             curriculum_list.append(c)
-
 
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'instructor': instructor,
@@ -1405,3 +1413,34 @@ def submit_attendance(request, course_code):
 
 
     return HttpResponse("Feedback uploaded")
+
+
+@login_required
+def usercourse(request, course_code):
+    """
+    The function is use for course content
+    """
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)  # get the type of user
+
+    courseid = Curriculum.objects.get(course_code=course_code)
+    classes = OnlineClasses.objects.filter(course_id=courseid.course_id)
+
+    if extrainfo.user_type == 'faculty':
+        if request.method == 'POST':
+
+            topic = request.POST.get('topicName')
+            class_date = request.POST.get('date')
+            start_time = request.POST.get('StartTime')
+            end_time = request.POST.get('EndTime')
+            upload_url = request.POST.get('ClassURL')
+
+            OnlineClasses.objects.create(course_id = courseid.course_id,
+                class_date=class_date,
+                start_time=start_time,
+                end_time=end_time,
+                description=topic,
+                upload_url=upload_url
+            )
+
+    return render(request, "online_cms/course_new.html", {'classes': classes})
