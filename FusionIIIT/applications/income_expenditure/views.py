@@ -173,7 +173,7 @@ def add_income(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_recieved')
-		receipt = request.Files.get('income_receipt')
+		receipt = request.POST.get('income_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_i = Income(
@@ -209,7 +209,7 @@ def add_expenditure(request):
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
-		receipt = request.FILES.get('expenditure_receipt')
+		receipt = request.POST.get('expenditure_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_e = Expenditure(
