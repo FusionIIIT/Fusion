@@ -203,3 +203,14 @@ class ForumReply(models.Model):
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
 
+
+class OnlineClasses(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    description = models.TextField(max_length=1000)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    class_date = models.DateField()
+    upload_url = models.URLField(max_length=200)
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.pk, self.course_id, self.class_date)
