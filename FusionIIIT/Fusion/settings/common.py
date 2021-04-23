@@ -126,6 +126,8 @@ INSTALLED_APPS = [
     'applications.visitor_hostel',
     'applications.establishment',
     'applications.estate_module',
+    'applications.counselling_cell',
+    'applications.income_expenditure',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -136,7 +138,7 @@ INSTALLED_APPS = [
     'markdown_deux',
     'django_cleanup.apps.CleanupConfig',
     'django_unused_media',
-]
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -154,7 +156,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '..', 'templates/'),],
+        'DIRS': [os.path.join(BASE_DIR, '..', 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -238,7 +240,7 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media/')
 MEDIA_URL = '/media/'

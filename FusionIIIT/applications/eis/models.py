@@ -347,7 +347,7 @@ class emp_achievement(models.Model):
     def get_absolute_url(self):
         return reverse('eis:profile')
 
-class faculty_about(models.Model):
+class eis_faculty_about(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     about = models.TextField(max_length=1000)
     doj = models.DateField(default=datetime.datetime.now)

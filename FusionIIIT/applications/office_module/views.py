@@ -29,12 +29,12 @@ from django.template.defaulttags import register
 
 
 def officeOfDeanRSPC(request):
-    project=Project_Registration.objects.all()
-    project1=Project_Extension.objects.all()
-    project2=Project_Closure.objects.all()
-    project3=Project_Reallocation.objects.all()
+    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
+    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
 
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -62,7 +62,7 @@ def _req_history(req):
     """
     Return requisition history: All tracking rows that are associated with the passet requisition
     """
-    return Tracking.objects.filter(file_id=req.assign_file)
+    return Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=req.assign_file)
 
 _pnd_deslist={
             'Civil_JE': 'Junior Engg. (Civil)',
@@ -79,7 +79,7 @@ _pnd_deslist={
 def pndReadableDesignation(key):
     # Map designations to readable titles.
     d = str(key)
-    return _pnd_deslist.get(d, d) 
+    return _pnd_deslist.get(d, d)
 
 @login_required
 def officeOfDeanPnD(request):
@@ -94,18 +94,18 @@ def officeOfDeanPnD(request):
                 outgoing assignments. Allows performing actions on incoming assignments.
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
 
 
 
     holds=HoldsDesignation.objects.filter(working=user)
-    designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
+    designations=[d.designation for d in HoldsDesignation.objects.select_related('user','designation','working').filter(working=user)]
 
     # handle createassignment POST request
     if 'createassign' in request.POST:
         print("createassign", request)
         req_id=request.POST.get('req_id')
-        requisition=Requisitions.objects.get(pk=req_id)
+        requisition=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
         description=request.POST.get('description')
         upload_file=request.FILES.get('estimate')
         sender_design=None
@@ -115,13 +115,13 @@ def officeOfDeanPnD(request):
                 if requisition.department != "civil":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
+                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Civil_AE")
                 #fdate = datetime.dat
             elif str(hold.designation.name)=="Electrical_JE":
                 if requisition.department != "electrical":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
+                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Electrical_AE")
                 #fdate = datetime.datetime.now().date()
         if not sender_design:
             return HttpResponse('Unauthorized', status=401)
@@ -156,11 +156,11 @@ def officeOfDeanPnD(request):
     # kept in the database for record-keeping reasons.
     elif 'delete_requisition' in request.POST:
         print('delete requisition')
-        hold = HoldsDesignation.objects.get(working=user, designation__name__in=_pnd_deslist)
+        hold = HoldsDesignation.objects.select_related('user','designation','working').get(working=user,designation__name__in=_pnd_deslist)
         if hold:
             req_id=request.POST.get('req_id')
             try:
-                req = Requisitions.objects.get(pk=req_id)
+                req = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
                 office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
                 req.tag = 1 # tag = 1 implies the requisition has been deleted
                 req.save()
@@ -170,19 +170,19 @@ def officeOfDeanPnD(request):
             return HttpResponse('Unauthorized', status=401)
 
     # Requisitions that *don't* have as assignment
-    req=Requisitions.objects.filter(assign_file__isnull=True, tag=0)
+    req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=True, tag=0)
     # all requisitions
-    all_req=Requisitions.objects.filter(tag=0)
+    all_req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(tag=0)
     # list of all requisitions that have an assignment
-    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    assigned_req=list(Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=False).select_related())
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for incoming tracking files
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
+            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receiver_id=user).filter(is_read=False)]
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for outgoing tracking files
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(current_id__user=user)]
+            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id__user=user)]
     # history of assignment, list of pair of (requisition, history list)
     assign_history=[(r, _req_history(r)) for r in assigned_req]
 
@@ -200,11 +200,11 @@ def officeOfDeanPnD(request):
             # this way all history is generated
             passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
             # the last date the requisition was sent
-            last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+            last_date = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=r.assign_file).last().receive_date
             # map with readable titles from deslist
             passed = [pndReadableDesignation(d) for d in passed]
             req_history.append((r, passed, last_date))
-        # in case there is no assignment, that means the history only contains the junior engg. 
+        # in case there is no assignment, that means the history only contains the junior engg.
         else:
             je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
             passed = [pndReadableDesignation(je)]
@@ -249,7 +249,7 @@ def submitRequest(request):
         Endpoint used to create requisition
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     fdate = datetime.datetime.now().date()
     dept=request.POST.get('department')
     building = request.POST.get('building')
@@ -273,19 +273,19 @@ def action(request):
     """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     req_id=request.POST.get('req_id')
-    requisition = Requisitions.objects.get(pk=req_id)
+    requisition = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
     description=request.POST.get('description')
     upload_file=request.FILES.get('estimate')
-    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
-    
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
+
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
-    current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
+    current_hold_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user=user).get(designation=current_design)
     # prev_design = track.current_design.designation
     # prev_hold_design = track.current_design
-    
+
     """
     # This entire thing decides who is the next designation
     if current_design.name == "Civil_JE":
@@ -302,14 +302,14 @@ def action(request):
     elif current_design.name == "Dean_s":
         next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
     # if estimate greater than 10 lacs, left to discretion of Dean PnD to forward when required
-    elif "DeanPnD" in current_design.name: 
+    elif "DeanPnD" in current_design.name:
         next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
     """
 
     if 'Send' in request.POST:
         sent_design=request.POST.get('sent_design')
         sent_design = Designation.objects.get(name=sent_design)
-        sent_hold_design = HoldsDesignation.objects.get(designation=sent_design)
+        sent_hold_design = HoldsDesignation.objects.select_related('user','designation','working').get(designation=sent_design)
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -391,12 +391,12 @@ def frequest(request):
 
 
 def eisModulenew(request):
-    project=Project_Registration.objects.all()
-    project1=Project_Extension.objects.all()
-    project2=Project_Closure.objects.all()
-    project3=Project_Reallocation.objects.all()
+    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
+    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
 
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','designation','working').filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -427,19 +427,19 @@ def officeOfRegistrar(request):
     for atrack in archive_track:
         archive_view[atrack] = atrack.track_id.file_id
 
-    director_track = Tracking.objects.filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
+    director_track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
     director_view = {}
     for track in director_track:
         if not Registrar_response.objects.filter(track_id = track):
-            director_view[track.id] = track.file_id 
+            director_view[track.id] = track.file_id
 
     estab_view = []
     purch_view1 = []
-    purch_view2 = [] 
+    purch_view2 = []
     genadmin_view = []
     current_date = datetime.datetime.now()
 
-    context = { 
+    context = {
                 #"archive_track":archive_track,
                 "archive_view":archive_view,
                 "director_track":director_track,
@@ -464,7 +464,7 @@ def officeOfRegistrar_ajax_submit(request):
         track = Tracking(pk = int(values[0]))
         rr = Registrar_response(track_id = track, remark = values[1], status = values[2])
         rr.save()
-        #print(rr.id) 
+        #print(rr.id)
         return HttpResponse("Done", content_type='text/html')
     else:
         return HttpResponse("Error", content_type='text/html')
@@ -479,7 +479,7 @@ def officeOfRegistrar_forward(request, id):
 def officeOfRegistrar_forward_submit(request):
 
     """Submit handler for the above form"""
-    
+
     if request.method == "POST":
         try:
             track_id = int(request.POST.get("track_id"))
@@ -491,9 +491,9 @@ def officeOfRegistrar_forward_submit(request):
                 return HttpResponse("Cannot find user")
             receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
             current_id = request.user.extrainfo
-            current_design = HoldsDesignation.objects.filter(user = request.user)[0]
-            t_id = Tracking.objects.get(id = track_id)
-            up_file = Tracking.objects.get(id = track_id)
+            current_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user = request.user)[0]
+            t_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
+            up_file = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
             remarks = ""
 
             Tracking.objects.create(
@@ -504,7 +504,7 @@ def officeOfRegistrar_forward_submit(request):
                         receiver_id=receiver_id,
                         remarks=remarks,
                     )
-            rr = Registrar_response(track_id = Tracking.objects.get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
+            rr = Registrar_response(track_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
             rr.save()
             messages.success(request,'File sent successfully')
             return HttpResponse('File sent successfully')
@@ -519,12 +519,12 @@ def officeOfRegistrar_view_file(request, id):
         This is the view to handle registrar's request to view the details of a file, The file whoose id is passed is accessed through
     """
     #file = get_object_or_404(File, id=id)
-    
-    track = Tracking.objects.get(id=id)
+
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=id)
     file = track.file_id
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','designation','working').all()
+    designations = HoldsDesignation.objects.select_related('user','designation','working').filter(user=request.user)
 
     context = {
         'designations':designations,
@@ -570,7 +570,7 @@ def project_register(request):
 
     """Project Fields added"""
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     project_title = request.POST.get('project_title')
     sponsored_agency = ""
     sponsored_agency = request.POST.get('sponsored_agency')
@@ -649,12 +649,12 @@ def project_registration_permission(request):
     """
 
     """on approving project should be displayed in projects tab of Dean RSPC Dashboard"""
-    if 'approve' in request.POST or (request.method == 'GET' and request.GET['a'] == "approve"):
+    if 'approve' in request.POST or (request.method == 'GET' and request.GET.get('a') == "approve"):
         """id list works if multiple projects are selected at a time"""
         id_list = []
         id_list = request.POST.getlist('id[]')
         if len(id_list) == 0:
-            id_list.append(int(request.GET['pk']))
+            id_list.append(int(request.GET.get('pk')))
         for id in id_list:
             # obj = Project_Registration.objects.get(pk=id)
             obj = get_object_or_404(Project_Registration, pk=id)
@@ -701,10 +701,10 @@ def project_registration_permission(request):
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = "Forward"
                 obj.save()
-    elif "reject" in request.POST or request.GET['a'] == "reject":
+    elif "reject" in request.POST or request.GET.get("a") == "reject":
         id_list = request.POST.getlist('id[]')
         if len(id_list) == 0:
-            id_list.append(int(request.GET['pk']))
+            id_list.append(int(request.GET.get('pk')))
         for id in id_list:
             obj = get_object_or_404(Project_Registration, pk=id)
             # print(obj.DRSPC_response)
@@ -728,13 +728,13 @@ def project_extension(request):
     project_id = request.POST.get('project_id')
     # ob = get_object_or_404(Project_Registration, pk=project_id)
     try:
-        ob = Project_Registration.objects.get(pk=project_id)
+        ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob.PI_id.id:
         # date = ob.start_date
@@ -822,13 +822,13 @@ def project_closure(request):
     """Project closure conditions added"""
     project_id = request.POST.get('project_id')
     try:
-        extrainfo1 = Project_Registration.objects.get(pk=project_id)
+        extrainfo1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == extrainfo1.PI_id.id:
         completion_date = request.POST.get('date')
@@ -917,12 +917,12 @@ def project_reallocation(request):
     """Project reallocation details added"""
     project_id = request.POST.get('project_id')
     try:
-        ob1 = Project_Registration.objects.get(pk=project_id)
+        ob1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob1.PI_id.id:
         # applied_date = request.POST.get('applied_date')
@@ -965,7 +965,7 @@ def project_reallocation_permission(request):
         for id in id_list:
             obj = get_object_or_404(Project_Reallocation, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
-                ob = Project_Registration.objects.get(pk=obj.project_id.id)
+                ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=obj.project_id.id)
                 pf = int(ob.PI_id.id)
                 title = ob.project_title
                 ptype = ob.project_type
@@ -1704,7 +1704,7 @@ def directorOffice(request):
         user=ExtraInfo.objects.all().filter(user=user_name).first()
         holds=HoldsDesignation.objects.filter(user=user.user)
         deslist1=['Director']
-        if user.user_type == 'faculty': 
+        if user.user_type == 'faculty':
             context={ }
             return render(request, "officeModule/directorOffice/directorOffice.html", context)
 
@@ -1721,33 +1721,33 @@ def viewProfile(request):
     ns = Faculty.objects.all().filter(id__department__name = 'NATURAL SCIENCE').count()
     #Top students of each year
     top_2017_cse = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'CSE').order_by('-cpi')[:3]
-    
+
 
     top_2016_cse = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'CSE').order_by('-cpi')[:3]
-    
+
 
     top_2015_cse = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'CSE').order_by('-cpi')[:3]
-    
+
     top_2017_me = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ME').order_by('-cpi')[:3]
-    
+
     top_2016_me = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ME').order_by('-cpi')[:3]
-    
+
     top_2015_me = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ME').order_by('-cpi')[:3]
-    
+
     top_2017_ece = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ECE').order_by('-cpi')[:3]
-   
+
     top_2016_ece = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ECE').order_by('-cpi')[:3]
-    
+
     top_2015_ece = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ECE').order_by('-cpi')[:3]
-    
+
     top_2017_design = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'DESIGN').order_by('-cpi')[:3]
-    
+
     top_2016_design = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'DESIGN').order_by('-cpi')[:3]
-    
+
     top_2015_design = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'DESIGN').order_by('-cpi')[:3]
-    
+
     all_counts = [cs,ec,me,des,ns]
-    
+
     top_17_cse = []
     for x in top_2017_cse:
         top_17_cse.append(x.id.user.first_name + ' ' + x.id.user.last_name)
@@ -1758,7 +1758,7 @@ def viewProfile(request):
         top_17_ece.append(x.id.user.first_name + ' ' + x.id.user.last_name)
         top_17_ece.append(x.cpi)
 
-    
+
     top_17_me = []
     for x in top_2017_me:
         top_17_me.append(x.id.user.first_name + ' ' + x.id.user.last_name)
@@ -1786,7 +1786,7 @@ def viewProfile(request):
 
         top_16_design = []
     for x in top_2016_design:
-        top_16_design.append(x.id.user.first_name + ' ' + x.id.user.last_name)  
+        top_16_design.append(x.id.user.first_name + ' ' + x.id.user.last_name)
         top_16_design.append(x.cpi)
 
     top_15_cse = []
@@ -1830,8 +1830,8 @@ def viewOngoingProjects(request):
 
     print(project_details)
 
-    context = {'project_details' : project_details} 
-    return JsonResponse(context)     
+    context = {'project_details' : project_details}
+    return JsonResponse(context)
 
 
 # function for displaying Gymkhana office bearers
@@ -1855,9 +1855,9 @@ def viewOfficeBearers(request):
 #function for viewing the scheduled meetings
 def viewMeetings(request):
     meeting_info=Meeting.objects.all()
-    
+
     meeting = []
-    
+
 
     for x in meeting_info:
         meeting.append(x.agenda)
@@ -1869,13 +1869,13 @@ def viewMeetings(request):
     print(meeting)
 
     context = {
-        'meeting':meeting 
-    }    
+        'meeting':meeting
+    }
 
     return JsonResponse(context)
 
 
-# function for faculty information department wise 
+# function for faculty information department wise
 def viewFacProfile(request):
 
     faculty = Faculty.objects.all()
@@ -1928,7 +1928,7 @@ def viewFacProfile(request):
     return JsonResponse(context)
 
 
-# function for staff information department wise 
+# function for staff information department wise
 def viewStaffProfile(request):
 
     staff_detail = Staff.objects.all()
@@ -1946,7 +1946,7 @@ def viewStaffProfile(request):
     for x in acad:
         academic.append(x.id.id)
         academic.append(x.id.user.first_name + ' ' + x.id.user.last_name)
-        academic.append(x.id.department.name)        
+        academic.append(x.id.department.name)
 
 
     admin = Staff.objects.all().filter(Q(id__department__name='General Administration') | Q(id__department__name='Finance and Accounts') |  Q(id__department__name='Purchase and Store') | Q(id__department__name='Registrar Office') | Q(id__department__name='Security and Central Mess') )
@@ -1959,27 +1959,27 @@ def viewStaffProfile(request):
         administration.append(x.id.department.name)
 
 
-    place =  Staff.objects.all().filter(Q(id__department__name='Placement Cell') )    
+    place =  Staff.objects.all().filter(Q(id__department__name='Placement Cell') )
     placement = []
     for x in place:
         placement.append(x.id.id)
         placement.append(x.id.user.first_name + ' ' + x.id.user.last_name)
-        placement.append(x.id.department.name)  
+        placement.append(x.id.department.name)
 
 
     offc=Staff.objects.all().filter(Q(id__department__name='Student Affairs') | Q(id__department__name='Office of The Dean P&D') | Q(id__department__name='Directorate') | Q(id__department__name='Office of The Dean R&D')  )
-    office =[] 
+    office =[]
     for x in offc:
         office.append(x.id.id)
         office.append(x.id.user.first_name + ' ' + x.id.user.last_name)
-        office.append(x.id.department.name)  
+        office.append(x.id.department.name)
 
     other=Staff.objects.all().filter(Q(id__department__name='Establishment & P&S') | Q(id__department__name='IWD') | Q(id__department__name='F&A & GA') | Q(id__department__name='Establishment, RTI and Rajbhasha') | Q(id__department__name='Establishment')  )
     others =[]
     for x in other:
         others.append(x.id.id)
         others.append(x.id.user.first_name + ' ' + x.id.user.last_name)
-        others.append(x.id.department.name)  
+        others.append(x.id.department.name)
 
 
     context = {"staff": staff, "academic":academic,"administration":administration , "placement": placement , "office": office , "others":others }
@@ -2014,9 +2014,9 @@ def viewStudentProfile(request):
             studentsearch = Student.objects.all().filter(id__id__startswith = yr, id__department__name = department ).filter(programme=programme)
         else:
             studentsearch = Student.objects.all().filter(id__id__startswith = year, programme = programme, id__department__name = department)
-            
+
         print(studentsearch)
-        
+
         for x in studentsearch:
             student_detail.append(x.id.id)
             student_detail.append(x.id.user.first_name + ' ' + x.id.user.last_name)
@@ -2024,11 +2024,11 @@ def viewStudentProfile(request):
             student_detail.append(x.cpi)
 
         info =[]
-        info.append(programme) 
-        info.append(year) 
-        info.append(department)  
-                
-     
+        info.append(programme)
+        info.append(year)
+        info.append(department)
+
+
         context = { "student_detail":student_detail , "info":info} #, 'year':year, 'prog': prog, 'dep': dep}
         return JsonResponse(context)
 
@@ -2041,9 +2041,9 @@ def meeting(request):
     meeting_time = request.POST['meeting_time']
     fetched_members = request.POST.getlist('member')
 
-    members = [] 
-    for i in fetched_members: 
-        if i not in members: 
+    members = []
+    for i in fetched_members:
+        if i not in members:
             members.append(i)
 
     print(len(members))
@@ -2052,7 +2052,7 @@ def meeting(request):
     if(len(members) != len(fetched_members)):
         print("in if")
         return HttpResponse('Error handler content', status=400)
-    
+
     else:
         print("inside else")
         Meeting.objects.create(
@@ -2062,7 +2062,7 @@ def meeting(request):
             venue = venue
         )
 
-        meeting_id = Meeting.objects.get(agenda=agenda,time= meeting_time,venue=venue,date=adate)    
+        meeting_id = Meeting.objects.get(agenda=agenda,time= meeting_time,venue=venue,date=adate)
         for x in members:
             splitted_name = str(x).split(' ')
             u = User.objects.get(first_name = splitted_name[0], last_name = splitted_name[1])
@@ -2071,8 +2071,8 @@ def meeting(request):
             Member.objects.create(
                 meeting_id=meeting_id,
                 member_id=f
-            ) 
-        
+            )
+
 
     return HttpResponse("success")
 
@@ -2112,12 +2112,12 @@ def planMeetings(request):
         for y in Members:
             members.append(y.member_id.id.user.first_name + ' ' + y.member_id.id.user.last_name)
         meeting.append(members)
-    
+
     print(meeting)
 
     context = {
-        'meeting':meeting 
-    }    
+        'meeting':meeting
+    }
 
     return JsonResponse(context)
 

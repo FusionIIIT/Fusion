@@ -1,0 +1,42 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+
+    
+<div class="ui vertical segment">
+    <form id="add_income_source_form" method="POST" action='/income-expenditure/addIncomeSource/'>{% csrf_token %}
+        <div class="ui form" style="border: black" >
+
+            <div class="field">          
+                <input placeholder="Income Source" name='income_source' required="true" type="text"><br>
+            </div>
+            <br>
+
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type="submit">Add</button></center>
+    </form>
+</div>
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#add_income_source_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Income Source added Successfully');
+            window.location = "/income-expenditure/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to add');
+            window.location = "/income-expenditure/main/";
+        });
+    });
+});
+</script>

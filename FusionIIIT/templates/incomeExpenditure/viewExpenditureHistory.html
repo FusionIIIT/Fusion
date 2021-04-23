@@ -1,0 +1,70 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<div class="ui vertical segment">
+      <!---<table class="ui very basic collapsing celled sortable table"
+           style="padding-left: 2.5%;
+                  padding-right: 2.5%;
+                  padding-top: 1%;
+                  padding-bottom: 1.5%;
+                  margin: auto;">
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Granted To</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Receipt</th>
+          </tr>
+        </thead>
+
+        <tbody>
+            {% for items in expenditure_history %}
+              <tr>
+                <td>{{forloop.counter}}.</td>
+                    <td>
+                      {{ items.granted_to }}
+                    </td>
+                    <td>
+                        {{ items.spent_on }}
+                    </td>
+                    <td>
+                        {{ items.date_added }}
+                    </td>
+                    <td>
+                        {{ items.amount }}
+                    </td>
+                    <td>
+                        <a href="">view</a>
+                    </td>
+              </tr>
+            {% endfor %}
+        </tbody>
+    </table> --->
+    {% comment %} {% for items in expenditure_history %} {% endcomment %}
+    
+    <div class="card" style = "    margin-bottom: 5%;
+    border-style: groove;
+    padding: 2%;">
+      <div class="card-header">
+        Granted to : <!--{{items.granted_to}-->
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Purpose :<!---- {{items.spent_on}}--></h5>
+        <p class="card-text">Date added : <!--{{items.date_added}}-->
+          <br>
+          Amount :<!---- {{item.amount}}-->
+        </p>
+        <a href="#" class="btn btn-primary" style="border: groove;
+        padding: 1%;">Delete</a>
+      </div>
+      </div>
+
+      
+
+
+    
+</div>

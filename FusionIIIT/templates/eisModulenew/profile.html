@@ -91,6 +91,16 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
+                {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                     <a class="item" data-tab="tenth">
+                        My Projects
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+
+
+
 
                  <!--{% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
@@ -185,14 +195,17 @@
 
             {% comment %}The others starts here!{% endcomment %}
             <div class="{% if mark14 == 1 or mark15 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="eigth">
-            
+
                 {% block others %}
                     {% include 'eisModulenew/others.html' %}
                 {% endblock %}
             </div>
             {% comment %}The others ends here!{% endcomment %}
 
-            {% comment %}The Project management form starts here!{% endcomment %}
+            {% comment %}The
+
+
+            Project management form starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="ninth">
                 <!-- <div class="ui active tab segment" data-tab="first"> -->
                 {% block form1 %}
@@ -200,9 +213,21 @@
                 {% endblock %}
                 <!-- </div> -->
             </div>
+            <div class="ui tab segment" data-tab="tenth">
+
+                {% block my_projects %}
+                    {% include 'eisModulenew/myProjects.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Project management form starts here!{% endcomment %}
+            {% comment %} The Project Requests {% comment %}
+
+
+
 
             <!-- <div class="ui tab segment" data-tab="ten">
-                
+
                 {% block form2 %}
                     {% include 'officeModule/officeOfDeanRSPC/Hod_Applications_content.html' %}
                 {% endblock %}
@@ -247,7 +272,7 @@
                 {% endblock %}
             </div>
             {% endif %}
-        
+
 
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
@@ -332,7 +357,7 @@
             $("#proj_finish").text(finish);
             $("#proj_finance").text(finance);
             $("#proj_status").text(status);
-           
+
             $("#projectmodal").modal('show');
         }
 
@@ -358,7 +383,7 @@
             document.getElementById("savejournal").style.display='none';
             document.getElementById("editjournal").style.display='block';
             document.getElementById("journalform").action="{% url 'eis:editjournal' %}";
-            
+
         }
 
         function editforeignvisit(index,id,country,place,purpose,start_date,end_date)
@@ -374,7 +399,7 @@
             document.getElementById("saveforeignvisit").style.display='none';
             document.getElementById("editforeignvisit").style.display='block';
             document.getElementById("foreignvisitform").action="{% url 'eis:editforeignvisit' %}";
-            
+
         }
 
         function toggleReport(){
@@ -399,7 +424,7 @@
             document.getElementById("saveindianvisit").style.display='none';
             document.getElementById("editindianvisit").style.display='block';
             document.getElementById("indianvisitform").action="{% url 'eis:editindianvisit' %}";
-            
+
         }
 
         function editbooks(index,id,title,author,p_type,pyear,publisher)
@@ -415,7 +440,7 @@
             document.getElementById("savebook").style.display='none';
             document.getElementById("editbook").style.display='block';
             document.getElementById("booksform").action="{% url 'eis:editbooks' %}";
-            
+
         }
 
         function editevent(index,id,role,agency,venue,start_date,end_date, type, name)
@@ -434,7 +459,7 @@
             document.getElementById("saveevent").style.display='none';
             document.getElementById("editevent").style.display='block';
             document.getElementById("eventsform").action="{% url 'eis:editevent' %}";
-            
+
         }
 
         function editconference2(index,id,role1,role2,name,venue,start_date,end_date)
@@ -453,12 +478,12 @@
             document.getElementById("saveconference2").style.display='none';
             document.getElementById("editconference2").style.display='block';
             document.getElementById("conferenceform2").action="{% url 'eis:editconsym' %}";
-            
+
         }
 
         function viewconference(c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
         {
-            
+
             $("#conf_name").text(c_name);
             $("#conf_authors").text(c_author);
             $("#conf_co_authors").text(c_co_author);
@@ -516,7 +541,7 @@
                 $("#contactInput").val(contactSpan);
                 $("#contactInput").show();
                 $("#contactSpan").hide();
-                $("#contactIcon").hide();  
+                $("#contactIcon").hide();
 
                 console.log($("#githubInput").val(githubSpan));
                 $("#githubInput").val(githubSpan);
@@ -530,7 +555,7 @@
                 $("#linkedinInput").show();
                 $("#linkedinSpan").hide();
                 $("#linkedinIcon").hide();
-                 
+
                 $("#aboutTextarea").val(aboutSpan);
                 $("#aboutTextarea").show();
                 $("#aboutSpan").hide();
@@ -995,11 +1020,11 @@
         $('#example1f').calendar();
         $('#example1g').calendar();
         $('#example1h').calendar();
-        
+
         $('#example2').calendar({
           type: 'date'
         });
-        
+
         $('#example2a').calendar({
           type: 'date'
         });

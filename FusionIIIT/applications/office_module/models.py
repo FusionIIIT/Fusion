@@ -74,6 +74,7 @@ class Constants:
     PROJECT_TYPE = (
         ('SRes', 'Sponsored Research'),
         ('Consultancy', 'Consultancy'),
+        ('FIG' , 'Faculty Initiation Grant'),
         ('Testing', 'Testing')
     )
 
@@ -180,8 +181,7 @@ class Assistantship(models.Model):
         return '{} - {}'.format(self.student_id, self.instructor_id)
 
 
-
-# Dean RSPC Begins ....................................................................................................
+# Dean RSPC Begins
 """
 DEAN RSPC BEGINS
 Table for Project Registration
@@ -303,7 +303,7 @@ class Project_Reallocation(models.Model):
         return str(self.project_id)
 
 
-# Dean RSPC ends ....................................................................................................
+# Dean RSPC ends
 
 
 class Member(models.Model):

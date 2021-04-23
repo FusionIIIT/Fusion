@@ -10,9 +10,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-        'HOST': '172.27.16.216',
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'HOST': 'localhost',
+        'USER': 'swati',
+        'PASSWORD': 'a',
     }
 }
 
@@ -27,10 +27,27 @@ if DEBUG:
     MIDDLEWARE += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
+
     INSTALLED_APPS += (
         'debug_toolbar',
+        'django_extensions',
         )
-    INTERNAL_IPS = ('127.0.0.1',)
+
+
+    ###############################
+    # DJANGO_EXTENSIONS SETTINGS: #
+    ###############################
+    INTERNAL_IPS = [
+        '127.0.0.1',
+    ]
+
+    ###############################
+    # DJANGO_EXTENSIONS SETTINGS: #
+    ###############################
+    SHELL_PLUS = "ipython"
+
+    SHELL_PLUS_PRINT_SQL = True
+
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }

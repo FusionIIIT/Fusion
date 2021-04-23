@@ -64,9 +64,7 @@ class Constants:
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
-
-
-    )
+        )
 
 
 class Designation(models.Model):

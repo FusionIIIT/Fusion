@@ -45,6 +45,23 @@
                     View Profile
                     <i class="right floated chevron right icon"></i>
                 </a>
+                <!-- TO see project requests -->
+                <!-- {% if request.user.extrainfo.user_type == "faculty" and request.user == user %} -->
+                {% if "Dean (R&D)" in designation %}
+                     <a class="item" href = "../office/officeOfDeanRSPC">
+                        Project Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+                {% if "Dean (R&D)" in designation %}
+                     <a class="item" href = "../eis/rspc_profile">
+                        RSPC Profile
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+                <!-- Finishes -->
+
+
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -111,6 +128,7 @@
 
 
 
+{% endif %}
 {% endblock %}
 
 {% block javascript %}
