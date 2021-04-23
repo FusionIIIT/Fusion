@@ -10,7 +10,6 @@
                     {% if drop_courses_options %}
                         <form id='drop_courses' action='/academic-procedures/drop_course/'>
                         {% csrf_token %}
-                                <input type="text" hidden="true" id="c_count" value="{{dropped_courses_count}}">
                                 <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
                             <table  class="ui very basic collapsing celled sortable table"               
                                     style= "padding-left: 2.5%;
@@ -75,21 +74,16 @@ $(function() {
     $("#drop_courses").submit(function(event) {
 
         var credits = parseInt(document.getElementById("cr_count").value);
-        var count = parseInt(document.getElementById("c_count").value);
         var checkboxing = document.getElementById("mycheck");
         var test =0;
         for(var i=0; i<mycheck.length;i++){
             if(mycheck[i].checked==true){
                 credits = credits - parseInt(mycheck[i].getAttribute("data-valuetwo"));
-                count =count+1;
                 test =test+1;
             }
         }
 
-        if (count >= 3){
-            alert("You Can't drop more than 2 courses in one semester");
-            window.location = "/academic-procedures/main/" ;  
-        }else if(credits <= 11 ){
+        if(credits <= 11 ){
             alert("You need to earn at least 12 credits in one semester");
             window.location = "/academic-procedures/main/" ;           
         }else if(test ==0 ){

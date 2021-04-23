@@ -39,6 +39,7 @@ def main_page(request):
 	fin_years = []
 	inc_fin_years = []
 	exp_fin_years = []
+	
 	if len(Income.objects.all()):
 		min_date_ob = Income.objects.all().aggregate(Min('date_added'))
 	
@@ -65,8 +66,6 @@ def main_page(request):
 
 	if len(Income.objects.all()):
 		
-		
-
 		min_date_in = Income.objects.all().aggregate(Min('date_added'))
 		max_date_in = Income.objects.all().aggregate(Max('date_added'))
 		mini_year = min_date_in['date_added__min'].year

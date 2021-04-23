@@ -30,12 +30,12 @@
                     LTC Management
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% comment %}
+
                 <a class="item" data-tab="third">
                     APR / Appraisals
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endcomment %}
+
                 <a class="item" data-tab="fourth">
                     Create Payroll Slip
                     <i class="right floated chevron right icon"></i>
@@ -52,6 +52,12 @@
                 {% block cpda %}
                     {% if admin %}
                         {% include 'establishment/cpda_admin.html' %}
+                    {% elif hod %}
+                        {% include 'establishment/cpda_reviewer.html' %}
+                    {% elif registrar %}
+                        {% include 'establishment/cpda_reviewer.html' %}
+                    {% elif director %}
+                        {% include 'establishment/cpda_reviewer.html' %}
                     {% else %}
                         {% include 'establishment/cpda.html' %}
                     {% endif %}
@@ -66,13 +72,19 @@
                     {% endif %}
                 {% endblock %}
             </div>
-            {% comment %}
+
             <div class="ui tab segment" data-tab="third">
                 {% block appraisal %}
-                    {% include 'establishment/appraisal.html' %}
+                    {% if hod %}
+                        {% include 'establishment/appraisal_hod.html' %}
+                    {% elif director %}
+                        {% include 'establishment/appraisal_director.html' %}
+                    {% else %}
+                        {% include 'establishment/appraisal.html' %}
+                    {% endif %}
                 {% endblock %}
             </div>
-            {% endcomment %}
+
             <div class="ui tab segment" data-tab="fourth">
                 {% block payroll_slip %}
                     {% include 'establishment/payroll_slip.html' %}
