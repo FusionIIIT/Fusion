@@ -17,7 +17,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-
+from notification.views import AssistantshipClaim_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance )
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -142,7 +142,6 @@ def academic_procedures_faculty(request):
                             'phdprogress_request_list' : phdprogress_request_list,
                             'dues' : dues,
                             'r' : r,
-                            'stu' : stu,
                          })
     else:
         HttpResponse("user not found")
@@ -2867,7 +2866,7 @@ def update_assistantship(request):
         i = request.POST.get('obj_id')
         user = ExtraInfo.objects.get(user = request.user)
         assistantship_object = AssistantshipClaim.objects.get(id = i)
-
+        recipient = User.objects.filter(username = assistantship_object.student)
         if user == assistantship_object.ta_supervisor.id and r == "Satisfactory":
             assistantship_object.ta_supervisor_remark=True
         elif user == assistantship_object.ta_supervisor.id and r == "Unsatisfactory":
@@ -2876,8 +2875,10 @@ def update_assistantship(request):
             assistantship_object.thesis_supervisor_remark=True 
         elif r == "Unsatisfactory" :
             assistantship_object.thesis_supervisor_remark=False
-        
         assistantship_object.save()
+        AssistantshipClaim_notify(request.user,recipient,r,assistantship_object.month,assistantship_object.year)
+        
+        
     return HttpResponseRedirect('/academic-procedures/main/')
         
 
@@ -2992,8 +2993,11 @@ def update_phdform(request):
         phd_object.annual_progress_seminar=annualp
         phd_object.commments=sugg
         phd_object.save()
-        print("saved")
-    return HttpResponseRedirect('/academic-procedures/main/')
+        content="success"
+        print(gr)
+        print(pr)
+        content = json.dumps(content)
+    return HttpResponse(content)
 
 
 def update_dues(request):

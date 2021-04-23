@@ -1,10 +1,5 @@
 {% extends 'globals/base.html' %}
 {% load static %}
-
-
-
-
-
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
@@ -62,13 +57,13 @@
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
         </div>
-        {% comment %}
+         {% comment %}
             The left-rail segment ends here!
-        {% endcomment %}
+         {% endcomment %}
 
-        {% comment %}
+         {% comment %}
             The central-rail segment starts here!
-        {% endcomment %}
+         {% endcomment %}
         <div class="eight wide column">
 
          {% comment %}
@@ -77,85 +72,88 @@
 
 
 
-         <div class="ui active tab segment" data-tab="one">
-                <br> <br>
-                <table class="ui orange table">
-                    <thead>
-                        <tr>
-                            <th>Name Of the Courses</th>
-                            <th>Course Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for obj in courses_list %}
-                        <tr>
-                            <td><a href="../../ocms/{{obj.curriculum_id.course_code}}/">{{obj.curriculum_id.course_code}}</a></td>
-                            <td>{{obj.curriculum_id.course_id.course_name}}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-         </div>        
-        
-         <div class="ui tab segment" data-tab="three" style="width: 100%;">
-            <div class="ui pointing secondary menu">
-                <a class="active item" data-tab="three_one" style="width: 50%;">
-                    <center>Marks Submission</center>
-                </a>
-                <a class=" item" data-tab="three_two" style="width: 50%;" >
-                    <center>Submit Marks Manually</center>
-                </a>
-            </div>
-            <div class="ui active tab segment" data-tab="three_one">
-                {%  include 'academic_procedures/grade_submission.html' %}
-            </div>
-            <div class="ui  tab segment" data-tab="three_two">
-                {%  include 'academic_procedures/manual_grade_submission.html' %}
-            </div>
+            <div class="ui active tab segment" data-tab="one">
+                    <br> <br>
+                    <table class="ui orange table">
+                        <thead>
+                            <tr>
+                               <th>Name Of the Courses</th>
+                               <th>Course Code</th>
+                               </tr>
+                        </thead>
+                        <tbody>
+                            {% for obj in courses_list %}
+                            <tr>
+                                <td><a href="../../ocms/{{obj.curriculum_id.course_code}}/">{{obj.curriculum_id.course_code}}</a></td>
+                                <td>{{obj.curriculum_id.course_id.course_name}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+            </div>        
         
             <div class="ui  tab segment" data-tab="two">
-            {%  include 'academic_procedures/thesissupervise.html' %}
+                {%  include 'academic_procedures/thesissupervise.html' %}
+            </div>
+            
+            <div class="ui tab segment" data-tab="three" style="width: 100%;">
+                <div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="three_one" style="width: 50%;">
+                        <center>Marks Submission</center>
+                    </a>
+                    <a class=" item" data-tab="three_two" style="width: 50%;" >
+                        <center>Submit Marks Manually</center>
+                    </a>
+                </div>
+            
+                <div class="ui active tab segment" data-tab="three_one">
+                    {%  include 'academic_procedures/grade_submission.html' %}
+                </div>
+                <div class="ui  tab segment" data-tab="three_two">
+                    {%  include 'academic_procedures/manual_grade_submission.html' %}
+                </div>
             </div>
         
 
             <div class="ui  tab segment" data-tab="assis">
                 {%  include 'academic_procedures/approveassis.html' %}
             </div>
-        
+            
             <div class="ui  tab segment" data-tab="mtechsg">
                 {%  include 'academic_procedures/approvemtechsg.html' %}
             </div>
+            
         
             <div class="ui  tab segment" data-tab="phdform">
                 {%  include 'academic_procedures/phdform.html' %}
             </div>
+            
         
             <div class="ui  tab segment" data-tab="dues">
-            {%  include 'academic_procedures/updatedues.html' %}
+                {%  include 'academic_procedures/updatedues.html' %}
             </div>
         
         
             {% comment %}The grid ends here!{% endcomment %}
             
-         </div>
+        </div>
         
-
     
             {% comment %}The central-rail segment ends here!{% endcomment %}
 
             {% comment %}The right-rail segment starts here!{% endcomment %}
-            <div class="three wide column">
-                <div class="row">
-                    {% comment %}
-                    TODO: the right rail!
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                TODO: the right rail!
                 {% endcomment %}
-                </div>
             </div>
+        </div>
           {% comment %}The right-rail segment ends here!{% endcomment %}
 
           {% comment %}The right-margin segment!{% endcomment %}
            <div class="column"></div>
-        </div>
+        
     </div>
     
 
