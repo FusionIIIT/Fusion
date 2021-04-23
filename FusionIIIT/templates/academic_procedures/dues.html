@@ -1,6 +1,9 @@
 {% load static %}
+{% if lib_d < 0 %}
+<h4>Your Entry in Dues is not entered yet.</h4>
+{% else %} 
 <center><b>Dues</b></center>
-<div class="ui vertical segment" style="width: 100%">
+<div class="ui vertical segment" style="width: 100%">   
     <table class="ui very basic celled sortable table" style="width: 100%">
         <thead>
             <tr style="background-color: #f1f1f1">
@@ -22,3 +25,13 @@
             </tr>
     </table>
 </div>
+ {% if tot_d == 0 %}
+    <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/dues_pdf/ ">
+    {%csrf_token%}
+        <br><br>
+        <button class="ui large primary button right floated">
+            Click Here to get No Dues
+        </button>
+    </form>
+ {% endif %}
+{% endif %}

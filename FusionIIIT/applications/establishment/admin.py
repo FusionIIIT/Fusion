@@ -21,3 +21,16 @@ admin.site.register(Ltc_tracking)
 admin.site.register(Ltc_eligible_user)
 
 admin.site.register(Establishment_variables)
+admin.site.register(Appraisal)
+admin.site.register(CoursesInstructed)
+admin.site.register(NewCourseMaterial)
+admin.site.register(ThesisResearchSupervision)
+admin.site.register(AppraisalRequest)
+admin.site.register(AppraisalAdministrators)
+admin.site.register(SponsoredProjects)
+admin.site.register(NewCoursesOffered)
+
+admin.site.register(Ltc_availed)
+admin.site.register(Ltc_to_avail)
+admin.site.register(Dependent)
+

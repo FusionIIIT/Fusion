@@ -1,0 +1,162 @@
+{% block hall_staff_edit %}
+<h3 align="center"> HALL STAFF EDIT </h3><br><br>
+<!-- <form action="{%url 'office_module:teaching_form' %}" method ="POST"> -->
+<form action="{% url 'hostelmanagement:staff_edit_schedule' %}" method ="POST">
+   {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        
+       <div class="two fields">
+           {% comment %} <div class="six wide field"> {% endcomment %}
+               {% comment %} <label>Hall No</label> {% endcomment %}
+               {% comment %} <input value="" class="ui large input" name="hall_no" placeholder="Hall-4"> {% endcomment %}
+               {% comment %} <input value="" class="ui large input" name="hall_no" required onkeypress="return isNumberKey(event)"> {% endcomment %}
+           {% comment %} </div> {% endcomment %}
+           <div class="six wide field">
+               <label>Hall No</label>
+               <select class="ui search fluid dropdown" name="hall_no"  placeholder="Hall"required>
+                   <option value="">Select</option>
+                   <option value="hall1">Hall-1</option>
+                   <option value="hall3">Hall-3</option>
+                   <option value="hall4">Hall-4</option>
+               </select>
+           </div>
+           <div class="six wide field">
+               <label>Staff Type</label>
+               <select class="ui search fluid dropdown" name="staff_type" required>
+                   <option value="">Select</option>
+                   <option value="Caretaker">Caretaker</option>
+                   <option value="Gaurd">Gaurd</option>
+               </select>
+           </div>
+        </div>
+           {% comment %} <div class="six wide field">
+               <label>Staff Name</label>
+               <select class="ui search fluid dropdown" name="Staff_name" required>
+                   <option value="">Select</option>
+                   {% for stff in staff %}
+                   <option value={{stff.id}}>{{stff.id.user.first_name}} {{stff.id.user.last_name}}</option>
+                   {% endfor %}
+                   
+               </select>
+           </div> {% endcomment %}
+        <div class="two fields">
+           <div class="six wide field">
+                <label>Staff Name</label>
+                <div class="ui fluid search selection dropdown">
+                    <input name="Staff_name"  type="hidden">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select</div>
+                    <div class="menu">
+                        {% for staff in staff%}
+                        <div class="item" data-value={{ staff.pk }}>
+                        {{staff.id.user.first_name}} {{staff.id.user.last_name}}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+           <div class="six wide field">
+               <label>Day</label>
+               <select class="ui search fluid dropdown" name="day" required>
+                   <option value="">Select</option>
+                   <option value="Monday">Monday</option>
+                   <option value="Tuesday">Tuesday</option>
+                   <option value="Wednesday">Wednesday</option>
+                   <option value="Thursday">Thursday</option>
+                   <option value="Friday">Friday</option>
+                   <option value="Saturday">Saturday</option>
+                   <option value="Sunday">Sunday</option>
+               </select>
+           </div>
+           
+       </div>
+       
+       <div class="two fields">
+            <div class="six wide field">
+                <label>Start Time</label>
+                {% comment %} <input value="" class="ui large input" name="room_no" required> {% endcomment %}
+                <input type="time"  class="ui large input"  name="start_time" required>
+           </div>
+            <div class="six wide field">
+                <label>End Time</label>
+                {% comment %} <input value="" class="ui large input" name="room_no" required> {% endcomment %}
+                <input type="time"  class="ui large input"  name="end_time" required>
+           </div>
+
+           {% comment %} <div class="six wide field">
+               <label>Branch</label>
+               <select class="ui search fluid dropdown" name="branch" required>
+                   <option value="">Select</option>
+                   <option value="CSE">CSE</option>
+                   <option value="ME">ME</option>
+                   <option value="ECE">ECE</option>
+               </select>
+           </div> {% endcomment %}
+           
+       </div>
+       
+       <!-- <div class="three fields">
+           <div class="six wide field">
+               <label>Course 1</label>
+               <select class="ui search fluid dropdown" name="course1" required>
+                   <option value="">Select</option>
+                   <option value="Computer Graphics">Computer Graphics</option>
+                   <option value="Machine Learning">Machine Learning</option>
+                   <option value="Image Processing">Image Processing</option>
+                   <option value="Data Structure">Data Structure</option>
+               </select>
+           </div>
+
+           <div class="six wide field">
+               <label>Course 2</label>
+               <select class="ui search fluid dropdown" name="course2" required>
+                   <option value="">Select</option>
+                   <option value="Computer Graphics">Computer Graphics</option>
+                   <option value="Machine Learning">Machine Learning</option>
+                   <option value="Image Processing">Image Processing</option>
+                   <option value="Data Structure">Data Structure</option>
+               </select>
+           </div>
+
+           <div class="six wide field">
+               <label>Course 3</label>
+               <select class="ui search fluid dropdown" name="course3" required>
+                   <option value="">Select</option>
+                   <option value="Computer Graphics">Computer Graphics</option>
+                   <option value="Machine Learning">Machine Learning</option>
+                   <option value="Image Processing">Image Processing</option>
+                   <option value="Data Structure">Data Structure</option>
+               </select>
+           </div>
+       </div> -->
+
+       <div class="field">
+           <button class="ui primary button right floated" type="submit">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+<script type="text/javascript">
+   
+   function isNumberKey(evt){
+   var charCode = (evt.which) ? evt.which : event.keyCode
+   if (charCode > 31 && (charCode < 48 || charCode > 57))
+       return false;
+   return true;
+}
+
+</script>
+
+ {% endblock %} 
+
+
+
+
+

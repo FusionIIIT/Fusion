@@ -3,6 +3,7 @@
 {% comment %}The tab menu starts here!{% endcomment %}
     
 <div class="field" style="border : 0">
+<<<<<<< HEAD
         
     <select class="ui dropdown" >
         <option value="">Select Financial Year</option>
@@ -17,6 +18,18 @@
     </select>
     <input class="ui primary button" type="button" value="Download" style="float: right;">
         
+=======
+    <form action="/income-expenditure/balanceSheet_pdf/" method="POST"> {%csrf_token%}
+    <select class="ui dropdown" name="fin_year" >
+        <option value="">Select Financial Year</option>
+
+        {% for year in fin_years %}
+         <option  value = {{year}}>{{year}}</option>
+        {% endfor %}
+    </select>
+<button class="ui large primary button right floated"> Submit</button>
+</form>    
+>>>>>>> 9b561901b48e4d2e343d71189149122b60d642b6
 </div>
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
@@ -29,11 +42,19 @@ $(function() {
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
+<<<<<<< HEAD
             alert('Thesis Topic Successfully Submitted');
             window.location = "/income-expenditure/main/";
         });
         posting.fail(function(data) {
             alert('Failed to add');
+=======
+           
+            window.location = "/income-expenditure/main/";
+        });
+        posting.fail(function(data) {
+           
+>>>>>>> 9b561901b48e4d2e343d71189149122b60d642b6
             window.location = "/income-expenditure/main/";
         });
     });
