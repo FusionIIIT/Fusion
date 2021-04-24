@@ -49,109 +49,107 @@
 
 <center><b>Pre-Registration for Next Semester Courses</b></center>
     <div class="ui vertical segment">
-        {% if prd %}
-            {% if pre_registration_flag %}
-                <B style="color:red"><CENTER>   You have already registered!!!</B></CENTER>
-                <center><a id="viewbtn" class="btn" onclick="view()">View Courses</a></center>
-                <center><a id="hidebtn" class="btn2" onclick="hide()">Hide courses</a></center>
-                <table class="ui very basic collapsing celled sortable table " id="view" style="display:none"
-                       style = "padding-left: 2.5%;
-                                padding-right: 2.5%;
-                                padding-top: 1%;
-                                padding-bottom: 1.5%;
-                                margin: auto;">
+        {% if curr_sem.semester_no != 8 %}
+            {% if prd %}
+                {% if pre_registration_flag %}
+                    <B style="color:red"><CENTER>   You have already registered!!!</B></CENTER>
+                    <center><a id="viewbtn" class="btn" onclick="view()">View Courses</a></center>
+                    <center><a id="hidebtn" class="btn2" onclick="hide()">Hide courses</a></center>
+                    <table class="ui very basic collapsing celled sortable table " id="view" style="display:none"
+                        style = "padding-left: 2.5%;
+                                    padding-right: 2.5%;
+                                    padding-top: 1%;
+                                    padding-bottom: 1.5%;
+                                    margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Course ID</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for items in pre_registered_course_show %}
+                            <tr>
+                                <td>{{forloop.counter}}.</td>
+                                <td>{{ items.course_id.code }}
+                                </td>
+                                <td>{{ items.course_id.name}}</td>
+                                <td>{{items.course_id.credit}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                <form id='student_register' action='/academic-procedures/pre_registration/'>
+                        {% csrf_token %}
+                    <table  class="ui very basic collapsing celled sortable table"
+                            style ="padding-left: 2.5%;
+                                    padding-right: 2.5%;
+                                    padding-top: 1%;
+                                    padding-bottom: 1.5%;
+                                    margin: auto;">
                     <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Course ID</th>
-                        <th>Course Name</th>
-                        <th>Credits</th>
-                        <th>Semester</th>
-                    </tr>
+                        <tr>
+                            <th>#</th>
+                            <th>Course ID</th>
+                            <th>Course Name</th>
+                            <th>Semester</th>
+                            <th>Credits</th>
+                            <th>Select</th>
+                        </tr>
                     </thead>
 
                     <tbody>
-                        {% for items in pre_registered_courses_show %}
-                        <tr>
-                            <td>{{forloop.counter}}.</td>
-                            <td>{{ items.curr_id.course_code }}
-                                {% if items.curr_id.optional %}
-                                    <B><div style="color:green;">(optional)</B></div>
-                                {% endif %}
-                            </td>
-                            <td>{{ items.curr_id.course_id.course_name}}</td>
-                            <td>{{items.curr_id.credits}}</td>
-                            <td>{{ items.curr_id.sem }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-            <form id='student_register' action='/academic-procedures/pre_registration/'>
-                    {% csrf_token %}
-                <table  class="ui very basic collapsing celled sortable table"
-                        style ="padding-left: 2.5%;
-                                padding-right: 2.5%;
-                                padding-top: 1%;
-                                padding-bottom: 1.5%;
-                                margin: auto;">
-                <thead>
-                    <tr>
-                        <!-- <th>#</th> -->
-                        <th>Course ID</th>
-                        <th>Course Name</th>
-                        <th>Semester</th>
-                        <th>Credits</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                        <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
-                        {% for item in next_sem_branch_registration_courses %}
-                            {% for items in item %}
-                        <tr>
-                            <!-- <td>{{forloop.counter}}.</td> -->
-                            <td>{{ items.course_code }}
-                                {% if items.optional %}
-                                    <div style="color:green;"><B>(optional)</B></div>
-                                {% endif %}
-                            </td>
-                            <td>{{ items.course_id.course_name}}
-                            </td>
-                            <td>{{items.sem}}
-                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
-                            </td>
-                            <td>{{ items.credits }}
-                            </td>
-                            <td><B>{% if items.optional %}
-                                <input name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}" required>
-                                {% else %}
-                                <input name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}" onclick="return false;" checked hidden="True">
-                                <div style="color:red;"> (Compulsory)   </div>
-                                {% endif %}
-                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-
-                                </B>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-                    {% endfor %}
+                            <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
+                            {% for item in next_sem_registration_courses %}
+                                {% for items in item %}
+                                    <tr>
+                                        <td>{{forloop.counter}}.</td>
+                                        <td>{{ items.code }}
+                                        </td>
+                                        <td>{{ items.name}}
+                                        </td>
+                                        <td>{{next_sem.semester_no}}
+                                            <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
+                                        </td>
+                                        <td>{{ items.credit }}
+                                        </td>
+                                        <td><B>
+                                            <input class="choices" name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.id }}" data-value2="{{items.credit}}" required>
+                                            <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                            </B>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                            {% endfor %}
 
 
-        </tbody>
-        </table>
-                    <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <button class="ui primary button">Register</button>
+            </tbody>
+            </table>
+                        <div class="extra content">
+                    <div class="" style="text-align: center;">
+                        <button class="ui primary button">Register</button>
+                    </div>
                 </div>
-            </div>
-        </form>
-             {% endif %}
-             {% else %}
-                <B><CENTER>   Pre Registration date hasn't come yet </B></CENTER>
-             {% endif %}
+            </form>
+                {% endif %}
+                {% else %}
+                    <B><CENTER>   Pre Registration date hasn't come yet </B></CENTER>
+            {% endif %}
+        {% else %}
+            <CENTER><p style="color: red" >   You are not Eligible for Registration !! </p></CENTER>     
+        {% endif %}  
 
 
 
@@ -166,11 +164,11 @@
 $(function() {
     $("#student_register").submit(function(event) {
 
-        var inp = document.getElementsByTagName("input");
+        var inp = document.getElementsByClassName("choices");
         var count = 0;
         for(var i=0; i<inp.length;i++){
             if(inp[i].type=="radio" && inp[i].checked==true){
-                count = count + parseInt(inp[i].getAttribute("data-valuetwo"));
+                count = count + parseInt(inp[i].getAttribute("data-value2"));
 
             }
         }
@@ -218,34 +216,3 @@ function hide(){
 
 
 
-
-<!-- <tbody>
-                    <form id='student_register' action='/academic-procedures/pre_registration/'>
-                    {% csrf_token %}
-                        <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
-                        {% for items in courses_list %}
-                        <tr>
-                            <td>{{forloop.counter}}.</td>
-                            <td>{{ items.course_code }}
-                                {% if items.optional %}
-                                    <B><div style="color:green;">(optional)</B></div>
-                                {% endif %}
-                            </td>
-                            <td>{{ items.course_id.course_name}}
-                            </td>
-                            <td>{{items.sem}}
-                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
-                            </td>
-                            <td>{{ items.credits }}
-                            </td>
-                            <td><B>{% if items.optional %}
-                                <input name="choice" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}">
-                                {% else %}
-                                <input name="choice" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}" onclick="return false;" checked hidden="True">
-                                <div style="color:red;"> (Compulsory)   </div>
-                                {% endif %}
-                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                            </td></B>
-                        </tr>
-                    {% endfor %}
-                </tbody> -->
