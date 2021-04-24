@@ -17,7 +17,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-
+from notification.views import AssistantshipClaim_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester)
@@ -143,7 +143,6 @@ def academic_procedures_faculty(request):
                             'phdprogress_request_list' : phdprogress_request_list,
                             'dues' : dues,
                             'r' : r,
-                            'stu' : stu,
                          })
     else:
         HttpResponse("user not found")
@@ -2841,6 +2840,7 @@ def ACF(request):
                 content = json.dumps(content) 
                 return HttpResponse(content)
                
+
             faculty_inc1 = get_object_or_404(Faculty, id = FACUL1)
             faculty_inc2 = get_object_or_404(Faculty, id = FACUL2)
             acf = AssistantshipClaim(student=stu,month=month, year=year, bank_account=account, thesis_supervisor=faculty_inc2, ta_supervisor=faculty_inc1, applicability= appli)
@@ -2850,6 +2850,7 @@ def ACF(request):
             'status' : res,
             'message' : message
             } 
+
             content = json.dumps(content)
             return HttpResponse(content)
 
@@ -2860,7 +2861,7 @@ def update_assistantship(request):
         i = request.POST.get('obj_id')
         user = ExtraInfo.objects.get(user = request.user)
         assistantship_object = AssistantshipClaim.objects.get(id = i)
-
+        recipient = User.objects.filter(username = assistantship_object.student)
         if user == assistantship_object.ta_supervisor.id and r == "Satisfactory":
             assistantship_object.ta_supervisor_remark=True
         elif user == assistantship_object.ta_supervisor.id and r == "Unsatisfactory":
@@ -2869,8 +2870,10 @@ def update_assistantship(request):
             assistantship_object.thesis_supervisor_remark=True 
         elif r == "Unsatisfactory" :
             assistantship_object.thesis_supervisor_remark=False
-        
         assistantship_object.save()
+        AssistantshipClaim_notify(request.user,recipient,r,assistantship_object.month,assistantship_object.year)
+        
+        
     return HttpResponseRedirect('/academic-procedures/main/')
         
 
@@ -2903,6 +2906,7 @@ def MTSGF(request):
             'status' : res,
             'message' : message
         } 
+
         content = json.dumps(content)
         return HttpResponse(content)
 
@@ -2933,6 +2937,7 @@ def PHDPE(request):
             'status' : res,
             'message' : message
         } 
+
         content = json.dumps(content)
         return HttpResponse(content)
 
@@ -2983,7 +2988,9 @@ def update_phdform(request):
         phd_object.annual_progress_seminar=annualp
         phd_object.commments=sugg
         phd_object.save()
-    return HttpResponseRedirect('/academic-procedures/main/')
+        content="success"
+        content = json.dumps(content)
+    return HttpResponse(content)
 
 
 def update_dues(request):
@@ -3008,6 +3015,7 @@ def update_dues(request):
         if ad < 0 and -1*ad > dues_object.mess_due :
             message = message + "Subtracting more value than existing academic due<br>"
         
+
         
 
         if (not message):

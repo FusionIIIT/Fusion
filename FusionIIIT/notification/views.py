@@ -298,3 +298,14 @@ def gymkhana_event(sender, recipient, type, club, event_name, desc, venue):
                 verb=verb,
                 description=desc
                 )
+
+def AssistantshipClaim_notify(sender,recipient,message,month,year):
+    if message == "Satisfactory":
+        message="Your Assistantshipclaim of {} month year {} is approved by ".format(month,year,sender)
+    else:
+         message="Your Assistantshipclaim of {} month year {} is disapproved by ".format(month,year,sender)
+
+    url = 'academic-procedures:academic_procedures'
+    module = 'Assistantship Request'
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=message)
+

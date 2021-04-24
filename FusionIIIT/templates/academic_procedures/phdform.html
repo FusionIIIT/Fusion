@@ -193,7 +193,7 @@ table{
         <form id="phd_form" >{% csrf_token %}
             <div class="ui form" style="border: black" >
                 <div class="field">
-                    <select class="ui dropdown" name="pqlow" required>
+                    <select class="ui dropdown" name="quality_of_work">
                         <option selected disabled value="">Quality of work</option>
                         <option value="Excellent">Excellent</option>
                         <option value="Good">Good</option>
@@ -202,7 +202,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="pqnow" required>
+                    <select class="ui dropdown" name="quantity_of_work" >
                         <option selected disabled value="">Quantity of work</option>
                         <option value="Enough">Enough</option>
                         <option value="Just Sufficient ">Just Sufficient</option>
@@ -210,7 +210,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="pgrade" required>
+                    <select class="ui dropdown" name="grade" >
                         <option selected disabled value="">Grade</option>
                         <option value="A+">A+</option>
                         <option value="A">A</option>
@@ -225,7 +225,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="cea" required>
+                    <select class="ui dropdown" name="continuation_enhancement" >
                         <option selected disabled value="">For continuation Enhancement of Assistantship</option>
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
@@ -234,7 +234,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="ea" required>
+                    <select class="ui dropdown" name="enhancement_of_assistantship" >
                         <option selected disabled value="">Enhancement of Assistantship(after end of two year)</option>
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
@@ -244,15 +244,15 @@ table{
                 </div>
                 <div class=" field">
                     <label>Expected period for Completion of programme</label>
-                    <input type="number"  name="completionp" value="0" required/>    
+                    <input type="number"  name="completion_period" value="0" />    
                 </div>
                 <div class="field">
                     <label>Panel Report</label>
-                    <textarea rows="2" name="panelr" required /></textarea>
+                    <textarea rows="2" name="panel_report"  /></textarea>
                 </div>
                 <div class="field">
                     <label>Must give Annual Progress Seminar again</label>
-                    <select class="ui dropdown" name="aps" required>
+                    <select class="ui dropdown" name="annual_progess" >
                         <option selected disabled value="">Select</option>
                         <option value="Give again">Give again</option>
                         <option value="Not Applicable">Not Applicable</option>
@@ -263,7 +263,7 @@ table{
                 
                 <div class="field">
                     <label>Suggestion</label>
-                    <textarea rows="2" name="Suggestion" required /></textarea>
+                    <textarea rows="2" name="Suggestion" /></textarea>
                 </div>
                 <br>
                 <div class="ui divider"></div><br>
@@ -272,7 +272,7 @@ table{
                                                                                 padding: 8px 16px;
                                                                                 cursor: pointer;">&laquo; Back</div>
                 <button class="ui primary button" style="background-color: green" name="approve" value="yes">Submit</button> 
-                    
+                </div>  
             </div>
         </form>
         </div>
@@ -311,16 +311,31 @@ $(function() {
     $("#phd_form").submit(function(event) {
 
     event.preventDefault();
-    var quality = $('[name=pqlow]').val();
-    var quantity = $('[name=pqnow').val();
-    var grade = $('[name=pgrade]').val();
-    var continuationa =$('[name=cea]').val();
-    var enhancementa = $('[name=ea]').val();
-    var completionperiod = $('[name=completionp]').val();
-    var pr = $('[name=panelr]').val();
-    var annualp =$('[name=aps]').val();
+    var form = document.getElementById("phd_form");
+    var quality = $('[name=quality_of_work]').val();
+    var quantity = $('[name=quantity_of_work]').val();
+    var grade = $('[name=grade]').val();
+    var continuationa =$('[name=continuation_enhancement]').val();
+    var enhancementa = $('[name=enhancement_of_assistantship]').val();
+    var completionperiod = $('[name=completion_period]').val();
+    var pr = $('[name=panel_report]').val();
+    var annualp =$('[name=annual_progess]').val();
     var sugg = $('[name=Suggestion]').val();
+    var message="";
+    
+    for(var i=0;i<form.length;i++){
+        if(form.elements[i].name=="grade")
+        grade=form.elements[i].value;
+        if( form.elements[i].value==="")
+        message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+    }
 
+    if(message != "")
+    {   console.log(message);
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show") ;
+    }
+    else{
 
     $.ajax({
     type:"POST",
@@ -338,12 +353,20 @@ $(function() {
          sugg : sugg,
          csrfmiddlewaretoken: '{{ csrf_token }}'
     },
-    success: function( data ) 
-    {
-        alert('done');
-        window.location = "/academic-procedures/fac/";
+    success: function( response ) 
+    {   response = JSON.parse(response)
+        
+        if(response == "success")
+           {
+            $(".succ").modal("show");
+           }
+        // alert('done');
+        // window.location = "/academic-procedures/fac/";
+        form.reset();
     }
     });
+
+    }
 
   });
 
