@@ -1428,19 +1428,25 @@ def usercourse(request, course_code):
 
     if extrainfo.user_type == 'faculty':
         if request.method == 'POST':
+            if 'submiturl' in request.POST:
 
-            topic = request.POST.get('topicName')
-            class_date = request.POST.get('date')
-            start_time = request.POST.get('StartTime')
-            end_time = request.POST.get('EndTime')
-            upload_url = request.POST.get('ClassURL')
+                topic = request.POST.get('topicName')
+                class_date = request.POST.get('date')
+                start_time = request.POST.get('StartTime')
+                end_time = request.POST.get('EndTime')
+                upload_url = request.POST.get('ClassURL')
 
-            OnlineClasses.objects.create(course_id = courseid.course_id,
-                class_date=class_date,
-                start_time=start_time,
-                end_time=end_time,
-                description=topic,
-                upload_url=upload_url
-            )
+                OnlineClasses.objects.create(course_id = courseid.course_id,
+                    class_date=class_date,
+                    start_time=start_time,
+                    end_time=end_time,
+                    description=topic,
+                    upload_url=upload_url
+                )
 
-    return render(request, "online_cms/course_new.html", {'classes': classes})
+            if 'deleteurl' in request.POST:
+                classid = request.POST.get('delete-id')
+                OnlineClasses.objects.get(id=classid).delete()
+
+
+    return render(request, "online_cms/course_new.html", {'classes': classes, 'extrainfo': extrainfo})

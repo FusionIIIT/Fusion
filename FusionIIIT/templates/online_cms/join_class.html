@@ -41,6 +41,11 @@
                     <th class="five wide column">
                         Class URL
                     </th>
+                    {% if extrainfo.user_type == 'faculty' %}
+                    <th>
+                        Delete URL
+                    </th>
+                    {% endif %}
 
                 </tr>
                 </thead>
@@ -69,6 +74,16 @@
                     <td style="color:blue">
                         <a href= "{{ class.upload_url }}"><i>{{ class.upload_url }}</i></a>
                     </td>
+                    
+                    {% if extrainfo.user_type == 'faculty' %}
+                    <td style="color:red">
+                       <form method="POST">
+                           <input type="hidden" value="{{class.id}}" name="delete-id">
+                           <button class="ui large primary button right floated" name="deleteurl" onclick="request()">
+                            Delete
+                          </button>
+                    </td>
+                    {% endif %}
 
                 </tr>
                 {% endfor %}
