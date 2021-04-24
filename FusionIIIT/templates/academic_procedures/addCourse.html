@@ -11,7 +11,6 @@
 
     <div class="ui vertical segment">
         {% if adc_date_flag %}
-                {% if final_registration_flag %}
                     {% if details.cpi >= 6.0 %}
                         {% if add_courses_options %}
                             <form id='add_course_form' action='/academic-procedures/addCourse/' > {% csrf_token %}
@@ -51,7 +50,7 @@
                                                 <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
                                             </td>
                                             <td><B>
-                                                <input class="values" name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.id }}" data-valuetwo="{{items.credit}}" required>
+                                                <input class="values" name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.id }}" data-valuetwo="{{items.credit}}" >
                                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                                                 </B>
                                             </td>
@@ -79,9 +78,6 @@
                     {% else %}
                         <B><center>You do not have minimum CPI required to add course</center></B>
                     {% endif %}
-                {% else %}
-                    <B><center>You need to Register to add Course</center></B>
-                {% endif %}
         {% else %}
             <b><center>You have to wait for the date</center></b>
         {% endif %}

@@ -59,7 +59,7 @@
           <select class="ui dropdown" id="1" required="true">
             <option value=""> Select Batch </option>
             {% for batch in batch_branch_data %}
-            <option value="{{batch.id}}">B.Tech. {{batch.year}} - {{ batch.discipline.name }}</option>
+            <option value="{{batch.id}}">{{batch.name}}</option>
             {% endfor %}
           </select>
         </td>

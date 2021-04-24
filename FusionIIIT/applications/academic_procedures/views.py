@@ -20,7 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses,  Student as Students, Batch, Semester)
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
@@ -213,14 +213,17 @@ def academic_procedures_student(request):
         user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
         user_branch = get_user_branch(user_details)
 
-        stu = Students.objects.get(id = user_details.id)
-        batch = stu.batch
+        batch = obj.batch_id
         curr_id = batch.curriculum
-        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = user_sem)
-        next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = user_sem+1) #to be changed user_sem+1
+        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
-        student_registration_check_pre = get_student_registrtion_check(stu,next_sem_id)
-        student_registration_check_final = get_student_registrtion_check(stu,curr_sem_id)
+        try:
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no+1)
+        except Exception as e:
+            next_sem_id = curr_sem_id
+
+        student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
+        student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
 
         cpi = get_cpi(user_details.id)
 
@@ -248,20 +251,10 @@ def academic_procedures_student(request):
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
-        final_registration_choice = current_sem_branch_course
-        currently_registered_course = get_currently_registered_course(stu, curr_sem_id)
+        final_registration_choice = next_sem_branch_course
+        currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
         current_credits = get_current_credits(currently_registered_course)
 
-
-            # last_id = Register.objects.all().aggregate(Max('r_id'))
-            # Register.objects.filter(r_id = 7220).delete()
-            # o = Register.objects.all().filter(student_id = obj, course_id= Course.objects.all().filter(course_id= "CS314a").first()).first()
-            # o = Register.objects.all().filter(r_id = 7245).first()
-            # Register.objects.filter(r_id = 7239).delete()
-            # a = Student.objects.get(id = "1711003")
-            #Register.objects.all().delete()
-            #Student.objects.filter(id = user_details.id).update(cpi = 9.2)
-            #FeePayment.objects.all().delete()
         cur_cpi=0.0
         details = {
                 'current_user': current_user,
@@ -273,18 +266,18 @@ def academic_procedures_student(request):
         cur_cpi=details['cpi']
 
         try:
-            pre_registered_course = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = curr_sem_id)
-            pre_registered_course_show = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id) # to be changed
+            pre_registered_course = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            pre_registered_course_show = pre_registered_course
 
         except Exception as e:
             pre_registered_course =  None
             pre_registered_course_show = None
         try:
-            final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = curr_sem_id)
+            final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             requested_courses = get_requested_courses(user_details.id)
             requested_credits = get_requested_credits(requested_courses)
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, requested_courses)
-            added_course_count = get_added_course_count(currently_registered_course, final_registered_course)
+            added_course_count = get_added_course_count(currently_registered_course, requested_courses)
             drop_courses_options = currently_registered_course
 
         except Exception as e:
@@ -492,7 +485,6 @@ def facultyData(request):
 			else:
 				facultyNames.append(name)
         
-		print(facultyNames)
 		faculty = json.dumps(facultyNames)
 		return HttpResponse(faculty)
 	except Exception as e:
@@ -1125,7 +1117,7 @@ def pre_registration(request):
         try:
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-            current_user = Students.objects.all().filter(id=current_user.id).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
 
 
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
@@ -1173,7 +1165,7 @@ def final_registration(request):
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-                current_user = Students.objects.all().filter(id=current_user.id).first()
+                current_user = Student.objects.all().filter(id=current_user.id).first()
 
                 sem_id = Semester.objects.get(id = request.POST.get('semester'))
 
@@ -1218,7 +1210,7 @@ def final_registration(request):
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-                current_user = Students.objects.all().filter(id=current_user.id).first()
+                current_user = Student.objects.all().filter(id=current_user.id).first()
 
                 sem_id = Semester.objects.get(id = request.POST.get('semester'))
 
@@ -1324,7 +1316,7 @@ def add_courses(request):
         try:
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
-            current_user = Students.objects.all().filter(id=current_user.id).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
 
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
             count = request.POST.get('ct')
@@ -1333,12 +1325,15 @@ def add_courses(request):
             for i in range(1, count+1):
                 i = str(i)
                 choice = "choice["+i+"]"
-                course_id = Courses.objects.get(id = request.POST.get(choice))
-                p = CourseRequested(
-                    course_id = course_id,
-                    student_id = current_user
-                    )
-                reg_curr.append(p)
+                try:
+                    course_id = Courses.objects.get(id = request.POST.get(choice))
+                    p = CourseRequested(
+                        course_id = course_id,
+                        student_id = current_user
+                        )
+                    reg_curr.append(p)
+                except Exception as e:
+                    continue
             CourseRequested.objects.bulk_create(reg_curr)
             return HttpResponseRedirect('/academic-procedures/main')
         except Exception as e:
@@ -1353,12 +1348,11 @@ def verify_addCourse(request):
             student_id = request.POST.get('student_id')
             course_id = request.POST.get('course_id')
             course = Courses.objects.get(id = course_id)
-            student = Students.objects.get(id = student_id)
+            student = Student.objects.get(id = student_id)
 
-            batch = student.batch
+            batch = student.batch_id
             curr_id = batch.curriculum
             sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student.curr_semester_no)
-
             p = course_registration(
                 course_id = course,
                 student_id=student,
@@ -1373,7 +1367,7 @@ def verify_addCourse(request):
             student_id = request.POST.get('student_id')
             course_id = request.POST.get('course_id')
             course = Courses.objects.get(id = course_id)
-            student = Students.objects.get(id = student_id)
+            student = Student.objects.get(id = student_id)
 
             CourseRequested.objects.filter(student_id = student, course_id = course).delete() 
             academicadmin = get_object_or_404(User, username = "acadadmin")
@@ -1387,14 +1381,13 @@ def drop_course(request):
         try:
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-            current_user = Students.objects.all().get(id=current_user.id)
+            current_user = Student.objects.all().get(id=current_user.id)
 
             values_length = 0
             values_length = len(request.POST.getlist('choice'))
 
             sem_id = request.POST.get('semester')
             sem = Semester.objects.get(id = sem_id)
-
             for x in range(values_length):
                 for key, values in request.POST.lists():
                     if (key == 'choice'):
@@ -1606,7 +1599,7 @@ def get_currently_registered_courses(id, user_sem):
     return ans
 
 def get_currently_registered_course(id, sem_id):
-    obj = course_registration.objects.all().filter(student_id=id, semester_id=sem_id)
+    obj = course_registration.objects.all().filter(student_id = id, semester_id=sem_id)
     courses = []
     for i in obj:
         courses.append(i.course_id)
@@ -2008,14 +2001,13 @@ def student_list(request):
 
 
         batch_id = Batch.objects.get(id = batch)
-
-        student_obj = Students.objects.all().filter(batch = batch_id)
+        student_obj = Student.objects.all().filter(batch_id = batch_id)
 
         student = []
 
         for obj in student_obj:
             curr_id = batch_id.curriculum
-            sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
+            sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no + 1)
             try:
                 reg = StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem_id).first()
                 pay = FeePayments.objects.all().filter(student_id = obj, semester_id = sem_id).first()
@@ -2026,7 +2018,7 @@ def student_list(request):
                 final = None
             if reg:
                 if reg.final_registration_flag == True and final:
-                        student.append((obj,pay,final))
+                    student.append((obj,pay,final))
                 else:
                     continue
             else:
@@ -2054,32 +2046,35 @@ def process_verification_request(request):
 def verify_registration(request):
     if request.POST.get('status_req') == "accept" :
         student_id = request.POST.get('student_id')
-        student_id = Students.objects.get(id = student_id)
+        student = Student.objects.get(id = student_id)
 
-        batch = student_id.batch
+        batch = student.batch_id
         curr_id = batch.curriculum
-        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student_id.curr_semester_no)
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student.curr_semester_no+1)
 
-        final_register_list = FinalRegistration.objects.all().filter(student_id = student_id, verified = False, semester_id = sem_id)
+        final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
+
+        sem_no = student.curr_semester_no + 1
 
         with transaction.atomic():
             ver_reg = []
             for obj in final_register_list:
                 p = course_registration(
                     course_id=obj.course_id,
-                    student_id=student_id,
+                    student_id=student,
                     semester_id=obj.semester_id
                     )
                 ver_reg.append(p)
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
             course_registration.objects.bulk_create(ver_reg)
-            academics_module_notif(request.user, student_id.id.user, 'registration_approved')
+            academics_module_notif(request.user, student.id.user, 'registration_approved')
+            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
     elif request.POST.get('status_req') == "reject" :
         student_id = request.POST.get('student_id')
-        student_id = Students.objects.get(id = student_id)
+        student_id = Student.objects.get(id = student_id)
 
-        batch = student_id.batch
+        batch = student_id.batch_id
         curr_id = batch.curriculum
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student_id.curr_semester_no)
 
@@ -2846,7 +2841,6 @@ def ACF(request):
                 content = json.dumps(content) 
                 return HttpResponse(content)
                
-            print( month)
             faculty_inc1 = get_object_or_404(Faculty, id = FACUL1)
             faculty_inc2 = get_object_or_404(Faculty, id = FACUL2)
             acf = AssistantshipClaim(student=stu,month=month, year=year, bank_account=account, thesis_supervisor=faculty_inc2, ta_supervisor=faculty_inc1, applicability= appli)
@@ -2856,7 +2850,6 @@ def ACF(request):
             'status' : res,
             'message' : message
             } 
-            print (message)
             content = json.dumps(content)
             return HttpResponse(content)
 
@@ -2910,7 +2903,6 @@ def MTSGF(request):
             'status' : res,
             'message' : message
         } 
-        print (message)
         content = json.dumps(content)
         return HttpResponse(content)
 
@@ -2941,7 +2933,6 @@ def PHDPE(request):
             'status' : res,
             'message' : message
         } 
-        print (message)
         content = json.dumps(content)
         return HttpResponse(content)
 
@@ -2992,7 +2983,6 @@ def update_phdform(request):
         phd_object.annual_progress_seminar=annualp
         phd_object.commments=sugg
         phd_object.save()
-        print("saved")
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
@@ -3018,7 +3008,6 @@ def update_dues(request):
         if ad < 0 and -1*ad > dues_object.mess_due :
             message = message + "Subtracting more value than existing academic due<br>"
         
-        print(message)
         
 
         if (not message):
@@ -3045,7 +3034,6 @@ def update_dues(request):
         dues_object.academic_due = ad
 
         dues_object.save()
-        print(message)
         content = json.dumps(message)
         return HttpResponse(content)
 

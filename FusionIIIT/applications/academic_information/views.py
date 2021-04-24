@@ -23,7 +23,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
-from applications.academic_information.models import (Course as Courses, Programme, Batch, Discipline, CourseSlot, Semester)
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
 
 
 from applications.academic_procedures.views import acad_proced_global_context
@@ -829,7 +829,7 @@ def generatexlsheet(request):
 
     registered_courses = []
     for i in obj:
-        if i.student_id.batch.year == int(batch):
+        if i.student_id.batch_id.year == int(batch):
             registered_courses.append(i)
     ans = []
     for i in registered_courses:
@@ -1071,7 +1071,7 @@ def add_new_profile(request):
             last_name=str(sheet.cell(i,2).value)
             email=str(sheet.cell(i,3).value)
             sex=str(sheet.cell(i,4).value)
-            if sex is 'F':
+            if sex == 'F':
                 title='Ms.'
             else:
                 title='Mr.'
@@ -1080,19 +1080,27 @@ def add_new_profile(request):
             dob=datetime.datetime(*xlrd.xldate_as_tuple(dob_tmp,excel.datemode))
             fathers_name=str(sheet.cell(i,6).value)
             mothers_name=str(sheet.cell(i,7).value)
-            dept=str(sheet.cell(i,8).value)
-            year=str(sheet.cell(i,9).value)
-            curr_sem=str(sheet.cell(i,10).value)
-            category=str(sheet.cell(i,11).value)
-            phone_no=int(sheet.cell(i,12).value)
-            address=str(sheet.cell(i,13).value)
+            category=str(sheet.cell(i,8).value)
+            phone_no=int(sheet.cell(i,9).value)
+            address=str(sheet.cell(i,10).value)
+            dept=str(sheet.cell(i,11).value)
+            specialization=str(sheet.cell(i,12).value)
+            hall_no=sheet.cell(i,13 ).value
+
+            department=DepartmentInfo.objects.all().filter(name=dept).first()
+
+            if specialization == "":
+                specialization="None"
+
+            if hall_no == None:
+                hall_no=3
+            else:
+                hall_no=int(hall_no)
 
             programme_name=request.POST['Programme']
             batch_year=request.POST['Batch']
 
-            programme = Programme.objects.all().filter(name = programme_name).first()
-            discipline = Discipline.objects.all().filter(name = dept).first()
-            batch = Batch.objects.all().filter(year = batch_year, discipline = discipline).first()
+            batch = Batch.objects.all().filter(name = programme_name+" "+dept+" "+str(batch_year)).first()
 
             user = User.objects.create_user(
                 username=roll_no,
@@ -1116,13 +1124,18 @@ def add_new_profile(request):
 
             sem=1
 
-            stud_data = Students.objects.create(
+            stud_data = Student.objects.create(
                 id=einfo,
-                programme=programme,
-                batch=batch,
-                father_name=fathers_name,
-                mother_name=mothers_name,
-                curr_semester_no=sem
+                programme = programme_name,
+                batch=batch_year,
+                batch_id = batch,
+                father_name = fathers_name,
+                mother_name = mothers_name,
+                cpi = 0,
+                category = category,
+                hall_no = hall_no,
+                specialization = specialization,
+                curr_semester_no=sem,
                 
             )
 
@@ -1133,7 +1146,7 @@ def add_new_profile(request):
                 designation=desig,
             )
 
-            sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = 6)
+            sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
             course_slots = CourseSlot.objects.all().filter(semester = sem_id)
             courses = []
             for course_slot in course_slots:
