@@ -1,0 +1,92 @@
+{% extends 'programme_curriculum/acad_admin/common.html' %}
+
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+            style="max-width: 320px;">
+        
+        <a class="item" href="{% url 'programme_curriculum:admin_view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:admin_view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:admin_view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:admin_view_all_discplines' %}">Disciplines
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:admin_view_all_batches' %}">Batches
+            <i class="right floated chevron right icon"></i>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Semester {{ semester.semester_no }}</a>
+</div>
+
+
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description">
+            <table class="ui very basic celled large table"
+                style="text-align: center;
+                    padding-left: 2.5%;
+                    padding-right: 2.5%;
+                    padding-top: 1%;
+                    padding-bottom: 1.5%;
+                    margin: auto;">
+                {% for slot in course_slots %}
+                <thead>
+                    <tr><td></td></tr>
+                    <tr>
+                        <th colspan="4">{{ slot.name }}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="4">Type : {{ slot.type }}</th>
+                    </tr>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Credits</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in slot.courses.all %}
+                    <tr>
+                        <td><a href="{% url 'programme_curriculum:admin_view_a_course' course.id %}">{{ course.code }}</a></td>
+                        <td>{{ course.name }}</td>
+                        <td>{{ course.credit }}</td>
+                        <td><a href="{% url 'programme_curriculum:update_course_form' course.id %}"><i class="large green pencil icon"></i></a></td>
+                    </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Courses Avaliable for this slot</td><tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="4">
+                            <!-- <a class="ui basic small middle floated primary button" type="Submit" name="Submit">+ ADD COURSE</a> -->
+                            <a class="ui small right floated positive button" 
+                            href="{% url 'programme_curriculum:edit_courseslot_form' slot.id %}" 
+                            type="Submit" name="Submit">EDIT SLOT</a>
+                        </td>
+                    </tr>
+                </tbody>
+                {% empty %}
+                    <p>No Courses Avaliable for this slot</p>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <a class="ui large right floated primary button" 
+        href="{% url 'programme_curriculum:add_courseslot_form' %}"
+        type="Submit" name="Submit">+ ADD</a>
+    </div>
+</div>
+
+{% endblock %}

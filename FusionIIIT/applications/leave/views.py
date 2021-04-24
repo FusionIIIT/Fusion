@@ -52,7 +52,7 @@ def leavemanager(request):
 
     #user_designation = request.user.holds_designations.get(designation__name='Assistant Registrar')
     #user_designation = str(user_designation).split(' - ')
-    desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
+    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
     c=False
     for i in b:
@@ -71,7 +71,6 @@ def leavemanager(request):
     if c:
         return send_offline_leave_form(request)
     
-    #print(c)
     """form1 = LeaveSegmentFormOffline()
     form2 = AcademicReplacementFormOffline()
     form3 = AdminReplacementFormOffline()
@@ -127,7 +126,6 @@ def generate_form(request):
 def generate_form_offline(request):
     id = request.GET.get('id')
     leave = request.user.all_leaves_offline.filter(id=id)
-    print("hello")
     if leave:
         response = render(request, 'leaveModule/generate_form_offline.html', {'leave': leave.first()})
     else:
