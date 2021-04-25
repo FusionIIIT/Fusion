@@ -5,13 +5,13 @@
     <a class="active item" data-tab="this">
         This Semester
     </a>
-    <a class="item" data-tab="next">
+    <!-- <a class="item" data-tab="next">
        Next Semester
     </a>
     <a class="item" data-tab="prereg">
         Pre Registration Report
-    </a>
-</div>
+    </a>-->
+</div> 
 
 <div class="ui active tab segment" data-tab="this">
     <form class="ui form" action="/aims/generateSheet" method="post" id="form8_8">
@@ -20,14 +20,21 @@
             <label>Batch</label>
             <input type="number" name="batch" required>
         </div>
+
         <div class="field">
             <label>This Semester Courses</label>
-            <select name="course" required>
-                {% for i in this_sem_course %}
-                <option value="{{ i.course_code }}">{{i.course_code}} - {{i.course_id}}</option>
+            <div class="ui fluid search selection dropdown" id="courselist">
+                <input type="hidden" name="course" required="true">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select Courses from list</div>
+                <div class="menu">
+                {% for i in courses_list %}
+                <div class="item" data-value="{{ i.id }}"><i class="{{ i.id }}"></i>{{i.code}} - {{i.name}}</div>
                 {% endfor%}
-            </select>
+                </div>
+            </div>
         </div>
+
         <div class="field">
             <button class="ui fluid primary button" type="submit">Generate
                 Enrolled Student Excel Sheet
@@ -45,14 +52,21 @@
             <label>Batch</label>
             <input type="number" name="batch" required>
         </div>
+
         <div class="field">
             <label>Next Semester Courses</label>
-            <select name="course_next" required>
-                {% for i in next_sem_course %}
-                <option value="{{ i.course_code }}">{{i.course_code}} - {{i.course_id}}</option>
-                {% endfor%}
-            </select>
+            <div class="ui fluid search selection dropdown" id="courselist">
+                <input type="hidden" name="course" required="true">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select Courses from list</div>
+                <div class="menu">
+                    {% for i in courses_list %}
+                    <div class="item" data-value="{{ i.id }}"><i class="{{ i.id }}"></i>{{i.code}} - {{i.name}}</div>
+                    {% endfor%}
+                </div>
+            </div> 
         </div>
+        
         <div class="field">
             <button class="ui fluid primary button" type="submit">Generate
                 Enrolled Student Excel Sheet

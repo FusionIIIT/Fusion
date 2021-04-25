@@ -1,0 +1,204 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="three fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Select user</label>
+
+                        {{form.extra_info}}
+                        {{form.extra_info.errors}}
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Father name</label>
+
+                        {{form.father_name}}
+
+                        {{form.father_name.errors}}
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">Mother name</label>
+
+                        {{form.mother_name}}
+
+                        {{form.mother_name.errors}}
+
+
+                    </div>
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Religion</label>
+
+                        {{form.religion}}
+
+                        {{form.religion.errors}}
+
+
+
+
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Select category</label>
+
+                        {{form.category}}
+
+                        {{form.category.errors}}
+
+                    </div>
+
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">cast</label>
+
+                        {{form.cast}}
+                        {{form.cast.errors}}
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">Designation</label>
+
+                        {{form.designation}}
+
+
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+
+                        <label for="post_title">Home state</label>
+
+                        {{form.home_state}}
+                        {{form.home_state.errors}}
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Home disctrict</label>
+
+                        {{form.home_district}}
+                        {{form.home_district.errors}}
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+
+                        <label for="post_title">height</label>
+
+                        {{form.height}}
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Blood group</label>
+
+                        {{form.blood_group}}
+                    </div>
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Date of joining</label>
+
+                    {{form.date_of_joining}}
+                </div>
+
+
+                <hr>
+
+                <h4>Personal Details</h4>
+
+                <div class="two fields">
+
+
+                    <div class="eight wide field">
+                        <label>Employee</label>
+                        {{confForm.extra_info}}
+                        {{confForm.extra_info.errors}}
+
+                    </div>
+
+
+                    <div class="eight wide field">
+                        <label>Aadhar Card Number</label>
+                        {{confForm.aadhar_no}}
+                        {{confForm.aadhar_no.errors}}
+                    </div>
+
+                </div>
+
+
+
+                <div class="three fields">
+                    <div class="eight wide field">
+                        <label>Medical Certificate</label>
+                        {{confForm.medical_certificate}}
+                        {{confForm.medical_certificate.errors}}
+
+                    </div>
+                    <div class="eight wide field">
+                        <label>Age certificate</label>
+
+                        {{confForm.age_certificate}}
+                        {{confForm.age_certificate.errors}}
+                    </div>
+
+
+                </div>
+
+                <div class="eight wide field">
+                    <label>Cast certificate</label>
+                    {{confForm.cast_certificate}}
+                    {{confForm.cast_certificate.errors}}
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Salary</label>
+                        {{confForm.salary}}
+                        {{confForm.salary.errors}}
+                    </div>
+                    <div class="eight wide field">
+                        <label>Bank account No.</label>
+                        {{confForm.bank_account_no}}
+                        {{confForm.bank_account_no.errors}}
+                    </div>
+                </div>
+
+
+
+                <div class="two fields">
+
+                    <div class="eight wide field">
+                        <label>Marital Status</label>
+                        {{confForm.maritial_status}}
+                        {{confForm.maritial_status.errors}}
+                    </div>
+                </div>
+
+
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
