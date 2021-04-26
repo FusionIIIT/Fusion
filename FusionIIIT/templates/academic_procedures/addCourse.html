@@ -11,7 +11,6 @@
 
     <div class="ui vertical segment">
         {% if adc_date_flag %}
-                {% if final_registration_flag %}
                     {% if details.cpi >= 6.0 %}
                         {% if add_courses_options %}
                             <form id='add_course_form' action='/academic-procedures/addCourse/' > {% csrf_token %}
@@ -37,28 +36,35 @@
                                 </thead>
 
                                 <tbody>
-                                    {% for items in add_courses_options %}
+                                    {% for item in add_courses_options %}
+                                        {% for items in item %}
                                         <tr>
                                             <td>{{forloop.counter}}.</td>
-                                            <td>{{ items.course_code }}
-                                                {% if items.optional %}
-                                                    <B><div style="color:green;">(optional)</B></div>
-                                                {% endif %}
+                                            <td>{{ items.code }}
                                             </td>
-                                            <td>{{ items.course_id.course_name}}
+                                            <td>{{ items.name}}
                                             </td>
-                                            <td>{{ items.credits }}
-                                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
+                                            <td>{{ items.credit }}
                                             </td>
-                                            <td>{{items.sem}}
-                                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                                            <td>{{next_sem.id}}
+                                                <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
                                             </td>
                                             <td><B>
+                                                <input class="values" name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.id }}" data-valuetwo="{{items.credit}}" >
                                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                                <input name="choice" id="mycheck" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}" >
                                                 </B>
                                             </td>
                                         </tr>
+                                        {% endfor %}
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -72,9 +78,6 @@
                     {% else %}
                         <B><center>You do not have minimum CPI required to add course</center></B>
                     {% endif %}
-                {% else %}
-                    <B><center>You need to Register to add Course</center></B>
-                {% endif %}
         {% else %}
             <b><center>You have to wait for the date</center></b>
         {% endif %}
@@ -89,17 +92,16 @@
 $(function() {
     $("#add_course_form").submit(function(event) {
 
-        console.log('hello1');
         var credits = parseInt(document.getElementById("credit_count").value) + parseInt(document.getElementById("req_credit_count").value);
-        var checkboxing = document.getElementById("mycheck");
-        var test =0;
-        for(var i=0; i<mycheck.length;i++){
-            if(mycheck[i].checked==true){
-                credits = credits + parseInt(mycheck[i].getAttribute("data-valuetwo"));
-                test =test+1;
+        
+        var inp = document.getElementsByClassName("values");
+        var test = 0;
+        for(var i=0; i<inp.length;i++){
+            if(inp[i].type=="radio" && inp[i].checked==true){
+                credits = credits + parseInt(inp[i].getAttribute("data-value2"));
+                test = test + 1
             }
-        } 
-        console.log('hello2');
+        }
         if(credits >= 27 ){
             alert("You Can not earn more than 26 credits in one semester");
             window.location = "/academic-procedures/main/" ;           
@@ -107,7 +109,6 @@ $(function() {
             alert("please Select a course");
             window.location = "/academic-procedures/main/" ;           
         }else{
-        console.log('hello3');
         event.preventDefault();
         var friendForm = $(this);
 

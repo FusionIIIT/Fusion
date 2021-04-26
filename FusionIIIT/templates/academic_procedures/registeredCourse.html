@@ -14,8 +14,6 @@
 
                 <thead>
                   <tr>
-                    <th>#
-                    </th>
                     <th>Course ID</th>
                     <th>Course Name</th>
                     <th>Credits</th>
@@ -24,25 +22,23 @@
                 </thead>
 
                 <tbody>
-                    {% for items in courses_list %}
+                    {% for item in courses_list %}
+                      {% for items in item %}
                       <tr>
-                        <td>{{forloop.counter}}.</td>
                             <td>
-                              {{ items.course_code }}
-                              {% if items.optional %}
-                                <B><div style="color:green;">(optional)</B></div>
-                              {% endif %}
+                              {{ items.code }}
                             </td>
                             <td>
-                                {{ items.course_id.course_name}}
+                                {{ items.name}}
                             </td>
                             <td>
-                                {{ items.credits }}
+                                {{ items.credit }}
                             </td>
                             <td>
-                                {{items.sem}}
+                                {{curr_sem.semester_no}}
                             </td>
                       </tr>
+                      {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>

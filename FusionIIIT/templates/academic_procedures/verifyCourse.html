@@ -5,13 +5,12 @@
   $(document).on('submit','#query_form1',function(e)
     {
         e.preventDefault();
-        console.log(1,$("#11").val(), $('#21').val());
         var url_ = '/academic-procedures/acad_person/addCourse_list';
         $.ajax({
             type:'POST',
             url: url_,
             data:{
-                curriculum_id :$('#11').val() ,
+                course_id :$('#11').val() ,
                 csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             },
             beforeSend: function() {
@@ -57,12 +56,16 @@
           </B>
         </td>
         <td>
-          <select class="ui dropdown" id="11" required="true">
-            <option value=""> Select Course </option>
-            {% for i in this_sem_course %}
-              <option value="{{ i.curriculum_id }}">{{i.course_code}} - {{i.course_id}}</option>
-            {% endfor%}
-          </select>
+          <div class="ui fluid search selection dropdown" id="courselist">
+            <input type="hidden" name="courses" id="11"  required="true">
+            <i class="dropdown icon"></i>
+            <div class="default text">Select Courses from list</div>
+            <div class="menu">
+              {% for i in courses_list %}
+              <div class="item" data-value="{{ i.id }}"><i class="{{ i.id }}"></i>{{i.code}} - {{i.name}}</div>
+              {% endfor%}
+            </div>
+          </div>
         </td>
       </tr>
     </table>
@@ -141,4 +144,5 @@
   -webkit-transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
   transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
 }
+
 </style>
