@@ -112,7 +112,7 @@ class MessBillBase(models.Model):
 
 
 def current_month():
-    return datetime.date.today().month
+    return datetime.datetime.now().strftime("%B")
 
 
 class Monthly_bill(models.Model):
