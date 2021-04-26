@@ -111,9 +111,13 @@ class MessBillBase(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+def current_month():
+    return datetime.date.today().month
+
+
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    month = models.CharField(max_length=20, default=datetime.date.today().month)
+    month = models.CharField(max_length=20, default=current_month)
     year = models.IntegerField(default=datetime.date.today().year)
     amount = models.IntegerField(default=0)
     rebate_count = models.IntegerField(default=0)
