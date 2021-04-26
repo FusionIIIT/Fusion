@@ -6,7 +6,9 @@ from django.http import Http404
 from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm
 from django.contrib import messages
 from applications.eis.models import *
-
+from django.http import HttpResponse, HttpResponseRedirect
+from applications.establishment.models import *
+from applications.establishment.views import *
 
 def edit_employee_details(request, id):
     """ Views for edit details"""
@@ -26,6 +28,8 @@ def edit_employee_details(request, id):
             conf_form.save()
             messages.success(request, "Employee details edited successfully")
         else:
+            
+            messages.warning(request, "Error in submitting form")
             pass
 
     form = EditDetailsForm(initial={'extra_info': employee.id})
@@ -38,29 +42,36 @@ def edit_employee_details(request, id):
 
 def hr_admin(request):
     """ Views for HR2 Admin page """
-    template = 'hr2Module/hradmin.html'
+    
+    user = request.user
+    extra_info = ExtraInfo.objects.select_related().get(user=user)
+    
+    
+    if extra_info.user_type=='staff':
+        template = 'hr2Module/hradmin.html'
+        # searched employee
+        query = request.GET.get('search')
 
-    # searched employee
-    query = request.GET.get('search')
-
-    if(request.method == "GET"):
-        if(query != None):
-            emp = ExtraInfo.objects.filter(
-                Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query)
+        if(request.method == "GET"):
+            if(query != None):
+                emp = ExtraInfo.objects.filter(
+                    Q(user__first_name__icontains=query) |
+                    Q(user__last_name__icontains=query)
 
 
-            ).distinct()
-            emp = emp.filter(user_type="faculty")
+                ).distinct()
+                emp = emp.filter(user_type="faculty")
+            else:
+                emp = ExtraInfo.objects.all()
+                emp = emp.filter(user_type="faculty")
         else:
             emp = ExtraInfo.objects.all()
             emp = emp.filter(user_type="faculty")
-    else:
-        emp = ExtraInfo.objects.all()
-        emp = emp.filter(user_type="faculty")
 
-    context = {'emps': emp}
-    return render(request, template, context)
+        context = {'emps': emp}
+        return render(request, template, context)
+    else:
+         return HttpResponse('Unauthorized', status=401)
 
 
 def service_book(request):
@@ -117,6 +128,37 @@ def view_employee_details(request, id):
     awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
     thesis = emp_mtechphd_thesis.objects.filter(pf_no=pf).order_by('-date_entry')
     
+
+    
+ 
+    response = {}
+    # Check if establishment variables exist, if not create some fields or ask for them
+    response.update(initial_checks(request))
+    if is_eligible(request) and request.method == "POST":
+        handle_appraisal(request)
+
+    if is_eligible(request):
+        response.update(generate_appraisal_lists(request))
+
+    # If user has designation "HOD"
+    if is_hod(request):
+        response.update(generate_appraisal_lists_hod(request))
+
+    # If user has designation "Director"
+    if is_director(request):
+        response.update(generate_appraisal_lists_director(request))
+
+    response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
+
+
+
+
+
+    
+
+
+
+    
     template = 'hr2Module/viewdetails.html'
     context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info,
         'appraisalForm':appraisal_form,
@@ -125,7 +167,10 @@ def view_employee_details(request, id):
         'conferences':conferences,
         'awards':awards,
         'thesis':thesis,
+        
     }
+    context.update(response)
+    
     return render(request, template, context)
 
 
@@ -146,7 +191,7 @@ def edit_employee_servicebook(request, id):
             messages.success(
                 request, "Employee Service Book details edited successfully")
         else:
-
+            messages.warning(request, "Error in submitting form")
             pass
 
     form = EditServiceBookForm(initial={'extra_info': employee.id})
