@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import *
 from applications.globals.models import ExtraInfo
+from applications.globals.models import *
 from django.db.models import Q
 from django.http import Http404
 from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm
@@ -44,10 +45,10 @@ def hr_admin(request):
     """ Views for HR2 Admin page """
     
     user = request.user
-    extra_info = ExtraInfo.objects.select_related().get(user=user)
+    # extra_info = ExtraInfo.objects.select_related().get(user=user)
+    designat = HoldsDesignation.objects.select_related().get(user=user)
     
-    
-    if extra_info.user_type=='staff':
+    if designat.designation.name =='hradmin':
         template = 'hr2Module/hradmin.html'
         # searched employee
         query = request.GET.get('search')

@@ -93,12 +93,43 @@ Profile
                     Administrative Responsibilities
                     <i class="right floated chevron right icon"></i>
                 </a> -->
+
+
+            <a class="item" href="{% url 'establishment:cpda' %}">
+                CPDA
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" href="{% url 'establishment:ltc' %}">
+                LTC
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" href="{% url 'establishment:appraisal' %}">
+                Appraisal
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" href="/leave/">
+                Leave
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+
+
+
             {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
             <a class="item" data-tab="ninth">
                 Project Management Forms
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
+
+
+
+
+
+
+
+
+
 
             <!--{% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
@@ -229,6 +260,14 @@ Profile
             {% endblock %}
         </div>
         {% comment %}The others ends here!{% endcomment %}
+
+
+
+
+
+
+
+
 
 
 

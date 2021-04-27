@@ -29,6 +29,8 @@ from .models import *
 
 def index(request):
     context = {}
+    
+
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
@@ -715,7 +717,10 @@ def dashboard(request):
         'notifications':notifs,
         'Curr_desig' : roll_,
         'club_details' : coordinator_club(request),
+        'designat': HoldsDesignation.objects.select_related().get(user=user)
     }
+
+   
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
     else:
