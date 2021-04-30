@@ -47,6 +47,9 @@
                             <h4> Academics Module </h4>
                         </a>
                         {% endif %}
+                        <a class="item" href="/programme_curriculum">
+                            <h4> Programme & Curriculum Module </h4>
+                        </a>
                         <a class="item" href="/gymkhana">
                             <h4> Gymkhana Module </h4>
                         </a>
@@ -181,6 +184,54 @@
                         <a class="item" href="{% url 'filetracking:filetracking' %}">
                             <h4> File Tracking </h4>
                         </a>
+
+
+                        <a class="item" href="/dep">
+                            <h4> Department </h4>
+                        </a>
+                        <a class="item" href="{% url 'spacs:spacs' %}">
+                            <h4>Awards & Scholarship</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'complaint:complaint' %}">
+                            <h4>Complaint Module</h4>
+                        </a>
+                        {% if user.extrainfo.user_type != 'faculty' %}
+                        <a class="item" href="{% url 'mess:mess' %}">
+                            <h4>Central Mess Module</h4>
+                        </a>
+                        {% endif %}
+
+                        <a class="item" href="{% url 'feeds:feeds' %}">
+                            <h4>Feeds Module</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'healthcenter:healthcenter' %}">
+                            <h4>Health Center Module</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'leave:leave' %}">
+                            <h4>Leave Module</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'feeds:feeds' %}">
+                            <h4>Feeds Module</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'placement:placement' %}">
+                            <h4>Placement Module</h4>
+                        </a>
+
+                        <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
+                            <h4>Visitor Hostel Module</h4>
+                        </a>
+                        <a class="item" href="{% url 'hostelmanagement:hostel_view' %}">
+                            <h4>Hostel Module</h4>
+                        </a>
+                        <a class="item" href="{% url 'filetracking:filetracking' %}">
+                            <h4> File Tracking </h4>
+                        </a>
+
                     </div>
 
                 </div>

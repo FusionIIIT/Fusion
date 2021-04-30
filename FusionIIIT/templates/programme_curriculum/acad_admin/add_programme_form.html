@@ -1,0 +1,24 @@
+{% extends 'programme_curriculum/acad_admin/common.html' %}
+
+{% block content %}
+    <form class="ui large form" method="POST" role="form">
+            {{ form.non_field_errors }}
+            {% csrf_token %}
+                
+            {{ form.as_p }}
+            <td>
+                <div class="ui large right floated buttons">
+                    <a class="ui button" href="{% url 'programme_curriculum:admin_view_all_programmes' %}">Cancel</a>
+                    <div class="or"></div>
+                    <input class="ui primary button" type="Submit" name="Submit">
+                </div>
+            </td>
+        </div>
+    </form>
+    <script>
+        $(window).load(function() {
+            $('form').get(0).reset(); //clear form data on page load
+        });
+    </script>
+{% endblock %}
+
