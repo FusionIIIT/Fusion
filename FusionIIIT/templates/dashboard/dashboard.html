@@ -55,6 +55,7 @@ Dashboard
         {% comment %}The Tab-Menu starts here!{% endcomment %}
 
 
+        {% if request.user.extrainfo.user_type == 'faculty' %}
         {% if 'hradmin' == designat.designation.name %}
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
@@ -65,6 +66,7 @@ Dashboard
             </a>
 
         </div>
+        {% endif %}
         {% endif %}
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 

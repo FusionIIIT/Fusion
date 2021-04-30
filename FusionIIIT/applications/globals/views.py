@@ -713,16 +713,27 @@ def dashboard(request):
     for i in b :
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
+    
+    
+    
+
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
         'club_details' : coordinator_club(request),
-        'designat': HoldsDesignation.objects.select_related().get(user=user)
+        
     }
+    
 
    
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
+    elif user.extrainfo.user_type != 'student':
+        designat = HoldsDesignation.objects.select_related().get(user=user)
+        response = {'designat':designat}
+        context.update(response)
+        return render(request, "dashboard/dashboard.html", context)
+
     else:
         return render(request, "dashboard/dashboard.html", context)
 
