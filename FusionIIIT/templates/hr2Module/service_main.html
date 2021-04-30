@@ -860,6 +860,7 @@
             </div>
 
 
+            {% if 'staff' != extrainfo.user_type %}
             <!-- visits -->
             <div class="ui one cards" style="padding: 2px;">
                 <div class="ui blue card" id="noti">
@@ -1013,7 +1014,7 @@
                     </div>
                 </div>
             </div>
-
+            {% endif %}
 
 
 

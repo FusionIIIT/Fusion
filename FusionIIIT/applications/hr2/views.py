@@ -81,6 +81,7 @@ def service_book(request):
     """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
+    
     lien_service_book = ForeignService.objects.filter(
         extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
     deputation_service_book = ForeignService.objects.filter(
@@ -106,9 +107,11 @@ def service_book(request):
                'conferences': conferences,
                'awards': awards,
                'thesis': thesis,
+               'extrainfo':extra_info
                }
 
-    return render(request, template, context)
+    return HttpResponseRedirect("/eis/profile/")
+    # return render(request, template, context)
 
 
 def view_employee_details(request, id):

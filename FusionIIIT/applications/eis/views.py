@@ -375,7 +375,8 @@ def profile(request, username=None):
                'events':events,
                'year_range':y,
                'pers':pers,
-               'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book
+               'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
+               'extrainfo':extra_info
                }
 
     context.update(response)
