@@ -489,6 +489,117 @@ def forwardindent(request, id):
     return render(request, 'ps1/forwardindent.html', context)
 
 @login_required(login_url = "/accounts/login")
+def createdindent(request, id):
+    """
+            The function is used to forward files received by user(employee) from other
+            employees which are filtered from Tracking(table) objects by current user
+            i.e. receiver_id to other employees.
+            It also gets track of file created by uploader through all users involved in file
+            along with their remarks and attachments
+            It displays details file of a File(table) and remarks and attachments of user involved
+            in file of Tracking(table) of filetracking(model) in the template.
+            @param:
+                    request - trivial.
+                    id - id of the file object which the user intends to forward to other employee.
+            @variables:
+                    file - The File object.
+                    track - The Tracking object.
+                    remarks = Remarks posted by user.
+                    receiver = Receiver to be selected by user for forwarding file.
+                    receiver_id = Receiver_id who has been selected for forwarding file.
+                    upload_file = File attached by user.
+                    extrainfo = ExtraInfo object.
+                    holdsdesignations = HoldsDesignation objects.
+                    context - Holds data needed to make necessary changes in the template.
+    """
+    # start = timer()
+    
+    # end = timer()
+    indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+    file=indent.file_info
+    # start = timer()
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+    # end = timer()
+    
+
+
+
+    if request.method == "POST":
+            if 'finish' in request.POST:
+                file.complete_flag = True
+                file.save()
+
+            if 'send' in request.POST:
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+
+                sender = request.POST.get('sender')
+                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
+
+                receiver = request.POST.get('receiver')
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid destination')
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'ps1/createdindent.html', context)
+                receive = request.POST.get('recieve')
+                try:
+                    receive_design = Designation.objects.get(name=receive)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Designation')
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'ps1/createdindent.html', context)
+
+                # receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+
+
+            messages.success(request, 'File sent successfully')
+    # start = timer()
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+    context = {
+        # 'extrainfo': extrainfo,
+        # 'holdsdesignations': holdsdesignations,
+        'designations':designations,
+        'file': file,
+        'track': track,
+        'indent':indent,
+    }
+
+    return render(request, 'ps1/createdindent.html', context)
+
+@login_required(login_url = "/accounts/login")
 def archive(request):
     return render(request, 'filetracking/archive.html')
 
