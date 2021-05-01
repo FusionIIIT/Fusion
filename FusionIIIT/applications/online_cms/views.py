@@ -6,7 +6,9 @@ import json
 import os
 import random
 import subprocess
-import datetime
+from datetime import date
+from datetime import time
+from datetime import timezone
 import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -26,6 +28,9 @@ from .forms import *
 from .models import *
 from .helpers import create_thumbnail, semester
 
+from applications.programme_curriculum.models import Course as Courses, Semester,Batch
+from applications.academic_procedures.models import course_registration
+
 
 @login_required
 def viewcourses(request):
@@ -36,13 +41,19 @@ def viewcourses(request):
 
     extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
-        student = Student.objects.select_related('id').get(id=extrainfo)
-        roll = student.id.id[:4]                       #get the roll no. of the student
-        register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
+        student = Student.objects.select_related().get(id=extrainfo)
+        batch = Batch.objects.get(id = student.batch_id.id)
+        semid = Semester.objects.get(curriculum=batch.curriculum, semester_no= student.curr_semester_no)
+        register = course_registration.objects.select_related().filter(student_id=student , semester_id = semid)
         courses = collections.OrderedDict()   #courses in which student is registerd
         for reg in register:   #info of the courses
-            instructor = Curriculum_Instructor.objects.select_related().get(course_id=reg.course_id)
-            courses[reg] = instructor
+            course_details = Courses.objects.select_related().get(id=reg.course_id.id)
+            #instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
+            #instructor = Curriculum_Instructor.objects.select_related().filter(curriculum_id=reg.curr_id)
+            #for inst in instructor:
+            #    courses[inst] = inst
+            courses[course_details] = course_details
+
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
 
@@ -1405,3 +1416,39 @@ def submit_attendance(request, course_code):
 
 
     return HttpResponse("Feedback uploaded")
+
+
+@login_required
+def usercourse(request, course_code):
+    """
+    The function is use for course content
+    """
+    user = request.user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)  # get the type of user
+    courseid = Courses.objects.select_related().get(code=course_code)
+    classes = OnlineClasses.objects.select_related().filter(course_id=courseid.id)
+
+    if extrainfo.user_type == 'faculty':
+        if request.method == 'POST':
+            if 'submiturl' in request.POST:
+
+                topic = request.POST.get('topicName')
+                class_date = request.POST.get('date')
+                start_time = request.POST.get('StartTime')
+                end_time = request.POST.get('EndTime')
+                upload_url = request.POST.get('ClassURL')
+
+                OnlineClasses.objects.create(course_id = courseid,
+                    class_date=class_date,
+                    start_time=start_time,
+                    end_time=end_time,
+                    description=topic,
+                    upload_url=upload_url
+                )
+
+            if 'deleteurl' in request.POST:
+                classid = request.POST.get('delete-id')
+                OnlineClasses.objects.get(id=classid).delete()
+
+
+    return render(request, "online_cms/course_new.html", {'classes': classes, 'extrainfo': extrainfo})
