@@ -23,7 +23,7 @@
 
                 <tbody>
                     {% for item in courses_list %}
-                      {% for items in item %}
+                      {% for items in item.courses.all %}
                       <tr>
                             <td>
                               {{ items.code }}

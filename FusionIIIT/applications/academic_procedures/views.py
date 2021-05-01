@@ -1512,7 +1512,7 @@ def get_add_course_options(branch_courses, current_register, requested):
     courses = set(requested + current_register)
     for courseslot in branch_courses:
         course_slot = []
-        for course in courseslot:
+        for course in courseslot.courses.all():
             course_slot.append(course)
         if not (set(course_slot) & courses):
             course_option.append(courseslot)
@@ -1585,8 +1585,7 @@ def get_sem_courses(sem_id, batch):
     courses = []
     course_slots = CourseSlot.objects.all().filter(semester_id = sem_id)
     for slot in course_slots:
-        if batch in slot.for_batches.all():
-            courses.append(slot.courses.all())
+        courses.append(slot)
     return courses
 
 

@@ -105,7 +105,7 @@
                     <tbody>
                             <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
                             {% for item in next_sem_registration_courses %}
-                                {% for items in item %}
+                                {% for items in item.courses.all %}
                                     <tr>
                                         <td>{{forloop.counter}}.</td>
                                         <td>{{ items.code }}

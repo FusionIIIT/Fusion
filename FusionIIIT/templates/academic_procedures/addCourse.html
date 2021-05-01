@@ -37,7 +37,7 @@
 
                                 <tbody>
                                     {% for item in add_courses_options %}
-                                        {% for items in item %}
+                                        {% for items in item.courses.all %}
                                         <tr>
                                             <td>{{forloop.counter}}.</td>
                                             <td>{{ items.code }}
