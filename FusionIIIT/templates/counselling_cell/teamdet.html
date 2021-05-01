@@ -1,0 +1,231 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block team_details %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Edit Team Details
+        </a>
+
+        <a class="item" data-tab="viewfeedback">
+            Team Details
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="feedback" id="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Head Counsellor :
+                    </div>
+                   
+                    <div class="field">
+                        <label>Name*</label>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Designation*</label>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Email Id*</label>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Contact Number*</label>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
+                    </div>
+
+                    <div class="ui header">
+                        Faculty Counsellor :
+                    </div>
+                   
+                    <div class="field">
+                        <label>Name*</label>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Designation*</label>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Email Id*</label>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Contact Number*</label>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
+                    </div>
+
+                    <div class="ui header">
+                        Student Coordinator :
+                    </div>
+                   
+                    <div class="field">
+                        <label>Name*</label>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Designation*</label>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Email Id*</label>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Contact Number*</label>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
+                    </div>
+                    
+                    <div class="ui header">
+                        Co-Coordinator :
+                    </div>
+                   
+                    <div class="field">
+                        <label>Name*</label>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Designation*</label>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Email Id*</label>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label>Contact Number*</label>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit" onclick="return feedback()">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+
+        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
+            {% for faq in faqs %}
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> -->
+            <div class="item">
+                <div class="right floated content">
+                    <a class="header">{{faq.category}}</a>
+                </div>
+                <div class="description">
+                    <div class="header">Question {{forloop.counter}} : </div>
+                    <h2 class="ui header">{{faq.question}}</h1>
+                    <div class="header">Answer {{forloop.counter}} :</div>
+                    <h3 class="ui header">{{faq.answer}}</h3>
+                </div> 
+                
+            </div>
+            {% endfor %}
+        </div>
+
+    <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% comment %} {% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        const required_check_faq_form = () => {
+            if ($("#answer").val().length == 0  && $("#question").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+       
+        function feedback(){
+            check = required_check_faq_form();
+            if(check == 0){
+                alert("Please fill question and anser both");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitfaq/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'category': $("#category").val(),
+                        'answer': $("#answer").val(),
+                        'question': $("#question").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            $("#feedback").load(location.href + " #feedback>*", "");
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                    },
+                    error: function (data, err) {
+                        console.log(err.message)
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
+                    }
+                });
+            }
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %} {% endcomment %}

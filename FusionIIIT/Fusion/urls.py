@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^ocms/', include('applications.online_cms.urls')),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    url(r'^counselling/', include('applications.counselling_cell.urls')),
     url(r'^notifications/', include('applications.notifications_extension.urls')),
     url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^dep/', include('applications.department.urls')),
