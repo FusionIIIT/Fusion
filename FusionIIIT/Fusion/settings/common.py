@@ -129,6 +129,7 @@ INSTALLED_APPS = [
     'applications.establishment',
     'applications.estate_module',
     'applications.counselling_cell',
+    'applications.research_procedures',
     'applications.income_expenditure',
     'applications.hostel_management',
     'applications.hr2',
