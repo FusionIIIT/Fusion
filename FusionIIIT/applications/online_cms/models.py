@@ -3,6 +3,7 @@ from django.db import models
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
+from applications.programme_curriculum.models import Course as Courses
 
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
@@ -202,4 +203,16 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
+
+# for online classes
+class OnlineClasses(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    description = models.TextField(max_length=1000)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    class_date = models.DateField()
+    upload_url = models.URLField(max_length=1000)
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.pk, self.course_id, self.class_date)
 
