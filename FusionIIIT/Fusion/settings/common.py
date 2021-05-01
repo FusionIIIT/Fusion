@@ -123,6 +123,7 @@ INSTALLED_APPS = [
     'applications.online_cms',
     'applications.programme_curriculum',
     'applications.placement_cell',
+    'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
     'applications.establishment',
