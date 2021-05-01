@@ -1,0 +1,35 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Non-Teaching Vacancy
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'recruitment/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+
+<h1 class="ui header" style="margin-left: 38%;">
+    <img class="ui image" src="https://semantic-ui.com/images/icons/school.png">
+    <div class="content">
+        Non-Teaching Job Form
+    </div>
+</h1>
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+
+{% endblock %}

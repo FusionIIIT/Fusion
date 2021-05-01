@@ -12,8 +12,9 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from xhtml2pdf import pisa
-
+from applications.establishment.views import *
 from applications.eis import admin
+from applications.hr2.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from django.http.response import JsonResponse
 from .forms import *
@@ -301,6 +302,12 @@ def profile(request, username=None):
     chairs = emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry')
     keynotes = emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry')
     events = emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date')
+    lien_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
+    deputation_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="DEPUTATION").order_by('-start_date')
+    other_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
     y=[]
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
@@ -322,6 +329,27 @@ def profile(request, username=None):
     desig=[]
     for i in design:
         desig.append(str(i.designation))
+
+       # view appraisal from from establishment
+    response = {}
+    # Check if establishment variables exist, if not create some fields or ask for them
+    response.update(initial_checks(request))
+    if is_eligible(request) and request.method == "POST":
+        handle_appraisal(request)
+
+    if is_eligible(request):
+        response.update(generate_appraisal_lists(request))
+
+    # If user has designation "HOD"
+    if is_hod(request):
+        response.update(generate_appraisal_lists_hod(request))
+
+    # If user has designation "Director"
+    if is_director(request):
+        response.update(generate_appraisal_lists_director(request))
+
+    response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
+
 
     context = {'user': user,
                'desig':desig,
@@ -346,8 +374,12 @@ def profile(request, username=None):
                'keynotes':keynotes,
                'events':events,
                'year_range':y,
-               'pers':pers
+               'pers':pers,
+               'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
+               'extrainfo':extra_info
                }
+
+    context.update(response)
     return render(request, 'eisModulenew/profile.html', context)
 
 # Dean RSPC Profile
@@ -386,6 +418,8 @@ def rspc_profile(request):
     desig=[]
     for i in design:
         desig.append(str(i.designation))
+
+
     context = {'user': user,
                'desig':desig,
                'pf':pf,

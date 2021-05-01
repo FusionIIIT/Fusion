@@ -27,6 +27,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 
 from applications.academic_procedures.views import acad_proced_global_context
+from applications.programme_curriculum.models import Batch
 
 
 @login_required
@@ -1905,3 +1906,29 @@ def confirm_grades(request):
     return HttpResponseRedirect('/aims/')
 
 
+def populate_student_db(request):
+    lis = Student.objects.select_related('id__department').all()
+    stu_list = list(lis)
+
+    batches = Batch.objects.all()
+    batch_dict = {}
+
+    for batch in batches:
+        batch_dict[batch.name] = batch
+
+    for stu in stu_list:
+        name = stu.programme+" "+stu.id.department.name+" "+str(stu.batch)
+        batch = Batch.objects.filter(name=name)
+        if name in batch_dict.keys():
+            stu.batch_id = batch_dict[name]
+
+        if stu.batch == 2019:
+            stu.curr_semester_no = 4
+        elif stu.batch == 2018:
+            stu. curr_semester_no = 6
+        else:
+            stu.curr_semester_no = 8
+
+    Student.objects.bulk_update(stu_list, ['batch_id', 'curr_semester_no'])
+
+    return HttpResponse('hello')

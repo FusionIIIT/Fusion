@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^ocms/', include('applications.online_cms.urls')),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    url(r'^counselling/', include('applications.counselling_cell.urls')),
     url(r'^notifications/', include('applications.notifications_extension.urls')),
     url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^dep/', include('applications.department.urls')),
@@ -50,6 +51,8 @@ urlpatterns = [
     url(r'^accounts/', include('allauth.urls')),
     url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
+    url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^hr2/', include('applications.hr2.urls')),
-    url(r'^programme_curriculum/',include('applications.programme_curriculum.urls'))
+    url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
+    url(r'^recruitment/', include('applications.recruitment.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
