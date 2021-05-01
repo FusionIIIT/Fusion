@@ -7,12 +7,12 @@ SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 ALLOWED_HOSTS = []
 
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-        'HOST': '172.27.16.216',
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'HOST': '127.0.0.1',
+        'USER': 'admin',
+        'PASSWORD': 'admin1234',
     }
 }
 

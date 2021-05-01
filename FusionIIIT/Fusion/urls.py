@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^finance/', include('applications.finance_accounts.urls')),
+    url(r'^ps1/', include('applications.ps1.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
