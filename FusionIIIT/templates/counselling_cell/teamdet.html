@@ -30,22 +30,22 @@
                    
                     <div class="field">
                         <label>Name*</label>
-                        <textarea rows="1" id="name" name="name" required="true"></textarea>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Designation*</label>
-                        <textarea rows="1" id="des" name="des" required="true"></textarea>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
                     </div>
                     
                     <div class="field">
                         <label>Email Id*</label>
-                        <textarea rows="1" id="eid" name="eid" required="true"></textarea>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Contact Number*</label>
-                        <textarea rows="1" id="cn" name="cn" required="true"></textarea>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
                     </div>
 
                     <div class="ui header">
@@ -54,22 +54,22 @@
                    
                     <div class="field">
                         <label>Name*</label>
-                        <textarea rows="1" id="name" name="name" required="true"></textarea>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Designation*</label>
-                        <textarea rows="1" id="des" name="des" required="true"></textarea>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
                     </div>
                     
                     <div class="field">
                         <label>Email Id*</label>
-                        <textarea rows="1" id="eid" name="eid" required="true"></textarea>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Contact Number*</label>
-                        <textarea rows="1" id="cn" name="cn" required="true"></textarea>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
                     </div>
 
                     <div class="ui header">
@@ -78,22 +78,22 @@
                    
                     <div class="field">
                         <label>Name*</label>
-                        <textarea rows="1" id="name" name="name" required="true"></textarea>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Designation*</label>
-                        <textarea rows="1" id="des" name="des" required="true"></textarea>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
                     </div>
                     
                     <div class="field">
                         <label>Email Id*</label>
-                        <textarea rows="1" id="eid" name="eid" required="true"></textarea>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Contact Number*</label>
-                        <textarea rows="1" id="cn" name="cn" required="true"></textarea>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
                     </div>
                     
                     <div class="ui header">
@@ -102,22 +102,22 @@
                    
                     <div class="field">
                         <label>Name*</label>
-                        <textarea rows="1" id="name" name="name" required="true"></textarea>
+                        <input type="text" rows="1" id="name" name="name" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Designation*</label>
-                        <textarea rows="1" id="des" name="des" required="true"></textarea>
+                        <input type="text" rows="1" id="des" name="des" required="true"/>
                     </div>
                     
                     <div class="field">
                         <label>Email Id*</label>
-                        <textarea rows="1" id="eid" name="eid" required="true"></textarea>
+                        <input type="text" rows="1" id="eid" name="eid" required="true"/>
                     </div>
 
                     <div class="field">
                         <label>Contact Number*</label>
-                        <textarea rows="1" id="cn" name="cn" required="true"></textarea>
+                        <input type="text" rows="1" id="cn" name="cn" required="true"/>
                     </div>
 
                     <div class="field">
@@ -141,7 +141,7 @@
         <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
         <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
             {% for faq in faqs %}
-                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> -->
             <div class="item">
                 <div class="right floated content">
                     <a class="header">{{faq.category}}</a>
@@ -163,7 +163,7 @@
 {% endblock %}
 {#{% endblock %}#}
 
-{% block javascript %}
+{% comment %} {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
  <script>
@@ -228,7 +228,4 @@
 
 
 </script>
-{% endblock %}
-
-
-
+{% endblock %} {% endcomment %}

@@ -43,6 +43,7 @@ def counselling_cell(request):
     categories = CounsellingIssueCategory.objects.all()
     student_coordinators = StudentCounsellingTeam.objects.filter(student_position="student_coordinator")
     student_guide = StudentCounsellingTeam.objects.filter(student_position="student_guide")
+    
     context = {
         "faqs":faqs,
         "categories":categories,

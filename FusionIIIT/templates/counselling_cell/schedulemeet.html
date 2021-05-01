@@ -30,16 +30,10 @@
 
                     <br>
 
-                   <div class="field" >
-                        <label>Serial No.*</label>
-                        <textarea rows="1" id="Serial No." name="Serial No." required="true"></textarea>
-                    </div>
-
-
             <div class="two fields">
                 
                 <div class="field">
-                    <label>Schedule Date*</label>
+                    <label>Schedule Date</label>
                     <!-- <div class="ui calendar" id="rangestart">
                         <div class="ui input left icon">
                             <i class="calendar icon"></i> -->
@@ -50,23 +44,43 @@
             </div>    
 
                 <div class="field">
-                    <label>Time*</label>
+                    <label>Time</label>
                     <input name="time" type="time" required="true" id="time">
                 </div>
-
-
-
-
-                   
                     <div class="field">
                         <label>Venue</label>
-                        <textarea rows="2" id="question" name="question" required="true"></textarea>
+                        <input type="text" id="question" name="question"  required="true">
                     </div>
                     
                     <div class="field">
-                        <label>Invitees</label>
-                        <textarea rows="5" id="answer" name="answer" required="true"></textarea>
+                        <label>Agenda</label>
+                        <textarea rows="3" id="answer" name="answer" required="true"></textarea>
                     </div>
+
+                    <div class="two fields">
+                            <div class="twelve wide field">
+                            <label>Student Invities</label>
+                                <select class="ui dropdown" name="student" id="student">
+                                    {% for student in second_year_students %}
+                                    <option value={{student.id.user.username}}>{{student.id.user.username}}          {{student.id.user.first_name}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+
+                    <div class="two fields">
+                            <div class="twelve wide field">
+                            <label>Faculty Invities</label>
+                                <select class="ui dropdown" name="student" id="student">
+                                    {% for faculty in faculty_counsellor %}
+                                    <option value={{faculty.id.user.username}}>{{faculty.id.user.username}}          {{student.id.user.first_name}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                        
                     
                     <div class="field">
                         <label><br></label>

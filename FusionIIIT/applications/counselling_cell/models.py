@@ -16,7 +16,7 @@ class CounsellingCellConstants :
     
     ISSUE_STATUS= (
         ('status_unresolved', 'Unresolved'),
-        ('status_resolved', 'Resolved'),
+        ('status_resolved', 'Resolved'),    
         ('status_inprogress', 'InProgress'),
     )
 
