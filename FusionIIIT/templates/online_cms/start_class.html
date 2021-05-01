@@ -1,0 +1,76 @@
+{% load static %}
+{% block uploadURL %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="uploadurl">
+            Upload Meeting URL
+        </a>
+
+    </div>
+
+    {% comment %}the upload meeting url tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="uploadurl">
+        <div class="ui vertical segment">
+            <form class="ui form"  method="POST"  style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+            
+              <div class="field">
+                <label><strong>Topic:</strong></label>
+                <div class="ui large input" style="width:100%">
+                    <input placeholder="Topic Name" name="topicName">
+                </div>
+            </div>
+            <br>
+
+            <div class="field">
+              <label><strong>Date:</strong></label>
+              <div class="ui large input" style="width:100%">
+                <input type="date" placeholder="Select" id="date" name="date">
+              </div>
+          </div>
+
+          <br>
+
+          <div class="field">
+            <label><strong>Start Time:</strong></label>
+            <div class="ui large input" style="width:100%">
+                <input type="time" placeholder="Start Time" name="StartTime">
+            </div>
+        </div>
+
+        <br>
+
+        <div class="field">
+          <label><strong>End Time:</strong></label>
+          <div class="ui large input" style="width:100%">
+              <input type="time" placeholder="End Time" name="EndTime">
+          </div>
+      </div>
+
+      <br>
+
+          <div class="field">
+            <label><strong>URL:</strong></label>
+            <div class="ui large input" style="width:100%">
+                <input type="url" placeholder="Class URL" name="ClassURL">
+            </div>
+        </div>
+
+        <br>
+               
+        <button class="ui large primary button right floated" name="submiturl" onclick="request()">
+          Submit
+        </button>
+
+        <br>
+
+        <div class="extra segment"></div>
+
+            </form>
+          
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the upload meeting tab ends here {% endcomment %}
+
+
+{% endblock %}
