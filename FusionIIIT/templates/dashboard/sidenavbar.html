@@ -37,16 +37,16 @@
 
                 <div class="active content">
                     <div class="link items">
-                        {% if request.user.extrainfo.user_type == 'faculty' %}
+                        {% if request.user.extrainfo.user_type == 'student' %}
                         <a class="item" href="/ocms">
                             <h4> Course Management </h4>
                         </a>
-                        {% else %}
+                        {% endif %}
 
                         <a class="item" href="/academic-procedures">
                             <h4> Academics Module </h4>
                         </a>
-                        {% endif %}
+                       
                         <a class="item" href="/programme_curriculum">
                             <h4> Programme & Curriculum Module </h4>
                         </a>
