@@ -149,7 +149,7 @@
                 <th>vendor</th>
                 <th >current_stock  </th>
                     <th >recieved_date  </th>
-                    <!-- <th >bill  </th> -->
+                    <th >bill  </th>
                    
                     <th >Edit stocks  </th>
                     <th >Delete stocks  </th>
@@ -167,7 +167,7 @@
                 <td>{{s.vendor}}</td>
                 <td>{{s.current_stock}}</td>
                 <td>{{s.recieved_date}}</td>
-                <!-- <td>{{s.bill}}</td> -->
+                <td>{{s.bill}}</td>
                  
                  <td><form action="/ps1/stock_edit/" method="POST" id="item_id">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">

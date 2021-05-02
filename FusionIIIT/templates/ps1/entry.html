@@ -89,10 +89,6 @@
         </thead>
         <tbody>
             {% for s in ent %}
-            {% if s.head_approval %}
-            {% if s.director_approval %}
-            {% if s.financial_approval %}
-            {% if s.purchased == false %}
              <tr>
                  <td>{{s.file_info.id}}</td>
                  <td>{{s.quantity}}</td>
@@ -105,11 +101,6 @@
 
                 
               </tr>
-              {% endif %}
-              {% endif %}
-              {% endif %}
-              {% endif %}
-              
               {% endfor %}
         </tbody>
 
