@@ -139,7 +139,7 @@
                                 {%if fac_list.sm_f%}
                                 {% for fcu in fac_list.sm_f %}
                                 <tr>
-                                    {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
+                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
                                     <td>{{ fcu.id }}</td>
                                     <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
                                     <!-- <td>{{ fcu.title }}</td> -->
