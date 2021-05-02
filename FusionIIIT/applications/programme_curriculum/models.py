@@ -64,7 +64,8 @@ class Curriculum(models.Model):
     version = models.PositiveIntegerField(default=1, null=False)
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
-
+    min_credit = models.PositiveIntegerField(default = 0)
+    
     class Meta:
         unique_together = ('name', 'version',)
     
@@ -149,6 +150,8 @@ class CourseSlot(models.Model):
     # for_batches = models.ManyToManyField(Batch)
     course_slot_info = models.TextField(null=True)
     courses = models.ManyToManyField(Course)
+    min_registration_limit = models.PositiveIntegerField(default = 0)
+    max_registration_limit = models.PositiveIntegerField(default = 1000)
 
     def __str__(self):
         return str(Semester.__str__(self.semester) + ", " + self.name + ", id = " + str(self.id))
