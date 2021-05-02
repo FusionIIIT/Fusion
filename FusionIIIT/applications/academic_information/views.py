@@ -1019,7 +1019,7 @@ def generate_preregistration_report(request):
 
 
 @login_required
-def add_new_profile(request):
+def add_new_profile (request):
     """
     To add details of new upcoming students in the database.User must be logged in and must be acadadmin
 

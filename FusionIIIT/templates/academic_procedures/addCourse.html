@@ -15,7 +15,6 @@
                         {% if add_courses_options %}
                             <form id='add_course_form' action='/academic-procedures/addCourse/' > {% csrf_token %}
                                 <input type="text" hidden="true" id="credit_count" value="{{current_credits}}">
-                                <input type="text" hidden="true" id="req_credit_count" value="{{ requested_credits }}">
                                 <h5></h5>
                                 <table class="ui very basic collapsing celled sortable table"
                                         style="padding-left: 2.5%;
@@ -92,7 +91,7 @@
 $(function() {
     $("#add_course_form").submit(function(event) {
 
-        var credits = parseInt(document.getElementById("credit_count").value) + parseInt(document.getElementById("req_credit_count").value);
+        var credits = parseInt(document.getElementById("credit_count").value);
         
         var inp = document.getElementsByClassName("values");
         var test = 0;
