@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^stock_edit/$', views.stock_edit, name='stock_edit'),
     url(r'^stock_update/$', views.stock_update, name='stock_update'),
 
-    url(r'^entry/$', views.entry, name='entry')
+    url(r'^entry/$', views.entry, name='entry'),
+    url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant')
 ]
