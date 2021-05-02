@@ -448,6 +448,7 @@ class InitialRegistration(models.Model):
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True)
 
     class Meta:
         db_table = 'InitialRegistration'
@@ -458,6 +459,7 @@ class FinalRegistration(models.Model):
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True)
 
     class Meta:
         db_table = 'FinalRegistration'
@@ -484,6 +486,7 @@ class course_registration(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True)
     # grade = models.CharField(max_length=10)
 
     class Meta:
