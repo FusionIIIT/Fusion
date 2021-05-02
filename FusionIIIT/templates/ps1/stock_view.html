@@ -2,32 +2,7 @@
 {% load static %}
 
 {% block filetracking_tab %} 
-<html>
 
-<style>
-table {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-td,  th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
- tr:nth-child(even){background-color: #f2f2f2;}
-
- tr:hover {background-color: #ddd;}
-
- th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #4cae9e;
-  color: white;
-}
-</style>
 
     <div class="ui pointing secondary menu">
         <h3>
@@ -36,11 +11,22 @@ td,  th {
             </a>
         </h3>
     </div>
+    <div class="ui divider"></div> 
+
     <div class="ui active tab" data-tab="composefile">
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
-    <div >
-        <h4>Stock Information</h4>
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+           Procuremented  stock entry view
+            </a>
+        </h3>
+    
+    </div>    
+    <div class="ui divider"></div>
+    <!-- <div >
+        
         {% if sto %}
         <table >
             <thread>
@@ -59,6 +45,7 @@ td,  th {
             </thread>
             <tbody>
                 {% for s in sto %}
+                {% if s.item_id.purchased %}
                 <tr>
                          <th scope="row"> {{s.item_id.file_info.id}}</th>
                          <td>{{s.item_name}}</td>
@@ -88,12 +75,127 @@ td,  th {
 
                         </td>
                 </tr>
+                {% endif %}
+
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
         <h4 >No Records present in database</h4>
-        {% endif %}
+        {% endif %} -->
+
+
+        <!-- <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                <th>item_id</th>
+                <th>item_Name</th>
+                <th>dealing assistant id</th>
+                <th>vendor</th>
+                <th >current_stock  </th>
+                    <th >recieved_date  </th>
+                    <th >bill  </th>
+                    <th >Action  </th>
+                    <th >Edit stocks  </th>
+                    <th >Delete stocks  </th>
+                
+               
+                
+            </tr>
+            </thead>
+            <tbody>
+                {% for s in sto %}
+                {% if s.item_id.purchased %}
+                 <tr>
+                    <th scope="row"> {{s.item_id.file_info.id}}</th>
+                    <td>{{s.item_name}}</td>
+                   
+                    <td>{{s.dealing_assistant_id}}</td>
+                    <td>{{s.vendor}}</td>
+                    <td>{{s.current_stock}}</td>
+                    <td>{{s.recieved_date}}</td>
+                    <td>{{s.bill}}</td>
+                     
+                     <td><form action="/ps1/stock_edit/" method="POST" id="item_id">{% csrf_token %}
+                        <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
+                        <button class="ui primary button" >Edit</button>
+                      </form> </td>
+                     <td> <form action="/ps1/stock_delete/" method="POST" id="item_id">{% csrf_token %}
+                        <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
+                        <button class="ui primary button" >Delete</button>
+                      </form> </td>
+    
+                    
+                  </tr>
+                  {% endif %}
+
+                {% endfor %}
+            </tbody>
+    
+        </table>
+    
+        
+        <br>
+         
+     -->
+     <div class="ui divider"></div>
+     {% if sto %}
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+            <th>item_id</th>
+                <th>item_Name</th>
+                <th>dealing assistant id</th>
+                <th>vendor</th>
+                <th >current_stock  </th>
+                    <th >recieved_date  </th>
+                    <th >bill  </th>
+                   
+                    <th >Edit stocks  </th>
+                    <th >Delete stocks  </th>
+            
+        </tr>
+        </thead>
+        <tbody>
+            {% for s in sto %}
+                {% if s.item_id.purchased %}
+             <tr>
+                <td > {{s.item_id.file_info.id}}</td>
+                <td>{{s.item_name}}</td>
+               
+                <td>{{s.dealing_assistant_id}}</td>
+                <td>{{s.vendor}}</td>
+                <td>{{s.current_stock}}</td>
+                <td>{{s.recieved_date}}</td>
+                <td>{{s.bill}}</td>
+                 
+                 <td><form action="/ps1/stock_edit/" method="POST" id="item_id">{% csrf_token %}
+                    <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
+                    <button class="ui primary button" >Edit</button>
+                  </form></td>
+                  <td>
+                    <form action="/ps1/stock_delete/" method="POST" id="item_id">{% csrf_token %}
+                        <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
+                        <button class="ui primary button" >Delete</button>
+                      </form> 
+                  </td>
+
+                
+
+                
+              </tr>
+              {% endif %}
+
+                {% endfor %}
+        </tbody>
+
+    </table>
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+     {% endif %}
+
 
        
    

@@ -2,32 +2,9 @@
 {% load static %}
 
 {% block filetracking_tab %}
-<html>
 
-<style>
-table {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
 
-td,  th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
 
- tr:nth-child(even){background-color: #f2f2f2;}
-
- tr:hover {background-color: #ddd;}
-
- th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #4cae9e;
-  color: white;
-}
-</style>
 <div class="ui pointing secondary menu">
     <h3>
         <a class="active item" data-tab="composefile">
@@ -38,9 +15,16 @@ td,  th {
 <div class="ui active tab" data-tab="composefile">
     <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
             padding-right: 3.5%;">
-<div >
-    <h4>Stock Info</h4>
-    {% if ent %}
+<div class="ui pointing secondary menu" >
+    <h3>
+        <a class="active item" data-tab="inward">
+       Stocks Information
+        </a>
+    </h3>
+
+</div>       
+
+    <!-- {% if ent %}
     <table >
         <thread>
             <tr>
@@ -55,6 +39,11 @@ td,  th {
         </thread>
         <tbody>
             {% for s in ent %}
+            {% if s.head_approval %}
+            {% if s.director_approval %}
+            {% if s.financial_approval %}
+            {% if s.purchased == false %}
+            
             <tr>
                      <th scope="row"> {{s.file_info.id}}</th>
                      <td>{{s.quantity}}</td>
@@ -76,9 +65,57 @@ td,  th {
 
                     </td>
             </tr>
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            
             {% endfor %}
         </tbody>
+    </table> -->
+
+    <div class="ui divider"></div>
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+            <th>File Info</th>
+            <th>Quantity</th>
+            <th>Item Name</th>
+            
+            <th>Enter Stock details</th>
+            
+        </tr>
+        </thead>
+        <tbody>
+            {% for s in ent %}
+            {% if s.head_approval %}
+            {% if s.director_approval %}
+            {% if s.financial_approval %}
+            {% if s.purchased == false %}
+             <tr>
+                 <td>{{s.file_info.id}}</td>
+                 <td>{{s.quantity}}</td>
+                 <td>{{s.item_name}}</td>
+                 
+                 <td><form action="/ps1/entry/" method="POST" id="file_info">{% csrf_token %}
+                    <input hidden  name = 'id' value="{{ s.file_info.id}}"><button class="ui primary button">
+                              Enter stock details
+                    </button></form</td>
+
+                
+              </tr>
+              {% endif %}
+              {% endif %}
+              {% endif %}
+              {% endif %}
+              
+              {% endfor %}
+        </tbody>
+
     </table>
+
+    <br>
     {% else %}
         <h4 >No Records present in database</h4>
      {% endif %}

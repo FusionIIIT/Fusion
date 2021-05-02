@@ -697,40 +697,42 @@ def forward_inward(request,id):
     print(file.is_read)
     return render(request, 'filetracking/forward.html', context)
 @login_required(login_url = "/accounts/login")
+
 def Stock_Entry(request):
     
-    if request.method=='GET' :
-        
-        return HttpResponseRedirect('../stock_view')
     
-    if request.method =="POST":
+        if request.method=='GET' :
+            
+            return HttpResponseRedirect('../stock_view')
         
-        
-        #dealing_assistant_id=request.POST.get('dealing_assistant_id')
-        id=request.POST.get('id')
-        
-        
-        temp1=File.objects.get(id=id)
-        temp=IndentFile.objects.get(file_info=temp1)
-        
+        if request.method =="POST":
+            
+            
+            #dealing_assistant_id=request.POST.get('dealing_assistant_id')
+            id=request.POST.get('id')
+            
+            
+            temp1=File.objects.get(id=id)
+            temp=IndentFile.objects.get(file_info=temp1)
+            
 
-        
-        dealing_assistant_id=request.user.extrainfo
+            
+            dealing_assistant_id=request.user.extrainfo
 
-        item_id=temp
-        item_name=request.POST.get('item_name')
-        vendor=request.POST.get('vendor')
-        current_stock=request.POST.get('current_stock')
-        recieved_date=request.POST.get('recieved_date')
-        bill=request.FILES.get('bill')
-        
-                
-               # staff=Staff.objects.get(id=request.user.extrainfo)
+            item_id=temp
+            item_name=request.POST.get('item_name')
+            vendor=request.POST.get('vendor')
+            current_stock=request.POST.get('current_stock')
+            recieved_date=request.POST.get('recieved_date')
+            bill=request.FILES.get('bill')
+            
+                    
+                # staff=Staff.objects.get(id=request.user.extrainfo)
 
-        StockEntry.objects.create(item_id=item_id,item_name= item_name,vendor=vendor,current_stock=current_stock,dealing_assistant_id=dealing_assistant_id,bill=bill,recieved_date=recieved_date,)
-        IndentFile.objects.filter(file_info=temp).update(purchased=True)         
-     
-        return HttpResponseRedirect('../stock_view')
+            StockEntry.objects.create(item_id=item_id,item_name= item_name,vendor=vendor,current_stock=current_stock,dealing_assistant_id=dealing_assistant_id,bill=bill,recieved_date=recieved_date,)
+            IndentFile.objects.filter(file_info=temp).update(purchased=True)         
+        
+            return HttpResponseRedirect('../stock_view')
 
        
 
@@ -808,10 +810,13 @@ def stock_delete(request):
         
         #temp1=IndentFile.objects.get(id=id)
         temp=File.objects.get(id=id)
-        temp.delete()
+        temp1=IndentFile.objects.get(file_info=temp)
+        stocks=StockEntry.objects.get(item_id=temp1)
+        stocks.delete()
     return HttpResponseRedirect('../stock_view')   
 @login_required(login_url = "/accounts/login")   
 def entry(request):
+
     if request.method=='POST':
         id=request.POST.get('id')
         return render(request,'ps1/StockEntry.html',{'id':id})
@@ -821,5 +826,11 @@ def entry(request):
     
     ent=IndentFile.objects.all()
     return render(request,'ps1/entry.html',{'ent':ent})
-   
-        
+    
+def dealing_assistant(request):
+    print(request.user.extrainfo.id)
+    print(type(request.user.extrainfo.id))
+    if request.user.extrainfo.id=='132' :
+        return redirect('/ps1/entry/')   
+    else:
+        return redirect('/ps1')       
