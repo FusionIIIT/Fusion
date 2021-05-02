@@ -61,7 +61,6 @@ def academic_procedures(request):
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
 
-
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
         return HttpResponseRedirect('/academic-procedures/stu/')
@@ -264,6 +263,7 @@ def academic_procedures_student(request):
                 'cpi' : cpi,
                 }
         cur_cpi=details['cpi']
+
 
         try:
             pre_registered_course = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
@@ -1114,7 +1114,6 @@ def pre_registration(request):
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
 
-
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
             count = request.POST.get('ct')
             count = int(count)
@@ -1122,12 +1121,15 @@ def pre_registration(request):
             for i in range(1, count+1):
                 i = str(i)
                 choice = "choice["+i+"]"
-                course_id = Courses.objects.get(id = request.POST.get(choice))
-                p = InitialRegistration(
-                    course_id = course_id,
-                    semester_id = sem_id,
-                    student_id = current_user
-                    )
+                try:
+                    course_id = Courses.objects.get(id = request.POST.get(choice))
+                    p = InitialRegistration(
+                        course_id = course_id,
+                        semester_id = sem_id,
+                        student_id = current_user
+                        )
+                except Exception as e:
+                    return HttpResponseRedirect('/academic-procedures/main')
                 reg_curr.append(p)
             InitialRegistration.objects.bulk_create(reg_curr)
             try:
