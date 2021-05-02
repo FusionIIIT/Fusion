@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from notification.views import AssistantshipClaim_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
@@ -34,7 +35,7 @@ from .forms import BranchChangeForm
 
 
 
-demo_date = datetime.datetime.now()
+demo_date = timezone.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
@@ -273,10 +274,7 @@ def academic_procedures_student(request):
             pre_registered_course_show = None
         try:
             final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
-            requested_courses = get_requested_courses(user_details.id)
-            requested_credits = get_requested_credits(requested_courses)
-            add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, requested_courses)
-            added_course_count = get_added_course_count(currently_registered_course, requested_courses)
+            add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course)
             drop_courses_options = currently_registered_course
 
         except Exception as e:
@@ -405,8 +403,6 @@ def academic_procedures_student(request):
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
                             'drop_courses_options' : drop_courses_options,
-                            'added_course_count' : added_course_count,
-                            'requested_credits' : requested_credits,
                            # 'pre_register': pre_register,
                             'prd': pre_registration_date_flag,
                             'frd': final_registration_date_flag,
@@ -1287,27 +1283,6 @@ def register(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
-@login_required(login_url='/accounts/login')
-def addCourse_list(request):
-    if(request.POST):
-        course_id = request.POST.get('course_id')
-
-        course = Courses.objects.get(id = course_id)
-        registered_students = len(course_registration.objects.all().filter(course_id =  course))
-        
-        course_list = CourseRequested.objects.all().filter(course_id=course)
-        student = []
-
-        for course in course_list:
-            student.append((course.student_id,course_id))
-
-        html = render_to_string('academic_procedures/course_table.html',
-                                {'student': student, 'registered_students': registered_students}, request)
-
-        maindict = {'html': html,
-                    'queryflag': 1}
-        obj = json.dumps(maindict)
-        return HttpResponse(obj, content_type='application/json')
 
 
 def add_courses(request):
@@ -1326,53 +1301,20 @@ def add_courses(request):
                 choice = "choice["+i+"]"
                 try:
                     course_id = Courses.objects.get(id = request.POST.get(choice))
-                    p = CourseRequested(
-                        course_id = course_id,
-                        student_id = current_user
+                    p = course_registration(
+                        course_id = course,
+                        student_id=student,
+                        semester_id=sem_id
                         )
                     reg_curr.append(p)
                 except Exception as e:
                     continue
-            CourseRequested.objects.bulk_create(reg_curr)
+            course_registration.objects.bulk_create(reg_curr)
             return HttpResponseRedirect('/academic-procedures/main')
         except Exception as e:
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
-
-
-def verify_addCourse(request):
-    if request.is_ajax():
-        if request.POST.get('status_req') == "accept" :
-            student_id = request.POST.get('student_id')
-            course_id = request.POST.get('course_id')
-            course = Courses.objects.get(id = course_id)
-            student = Student.objects.get(id = student_id)
-
-            batch = student.batch_id
-            curr_id = batch.curriculum
-            sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student.curr_semester_no)
-            p = course_registration(
-                course_id = course,
-                student_id=student,
-                semester_id=sem_id
-                )
-            p.save()
-            CourseRequested.objects.filter(student_id = student, course_id = course).delete()  
-            academics_module_notif(request.user, student.id.user, course.code+' course add request accepted')
-            return JsonResponse({'status': 'success', 'message': 'Successfully'})
-
-        elif request.POST.get('status_req') == "reject" :
-            student_id = request.POST.get('student_id')
-            course_id = request.POST.get('course_id')
-            course = Courses.objects.get(id = course_id)
-            student = Student.objects.get(id = student_id)
-
-            CourseRequested.objects.filter(student_id = student, course_id = course).delete() 
-            academicadmin = get_object_or_404(User, username = "acadadmin")
-            academics_module_notif(academicadmin, student.id.user, course.code + ' course add request rejected')
-            return JsonResponse({'status': 'success', 'message': 'Successfully'})
-    return JsonResponse({'status': 'Failed'}, status=400)
 
 
 def drop_course(request):
@@ -1400,6 +1342,30 @@ def drop_course(request):
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
+
+@login_required(login_url='/accounts/login')
+def gen_course_list(request):
+    if(request.POST):
+        try:
+            batch = request.POST['batch']
+            course_id = request.POST['course']
+            course = Courses.objects.get(id = course_id)
+            obj = course_registration.objects.all().filter(course_id = course)
+        except Exception as e:
+            batch=""
+            course=""
+            obj=""
+
+        students = []
+        for i in obj:
+            if i.student_id.batch_id.year == int(batch):
+                students.append(i.student_id)
+        html = render_to_string('academic_procedures/gen_course_list.html',
+                                {'students': students, 'batch':batch, 'course':course_id}, request)
+
+        maindict = {'html': html}
+        obj = json.dumps(maindict)
+        return HttpResponse(obj, content_type='application/json')
 
 
 def add_thesis(request):
@@ -1492,29 +1458,22 @@ def add_thesis(request):
 
 
 
-def get_requested_credits(requested_courses):
-    credits = 0
-    for courses in requested_courses:
-        credits += courses.credit
-    return credits
-
-def get_requested_courses(student_id):
-    courses = []
-    for req in CourseRequested.objects.all().filter(student_id = student_id):
-        courses.append(req.course_id)
-    return courses
-
-
-def get_add_course_options(branch_courses, current_register, requested):
+def get_add_course_options(branch_courses, current_register):
 
     course_option = []
-    courses = set(requested + current_register)
+    courses = set(current_register)
     for courseslot in branch_courses:
         course_slot = []
+        # max_limit = courseslot.max_registration_limit
         for course in courseslot.courses.all():
             course_slot.append(course)
         if not (set(course_slot) & courses):
             course_option.append(courseslot)
+            # lis = []
+            # for course in course_slot:
+            #     if course_registration.objects.filter(student_id__batch_id__year = batch, course_id = course).count < max_limit:
+            #         lis.append(course)
+            # course_option.append((courseslot, lis))
     return course_option
 
 

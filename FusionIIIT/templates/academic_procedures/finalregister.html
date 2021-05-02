@@ -145,6 +145,7 @@
                         <div id="course_change_table" hidden>
                             <form id='change_course' action='/academic-procedures/final_registration/'>
                                 {% csrf_token %}
+                            <div class="ui form" style="border: black" >
                             <table id="course_change_table"  class="ui very basic collapsing celled sortable table" 
                                     style ="padding-left: 2.5%;
                                             padding-right: 2.5%;
@@ -202,7 +203,7 @@
                         <div class="ui divider"></div>
 
                         <div class="two fields" style="width: 100%">
-                            <div class="field" style="width: 20%; margin-right: 5px">
+                            <div class="field" style="width: 30%; margin-right: 5px">
                                 <select class="ui dropdown" name="mode" required="True">
                                     <option value="">Fee Payment Mode</option>
                                     {% for i in fee_payment_mode_list %}
@@ -220,6 +221,7 @@
                                 <button class="ui primary button">Register</button>
                             </div>
                         </div>
+                    </div>
                     
                     </form></div>
 
