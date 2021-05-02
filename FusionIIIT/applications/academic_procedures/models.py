@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
