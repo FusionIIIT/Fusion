@@ -30,6 +30,11 @@ def ps1(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+          return redirect('/dashboard')
+    if request.user.extrainfo.id == '132':
+          return redirect("/ps1/entry/")
     if request.method =="POST":
         try:
             if 'save' in request.POST:
@@ -163,7 +168,7 @@ def ps1(request):
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
-                    return redirect('/filetracking/')
+                    return redirect('/ps1/')
 
                 upload_file = request.FILES.get('myfile')
 
