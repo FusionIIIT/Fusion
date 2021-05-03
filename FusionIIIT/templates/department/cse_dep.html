@@ -196,7 +196,9 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
-                                        <td>{{ stu.upload_announcement }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                                 {% for stu in announcements.all %}
@@ -206,7 +208,9 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
-                                        <td>{{ stu.upload_announcement }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
 
