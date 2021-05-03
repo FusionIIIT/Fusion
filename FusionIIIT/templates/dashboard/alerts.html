@@ -4,6 +4,7 @@
 {% load notifications_tags %}
     <div class="ui one cards" style="padding: 2px">
         {% for notice in notifications %}
+            {% ifnotequal notice.data.flag "department" %}
             {% comment %}A single notification starts here!{% endcomment %}
                 {% if notice.unread %}
                 <div class="ui blue card" id="notif{{notice.id}}">
@@ -36,7 +37,7 @@
                 </div>
             </div>
 
-
+            {% endifnotequal %}
             {% comment %}A single notification ends here!{% endcomment %}
         {% endfor %}
 
