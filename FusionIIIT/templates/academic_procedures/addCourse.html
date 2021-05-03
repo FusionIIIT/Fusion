@@ -36,18 +36,19 @@
 
             <tbody>
                 {% for item in add_courses_options %}
+                <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.0.id }}' hidden="True">
                 <tr>
                     <td>{{forloop.counter}}.</td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.type}}</td>
+                    <td>{{item.0.name}}</td>
+                    <td>{{item.0.type}}</td>
                     <td>{{curr_sem.semester_no}}
                         <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
                     </td>
-                    <td>{{item.courses.all.0.credit}} </td>
+                    <td>{{item.0.courses.all.0.credit}} </td>
                     <td>
                         <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
                             <option value="0">Select course</option>
-                            {% for items in item.courses.all %}
+                            {% for items in item.1 %}
                             <option value='{{items.id}}' class="values" data-value2="{{items.credit}}">
                                 {{items.code}}-{{ items.name }}</option>
                             {% endfor %}
@@ -111,7 +112,7 @@
 
                 var posting = $.post(friendForm.attr('action'), friendForm.serialize());
                 posting.done(function (data) {
-                    alert('Request Sent Successfully');
+                    alert('Course(s) added Successfully');
                     window.location = "/academic-procedures/main/";
                 });
                 posting.fail(function (data) {

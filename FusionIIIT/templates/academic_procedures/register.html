@@ -107,8 +107,9 @@
             </thead>
 
             <tbody>
-                <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
+                <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
                 {% for item in next_sem_registration_courses %}
+                <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.id }}' hidden="True">
                 <tr>
                     <td>{{forloop.counter}}.</td>
                     <td>{{item.name}}</td>
@@ -118,7 +119,7 @@
                     </td>
                     <td>{{item.courses.all.0.credit}} </td>
                     <td>
-                        {% if item.courses.all|length == 1 %}
+                        {% if item.type == "Professional Core" %}
                         <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
                             {% for items in item.courses.all %}
                             <option value='{{items.id}}' class="Prechoices" data-value2="{{items.credit}}" selected>

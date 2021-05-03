@@ -85,6 +85,8 @@
 
                     <tbody>
 
+                        <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
+                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                         {% for items in pre_registered_course %}
                         <tr>
                             <td>{{forloop.counter}}.</td>
@@ -92,14 +94,10 @@
                             </td>
                             <td>{{ items.course_id.name }}
                             </td>
-                            <td>{{ items.course_id.credit }}
-                            </td>
-                            <td>{{next_sem.semester_no}}
-                                <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id.id }}"
-                                    onclick="return false;" checked hidden="True">
-                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                            </td>
+                            <td>{{ items.course_id.credit }}</td>
+                            <td>{{next_sem.semester_no}}</td>
+                            <input name="choice" value="{{ items.course_id.id }}" hidden="True">
+                            <input name="slot" value="{{ items.course_slot_id.id }}" hidden="True">
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -147,6 +145,7 @@
         <form id='change_course' action='/academic-procedures/final_registration/'>
             {% csrf_token %}
             <div class="ui form" style="border: black">
+                <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
                 <table id="course_change_table" class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
                                             padding-right: 2.5%;
                                             padding-top: 1%;
@@ -166,17 +165,17 @@
                     <tbody>
 
                         <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
+                        <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
                         {% for item in final_registration_choice %}
+                        <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.id }}' hidden="True">
                         <tr>
                             <td>{{forloop.counter}}.</td>
                             <td>{{item.name}}</td>
                             <td>{{item.type}}</td>
-                            <td>{{next_sem.semester_no}}
-                                <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
-                            </td>
+                            <td>{{next_sem.semester_no}}</td>
                             <td>{{item.courses.all.0.credit}} </td>
                             <td>
-                                {% if item.courses.all|length == 1 %}
+                                {% if item.type == "Professional Core" %}
                                 <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
                                     {% for items in item.courses.all %}
                                     <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}"
@@ -199,42 +198,6 @@
                         {% endfor %}
                         <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
 
-
-
-
-                        <!-- 
-                    {% for item in final_registration_choice %}
-                    {% for items in item.courses.all %}
-                    <tr>
-                        <td>{{forloop.counter}}.</td>
-                        <td>{{ items.code }}
-                        </td>
-                        <td>{{ items.name}}
-                        </td>
-                        <td>{{next_sem.semester_no}}
-                            <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
-                        </td>
-                        <td>{{ items.credit }}
-                        </td>
-                        <td><B>
-                                <input class="choice" name="choice[{{forloop.parentloop.counter}}]" type="radio"
-                                    value="{{ items.id }}" data-valuetwo="{{items.credit}}" required>
-                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-
-                            </B>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-
-                    {% endfor %}  -->
                     </tbody>
                 </table>
                 <input type="text" name="type_reg" value="change_register" hidden="True">
@@ -264,13 +227,6 @@
             </div>
         </form>
     </div>
-
-
-
-
-
-
-
 
 
 
@@ -345,20 +301,37 @@
         });
         $("#change_course").submit(function (event) {
 
+            var inp = document.getElementsByClassName("choices");
+            var count = 0;
+            for (var i = 0; i < inp.length; i++) {
+                if (inp[i].selected) {
+                    count = count + parseInt(inp[i].getAttribute("data-value2"));
+                }
+            }
+
             event.preventDefault();
             var friendForm = $(this);
 
             var posting = $.post(friendForm.attr('action'), friendForm.serialize());
-            // if success:
-            posting.done(function (data) {
-                alert('Registration Successful');
-                window.location = "/academic-procedures/main/";
-            });
-            // if failure
-            posting.fail(function (data) {
-                alert('Registration Failed');
-                window.location = "/academic-procedures/main/";
-            });
+
+            var min = parseInt(document.getElementById("mincr").value);
+            if (count <= min) {
+                alert("You Can't Register as Minimum Credits: " + min);
+                window.location = "/academic-procedures/main/"
+            }
+            else {
+                // if success:
+                posting.done(function (data) {
+                    alert('Registration Successful');
+                    window.location = "/academic-procedures/main/";
+                });
+                // if failure
+                posting.fail(function (data) {
+                    alert('Registration Failed');
+                    window.location = "/academic-procedures/main/";
+                });
+            }
+            
         });
     });
 
