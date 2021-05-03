@@ -64,6 +64,7 @@
             <div class="ui top attached tabular large menu">
                 <a class="active item" data-tab="first">Notifications</a>
                 <a class="item" data-tab="second">News</a>
+                <a class="item" data-tab="third">Announcements</a>
             </div>
             <div class="ui bottom attached active tab segment" data-tab="first">
                 <div id="textSegmentDiv">
@@ -87,6 +88,17 @@
             <div class="ui bottom attached tab segment" data-tab="second">
                 Work in Progress, coming soon!
             </div>
+            <div class="ui bottom attached tab segment" data-tab="third">
+                <div id="textSegmentDiv">
+
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts1 %}
+                            {% include 'dashboard/alerts1.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+            
         </div>
 
         {% comment %}The central-rail segment ends here!{% endcomment %}
