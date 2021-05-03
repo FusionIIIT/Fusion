@@ -41,18 +41,18 @@
 
                 <div class="field">
                     <label>Quantity</label>
-                    <textarea rows="1" name="quantity" required></textarea>
+                    <input type="number" name="quantity" required></input>
                 </div>
 
 
                 <div class="field">
                     <label>Present Stock</label>
-                    <textarea rows="1" name="present_stock" required></textarea>
+                    <input type="number"  name="present_stock" required></input>
                 </div>
 
                 <div class="field">
                     <label>Estimated Cost</label>
-                    <textarea rows="1" name="estimated_cost" required></textarea>
+                    <input type="number"  name="estimated_cost" required></input>
                 </div>
 
 
@@ -70,13 +70,18 @@
 
                 <div class="field">
                     <label>Indent Type</label>
-                    <textarea rows="3" name="indent_type" required></textarea>
+                    <select name="indent_type">  
+                        <option value = "Equipment">Equipment</option>  
+                        <option value = "Machinery">Machinery</option>  
+                        <option value = "Furniture">Furniture</option>  
+                        <option value = "Fixture"> Fixture</option>  
+                    </select>  
                 </div>
 
 
                 <div class="field">
                     <label>Budgetary Head</label>
-                    <textarea rows="3" name="budgetary_head" required></textarea>
+                    <textarea rows="2" name="budgetary_head" required></textarea>
                 </div>
 
 
@@ -92,12 +97,12 @@
                 </div>
                 
                 <div class="field">
-                    <h5>Nature</h5>
+                    <h5>Nature of Indent</h5>
                     <label class="radio-inline">
-                        <input type="radio" id="Yes" name="nature" value="True">Yes
+                        <input type="radio" name="nature" value="True"> Consumable 
                     </label>
                     <label class="radio-inline">
-                        <input type="radio" id="Yes" name="nature" value="False">No
+                        <input type="radio" name="nature" value="False"> Non Consumable
                     </label>
                  </div>
 
@@ -105,10 +110,10 @@
                 <div class="field">
                    <h5>Indigenous</h5>
                    <label class="radio-inline">
-                       <input type="radio" id="Yes" name="indigenous" value="True">Yes
+                       <input type="radio" name="indigenous" value="True"> Yes
                    </label>
                    <label class="radio-inline">
-                       <input type="radio" id="Yes" name="indigenous" value="False">No
+                       <input type="radio" name="indigenous" value="False"> No
                    </label>
                 </div>
 
@@ -117,10 +122,10 @@
                 <div class="field">
                    <h5>Replaced</h5>
                    <label class="radio-inline">
-                       <input type="radio" id="Yes" name="replaced" value="True">Yes
+                       <input type="radio" name="replaced" value="True"> Yes
                    </label>
                    <label class="radio-inline">
-                       <input type="radio" id="Yes" name="replaced" value="False">No
+                       <input type="radio" name="replaced" value="False"> No
                    </label>
                 </div>
 
