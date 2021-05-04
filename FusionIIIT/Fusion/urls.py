@@ -55,5 +55,6 @@ urlpatterns = [
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^hr2/', include('applications.hr2.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
+    url(r'^iwdModuleV2/', include('applications.iwdModuleV2.urls')),
     url(r'^recruitment/', include('applications.recruitment.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
