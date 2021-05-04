@@ -34,6 +34,7 @@
             <div class="ui divider"></div>
 
             {% comment %}ROW #2 starts here!{% endcomment %}
+            {% if eligible %}
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
@@ -84,8 +85,8 @@
             {% comment %}The patient history ends here!{% endcomment %}
 
         </div>
+        {% endif %}
         {% comment %}The central-rail segment ends here!{% endcomment %}
-
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
         </div>
