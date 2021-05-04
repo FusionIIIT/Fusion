@@ -330,7 +330,7 @@
                      <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
                      {% if request.user == user %}
                     <td><a class="ui button left floated" onclick="updateCONSULTANCY({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>
-                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" ></i> </a> </td>{% endif %}
+                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -493,16 +493,16 @@
             </thead>
 
             <tbody>
-            {% for patent in emp_patents %}
+            {% for patent in patents %}
                 <tr id="r1">
-                     <td id="patent{{ forloop.counter}}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter|add:sr6 }}.</td>
+                     <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter|add:sr6 }}.</td>
                      <td id="patent{{ forloop.counter }}A">{{ patent.p_no }}</td>
                      <td id="patent{{ forloop.counter }}B">{{ patent.title }}</td>
                      <td id="patent{{ forloop.counter }}C">{{ patent.status }}</td>
                      <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
                      <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
                      {% if request.user == user %}
-                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 2 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
+                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
                     {% endif %}
                 </tr>
             {% endfor %}
