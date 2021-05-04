@@ -82,8 +82,7 @@ def AESForm(request):
         formObject = AESDetails()
         formObject.id = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
-        formObject.descOfTeam = request.POST['description']
-        formObject.descOfTeam = request.POST['description']
+        formObject.descOfItems = request.POST['description']
         formObject.unit = request.POST['unit']
         formObject.quantity = request.POST['quantity']
         formObject.rate = request.POST['rate']
