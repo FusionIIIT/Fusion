@@ -66,11 +66,11 @@
 
         <td class="four wide column">
             {% if pr.DRSPC_response == "Approve" %}
-            <i class="large green checkmark icon"></i>
+            <i class="large green checkmark icon">{{pr.DRSPC_response}}</i>
             {% elif pr.DRSPC_response == "Pending" %}
-            <i class="large orange warning icon"></i>
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
             {% elif pr.DRSPC_response == "Disapprove" %}
-            <i class="large red x icon"></i>
+            <i class="large red x icon">{{pr.DRSPC_response}}</i>
             {% elif pr.DRSPC_response == "Forward" %}
             <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
             {% endif %}
