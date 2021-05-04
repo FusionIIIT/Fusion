@@ -726,6 +726,11 @@ def dashboard(request):
     }
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
+    elif user.extrainfo.user_type != 'student':
+        designat = HoldsDesignation.objects.select_related().get(user=user)
+        response = {'designat':designat}
+        context.update(response)
+        return render(request, "dashboard/dashboard.html", context)
     else:
         return render(request, "dashboard/dashboard.html", context)
 
