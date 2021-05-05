@@ -1,0 +1,147 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+<div class="ui stackable doubling grid" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+     xmlns="http://www.w3.org/1999/html">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    Work Order Form:
+</div>
+
+
+<div class="fields">
+    <div class="eight wide field">
+      <label>Dated:</label>
+        {{x.issueDate}}<br><br>
+     </div>
+
+
+     <div class="eight wide field">
+        <label>NIT/NIQ No:</label>
+        {{x.nitNiqNo}}<br>
+       </div>
+
+    </div>
+
+Agency: {{x.agency}}
+        <br>
+
+
+ Name of work: {{x.name}}
+<br>
+<br>
+
+Your lowest tender for the work mentioned above has been accepted, on behalf of the Board of
+Governor, PDPMIIITDM, Jabalpur, for an amount of Rs. {{x.amount}}
+<br> <br>
+
+
+You are directed to start the work at once. Please note that the time allowed for carrying out the
+work is {{x.time}}
+<br> Days including rainy season as entered in the tender and shall be reckoned
+from {{x.monthDay}}
+<br> day after the date of this order to commence the work.<br> Accordingly the time schedule
+for completion of work shall be as follows:<br><br>
+
+<div class="fields">
+    <div class="eight wide field">
+        Date of start :
+        {{x.startDate}}
+    </div>
+    <div class="eight wide field">
+        Date of Completion :
+        {{x.completionDate}}
+    </div>
+</div>
+<br>
+You are requested to contact the Executive Engineer (C), PDPM IIITDM, Jabalpur for taking
+possession of the site for starting the work.<br>
+
+You are required to deposit a Rs. {{x.deposit}}
+<br> Non judicial stamp paper for preparation of Contract
+Agreement and to sign the Contract Agreement within {{x.contractDay}}
+<br>  days from the receipt of this work
+order. Stamp duty as per provisions of notification of M. P. Government may also be deposited.<br><br>
+
+<br>
+
+                <div class="field">
+                    <label><br></label>
+                </div>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

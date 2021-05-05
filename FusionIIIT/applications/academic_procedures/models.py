@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 
 from applications.academic_information.models import Course, Student, Curriculum
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -111,6 +112,9 @@ class MinimumCredits(models.Model):
 #
 #
 #
+
+# THE THREE TABLES BELOW ARE OLD. PLEASE REFRAIN FROM USING THEM FURTHER.
+# USE THE TABLES AT THE BOTTOM OF THE FILE INSTEAD.
 class StudentRegistrationCheck(models.Model):
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     pre_registration_flag = models.BooleanField(default = False)
@@ -143,14 +147,6 @@ class FinalRegistrations(models.Model):
 
     class Meta:
         db_table = 'FinalRegistrations'
-
-
-class CourseRequested(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'CourseRequested'
 
 
 class Thesis(models.Model):
@@ -190,6 +186,8 @@ class ThesisTopicProcess(models.Model):
         return str(self.thesis_topic) + " " + str(self.student_id)
 
 
+# THIS IS AN OLD TABLE. PLEASE REFRAIN FROM USING IT.
+# USE THE TABLE AT THE BOTTOM INSTEAD.
 class FeePayment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     semester = models.IntegerField(default= 1)
@@ -470,3 +468,64 @@ class PhDProgressExamination(models.Model):
     annual_progress_seminar = models.CharField(max_length=20, choices=recommendations,null=True)
     commments = models.TextField(null=True)
           
+
+
+# THESE ARE THE NEW TABLES AND REPLACEMENT OF THOSE ABOVE.
+# PLEASE USE THESE TABLES FOR FURTHER WORK.
+class StudentRegistrationChecks(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    pre_registration_flag = models.BooleanField(default=False)
+    final_registration_flag = models.BooleanField(default=False)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'StudentRegistrationChecks'
+
+
+class InitialRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+
+    class Meta:
+        db_table = 'InitialRegistration'
+
+
+class FinalRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+
+    class Meta:
+        db_table = 'FinalRegistration'
+
+
+class CourseRequested(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'CourseRequested'
+
+class FeePayments(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
+    transaction_id = models.CharField(max_length = 40)
+
+    class Meta:
+        db_table = 'FeePayments'
+
+
+class course_registration(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
+    # grade = models.CharField(max_length=10)
+
+    class Meta:
+        db_table = 'course_registration'
