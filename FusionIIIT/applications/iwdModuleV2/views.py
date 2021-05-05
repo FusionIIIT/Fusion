@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from .models import *
 from time import sleep
+from django.contrib.auth.models import User
+from applications.globals.models import *
 
 # Create your views here.
 
@@ -30,7 +32,14 @@ theTurnOfExtension = 0
 # in conjunction with SRS. After that, everything will become easier.
 
 def dashboard(request):
-    return render(request, 'iwdModuleV2/dashboard.html', {})
+    eligible = True
+    userObj = User.objects.get(id=request.user.id)
+    userDesignationObjects = HoldsDesignation.objects.filter(working=userObj)
+    for f in userDesignationObjects:
+        if f.designation.name == 'Admin IWD':
+            eligible = False
+            break
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 
 def page1_1(request):
