@@ -35,20 +35,8 @@
                         <B>Current Semester</B>
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="two">Registration
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                     <a class="item" data-tab="check_dues">Check Dues
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="apply_for_bonafide">Apply For Bonafide
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                     <a class="item" data-tab="check_attendance">Check Attendance
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="three">
-                        Add/Drop Courses
+                    <a class="item" data-tab="miscellaneous_2">
+                        Check Dues
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% if ug_flag %}
@@ -68,10 +56,15 @@
                             Thesis
                             <i class="right floated chevron right icon"></i>
                         </a>
-                        <a class="item" data-tab="twelve">
-                            PG Procedure
+                        <a class="item" data-tab="ten">
+                            Apply for Assistantship
                             <i class="right floated chevron right icon"></i>
                         </a>
+                        <a class="item" data-tab="eleven">
+                            Mtech Seminar Graduate
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+
                         {% endif %}
                     {% if phd_flag %}
                         <a class="item" data-tab="six">
@@ -82,11 +75,18 @@
                             Apply for Teaching Credits
                             <i class="right floated chevron right icon"></i>
                         </a>
+                        <a class="item" data-tab="ten">
+                            Apply for Assistantship
+                            <i class="right floated chevron right icon"></i>
+                        </a>
                         <a class="item" data-tab="twelve">
-                            PG Procedure
+                            Phd Progress Examination
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
+                    <a class="item" data-tab="Miscellaneous">Miscellaneous
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     <a class="item" data-tab="eight" style="display: none;">
                         Apply for Leave
                         <i class="right floated chevron right icon"></i>
@@ -95,10 +95,7 @@
                         Apply for Bonafide
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="ten" >
-                        View Performance
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                     
                 {% endif %}
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -117,56 +114,118 @@
             <div class="ui active tab segment" data-tab="one" >
                 {%  include 'academic_procedures/current_sem.html' %}
             </div>
-            <div class="ui tab segment" data-tab="two" style="width: 100%"  >
+            <div class="ui tab segment" data-tab="miscellaneous_2" >
                 <div class="ui pointing secondary menu">
-                    <a class=" active item" data-tab="next_courses" style="width: 33%;">
-                        <p style="margin-left: 30%;">Courses</p>
+                    <a class=" active item" data-tab="messdue">
+                        Mess Due History
                     </a>
-                    <a class="item" data-tab="pre_registration" style="width: 33%;">
-                        <p style="margin-left: 25%;">Pre-Registration</p>
+                    <a class="item" data-tab="librarydue">
+                        Library Due History
                     </a>
-                    <a class=" item" data-tab="final_registration" style="width: 33%;">
-                        <p style="margin-left: 25%;">Final-Registration</p>
+                    <a class="item" data-tab="hosteldue">
+                        Hostel Due History
                     </a>
-                </div>
-                <div class="ui active tab segment" data-tab="next_courses" >
-                    {%  include 'academic_procedures/registeredCourse.html' %}
-                </div>
-                <div class="ui tab segment" data-tab="pre_registration">
-                    {%  include 'academic_procedures/register.html' %}
-                </div>
-                <div class="ui tab segment" data-tab="final_registration">
-                    {%  include 'academic_procedures/finalregister.html' %}
-                </div>
-            </div>
-            <div class="ui tab segment" data-tab="three" style="width: 100%">
-                <div class="ui pointing secondary menu">
-                    <a class="active item" data-tab="add_courses" style="width: 37%;">
-                        <p style="margin-left: 30%;">Add Course</p>
+                    <a class = "item" data-tab="Placementdue">
+                        Placement Cell Due History
                     </a>
-                    <a class="item" data-tab="drop_courses" style="width: 38%;">
-                        <p style="margin-left: 35%;">Drop Course</p>
+                    <a class=" item" data-tab="overall">
+                        Overall
                     </a>
-                    <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
-                        Current Credits :  {{current_credits}}
-                    </p>
+
                 </div>
-                <div class="ui active tab segment" data-tab="add_courses" >
-                    {%  include 'academic_procedures/addCourse.html' %}
+                <div class="ui active tab segment" data-tab="messdue">
+                    {%  include 'academic_procedures/messduehistory.html' %}
                 </div>
-                <div class="ui tab segment" data-tab="drop_courses">
-                    {%  include 'academic_procedures/dropCourse.html' %}
-                </div>                
-            </div>
-            <div class="ui tab segment" data-tab="check_attendance" >
-                    {%  include 'academic_procedures/check_attendance.html' %}
-            </div>
-            <div class="ui tab segment" data-tab="check_dues" >
+                <div class="ui tab segment" data-tab="librarydue">
+                    nothing libraay
+                </div>
+                <div class="ui tab segment" data-tab="hosteldue">
+                    nothing hostel
+                </div>
+                <div class="ui tab segment" data-tab="Placementdue">
+                    nothing placement
+                </div>
+                <div class="ui tab segment" data-tab="overall">
                     {%  include 'academic_procedures/dues.html' %}
+                </div>
             </div>
-            <div class="ui tab segment" data-tab="apply_for_bonafide" >
-                {%  include 'academic_procedures/bonafide.html' %}
+            <div class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
+                <div class="ui pointing secondary menu">
+                    <a class=" active item" data-tab="miscellaneous_1" >
+                        Registration
+                    </a>
+                    <a class="item" data-tab="miscellaneous_3">
+                        Apply For Bonafide
+                    </a>
+                    <a class="item" data-tab="miscellaneous_4">
+                        Check Attendance
+                    </a>
+                    <a class="item" data-tab="miscellaneous_5" >
+                        Add/drop courses
+                    </a>
+                    <a class="item" data-tab="miscellaneous_6" >
+                        View Performance
+                    </a>
+                </div>
+                
+                <div class="ui active tab segment" data-tab="miscellaneous_1">
+                    <div class="ui pointing secondary menu">
+                        <a class=" active item" data-tab="next_courses" style="width: 33%;">
+                            Courses
+                        </a>
+                        <a class="item" data-tab="pre_registration" style="width: 33%;">
+                            Pre-Registration
+                        </a>
+                        <a class=" item" data-tab="final_registration" style="width: 33%;">
+                            Final-Registration
+                        </a>
+                    </div>
+                
+                    <div class="ui active tab segment" data-tab="next_courses" >
+                        {%  include 'academic_procedures/registeredCourse.html' %}
+                    </div>
+                    <div class="ui tab segment" data-tab="pre_registration">
+                        {%  include 'academic_procedures/register.html' %}
+                    </div>
+                    <div class="ui tab segment" data-tab="final_registration">
+                        {%  include 'academic_procedures/finalregister.html' %}
+                    </div>
+                </div>
+
+                <div class="ui tab segment" data-tab="miscellaneous_3" >
+                    {%  include 'academic_procedures/bonafide.html' %}
+                </div>
+
+                <div class="ui tab segment" data-tab="miscellaneous_4" >
+                    {%  include 'academic_procedures/check_attendance.html' %}
+                </div>
+
+                <div class="ui tab segment" data-tab="miscellaneous_5" style="width: 100%">
+                    <div class="ui pointing secondary menu">
+                        <a class="active item" data-tab="add_courses" style="width: 37%;">
+                            <p style="margin-left: 30%;">Add Course</p>
+                        </a>
+                        <a class="item" data-tab="drop_courses" style="width: 38%;">
+                            <p style="margin-left: 35%;">Drop Course</p>
+                        </a>
+                        <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
+                            Current Credits :  {{current_credits}}
+                        </p>
+                    </div>
+                    <div class="ui active tab segment" data-tab="add_courses" >
+                        {%  include 'academic_procedures/addCourse.html' %}
+                    </div>
+                    <div class="ui tab segment" data-tab="drop_courses">
+                        {%  include 'academic_procedures/dropCourse.html' %}
+                    </div>                
+                </div>
+                <div class="ui tab segment" data-tab="miscellaneous_6">
+                    {%  include 'academic_procedures/view_performance.html' %}
+                </div>
+                
             </div>
+            
+            
             <div class="ui tab segment" data-tab="four">
                 {%  include 'academic_procedures/branchChange.html' %}
             </div>
@@ -200,10 +259,13 @@
                 {%  include 'academic_procedures/underconstruction.html' %}
             </div>
             <div class="ui tab segment" data-tab="ten">
-                {%  include 'academic_procedures/view_performance.html' %}
+                {%  include 'academic_procedures/assistantshipclaim.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="eleven">
+                {%  include 'academic_procedures/mtechseminar.html' %}
             </div>
             <div class="ui tab segment" data-tab="twelve">
-                {%  include 'academic_procedures/assistantshipclaim.html' %}
+                {%  include 'academic_procedures/phdprogress.html' %}
             </div>
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
