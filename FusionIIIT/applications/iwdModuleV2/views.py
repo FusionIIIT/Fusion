@@ -32,12 +32,12 @@ theTurnOfExtension = 0
 # in conjunction with SRS. After that, everything will become easier.
 
 def dashboard(request):
-    eligible = True
+    eligible = False
     userObj = User.objects.get(id=request.user.id)
     userDesignationObjects = HoldsDesignation.objects.filter(working=userObj)
     for f in userDesignationObjects:
         if f.designation.name == 'Admin IWD':
-            eligible = False
+            eligible = True
             break
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
