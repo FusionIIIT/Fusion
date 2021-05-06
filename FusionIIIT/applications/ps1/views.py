@@ -15,9 +15,8 @@ from notification.views import office_module_notif
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
     """
-        The function is used to create files by current user(employee).
-        It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
-        if he intends to create file.
+        The function is used to create indents by faculty.
+        It adds the indent datails to the indet_table of Purchase and Store module
         @param:
                 request - trivial.
         @variables:
@@ -29,6 +28,23 @@ def ps1(request):
                 extrainfo - The Extrainfo object.
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
+                item_name- Name of the item to be procured
+                quantity - Qunat of the item to be procured
+                present_stock=request.POST.get('present_stock')
+                estimated_cost=request.POST.get('estimated_cost')
+                purpose=request.POST.get('purpose')
+                specification=request.POST.get('specification')
+                indent_type=request.POST.get('indent_type')
+                nature=request.POST.get('nature')
+                indigenous=request.POST.get('indigenous')
+                replaced =request.POST.get('replaced')
+                budgetary_head=request.POST.get('budgetary_head')
+                expected_delivery=request.POST.get('expected_delivery')
+                sources_of_supply=request.POST.get('sources_of_supply')
+                head_approval=False
+                director_approval=False
+                financial_approval=False
+                purchased =request.POST.get('purchased')
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
@@ -62,7 +78,7 @@ def ps1(request):
                 head_approval=False
                 director_approval=False
                 financial_approval=False
-                purchased =request.POST.get('purchased')
+                purchased =False
 
                 file=File.objects.create(
                     uploader=uploader,
@@ -83,14 +99,14 @@ def ps1(request):
                     indent_type=indent_type,
                     nature=nature,
                     indigenous=indigenous, 
-               #     replaced = replaced ,
+                    replaced = replaced ,
                     budgetary_head=budgetary_head,
                     expected_delivery=expected_delivery,
                     sources_of_supply=sources_of_supply,
                     head_approval=head_approval,
                     director_approval=director_approval,
                     financial_approval=financial_approval,
-                 #   purchased =purchased,
+                    purchased =purchased,
                 )
 
             if 'send' in request.POST:
@@ -118,7 +134,7 @@ def ps1(request):
                 head_approval=False
                 director_approval=False
                 financial_approval=False
-                purchased =request.POST.get('purchased')
+                purchased = False
 
                 file = File.objects.create(
                     uploader=uploader,
@@ -147,7 +163,7 @@ def ps1(request):
                     head_approval=head_approval,
                     director_approval=director_approval,
                     financial_approval=financial_approval,
-                 #   purchased =purchased,
+                    purchased =purchased,
                 )
 
 
@@ -182,7 +198,7 @@ def ps1(request):
                     upload_file=upload_file,
                 )
                 office_module_notif(request.user, receiver_id)
-                messages.success(request,'File sent successfully')
+                messages.success(request,'Indent Filed Successfully!')
 
         finally:
             message = "FileID Already Taken.!!"
