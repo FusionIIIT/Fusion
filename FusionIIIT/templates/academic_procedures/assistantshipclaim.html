@@ -1,21 +1,16 @@
 {% block applyform %}
+{% load static %}
     {% comment %}The tab menu starts here!{% endcomment %}
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="assistantship">
             Assistantship Claim Form
         </a>
-
-        <a class="item" data-tab="MTechGraduateSeminarReport">
-            MTech Graduate Seminar Report
+        <a class="item" data-tab="status">
+           Status
         </a>
 
-        <a class="item" data-tab="PhDProgressExamination">
-            PhD Progress Examination
-        </a>
     </div>
-    <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
-    <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
     
     <div class="ui active tab" data-tab="assistantship">
         <div class="ui vertical segment">
@@ -118,160 +113,71 @@
         <div class="extra content"></div>
     </div>
 
-    <div class="ui tab" data-tab="MTechGraduateSeminarReport">
-        <div class="ui vertical segment">
-            <form method="post" id="new_mtechseminarreport" enctype="multipart/form-data">
-            {% csrf_token %}
-                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                    <div class ="two fields">
-                        <div class="field">
-                            <label> Theme of Work</label>
-                            <input type="text" name="theme_of_work">
-                        </div>
-                        <div class="field">
-                            <label>Date</label>
-                            <input type="date" name="date" required>
-                        </div>
-                    </div>
-                        
-                        
-                    <div class="two fields">
-                        <div class="field" >
-                            <label>Place</label>
-                            <input name="place" type="text" required/>
-                        </div>
-                            
-                        <div class="field">
-                            <label>Time</label>
-                            <input type="time" name="time" required>                
-                        </div> 
-                    </div>       
-                    <div class="field">
-                        <label>Work done till last Semester</label>
-                        <textarea rows="2" name="workdone" required /></textarea>
-                    </div>
-                        
-                    <div class="field">
-                        <label>Specific contribution in current Semester</label>
-                        <textarea rows="2" name="specificcontri" required /></textarea>
-                    </div>  
-
-                    <div class="field">
-                        <label>Future Plan</label>
-                        <textarea rows="2" name="futureplan" required /></textarea>
-                    </div>
-                        
-                    <div class="field">
-                        <label>Brief Report</label>
-                        <textarea rows="2" name="briefreport" required /></textarea>
-                    </div>
-                        
-                    <div class="two fields">
-                        <div class=" field">
-                            <label>Publication Submitted</label>
-                            <input type="number"  name="publicationsubmitted" value="0" required/>    
-                        </div>
-                        <div class="field">
-                            <label>Publication Accepted</label>
-                            <input type="number" name=" publicationaccepted" value="0" required/>                    
-                        </div>
-                    </div>
+    <div class="ui tab" data-tab="status" >
+        <table class="ui celled table"
+        style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                width: 100%">
+            <thead>
+                <tr style="border-radius: 3px;">
+                    <th rowspan="2">#</th>
+                    <th rowspan="2">Month</th>
+                    <th rowspan="2">Year</th>
+                    <th rowspan="2">TA Supervisor</th>
+                    <th rowspan="2">Thesis Supervisor</th>
+                    <th rowspan="2">Academic department</th>
+                    <th rowspan="2">Account department</th>
+            
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in assistantship_list %}
+             <tr >                
+                <td>{{forloop.counter}}.</td>
+                <td>{{obj.month}}</td>
+                <td>{{ obj.year }}</td>
+                <td>
+                    {% if obj.ta_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.ta_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.thesis_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.thesis_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.ta_supervisor_remark == False or obj.thesis_supervisor_remark == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.acad_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.acad_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.acad_approval == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.account_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.account_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+             </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     
-                    <div class="two fields">
-                        <div class="field">
-                            <label>Paper Presented</label>
-                            <input type="number" name="paperpresented" value="0" required>
-                        </div> 
-                        <div class="field">
-                            <label>Paper Under Review</label>
-                            <input type="number" name="paperunderreview" value="0" required>
-                        </div> 
-                    </div>     
-                     <div class="field">
-                        <button  class="ui primary button right floated" type="submit" onclick="validateMtech('new_mtechseminarreport',event)">
-                            Submit
-                        </button>
-                    </div>       
-                </div>
-            </form>
-            <br>
-            <br>
-        </div>
-        <br>
-        <div class="extra content"></div>
     </div>
 
-    <div class="ui tab" data-tab="PhDProgressExamination">
-        <div class="ui vertical segment">
-            <form method="post" id="new_phdprogressexamination" enctype="multipart/form-data">
-            {% csrf_token %}
-                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                    <div class ="field">
-                        <div class="field">
-                            <label> Theme of Doctoral Work</label>
-                            <input type="text" name="theme_of_work">
-                        </div>
-                    </div>
-                    <div class="two fields">
-                        <div class="field">
-                            <label>Date and Time</label>
-                            <input type="datetime-local" name="date" required>
-                        </div>
-                        <div class="field" >
-                            <label>Place</label>
-                            <input name="place" type="text" required/>
-                        </div>
-                    </div>
-                               
-                    <div class="field">
-                        <label>Work done till last Semester</label>
-                        <textarea rows="2" name="workdone" required /></textarea>
-                    </div>
-                        
-                    <div class="field">
-                        <label>Specific contribution in current Semester</label>
-                        <textarea rows="2" name="specificcontri" required /></textarea>
-                    </div>  
-
-                    <div class="field">
-                        <label>Future Plan</label>
-                        <textarea rows="2" name="futureplan" required /></textarea>
-                    </div>
-                    <div class="field">
-                        <label>Attachments (if any)</label>
-                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file" name="Attachments" accept=".pdf" required></input>
-                        <span id="lblError" style="color: red;"></span>
-                    </div>
-                        
-                    
-                    <div class=" field">
-                        <label>Number of paper submitted</label>
-                        <input type="number"  name="papersubmitted" value="0" required/>    
-                    </div>
-                    <div class="field">
-                            <label>Number of paper published/accepted in conference proceedings</label>
-                            <input type="number" name=" paperaccepted" value="0" required/>                    
-                    </div>
     
-                    <div class="field">
-                            <label>Number of paper presented in conferences/meetings/workshops</label>
-                            <input type="number" name="paperpresented" value="0" required>
-                    </div>      
-                     <div class="field">
-                        <button  class="ui primary button right floated" type="submit" onclick="validatePhD('new_phdprogressexamination',event)">
-                            Submit
-                        </button>
-                    </div>       
-                </div>
-            </form>
-            <br>
-            <br>
-        </div>
-        <br>
-        <div class="extra content"></div>
-    </div>
     
 {% endblock %}
 
@@ -401,108 +307,7 @@
         
         }
     
-    function validateMtech(form,event){
-        event.preventDefault();
-        var form=document.getElementById(form);
-        var i;
-        var message= "";
-        for(i=0;i<form.length-4; i++)
-            if(form.elements[i].name != "" && form.elements[i].value==="")
-                {
-                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
-                }  
-        
-        var ret1 = 0 ;
-        if (message != ""){
-                ret1 = 1 ;
-                $("#errorContent").html(message);
-                $(".formErrors").modal("show") ;
-        }
-        
-        if(ret1 == 0)
-            {
-                var formData = new FormData(form);
-                console.log(formData);
-                form.reset();
-                $.ajax({
-                    url: '/academic-procedures/MTSGF/',
-                    data: formData,
-                    enctype: "multipart/form-data",
-                    type: 'POST',
-                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
-                    processData: false, // NEEDED, DON'T OMIT THIS
-                    // ... Other options like success and etc
-                    success: function(response) {
-                        response = JSON.parse(response);
-                        console.log(response);
-                        console.log("here") ;
-                        // $("#modalHeader").html(response.status);
-                        if (response.status == "success"){
-                            $(".succ").modal("show");
-                        }
-                        else
-                        {
-                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
-                            $(".formErrors").modal('show');
-                        }
-                        form.reset();
-                    }
-                });
-            }
-
-
-    }
-    function validatePhD(form,event){
-        event.preventDefault();
-        var form=document.getElementById(form);
-        var i;
-        var message= "";
-        for(i=0;i<form.length-3; i++)
-            if(form.elements[i].name != "" && form.elements[i].value==="")
-                {
-                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
-                }  
-        
-        var ret1 = 0 ;
-        if (message != ""){
-                ret1 = 1 ;
-                $("#errorContent").html(message);
-                $(".formErrors").modal("show") ;
-        }
-        
-        if(ret1 == 0)
-            {
-                var formData = new FormData(form);
-                console.log(formData);
-                form.reset();
-                $.ajax({
-                    url: '/academic-procedures/PHDPE/',
-                    data: formData,
-                    enctype: "multipart/form-data",
-                    type: 'POST',
-                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
-                    processData: false, // NEEDED, DON'T OMIT THIS
-                    // ... Other options like success and etc
-                    success: function(response) {
-                        response = JSON.parse(response);
-                        console.log(response);
-                        console.log("here") ;
-                        // $("#modalHeader").html(response.status);
-                        if (response.status == "success"){
-                            $(".succ").modal("show");
-                        }
-                        else
-                        {
-                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
-                            $(".formErrors").modal('show');
-                        }
-                        form.reset();
-                    }
-                });
-            }
-
-
-    }
+    
 </script> 
 
 {% endblock %}
