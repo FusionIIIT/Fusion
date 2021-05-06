@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 
 from applications.academic_information.models import Course, Student, Curriculum
+from applications.programme_curriculum.models import Course as Courses, Semester
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -111,6 +112,9 @@ class MinimumCredits(models.Model):
 #
 #
 #
+
+# THE THREE TABLES BELOW ARE OLD. PLEASE REFRAIN FROM USING THEM FURTHER.
+# USE THE TABLES AT THE BOTTOM OF THE FILE INSTEAD.
 class StudentRegistrationCheck(models.Model):
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     pre_registration_flag = models.BooleanField(default = False)
@@ -143,14 +147,6 @@ class FinalRegistrations(models.Model):
 
     class Meta:
         db_table = 'FinalRegistrations'
-
-
-class CourseRequested(models.Model):
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'CourseRequested'
 
 
 class Thesis(models.Model):
@@ -190,6 +186,8 @@ class ThesisTopicProcess(models.Model):
         return str(self.thesis_topic) + " " + str(self.student_id)
 
 
+# THIS IS AN OLD TABLE. PLEASE REFRAIN FROM USING IT.
+# USE THE TABLE AT THE BOTTOM INSTEAD.
 class FeePayment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     semester = models.IntegerField(default= 1)
@@ -256,3 +254,237 @@ class Bonafide(models.Model):
 
     class Meta:
         db_table = 'Bonafide'
+
+class AssistantshipClaim(models.Model):
+    Month_Choices = [
+        ('Jan', 'January'),
+        ('Feb', 'Febuary'),
+        ('Mar', 'March'),
+        ('Apr', 'April'),
+        ('May', 'May'),
+        ('Jun', 'June'),
+        ('Jul', 'July'),
+        ('Aug', 'August'),
+        ('Sep', 'September'),
+        ('Oct', 'October'),
+        ('Nov', 'November'),
+        ('Dec', 'December'),
+
+    ]
+
+    Year_Choices = [
+        (datetime.date.today().year, datetime.date.today().year),
+        (datetime.date.today().year-1, datetime.date.today().year-1)
+    ]
+
+    Applicability_choices = [
+        ('GATE', 'GATE'),
+        ('NET', 'NET'),
+        ('CEED', 'CEED'),
+    ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add = True)  
+    month = models.CharField(max_length=10, choices=Month_Choices, null=False , blank=False)
+    year = models.IntegerField(choices=Year_Choices)
+    bank_account = models.CharField(max_length=11)
+    applicability = models.CharField(max_length=5, choices=Applicability_choices)
+    ta_supervisor_remark = models.BooleanField(default=False)
+    ta_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='TA_SUPERVISOR')
+    thesis_supervisor_remark = models.BooleanField(default=False)
+    thesis_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE,related_name='THESIS_SUPERVISOR')
+    hod_approval = models.BooleanField(default=False)
+
+    class meta:
+        db_table = 'AssistantshipClaim' 
+
+
+class MTechGraduateSeminarReport(models.Model):
+
+    Quality_of_work = [
+        ('Excellent', 'Excellent'),
+        ('Good', 'Good'),
+        ('Satisfactory', 'Satisfactory'),
+        ('Unsatisfactory' , 'Unsatisfactory'),
+    ]
+    
+
+    Quantity_of_work = [
+        ('Enough', 'Enough'),
+        ('Just Sufficient', 'Just Sufficient'),
+        ('Insufficient', 'Insufficient'),
+    ]
+
+
+    Grade = [
+        ('A+', 'A+'),
+        ('A', 'A'),
+        ('B+', 'B+'),
+        ('B', 'B'),
+        ('C+', 'C+'),
+        ('C', 'C'),
+        ('D+', 'D'),                   
+        ('D', 'D'),
+        ('F', 'F'),
+
+    ]
+
+
+    recommendations = [
+        ('Give again','Give again'),
+        ('Not Applicable','Not Applicable'),
+        ('Approved', 'Approved')
+    ]
+
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    theme_of_work = models.TextField()
+    date = models.DateField()
+    place = models.CharField(max_length=30)
+    time = models.TimeField()
+    work_done_till_previous_sem = models.TextField()
+    specific_contri_in_cur_sem = models.TextField()
+    future_plan = models.TextField()
+    brief_report = models.FileField(upload_to='academic_procedure/Uploaded_document/GraduateSeminarReport/', null=False)
+    publication_submitted = models.IntegerField()
+    publication_accepted = models.IntegerField()
+    paper_presented = models.IntegerField()
+    papers_under_review = models.IntegerField()
+    quality_of_work = models.CharField(max_length=20, choices=Quality_of_work)
+    quantity_of_work = models.CharField(max_length=15, choices=Quantity_of_work)
+    Overall_grade = models.CharField(max_length=2, choices=Grade)
+    panel_report = models.CharField(max_length=15, choices=recommendations)
+    suggestion = models.TextField(null=True)
+
+
+    class meta:
+        db_table =  ' MTechGraduateSeminarReport'
+
+
+class PhDProgressExamination(models.Model):
+
+
+    Quality_of_work = [
+        ('Excellent', 'Excellent'),
+        ('Good', 'Good'),
+        ('Satisfactory', 'Satisfactory'),
+        ('Unsatisfactory' , 'Unsatisfactory'),
+    ]
+    
+
+    Quantity_of_work = [
+        ('Enough', 'Enough'),
+        ('Just Sufficient', 'Just Sufficient'),
+        ('Insufficient', 'Insufficient'),
+    ]
+
+
+    Grade = [
+        ('A+', 'A+'),
+        ('A', 'A'),
+        ('B+', 'B+'),
+        ('B', 'B'),
+        ('C+', 'C+'),
+        ('C', 'C'),
+        ('D+', 'D'),                   
+        ('D', 'D'),
+        ('F', 'F'),
+
+    ]
+
+
+    recommendations = [
+        ('Give again','Give again'),
+        ('Not Applicable','Not Applicable'),
+        ('Approved', 'Approved')
+    ]
+
+
+    continuation_and_enhancement_choice = [
+        ('yes', 'yes'),
+        ('no', 'no'),
+        ('not applicable', 'not applicable')
+    ]
+
+
+    
+
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    theme = models.CharField(max_length=50, null=False)
+    seminar_date_time = models.DateTimeField(null=False)
+    place = models.CharField(max_length=30, null=False)
+    work_done = models.TextField(null=False)
+    specific_contri_curr_semester = models.TextField(null=False)
+    future_plan =  models.TextField(null=False)
+    details =  models.FileField(upload_to= 'academic_procedure/Uploaded_document/PhdProgressDetails/',null=False)
+    papers_published = models.IntegerField(null=False)
+    presented_papers = models.IntegerField(null=False)
+    papers_submitted = models.IntegerField(null=False)
+    quality_of_work = models.CharField(max_length=20, choices=Quality_of_work)
+    quantity_of_work = models.CharField(max_length=15, choices=Quantity_of_work)
+    Overall_grade = models.CharField(max_length=2, choices=Grade)
+    completion_period = models.IntegerField(null=True)
+    panel_report = models.TextField(null=True)
+    continuation_enhancement_assistantship = models.CharField(max_length=20, choices=continuation_and_enhancement_choice,null=True)
+    enhancement_assistantship = models.CharField(max_length=15, null=True, choices=continuation_and_enhancement_choice)
+    annual_progress_seminar = models.CharField(max_length=20, choices=recommendations,null=True)
+    commments = models.TextField(null=True)
+          
+
+
+# THESE ARE THE NEW TABLES AND REPLACEMENT OF THOSE ABOVE.
+# PLEASE USE THESE TABLES FOR FURTHER WORK.
+class StudentRegistrationChecks(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    pre_registration_flag = models.BooleanField(default=False)
+    final_registration_flag = models.BooleanField(default=False)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'StudentRegistrationChecks'
+
+
+class InitialRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'InitialRegistration'
+
+
+class FinalRegistration(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'FinalRegistration'
+
+
+class CourseRequested(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'CourseRequested'
+
+class FeePayments(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
+    transaction_id = models.CharField(max_length = 40)
+
+    class Meta:
+        db_table = 'FeePayments'
+
+
+class course_registration(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    # grade = models.CharField(max_length=10)
+
+    class Meta:
+        db_table = 'course_registration'

@@ -6,7 +6,6 @@
 <div class="ui active tab" data-tab="complainthistory">
     <div class="ui vertical segment">
         {% if adc_date_flag %}
-                {% if final_registration_flag %}
                     {% if drop_courses_options %}
                         <form id='drop_courses' action='/academic-procedures/drop_course/'>
                         {% csrf_token %}
@@ -32,18 +31,15 @@
                                 {% for items in drop_courses_options %}
                                             <tr>
                                                 <td>{{forloop.counter}}</td>
-                                                <td>{{ items.course_code }}
-                                                    {% if items.optional %}
-                                                    <B><div style="color:green;">(optional)</B></div>
-                                                    {% endif %}
+                                                <td>{{ items.code }}
                                                 </td>
-                                                <td>{{ items.course_id.course_name}}</td>
-                                                <td>{{ items.credits }}</td>
-                                                <td>{{items.sem}}
-                                                    <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                                                <td>{{ items.name}}</td>
+                                                <td>{{ items.credit }}</td>
+                                                <td>{{curr_sem.semester_no}}
+                                                    <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
                                                 </td>
                                                 <td>
-                                                    <input name="choice" id="mycheck" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}">
+                                                    <input class="choice1" name = "choice" id="mycheck" type="checkbox" value="{{ items.id }}" data-valuetwo="{{items.credit}}">
                                                     <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                                                 </td>
                                             </tr>
@@ -55,11 +51,8 @@
                         <div class="ui divider"></div>
                         <center><button class="ui negative basic button">Drop Course(s)</button></center></form>
                     {% else %}
-                        <B> YOU HAVE NOT REGISTERED YET</B>
+                        <B> No Courses to drop</B>
                     {% endif %}
-                {% else %}
-                    <B><center>You need to complete Registration process first</center></B>
-                {% endif %}
         {% else %}
             <b><center>You have to wait for the date</center></b>
         {% endif %}
@@ -74,11 +67,13 @@ $(function() {
     $("#drop_courses").submit(function(event) {
 
         var credits = parseInt(document.getElementById("cr_count").value);
-        var checkboxing = document.getElementById("mycheck");
+        var checkboxing = document.getElementsByClassName("choice1");
         var test =0;
-        for(var i=0; i<mycheck.length;i++){
-            if(mycheck[i].checked==true){
-                credits = credits - parseInt(mycheck[i].getAttribute("data-valuetwo"));
+        console.log(checkboxing)
+        for(var i=0; i<checkboxing.length;i++){
+            console.log(checkboxing)
+            if(checkboxing[i].checked==true){
+                credits = credits - parseInt(checkboxing[i].getAttribute("data-valuetwo"));
                 test =test+1;
             }
         }

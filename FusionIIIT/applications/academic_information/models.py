@@ -2,6 +2,7 @@ from django.db import models
 
 from applications.globals.models import ExtraInfo
 
+from applications.programme_curriculum.models import Batch
 
 class Constants:
     HOLIDAY_TYPE = (
@@ -68,6 +69,7 @@ class Student(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     batch = models.IntegerField(default=2016)
+    batch_id = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.CASCADE)
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
     father_name = models.CharField(max_length=40, default='')
@@ -75,6 +77,7 @@ class Student(models.Model):
     hall_no = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
+    curr_semester_no = models.IntegerField(default=1)
 
     def __str__(self):
         username = str(self.id.user.username)
