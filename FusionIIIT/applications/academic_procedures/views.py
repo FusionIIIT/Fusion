@@ -180,8 +180,8 @@ def academic_procedures_student(request):
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
-
-        if obj.programme.upper() == "PH.D" :
+        
+        if obj.programme.upper() == "PHD" :
             student_flag = True
             ug_flag = False
             masters_flag = False
@@ -230,6 +230,8 @@ def academic_procedures_student(request):
 
         else :
             return HttpResponse("Student has no record")
+        
+        
         # masters_flag=True
         current_date = demo_date.date()
         year = demo_date.year
