@@ -45,6 +45,18 @@ Dashboard
                 View Profile
                 <i class="right floated chevron right icon"></i>
             </a>
+            {% if "dean_rspc" in designation %}
+            <a class="item" href = "../office/officeOfDeanRSPC">
+               Project Requests
+               <i class="right floated chevron right icon"></i>
+           </a>
+            {% endif %}
+       {% if "dean_rspc" in designation %}
+            <a class="item" href = "../eis/rspc_profile">
+               RSPC Profile
+               <i class="right floated chevron right icon"></i>
+           </a>
+       {% endif %}
 
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -166,7 +178,6 @@ Dashboard
         $("#replacement-card").toggle();
         setTimeout(loader, 1750);
     });
-
     function loader() {
         $("#textLoader").toggle();
         $("#replacement-card").toggle();
