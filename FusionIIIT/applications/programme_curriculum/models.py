@@ -50,7 +50,7 @@ class Programme(models.Model):
 
 class Discipline(models.Model):
     name = models.CharField(max_length=100, null=False, unique=True, blank=False)
-    acronym = models.CharField(max_length=10, null=False, unique=True, blank=False)
+    acronym = models.CharField(max_length=10, null=False, default="", blank=False)
     programmes = models.ManyToManyField(Programme, blank=True)    
     
     def __str__(self):
