@@ -9,7 +9,7 @@ class Projects(models.Model):
 
 
 class PageOneDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE,  primary_key=True)
+    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
     aESFile = models.FileField(null=True)
     dASA = models.DateField(null=True)
     nitNiqNo = models.IntegerField(null=True)
@@ -21,7 +21,7 @@ class PageOneDetails(models.Model):
 
 
 class AESDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE,  primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=100)
     descOfItems = models.CharField(max_length=200)
     unit = models.CharField(max_length=200)
@@ -46,7 +46,7 @@ class PageTwoDetails(models.Model):
 
 
 class CorrigendumTable(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE,  primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     issueDate = models.DateField()
     nitNo = models.IntegerField()
     name = models.CharField(max_length=200)
@@ -59,7 +59,7 @@ class CorrigendumTable(models.Model):
 
 
 class Addendum(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE,  primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     issueDate = models.DateField()
     nitNiqNo = models.IntegerField()
     name = models.CharField(max_length=200)
@@ -68,7 +68,7 @@ class Addendum(models.Model):
 
 
 class PreBidDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE,  primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     nameOfParticipants = models.CharField(max_length=200)
     issuesRaised = models.CharField(max_length=200)
@@ -76,25 +76,25 @@ class PreBidDetails(models.Model):
 
 
 class TechnicalBidDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     requirements = models.CharField(max_length=200)
 
 
 class TechnicalBidContractorDetails(models.Model):
-    id = models.ForeignKey(TechnicalBidDetails, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(TechnicalBidDetails, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
 
 
 class FinancialBidDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
 
 
 class FinancialContractorDetails(models.Model):
-    id = models.ForeignKey(FinancialBidDetails, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(FinancialBidDetails, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     estimatedCost = models.IntegerField()
     percentageRelCost = models.IntegerField()
@@ -103,7 +103,7 @@ class FinancialContractorDetails(models.Model):
 
 
 class LetterOfIntentDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     nitNiqNo = models.IntegerField()
     dateOfOpening = models.DateField()
     agency = models.CharField(max_length=200)
@@ -112,7 +112,7 @@ class LetterOfIntentDetails(models.Model):
 
 
 class WorkOrderForm(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     issueDate = models.DateField()
     nitNiqNo = models.IntegerField()
     agency = models.CharField(max_length=200)
@@ -127,7 +127,7 @@ class WorkOrderForm(models.Model):
 
 
 class Agreement(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     date = models.DateField()
     agencyName = models.CharField(max_length=200)
     workName = models.CharField(max_length=200)
@@ -135,7 +135,7 @@ class Agreement(models.Model):
 
 
 class Milestones(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
     timeAllowed = models.IntegerField()
@@ -149,7 +149,7 @@ class PageThreeDetails(models.Model):
 
 
 class ExtensionOfTimeDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     hindrance = models.CharField(max_length=200)
     periodOfHindrance = models.IntegerField()

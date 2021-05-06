@@ -1,8 +1,13 @@
 from django.shortcuts import render, redirect
+
+from applications.globals.models import *
 from .models import *
+<<<<<<< HEAD
+=======
 from time import sleep
 from django.contrib.auth.models import User
 from applications.globals.models import *
+>>>>>>> f0b445a3c665afe52cf6bed4d79d80453b3d32c2
 
 # Create your views here.
 
@@ -32,14 +37,25 @@ theTurnOfExtension = 0
 # in conjunction with SRS. After that, everything will become easier.
 
 def dashboard(request):
+<<<<<<< HEAD
     eligible = False
+    userObj = User.objects.get(id=request.user.id)
+    userDesignationObjects = HoldsDesignation.objects.filter(working=userObj)
+    for p in userDesignationObjects:
+        if p.designation.name == 'Admin IWD':
+            eligible = True
+            break
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible':eligible})
+=======
+    eligible = True
     userObj = User.objects.get(id=request.user.id)
     userDesignationObjects = HoldsDesignation.objects.filter(working=userObj)
     for f in userDesignationObjects:
         if f.designation.name == 'Admin IWD':
-            eligible = True
+            eligible = False
             break
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+>>>>>>> f0b445a3c665afe52cf6bed4d79d80453b3d32c2
 
 
 def page1_1(request):
@@ -53,7 +69,7 @@ def page1_1(request):
         if 'aes_file' in request.POST:
             formObject.AESFile = request.POST['aes_file']
         if 'dASAName' in request.POST:
-            formObject.dASAName = request.POST['dASAName']
+            formObject.dASA = request.POST['dASAName']
         if 'nitNiqNo' in request.POST:
             formObject.nitNiqNo = request.POST['nitNiqNo']
         if 'proTh' in request.POST:
@@ -89,7 +105,7 @@ def AESForm(request):
     global fromAES
     if request.method == 'POST':
         formObject = AESDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.descOfItems = request.POST['description']
         formObject.unit = request.POST['unit']
@@ -137,7 +153,7 @@ def page2_1(request):
 def corrigendumInput(request):
     if request.method == 'POST':
         formObject = CorrigendumTable()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
         # formObject.lastDate = request.POST['lastDate']
         formObject.lastTime = request.POST['lastTime']
@@ -155,7 +171,7 @@ def corrigendumInput(request):
 def addendumInput(request):
     if request.method == 'POST':
         formObject = Addendum()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
         formObject.nitNiqNo = request.POST['nitNiqNo']
         formObject.openDate = request.POST['openDate']
@@ -184,7 +200,7 @@ def PreBidForm(request):
     global fromPreBid
     if request.method == 'POST':
         formObject = PreBidDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.nameOfParticipants = request.POST['nameParticipants']
         formObject.issuesRaised = request.POST['issuesRaised']
@@ -208,14 +224,14 @@ def TechnicalBidForm(request):
     if request.method == 'POST':
         global listOfContractors
         formObject = TechnicalBidDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.requirements = request.POST['requirements']
         formObject.save()
         listOfContractors.clear()
         for w in range(numberOfTechnicalBidTimes):
             formContractorObject = TechnicalBidContractorDetails()
-            formContractorObject.id = formObject
+            formContractorObject.key = formObject
             formContractorObject.name = request.POST[str(w) + 'name']
             listOfContractors.append(formContractorObject.name)
             formContractorObject.description = request.POST[str(w) + 'Description']
@@ -229,13 +245,13 @@ def noOfEntriesFinancialBid(request):
     global listOfContractors
     if request.method == 'POST':
         formObject = FinancialBidDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.description = request.POST['description']
         formObject.save()
         for f in range(len(listOfContractors)):
             formContractorObject = FinancialContractorDetails()
-            formContractorObject.id = formObject
+            formContractorObject.key = formObject
             formContractorObject.name = listOfContractors[f]
             formContractorObject.totalCost = request.POST[listOfContractors[f] + 'totalCost']
             formContractorObject.estimatedCost = request.POST[listOfContractors[f] + 'estimatedCost']
@@ -250,7 +266,7 @@ def noOfEntriesFinancialBid(request):
 def letterOfIntent(request):
     if request.method == 'POST':
         formObject = LetterOfIntentDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.name = request.POST['name']
         formObject.dateOfOpening = request.POST['dateOfOpening']
         formObject.nitNiqNo = request.POST['nitNiqNo']
@@ -264,7 +280,7 @@ def letterOfIntent(request):
 def workOrderForm(request):
     if request.method == 'POST':
         formObject = WorkOrderForm()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
         formObject.name = request.POST['name']
         formObject.agency = request.POST['agency']
@@ -284,7 +300,7 @@ def workOrderForm(request):
 def AgreementInput(request):
     if request.method == 'POST':
         formObject = Agreement()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.date = request.POST['date']
         formObject.fdrSum = request.POST['fdrSum']
         formObject.workName = request.POST['workName']
@@ -312,7 +328,7 @@ def milestonesForm(request):
     global fromMilestone
     if request.method == 'POST':
         formObject = Milestones()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.description = request.POST['description']
         formObject.amountWithheld = request.POST['amountWithheld']
@@ -353,7 +369,7 @@ def ExtensionOfTimeForm(request):
     global fromExtension
     if request.method == 'POST':
         formObject = ExtensionOfTimeDetails()
-        formObject.id = Projects.objects.get(id=request.session['projectId'])
+        formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.hindrance = request.POST['hindrance']
         formObject.periodOfHindrance = request.POST['periodHindrance']
@@ -376,15 +392,15 @@ def page2View(request):
 
 
 def AESView(request):
-    objects = AESDetails.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
-    return render(request, 'iwdModuleV2/AA&ES.html', {'AES': objects, 'exists': len(objects) != 0})
+    objects = AESDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    return render(request, 'iwdModuleV2/AA&ES.html', {'AES': objects})
 
 
 def financialBidView(request):
     elements = []
-    objects = FinancialBidDetails.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
+    objects = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     for f in objects:
-        contractorObjects = FinancialContractorDetails.objects.filter(id=f)
+        contractorObjects = FinancialContractorDetails.objects.filter(key=f)
         for w in contractorObjects:
             obj = [f.sNo, f.description, w.name, w.estimatedCost, w.percentageRelCost, w.perFigures, w.totalCost]
             elements.append(obj)
@@ -393,9 +409,9 @@ def financialBidView(request):
 
 def technicalBidView(request):
     elements = []
-    objects = TechnicalBidDetails.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
+    objects = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     for f in objects:
-        contractorObjects = TechnicalBidContractorDetails.objects.filter(id=f)
+        contractorObjects = TechnicalBidContractorDetails.objects.filter(key=f)
         for w in contractorObjects:
             obj = [f.sNo, f.requirements, w.name, w.description]
             elements.append(obj)
@@ -403,37 +419,37 @@ def technicalBidView(request):
 
 
 def preBidDetailsView(request):
-    preBidObjects = PreBidDetails.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
+    preBidObjects = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2_pre-bid.html', {'preBidDetails': preBidObjects})
 
 
 def corrigendumView(request):
-    corrigendumObject = CorrigendumTable.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    corrigendumObject = CorrigendumTable.objects.get(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/corrigendum.html', {'corrigendum': corrigendumObject})
 
 
 def addendumView(request):
-    addendumObject = Addendum.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    addendumObject = Addendum.objects.get(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Addendum.html', {'x': addendumObject})
 
 
 def letterOfIntentView(request):
-    letterOfIntentObject = LetterOfIntentDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    letterOfIntentObject = LetterOfIntentDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/letterOfIntent.html', {'x': letterOfIntentObject})
 
 
 def workOrderFormView(request):
-    workOrderFormObject = WorkOrderForm.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    workOrderFormObject = WorkOrderForm.objects.get(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/WorkOrderForm.html', {'x': workOrderFormObject})
 
 
 def agreementView(request):
-    agreementObject = Agreement.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    agreementObject = Agreement.objects.get(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Agreement.html', {'agreement': agreementObject})
 
 
 def milestoneView(request):
-    milestoneObjects = Milestones.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
+    milestoneObjects = Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2_milestones.html', {'milestones': milestoneObjects})
 
 
@@ -443,5 +459,5 @@ def page3View(request):
 
 
 def extensionFormView(request):
-    extensionObjects = ExtensionOfTimeDetails.objects.filter(id=Projects.objects.get(id=request.session['projectId']))
+    extensionObjects = ExtensionOfTimeDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
