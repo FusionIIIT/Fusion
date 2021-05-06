@@ -49,7 +49,7 @@
                             <td>{{ batch.discipline }}</td>
                             <td>{{ batch.year }}</td>
                             {% if batch.curriculum != None %}
-                            <td><a href="{% url 'programme_curriculum:admin_view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
+                            <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
                             {% else %}
                             <td></td>
                             {% endif %}
@@ -86,7 +86,7 @@
                             <td>{{ batch.discipline }}</td>
                             <td>{{ batch.year }}</td>
                             {% if batch.curriculum != None %}
-                            <td><a href="{% url 'programme_curriculum:admin_view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
+                            <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
                             {% else %}
                             <td></td>
                             {% endif %}

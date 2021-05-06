@@ -281,6 +281,13 @@ def admin_view_all_working_curriculums(request):
 def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     """ gets all the semesters of a specfic curriculum """
 
+    user_details = ExtraInfo.objects.get(user = request.user)
+    des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    elif str(request.user) == "acadadmin" :
+        pass
+    
     curriculum = Curriculum.objects.get(id=curriculum_id)
     semesters = curriculum.semesters
     semester_slots = []

@@ -38,8 +38,9 @@
             style="text-align: center;
                 margin: auto;">
                 <thead>
-                    <tr>
-                        <th colspan="3">{{ program.name }}</th>
+                    <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                        <td colspan="3"><h3>{{ program.name }}</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,7 +84,7 @@
                             <td>{{ curriculum.version }}</td>
                             <td>
                                 {% for batch in curriculum.batches %}
-                                    <p>{{ batch.name }}</p>
+                                    <p>{{ batch }}</p>
                                 {% endfor %}
                             </td>
                             <td>{{ curriculum.no_of_semester }}</td>
@@ -120,7 +121,7 @@
                             <td>{{ curriculum.version }}</td>
                             <td>
                                 {% for batch in curriculum.batches %}
-                                    <p>{{ batch.name }}</p>
+                                    <p>{{ batch }}</p>
                                 {% endfor %}
                             </td>
                             <td>{{ curriculum.no_of_semester }}</td>

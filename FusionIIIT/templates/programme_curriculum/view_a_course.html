@@ -94,7 +94,7 @@
                     <td class="right aligned collapsing">Courses</td>
                     <td colspan="1">
                         {% for p_course in course.pre_requisit_courses.all %}
-                            <a href="{% url 'programme_curriculum:admin_view_a_course' p_course.id %}">{{ p_course }}</a>,
+                            <a href="{% url 'programme_curriculum:view_a_course' p_course.id %}">{{ p_course }}</a>,
                         {% endfor %}
 
                     </td>
