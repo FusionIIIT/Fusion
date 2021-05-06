@@ -23,28 +23,58 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="ui top attached tabular large menu">
-    <a class="item active" data-tab="afirst">{{ program.name }} Working Curriculums</a>
-    <a class="item" data-tab="asecond">{{ program.name }} Obsolete Curriculums</a>
+    <a class="item active" data-tab="afirst">{{ program.name }} Info</a>
+    <a class="item" data-tab="asecond">Working Curriculums</a>
+    <a class="item" data-tab="athird">Obsolete Curriculums</a>
 </div>
 
 
 <div class="ui bottom attached tab segment active" data-tab="afirst">
     <div class="content">
-        <div class="description">
-            <table class="ui very basic celled large sortable table"
-                style="text-align: center;
-                    padding-left: 2.5%;
-                    padding-right: 2.5%;
-                    padding-top: 1%;
-                    padding-bottom: 1.5%;
-                    margin: auto;">
+        <div class="description" style="overflow: auto; max-height: auto">
+            <table class="ui celled large table"
+            style="text-align: center;
+                margin: auto;">
                 <thead>
+                    <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                        <td colspan="3"><h3>{{ program.name }}</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
                     <tr>
-                        <th>Name</th>
-                        <th>Version</th>
-                        <th>Batch</th>
-                        <th>No. of Semester</th>
+                        <td><B>Programme Category</B></td>
+                        <td colspan="2">{{ program.category }}</td>
+                    </tr>
+                    <tr>
+                        <td><B>Programme Name</B></td>
+                        <td colspan="2">{{ program.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><B>Programme Begin Year</B></td>
+                        <td colspan="2">{{ program.programme_begin_year }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="asecond">
+    <div class="content">
+        <div class="description"  style="overflow: auto; max-height: auto">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: aliceblue;">
+                        <td><h4>Name</h4></td>
+                        <td class="collapsing"><h4>Version</h4></td>
+                        <td><h4>Batch</h4></td>
+                        <td><h4>No. of Semester</h4></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,7 +82,11 @@
                         <tr>
                             <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                             <td>{{ curriculum.version }}</td>
-                            <td></td>
+                            <td>
+                                {% for batch in curriculum.batches %}
+                                    <p>{{ batch }}</p>
+                                {% endfor %}
+                            </td>
                             <td>{{ curriculum.no_of_semester }}</td>
                         </tr>
                     {% empty %}
@@ -65,22 +99,19 @@
 </div>
 
 
-<div class="ui bottom attached tab segment" data-tab="asecond">
+<div class="ui bottom attached tab segment" data-tab="athird">
     <div class="content">
-        <div class="description">
-            <table class="ui very basic celled large sortable table"
-                style="text-align: center;
-                    padding-left: 2.5%;
-                    padding-right: 2.5%;
-                    padding-top: 1%;
-                    padding-bottom: 1.5%;
-                    margin: auto;">
+        <div class="description" style="overflow: auto; max-height: auto">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Version</th>
-                        <th>Batch</th>
-                        <th>No. of Semester</th>
+                    <tr style="font-size: medium;
+                        background-color: aliceblue;">
+                        <td><h4>Name</h4></td>
+                        <td class="collapsing"><h4>Version</h4></td>
+                        <td><h4>Batch</h4></td>
+                        <td><h4>No. of Semester</h4></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,7 +119,11 @@
                         <tr>
                             <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                             <td>{{ curriculum.version }}</td>
-                            <td></td>
+                            <td>
+                                {% for batch in curriculum.batches %}
+                                    <p>{{ batch }}</p>
+                                {% endfor %}
+                            </td>
                             <td>{{ curriculum.no_of_semester }}</td>
                         </tr>
                     {% empty %}
@@ -99,4 +134,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
