@@ -7,7 +7,7 @@ from applications.globals.models import ExtraInfo
   
 class SpecialRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    request_date = models.DateTimeField(default=date.today())
+    request_date = models.DateTimeField(default=date.today)
     brief = models.CharField(max_length=20, default='--')
     request_details = models.CharField(max_length=200)
     upload_request = models.FileField(blank=True)

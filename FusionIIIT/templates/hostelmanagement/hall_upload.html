@@ -1,0 +1,32 @@
+{% block hall_upload %}
+
+<h3 align="center"> Student Room Allotment Application Form </h3><br>
+<form class="ui form" method ="POST" action="{% url 'hostelmanagement:upload' %}" enctype="multipart/form-data">
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet(xls not xlsx) in following format:</h4>
+            SI NO. | ROLL NO. | STUDENT NAME | MALE/ FEMALE  | PROGRAM | BATCH/ YEAR | DISEIPLINE | ROOM NO | 
+            BLOCK | Hall
+            <h4 class="ui dividing header"><a href="..\media\hostel_management\HALL 4 upload.xls">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+        </div>
+        
+       <div class="field">
+            <label>Hall upload</label>
+            <input type='file' name='hallroom'> 
+
+           <button class="ui primary button right floated" type="submit">
+                <i class="upload icon"></i> Upload
+           </button>
+       </div>
+
+       
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+ {% endblock %}

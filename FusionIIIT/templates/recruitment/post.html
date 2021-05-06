@@ -1,0 +1,82 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Post Job
+{% endblock %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/site.css' %}">
+
+
+{% endblock %}
+
+{% block body %}
+
+{% block navBar %}
+{% include 'recruitment/navbar.html' %}
+{% endblock %}
+
+{% if  user.is_superuser %}
+<h2 class="ui header" style="margin-left: 41%;">
+    <img class="ui image" src="https://image.flaticon.com/icons/png/512/69/69146.png">
+    <div class="content">
+        Post Job
+    </div>
+</h2>
+
+<br>
+<div class="ui grid">
+    <div class="eight wide column" style="margin: auto;">
+
+        <form class="ui form">
+            <div class="field">
+                <label>Advertisement Number</label>
+                <input type="text" name="Advertisement_Number" placeholder="Advertisement Number">
+            </div>
+            <div class="field">
+                <label>Job Description</label>
+                <textarea type="text" name="Job_Description" placeholder="Job_Description"></textarea>
+            </div>
+            <div class="field">
+                <label>Job Type</label>
+                <div class="ui selection dropdown">
+                    <input type="hidden" name="job_type">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Teaching</div>
+                    <div class="menu">
+                        <div class="item" data-value="1">Teaching</div>
+                        <div class="item" data-value="0">Non Teaching</div>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Upload Notification Document</label>
+                <input type="file" name="Document" placeholder="Document">
+            </div>
+            <div class="field">
+                <label>Number of Vacancy</label>
+                <input type="number" name="Vacancy" placeholder="Number of Vacancy">
+            </div>
+            <div class="field">
+                <label>Last Date To Apply</label>
+                <input type="date" name="date">
+            </div>
+            <br>
+            <div class="ui animated fade button secondary btn" tabindex="0" style="margin-left: 40%;">
+                <div class="visible content">Submit</div>
+                <div class="hidden content">
+                    Post
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+<h1 style="text-align: center;">You Have No Access to this page</h1>
+{% endif %}
+{% endblock %}

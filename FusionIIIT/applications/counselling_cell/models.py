@@ -1,7 +1,7 @@
 from django.db import models
 from applications.academic_information.models import Student
 from django.contrib.auth.models import User
-from applications.globals.models import Faculty
+from applications.globals.models import Faculty,ExtraInfo
 # Create your models here.
 
 class CounsellingCellConstants :
@@ -16,7 +16,7 @@ class CounsellingCellConstants :
     
     ISSUE_STATUS= (
         ('status_unresolved', 'Unresolved'),
-        ('status_resolved', 'Resolved'),
+        ('status_resolved', 'Resolved'),    
         ('status_inprogress', 'InProgress'),
     )
 
@@ -54,8 +54,10 @@ class StudentCounsellingInfo(models.Model):
         return f"{self.faculty} - {self.student_guide} - {self.student}"
 
 class CounsellingIssueCategory(models.Model):
-    category_id = models.CharField(max_length=40)
+    category_id = models.CharField(max_length=40,unique=True)
     category = models.CharField(max_length=40)
+
+
 
     def __str__(self):
         return f"{self.category}"
@@ -73,13 +75,13 @@ class CounsellingFAQ(models.Model):
     
     counselling_question = models.TextField(max_length=1000)
     counselling_answer = models.TextField(max_length=5000)
-    counseliing_category = models.ForeignKey(CounsellingIssueCategory,on_delete=models.CASCADE)
+    counselling_category = models.ForeignKey(CounsellingIssueCategory,on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.counselling_question}"
 
 class CounsellingMeeting(models.Model):
-    meeting_host=  models.ForeignKey(User,on_delete=models.CASCADE,null=True, blank=True)
+    meeting_host=  models.ForeignKey(ExtraInfo,on_delete=models.CASCADE,null=True, blank=True)
     meeting_time = models.DateTimeField()
     agenda = models.TextField()
     venue = models.CharField(max_length=20)
@@ -101,8 +103,8 @@ class StudentMeetingRequest(models.Model):
     requested_time = models.DateTimeField()
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     description = models.TextField(max_length=1000)
-    requested_student_invitie = models.ForeignKey(StudentCounsellingTeam,on_delete=models.CASCADE,null=True, blank=True)
-    requested_faculty_invitie = models.ForeignKey(FacultyCounsellingTeam,on_delete=models.CASCADE,null=True, blank=True)
+    requested_student_invitee = models.ForeignKey(StudentCounsellingTeam,on_delete=models.CASCADE,null=True, blank=True)
+    requested_faculty_invitee = models.ForeignKey(FacultyCounsellingTeam,on_delete=models.CASCADE,null=True, blank=True)
     requested_meeting_status = models.CharField(max_length=20,choices=CounsellingCellConstants.MEETING_STATUS,default="status_pending")
     recipient_reply = models.TextField(max_length=1000)
 
