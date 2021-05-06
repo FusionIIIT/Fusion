@@ -17,7 +17,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from notification.views import AssistantshipClaim_notify
+from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance )
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -27,7 +27,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRe
                      MinimumCredits, Register, Thesis, FinalRegistrations, ThesisTopicProcess,
                      Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested)
+                     PhDProgressExamination,CourseRequested,MessDue)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 
@@ -71,6 +71,19 @@ def academic_procedures(request):
     elif str(request.user) == "acadadmin" :
         return HttpResponseRedirect('/aims/')
 
+    elif str(request.user) == "rizwan":
+        return HttpResponseRedirect('/academic-procedures/account/')
+    
+    elif str(request.user) == "talib":
+        Messdue = MessDue.objects.all()
+        dues = Dues.objects.all()
+        return render(request,
+        '../templates/academic_procedures/messdueassistant.html' ,
+        {
+            'Mess_due' : Messdue,
+            'dues' : dues,
+
+        })
     else:
         return HttpResponse('person not found')
 #
@@ -105,7 +118,6 @@ def academic_procedures_faculty(request):
             sem = [2,4,6,8]
         student_flag = False
         fac_flag = True
-
         # temp = Curriculum.objects.all().filter(course_code = "CS315L").first()
         # Curriculum_Instructor.objects.create(curriculum_id = temp, instructor_id = user_details)
         #thesis_supervision_request_list = ThesisTopicProcess.objects.all()
@@ -120,8 +132,8 @@ def academic_procedures_faculty(request):
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
         courses_list = Curriculum_Instructor.objects.select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
-        dues = Dues.objects.all()
-        stu = Student.objects.all()
+        
+        
         r = range(4)
         return render(
                         request,
@@ -140,12 +152,22 @@ def academic_procedures_faculty(request):
                             'approved_assistantship_request_list' : approved_assistantship_request_list,
                             'mtechseminar_request_list' : mtechseminar_request_list,
                             'phdprogress_request_list' : phdprogress_request_list,
-                            'dues' : dues,
                             'r' : r,
                          })
     else:
         HttpResponse("user not found")
 
+
+@login_required(login_url='/accounts/login')
+def account(request):
+    assistant_account_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+    assistant_account_length = len(assistant_account_list.filter(acad_approval = True).filter(account_approval = False))
+    return render(request,
+                        '../templates/ais/account.html' ,
+                        {
+                            'assistant_account_length' : assistant_account_length,
+                            'assistant_account_list' : assistant_account_list ,
+                        })
 
 
 @login_required(login_url='/accounts/login')
@@ -158,14 +180,15 @@ def academic_procedures_student(request):
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
-
-        if obj.programme.upper() == "PH.D" :
+        
+        if obj.programme.upper() == "PHD" :
             student_flag = True
             ug_flag = False
             masters_flag = False
             phd_flag = True
             fac_flag = False
             des_flag = False
+            
 
         elif obj.programme.upper() == "M.DES" :
             student_flag = True
@@ -174,6 +197,7 @@ def academic_procedures_student(request):
             phd_flag = False
             fac_flag = False
             des_flag = True
+            
 
         elif obj.programme.upper() == "B.DES" :
             student_flag = True
@@ -182,6 +206,7 @@ def academic_procedures_student(request):
             phd_flag = False
             fac_flag = False
             des_flag = True
+            
 
         elif obj.programme.upper() == "M.TECH" :
             student_flag = True
@@ -190,6 +215,7 @@ def academic_procedures_student(request):
             phd_flag = False
             fac_flag = False
             des_flag = False
+            
 
         elif obj.programme.upper() == "B.TECH" :
             student_flag = True
@@ -198,12 +224,15 @@ def academic_procedures_student(request):
             phd_flag = False
             fac_flag = False
             des_flag = False
+            
 
 
 
         else :
             return HttpResponse("Student has no record")
-        masters_flag=True
+        
+        
+        # masters_flag=True
         current_date = demo_date.date()
         year = demo_date.year
         
@@ -312,11 +341,13 @@ def academic_procedures_student(request):
 
         faculty_list = None
         thesis_request_list = None
+        assistantship_list = None
         pre_existing_thesis_flag = False
         teaching_credit_registration_course = None
         if masters_flag:
             faculty_list = get_faculty_list()    
             thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
+            assistantship_list = AssistantshipClaim.objects.all().filter(student = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
         if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
@@ -359,7 +390,7 @@ def academic_procedures_student(request):
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
 
         
-           
+        Mess_Due = MessDue.objects.filter(student = obj)
         
 
         # Branch Change Form save
@@ -387,6 +418,7 @@ def academic_procedures_student(request):
                             'performance_list' : performance_list,
                             'faculty_list' : faculty_list,
                             'thesis_request_list' : thesis_request_list,
+                            'assistantship_list' : assistantship_list,
 
                            # 'final_register': final_register,
                            'student_flag' : student_flag,
@@ -417,6 +449,7 @@ def academic_procedures_student(request):
                             'cur_cpi': cur_cpi,
                            'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
+                           'Mess_due' : Mess_Due,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
                            'mess_d':mess_d,
@@ -482,7 +515,6 @@ def facultyData(request):
 			else:
 				facultyNames.append(name)
         
-		print(facultyNames)
 		faculty = json.dumps(facultyNames)
 		return HttpResponse(faculty)
 	except Exception as e:
@@ -2855,8 +2887,11 @@ def ACF(request):
             'status' : res,
             'message' : message
             } 
-            
+            sender1 = ExtraInfo.objects.get(id = str(FACUL1)[:4]).user
+            sender2 = ExtraInfo.objects.get(id = str(FACUL2)[:4]).user
             content = json.dumps(content)
+            AssistantshipClaim_faculty_notify(request.user,sender1)
+            AssistantshipClaim_faculty_notify(request.user,sender2)
             return HttpResponse(content)
 
 
@@ -2865,24 +2900,47 @@ def update_assistantship(request):
         r = request.POST.get('remark')
         i = request.POST.get('obj_id')
         user = ExtraInfo.objects.get(user = request.user)
+        recipient = User.objects.get(username = "acadadmin")
         assistantship_object = AssistantshipClaim.objects.get(id = i)
-        recipient = User.objects.filter(username = assistantship_object.student)
+        sender = User.objects.get(username = assistantship_object.student)
         if user == assistantship_object.ta_supervisor.id and r == "Satisfactory":
             assistantship_object.ta_supervisor_remark=True
         elif user == assistantship_object.ta_supervisor.id and r == "Unsatisfactory":
             assistantship_object.ta_supervisor_remark=False
         if user == assistantship_object.thesis_supervisor.id and r == "Satisfactory":
-            assistantship_object.thesis_supervisor_remark=True 
+            assistantship_object.thesis_supervisor_remark=True
         elif r == "Unsatisfactory" :
             assistantship_object.thesis_supervisor_remark=False
         assistantship_object.save()
-        AssistantshipClaim_notify(request.user,recipient,r,assistantship_object.month,assistantship_object.year)
-        
-        
+        if  assistantship_object.thesis_supervisor_remark == True or  assistantship_object.ta_supervisor_remark == True :
+            AssistantshipClaim_acad_notify(sender,recipient)
+   
     return HttpResponseRedirect('/academic-procedures/main/')
         
 
-            
+def update_acad_assis(request):
+    if request.method == 'POST':
+        i = request.POST.get('obj_id')
+        sti = request.POST.get('stipend')
+        aobj= AssistantshipClaim.objects.get(id = i)
+        recipient = User.objects.get(username = "rizwan")
+        aobj.stipend = sti
+        aobj.acad_approval = True
+        aobj.save()
+        AssistantshipClaim_account_notify(request.user,aobj.student,recipient)         
+        return HttpResponse('success')
+
+
+def update_account_assistantship(request):
+    if request.method == 'POST':
+        i = request.POST.get('obj_id')
+        acobj= AssistantshipClaim.objects.get(id = i)
+        acobj.account_approval = True
+        recipient = User.objects.get(username = acobj.student)
+        acobj.save()
+        AssistantshipClaim_notify(request.user,recipient,acobj.month,acobj.year)
+        return HttpResponse('success')
+
 
 @login_required
 def MTSGF(request):
@@ -3017,7 +3075,7 @@ def update_dues(request):
             message = message + "Subtracting more value than existing library due<br>" 
         if pd < 0 and -1*pd > dues_object.placement_cell_due :
             message = message + "Subtracting more value than existing placement cell due<br>"
-        if ad < 0 and -1*ad > dues_object.mess_due :
+        if ad < 0 and -1*ad > dues_object.academic_due :
             message = message + "Subtracting more value than existing academic due<br>"
         
         
@@ -3051,3 +3109,39 @@ def update_dues(request):
         return HttpResponse(content)
 
 
+def mdue(request):
+    if request.method == 'POST':
+        rollno = request.POST.get('rollno')
+        year = request.POST.get('year')
+        month = request.POST.get('month')
+        amount = int(request.POST.get('amount'))
+        desc = request.POST.get('desc')
+        amount1 = amount
+        if desc == "due":
+            amount1 = -1*amount
+        
+        Dues_mess = amount  
+        student = Student.objects.get(id = rollno)
+        
+        messdue_list=MessDue.objects.all().filter(student = student)
+        duesobj = Dues.objects.get(student_id = student)
+        if(messdue_list):
+            new_remaining = messdue_list[len(messdue_list)-1].remaining_amount + amount1
+            Dues_mess = new_remaining
+            messdueobj = MessDue(student = student, month = month, year = year,description = desc, amount = amount, remaining_amount = new_remaining)
+        else:
+            messdueobj=MessDue(student = student, month = month, year = year,description = desc, amount = amount, remaining_amount = amount1)
+        messdueobj.save()
+
+        if Dues_mess >= 0 :
+            duesobj.mess_due = 0
+        else :
+            duesobj.mess_due = -1*Dues_mess
+        duesobj.save()
+        content = json.dumps("success")
+        return HttpResponse(content)
+
+        
+
+
+        
