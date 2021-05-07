@@ -1,10 +1,11 @@
-{% block hall3 %}
- <table class="ui very basic collapsing celled sortable table"
-       style="padding-left: 5%;
+{% for hall in all_hall %}
+    {% block {{hall.hall_id}} %}
+        <table class="ui very basic collapsing celled sortable table"
+      style="padding-left: 5%;
             padding-right: 5%;
             padding-top: 1%;
             padding-bottom: 1.5%;
-            margin: auto;">
+            margin: auto;"> 
     <thead>
     <tr>
 
@@ -28,14 +29,15 @@
     </thead>
 
     <tbody>
-     {% for student in hall_3_student %}
+    {% for student in {{halls_student.{{hall.hall_id}}}} %}
     <tr>
+    
         <td>
             {{student.id.id}}
         </td>
 
         <td>
-            {{student.id.user.first_name}}  {{student.id.user.last_name}}
+            {{student.id.user.first_name}} {{student.id.user.last_name}}
         </td>
 
         <td>
@@ -45,9 +47,11 @@
         <td>
             {{student.room_no}}
         </td>
+
     </tr>
-    {% endfor %} 
+     {% endfor %} 
 
     </tbody>
 </table>
-{% endblock %}
+    {% endblock  %}
+{% endfor %}
