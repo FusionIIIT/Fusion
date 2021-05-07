@@ -276,6 +276,7 @@ def indentview(request,id):
     context = {
 
         'draft': draft,
+        'indents' : draft_indent,
         'extrainfo': extrainfo,
         'designations': designations,
     }
