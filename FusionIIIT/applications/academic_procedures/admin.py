@@ -19,6 +19,7 @@ class StudentRegistrationCheckAdmin(admin.ModelAdmin):
     model = StudentRegistrationCheck
     raw_id_fields = ("student",)
 
+
 admin.site.register(Thesis)
 admin.site.register(Register,RegisterAdmin)
 admin.site.register(InitialRegistrations,InitialRegistrationsAdmin)
