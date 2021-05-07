@@ -75,7 +75,7 @@
     </table> -->
 
     <div class="ui divider"></div>
-
+    {% if ent %}
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
@@ -89,7 +89,8 @@
         </thead>
         <tbody>
             {% for s in ent %}
-             <tr>
+            {% if s.head_approval == True and s.director_approval == True and s.financial_approval == True and s.purchased == False %}
+            <tr>
                  <td>{{s.file_info.id}}</td>
                  <td>{{s.quantity}}</td>
                  <td>{{s.item_name}}</td>
@@ -101,6 +102,7 @@
 
                 
               </tr>
+              {% endif %}       
               {% endfor %}
         </tbody>
 
