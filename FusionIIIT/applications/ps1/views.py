@@ -835,7 +835,9 @@ def entry(request):
 
     if request.method=='POST':
         id=request.POST.get('id')
-        return render(request,'ps1/StockEntry.html',{'id':id})
+        temp=File.objects.get(id=id)
+        temp1=IndentFile.objects.get(file_info=temp)
+        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':temp1})
         
         
 
