@@ -306,10 +306,9 @@ def indentview2(request,id):
 
 
 
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
-
-
-
+    indent_files = IndentFile.objects.all().values('file_info')
+    print(indent_files)
+    in_file = Tracking.objects.filter(file_id=indent_files,receiver_id=request.user)
 
     #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
@@ -357,7 +356,8 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
     designation = HoldsDesignation.objects.filter(user=request.user)
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+    in_file=Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+
 
     context = {
         'in_file': in_file,
