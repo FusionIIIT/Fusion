@@ -309,7 +309,7 @@ def indentview2(request,id):
 
     indent_files = IndentFile.objects.all().values('file_info')
     print(indent_files)
-    in_file = Tracking.objects.filter(file_id=indent_files,receiver_id=request.user)
+    in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user)
 
     #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
@@ -322,6 +322,7 @@ def indentview2(request,id):
         'designations': designations,
     }
     return render(request, 'ps1/indentview2.html', context)
+
 @login_required(login_url = "/accounts/login")
 def outward(request):
     """
