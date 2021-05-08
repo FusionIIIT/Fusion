@@ -55,7 +55,6 @@ pending ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -126,12 +125,14 @@ pending ltc applications
                                         {% render_field app.assign_form.assign_status %}
                                     </div>
                                     <br>
+                                    <b>Forward to</b>
+                                    <br><br>
                                     <div class="field">
                                         {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %}
+                                        {% render_field app.assign_form.reviewer_design %}
                                     </div>
                                     <br>
                                     <div class="field">
@@ -139,7 +140,7 @@ pending ltc applications
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Assign Reviewer
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -194,7 +195,6 @@ under_review ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -274,7 +274,6 @@ under_review ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -345,12 +344,15 @@ under_review ltc applications
                                         {% render_field app.assign_form.status %}
                                     </div>
                                     <br>
+                                    <br>
+                                    <b>Forward to</b>
+                                    <br><br>
                                     <div class="field">
                                         {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %}
+                                        {% render_field app.assign_form.reviewer_design %}
                                     </div>
                                     <br>
                                     <div class="field">
@@ -358,7 +360,7 @@ under_review ltc applications
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Assign Reviewer
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -391,10 +393,9 @@ reviewed ltc applications
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
-                            <div class="meta"> Remarks by Reviewer : {{app.tracking_info.remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.assign_ltc-{{app.id}}').modal('show')">
-                                    Approve/Reject
+                                    View
                                 </button>
                             </div>
                         </div>
@@ -411,7 +412,6 @@ reviewed ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -480,11 +480,33 @@ reviewed ltc applications
                                     {% render_field app.assign_form.app_id %}
 
                                     <div class="field">
-                                        Remarks from Director : {{ app.tracking_info.remarks }}
+                                        {% for key, value in remarks_list.items %}    
+                                        {% if key == app %}
+                                            {% for x in value %}
+                                            Remarks from 
+                                            {% for x in value %}
+                                            Remarks from 
+                                            {{x.0}} : {{x.1}}
+                                            <br>             
+                                            {% endfor %}
+                                            {% endfor %}
+                                        {%endif%}
+                                        {% endfor %}
+                                        
+                                        <br>
+                                    </div>
+
+                                    <br>
+                                    <div class="field">
+                                        {% render_field app.assign_form.reviewer_id %}
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.accept_status%}
+                                        {% render_field app.assign_form.reviewer_design %}
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field app.assign_form.assign_status%}
                                     </div>
                                     <br>
                                     <div class="field">
@@ -492,7 +514,7 @@ reviewed ltc applications
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Approve/Reject
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -528,6 +550,7 @@ archived ltc applications
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Your Remarks : {{app.tracking_info.admin_remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
@@ -546,7 +569,6 @@ archived ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
