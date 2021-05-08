@@ -27,7 +27,7 @@ from .models import *
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 def coordinator_club(request):
-	for i in Club_info.objects.all():
+	for i in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
 		co = (str(i.co_ordinator)).split(" ")
 		co_co = (str(i.co_coordinator)).split(" ")
 		if co[0] == str(request.user) or co_co[0] == str(request.user) :
@@ -61,10 +61,8 @@ def editsession(request, session_id):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
-			print("in the post body")
-			print(res)
 			if (res == 'success'):
-				event = Session_info.objects.get(id=session_id)
+				event = Session_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').get(id=session_id)
 				event.club = club_name
 				event.venue = venue
 				event.date = date
@@ -75,11 +73,9 @@ def editsession(request, session_id):
 				event.save()
 				# e = Session_info.objects.filter(id=session_id).update(club=club_name,venue=venue, date=date,start_time=start_time, end_time=end_time, session_poster=session_poster, details=desc)
 				message += "Your form has been dispatched for further process"
-				print(message)
 				return redirect('/gymkhana/')
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
-				print(message)
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
@@ -88,7 +84,7 @@ def editsession(request, session_id):
 	##Get Request
 	#  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
 	venue = []
-	event = Session_info.objects.get(pk=session_id)
+	event = Session_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').get(pk=session_id)
 
 	for i in Constants.venue:
 		for j in i[1]:
@@ -119,7 +115,7 @@ def delete_events(request):
 	message = ""
 	try:
 		for i in selectedIds:
-			delEvent = Event_info.objects.get(id=i)
+			delEvent = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').get(id=i)
 			delEvent.delete()
 		return HttpResponse("success")
 	except Exception as e:
@@ -144,10 +140,8 @@ def edit_event(request,event_id):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_event(date, start_time, end_time, venue)
 			message = ""
-			print("in the post body")
-			print(res)
 			if(res == 'success'):
-				event = Event_info.objects.get(id=event_id)
+				event = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').get(id=event_id)
 				event.club = club_name
 				event.event_name = event_name
 				event.incharge = incharge
@@ -160,11 +154,9 @@ def edit_event(request,event_id):
 				event.save()
 				# e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 				message += "Your form has been dispatched for further process"
-				print(message)
 				return redirect('/gymkhana/')
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
-				print(message)
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
@@ -174,7 +166,7 @@ def edit_event(request,event_id):
 	##Get Request
 	#  Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 	venue = []
-	event = Event_info.objects.get(pk=event_id)
+	event = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').get(pk=event_id)
 
 	for i in Constants.venue:
 		for j in i[1]:
@@ -204,7 +196,7 @@ def delete_memberform(request):
 	selectedIds = json.loads(selectedIds)
 	try:
 		for i in selectedIds:
-			delMemberform = Club_member.objects.get(id=i)
+			delMemberform = Club_member.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department','member','member__id','member__id__user','member__id__department').get(id=i)
 			delMemberform.delete()
 		return HttpResponse("success")
 	except Exception as e:
@@ -215,7 +207,7 @@ def facultyData(request):
 	current_value = request.POST['current_value']
 	try:
 		# students =ExtraInfo.objects.all().filter(user_type = "student")
-		faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		faculty = ExtraInfo.objects.select_related('user','department').all().filter(user_type = "faculty")
 		facultyNames = []
 		for i in faculty:
 			name = i.user.first_name + " " + i.user.last_name
@@ -226,7 +218,6 @@ def facultyData(request):
 					facultyNames.append(name)
 			else:
 				facultyNames.append(name)
-		print(facultyNames)
 		faculty = json.dumps(facultyNames)
 		return HttpResponse(faculty)
 	except Exception as e:
@@ -236,8 +227,8 @@ def facultyData(request):
 def studentsData(request):
 	current_value = request.POST['current_value']
 	try:
-		students = ExtraInfo.objects.all().filter(
-			user_type="student").filter(id__startswith=current_value)
+		# students = ExtraInfo.objects.all().filter(user_type="student").filter(id__startswith=current_value)
+		students = ExtraInfo.objects.select_related('user','department').all().filter(user_type="student").filter(id__startswith=current_value)
 		students = serializers.serialize('json', students)
 		return HttpResponse(students)
 	except Exception as e:
@@ -263,16 +254,11 @@ def new_club(request):
 			co = co.strip()
 			coco = coco.strip()
 			faculty = faculty.strip()
-			# print("co ", co)
-			# print("coco ", coco)
-			# print("faculty ", faculty)
 			#checking if the form data is authentic
 			#checking for coordinator field
-			students = ExtraInfo.objects.all().filter(user_type = "student")
+			students = ExtraInfo.objects.select_related('user','department').all().filter(user_type = "student")
 			CO = None
 			for i in students:
-				print("id ", len(i.id))
-				print("co ", len(co))
 				if co == i.id:
 					res = "success"
 					CO = i
@@ -305,7 +291,7 @@ def new_club(request):
 
 			#checking for faculty field
 			FACUL = None
-			faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
+			faculties = ExtraInfo.objects.select_related('user','department').all().filter(user_type = "faculty")
 			res = "error"
 			for i in faculties:
 				checkName = i.user.first_name + " " + i.user.last_name
@@ -327,10 +313,6 @@ def new_club(request):
 			#getting queryset class objects
 			coco_student = get_object_or_404(Student, id = COCO)
 
-			#    #    print "----------------------------------"
-			#    #    print COCO[1]
-			#    #    print COCO[0]
-			#    print "----------------------------"
 			#getting queryset class objects
 			# faculty = faculty.split(" - ")
 			# user_name = get_object_or_404(User, username = faculty[1])
@@ -370,11 +352,9 @@ def form_avail(request):
 				status = True
 			else:
 				status = False
-			print(form_name)
 			roll = request.user.username
 			rev = Form_available.objects.get(roll=roll).form_name
 			if rev != form_name:
-				# print("aabracaadaaabra")
 				delete_requests(request)
 			#saving data to the database
 			rob = Form_available.objects.get(roll=roll)
@@ -423,8 +403,7 @@ def registration_form(request):
 		message = "The form has been dispatched for further process"
 		try:
 			#getting form data
-			info = Student.objects.get(id__user=request.user).cpi
-			print(info)
+			info = Student.objects.select_related('id','id__user','id__department').get(id__user=request.user).cpi
 			user = request.POST.get("user_name")
 			roll = request.POST.get("roll")
 			cpi = request.POST.get("cpi")
@@ -433,7 +412,6 @@ def registration_form(request):
 
 			#saving data to the database
 			reg = Registration_form(user_name=user, branch=branch, roll=roll, cpi=cpi, programme=programme)
-			print(reg)
 			reg.save()
 			# club_member = Club_member(member = student, club = club_name, description = pda)
 			# club_member.save()
@@ -453,19 +431,19 @@ def registration_form(request):
 	# return redirect('/gymkhana/')
 
 def retrun_content(request, roll, name, desig , club__ ):
-	students =ExtraInfo.objects.filter(user_type = "student")
-	faculty = ExtraInfo.objects.filter(user_type = "faculty")
-	club_name = Club_info.objects.all()
-	club_member = Club_member.objects.all()
+	students =ExtraInfo.objects.select_related('user','department').filter(user_type = "student")
+	faculty = ExtraInfo.objects.select_related('user','department').filter(user_type = "faculty")
+	club_name = Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all()
+	club_member = Club_member.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department','member','member__id','member__id__user','member__id__department').all()
 	fest_budget = Fest_budget.objects.all()
-	club_budget = Club_budget.objects.all()
-	club_session = Session_info.objects.all()
-	club_event = Event_info.objects.all()
-	club_event_report = Club_report.objects.all()
+	club_budget = Club_budget.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').all()
+	club_session = Session_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').all()
+	club_event = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').all()
+	club_event_report = Club_report.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department','incharge','incharge__user','incharge__department').all()
 	if 'student' in desig or 'Convenor' in desig:
 		registration_form = Registration_form.objects.all()
-		cpi = Student.objects.get(id__user=request.user).cpi
-		programme = Student.objects.get(id__user=request.user).programme
+		cpi = Student.objects.select_related('id','id__user','id__department').get(id__user=request.user).cpi
+		programme = Student.objects.select_related('id','id__user','id__department').get(id__user=request.user).programme
 
 		try:
 			form_name = Form_available.objects.get(roll=request.user.username).form_name
@@ -477,9 +455,6 @@ def retrun_content(request, roll, name, desig , club__ ):
 				form_name = i.form_name
 				status = i.status
 				break
-	# print(status)
-	# print(request.user.username)
-	# print(registration_form)
 
 	venue_type = []
 	id =0
@@ -551,7 +526,6 @@ def retrun_content(request, roll, name, desig , club__ ):
 def getVenue(request):
 	selected = request.POST.get('venueType')
 	selected = selected.strip()
-	# print(id(selected))
 	venue_type = []
 	venue_details = {}
 	idd = 0
@@ -563,15 +537,12 @@ def getVenue(request):
 				lt = [k[0] for k in j]
 				venue_details[venue_type[int(idd/2)]] = lt
 			idd = idd+1
-	# print(selected)
-	# print(len(selected))
 	content = []
 	for key, value in venue_details.items():
 		if key == selected:
 			for val in value:
 				val = val.strip()
 				content.append(val)
-	print(content)
 	content = json.dumps(content)
 	return HttpResponse(content)
 
@@ -579,17 +550,16 @@ def getVenue(request):
 def gymkhana(request):
 	roll = request.user
 	name = request.user.first_name +"_"+ request.user.last_name
-	desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
+	desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
 	b = [i for sub in desig for i in sub]
 	roll_ = []
 	for i in b :
 		name_ = get_object_or_404(Designation, id = i)
 		# #    #    print name_
 		roll_.append(str(name_.name))
-	for i in Club_info.objects.all():
+	for i in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
 		lines =str("")
 		Types = lines.split(" ")
-		#print(Types[1])
 	club__ = coordinator_club(request)
 	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
 
@@ -662,7 +632,6 @@ def core_team(request):
 def event_report(request):
 	if request.method == 'POST':
 		# getting form data
-		##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 		user = request.POST.get("st_inc")
 		event = request.POST.get("event")
 		d_d = request.POST.get("d_d")
@@ -708,8 +677,6 @@ def club_budget(request):
 def act_calender(request):
 	if request.method == "POST":
 		message = ""
-		#    print "-------------------"
-		#    print request.FILES['act_file']
 		club = request.POST.get("club")
 		act_calender = request.FILES['act_file']
 		act_calender.name = club+"_act_calender.pdf"
@@ -718,8 +685,6 @@ def act_calender(request):
 
 		club_info = get_object_or_404(Club_info, club_name=club)
 		club_info.activity_calender = act_calender
-		#    print "---------------"
-		#    print club_info.activity_calender
 		club_info.save()
 		message += "Successfully uploaded the calender !!!"
 
@@ -736,7 +701,6 @@ def act_calender(request):
 def club_report(request):
 	if request.method == 'POST' and request.FILES['report']:
 		# getting form data
-		##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 		club = request.POST.get('club')
 		user = request.POST.get("s_inc")
 		event = request.POST.get("event")
@@ -775,18 +739,13 @@ def change_head(request):
 		# club_name = get_object_or_404(Club_info, club_name=club)
 
 		co_student = get_object_or_404(Student, id__user__username=co)
-		print(co_student)
 
 		coco_student = get_object_or_404(Student, id__user__username=coco)
-		print(coco_student)
 
 		club_info = get_object_or_404(Club_info, club_name=club)
 
 		old_co = club_info.co_ordinator
 		old_coco = club_info.co_coordinator
-		#    print "--------111"
-		print (old_coco, old_co)
-
 		club_info.co_ordinator = co_student
 		club_info.co_coordinator = coco_student
 		club_info.save()
@@ -798,9 +757,9 @@ def change_head(request):
 		new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
 		new_coco.save()
 
-		old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
+		old_co = HoldsDesignation.objects.select_related('user','working','designation').filter(user__username=old_co, designation__name="co-ordinator")
 		old_co.delete()
-		old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
+		old_coco = HoldsDesignation.objects.select_related('user','working','designation').filter(user__username=old_coco, designation__name="co co-ordinator")
 		old_coco.delete()
 
 		content = {
@@ -831,7 +790,7 @@ def new_session(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
-			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			getstudents = ExtraInfo.objects.select_related('user','department').filter(user_type = 'student')
 			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
@@ -856,7 +815,6 @@ def new_session(request):
 
 @login_required
 def new_event(request):
-	print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	if request.method == "POST":
 		club_name = None
 		res =None
@@ -873,7 +831,7 @@ def new_event(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_event(date, start_time, end_time, venue)
 			message = ""
-			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			getstudents = ExtraInfo.objects.select_related('user','department').filter(user_type = 'student')
 			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				event = Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
@@ -914,28 +872,19 @@ def fest_budget(request):
 @login_required
 def approve(request):
 	lis = list(request.POST.getlist('check'))
-	print(lis)
 	for user in lis:
 		# pos = lis.index(user)
 		re = "remarks" + user
-		print(re)
 		remarks = request.POST.getlist(re)
-		print(remarks)
 		user = user.split(',')
-		print(user)
 		info = user[0].split(' - ')
-		print(info)
 
 		# getting queryset class objects
 		user_name = get_object_or_404(User, username=info[1])
-		print(user_name)
 		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-		print(extra1)
 		student = get_object_or_404(Student, id=extra1)
-		print(student)
 
 		club_member = get_object_or_404(Club_member, club=user[1], member=student)
-		print(club_member)
 		club_member.status = "confirmed"
 		club_member.remarks = remarks[0]
 		club_member.save()
@@ -946,9 +895,7 @@ def approve(request):
 @login_required
 def club_approve(request):
 	lisx = list(request.POST.getlist('check'))
-	print(lisx)
 	for club in lisx:
-		print(club)
 		club_name = get_object_or_404(Club_info, club_name=club)
 		club_name.status = "confirmed"
 		club_name.save()
@@ -960,9 +907,7 @@ def club_approve(request):
 @login_required
 def club_reject(request):
 	lisx = list(request.POST.getlist('check'))
-	print(lisx)
 	for club in lisx:
-		print(club)
 		club_name = get_object_or_404(Club_info, club_name=club)
 		club_name.status = "rejected"
 		club_name.save()
@@ -1025,7 +970,7 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		get_sessions = Session_info.objects.filter(date=value).order_by('start_time')
+		get_sessions = Session_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').filter(date=value).order_by('start_time')
 		dates = []
 		for i in get_sessions:
 			dates.append(i)
@@ -1035,11 +980,9 @@ def date_sessions(request):
 @login_required
 @csrf_exempt
 def date_events(request):
-	print("I was here")
 	if(request.method=='POST'):
 		value = request.POST.get('date')
-		print(f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@{value}")
-		get_events = Event_info.objects.filter(date=value).order_by('start_time')
+		get_events = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').filter(date=value).order_by('start_time')
 		dates = []
 		for i in get_events:
 			dates.append(i)
@@ -1052,7 +995,7 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
 	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
-	booked_Sessions = Session_info.objects.filter(date=date, venue=venue)
+	booked_Sessions = Session_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').filter(date=date, venue=venue)
 
 	#placing start time and end time in tuple fashion inside this list
 	slots = [(start_time, end_time)]
@@ -1068,9 +1011,7 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
 		flag = 0
 		i=1
 		while i < len(slots):
-			print(counter)
 			if (slots[i][0] < counter):
-				print("error ", i)
 				flag = 1
 				break
 			counter = slots[i][1]
@@ -1106,7 +1047,6 @@ def voting_poll(request):
 			exp_date = body.get('expire_date')
 			groups = body.getlist('groups')
 			target_groups = get_target_user(groups)
-			print(groups,target_groups)
 			name = request.user.first_name + " " + request.user.last_name
 			roll = request.user
 			created_by = str(name) +":"+ str(roll)
@@ -1120,7 +1060,7 @@ def voting_poll(request):
 				batch = value[0]
 				branch = value[1]
 				allbatch = User.objects.filter(username__contains = batch)
-				selbranch = ExtraInfo.objects.filter(department__name = branch)
+				selbranch = ExtraInfo.objects.select_related('user','department').filter(department__name = branch)
 				batchbranch = User.objects.filter(username__contains = batch, extrainfo__in=selbranch)
 				if branch == 'All':
 					gymkhana_voting(request.user, allbatch, 'voting_open', title, description)
@@ -1143,12 +1083,11 @@ def voting_poll(request):
 @login_required
 def vote(request,poll_id):
 	poll = Voting_polls.objects.get(pk=poll_id)
-	print(poll_id)
 	if request.POST:
 		try:
 			body = request.POST
 			submitted_choice = body.get('choice')
-			choice = Voting_choices.objects.get(pk=submitted_choice)
+			choice = Voting_choices.objects.select_related('poll_event').get(pk=submitted_choice)
 			choice.votes += 1
 			choice.save()
 			new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
@@ -1157,7 +1096,7 @@ def vote(request,poll_id):
 		except Exception as e:
 			print(e)
 			return HttpResponse('error')
-	data = serializers.serialize('json',Voting_choices.objects.all())
+	data = serializers.serialize('json',Voting_choices.objects.select_related('poll_event').all())
 	return redirect('/gymkhana/')
 
 @login_required
@@ -1178,7 +1117,7 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
 	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
-	booked_Events = Event_info.objects.filter(date=date, venue=venue)
+	booked_Events = Event_info.objects.select_related('club','club__co_ordinator','club__co_ordinator__id','club__co_ordinator__id__user','club__co_ordinator__id__department','club__co_coordinator','club__co_coordinator__id','club__co_coordinator__id__user','club__co_coordinator__id__department','club__faculty_incharge','club__faculty_incharge__id','club__faculty_incharge__id__user','club__faculty_incharge__id__department').filter(date=date, venue=venue)
 
 	#placing start time and end time in tuple fashion inside this list
 	slots = [(start_time, end_time)]
@@ -1194,9 +1133,7 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 		flag = 0
 		i=1
 		while i < len(slots):
-			print(counter)
 			if (slots[i][0] < counter):
-				print("error ", i)
 				flag = 1
 				break
 			counter = slots[i][1]
@@ -1231,7 +1168,6 @@ def filetracking(request):
 	if request.method =="POST":
 		try:
 			if 'save' in request.POST:
-				print("********************")
 				uploader = request.user.extrainfo
 				print(uploader)
 				#ref_id = request.POST.get('fileid')
@@ -1260,7 +1196,7 @@ def filetracking(request):
 				description = request.POST.get('desc')
 				design = request.POST.get('design')
 				print("designation is ", design)
-				designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+				designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
 
 				upload_file = request.FILES.get('myfile')
 
@@ -1278,7 +1214,7 @@ def filetracking(request):
 				remarks = request.POST.get('remarks')
 
 				sender = request.POST.get('design')
-				current_design = HoldsDesignation.objects.get(id=sender)
+				current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
 				receiver = request.POST.get('receiver')
 				receiver_id = User.objects.get(username=receiver)
@@ -1292,7 +1228,7 @@ def filetracking(request):
 				print(receive_designation)
 				receive_design = receive_designation[0]
 				upload_file = request.FILES.get('myfile')
-				# return HttpResponse ("success")
+				return HttpResponse ("success")
 				Tracking.objects.create(
 					file_id=file,
 					current_id=current_id,
@@ -1311,10 +1247,10 @@ def filetracking(request):
 
 
 
-	file = File.objects.all()
-	extrainfo = ExtraInfo.objects.all()
-	holdsdesignations = HoldsDesignation.objects.all()
-	designations = HoldsDesignation.objects.filter(user = request.user)
+	file = File.objects.select_related('uploader','uploader__user','uploader__department','designation').all()
+	extrainfo = ExtraInfo.objects.select_related('user','department').all()
+	holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+	designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
 
 	context = {
 		'file': file,
@@ -1353,12 +1289,10 @@ def forward(request, id):
 	# start = timer()
 	file = get_object_or_404(File, id=id)
 	# end = timer()
-	# print (end-start)
 
 	# start = timer()
-	track = Tracking.objects.filter(file_id=file)
+	track = Tracking.objects.select_related('file_id','file_id__uploader','file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id','current_id__user','current_id__department','current_design','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
 	# end = timer()
-	# print (end-start)
 
 	if request.method == "POST":
 			if 'finish' in request.POST:
@@ -1370,18 +1304,12 @@ def forward(request, id):
 				remarks = request.POST.get('remarks')
 
 				sender = request.POST.get('sender')
-				current_design = HoldsDesignation.objects.get(id=sender)
+				current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
 				receiver = request.POST.get('receiver')
 				receiver_id = User.objects.get(username=receiver)
-				print("Receiver_id = ")
-				print(receiver_id)
 				receive = request.POST.get('recieve')
-				print("recieve = ")
-				print(receive)
 				receive_designation = Designation.objects.filter(name=receive)
-				print("receive_designation = ")
-				print(receive_designation)
 				receive_design = receive_designation[0]
 				upload_file = request.FILES.get('myfile')
 				# return HttpResponse ("success")
@@ -1396,9 +1324,9 @@ def forward(request, id):
 				)
 	# start = timer()
 
-	extrainfo = ExtraInfo.objects.all()
-	holdsdesignations = HoldsDesignation.objects.all()
-	designations = HoldsDesignation.objects.filter(user=request.user)
+	extrainfo = ExtraInfo.objects.select_related('user','department').all()
+	holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+	designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
 	context = {
 		# 'extrainfo': extrainfo,
