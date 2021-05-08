@@ -10,6 +10,17 @@ from applications.eis.models import *
 from django.http import HttpResponse, HttpResponseRedirect
 from applications.establishment.models import *
 from applications.establishment.views import *
+from applications.eis.models import *
+from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
+from html import escape
+from io import BytesIO
+
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import (get_object_or_404, redirect, render,
+                              render)
+
+
 
 def edit_employee_details(request, id):
     """ Views for edit details"""
@@ -52,14 +63,12 @@ def hr_admin(request):
         template = 'hr2Module/hradmin.html'
         # searched employee
         query = request.GET.get('search')
-
         if(request.method == "GET"):
             if(query != None):
                 emp = ExtraInfo.objects.filter(
                     Q(user__first_name__icontains=query) |
-                    Q(user__last_name__icontains=query)
-
-
+                    Q(user__last_name__icontains=query)|
+                    Q(id__icontains=query)
                 ).distinct()
                 emp = emp.filter(user_type="faculty")
             else:
@@ -68,7 +77,6 @@ def hr_admin(request):
         else:
             emp = ExtraInfo.objects.all()
             emp = emp.filter(user_type="faculty")
-
         context = {'emps': emp}
         return render(request, template, context)
     else:
@@ -202,4 +210,52 @@ def edit_employee_servicebook(request, id):
     context = {'form': form, 'employee': employee
                }
 
+    return render(request, template, context)
+
+
+
+
+def administrative_profile(request, username=None):
+    user = get_object_or_404(User, username=username) if username else request.user
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    if extra_info.user_type != 'faculty':
+        return redirect('/')
+    pf = extra_info.id
+
+    
+    lien_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
+    deputation_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="DEPUTATION").order_by('-start_date')
+    other_service_book = ForeignService.objects.filter(
+        extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
+
+    response = {}
+
+    response.update(initial_checks(request))
+    if is_eligible(request) and request.method == "POST":
+        handle_appraisal(request)
+
+    if is_eligible(request):
+        response.update(generate_appraisal_lists(request))
+
+    # If user has designation "HOD"
+    if is_hod(request):
+        response.update(generate_appraisal_lists_hod(request))
+
+    # If user has designation "Director"
+    if is_director(request):
+        response.update(generate_appraisal_lists_director(request))
+
+    response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
+
+
+    context = {'user': user,
+               'pf':pf,
+               'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
+               'extrainfo':extra_info
+               }
+
+    context.update(response)
+    template = 'hr2Module/dashboard_hr.html'
     return render(request, template, context)

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Employee,EmpConfidentialDetails,EmpDependents,ForeignService,EmpAppraisalForm
+from .models import Employee,EmpConfidentialDetails,EmpDependents,ForeignService,EmpAppraisalForm,WorkAssignemnt
 
 # Register your models here.
 
@@ -9,3 +9,4 @@ admin.site.register(EmpConfidentialDetails)
 admin.site.register(EmpDependents)
 admin.site.register(ForeignService)
 admin.site.register(EmpAppraisalForm)
+admin.site.register(WorkAssignemnt)

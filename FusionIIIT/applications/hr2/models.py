@@ -134,3 +134,12 @@ class EmpAppraisalForm(models.Model):
         upload_to='Hr2/appraisal_form', null=True, default=" ")
     def __str__(self):
         return self.extra_info.user.first_name
+
+class WorkAssignemnt(models.Model):
+    extra_info = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
+    start_date =  models.DateField(max_length=6, null=True,blank=True)
+    end_date =  models.DateField(max_length=6, null=True,blank=True)
+    job_title = models.CharField(max_length=50, default='')
+    orders_copy = models.FileField(blank=True,null=True)
+    
+
