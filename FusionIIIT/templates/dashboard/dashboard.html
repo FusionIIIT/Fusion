@@ -73,25 +73,45 @@ Dashboard
 
 
 
+        <div class="eight wide column">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Notifications</a>
+                <a class="item" data-tab="second">News</a>
+                <a class="item" data-tab="third">Announcements</a>
+            </div>
+            <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="textSegmentDiv">
 
+                    {% comment %}
+                    TODO: Loader required?
+                    <div class="ui active large text loader"
+                             id="loader">
+                        Loading ...
+                    </div>
+                    {% endcomment %}
 
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts %}
+                            {% include 'dashboard/alerts.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
 
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="second">
+                Work in Progress, coming soon!
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="third">
+                <div id="textSegmentDiv">
 
-    </div>
-    {% comment %}
-    The left-rail segment ends here!
-    {% endcomment %}
-
-
-
-    {% comment %}
-    The central-rail segment starts here!
-    {% endcomment %}
-
-    <div class="eight wide column">
-        <div class="ui top attached tabular large menu">
-            <a class="active item" data-tab="first">Notifications</a>
-            <a class="item" data-tab="second">News</a>
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts1 %}
+                            {% include 'dashboard/alerts1.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+            
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">

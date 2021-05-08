@@ -13,7 +13,7 @@ from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
-
+from notification.views import department_notif
 from .models import SpecialRequest, Announcements
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -158,6 +158,8 @@ def faculty_view(request):
         ann_date = date.today()
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
 
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)
         obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
                                     batch=batch,
                                     programme=programme,
@@ -165,7 +167,8 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-
+        department_notif(usrnm, recipients , message)
+    
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,

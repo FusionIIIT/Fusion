@@ -309,3 +309,17 @@ def AssistantshipClaim_notify(sender,recipient,message,month,year):
     module = 'Assistantship Request'
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=message)
 
+def department_notif(sender, recipient, type):
+    url='dep:dep'
+    module='department'
+    sender = sender
+    recipient = recipient
+    verb = type
+    flag = "department"
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                flag=flag)

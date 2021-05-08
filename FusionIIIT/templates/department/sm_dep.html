@@ -139,7 +139,7 @@
                                 {%if fac_list.sm_f%}
                                 {% for fcu in fac_list.sm_f %}
                                 <tr>
-                                    {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
+                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
                                     <td>{{ fcu.id }}</td>
                                     <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
                                     <!-- <td>{{ fcu.title }}</td> -->
@@ -192,7 +192,9 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
-                                        <td>{{ stu.upload_announcement }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                                 {% for stu in announcements.all %}
@@ -202,7 +204,9 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
-                                        <td>{{ stu.upload_announcement }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
 
