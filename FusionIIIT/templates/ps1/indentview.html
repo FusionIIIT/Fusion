@@ -21,7 +21,7 @@
             <th>Subject</th>
             <th>Date</th>
             <th>View Indent</th>
-            <th>Delete Indent</th>
+            <th>Indent Status</th>
         </tr>
         </thead>
         <tbody>
@@ -36,15 +36,15 @@
                               View
                     </button></a></td>
                  {% if indent.head_approval == False or indent.director_approval == False or indent.financial_approval == False %}
-                 <td> <button class="ui yellow button">
+                 <td> <button class="ui red button">
                      Pending
                  </button></td>
                  {% elif indent.head_approval == True and indent.director_approval == True and indent.financial_approval == True and indent.purchased == False %}
-                 <td> <button class="ui green button">
+                 <td> <button class="ui yellow button">
                      Approved
                  </button></td>
                  {% elif indent.head_approval == True and indent.director_approval == True and indent.financial_approval == True and indent.purchased == True %}
-                 <td> <button class="ui black basic button">
+                 <td> <button class="ui green button">
                      Purchased
                  </button></td>
                  {% endif %}
