@@ -276,6 +276,7 @@ def indentview(request,id):
     context = {
 
         'draft': draft,
+        'indents' : draft_indent,
         'extrainfo': extrainfo,
         'designations': designations,
     }
@@ -471,23 +472,49 @@ def forwardindent(request, id):
 
                 check=str(request.user)
                 val=str(request.POST.get('approval'))
+                
+                
+                # if val=="accept":
+                #     print("correct")
+                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                #         indent.head_approval=True
+                #     elif check=="director":
+                #         indent.director_approval=True
+                #     elif check=="rizwan":
+                #         indent.financial_approval=True
+                
+                # else:
+                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                #         indent.head_approval=False
+                #     elif check=="director":
+                #         indent.director_approval=False
+                #     elif check=="rizwan":
+                #         indent.financial_approval=False
+
+                
+                designs =[] 
+                designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+                for designation in designations :
+                    s = str(designation).split(" - ")
+                    designs.append(s[1]) 
+
 
                 if val=="accept":
                     print("correct")
-                    if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=True
-                    elif check=="director":
+                    elif "director" in designs:
                         indent.director_approval=True
-                    elif check=="rizwan":
+                    elif "asst. registrar fa" in designs:
                         indent.financial_approval=True
                 
                 else:
-                    if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
-                        indent.head_approval=False
-                    elif check=="director":
-                        indent.director_approval=False
-                    elif check=="rizwan":
-                        indent.financial_approval=False
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
+                        indent.head_approval=True
+                    elif "director" in designs:
+                        indent.director_approval=True
+                    elif "asst. registrar fa" in designs:
+                        indent.financial_approval=True
                     
 
                 indent.save()
