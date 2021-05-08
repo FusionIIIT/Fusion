@@ -74,6 +74,7 @@ class Constants:
     PROJECT_TYPE = (
         ('SRes', 'Sponsored Research'),
         ('Consultancy', 'Consultancy'),
+        ('fig', 'Faculty Initiation Grant'),
         ('Testing', 'Testing')
     )
 

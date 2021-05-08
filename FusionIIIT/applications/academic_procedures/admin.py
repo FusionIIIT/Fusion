@@ -7,6 +7,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations,
                      SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,
                      AssistantshipClaim, CourseRequested,course_registration, InitialRegistration, FinalRegistration, StudentRegistrationChecks, FeePayments)
 
+                     SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim)
 
 class RegisterAdmin(admin.ModelAdmin):
     model = Register
@@ -20,6 +21,7 @@ class InitialRegistrationsAdmin(admin.ModelAdmin):
 class StudentRegistrationCheckAdmin(admin.ModelAdmin):
     model = StudentRegistrationCheck
     raw_id_fields = ("student_id",)
+
 
 admin.site.register(Thesis)
 admin.site.register(Register,RegisterAdmin)
@@ -38,6 +40,7 @@ admin.site.register(Dues)
 admin.site.register(AssistantshipClaim)
 admin.site.register(PhDProgressExamination)
 admin.site.register(MTechGraduateSeminarReport)
+<<<<<<< HEAD
 admin.site.register(CourseRequested)
 admin.site.register(course_registration)
 admin.site.register(InitialRegistration)
@@ -45,3 +48,5 @@ admin.site.register(StudentRegistrationChecks)
 admin.site.register(FinalRegistration)
 admin.site.register(FeePayments)
 
+=======
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe

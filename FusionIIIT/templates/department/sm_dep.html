@@ -139,7 +139,11 @@
                                 {%if fac_list.sm_f%}
                                 {% for fcu in fac_list.sm_f %}
                                 <tr>
+<<<<<<< HEAD
                                     {% with "/eis/profile/"|add:fcu.user.username as link %}
+=======
+                                    {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                                     <td>{{ fcu.id }}</td>
                                     <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
                                     <!-- <td>{{ fcu.title }}</td> -->
@@ -192,9 +196,13 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
+<<<<<<< HEAD
                                         {% if stu.upload_announcement %}
                                             <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
                                         {% endif %}
+=======
+                                        <td>{{ stu.upload_announcement }}</td>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                                     </tr>
                                 {% endfor %}
                                 {% for stu in announcements.all %}
@@ -204,9 +212,13 @@
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
+<<<<<<< HEAD
                                         {% if stu.upload_announcement %}
                                             <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
                                         {% endif %}
+=======
+                                        <td>{{ stu.upload_announcement }}</td>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                                     </tr>
                                 {% endfor %}
 
@@ -373,4 +385,8 @@
         </div>
     </div>
 
+<<<<<<< HEAD
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe

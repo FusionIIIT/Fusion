@@ -1,0 +1,167 @@
+{% block applyform %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+
+        <a class="active item" data-tab="PhDProgressExamination">
+            PhD Progress Examination
+        </a>
+    </div>
+    <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
+    <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
+    
+    
+
+    
+
+    <div class="ui active tab" data-tab="PhDProgressExamination">
+        <div class="ui vertical segment">
+            <form method="post" id="new_phdprogressexamination" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class ="field">
+                        <div class="field">
+                            <label> Theme of Doctoral Work</label>
+                            <input type="text" name="theme_of_work">
+                        </div>
+                    </div>
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Date and Time</label>
+                            <input type="datetime-local" name="date" required>
+                        </div>
+                        <div class="field" >
+                            <label>Place</label>
+                            <input name="place" type="text" required/>
+                        </div>
+                    </div>
+                               
+                    <div class="field">
+                        <label>Work done till last Semester</label>
+                        <textarea rows="2" name="workdone" required /></textarea>
+                    </div>
+                        
+                    <div class="field">
+                        <label>Specific contribution in current Semester</label>
+                        <textarea rows="2" name="specificcontri" required /></textarea>
+                    </div>  
+
+                    <div class="field">
+                        <label>Future Plan</label>
+                        <textarea rows="2" name="futureplan" required /></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Attachments (if any)</label>
+                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file" name="Attachments" accept=".pdf" required></input>
+                        <span id="lblError" style="color: red;"></span>
+                    </div>
+                        
+                    
+                    <div class=" field">
+                        <label>Number of paper submitted</label>
+                        <input type="number"  name="papersubmitted" value="0" required/>    
+                    </div>
+                    <div class="field">
+                            <label>Number of paper published/accepted in conference proceedings</label>
+                            <input type="number" name=" paperaccepted" value="0" required/>                    
+                    </div>
+    
+                    <div class="field">
+                            <label>Number of paper presented in conferences/meetings/workshops</label>
+                            <input type="number" name="paperpresented" value="0" required>
+                    </div>      
+                     <div class="field">
+                        <button  class="ui primary button right floated" type="submit" onclick="validatePhD('new_phdprogressexamination',event)">
+                            Submit
+                        </button>
+                    </div>       
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+    
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    
+    
+
+
+    
+
+    
+    function ValidateExtension() {
+        var allowedFiles = [".doc", ".docx", ".pdf"];
+        var fileUpload = document.getElementById("fileUpload");
+        var lblError = document.getElementById("lblError");
+        var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+        if (!regex.test(fileUpload.value.toLowerCase())) {
+            lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+            return false;
+        }
+        lblError.innerHTML = "";
+        return true;
+    }
+    
+    
+    function validatePhD(form,event){
+        event.preventDefault();
+        var form=document.getElementById(form);
+        var i;
+        var message= "";
+        for(i=0;i<form.length-3; i++)
+            if(form.elements[i].name != "" && form.elements[i].value==="")
+                {
+                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+                }  
+        
+        var ret1 = 0 ;
+        if (message != ""){
+                ret1 = 1 ;
+                $("#errorContent").html(message);
+                $(".formErrors").modal("show") ;
+        }
+        
+        if(ret1 == 0)
+            {
+                var formData = new FormData(form);
+                console.log(formData);
+                form.reset();
+                $.ajax({
+                    url: '/academic-procedures/PHDPE/',
+                    data: formData,
+                    enctype: "multipart/form-data",
+                    type: 'POST',
+                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                    processData: false, // NEEDED, DON'T OMIT THIS
+                    // ... Other options like success and etc
+                    success: function(response) {
+                        response = JSON.parse(response);
+                        console.log(response);
+                        console.log("here") ;
+                        // $("#modalHeader").html(response.status);
+                        if (response.status == "success"){
+                            $(".succ").modal("show");
+                        }
+                        else
+                        {
+                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
+                            $(".formErrors").modal('show');
+                        }
+                        form.reset();
+                    }
+                });
+            }
+
+
+    }
+</script> 
+
+{% endblock %}

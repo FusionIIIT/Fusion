@@ -135,6 +135,7 @@ table{
 <div class="ui active tab segment" data-tab="btech2017">
     <div id="p1" class="ui vertical segment">
         {% if dues %}
+<<<<<<< HEAD
             {% for obj in dues %}
             {% if obj.student_id.batch == 2017 %}
                     <div  class="dues" id_b="btech2017{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj.student_id}}</div>
@@ -214,6 +215,57 @@ table{
             </div>
         </form>
         </div>
+=======
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 2017 %}
+                    <div  class="dues" id_b="btech2017{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="btech2017{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="dueprevious" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         {% else %}
        <h3>no requests</h3>
        {% endif %}
@@ -221,6 +273,7 @@ table{
     </div>
 </div>
 {% endblock %}
+<<<<<<< HEAD
 <div class="ui basic modal succ">
     <div class="ui icon header">
       <i class="bell icon"></i>
@@ -284,6 +337,14 @@ table{
 
 // }
 
+=======
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 
 $(function() {
     
@@ -292,13 +353,17 @@ $(function() {
         id = $(this).attr("id_b");
         $("#"+id).show();
         $(".dues").hide();
+<<<<<<< HEAD
         $(".dform_class").show();
+=======
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         obj_id = $(this).attr("id_dobject");
         
     });
     $(".dueprevious").click(function(){
         $("#"+id).hide();
         $(".dues").show();
+<<<<<<< HEAD
         $(".dform_class").hide();
     });
 
@@ -343,6 +408,13 @@ $(function() {
 
   });
 
+=======
+    });
+
+
+    
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 });
 
 

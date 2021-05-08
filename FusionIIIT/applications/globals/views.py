@@ -693,14 +693,14 @@ def dashboard(request):
     # students_2016 = Student.objects.filter(batch = 2016)
     # students_2015 = Student.objects.filter(batch = 2015)
     # students_2019 = Student.objects.filter(batch = 2019)
-    # students_2018 = Student.objects.filter(batch = 2018) 
-    # data = {'cse': cse_faculty, 
-    #         'ece': ece_faculty, 
-    #         'me': me_faculty, 
-    #         'des': des_faculty, 
+    # students_2018 = Student.objects.filter(batch = 2018)
+    # data = {'cse': cse_faculty,
+    #         'ece': ece_faculty,
+    #         'me': me_faculty,
+    #         'des': des_faculty,
     #         'ns': ns_faculty,
     #         'students_2019': students_2019,
-    #         'students_2018': students_2018, 
+    #         'students_2018': students_2018,
     #         'students_2017': students_2017,
     #         'students_2016': students_2016,
     #         'students_2015': students_2015}
@@ -709,6 +709,12 @@ def dashboard(request):
     name = request.user.first_name +"_"+ request.user.last_name
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+
+    designation=[]
+    for i in design:
+        designation.append(str(i.designation))
+
     roll_ = []
     for i in b :
         name_ = get_object_or_404(Designation, id = i)
@@ -721,6 +727,7 @@ def dashboard(request):
         'notifications':notifs,
         'Curr_desig' : roll_,
         'club_details' : coordinator_club(request),
+<<<<<<< HEAD
         
     }
     
@@ -728,12 +735,25 @@ def dashboard(request):
    
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
+=======
+        'designation' : designation,
+        
+    }
+    # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
+    if(request.user.get_username() == 'director'):
+        return render(request, "dashboard/director_dashboard2.html", {})
+    elif( "dean_rspc" in designation):
+        return render(request, "dashboard/dashboard.html", context)
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     elif user.extrainfo.user_type != 'student':
         designat = HoldsDesignation.objects.select_related().get(user=user)
         response = {'designat':designat}
         context.update(response)
         return render(request, "dashboard/dashboard.html", context)
+<<<<<<< HEAD
 
+=======
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     else:
         return render(request, "dashboard/dashboard.html", context)
 
@@ -752,6 +772,7 @@ def profile(request, username=None):
             displays the profile of currently logged-in user
     """
     user = get_object_or_404(User, Q(username=username)) if username else request.user
+
 
     editable = request.user == user
     profile = get_object_or_404(ExtraInfo, Q(user=user))

@@ -1,10 +1,15 @@
 {% block applyform %}
+<<<<<<< HEAD
+=======
+{% load static %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     {% comment %}The tab menu starts here!{% endcomment %}
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="assistantship">
             Assistantship Claim Form
         </a>
+<<<<<<< HEAD
 
         <a class="item" data-tab="MTechGraduateSeminarReport">
             MTech Graduate Seminar Report
@@ -16,6 +21,13 @@
     </div>
     <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
     <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
+=======
+        <a class="item" data-tab="status">
+           Status
+        </a>
+
+    </div>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     
     <div class="ui active tab" data-tab="assistantship">
         <div class="ui vertical segment">
@@ -118,6 +130,7 @@
         <div class="extra content"></div>
     </div>
 
+<<<<<<< HEAD
     <div class="ui tab" data-tab="MTechGraduateSeminarReport">
         <div class="ui vertical segment">
             <form method="post" id="new_mtechseminarreport" enctype="multipart/form-data">
@@ -272,6 +285,73 @@
         <br>
         <div class="extra content"></div>
     </div>
+=======
+    <div class="ui tab" data-tab="status" >
+        <table class="ui celled table"
+        style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                width: 100%">
+            <thead>
+                <tr style="border-radius: 3px;">
+                    <th rowspan="2">#</th>
+                    <th rowspan="2">Month</th>
+                    <th rowspan="2">Year</th>
+                    <th rowspan="2">TA Supervisor</th>
+                    <th rowspan="2">Thesis Supervisor</th>
+                    <th rowspan="2">Academic department</th>
+                    <th rowspan="2">Account department</th>
+            
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in assistantship_list %}
+             <tr >                
+                <td>{{forloop.counter}}.</td>
+                <td>{{obj.month}}</td>
+                <td>{{ obj.year }}</td>
+                <td>
+                    {% if obj.ta_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.ta_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.thesis_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.thesis_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.ta_supervisor_remark == False or obj.thesis_supervisor_remark == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.acad_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.acad_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.acad_approval == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.account_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.account_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+             </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    
+    </div>
+
+    
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     
 {% endblock %}
 
@@ -401,6 +481,7 @@
         
         }
     
+<<<<<<< HEAD
     function validateMtech(form,event){
         event.preventDefault();
         var form=document.getElementById(form);
@@ -506,3 +587,9 @@
 </script> 
 
 {% endblock %}
+=======
+    
+</script> 
+
+{% endblock %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe

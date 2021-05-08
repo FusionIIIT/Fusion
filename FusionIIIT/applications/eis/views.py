@@ -321,7 +321,7 @@ def profile(request, username=None):
     for i in a1:
         if(str(i.designation)=='Dean (RSPC)'):
             flag_rspc = 1
-    
+
     # done edit
 
     #design = HoldsDesignation.objects.filter(working=user)
@@ -383,15 +383,16 @@ def profile(request, username=None):
     return render(request, 'eisModulenew/profile.html', context)
 
 # Dean RSPC Profile
+
 def rspc_profile(request):
-    user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    user = get_object_or_404(faculty_about, user=request.user)
+    pf = user.user
 
     form = ConfrenceForm()
 
     journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
     conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
-    books = emp_published_books.objects.all().order_by('-pyear', '-a_month')
+    books = emp_published_books.objects.all().order_by('-pyear', '-authors')
     projects = emp_research_projects.objects.all().order_by('-start_date')
     consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
     patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
@@ -414,7 +415,7 @@ def rspc_profile(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
-    
+
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -465,7 +466,7 @@ def persinfo(request):
             return JsonResponse({'x' : 'Your data is updated '})
         except:
             return JsonResponse({'x' : 'You are not authorized to update '})
-    
+
 
 
 
@@ -487,7 +488,6 @@ def emp_consymDelete(request, pk, sr, mark):
     url = ""
     if mark== '13':
         url = '/profile/?page13='+str(page)
-    
     instance.delete()
     return redirect(url)
 
@@ -506,7 +506,6 @@ def emp_event_organizedDelete(request, pk, sr, mark):
     url = ""
     if mark== '12':
         url = '/profile/?page12='+str(page)
-    
     instance.delete()
     return redirect(url)
 
@@ -527,7 +526,7 @@ def emp_mtechphd_thesisDelete(request, pk, sr,mark):
     url = ""
     if mark == 1:
         url = '/profile/?page8='+str(page)
-    else : 
+    else :
         url = '/profile/?page9='+str(page)
     instance.delete()
     return redirect(url)
@@ -685,7 +684,7 @@ def ivisit_insert(request):
     return redirect('/profile/?page11=1')
 
 
-#Function to save journal of employee 
+#Function to save journal of employee
 def journal_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     eis = emp_research_papers.objects.create(pf_no = user.id)
@@ -774,7 +773,7 @@ def editjournal(request):
     volume_no = request.POST.get('volume')
     eis.page_no = request.POST.get('page')
     eis.year = request.POST.get('year')
-    
+
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
         x = request.POST.get('doi')
 
@@ -843,7 +842,6 @@ def editforeignvisit(request):
     x = request.POST.get('start_date')
     if x[:5] == "Sept." :
             x = "Sep." + x[5:]
-    
     try:
         eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
@@ -905,7 +903,6 @@ def conference_insert(request):
         eis.paper=uploaded_file_url
     except:
         logging.warning('Journal file not Uploaded')
-    
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
     if request.POST.get('page_no3') != '':
@@ -957,7 +954,7 @@ def conference_insert(request):
                 x, "%b. %d, %Y")
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
         x = request.POST.get('dos3')
-        
+
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
@@ -986,9 +983,9 @@ def editconference(request):
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
     isbn  = request.POST.get('isbn_no3')
-    
+
     eis.page_no = request.POST.get('page_no3')
-    
+
     eis.year = request.POST.get('year3')
     eis.status = request.POST.get('status3')
     if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
@@ -1171,7 +1168,7 @@ def event_insert(request):
 
 def editevent(request):
     eis = emp_event_organized.objects.get(pk=request.POST.get('eventpk'))
-    
+
     eis.type = request.POST.get('event_type')
     if(eis.type == 'Any Other'):
         if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
@@ -1242,7 +1239,7 @@ def talk_insert(request):
         eis.l_date = datetime.datetime.strptime(x, "%b. %d, %Y")
 
     eis.save()
-    return redirect('/profile/?page15=1')   
+    return redirect('/profile/?page15=1')
 
 def chaired_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1439,7 +1436,6 @@ def achievements(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 achieve.append(e)
             emp_achievement.objects.bulk_create(achieve)
             return HttpResponseRedirect('DONE')
@@ -1498,7 +1494,6 @@ def confrence(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 confr.append(e)
             emp_confrence_organised.objects.bulk_create(confr)
             return HttpResponseRedirect('DONE')
@@ -1557,7 +1552,6 @@ def consultancy(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 consult.append(e)
             emp_consultancy_projects.objects.bulk_create(consult)
             return HttpResponseRedirect('DONE')
@@ -1613,7 +1607,6 @@ def event(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 organize.append(e)
             emp_event_organized.objects.bulk_create(organize)
             return HttpResponseRedirect('DONE')
@@ -1658,7 +1651,6 @@ def lectures(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 expert.append(e)
             emp_expert_lectures.objects.bulk_create(expert)
             return HttpResponseRedirect('DONE')
@@ -1716,7 +1708,6 @@ def keynote(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 address.append(e)
             emp_keynote_address.objects.bulk_create(address)
             return HttpResponseRedirect('DONE')
@@ -1757,7 +1748,6 @@ def thesis(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 mtech_phd_thesis.append(e)
             emp_mtechphd_thesis.objects.bulk_create(mtech_phd_thesis)
             return HttpResponseRedirect('DONE')
@@ -1802,7 +1792,6 @@ def patents(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 patent.append(e)
             emp_patents.objects.bulk_create(patent)
             return HttpResponseRedirect('DONE')
@@ -1849,7 +1838,6 @@ def published_books(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                
                 pub_books.append(e)
             emp_published_books.objects.bulk_create(pub_books)
             return HttpResponseRedirect('DONE')
@@ -1917,7 +1905,6 @@ def papers(request):
 
                 except:
                     a=1
-                
 
                 try:
                     if (row['date_acceptance'] == ' ' or row['date_acceptance'] == ''):
@@ -1956,7 +1943,6 @@ def papers(request):
                     a=1
                 a = e.start_date
                 b = e.end_date
-                
                 research_papers.append(e)
             emp_research_papers.objects.bulk_create(research_papers)
             return HttpResponseRedirect('DONE')
@@ -2027,7 +2013,6 @@ def projects(request):
                 except:
                     a=1
 
-                
                 research_projects.append(e)
             emp_research_projects.objects.bulk_create(research_projects)
             return HttpResponseRedirect('DONE')
@@ -2091,7 +2076,6 @@ def visits(request):
                 except:
                     a=1
 
-                
                 visit.append(e)
             emp_visits.objects.bulk_create(visit)
             return HttpResponseRedirect('DONE')
@@ -2145,7 +2129,6 @@ def upload_file(request):
                 except:
                     a=1
 
-                
                 session.append(e)
             emp_session_chair.objects.bulk_create(session)
             return HttpResponseRedirect('DONE')
@@ -2972,7 +2955,7 @@ def rspc_generate_report(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
-    
+
     desig=[]
     for i in design:
         desig.append(str(i.designation))

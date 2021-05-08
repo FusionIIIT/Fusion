@@ -21,6 +21,7 @@ Dashboard
 
 {% comment %}The grid starts here!{% endcomment %}
 <div class="ui stackable doubling grid">
+<<<<<<< HEAD
 
     {% comment %}The left-margin segment!{% endcomment %}
     <div class="column"></div>
@@ -55,6 +56,54 @@ Dashboard
         {% comment %}The Tab-Menu starts here!{% endcomment %}
 
 
+=======
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="{% url 'globals:profile' %}">
+                View Profile
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% if "dean_rspc" in designation %}
+            <a class="item" href = "../office/officeOfDeanRSPC">
+               Project Requests
+               <i class="right floated chevron right icon"></i>
+           </a>
+            {% endif %}
+       {% if "dean_rspc" in designation %}
+            <a class="item" href = "../eis/rspc_profile">
+               RSPC Profile
+               <i class="right floated chevron right icon"></i>
+           </a>
+       {% endif %}
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+
+
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         {% if request.user.extrainfo.user_type == 'faculty' %}
         {% if 'hradmin' == designat.designation.name %}
 
@@ -73,6 +122,7 @@ Dashboard
 
 
 
+<<<<<<< HEAD
         <div class="eight wide column">
             <div class="ui top attached tabular large menu">
                 <a class="active item" data-tab="first">Notifications</a>
@@ -112,6 +162,27 @@ Dashboard
                 </div>
             </div>
             
+=======
+
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <a class="active item" data-tab="first">Notifications</a>
+            <a class="item" data-tab="second">News</a>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">
@@ -186,7 +257,10 @@ Dashboard
         $("#replacement-card").toggle();
         setTimeout(loader, 1750);
     });
+<<<<<<< HEAD
 
+=======
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     function loader() {
         $("#textLoader").toggle();
         $("#replacement-card").toggle();

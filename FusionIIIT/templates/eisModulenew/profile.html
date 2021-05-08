@@ -121,6 +121,19 @@ Profile
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
+<<<<<<< HEAD
+=======
+
+            {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                     <a class="item" data-tab="tenth">
+                        My Projects
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+            {% endif %}
+
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 
 
 
@@ -128,9 +141,12 @@ Profile
 
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
             <!--{% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
                     HOD_TAB
@@ -146,6 +162,7 @@ Profile
     The left-rail segment ends here!
     {% endcomment %}
 
+<<<<<<< HEAD
 
 
     {% comment %}
@@ -154,6 +171,16 @@ Profile
     <div class="eight wide column">
         {% comment %}The Details start here!{% endcomment %}
 
+=======
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+    <div class="eight wide column">
+        {% comment %}The Details start here!{% endcomment %}
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark9 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 and mark14 != 1 and mark15 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}"
             data-tab="first">
 
@@ -218,6 +245,26 @@ Profile
             {% endblock %}
         </div>
         {% comment %}The visits ends here!{% endcomment %}
+<<<<<<< HEAD
+
+        {% comment %}The conference starts here!{% endcomment %}
+        <div class="{% if mark13 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seventh">
+            {% block conference %}
+            {% include 'eisModulenew/conference.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The conference ends here!{% endcomment %}
+
+        {% comment %}The others starts here!{% endcomment %}
+        <div class="{% if mark14 == 1 or mark15 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}"
+            data-tab="eigth">
+
+            {% block others %}
+            {% include 'eisModulenew/others.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The others ends here!{% endcomment %}
+=======
 
         {% comment %}The conference starts here!{% endcomment %}
         <div class="{% if mark13 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seventh">
@@ -249,6 +296,41 @@ Profile
             {% endblock %}
             <!-- </div> -->
         </div>
+        <div class="ui tab segment" data-tab="tenth">
+
+            {% block my_projects %}
+                {% include 'eisModulenew/my_projects.html' %}
+            {% endblock %}
+        </div>
+
+
+
+
+        {% comment %}The servicebook starts here!{% endcomment %}
+        <div class="{% if mark26 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="ttenth">
+            {% block service %}
+            {% include 'hr2Module/service_main.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The others ends here!{% endcomment %}
+
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
+
+
+
+
+
+<<<<<<< HEAD
+        {% comment %}The Project management form starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="ninth">
+            <!-- <div class="ui active tab segment" data-tab="first"> -->
+            {% block form1 %}
+            {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
+            {% endblock %}
+            <!-- </div> -->
+        </div>
 
 
 
@@ -271,6 +353,11 @@ Profile
 
 
 
+=======
+
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         <!-- <div class="ui tab segment" data-tab="ten">
                 
                 {% block form2 %}
@@ -307,10 +394,17 @@ Profile
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             {% if request.user == user %}
+<<<<<<< HEAD
             <center>
                 <div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">
                     Generate Report <i class="dropdown icon"></i></div>
             </center>
+=======
+            <!-- <center>
+                <div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">
+                    Generate Report <i class="dropdown icon"></i></div>
+            </center> -->
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
             <div class="row" style="display: none;" id="report_tab">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
@@ -1042,11 +1136,19 @@ Profile
             if ($('.modulesContent').is(':visible')) {
                 $('#toggleIcon').removeClass("chevron down");
                 $('#toggleIcon').addClass("chevron up");
+<<<<<<< HEAD
             }
             else if (!$('.modulesContent').is(':visible')) {
                 $('#toggleIcon').removeClass("chevron up");
                 $('#toggleIcon').addClass("chevron down");
             }
+=======
+            }
+            else if (!$('.modulesContent').is(':visible')) {
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
         }
 
 

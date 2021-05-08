@@ -23,6 +23,11 @@
 {% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 <div class="ui top attached tabular large menu">
     <a class="item active" data-tab="afirst">UG: Under Graduate</a>
     <a class="item" data-tab="asecond">PG: Post Graduate</a>
@@ -32,6 +37,7 @@
 
 <div class="ui bottom attached tab segment active" data-tab="afirst">
     <div class="content">
+<<<<<<< HEAD
             <div class="description">
                 <table class="ui very basic celled large sortable table"
                     style="text-align: center;
@@ -44,6 +50,17 @@
                         <tr style="text-align: center;">
                             <th colspan="2">Programme</th>
                             <th colspan="2">Discipline</th>
+=======
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                         </tr>
                     </thead>
                     <tbody>
@@ -51,7 +68,11 @@
                         <tr>
                             <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
                             <td colspan="2">
+<<<<<<< HEAD
                             {% for discipline in programme.disciplines %}
+=======
+                            {% for discipline in programme.get_discipline_objects %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                                 <p>{{ discipline.name }}</p>
                             {% endfor %}
                             </td>
@@ -69,6 +90,7 @@
 
 <div class="ui bottom attached tab segment" data-tab="asecond">
     <div class="content">
+<<<<<<< HEAD
             <div class="description">
                 <table class="ui very basic celled large sortable table"
                     style="text-align: center;
@@ -81,6 +103,17 @@
                         <tr style="text-align: center;">
                             <th colspan="2">Programme</th>
                             <th colspan="2">Discipline</th>
+=======
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                         </tr>
                     </thead>
                     <tbody>
@@ -88,7 +121,11 @@
                         <tr>
                             <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
                             <td colspan="2">
+<<<<<<< HEAD
                             {% for discipline in programme.disciplines %}
+=======
+                            {% for discipline in programme.get_discipline_objects %}
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                                 <p>{{ discipline.name }}</p>
                             {% endfor %}
                             </td>
@@ -107,6 +144,7 @@
 
 <div class="ui bottom attached tab segment" data-tab="athrid">
     <div class="content">
+<<<<<<< HEAD
             <div class="description">
                 <table class="ui very basic celled large sortable table"
                     style="text-align: center;
@@ -119,6 +157,17 @@
                         <tr style="text-align: center;">
                             <th colspan="2">Programme</th>
                             <th colspan="2">Discipline</th>
+=======
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                         </tr>
                     </thead>
                     <tbody>
@@ -126,10 +175,18 @@
                         <tr>
                             <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
                             <td colspan="2">
+<<<<<<< HEAD
                             {% for discipline in programme.disciplines %}
                                 <p>{{ discipline.name }}</p>
                             {% endfor %}
                             </td>
+=======
+                            {% for discipline in programme.get_discipline_objects %}
+                                <p>{{ discipline.name }}</p>
+                            {% endfor %}
+                            </td>
+                            
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
                         </tr>
                         {% empty %}
                             <tr><td colspan="5">No Programmes Avaliable</td></tr>
@@ -139,4 +196,8 @@
             </div>
     </div>
 </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 {% endblock %}

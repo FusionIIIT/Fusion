@@ -121,6 +121,10 @@ INSTALLED_APPS = [
     'applications.finance_accounts',
     'applications.health_center',
     'applications.online_cms',
+<<<<<<< HEAD
+=======
+    'applications.ps1',
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     'applications.programme_curriculum',
     'applications.placement_cell',
     'applications.recruitment',
@@ -134,6 +138,10 @@ INSTALLED_APPS = [
     'applications.hostel_management',
     'applications.hr2',
     'applications.department',
+<<<<<<< HEAD
+=======
+    'applications.iwdModuleV2',
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

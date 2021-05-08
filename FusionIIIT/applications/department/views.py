@@ -13,7 +13,11 @@ from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
+<<<<<<< HEAD
 from notification.views import department_notif
+=======
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
 from .models import SpecialRequest, Announcements
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -167,11 +171,12 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
+<<<<<<< HEAD
         department_notif(usrnm, recipients , message)
     
-    context = browse_announcements()
+
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
-                                                            "announcements":context,
                                                             "request_to":requests_received
                                                         })
 
@@ -523,4 +528,8 @@ def deny(request):
         remark = request.POST.get('remark')
         SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
     request.method = ''
+<<<<<<< HEAD
     return redirect('/dep/facView/')
+=======
+    return redirect('/dep/facView/')
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe

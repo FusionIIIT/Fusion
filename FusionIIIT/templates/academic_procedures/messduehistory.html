@@ -1,0 +1,34 @@
+
+    <table class="ui celled table"
+    style="padding-left: 2.5%;
+            padding-right: 2.5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            width: 100%">
+        <thead>
+            <tr style="border-radius: 3px;">
+                <th rowspan="2">#</th>
+                <th rowspan="2">Month</th>
+                <th rowspan="2">Year</th>
+                <th rowspan="2">Description</th>
+                <th rowspan="2">Amount</th>
+                <th rowspan="2">Remaining amount</th>
+        
+            </tr>
+        </thead>
+        <tbody>
+        {% for obj in Mess_due %}
+         <tr >                
+            <td>{{forloop.counter}}.</td>
+            <td>{{obj.month}}</td>
+            <td>{{ obj.year }}</td>
+            <td>{{ obj.description }}</td>
+            <td>{{ obj.amount }}</td>
+            <td>{{ obj.remaining_amount }}</td>
+         </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div>
+        <h4>Note : Negative value in <u><strong>Remaining amount</strong></u> indicate net due which you have to pay </h4>
+    </div>

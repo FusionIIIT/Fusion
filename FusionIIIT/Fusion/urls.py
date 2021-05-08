@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^finance/', include('applications.finance_accounts.urls')),
+    url(r'^ps1/', include('applications.ps1.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
@@ -54,5 +55,9 @@ urlpatterns = [
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^hr2/', include('applications.hr2.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
+<<<<<<< HEAD
+=======
+    url(r'^iwdModuleV2/', include('applications.iwdModuleV2.urls')),
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
     url(r'^recruitment/', include('applications.recruitment.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

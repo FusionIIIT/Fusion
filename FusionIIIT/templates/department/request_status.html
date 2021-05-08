@@ -83,11 +83,15 @@
         });
         $('.deny').on('click', function(e){
             e.preventDefault();
+<<<<<<< HEAD
             var remark = prompt("Please add extra remark");
 
             if(remark == null || remark == ""){
                 remark = "Request Denied";
             }
+=======
+            var remark = "Request Denied";
+>>>>>>> d3826989aebf1c9252035dd068f1af3ff791d9fe
             var id = $(this).attr('data');
             $.ajax({
                 type: 'post',
