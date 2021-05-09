@@ -111,6 +111,7 @@ class CourseForm(ModelForm):
                 + cleaned_data.get("percent_quiz_2")
                 + cleaned_data.get("percent_endsem")
                 + cleaned_data.get("percent_project")
+                + cleaned_data.get("percent_lab_evaluation")
                 + cleaned_data.get("percent_course_attendance")
             )
 
@@ -121,6 +122,7 @@ class CourseForm(ModelForm):
             self.add_error('percent_quiz_2', msg)
             self.add_error('percent_endsem', msg)
             self.add_error('percent_project', msg)
+            self.add_error('percent_lab_evaluation', msg)
             self.add_error('percent_course_attendance', msg)
 
         return cleaned_data
@@ -149,6 +151,7 @@ class CourseForm(ModelForm):
             'percent_quiz_2' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_endsem' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
         }
         labels = {
@@ -170,6 +173,7 @@ class CourseForm(ModelForm):
             'percent_quiz_2' : 'percent_quiz_2',
             'percent_endsem' : 'percent_endsem',
             'percent_project' : 'percent_project',
+            'percent_lab_evaluation' : 'percent_lab_evaluation',
             'percent_course_attendance' : 'percent_course_attendance',
             'working_course' : 'working_course',
             'disciplines' : 'disciplines'

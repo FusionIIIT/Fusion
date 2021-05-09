@@ -119,9 +119,10 @@ class Course(models.Model):
     syllabus = models.TextField()
     percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
     percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
-    percent_quiz_2 = models.PositiveIntegerField(default=15, null=False, blank=False)
-    percent_endsem = models.PositiveIntegerField(default=35, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
     percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
     percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
     ref_books = models.TextField()
     working_course = models.BooleanField(default=True)
@@ -163,7 +164,7 @@ class CourseSlot(models.Model):
 
 
     def __str__(self):
-        return str(Semester.__str__(self.semester) + ", " + self.name + ", id = " + str(self.id))
+        return str(Semester.__str__(self.semester) + ", " + self.name)
 
     class Meta:
         unique_together = ('semester', 'name', 'type')

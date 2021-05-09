@@ -108,7 +108,6 @@ def get_context(request):
     # exam_t = Exam_timetable.objects.all()
 
     procedures_context = acad_proced_global_context()
-    print(1111111111111111111111111111111111111111111)
 
     try:
         examTtForm = ExamTimetableForm()
@@ -1105,7 +1104,7 @@ def add_new_profile (request):
             programme_name=request.POST['Programme']
             batch_year=request.POST['Batch']
 
-            batch = Batch.objects.all().filter(name = programme_name+" "+dept+" "+str(batch_year)).first()
+            batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
 
             user = User.objects.create_user(
                 username=roll_no,
