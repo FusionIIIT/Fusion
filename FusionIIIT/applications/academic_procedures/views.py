@@ -21,6 +21,9 @@ from django.utils import timezone
 from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
+                                                      
+from applications.central_mess.models import(Monthly_bill, Payments)
+
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
