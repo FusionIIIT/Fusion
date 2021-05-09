@@ -7,7 +7,7 @@
 
         <!-- Project Regiatration -->
         {% for pr in project %}
-        {% if "Dean (R&D)" in desig %}
+        {% if "dean_rspc" in desig %}
         {% if pr.DRSPC_response == "Pending" %}
         <div class="ui card">
             <div class="content">
@@ -44,7 +44,7 @@
 
 
         <!-- Project Extension -->
-        {% if "Dean (R&D)" in desig %}
+        {% if "dean_rspc" in desig %}
         {% for pr in project1 %}
          {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}
@@ -80,7 +80,7 @@
 
 
         <!-- Project Closure -->
-        {% if "Dean (R&D)" in desig %}
+        {% if "dean_rspc" in desig %}
         {% for pr in project2 %}
          {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}
@@ -116,7 +116,7 @@
 
 
         <!-- Project Reallocation -->
-        {% if "Dean (R&D)" in desig %}
+        {% if "dean_rspc" in desig %}
         {% for pr in project3 %}
          {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}

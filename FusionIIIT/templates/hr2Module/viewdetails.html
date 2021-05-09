@@ -892,235 +892,23 @@ Module
 
 
 
+                        <!-- work Assignment -->
 
                         <div class="ui one cards" style="padding: 2px;">
+
+
                             <div class="ui blue card" id="noti">
                                 <div class="content">
 
                                     <table class="ui orange table">
                                         <thead>
-                                            <th>Projects:-</th>
+                                            <th>workAssignemnt :-</th>
                                             <tr>
-                                                <td>Sr.</td>
-                                                <td>PI/CO-PI</td>
-                                                <td>Title of Paper</td>
-                                                <td>Funding Agency</td>
-                                                <td>Financila Outlay</td>
-                                                <td>Status</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-
-
-
-
-                                            {% if not empproject %}
-
-                                            <h1>No entry found</h1>
-                                            {% endif %}
-
-                                            {% for project in empproject %}
-                                            <tr>
-                                                <td>
-                                                    {{ forloop.counter }}.
-                                                </td>
-                                                <td><b>PI: </b>{{ project.pi }}/ <b>Co-PI: </b>{{ project.co_pi }}
-                                                </td>
-                                                <td>{{ project.title }}</td>
-                                                <td>{{ project.funding_agency }}
-
-                                                </td>
-
-                                                <td>{{ project.financial_outlay}}
-                                                </td>
-                                                <td>{{ project.status }}
-
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-
-
-
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- visits -->
-                        <div class="ui one cards" style="padding: 2px;">
-                            <div class="ui blue card" id="noti">
-                                <div class="content">
-
-                                    <table class="ui orange table">
-                                        <thead>
-                                            <th>Visits:-</th>
-                                            <tr>
-                                                <td>Sr.</td>
-                                                <td>Country</td>
-                                                <td>Place</td>
-                                                <td>From</td>
-                                                <td>To</td>
-                                                <td>Purpose</td>
-                                            </tr>
-
-                                        </thead>
-                                        <tbody>
-
-
-                                            {% if not visits %}
-
-                                            <h1>No entry found</h1>
-                                            {% endif %}
-
-                                            {% for f_visit in visits %}
-                                            <tr>
-                                                <td>{{ forloop.counter }}</td>
-                                                <td>
-                                                    <i class="{{ f_visit.country|lower }} flag"></i>
-                                                    {{ f_visit.country }}
-                                                </td>
-                                                <td>{{ f_visit.place }}</td>
-                                                <td>{{ f_visit.start_date }}</td>
-                                                <td>{{ f_visit.end_date }}</td>
-                                                <td>{{ f_visit.purpose }}</td>
-
-                                            </tr>
-                                            {% endfor %}
-
-
-
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- conference -->
-                        <div class="ui one cards" style="padding: 2px;">
-                            <div class="ui blue card" id="noti">
-                                <div class="content">
-
-                                    <table class="ui orange table">
-                                        <thead>
-                                            <th>Conference :-</th>
-                                            <tr>
-                                                <td>Sr.</td>
-                                                <td>Role</td>
-                                                <td>Conference Name</td>
-                                                <td>Venue</td>
-                                                <td>Start date</td>
-                                                <td>End Date</td>
-
-                                            </tr>
-
-                                        </thead>
-                                        <tbody>
-
-
-                                            {% if not conferences %}
-
-                                            <h1>No entry found</h1>
-                                            {% endif %}
-
-
-                                            {% for e in conferences %}
-                                            <tr>
-                                                <td>{{ forloop.counter }}</td>
-                                                <td>
-                                                    {% if e.role1 == "Organised" %}
-                                                    {{ e.role1 }} - {{ e.role2 }}
-                                                    {% else %}
-                                                    {{ e.role1 }}
-                                                    {% endif %}
-
-                                                </td>
-                                                <td>{{ e.name }}</td>
-                                                <td>{{ e.venue }}</td>
-                                                <td>{{ e.start_date }}</td>
-                                                <td>{{ e.end_date }}</td>
-
-                                            </tr>
-                                            {% endfor %}
-
-
-
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                        <div class="ui one cards" style="padding: 2px;">
-                            <div class="ui blue card" id="noti">
-                                <div class="content">
-
-                                    <table class="ui orange table">
-                                        <thead>
-                                            <th>Thesis supervision:-</th>
-                                            <tr>
-                                                <td>Sr.</td>
-                                                <td>Student</td>
-                                                <td>Title</td>
-                                                <td>Year</td>
-                                                <td>Supervisor</td>
-                                                <td>Action</td>
-                                            </tr>
-
-                                        </thead>
-                                        <tbody>
-
-
-                                            {% if not thesis %}
-
-                                            <h1>No entry found</h1>
-                                            {% endif %}
-
-                                            {% for mtech in thesis %}
-                                            <tr>
-                                                <td id="s{{ forloop.counter }}Z">
-                                                    {{forloop.counter }}.
-                                                </td>
-                                                <td id="s{{ forloop.counter }}A"><b>Name:
-                                                    </b>{{mtech.s_name}}<br /><b>Roll No.: </b>{{ mtech.rollno }}</td>
-                                                <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
-                                                <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}
-                                                </td>
-                                                <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
-
-                                            </tr>
-                                            {% endfor %}
-
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-
-                        <!-- Achievements -->
-                        <div class="ui one cards" style="padding: 2px;">
-                            <div class="ui blue card" id="noti">
-                                <div class="content">
-
-                                    <table class="ui orange table">
-                                        <thead>
-                                            <th>Achievement :-</th>
-                                            <tr>
-                                                <td>Sr.</td>
-                                                <td>Achievement</td>
-                                                <td>Title</td>
-                                                <td>Date</td>
-
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Orders Copy</th>
                                             </tr>
 
                                         </thead>
@@ -1128,42 +916,49 @@ Module
 
 
 
-                                            {% if not awards %}
 
+                                            {% if not workAssignment %}
                                             <h1>No entry found</h1>
-                                            {% endif %}
+                                            {% endif%}
 
-
-                                            {% for award in awards %}
+                                            {% for serviceBook in workAssignment %}
 
 
                                             <tr>
                                                 <td>
                                                     {{forloop.counter }}.
                                                 </td>
-                                                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
-                                                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
-                                                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{award.a_day }}
-                                                    / {% endif %}{% if award.a_month %}{{award.a_month }} / {% endif%}
-                                                    {% if award.a_year %}{{award.a_year }}
-                                                    {% endif %}</td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">
+
+                                                    <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                            class="large attach black icon"></i>
+                                                    </a>
+
+
+                                                </td>
 
                                             </tr>
-
                                             {% endfor %}
-
-
-
-
-
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
 
+
+
+
+
+
+
                         </div>
 
+
+
+                        <!-- workassignemnt end -->
 
 
 

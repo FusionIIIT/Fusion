@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
-
+from applications.globals.models import ExtraInfo
 
 class emp_visits(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
@@ -363,6 +363,7 @@ class emp_achievement(models.Model):
 
 
 class faculty_about(models.Model):
+    # id= models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     about = models.TextField(max_length=1000)
     doj = models.DateField(default=datetime.datetime.now)

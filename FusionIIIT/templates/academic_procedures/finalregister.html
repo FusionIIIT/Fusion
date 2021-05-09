@@ -2,76 +2,81 @@
 {% block finalregister %}
 
 <style type="text/css">
-    table#view_1{
-    border-style: hidden;
-    width: 100%;
+    table#view_1 {
+        border-style: hidden;
+        width: 100%;
     }
 </style>
 
 
 <center><b>Final Registration</b></center>
-    <div class="ui vertical segment">
-        {% if curr_sem.semester_no != 8 %}
-            {% if frd %}
-                {% if final_registration_flag == True %}
-                    <p style="color:red"><CENTER>  You have already registered for this semester!!! </CENTER></p>
-                    <center><a id="viewbtn1" class="btn" onclick="view1()" style="display: inline;">View Courses</a>
-                        
-                        <a id="hidebtn1" class="btn2" onclick="hide1()" >Hide courses</a>
-                        <a class="btn" id="change_reg" style="display: inline;">Change Courses</a>
-                    </center>
-                    <center>
-                    <table  id="view_1" style="display:none" class="ui very basic collapsing celled sortable table"
-                            style="padding-left: 2.5%;
+<div class="ui vertical segment">
+    {% if curr_sem.semester_no != 8 %}
+    {% if frd %}
+    {% if final_registration_flag == True %}
+    <p style="color:red">
+        <CENTER> You have already registered for this semester!!! </CENTER>
+    </p>
+    <center>
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
                                     padding-right: 2.5%;
                                     padding-top: 1%;
                                     padding-bottom: 1.5%;
                                     margin: auto;">
 
-                        <thead>
-                        <tr>
-                            <th style="width: 5%">#</th>
-                            <th style="width: 15%">Course ID</th>
-                            <th style="width: 30%">Course Name</th>
-                            <th style="width: 5%">Credits</th>
-                            <th style="width: 5%">Semester</th>
-                        </tr>
-                        </thead>
+            <thead>
+                <tr>
+                    <th style="width: 5%">#</th>
+                    <th style="width: 15%">Course ID</th>
+                    <th style="width: 30%">Course Name</th>
+                    <th style="width: 5%">Credits</th>
+                    <th style="width: 5%">Semester</th>
+                </tr>
+            </thead>
 
-                        <tbody>
-                            {% for items in final_registered_course %}
-                            <tr>
-                                <td style="width: 5%">{{forloop.counter}}.</td>
-                                <td style="width: 15%">{{ items.course_id.code }}
-                                </td>
-                                <td style="width: 30%">{{ items.course_id.name}}</td>
-                                <td style="width: 5%">{{items.course_id.credit}}</td>
-                                <td style="width: 5%">{{ next_sem.semester_no }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table></center><br>
-
-
-
+            <tbody>
+                {% for items in final_registered_course %}
+                <tr>
+                    <td style="width: 5%">{{forloop.counter}}.</td>
+                    <td style="width: 15%">{{ items.course_id.code }}
+                    </td>
+                    <td style="width: 30%">{{ items.course_id.name}}</td>
+                    <td style="width: 5%">{{items.course_id.credit}}</td>
+                    <td style="width: 5%">{{ next_sem.semester_no }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </center>
 
 
 
-                    <center></center>
-                    <div id="course_change_table" hidden>
-                    <form id='change_course' action='/academic-procedures/final_registration/'>
-                        {% csrf_token %}
-                    <table id="course_change_table"  class="ui very basic collapsing celled sortable table" 
-                            style ="padding-left: 2.5%;
-                                    padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
-                                    margin: auto;">
+
+
+
+
+
+
+
+    {% else %}
+    <center>
+        <a id="viewbtn1" class="btn" style="display: inline;">View Courses</a>
+        <a class="btn" id="change_reg" style="display: inline;">Change Courses</a>
+    </center>
+    <div id="view_1">
+        <form id='final_student_register' action='/academic-procedures/final_registration/'>
+            {% csrf_token %}
+            <div class="ui form" style="border: black">
+                <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        margin: auto;">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Course ID</th>
-                            <th>Course Name</th>
+                            <th>Slot name</th>
+                            <th>Slot type</th>
                             <th>Semester</th>
                             <th>Credits</th>
                             <th>Select</th>
@@ -79,51 +84,52 @@
                     </thead>
 
                     <tbody>
-                        
-                            {% for item in final_registration_choice %}
-                                {% for items in item %}
-                                <tr>
-                                    <td>{{forloop.counter}}.</td>
-                                    <td>{{ items.code }}
-                                    </td>
-                                    <td>{{ items.name}}
-                                    </td>
-                                    <td>{{next_sem.semester_no}}
-                                        <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
-                                    </td>
-                                    <td>{{ items.credit }}
-                                    </td>
-                                    <td><B>
-                                        <input class = "choice" name="choice[{{forloop.parentloop.counter}}]" type="radio" value="{{ items.id }}" data-valuetwo="{{items.credit}}" required>
-                                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
 
-                                        </B>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-                            
+                        <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
+                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                        {% for items in pre_registered_course %}
+                        <tr>
+                            <td>{{forloop.counter}}.</td>
+                            <td>{{ items.course_id.code }}
+                            </td>
+                            <td>{{ items.course_id.name }}
+                            </td>
+                            <td>{{ items.course_id.credit }}</td>
+                            <td>{{next_sem.semester_no}}</td>
+                            <input name="choice" value="{{ items.course_id.id }}" hidden="True">
+                            <input name="slot" value="{{ items.course_slot_id.id }}" hidden="True">
+                        </tr>
                         {% endfor %}
-                        </tbody>
-                    </table>
-                    <input type="text" name="type_reg" value="change_register" hidden="True">
+                    </tbody>
+                </table>
+                <input type="text" name="type_reg" value="register" hidden="True">
 
-                    <div class="ui divider"></div>
 
-                    <div class="extra content">
-                        <div class="" style="text-align: center;">
-                            <button class="ui primary button">Register</button>
-                        </div>
+                <div class="ui divider"></div>
+
+                <div class="two fields" style="width: 100%">
+                    <div class="field" style="width: 30%; margin-right: 5px">
+                        <select class="ui dropdown" name="mode" required="True">
+                            <option value="">Fee Payment Mode</option>
+                            {% for i in fee_payment_mode_list %}
+                            <option value="{{ i }}">{{i}}</option>
+                            {% endfor%}
+                        </select>
                     </div>
-                
-                    </form></div>
+                    <div class="field" style="width: 50%;margin-left: 5px">
+                        <input placeholder="challan NO. / transaction ID" name='transaction_id' type="text"
+                            required="True"> <br>
+                    </div>
+                </div>
+
+                <div class="extra content">
+                    <div class="" style="text-align: center;">
+                        <button class="ui primary button">Register</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 
 
 
@@ -135,109 +141,125 @@
 
 
 
-
-                {% else %}
-                        <form id='final_student_register' action='/academic-procedures/final_registration/'>
-                        {% csrf_token %}
-                        <div class="ui form" style="border: black" >
-                        <table class="ui very basic collapsing celled sortable table"
-                            style="padding-left: 2.5%;
-                                    padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
-                                    margin: auto;">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Course ID</th>
-                                <th>Course Name</th>
-                                <th>Credits</th>
-                                <th>Semester</th>
-                            </tr>
-                        </thead>
+    <div id="course_change_table" hidden>
+        <form id='change_course' action='/academic-procedures/final_registration/'>
+            {% csrf_token %}
+            <div class="ui form" style="border: black">
+                <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
+                <table id="course_change_table" class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Slot name</th>
+                            <th>Slot type</th>
+                            <th>Semester</th>
+                            <th>Credits</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
 
                     <tbody>
-                        
-                            {% for items in pre_registered_course %}
-                            <tr>
-                                <td>{{forloop.counter}}.</td>
-                                <td>{{ items.course_id.code }}
-                                </td>
-                                <td>{{ items.course_id.name }}
-                                </td>
-                                <td>{{ items.course_id.credit }}
-                                </td>
-                                <td>{{next_sem.semester_no}}
-                                    <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
-                                <input name="choice" type="checkbox" 
-                                            value="{{ items.course_id.id }}"
-                                            onclick="return false;" checked hidden="True">
-                                    <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                        </table>
-                        <input type="text" name="type_reg" value="register" hidden="True">
 
-
-                        <div class="ui divider"></div>
-
-                        <div class="two fields" style="width: 100%">
-                            <div class="field" style="width: 30%; margin-right: 5px">
-                                <select class="ui dropdown" name="mode" required="True">
-                                    <option value="">Fee Payment Mode</option>
-                                    {% for i in fee_payment_mode_list %}
-                                    <option value="{{ i }}">{{i}}</option>
-                                    {% endfor%}
+                        <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
+                        <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
+                        {% for item in final_registration_choice %}
+                        <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.id }}' hidden="True">
+                        <tr>
+                            <td>{{forloop.counter}}.</td>
+                            <td>{{item.name}}</td>
+                            <td>{{item.type}}</td>
+                            <td>{{next_sem.semester_no}}</td>
+                            <td>{{item.courses.all.0.credit}} </td>
+                            <td>
+                                {% if item.type == "Professional Core" %}
+                                <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
+                                    {% for items in item.courses.all %}
+                                    <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}"
+                                        selected>
+                                        {{items.code}}-{{ items.name }}</option>
+                                    {% endfor %}
                                 </select>
-                            </div>
-                            <div class="field" style="width: 70%;margin-left: 5px">
-                                <input placeholder="challan NO. / transaction ID" name='transaction_id'  type="text" required="True"> <br>
-                            </div>
-                        </div>
+                                {% else %}
+                                <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
+                                    <option value="0">Select course</option>
+                                    {% for items in item.courses.all %}
+                                    <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}">
+                                        {{items.code}}-{{ items.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                        {% endfor %}
+                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
 
-                        <div class="extra content">
-                            <div class="" style="text-align: center;">
-                                <button class="ui primary button">Register</button>
-                            </div>
-                        </div>
+                    </tbody>
+                </table>
+                <input type="text" name="type_reg" value="change_register" hidden="True">
+
+                <div class="ui divider"></div>
+
+                <div class="two fields" style="width: 100%">
+                    <div class="field" style="width: 30%; margin-right: 5px">
+                        <select class="ui dropdown" name="mode" required="True">
+                            <option value="">Fee Payment Mode</option>
+                            {% for i in fee_payment_mode_list %}
+                            <option value="{{ i }}">{{i}}</option>
+                            {% endfor%}
+                        </select>
                     </div>
-                        </form>
+                    <div class="field" style="width: 50%;margin-left: 5px">
+                        <input placeholder="challan NO. / transaction ID" name='transaction_id' type="text"
+                            required="True"> <br>
+                    </div>
+                </div>
 
-
-                        <form id='payment' action='/academic-procedures/final_registration/'>
-                            {% csrf_token %}
-
-
-
-                            <h3>Fee Payment</h3>
-                            
-
-                            <script    src="https://checkout.razorpay.com/v1/checkout.js"
-                                        data-key="rzp_test_p860XxWC2yFrgd"
-                                        data-amount="2500000"
-                                        data-currency="INR"
-                                        data-order_id="{{payment.id}}"
-                                        data-buttontext="Pay with Razorpay"
-                                        data-name="IIITDM Jabalpur"
-                                        data-description="Test transaction"
-                                        data-image="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRpWzPOB8s9WRX7JXZ96x1oPESu-eoN5YUFfDKcebTKFn7piPBS&usqp=CAU"
-                                        data-prefill.name="{{ name }}"
-                                        data-prefill.email="{{ email }}"
-                                        data-prefill.contact="{{ phone }}"
-                                        data-theme.color="#F37254"></script>
-                            <input type="hidden" custom="Hidden Element" name="hidden">
-                    
-                            </form>
-                {% endif %}
-            {% else %}
-                <CENTER><p style="color: red" >   Final Registration Date is yet to come </p></CENTER>
-            {% endif %}
-        {% else %}
-            <CENTER><p style="color: red" >   You are not Eligible for Registration !! </p></CENTER>     
-        {% endif %}           
+                <div class="extra content">
+                    <div class="" style="text-align: center;">
+                        <button class="ui primary button">Register</button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
+
+
+
+
+    <form id='payment' action='/academic-procedures/final_registration/'>
+        {% csrf_token %}
+
+
+
+        <h3>Fee Payment</h3>
+
+
+        <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_test_p860XxWC2yFrgd"
+            data-amount="2500000" data-currency="INR" data-order_id="{{payment.id}}" data-buttontext="Pay with Razorpay"
+            data-name="IIITDM Jabalpur" data-description="Test transaction"
+            data-image="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRpWzPOB8s9WRX7JXZ96x1oPESu-eoN5YUFfDKcebTKFn7piPBS&usqp=CAU"
+            data-prefill.name="{{ name }}" data-prefill.email="{{ email }}" data-prefill.contact="{{ phone }}"
+            data-theme.color="#F37254"></script>
+        <input type="hidden" custom="Hidden Element" name="hidden">
+
+    </form>
+    {% endif %}
+    {% else %}
+    <CENTER>
+        <p style="color: red"> Final Registration Date is yet to come </p>
+    </CENTER>
+    {% endif %}
+    {% else %}
+    <CENTER>
+        <p style="color: red"> You are not Eligible for Registration !! </p>
+    </CENTER>
+    {% endif %}
+</div>
 {% endblock %}
 
 
@@ -251,58 +273,66 @@
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
-$(function() {
-    $('#change_reg').on('click', function(e) {
-        document.getElementById('view_1').style="display:none";
-        $('#course_change_table').show();    
+    $(function () {
+        $('#change_reg').on('click', function (e) {
+            $('#view_1').hide();
+            $('#course_change_table').show();
+        });
+        $('#viewbtn1').on('click', function (e) {
+            $('#course_change_table').hide();
+            $('#view_1').show();
+        });
+        $("#final_student_register").submit(function (event) {
+
+            event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+            // if success:
+            posting.done(function (data) {
+                alert('Registration Successful');
+                window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function (data) {
+                alert('Registration Failed');
+                window.location = "/academic-procedures/main/";
+            });
+        });
+        $("#change_course").submit(function (event) {
+
+            var inp = document.getElementsByClassName("choices");
+            var count = 0;
+            for (var i = 0; i < inp.length; i++) {
+                if (inp[i].selected) {
+                    count = count + parseInt(inp[i].getAttribute("data-value2"));
+                }
+            }
+
+            event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+
+            var min = parseInt(document.getElementById("mincr").value);
+            if (count <= min) {
+                alert("You Can't Register as Minimum Credits: " + min);
+                window.location = "/academic-procedures/main/"
+            }
+            else {
+                // if success:
+                posting.done(function (data) {
+                    alert('Registration Successful');
+                    window.location = "/academic-procedures/main/";
+                });
+                // if failure
+                posting.fail(function (data) {
+                    alert('Registration Failed');
+                    window.location = "/academic-procedures/main/";
+                });
+            }
+            
+        });
     });
-    $("#final_student_register").submit(function(event) {
 
-        event.preventDefault();
-        var friendForm = $(this);
-
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        // if success:
-        posting.done(function(data) {
-            alert('Registration Successful');
-            window.location = "/academic-procedures/main/";
-        });
-        // if failure
-        posting.fail(function(data) {
-            alert('Registration Failed');
-            window.location = "/academic-procedures/main/";
-        });
-    });
-    $("#change_course").submit(function(event) {
-
-        event.preventDefault();
-        var friendForm = $(this);
-
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        // if success:
-        posting.done(function(data) {
-            alert('Registration Successful');
-            window.location = "/academic-procedures/main/";
-        });
-        // if failure
-        posting.fail(function(data) {
-            alert('Registration Failed');
-            window.location = "/academic-procedures/main/";
-        });
-    });
-});
-
-function view1(){
-    document.getElementById('view_1').style="display:block";
-    document.getElementById('viewbtn1').style="display:none";
-   document.getElementById('hidebtn1').style="display:inline";
-   $('#course_change_table').hide();
-}
-
-function hide1(){
-    document.getElementById('view_1').style="display:none";
-    document.getElementById('hidebtn1').style="display:none";
-    document.getElementById('viewbtn1').style="display:inline";
-    $('#course_change_table').hide();
-}
 </script>

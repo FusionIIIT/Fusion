@@ -1,6 +1,8 @@
 <div style="margin: 2rem;">
     <div class="ui vertical segment">
 
+
+
         <form method="post" id="editDetail" enctype="multipart/form-data">
             {% csrf_token %}
             <!-- <input type="hidden" name="csrfmiddlewaretoken"
@@ -9,6 +11,14 @@
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                 <div class="three fields">
+
+                    <div class="eight wide field">
+                        <label for="post_title">User</label>
+                        <select>
+                            <option value="" selected disabled>{{employee}}</option>
+                        </select>
+                    </div>
+
                     <div class="eight wide field" style="display: none;">
                         <label for="post_title">Select user</label>
 

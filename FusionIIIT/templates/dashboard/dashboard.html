@@ -42,21 +42,45 @@ Dashboard
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="item" href="{% url 'globals:profile' %}">
-                View Profile
+                View Professional Profile
                 <i class="right floated chevron right icon"></i>
             </a>
+            {% if "dean_rspc" in designation %}
+            <a class="item" href = "../office/officeOfDeanRSPC">
+               Project Requests
+               <i class="right floated chevron right icon"></i>
+           </a>
+            {% endif %}
+       {% if "dean_rspc" in designation %}
+            <a class="item" href = "../eis/rspc_profile">
+               RSPC Profile
+               <i class="right floated chevron right icon"></i>
+           </a>
+       {% endif %}
 
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
 
+        {% if 'student' != request.user.extrainfo.user_type %}
 
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            <a class="item" href="/hr2/administrativeProfile">
+                View Administrative Profile
+                <i class="right floated chevron right icon"></i>
+            </a>
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        {% endif %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
 
 
         {% if request.user.extrainfo.user_type == 'faculty' %}
-        {% if 'hradmin' == designat.designation.name %}
+        {%for desig in designat%}
+        {% if 'hradmin' == desig.designation.name %}
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
@@ -67,6 +91,7 @@ Dashboard
 
         </div>
         {% endif %}
+        {%endfor %}
         {% endif %}
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -92,6 +117,7 @@ Dashboard
         <div class="ui top attached tabular large menu">
             <a class="active item" data-tab="first">Notifications</a>
             <a class="item" data-tab="second">News</a>
+            <a class="item" data-tab="third">Announcements</a>
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">
@@ -114,6 +140,16 @@ Dashboard
         <div class="ui bottom attached tab segment" data-tab="second">
             Work in Progress, coming soon!
         </div>
+        <div class="ui bottom attached tab segment" data-tab="third">
+                <div id="textSegmentDiv">
+
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts1 %}
+                            {% include 'dashboard/alerts1.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
     </div>
 
     {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -166,7 +202,6 @@ Dashboard
         $("#replacement-card").toggle();
         setTimeout(loader, 1750);
     });
-
     function loader() {
         $("#textLoader").toggle();
         $("#replacement-card").toggle();

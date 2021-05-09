@@ -106,7 +106,7 @@ def get_context(request):
     # exam_t = Exam_timetable.objects.all()
 
     procedures_context = acad_proced_global_context()
-
+    print(1111111111111111111111111111111111111111111)
 
     try:
         examTtForm = ExamTimetableForm()
@@ -132,19 +132,19 @@ def get_context(request):
         pass
 
     context = {
-         'acadTtForm': acadTtForm,
-         'examTtForm': examTtForm,
-         'courses': courses,
-          'courses_list': courses_list,
-         'course_type': course_type,
-         'exam': exam_t,
-         'timetable': timetable,
-         'academic_calendar': calendar,
-         'next_sem_course': next_sem_courses,
-         'this_sem_course': this_sem_courses,
-         'curriculum': curriculum,
-         'tab_id': ['1','1'],
-         'context': procedures_context['context'],
+        'acadTtForm': acadTtForm,
+        'examTtForm': examTtForm,
+        'courses': courses,
+        'courses_list': courses_list,
+        'course_type': course_type,
+        'exam': exam_t,
+        'timetable': timetable,
+        'academic_calendar': calendar,
+        'next_sem_course': next_sem_courses,
+        'this_sem_course': this_sem_courses,
+        'curriculum': curriculum,
+        'tab_id': ['1','1'],
+        'context': procedures_context['context'],
         'lists': procedures_context['lists'],
         'date': procedures_context['date'],
         'query_option1': procedures_context['query_option1'],
@@ -189,11 +189,12 @@ def homepage(request):
         context - the datas to be displayed in the webpage
 
     """
-
+    print(22222222222222222222222222222222222222222222222222222222)
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
+    print(context['courses_list'])
 
     return render(request, "ais/ais.html", context)
 
@@ -1019,7 +1020,7 @@ def generate_preregistration_report(request):
 
 
 @login_required
-def add_new_profile(request):
+def add_new_profile (request):
     """
     To add details of new upcoming students in the database.User must be logged in and must be acadadmin
 
@@ -1906,29 +1907,3 @@ def confirm_grades(request):
     return HttpResponseRedirect('/aims/')
 
 
-def populate_student_db(request):
-    lis = Student.objects.select_related('id__department').all()
-    stu_list = list(lis)
-
-    batches = Batch.objects.all()
-    batch_dict = {}
-
-    for batch in batches:
-        batch_dict[batch.name] = batch
-
-    for stu in stu_list:
-        name = stu.programme+" "+stu.id.department.name+" "+str(stu.batch)
-        batch = Batch.objects.filter(name=name)
-        if name in batch_dict.keys():
-            stu.batch_id = batch_dict[name]
-
-        if stu.batch == 2019:
-            stu.curr_semester_no = 4
-        elif stu.batch == 2018:
-            stu. curr_semester_no = 6
-        else:
-            stu.curr_semester_no = 8
-
-    Student.objects.bulk_update(stu_list, ['batch_id', 'curr_semester_no'])
-
-    return HttpResponse('hello')
