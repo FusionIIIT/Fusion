@@ -11,7 +11,6 @@
             url: url_,
             data:{
                 batch :$('#1').val() ,
-                branch :$('#2').val() ,
                 csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             },
             beforeSend: function() {
@@ -59,31 +58,12 @@
         <td>
           <select class="ui dropdown" id="1" required="true">
             <option value=""> Select Batch </option>
-            {% for i in batch_grade_data.batch_grade_data %}
-            <option value="{{i.batch_list_year}}">B.Tech. {{i.batch_list_year}}</option>
+            {% for batch in batch_branch_data %}
+            <option value="{{batch.id}}">{{batch.name}}</option>
             {% endfor %}
           </select>
         </td>
       </tr>
-      <tr>
-      <td>
-            <b>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-               Select Batch Branch:
-               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>
-      </td>
-      <td>
-        <select class="ui dropdown" id="2" required="true">
-          <option value=""> Select Branch</option>
-          {% for i in query_option2 %}
-          <option value="{{ i }}"> {{ i }} </option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
   </table>
   <br>
   <center>

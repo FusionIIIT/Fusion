@@ -28,19 +28,17 @@
 </div>
 <div class="ui bottom attached tab segment active" data-tab="afirst">
     <div class="content">
-        <div class="description">
-            <table class="ui very basic celled large table"
-                style="text-align: center;
-                    padding-left: 2.5%;
-                    padding-right: 2.5%;
-                    padding-top: 1%;
-                    padding-bottom: 1.5%;
-                    margin: auto;">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Version</th>
-                        <th>No. of Semester</th>
+                    <tr style="font-size: medium;
+                        background-color: aliceblue;">
+                        <td><h4>Name</h4></td>
+                        <td class="collapsing"><h4>Version</h4></td>
+                        <td><h4>Batch</h4></td>
+                        <td class="collapsing"><h4>No. of Semester</h4></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,6 +46,11 @@
                         <tr>
                             <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' curriculum.id %}">{{ curriculum.name }}</a></td>
                             <td>{{ curriculum.version }}</td>
+                            <td>
+                                {% for batch in curriculum.batches %}
+                                    <p>{{ batch }}</p>
+                                {% endfor %}
+                            </td>
                             <td>{{ curriculum.no_of_semester }}</td>
                         </tr>
                     {% empty %}

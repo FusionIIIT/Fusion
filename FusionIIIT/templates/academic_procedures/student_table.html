@@ -29,7 +29,7 @@
                       <td style="width: 20%">{{ stu.0.id.user }}</td>
                       <td style="width: 40%">{{ stu.0.id.user.first_name   }} {{stu.0.id.user.last_name}}</td>
                       <td style="width: 20%"> {{ stu.0.id.department.name  }}</td>
-                      <td  style="width: 20%"><div  data='{{ stu.0.id.user.username }}' data-two="{{forloop.counter}}" data-three="6" class="reg-approve ui basic green button">Approve</div>
+                      <td  style="width: 20%"><div  data='{{ stu.0.id.user.username }}' data-two="{{forloop.counter}}" class="reg-approve ui basic green button">Approve</div>
                       </td>
                       </table>
                       <div class="pay" id="tran{{forloop.counter}}" hidden>
@@ -51,9 +51,9 @@
                           
                             {% for x in stu.2 %}
                             <tr>
-                            <td style="width: 20%"><center>{{x.curr_id.course_code}}</center></td>
-                            <td style="width: 60%">{{x.curr_id.course_id.course_name}}</td>
-                            <td style="width: 20%"><center>{{x.curr_id.credits}}</center></td>
+                            <td style="width: 20%"><center>{{x.course_id.code}}</center></td>
+                            <td style="width: 60%">{{x.course_id.name}}</td>
+                            <td style="width: 20%"><center>{{x.course_id.credit}}</center></td>
                             </tr>
                             {% endfor %}
                           
@@ -75,14 +75,12 @@
 var i;
         $('.reg-approve').on('click', function(e){
             var id = $(this).attr('data-two');
-            var roll = $(this).attr('data');
-            var sem = $(this).attr('data-three');
+            var student_id = $(this).attr('data');
             $.ajax({
                 type: 'post',
                 url: '/academic-procedures/process_verification_request/',
                 data: {
-                    roll: roll,
-                    sem: sem,
+                    student_id: student_id,
                     status_req: 'accept',
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
@@ -107,12 +105,12 @@ var i;
         });
         $('.reg-disapprove').on('click', function(e){
             var id = $(this).attr('data-two');
-            var roll = $(this).attr('data');
+            var student_id = $(this).attr('data');
             $.ajax({
                 type: 'post',
                 url: '/academic-procedures/process_verification_request/',
                 data: {
-                    roll: roll,
+                    student_id: student_id,
                     status_req: 'reject',
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },

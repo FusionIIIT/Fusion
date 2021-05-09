@@ -1,4 +1,4 @@
-{% extends 'programme_curriculum/acad_admin/common.html' %}
+{% extends 'programme_curriculum/common.html' %}
 
 {% block sidetabmenu %}
     <div class="ui huge fluid vertical pointing menu"
@@ -28,18 +28,15 @@
 </div>
 <div class="ui bottom attached tab segment active" data-tab="afirst">
     <div class="content">
-        <div class="description">
-            <table class="ui very basic celled large sortable table"
-                style="text-align: center;
-                    padding-left: 2.5%;
-                    padding-right: 2.5%;
-                    padding-top: 1%;
-                    padding-bottom: 1.5%;
-                    margin: auto;">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th colspan="2">Programmes</th>
+                    <tr style="font-size: medium;
+                        background-color: aliceblue;">
+                        <td><h4>Discipline Name</h4></td>
+                        <td colspan="2"><h4>Programmes</h4></td>
                     </tr>
                 </thead>
                 <tbody>
