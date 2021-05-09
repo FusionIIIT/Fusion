@@ -128,7 +128,7 @@ table{
 <div class="ui active tab segment" data-tab="pending_acad_assis" id="pa1">
     <div  class="ui vertical segment" >
         {% if assistant_list %}
-            {% for obj in assistant_list %}
+            {% for obj in assistant_list reversed %}
                 {% if obj.acad_approval == False %}
                     <div  class="acad_assis" id_thesis="acad_assis{{forloop.counter}}" id_object="{{obj.id}}">{{obj.student.id.user.username}}</div>
                     <div class="panel" id="acad_assis{{forloop.counter}}" hidden>
@@ -190,7 +190,7 @@ table{
 <!--  approved requests -->
 <div class="ui tab segment" data-tab="acad_approve_assis" id="paa2" >
     {% if assistant_list %}
-        {% for obj in assistant_list %}
+        {% for obj in assistant_list reversed %}
             {% if obj.acad_approval %}
                  
                 <div class="pthesis" id="acadassisapproved{{forloop.counter}}">{{obj.student.id.user.username}}</div>
@@ -249,6 +249,41 @@ table{
     <h3>nothing here</h3>
     {% endif %}
 </div>
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div> 
 
 
 

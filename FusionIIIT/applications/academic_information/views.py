@@ -26,8 +26,10 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instru
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
 
 
+
 from applications.academic_procedures.views import acad_proced_global_context
 from applications.programme_curriculum.models import Batch
+
 
 
 @login_required
@@ -114,6 +116,7 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
+        
         courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()

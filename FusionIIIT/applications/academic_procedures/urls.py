@@ -45,5 +45,7 @@ urlpatterns = [
     url(r'^update_dues/$' , views.update_dues),
     url(r'^dues_pdf/$' , views.dues_pdf),
     url(r'^acad_person/gen_course_list$', views.gen_course_list, name='gen_course_list'),
-
+    url(r'^update_acad_assistantship/$' , views.update_acad_assis),
+    url(r'^update_account_assistantship/$' , views.update_account_assistantship),
+    url(r'^mdue/$', views.mdue),
 ]
