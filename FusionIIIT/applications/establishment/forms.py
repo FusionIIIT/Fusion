@@ -6,7 +6,7 @@ dec2 = 'I hereby declare that the family members for whom the L.T.C. is claimed 
 dec3 = 'I hereby declare that the previous LTC advance drawn by me has already been adjusted.'
 
 class Cpda_Form(forms.Form):
-    pf_number = forms.CharField(label='PF Number', required=True)
+    pf_number = forms.CharField(label='PF Number')
     purpose = forms.CharField(label='Purpose', widget=forms.Textarea, required=True)
     declaration = forms.BooleanField(label=dec, required=True)
 
@@ -22,7 +22,6 @@ class Ltc_Form(forms.Form):
     pf_number = forms.CharField(label='PF Number', required=True)
     basic_pay = forms.IntegerField(label='Basic Pay', min_value=0, required=True)
 
-    is_leave_req = forms.ChoiceField(label='Is leave required for LTC ?', choices=Constants.LTC_LEAVE, required=True)
     leave_start = forms.DateField(label='Leave Start Date', 
                     widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
     leave_end = forms.DateField(label='Leave End Date', 
@@ -48,15 +47,15 @@ class Ltc_Form(forms.Form):
 class Assign_Form(forms.Form):
     app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
     status = forms.ChoiceField(choices=(Constants.STATUS))
-    reviewer_id = forms.CharField(label="Reviewer ID 1", required=False, 
+    reviewer_id = forms.CharField(label="ID", required=False, 
                     widget=forms.TextInput(attrs={'placeholder': 'Username'}))
     reviewer_id2 = forms.CharField(label="Reviewer ID 2", required=False, 
                     widget=forms.TextInput(attrs={'placeholder': 'Username'}))
     reviewer_id3 = forms.CharField(label="Reviewer ID 3", required=False, 
                     widget=forms.TextInput(attrs={'placeholder': 'Username'}))
-    reviewer_design = forms.CharField(label="Reviewer Designation 1", required=False,initial='HOD')
-    reviewer_design2 = forms.CharField(label="Reviewer Designation 2", required=False,initial='Registrar')
-    reviewer_design3 = forms.CharField(label="Reviewer Designation 3", required=False,initial='Director')
+    reviewer_design = forms.CharField(label="Designation", required=False)
+    reviewer_design2 = forms.CharField(label="Reviewer Designation 2", required=False)
+    reviewer_design3 = forms.CharField(label="Reviewer Designation 3", required=False)
     assign_status = forms.ChoiceField(choices=((('requested', 'Requested'))))
     accept_status = forms.ChoiceField(choices=((('approved', 'Approved'),
                                                 ('rejected', 'Rejected'))))
