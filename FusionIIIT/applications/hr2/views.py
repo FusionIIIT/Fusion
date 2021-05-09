@@ -4,7 +4,7 @@ from applications.globals.models import ExtraInfo
 from applications.globals.models import *
 from django.db.models import Q
 from django.http import Http404
-from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm
+from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm, NewUserForm, AddExtraInfo
 from django.contrib import messages
 from applications.eis.models import *
 from django.http import HttpResponse, HttpResponseRedirect
@@ -37,6 +37,13 @@ def edit_employee_details(request, id):
         if form.is_valid() and conf_form.is_valid():
             form.save()
             conf_form.save()
+            try:
+                ee = ExtraInfo.objects.get(pk=id)
+                ee.user_status = "PRESENT"
+                ee.save()
+
+            except:
+                pass
             messages.success(request, "Employee details edited successfully")
         else:
 
@@ -76,7 +83,9 @@ def hr_admin(request):
         else:
             emp = ExtraInfo.objects.all()
             emp = emp.filter(user_type="faculty")
-        context = {'emps': emp}
+        empPresent = emp.filter(user_status="PRESENT")
+        empNew = emp.filter(user_status="NEW")
+        context = {'emps': emp, "empPresent": empPresent, "empNew": empNew}
         return render(request, template, context)
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -258,4 +267,49 @@ def administrative_profile(request, username=None):
 
     context.update(response)
     template = 'hr2Module/dashboard_hr.html'
+    return render(request, template, context)
+
+
+def add_new_user(request):
+    """ Views for edit Service Book details"""
+    template = 'hr2Module/add_new_employee.html'
+
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        eform = AddExtraInfo(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, "New User added Successfully")
+        # else:
+        #     messages.error(request,"Some error occured please try again later")
+
+        if eform.is_valid():
+            eform.save()
+            messages.success(request, "Extra info of user saved successfully")
+        # else:
+        #     messages.error(request,"Some error occured please try again later")
+
+    form = NewUserForm
+    eform = AddExtraInfo
+
+    try:
+        employee = ExtraInfo.objects.all().first()
+    except:
+        raise Http404("Post does not exist")
+
+    # if request.method == "POST":
+    #     form = EditServiceBookForm(request.POST, request.FILES)
+
+    #     if form.is_valid():
+    #         form.save()
+    #         messages.success(
+    #             request, "Employee Service Book details edited successfully")
+    #     else:
+    #         messages.warning(request, "Error in submitting form")
+    #         pass
+
+    # form = EditServiceBookForm(initial={'extra_info': employee.id})
+    context = {'employee': employee, "register_form": form, "eform": eform
+               }
+
     return render(request, template, context)
