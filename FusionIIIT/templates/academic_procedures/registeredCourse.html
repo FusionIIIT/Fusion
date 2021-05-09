@@ -23,7 +23,7 @@
 
                 <tbody>
                     {% for item in courses_list %}
-                      {% for items in item %}
+                      {% for items in item.courses.all %}
                       <tr>
                             <td>
                               {{ items.code }}
@@ -35,7 +35,7 @@
                                 {{ items.credit }}
                             </td>
                             <td>
-                                {{curr_sem.semester_no}}
+                                {{next_sem.semester_no}}
                             </td>
                       </tr>
                       {% endfor %}

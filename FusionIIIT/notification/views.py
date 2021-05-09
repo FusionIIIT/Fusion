@@ -299,13 +299,32 @@ def gymkhana_event(sender, recipient, type, club, event_name, desc, venue):
                 description=desc
                 )
 
-def AssistantshipClaim_notify(sender,recipient,message,month,year):
-    if message == "Satisfactory":
-        message="Your Assistantshipclaim of {} month year {} is approved by ".format(month,year,sender)
-    else:
-         message="Your Assistantshipclaim of {} month year {} is disapproved by ".format(month,year,sender)
-
+def AssistantshipClaim_notify(sender,recipient,month,year):
+    
+    message="Your Assistantshipclaim of {} month year {} is approved ".format(month,year)
     url = 'academic-procedures:academic_procedures'
     module = 'Assistantship Request'
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=message)
+    notify.send(sender=sender,recipient= recipient, url=url, module=module, verb=message)
 
+
+
+def AssistantshipClaim_faculty_notify(sender,recipient):
+    
+    message=" Assistantshipclaim is requested "
+    url = 'academic-procedures:academic_procedures'
+    module = 'Assistantship Request'
+    notify.send(sender=sender,recipient= recipient, url=url, module=module, verb=message)
+
+
+def AssistantshipClaim_acad_notify(sender,recipient):
+    message = "AssistantshipClaim is requested " 
+    url = 'academic-procedures:academic_procedures'
+    module = 'Assistantship Request'
+    notify.send(sender=sender,recipient= recipient, url=url, module=module, verb=message)
+
+
+def AssistantshipClaim_account_notify(sender,stu, recipient):
+    message = "Assistantship claim of{} is forwaded ".format(stu)
+    url = 'academic-procedures:academic_procedures'
+    module = 'Assistantship Request'
+    notify.send(sender=sender,recipient= recipient, url=url, module=module, verb=message)
