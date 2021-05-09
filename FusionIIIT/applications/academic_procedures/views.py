@@ -380,7 +380,8 @@ def academic_procedures_student(request):
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
 
         
-        Mess_Due = MessDue.objects.filter(student = obj)
+        Mess_bill = Monthly_bill.objects.filter(student_id = obj)
+        Mess_pay = Payments.objects.filter(student_id = obj)
         
 
         # Branch Change Form save
@@ -438,7 +439,8 @@ def academic_procedures_student(request):
                             'cur_cpi': cur_cpi,
                            'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
-                           'Mess_due' : Mess_Due,
+                           'Mess_bill' : Mess_bill,
+                           'Mess_pay' : Mess_pay,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
                            'mess_d':mess_d,
@@ -2866,7 +2868,7 @@ def update_assistantship(request):
         elif r == "Unsatisfactory" :
             assistantship_object.thesis_supervisor_remark=False
         assistantship_object.save()
-        if  assistantship_object.thesis_supervisor_remark == True or  assistantship_object.ta_supervisor_remark == True :
+        if  assistantship_object.thesis_supervisor_remark == True and  assistantship_object.ta_supervisor_remark == True :
             AssistantshipClaim_acad_notify(sender,recipient)
    
     return HttpResponseRedirect('/academic-procedures/main/')
