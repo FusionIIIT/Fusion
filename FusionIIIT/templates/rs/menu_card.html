@@ -1,0 +1,35 @@
+
+
+{% block menucard %}
+
+{% for d in desig %} 
+
+    {% if info.user_type == 'faculty' and d.designation.name == 'dean_rspc' %}
+
+        
+        <a class="item" data-tab="forteenth">
+            View Applications
+        </a>
+
+        <a class="item" data-tab="sixteenth">
+           Change Status
+        </a>
+
+    {% endif %}
+    {% endfor %}
+    
+
+    {% if info.user_type == 'faculty' %}
+    
+        
+
+            <a class="item"  data-tab="fourth">
+           File Patent
+            </a>
+
+            <a class="item" data-tab="first">
+            View Status
+            </a>{% endif %}
+            
+
+{% endblock %}

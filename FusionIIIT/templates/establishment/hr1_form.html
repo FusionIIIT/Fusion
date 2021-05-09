@@ -25,16 +25,11 @@
         
         {% comment %}The central-rail segment ends here!{% endcomment %}
         <div class="eight wide column">
-            <a href="/establishment/"> Back</a>
                <!--{% block cpda %}-->
                {% if cpda %}
                     {% if admin %}
                         {% include 'establishment/cpda_admin.html' %}
-                    {% elif hod %}
-                        {% include 'establishment/cpda_reviewer.html' %}
-                    {% elif registrar %}
-                        {% include 'establishment/cpda_reviewer.html' %}
-                    {% elif director %}
+                    {% elif reviewer %}
                         {% include 'establishment/cpda_reviewer.html' %}
                     {% else %}
                         {% include 'establishment/cpda.html' %}

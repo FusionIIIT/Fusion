@@ -1,0 +1,159 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui header">
+        AES
+    </div>
+
+
+        {% comment %}the doctor appointment tab starts here {% endcomment %}
+        <div class="ui active tab" data-tab="doctorappointment">
+            <div class="ui vertical segment">
+                <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="">{% csrf_token %}
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                          <label>Sl. No.<sup> </sup></label><p id="sl_no"></p>
+                          <div class="ui fluid input">
+                              <textarea id="sl_no" class="ui textarea" rows="1" name="sNo" type="number" ></textarea>
+                          </div>
+                      </div>
+                    </div>
+
+                  <div class="field">
+                    <label>Description of Item<sup> </sup></label><p id="description"></p>
+                    <div class="ui fluid input">
+                        <textarea id="description" class="ui textarea" rows="1" name="description"  ></textarea>
+                    </div>
+                </div>
+
+
+                <!-- For both  the below fileds I'm using one div so that they are together -->
+                <div class="fields">
+                    <div class="eight wide field">
+                      <label>Unit<sup> </sup></label><p id="unit"></p>
+                      <div class="ui fluid input">
+                          <textarea id="unit" class="ui textarea" rows="1" name="unit" type="number"  ></textarea>
+                      </div>
+                  </div>
+
+                  <div class="eight wide field">
+                    <label>Quantity<sup> </sup></label><p id="quantity"></p>
+                    <div class="ui fluid input">
+                        <textarea id="quantity" class="ui textarea" rows="1" name="quantity" type="number"  ></textarea>
+                    </div>
+                     </div>
+                    </div>
+
+                    <div class="fields">
+
+                          <div class="eight wide field">
+                      <label>Rate<sup> </sup></label><p id="rate"></p>
+                      <div class="ui fluid input">
+                          <textarea id="rate" class="ui textarea" rows="1" name="rate" type="number"  ></textarea>
+                      </div>
+                  </div>
+
+                  <div class="eight wide field">
+                    <label>Amount<sup> </sup></label><p id="amount"></p>
+                    <div class="ui fluid input">
+                        <textarea id="amount" class="ui textarea" rows="1" name="amount" type="number"  ></textarea>
+                    </div>
+                </div>
+
+                    </div>
+
+
+                    <div class="field">
+                        <label><br></label>
+
+                        <div >
+                          <input type="submit" name="Submit" value="Submit" class="ui small right floated primary button" />
+                          </a>
+                        </div>
+
+                    </div>
+                </form>
+
+
+                <br>
+                <br>
+            </div>
+            <br>
+            <div class="extra segment"></div>
+
+        </div>
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

@@ -83,19 +83,16 @@
           <tr>
             <td><center>{{ forloop.counter }} .</center></td>
             <td><center>
-                {{ items.course_code }}
-                {% if items.optional %}
-                  <B><div style="color:green;">(optional)</div></B> 
-                {% endif %}</center>
+                {{ items.1.code }}
             </td>
             <td>
-                <a class ="course_link" href="/ocms/{{items.course_code}}">{{ items.course_id.course_name}}</a>
+                {{ items.1.name}}
             </td>
             <td>
-                <center>{{ items.credits }}</center>
+                <center>{{ items.1.credit }}</center>
             </td>
             <td>
-                <center>{{items.sem}}</center>
+                <center>{{curr_sem.semester_no}}</center>
             </td>
           </tr>
         {% endfor %}

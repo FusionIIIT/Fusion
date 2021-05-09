@@ -10,7 +10,7 @@ class Constants:
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
-        ('finished', 'Finished')
+        ('finished', 'Adjustments Approved')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -56,7 +56,7 @@ class Cpda_application(models.Model):
 
     # CPDA Request fields
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
-    pf_number = models.CharField(max_length=50, default='')
+    pf_number = models.CharField(max_length=50, default='1',null=True)
     purpose = models.CharField(max_length=500, default='', blank=True)
     requested_advance = models.IntegerField(blank=True)
     request_timestamp = models.DateTimeField(auto_now=True, null=True)
@@ -114,8 +114,6 @@ class Ltc_application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     pf_number = models.CharField(max_length=50, default='')
     basic_pay = models.IntegerField(blank=True)
-
-    is_leave_required = models.CharField(choices=Constants.LTC_LEAVE, max_length=50)
     leave_start = models.DateField()
     leave_end = models.DateField()
     family_departure_date = models.DateField()
@@ -152,8 +150,10 @@ class Ltc_tracking(models.Model):
     application = models.OneToOneField(Ltc_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
     reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
     reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
-    remarks = models.CharField(max_length=250, null=True, blank=True)
+    designations=  models.CharField(max_length=350, null=True, blank=True)
+    remarks = models.CharField(max_length=350, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
+    admin_remarks=models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return 'ltc id ' + str(self.application.id) + ' tracking'

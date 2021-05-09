@@ -7,7 +7,7 @@ from applications.globals.models import ExtraInfo
   
 class SpecialRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    request_date = models.DateTimeField(default=date.today())
+    request_date = models.DateTimeField(default=date.today)
     brief = models.CharField(max_length=20, default='--')
     request_details = models.CharField(max_length=200)
     upload_request = models.FileField(blank=True)
@@ -26,6 +26,6 @@ class Announcements(models.Model):
     batch = models.CharField(max_length=40,default="Year-1")
     department = models.CharField(max_length=40,default="ALL")
     programme = models.CharField(max_length=10)
-    upload_announcement = models.FileField(blank=True)
+    upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=" ")
     def __str__(self):
         return str(self.maker_id.user.username)

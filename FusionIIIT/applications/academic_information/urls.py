@@ -40,4 +40,5 @@ urlpatterns = [
     url(r'^delete_curriculum', views.delete_curriculum, name="delete_curriculum"),
     url(r'^float_course_submit', views.float_course_submit, name="float_course_submit"),
     url(r'^float_course', views.float_course, name="float_course"),
+    #url(r'^populate_student_db', views.populate_student_db, name="populate_student_db"),
 ]

@@ -43,9 +43,8 @@
 
             {% for fcu in fac_list %}
               <tr>
-                {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
                 <td>{{ fcu.id }}</td>
-                <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+                <td><a href = "{% url 'globals:profile' %}">{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
 			    <!-- <td>{{ fcu.title }}</td> -->
                 <td>{{ fcu.sex }}</td>
 				<td>{{ fcu.date_of_birth }}</td>
@@ -54,7 +53,6 @@
                 <td>{{ fcu.user_type }}</td>
 				<td>{{ fcu.department.name }}</td>
                 <td>{{ fcu.id.faculty_about.github }}</td>
-                {% endwith %}
               </tr>
               
             {% endfor %}
