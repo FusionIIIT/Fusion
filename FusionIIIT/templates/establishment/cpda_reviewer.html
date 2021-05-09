@@ -43,8 +43,7 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                     <b>Total Advance Availed</b> : Rs {{ total_advance_by_user }}
                     <br><br>
                     <b>Advance Limit</b> : Rs 3 Lakh per 3 year block
-                    <br><br>
-                    <b> Max Eligible Advance Amount</b> : Rs {{ remaining_advance }}
+                    <br>
                 </div>
                 <br>
                 <div class="field">
@@ -185,7 +184,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                 {% for app in cpda_archive_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {% if app.status == 'finished' %} Adjustments Approved {%endif%}</a>
+                            <a class="header">Status : {% if app.status == 'finished' %} Adjustments Approved {% else %} Rejected {%endif%}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>

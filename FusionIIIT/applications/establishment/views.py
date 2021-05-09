@@ -107,6 +107,7 @@ def handle_cpda_admin(request):
     reviewer = request.POST.get('reviewer_id')
     designation = request.POST.get('reviewer_design')
     remarks = request.POST.get('remarks')
+    print(status)
     if status is None:
         status=status_accept
     if status == 'requested' or status == 'adjustments_pending':
@@ -145,7 +146,7 @@ def handle_cpda_admin(request):
     elif app_id:
         # update the status of app
         application = Cpda_application.objects.select_related('applicant').get(id=app_id)
-        if(status=='approve'):
+        if(status=='approve' or status=='reject'):
             application.status= 'finished'
         else:
             application.status = status
@@ -162,7 +163,7 @@ def handle_ltc_admin(request):
     """
     if 'ltc_assign_form' in request.POST:
         app_id = request.POST.get('app_id')
-        status = request.POST.get('assign_status')
+        status = request.POST.get('status')
         status_accept=request.POST.get('accept_status')
         reviewer = request.POST.get('reviewer_id')
         designation = request.POST.get('reviewer_design')
@@ -899,7 +900,7 @@ def generate_cpda_eligible_lists(request):
         advance_taken=0
         advance_avail=300000
     today_date=date.today()
-    block_period=str(2018+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
+    block_period=str(2019+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
 
     #hod=is_hod(request)
     #registrar=is_registrar(request)

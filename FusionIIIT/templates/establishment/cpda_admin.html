@@ -15,7 +15,13 @@
         Archived
     </a>
 </div>
-
+<script>function yesnoCheck(that) {
+    if (that.value == "requested" || that.value == "adjustments_pending" ) {
+        document.getElementById("ifYes").style.display = "block";
+    } else {
+        document.getElementById("ifYes").style.display = "none";
+    }
+}</script>
 
 
 
@@ -76,30 +82,44 @@ pending cpda applications
                                         
                                         <br>
                                     {% endif %}
-                                    <br>
-                                    <b>Forward to</b>
-                                    <br><br>
+
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %} 
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %} 
-                                    </div>
-                                    <div class="field">
+                                        Status<br>
+                                        {% if app.status == 'requested' %}    
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
                                         
-                                        <div class="field">
-                                            {% render_field app.assign_form.status %} 
-                                        </div> 
+                                        </select>
+                                        {% else %}
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="adjustments_pending" >Adjustments Pending</option>
+                                            <option value="approve">Approved</option>
+                                            <option value="reject">Rejected</option>
+                                        
+                                        </select>
+                                        {% endif %}
+                                        
+                                    </div><br>
+                                    
+                                    <div id="ifYes" class="field" style="display: none;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
                                     
-                                    <br>
                                     
                                     <div class="field">
                                         {% render_field app.assign_form.remarks %} 
                                     </div>
-                                    <br>
                                     <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         Submit
                                     </button>
@@ -198,22 +218,60 @@ under_review cpda applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %} 
-                                    <div class="field">
-                                        {% render_field app.assign_form.status %} 
-                                    </div>
+                                    
                                     <br>
-                                    <br>
-                                    <b>Forward to</b>
-                                    <br><br>
+                                    {% if app.tracking_info.review_status == 'to_assign' %}
+                                    {% else %}
+                                        {% for key, value in remarks_list.items %}    
+                                        {% if key == app %}
+                                            {% for x in value %}
+                                            Remarks from 
+                                            {{x.0}} : {{x.1}}
+                                            <br>             
+                                            {% endfor %}
+                                            {%endif%}
+                                        {% endfor %}
+                                        
+                                        <br>
+                                    {% endif %}
+
                                     <div class="field">
+                                        Status<br>
+                                        {% if app.status == 'requested' %}    
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        {% else %}
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="adjustments_pending" >Adjustments Pending</option>
+                                            <option value="approve">Approved</option>
+                                            <option value="reject">Rejected</option>
+                                        
+                                        </select>
+                                        {% endif %}
+                                        
+                                    </div><br>
+                                    
+                                    <div id="ifYes" class="field" style="display: none;">
+                                        <b>Forward to</b>
+                                    <br>
                                         {% render_field app.assign_form.reviewer_id %} 
-                                    </div>
+                                    
                                     <br>
-                                    <div class="field">
+                                    
                                         {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
-
+                                    
+                                    
+                                    <div class="field">
+                                        {% render_field app.assign_form.remarks %} 
+                                    </div>
                                     <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         Submit
                                     </button>

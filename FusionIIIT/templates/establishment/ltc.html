@@ -164,7 +164,7 @@
                             <div class="header">Status : {{app.status|title}}</div>
                             {% if app.status == 'requested' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
-                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}} ({{app.tracking_info.reviewer_design}})</div>
+                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}}</div>
                                 {% endif %}
                                 {% if app.tracking_info.review_status == 'to_assign' %}
                                     <div class="meta">Review Status : Reviewer is not assigned</div>

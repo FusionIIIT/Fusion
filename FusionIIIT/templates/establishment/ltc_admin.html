@@ -19,7 +19,14 @@
     </a>
 </div>
 
+<script>function yesnoCheck(that) {
 
+    if (that.value == "requested" ) {
+        document.getElementById("assign_fields").style.display = "block";
+    } else {
+        document.getElementById("assign_fields").style.display = "none";
+    }
+}</script>
 <!--
 pending ltc applications
 -->
@@ -116,29 +123,40 @@ pending ltc applications
                                     </table>
                                 </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
-
+                                
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.assign_status %}
+                                        Status<br>
+                                           
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="assign_fields" class="field" style="display: none;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
-                                    <b>Forward to</b>
-                                    <br><br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
-                                    </div>
-                                    <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
                                         Submit
                                     </button>
@@ -341,22 +359,33 @@ under_review ltc applications
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
                                     <div class="field">
-                                        {% render_field app.assign_form.status %}
+                                        Status<br>
+                                           
+                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="ifYes" class="field" style="display: none;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
-                                    <br>
-                                    <b>Forward to</b>
-                                    <br><br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
