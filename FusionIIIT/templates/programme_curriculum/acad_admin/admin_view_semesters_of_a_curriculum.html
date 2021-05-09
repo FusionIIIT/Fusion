@@ -34,7 +34,7 @@
                         margin: auto;">
                 <tbody>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td></td>
                         <td colspan="{{ curriculum.no_of_semester }} ">
                             <h2 class="header">{{ curriculum }}</h2>
@@ -42,20 +42,20 @@
                     </tr>
                     {% if curriculum.batches.count > 0 %}
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td></td>
                         <td colspan="{{ curriculum.no_of_semester }}">
                             <h4 class="header">
-                                Batches:
+                                Batches:&nbsp;&nbsp;&nbsp;&nbsp;
                                 {% for batch in curriculum.batches.all %}
-                                    {{ batch }}
+                                    {{ batch }},&nbsp;&nbsp;&nbsp;&nbsp;
                                 {% endfor %}
                             </h4>
                         </td>
                     </tr>
                     {% endif %}
                     <tr style="font-size: medium;
-                            background-color: aliceblue;">
+                            background-color: whitesmoke;">
                         <td></td>
                         {% for semester in semesters %}
                         <td><a href="{% url 'programme_curriculum:admin_view_a_semester_of_a_curriculum' semester.id %}"><B>Semester<br>{{ semester.semester_no }}</B></a></td>

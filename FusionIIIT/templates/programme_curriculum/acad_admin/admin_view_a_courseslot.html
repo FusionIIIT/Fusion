@@ -32,7 +32,8 @@
         <div class="description" style="overflow: auto; max-height: 480px">
             <table class="ui celled medium table"
             style="text-align: center;
-                margin: auto;">
+                margin: auto;
+                background-color: whitesmoke;">
                 <tbody>
                     <tr>
                         <td colspan="4"><h2>Course Slot: {{ course_slot.name }}</h2></td>
@@ -43,15 +44,15 @@
                     <tr>
                         <td colspan="4"><h4>Type : {{ course_slot.type }}</h4></td>
                     </tr>
-                    <tr>
+                    <tr style="background-color: white;">
                         <td>Info</td>
                         <td colspan="3">{{ course_slot.course_slot_info|linebreaks }}</td>
                     </tr>
-                    <tr>
+                    <tr style="background-color: white;">
                         <td>Duration</td>
                         <td colspan="3">{{ course_slot.duration }} Semesters</td>
                     </tr>
-                    <tr>
+                    <tr style="background-color: white;">
                         <td>Min Registration Limit</td>
                         <td>{{ course_slot.min_registration_limit }}</td>
                         <td>Max Registration Limit</td>
@@ -66,7 +67,7 @@
                             margin: auto;">
                         <thead>
                             <tr style="font-size: medium;
-                                background-color: aliceblue;">
+                                background-color: whitesmoke;">
                                 <td><h4>Course Code</h4></td>
                                 <td><h4>Course Name</h4></td>
                                 <td><h4>Credits</h4></td>
