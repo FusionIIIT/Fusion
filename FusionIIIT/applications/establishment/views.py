@@ -110,7 +110,7 @@ def handle_cpda_admin(request):
     print(status)
     if status is None:
         status=status_accept
-    if status == 'requested' or status == 'adjustments_pending':
+    if status == 'requested' or status == 'adjustments_pending' and status !='':
         if reviewer and designation and app_id:
             # assign the applicaiton to the reviewers
             reviewer_id = User.objects.get(username=reviewer)
@@ -170,8 +170,8 @@ def handle_ltc_admin(request):
         remarks = request.POST.get('remarks')
         if status is None:
             status=status_accept
-        if status == 'requested':
-            if reviewer and designation and app_id:
+        if status == 'requested' :
+            if reviewer and designation and app_id and status != '':
                 # assign the app to the reviewer
                 reviewer_id = User.objects.get(username=reviewer)
                 reviewer_design = Designation.objects.filter(name=designation)
@@ -475,6 +475,7 @@ def generate_ltc_admin_lists(request):
             if(remarks[i]!=''):
                 rev_list.append([desig[i],remarks[i]])
         reviewer_remarks[app.tracking_info.application]=rev_list
+    print(reviewer_remarks)
     response = {
         'admin': True,
         'ltc_eligible_users': current_eligible_users,
