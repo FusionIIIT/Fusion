@@ -4,18 +4,18 @@
 {% block appoint_student_guide %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="counsellor">
+        <a class="active item" data-tab="guide">
             Appoint Student Guide
         </a>
 
-        <a class="item" data-tab="viewcoordinator">
+        <a class="item" data-tab="viewguide">
             Appointed Student Guide
         </a>
 
        
     </div>
 
-    <div class="ui active tab" data-tab="counsellor" id="counsellor">
+    <div class="ui active tab" data-tab="guide" id="counsellor">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -61,13 +61,13 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="viewcoordinator">
+    <div class="ui tab" data-tab="viewguide">
         
         
         <div id="coordinator_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
         <a class="header" id="user_name" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{{info.user.username}}</a>
         <div class="ui header ">
-            List of Appointed Student Coordinators  :
+            List of Appointed Student Guide  :
         </div>  
             {% for counsellor in student_guide %}
                 <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
@@ -78,6 +78,12 @@
                     <h2 class="ui header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
                     <!-- <div class="header">Answer {{forloop.counter}} :</div>
                     <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                    <!-- <div class="field">
+                        <label><br></label>
+                            <button class="ui red button"  onclick="return removestudentGuide(`${counsellor.student.id.user.username}`)">
+                            Remove
+                            </button>
+                    </div> -->
                 </div> 
                 
             </div>

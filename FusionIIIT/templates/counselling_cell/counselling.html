@@ -83,7 +83,23 @@ Counselling cell
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="eleventh">
+            {% block assign_student_to_sg %}
+            {% include 'counselling_cell/assign_student_to_sg.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
 
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="twelfth">
+            {% block Respond_Issue %}
+            {% include 'counselling_cell/respond_issues.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixth">
             {% block schedule_meeting %}
@@ -112,29 +128,12 @@ Counselling cell
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="ninth">
             <!--in invitation-->
-            {% block invitation %}
-            {% include 'messModule/meeting_information.html' %}
-            {% endblock %}
+         
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="eleventh">
-            {% block splreq %}
-            {% include 'messModule/splreq.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="twelfth">
-            {% block registration %}
-            {% include 'messModule/messactivities.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
+        
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
             {% block viewmenu %}
