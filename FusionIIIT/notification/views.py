@@ -328,6 +328,20 @@ def AssistantshipClaim_account_notify(sender,stu, recipient):
     url = 'academic-procedures:academic_procedures'
     module = 'Assistantship Request'
     notify.send(sender=sender,recipient= recipient, url=url, module=module, verb=message)
+def department_notif(sender, recipient, type):
+    url='dep:dep'
+    module='department'
+    sender = sender
+    recipient = recipient
+    verb = type
+    flag = "department"
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                flag=flag)
 
 def office_module_DeanRSPC_notif(sender, recipient, type):
     url='office:officeOfDeanRSPC'
