@@ -63,16 +63,18 @@
                     </tr>
                 
                     {% for course_slot in semester_slots %}
-                    <tr>
+                    <tr class="compact ui celled small table"
+                        style="text-align: center;
+                        margin: auto;">
                         <td></td>
                         {% for slot in course_slot %}
                             {% if slot != "" %}
-                                <td colspan="1" class="collapsing">
+                                <td colspan="1">
                                     {% if slot.courses.count != 1 %}
                                         <a href="{% url 'programme_curriculum:view_a_courseslot' slot.id %}">{{ slot.name }}</a>
                                     {% else %}
                                         {% for course in slot.courses.all %}
-                                            <a href="{% url 'programme_curriculum:view_a_courseslot' slot.id %}"><p>{{ course }}</p><p>(L: {{ course.lecture_hours }}, T: {{ course.tutorial_hours }}, C: {{ course.credit }})</p></a>
+                                            <a href="{% url 'programme_curriculum:view_a_courseslot' slot.id %}"><p>{{ course }}<br>(L: {{ course.lecture_hours }}, T: {{ course.tutorial_hours }}, C: {{ course.credit }})</p></a>
                                         {% endfor %}
                                     {% endif %}
                                 </td>
