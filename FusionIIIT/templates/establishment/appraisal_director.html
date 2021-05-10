@@ -4,15 +4,15 @@
 
 
 <div class="ui top attached tabular menu">
-    <a class="item active" data-tab="appraisal_one">
-        Appraisal Form
-    </a>
-    <a class="item" data-tab="appraisal_two">
-        Active
-    </a>
-    <a class="item" data-tab="appraisal_three">
-        Archived
-    </a>
+  <a class="item active" data-tab="appraisal_one">
+      Appraisal Form
+  </a>
+  <a class="item" data-tab="appraisal_two">
+      Active
+  </a>
+  <a class="item" data-tab="appraisal_three">
+      Archived
+  </a>
     <a class="item" data-tab="appraisal_four">
         Review
     </a>
@@ -75,37 +75,39 @@
                   Table for NewCoursesOffered
                   -->
 
-                    <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                    <!-- <div id="new_courses"></div>   the container to add the TABLE
-                    <p><input type="button" value="Add New Course" onclick="javascript:addRowNewCourses()"/></p> -->
-                    <table>  <!-- the container to add the TABLE -->
-                      <tr>
-                        <th>Course-Name</th>
-                        <th>Course Number</th>
-                        <th>UG/PG</th>
-                        <th>YEAR</th>
-                        <th>Semester</th>
-                      </tr>
-                    </table>
-
-                <!-- End of Table NewCoursesOffered -->
-
-                <!--
-                  Table for NewCourseMaterial
-                -->
-                  <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                  <!-- <div id="new_courses_material"></div>  the container to add the TABLE
-                  <p><input type="button" value="Add New Course Material" onclick="javascript:addRowNewCoursesMaterial()"/></p> -->
-                  <table>
+                  <!--
+                  Table for NewCoursesOffered
+                  -->
+                  <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                  <div id="new_courses"></div>    
+                  <table id="NewCoursesOffered">  <!-- the container to add the TABLE -->
                     <tr>
                       <th>Course-Name</th>
                       <th>Course Number</th>
                       <th>UG/PG</th>
-                      <th>Type of Activity</th>
-                      <th>Web/Public</th>
+                      <th>YEAR</th>
+                      <th>Semester</th>
+                      <th>Tutorial Hours/week</th>
                     </tr>
                   </table>
-                <!-- End of Table NewCourseMaterial -->
+                  <p><input type="button" value="Add New Course" onclick="javascript:addRowNewCourses()"/></p>
+              <!-- End of Table NewCoursesOffered -->
+
+              <!--
+                Table for NewCourseMaterial
+              -->
+                <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                <div id="new_courses_material"></div>  
+                <table id="NewCourseMaterial">
+                  <tr>
+                    <th>Course-Name</th>
+                    <th>Course Number</th>
+                    <th>UG/PG</th>
+                    <th>Type of Activity</th>
+                    <th>Web/Public</th>
+                  </tr>
+                </table>
+                <p><input type="button" value="Add New Course Material" onclick="javascript:addRowNewCoursesMaterial()"/></p>
 
                 <!-- {% for em in user_courses %}
                 <h2>{{em}}</h2>
@@ -134,6 +136,8 @@
                         <td>{{object.s_name}}</td>
                         <td>{{object.title}}</td>
                         <td>{{object.s_year}}</td>
+                        <td>{{object.semester}}</td>
+                        <td>{{object.status}}</td>
                       </tr>
                     {% endfor %}
                   </table>
@@ -155,21 +159,24 @@
                       <th>Remarks</th>
                     </tr>
                     {% for object in consultancy_projects %}
-                      <tr>
-                        <td>{{object.title}}</td>
-                        <td>{{object.client}}</td>
-                        <td>{{object.financial_outlay}}</td>
-                        <td>{{object.duration}}</td>
-                      </tr>
+                    <tr>
+                      <td>{{object.title}}</td>
+                      <td>{{object.client}}</td>
+                      <td>{{object.financial_outlay}}</td>
+                      <td>{{object.start_date}} to {{object.end_date}}</td>
+                      <td>{{object.status}}</td>
+                      <td>{{object.remarks}}</td>
+                    </tr>
                     {% endfor %}
                     {% for object in research_projects %}
-                      <tr>
-                        <td>{{object.title}}</td>
-                        <td>{{object.funding_agency}}</td>
-                        <td>{{object.financial_outlay}}</td>
-                        <td>{{object.finish_date}}</td>
-                        <td>{{object.status}}</td>
-                      </tr>
+                    <tr>
+                      <td>{{object.title}}</td>
+                      <td>{{object.funding_agency}}</td>
+                      <td>{{object.financial_outlay}}</td>
+                      <td>{{object.start_date}} to {{object.finish_date}}</td>
+                      <td>{{object.status}}</td>
+                      <td>{{object.remarks}}</td>
+                    </tr>
                     {% endfor %}
                   </table>
                   <br><br>
@@ -342,7 +349,7 @@
             {% for app in appraisal_active_apps %}
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status|title}}</div>
+                      <div class="header">Status : {{app.status}}</div>
                       <div class="meta">
                           <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
                       </div>
@@ -364,7 +371,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status|title }}</label><br>
+                          <label>Status : {{ app.status }}</label><br>
                           <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
                           <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">
@@ -402,10 +409,23 @@
                               <th>UG/PG</th>
                               <th>YEAR</th>
                               <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
                             </tr>
+                            {% for obj in new_courses_offered %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
                           </table>
 
-                          <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
                           <table>
                             <tr>
                               <th>Course-Name</th>
@@ -414,7 +434,19 @@
                               <th>Type of Activity</th>
                               <th>Web/Public</th>
                             </tr>
+                          {% for obj in new_courses_material %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
                           </table>
+
                           <hr style="height:5px;background-color:#333;">
 
 
@@ -434,6 +466,8 @@
                                 <td>{{object.s_name}}</td>
                                 <td>{{object.title}}</td>
                                 <td>{{object.s_year}}</td>
+                                <td>{{object.semester}}</td>
+                                <td>{{object.status}}</td>
                               </tr>
                             {% endfor %}
                           </table>
@@ -449,21 +483,24 @@
                               <th>Remarks</th>
                             </tr>
                             {% for object in consultancy_projects %}
-                              <tr>
-                                <td>{{object.title}}</td>
-                                <td>{{object.client}}</td>
-                                <td>{{object.financial_outlay}}</td>
-                                <td>{{object.duration}}</td>
-                              </tr>
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.client}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.end_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
                             {% endfor %}
                             {% for object in research_projects %}
-                              <tr>
-                                <td>{{object.title}}</td>
-                                <td>{{object.funding_agency}}</td>
-                                <td>{{object.financial_outlay}}</td>
-                                <td>{{object.finish_date}}</td>
-                                <td>{{object.status}}</td>
-                              </tr>
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.funding_agency}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.finish_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
                             {% endfor %}
                           </table>
                           <br><br>
@@ -643,7 +680,7 @@
             {% for app in appraisal_archive_apps %}
               <div class="item">
                   <div class="content">
-                      <div class="header">Status : {{app.status|title}}</div>
+                      <div class="header">Status : {{app.status}}</div>
                               <div class="meta">
                                   <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
                               </div>
@@ -665,7 +702,7 @@
                   <div class="content">
                       <div class="description">
 
-                          <label>Status : {{ app.status|title }}</label><br>
+                          <label>Status : {{ app.status }}</label><br>
                           <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
                           <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
                           <hr style="height:5px;background-color:#333;">
@@ -703,10 +740,23 @@
                               <th>UG/PG</th>
                               <th>YEAR</th>
                               <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
                             </tr>
+                            {% for obj in new_courses_offered %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
                           </table>
 
-                          <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
                           <table>
                             <tr>
                               <th>Course-Name</th>
@@ -715,7 +765,19 @@
                               <th>Type of Activity</th>
                               <th>Web/Public</th>
                             </tr>
+                          {% for obj in new_courses_material %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
                           </table>
+
                           <hr style="height:5px;background-color:#333;">
 
 
@@ -735,6 +797,8 @@
                                 <td>{{object.s_name}}</td>
                                 <td>{{object.title}}</td>
                                 <td>{{object.s_year}}</td>
+                                <td>{{object.semester}}</td>
+                                <td>{{object.status}}</td>
                               </tr>
                             {% endfor %}
                           </table>
@@ -750,21 +814,24 @@
                               <th>Remarks</th>
                             </tr>
                             {% for object in consultancy_projects %}
-                              <tr>
-                                <td>{{object.title}}</td>
-                                <td>{{object.client}}</td>
-                                <td>{{object.financial_outlay}}</td>
-                                <td>{{object.duration}}</td>
-                              </tr>
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.client}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.end_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
                             {% endfor %}
                             {% for object in research_projects %}
-                              <tr>
-                                <td>{{object.title}}</td>
-                                <td>{{object.funding_agency}}</td>
-                                <td>{{object.financial_outlay}}</td>
-                                <td>{{object.finish_date}}</td>
-                                <td>{{object.status}}</td>
-                              </tr>
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.funding_agency}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.finish_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
                             {% endfor %}
                           </table>
                           <br><br>
@@ -998,10 +1065,23 @@
                               <th>UG/PG</th>
                               <th>YEAR</th>
                               <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
                             </tr>
+                            {% for obj in new_courses_offered_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
                           </table>
 
-                          <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
                           <table>
                             <tr>
                               <th>Course-Name</th>
@@ -1010,7 +1090,19 @@
                               <th>Type of Activity</th>
                               <th>Web/Public</th>
                             </tr>
+                          {% for obj in new_courses_material_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
                           </table>
+
                           <hr style="height:5px;background-color:#333;">
 
 
@@ -1027,11 +1119,15 @@
                             </tr>
                             {% for object in thesis_all %}
                               {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
                                   <tr>
                                     <td>{{object.s_name}}</td>
                                     <td>{{object.title}}</td>
                                     <td>{{object.s_year}}</td>
+                                    <td>{{object.semester}}</td>
+                                    <td>{{object.status}}</td>
                                   </tr>
+                                {% endif %}
                               {% endif %}
                             {% endfor %}
                           </table>
@@ -1048,23 +1144,31 @@
                             </tr>
                             {% for object in consultancy_projects_all %}
                                 {% if object.user == app.appraisal.applicant %}
-                                    <tr>
-                                      <td>{{object.title}}</td>
-                                      <td>{{object.client}}</td>
-                                      <td>{{object.financial_outlay}}</td>
-                                      <td>{{object.duration}}</td>
-                                    </tr>
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.client}}</td>
+                                    <td>{{object.financial_outlay}}</td>
+                                    <td>{{object.start_date}} to {{object.end_date}}</td>
+                                    <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
+                                  </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
+
                             {% for object in research_projects_all %}
                                 {% if object.user == app.appraisal.applicant %}
-                                    <tr>
-                                      <td>{{object.title}}</td>
-                                      <td>{{object.funding_agency}}</td>
-                                      <td>{{object.financial_outlay}}</td>
-                                      <td>{{object.finish_date}}</td>
-                                      <td>{{object.status}}</td>
-                                    </tr>
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.finish_date and object.finish_date <= app.appraisal.end_date or app.appraisal.start_date <= object.date_submission and object.date_submission <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.funding_agency}}</td>
+                                    <td>{{object.financial_outlay}}</td>
+                                    <td>{{object.start_date}} to {{object.finish_date}}</td>
+                                    <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
+                                  </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1076,6 +1180,7 @@
                           <table>
                             {% for object in patents_all %}
                                 {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
                                     <tr>
                                       <td style="background-color:#f1f1c1"><strong>Type</strong></td>
                                       <td>Patent</td>
@@ -1092,6 +1197,7 @@
                                       <td style="background-color:#f1f1c1"><strong>Status</strong></td>
                                       <td>{{object.status}}</td>
                                     </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1100,6 +1206,7 @@
                           <table>
                             {% for object in tech_transfer_all %}
                                 {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
                                     <tr>
                                       <td style="background-color:#f1f1c1"><strong>Type</strong></td>
                                       <td>Technology Transfer</td>
@@ -1108,6 +1215,7 @@
                                       <td style="background-color:#f1f1c1"><strong>Details</strong></td>
                                       <td>{{object.details}}</td>
                                     </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1118,6 +1226,7 @@
                           <table>
                             {% for object in publications_all %}
                                 {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.publication_date and object.publication_date <= app.appraisal.end_date %}
                                     <tr>
                                       <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
                                       <td>{{object.p_type}}</td>
@@ -1138,6 +1247,7 @@
                                       <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
                                       <td>{{object.pyear}}</td>
                                     </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1155,11 +1265,13 @@
                             </tr>
                             {% for object in conferences_all %}
                                 {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
                                     <tr>
                                       <td>{{object.name}}</td>
                                       <td>{{object.venue}}</td>
                                       <td>{{object.role1}}</td>
                                     </tr>
+                                  {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1175,10 +1287,12 @@
                             </tr>
                             {% for object in achievments_all %}
                                 {% if object.user == app.appraisal.applicant %}
-                                    <tr>
-                                      <td>{{object.a_type}}</td>
-                                      <td>{{object.details}}</td>
-                                    </tr>
+                                    {% if app.appraisal.start_date <= object.achievment_date and object.achievment_date <= app.appraisal.end_date %}
+                                        <tr>
+                                          <td>{{object.a_type}}</td>
+                                          <td>{{object.details}}</td>
+                                        </tr>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                           </table>
@@ -1195,13 +1309,15 @@
                             </tr>
                             {% for object in events_all %}
                               {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td>{{object.type}}</td>
-                                    <td>{{object.name}}</td>
-                                    <td>{{object.sponsoring_agency}}</td>
-                                    <td>{{object.venue}}</td>
-                                    <td>{{object.role}}</td>
-                                  </tr>
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.type}}</td>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.sponsoring_agency}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role}}</td>
+                                    </tr>
+                                {% endif %}
                               {% endif %}
                             {% endfor %}
                           </table>
@@ -1240,13 +1356,16 @@
                               <textarea name="remarks_director" rows="2" cols="30"></textarea><br><br>
                               <label><strong>Please select your result:</strong></label><br>
                               <input type="radio" id="outstanding" name="result" value="outstanding">
-                              <label for="outstanding">Outstanding</label><br>
-                              <input type="radio" id="excellent" name="result" value="excellent">
-                              <label for="excellent">Excellent</label><br>
+                              <label for="outstanding">OUTSTANDING</label><br>
+                              <input type="radio" id="excellant" name="result" value="excellant">
+                              <label for="excellant">EXCELLENT</label><br>
+                              <input type="radio" id="very good" name="result" value="very good">
+                              <label for="very good">VERY GOOD</label><br>
                               <input type="radio" id="good" name="result" value="good">
-                              <label for="good">Good</label><br>
+                              <label for="good">GOOD</label><br>
                               <input type="radio" id="poor" name="result" value="poor">
-                              <label for="poor">Poor</label><br><br><br>
+                              <label for="poor">POOR</label><br>
+                              <br><br>
                               <button type="submit" name="director_appraisal_review" class="ui large primary button">
                                   Submit Request
                               </button>
@@ -1296,7 +1415,6 @@
                     <div class="description">
 
                         <label>Status : {{ app2.status }}</label><br>
-                        <label>HOD Remarks: {{app.remark_hod}}</label><br>
                         <label>Director Remarks: {{app.remark_director}}</label><br>
                         <hr style="height:5px;background-color:#333;">
 
@@ -1328,26 +1446,51 @@
                         </table>
 
                         <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                        <table>  <!-- the container to add the TABLE -->
-                          <tr>
-                            <th>Course-Name</th>
-                            <th>Course Number</th>
-                            <th>UG/PG</th>
-                            <th>YEAR</th>
-                            <th>Semester</th>
-                          </tr>
-                        </table>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>YEAR</th>
+                              <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
+                            </tr>
+                            {% for obj in new_courses_offered_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </table>
 
-                        <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
-                        <table>
-                          <tr>
-                            <th>Course-Name</th>
-                            <th>Course Number</th>
-                            <th>UG/PG</th>
-                            <th>Type of Activity</th>
-                            <th>Web/Public</th>
-                          </tr>
-                        </table>
+                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
+                          <table>
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>Type of Activity</th>
+                              <th>Web/Public</th>
+                            </tr>
+                          {% for obj in new_courses_material_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
+                          </table>
+
                         <hr style="height:5px;background-color:#333;">
 
 
@@ -1363,13 +1506,17 @@
                             <th>Status(Completed / Submitted / In progress)</th>
                           </tr>
                           {% for object in thesis_all %}
-                            {% if object.user == app.appraisal.applicant %}
-                                <tr>
-                                  <td>{{object.s_name}}</td>
-                                  <td>{{object.title}}</td>
-                                  <td>{{object.s_year}}</td>
-                                </tr>
-                            {% endif %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.s_name}}</td>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.s_year}}</td>
+                                    <td>{{object.semester}}</td>
+                                    <td>{{object.status}}</td>
+                                  </tr>
+                                {% endif %}
+                              {% endif %}
                           {% endfor %}
                         </table>
 
@@ -1384,26 +1531,34 @@
                             <th>Remarks</th>
                           </tr>
                           {% for object in consultancy_projects_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td>{{object.title}}</td>
-                                    <td>{{object.client}}</td>
-                                    <td>{{object.financial_outlay}}</td>
-                                    <td>{{object.duration}}</td>
-                                  </tr>
-                              {% endif %}
-                          {% endfor %}
-                          {% for object in research_projects_all %}
-                              {% if object.user == app.appraisal.applicant %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.title}}</td>
+                                      <td>{{object.client}}</td>
+                                      <td>{{object.financial_outlay}}</td>
+                                      <td>{{object.start_date}} to {{object.end_date}}</td>
+                                      <td>{{object.status}}</td>
+                                      <td>{{object.remarks}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for object in research_projects_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.finish_date and object.finish_date <= app.appraisal.end_date or app.appraisal.start_date <= object.date_submission and object.date_submission <= app.appraisal.end_date %}
                                   <tr>
                                     <td>{{object.title}}</td>
                                     <td>{{object.funding_agency}}</td>
                                     <td>{{object.financial_outlay}}</td>
-                                    <td>{{object.finish_date}}</td>
+                                    <td>{{object.start_date}} to {{object.finish_date}}</td>
                                     <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
                                   </tr>
-                              {% endif %}
-                          {% endfor %}
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
                         </table>
                         <br><br>
 
@@ -1412,40 +1567,44 @@
                         <br>
                         <table>
                           {% for object in patents_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Type</strong></td>
-                                    <td>Patent</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
-                                    <td>{{object.p_no}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Title</strong></td>
-                                    <td>{{object.title}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Status</strong></td>
-                                    <td>{{object.status}}</td>
-                                  </tr>
-                              {% endif %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Patent</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                                      <td>{{object.p_no}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                      <td>{{object.status}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
                           {% endfor %}
                         </table>
                         <br>
 
                         <table>
                           {% for object in tech_transfer_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Type</strong></td>
-                                    <td>Technology Transfer</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Details</strong></td>
-                                    <td>{{object.details}}</td>
-                                  </tr>
-                              {% endif %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Technology Transfer</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                      <td>{{object.details}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
                           {% endfor %}
                         </table>
                         <br><br>
@@ -1454,29 +1613,31 @@
                         <br>
                         <table>
                           {% for object in publications_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
-                                    <td>{{object.p_type}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Title</strong></td>
-                                    <td>{{object.title}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
-                                    <td>{{object.publisher}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
-                                    <td>{{object.authors}}</td>
-                                  </tr>
-                                  <tr>
-                                    <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
-                                    <td>{{object.pyear}}</td>
-                                  </tr>
-                              {% endif %}
-                          {% endfor %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.publication_date and object.publication_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                                      <td>{{object.p_type}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                      <td>{{object.publisher}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                      <td>{{object.authors}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                                      <td>{{object.pyear}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
                         </table>
                         <br><br>
 
@@ -1491,14 +1652,16 @@
                             <th><strong>Role</strong></th>
                           </tr>
                           {% for object in conferences_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td>{{object.name}}</td>
-                                    <td>{{object.venue}}</td>
-                                    <td>{{object.role1}}</td>
-                                  </tr>
-                              {% endif %}
-                          {% endfor %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role1}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
                         </table>
                         <br><br>
 
@@ -1511,12 +1674,14 @@
                             <th>Details</th>
                           </tr>
                           {% for object in achievments_all %}
-                              {% if object.user == app.appraisal.applicant %}
-                                  <tr>
-                                    <td>{{object.a_type}}</td>
-                                    <td>{{object.details}}</td>
-                                  </tr>
-                              {% endif %}
+                                {% if object.user == app.appraisal.applicant %}
+                                    {% if app.appraisal.start_date <= object.achievment_date and object.achievment_date <= app.appraisal.end_date %}
+                                        <tr>
+                                          <td>{{object.a_type}}</td>
+                                          <td>{{object.details}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
                           {% endfor %}
                         </table>
                         <br>
@@ -1531,15 +1696,17 @@
                             <th>Role</th>
                           </tr>
                           {% for object in events_all %}
-                            {% if object.user == app.appraisal.applicant %}
-                                <tr>
-                                  <td>{{object.type}}</td>
-                                  <td>{{object.name}}</td>
-                                  <td>{{object.sponsoring_agency}}</td>
-                                  <td>{{object.venue}}</td>
-                                  <td>{{object.role}}</td>
-                                </tr>
-                            {% endif %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.type}}</td>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.sponsoring_agency}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role}}</td>
+                                    </tr>
+                                {% endif %}
+                              {% endif %}
                           {% endfor %}
                         </table>
                         <br>
@@ -1585,4 +1752,84 @@
     </div>
 </div>
 
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript">
+  
+  var count2 = 0;
+  var counter_string2 = "0";
+  var arrHead2 = new Array();	// array for header.
+  arrHead2 = ['Course-Name','Course Number','UG/PG','YEAR','Semester','Tutorial (Hours/week)']
+
+  var count3 = 0;
+  var counter_string3 = "0";
+  var arrHead3 = new Array();	// array for header.
+  arrHead3 = ['Course-Name','Course Number','UG/PG','Type of Activity','Web/Public']
+
+
+function addRowNewCourses() {
+    count2 = count2 + 1;
+    counter_string2 = count2.toString();
+    var newcourseTab = document.getElementById('NewCoursesOffered');
+    var rowCnt2 = newcourseTab.rows.length;  // table row count.
+    var tr = newcourseTab.insertRow(rowCnt2);
+
+    for(var c = 0; c < arrHead2.length; c++){
+        var td = document.createElement('td');
+        td = tr.insertCell(c);
+        console.log(arrHead2[c]);
+        if(c == 0 || c == 2){
+          // Course Name: Text input field
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'text');
+          ele.setAttribute('value', '');
+          ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string2);
+          td.appendChild(ele);
+        }
+        else{
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'number');
+          ele.setAttribute('value', 0.0);
+          ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string2);
+          td.appendChild(ele);
+        }
+    }
+}
+
+function addRowNewCoursesMaterial(){
+      count3 = count3 + 1;
+      counter_string3 = count3.toString();
+      var newCourseMaterialTab = document.getElementById('NewCourseMaterial');
+      var rowCnt3 = newCourseMaterialTab.rows.length;
+      var tr = newCourseMaterialTab.insertRow(rowCnt3);
+      for(var c = 0; c < arrHead3.length; c++){
+        var td = document.createElement('td');
+        td = tr.insertCell(c);
+        if(c == 1){
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'number');
+          ele.setAttribute('value', 0.0);
+          ele.setAttribute('name', arrHead3[c] + '1.1.3' + counter_string3);
+          td.appendChild(ele);
+        }else {
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'text');
+          ele.setAttribute('value', '');
+          ele.setAttribute('name', arrHead3[c] + '1.1.3' + counter_string3);
+          td.appendChild(ele);
+        }
+      }
+  }
+
+// delete TABLE row function.
+function removeRow(oButton) {
+    console.log("Check");
+    var courseTab = document.getElementById('CoursesInstructed');
+    courseTab.deleteRow(oButton.parentNode.parentNode.rowIndex); // button -> td -> tr.
+}
+
+
+</script>
 {% endblock %}

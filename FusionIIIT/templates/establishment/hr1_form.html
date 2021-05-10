@@ -45,6 +45,8 @@
                         {% include 'establishment/appraisal_hod.html' %}
                     {% elif director %}
                         {% include 'establishment/appraisal_director.html' %}
+                    {% elif admin %}
+                        {% include 'establishment/appraisal_admin.html' %}
                     {% else %}
                         {% include 'establishment/appraisal.html' %}
                     {% endif %}

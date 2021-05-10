@@ -10,7 +10,12 @@ class Constants:
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
-        ('finished', 'Adjustments Approved')
+        ('finished', 'Finished'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -43,8 +48,14 @@ class Constants:
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('forwarded', 'Forwarded'),
-        ('auto rejected', 'Auto Rejected')
+        ('auto rejected', 'Auto Rejected'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
+
 
 
 class Establishment_variables(models.Model):
@@ -198,17 +209,23 @@ class Ltc_eligible_user(models.Model):
         return "{:.2f}".format(ret.years + ret.months/12 + ret.days/365)
 
     def total_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed+self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def hometown_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed)
+        x=max(x,0)
+        return x
 
     def elsewhere_ltc_remaining(self):
-        return (self.elsewhere_ltc_allowed
+        x=(self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def __str__(self):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
@@ -234,6 +251,8 @@ class Appraisal(models.Model):
     sevice_to_ins=models.CharField(max_length=20, blank=True, null=True, default='')
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
     def __str__(self):
         return str(self.applicant.username) + ' -- ' + str(self.id)

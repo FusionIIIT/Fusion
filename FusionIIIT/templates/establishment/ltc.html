@@ -20,7 +20,14 @@
         Review
     </a>
 </div>
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+</style>
 
 <!--    LTC INFORMATION   -->
 <div class="ui bottom attached tab segment active" data-tab="ltczero">
@@ -64,6 +71,10 @@
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
                 <br>
+
+                <div class="field disabled">
+                    {% render_field ltc_form.pf_number %}
+                </div>
                 <div class="field">
                     {% render_field ltc_form.basic_pay %}
                 </div>

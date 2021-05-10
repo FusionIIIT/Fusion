@@ -18,15 +18,18 @@
         Eligible Users
     </a>
 </div>
-
-<script>function yesnoCheck(that) {
-
-    if (that.value == "requested" ) {
-        document.getElementById("assign_fields").style.display = "block";
-    } else {
-        document.getElementById("assign_fields").style.display = "none";
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
     }
-}</script>
+    th {background-color:#f1f1c1}
+    .req:after {
+    content:" *";
+    color: red;
+  }
+</style>
 <!--
 pending ltc applications
 -->
@@ -128,10 +131,10 @@ pending ltc applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                            
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                        <select id='status' name='status' onchange="ltc_assign(this);" required>
                                             <option value="" selected>Select</option>
                                             <option value="requested" >Requested</option>
                                             <option value="approved">Approved</option>
@@ -142,7 +145,7 @@ pending ltc applications
                                         
                                     </div><br>
                                     
-                                    <div id="assign_fields" class="field" style="display: none;">
+                                    <div id="assign_fields" class="field" style="display: block;">
                                         <b>Forward to</b>
                                     <br>
                                         {% render_field app.assign_form.reviewer_id %} 
@@ -358,10 +361,10 @@ under_review ltc applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                            
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
+                                        <select id='status' name='status' onchange="ltc_assign(this);">
                                             <option value="" selected>Select</option>
                                             <option value="requested" >Requested</option>
                                             <option value="approved">Approved</option>
@@ -372,7 +375,7 @@ under_review ltc applications
                                         
                                     </div><br>
                                     
-                                    <div id="ifYes" class="field" style="display: none;">
+                                    <div id="assign_fields2" class="field" style="display: block;">
                                         <b>Forward to</b>
                                     <br>
                                         {% render_field app.assign_form.reviewer_id %} 
@@ -511,14 +514,14 @@ reviewed ltc applications
                                     <div class="field">
                                         {% for key, value in remarks_list.items %}    
                                         {% if key == app %}
-                                            {% for x in value %}
-                                            Remarks from 
+                                            
+                                             
                                             {% for x in value %}
                                             Remarks from 
                                             {{x.0}} : {{x.1}}
                                             <br>             
                                             {% endfor %}
-                                            {% endfor %}
+                                            
                                         {%endif%}
                                         {% endfor %}
                                         
@@ -526,20 +529,34 @@ reviewed ltc applications
                                     </div>
 
                                     <br>
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %}
+                                           
+                                        <select id='status' name='status' onchange="ltc_assign(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="assign_fields2" class="field" style="display: block;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.assign_status%}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">

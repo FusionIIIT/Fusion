@@ -14,7 +14,14 @@
 </div>
 
 
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+</style>
 
 <!--
 .o88b. d8888b. d8888b.  .d8b.       d8888b. d88888b  .d88b.  db    db d88888b .d8888. d888888b
@@ -39,6 +46,9 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                     <br>
                 </div>
                 <br>
+                <div class="field disabled">
+                    {% render_field cpda_form.pf_number %}
+                </div>
                 <div class="field">
                     {% render_field cpda_form.purpose %}
                 </div>
