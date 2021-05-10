@@ -209,17 +209,23 @@ class Ltc_eligible_user(models.Model):
         return "{:.2f}".format(ret.years + ret.months/12 + ret.days/365)
 
     def total_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed+self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def hometown_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed)
+        x=max(x,0)
+        return x
 
     def elsewhere_ltc_remaining(self):
-        return (self.elsewhere_ltc_allowed
+        x=(self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def __str__(self):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)

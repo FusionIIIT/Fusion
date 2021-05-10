@@ -1001,7 +1001,7 @@ def generate_ltc_eligible_lists(request):
         if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
             pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
         form = Ltc_Form(initial={'pf_number':pf_number})
-
+    pf_number=1234
     to_review_apps = (Ltc_application.objects
                     .filter(tracking_info__reviewer_id=request.user)
                     .filter(status='requested')
