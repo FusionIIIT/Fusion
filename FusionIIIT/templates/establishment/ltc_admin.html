@@ -18,6 +18,18 @@
         Eligible Users
     </a>
 </div>
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+    .req:after {
+    content:" *";
+    color: red;
+  }
+</style>
 <!--
 pending ltc applications
 -->
@@ -119,10 +131,10 @@ pending ltc applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                            
-                                        <select id='status' name='status' onchange="ltc_assign(this);">
+                                        <select id='status' name='status' onchange="ltc_assign(this);" required>
                                             <option value="" selected>Select</option>
                                             <option value="requested" >Requested</option>
                                             <option value="approved">Approved</option>
@@ -349,8 +361,8 @@ under_review ltc applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                            
                                         <select id='status' name='status' onchange="ltc_assign(this);">
                                             <option value="" selected>Select</option>
@@ -517,8 +529,8 @@ reviewed ltc applications
                                     </div>
 
                                     <br>
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                            
                                         <select id='status' name='status' onchange="ltc_assign(this);">
                                             <option value="" selected>Select</option>

@@ -10,7 +10,12 @@ class Constants:
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
-        ('finished', 'Adjustments Approved')
+        ('finished', 'Finished'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -43,8 +48,14 @@ class Constants:
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('forwarded', 'Forwarded'),
-        ('auto rejected', 'Auto Rejected')
+        ('auto rejected', 'Auto Rejected'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
+
 
 
 class Establishment_variables(models.Model):
@@ -234,6 +245,8 @@ class Appraisal(models.Model):
     sevice_to_ins=models.CharField(max_length=20, blank=True, null=True, default='')
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
     def __str__(self):
         return str(self.applicant.username) + ' -- ' + str(self.id)

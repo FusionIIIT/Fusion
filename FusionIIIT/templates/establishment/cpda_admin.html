@@ -16,7 +16,18 @@
     </a>
 </div>
 
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+  .req:after {
+    content:" *";
+    color: red;
+  }
+</style>
 <!--
 pending cpda applications 
 -->
@@ -75,8 +86,9 @@ pending cpda applications
                                         <br>
                                     {% endif %}
 
-                                    <div class="field">
-                                        Status<br>
+                                    <label class="req">Status</label>
+                                    <div class='field'>
+                                        <br>
                                         {% if app.status == 'requested' %}    
                                         <select id='staus' name='status' onchange="yesnoCheck(this);">
                                             <option value="" selected>Select</option>
@@ -226,9 +238,8 @@ under_review cpda applications
                                         
                                         <br>
                                     {% endif %}
-
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        Status<br>
                                         {% if app.status == 'requested' %}    
                                         <select id='staus' name='status' onchange="yesnoCheck(this);">
                                             <option value="" selected>Select</option>
