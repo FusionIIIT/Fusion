@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^acad_person/branch_change/$', views.acad_branch_change, name='acad_branch_change'),
     url(r'^stu/', views.academic_procedures_student),
     url(r'^fac/', views.academic_procedures_faculty, name='faculty_procedures'),
+    url(r'^account/$', views.account),
     url(r'^addThesis/$', views.add_thesis, name='add_thesis'),
     url(r'^process_verification_request/$', views.process_verification_request),
     url(r'^teaching_credit/$', views.teaching_credit_register),
