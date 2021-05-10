@@ -133,7 +133,7 @@
                 </tr>
             </thead>
             <tbody>
-            {% for obj in assistantship_list %}
+            {% for obj in assistantship_list reversed%}
              <tr >                
                 <td>{{forloop.counter}}.</td>
                 <td>{{obj.month}}</td>

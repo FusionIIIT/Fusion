@@ -159,34 +159,40 @@
             {% endif %}
         </div>
         <div class="fields">
-            <div class="three wide field">
-                
-                <label for="{{ form.percent_quiz_1.id_for_label }}">Quiz 1%:</label>
+            <div class="two wide field">
+                <label for="{{ form.percent_quiz_1.id_for_label }}">Quiz 1 %:</label>
                 {{ form.percent_quiz_1 }}
             </div>
-            <div class="three wide field">
+            <div class="six wide field">
                 
-                <label for="{{ form.percent_midsem.id_for_label }}">Midsem%:</label>
+                <label for="{{ form.percent_midsem.id_for_label }}">Midsem %:</label>
                 {{ form.percent_midsem }}
             </div>
-            <div class="three wide field">
+            <div class="two wide field">
                 
-                <label for="{{ form.percent_quiz_2.id_for_label }}">Quiz 2%:</label>
+                <label for="{{ form.percent_quiz_2.id_for_label }}">Quiz 2 %:</label>
                 {{ form.percent_quiz_2 }}
             </div>
-            <div class="three wide field">
+            <div class="six wide field">
                 
-                <label for="{{ form.percent_endsem.id_for_label }}">Endsem%:</label>
+                <label for="{{ form.percent_endsem.id_for_label }}">Endsem %:</label>
                 {{ form.percent_endsem }}
             </div>
-            <div class="three wide field">
+        </div>
+        <div class="fields">
+            <div class="seven wide field">
                 
-                <label for="{{ form.percent_project.id_for_label }}">Project%:</label>
+                <label for="{{ form.percent_project.id_for_label }}">Project %:</label>
                 {{ form.percent_project }}
+            </div>
+            <div class="six wide field">
+
+                <label for="{{ form.percent_lab_evaluation.id_for_label }}">Lab Evaluations %:</label>
+                {{ form.percent_lab_evaluation }}
             </div>
             <div class="three wide field">
 
-                <label for="{{ form.percent_course_attendance.id_for_label }}">Attendance%:</label>
+                <label for="{{ form.percent_course_attendance.id_for_label }}">Attendance %:</label>
                 {{ form.percent_course_attendance }}
             </div>
         </div>

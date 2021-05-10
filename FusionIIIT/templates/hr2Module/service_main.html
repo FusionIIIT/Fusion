@@ -808,6 +808,73 @@
 
             {% endif %}
 
+            <!-- work Assignment -->
+
+            <div class="ui one cards" style="padding: 2px;">
+
+
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                <th>workAssignemnt :-</th>
+                                <tr>
+                                    <th>Sr.</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Job Title</th>
+                                    <th>Orders Copy</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+
+
+
+
+                                {% if not workAssignment %}
+                                <h1>No entry found</h1>
+                                {% endif%}
+
+                                {% for serviceBook in workAssignment %}
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                    <td id="ach{{ forloop.counter }}C">
+
+                                        <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                class="large attach black icon"></i>
+                                        </a>
+
+
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+            <!-- workassignemnt end -->
 
 
             <!-- Lien -->

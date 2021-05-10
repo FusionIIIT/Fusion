@@ -34,7 +34,7 @@
                         margin: auto;">
                 <tbody>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td></td>
                         <td colspan="{{ curriculum.no_of_semester }} ">
                             <h2 class="header">{{ curriculum }}</h2>
@@ -42,20 +42,20 @@
                     </tr>
                     {% if curriculum.batches.count > 0 %}
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td></td>
                         <td colspan="{{ curriculum.no_of_semester }}">
                             <h4 class="header">
-                                Batches:
+                                Batches:&nbsp;&nbsp;&nbsp;&nbsp;
                                 {% for batch in curriculum.batches.all %}
-                                    {{ batch }}
+                                    {{ batch }},&nbsp;&nbsp;&nbsp;&nbsp;
                                 {% endfor %}
                             </h4>
                         </td>
                     </tr>
                     {% endif %}
                     <tr style="font-size: medium;
-                            background-color: aliceblue;">
+                            background-color: whitesmoke;">
                         <td></td>
                         {% for semester in semesters %}
                         <td><a href="{% url 'programme_curriculum:admin_view_a_semester_of_a_curriculum' semester.id %}"><B>Semester<br>{{ semester.semester_no }}</B></a></td>
@@ -63,16 +63,18 @@
                     </tr>
                 
                     {% for course_slot in semester_slots %}
-                    <tr>
+                    <tr class="compact ui celled small table"
+                        style="text-align: center;
+                        margin: auto;">
                         <td></td>
                         {% for slot in course_slot %}
                             {% if slot != "" %}
-                                <td colspan="1" class="collapsing">
+                                <td colspan="1">
                                     {% if slot.courses.count != 1 %}
                                         <a href="{% url 'programme_curriculum:admin_view_a_courseslot' slot.id %}">{{ slot.name }}</a>
                                     {% else %}
                                         {% for course in slot.courses.all %}
-                                            <a href="{% url 'programme_curriculum:admin_view_a_courseslot' slot.id %}"><p>{{ course }}</p><p>(L: {{ course.lecture_hours }}, T: {{ course.tutorial_hours }}, C: {{ course.credit }})</p></a>
+                                            <a href="{% url 'programme_curriculum:admin_view_a_courseslot' slot.id %}"><p>{{ course }}<br>(L: {{ course.lecture_hours }}, T: {{ course.tutorial_hours }}, C: {{ course.credit }})</p></a>
                                         {% endfor %}
                                     {% endif %}
                                 </td>
@@ -151,7 +153,7 @@
 <div class="ui center aligned segment">
     <a class="fluid ui large positive animated button"  tabindex="0"
         href="{% url 'programme_curriculum:edit_curriculum_form' curriculum.id %}"
-        type="Submit" name="Submit" target="_blank" rel="noopener">
+        type="Submit" name="Submit">
         <div class="visible content">EDIT CURRICULUM</div>
         <div class="hidden content">
         <i class="edit icon"></i>

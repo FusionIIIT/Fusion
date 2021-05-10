@@ -49,32 +49,37 @@
             {% endif %}
         </div>
         <h3>{{ semester }}</h3>
-        <div class="ui form">
-          <div class="two fields">
-            <div class="field">
-                <label for="{{ form.start_semester.id_for_label }}">Start Semester:</label>
-              <div class="ui small calendar" id="rangestart">
-                <div class="ui input left icon">
-                  <i class="calendar icon"></i>
-                  {{ form.start_semester }}
+        <div class="ui basic segment">
+            <div class="ui form">
+                <div class="two fields">
+                    <div class="field">
+                        <label for="{{ form.start_semester.id_for_label }}">Start Semester:</label>
+                    <div class="ui small calendar" id="rangestart">
+                        <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        {{ form.start_semester }}
+                        </div>
+                    </div>
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.end_semester.id_for_label }}">End Semester:</label>
+                    <div class="ui calendar" id="rangeend">
+                        <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        {{ form.end_semester }}
+                        </div>
+                    </div>
+                    </div>
                 </div>
-              </div>
             </div>
-            <div class="field">
-                <label for="{{ form.end_semester.id_for_label }}">End Semester:</label>
-              <div class="ui calendar" id="rangeend">
-                <div class="ui input left icon">
-                  <i class="calendar icon"></i>
-                  {{ form.end_semester }}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-        <div class="inline field">
-            <div class="ui toggle checkbox">
-                {{ form.instigate_semester }}
-                <label for="{{ form.instigate_semester.id_for_label }}">Instigate Semester:</label>
+        
+        <div class="ui segment">
+            <div class="inline field">
+                <div class="ui toggle checkbox">
+                    {{ form.instigate_semester }}
+                    <label for="{{ form.instigate_semester.id_for_label }}">Instigate Semester</label>
+                </div>
             </div>
         </div>
         <div class="field">

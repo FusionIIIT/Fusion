@@ -128,7 +128,7 @@ table{
 <div class="ui active tab segment" data-tab="pending_account_assis" id="acc1">
     <div  class="ui vertical segment" >
         {% if assistant_account_list %}
-            {% for obj in assistant_account_list %}
+            {% for obj in assistant_account_list reversed %}
                 {% if obj.acad_approval == True and obj.account_approval == False %}
                     <div  class="account_assis" id_thesis="account_assis{{forloop.counter}}" id_object="{{obj.id}}">{{obj.student.id.user.username}}</div>
                     <div class="panel" id="account_assis{{forloop.counter}}" hidden>
@@ -192,7 +192,7 @@ table{
 <!--  approved requests -->
 <div class="ui tab segment" data-tab="account_approve_assis" id="acc2" >
     {% if assistant_account_list %}
-        {% for obj in assistant_account_list %}
+        {% for obj in assistant_account_list reversed %}
             {% if obj.account_approval %}
                  
                 <div class="pthesis" id="accountassisapproved{{forloop.counter}}">{{obj.student.id.user.username}}</div>
@@ -252,6 +252,41 @@ table{
     <h3>nothing here</h3>
     {% endif %}
 </div>
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
 
 
 

@@ -35,6 +35,12 @@ def teaching(request):
 def non_teaching(request):
     return render(request,'recruitment/non_teaching_posts.html')
 
+def create(request):
+    if request.user.is_superuser:
+        return render(request,'recruitment/create.html')
+    else:
+        return redirect('/recruitment')
+
 
 def login(request):
     if request.method=="POST":

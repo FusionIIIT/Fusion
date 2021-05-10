@@ -36,10 +36,10 @@
             style="text-align: center;
                 margin: auto;">
                 <thead>
-                    <tr style="background-color: aliceblue;">
+                    <tr style="background-color: whitesmoke;">
                         <td colspan="4"><h2 class="ui header">Curriculum : {{ semester.curriculum }}</h2></td>
                     </tr>
-                    <tr style="background-color: aliceblue;">
+                    <tr style="background-color: whitesmoke;">
                         <td colspan="4"><h2 class="ui header">Semester : {{ semester.semester_no }}</h2></td>
                     </tr>
                 </thead>
@@ -66,7 +66,7 @@
                     </tr>
                     <tr>
                         <td>Semester Information</td>
-                        <td>{{ semester.semester_info }}</td>
+                        <td>{{ semester.semester_info|linebreaks }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -84,17 +84,17 @@
             style="text-align: center;
                 margin: auto;">
                 <thead>
-                    <tr style="background-color: aliceblue;">
+                    <tr style="background-color: whitesmoke;">
                         <td colspan="4"><h2 class="header">{{ slot.name }}</h2></td>
                     </tr>
-                    <tr style="background-color: aliceblue;">
+                    <tr style="background-color: whitesmoke;">
                         <td colspan="4"><h3 class="header">Type : {{ slot.type }}</h3></td>
                     </tr>
                 </thead>
                 {% if slot.courses.all %}
                 <thead>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td><h4>Course Code</h4></td>
                         <td><h4>Course Name</h4></td>
                         <td><h4>Credits</h4></td>
