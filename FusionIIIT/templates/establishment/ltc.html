@@ -71,6 +71,10 @@
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
                 <br>
+
+                <div class="field disabled">
+                    {% render_field ltc_form.pf_number %}
+                </div>
                 <div class="field">
                     {% render_field ltc_form.basic_pay %}
                 </div>

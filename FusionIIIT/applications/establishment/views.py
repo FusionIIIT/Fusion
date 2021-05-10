@@ -916,7 +916,10 @@ def generate_cpda_eligible_lists(request):
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
-    form = Cpda_Form()
+    pf_number=1234
+    if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
+        pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
+    form = Cpda_Form(initial={'pf_number':pf_number})
     bill_forms = {}
     apps = Cpda_application.objects.select_related('applicant').filter(applicant=request.user).filter(status='approved')
     for app in apps:
@@ -940,6 +943,7 @@ def generate_cpda_eligible_lists(request):
     #hod=is_hod(request)
     #registrar=is_registrar(request)
     #director=is_director(request)
+    
     response = {
         'reviewer':True,
         'cpda_form': form,
@@ -950,7 +954,8 @@ def generate_cpda_eligible_lists(request):
         'total_advance_by_user':advance_taken,
         'remaining_advance': advance_avail,
         'block_period': block_period,
-        'cpda_reviewed_apps': reviewed_apps
+        'cpda_reviewed_apps': reviewed_apps,
+        'pf':pf_number
     }
     return response
 
@@ -992,7 +997,10 @@ def generate_ltc_eligible_lists(request):
         availed_archived = (Ltc_availed.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
         to_avail_archived = (Ltc_to_avail.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
         depend_archived = (Dependent.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
-        form = Ltc_Form()
+        pf_number=1234
+        if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
+            pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
+        form = Ltc_Form(initial={'pf_number':pf_number})
 
     to_review_apps = (Ltc_application.objects
                     .filter(tracking_info__reviewer_id=request.user)
@@ -1005,15 +1013,18 @@ def generate_ltc_eligible_lists(request):
     depend_review = (Dependent.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
-
+    #if not present
+    
     response = {
         'ltc_info': ltc_info,
         'ltc_to_review_apps': to_review_apps,
         'ltc_availed_review': availed_review,
         'ltc_to_avail_review': to_avail_review,
         'dependent_review': depend_review,
-        'lessthan1year': less_than_1_year
+        'lessthan1year': less_than_1_year,
+        'pf':pf_number
     }
+    
     if ltc_info['eligible']:
         response.update({
             'ltc_form': form,
