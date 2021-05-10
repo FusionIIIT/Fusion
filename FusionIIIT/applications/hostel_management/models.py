@@ -126,4 +126,26 @@ class HostelStudentAttendence(models.Model):
         return str(self.student_id) + '->' + str(self.date) + '-' + str(self.present)
 
 
-    
+class HallRoom(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room_no = models.CharField(max_length=4) 
+    block_no = models.CharField(max_length=1)
+    room_cap = models.IntegerField(default=3)
+    room_occupied = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.hall) + str(self.block_no) + str(self.room_no) + str(self.room_cap) + str(self.room_occupied)
+
+
+class WorkerReport(models.Model):
+    worker_id = models.CharField(max_length=10)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    worker_name = models.CharField(max_length=50)
+    year =  models.IntegerField(default=2020)
+    month = models.IntegerField(default=1)
+    absent = models.IntegerField(default= 0)
+    total_day = models.IntegerField(default=31)
+    remark = models.CharField(max_length=100)
+
+    def str(self):
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
