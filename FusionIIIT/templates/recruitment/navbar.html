@@ -13,6 +13,9 @@
         <a class="item" href = "/recruitment/post">
             Post Job
         </a>
+        <a class="item" href = "/recruitment/create">
+            Create Form
+        </a>
         {% endif %}
         {% if user.is_authenticated %}
 
@@ -21,13 +24,19 @@
         </a>
         {% else %}
 
-        <a class="item right floated" href="/accounts/login">
-            Log in
+        <div class="item right floated">
+        <a href="/accounts/login">
+            Login
         </a>
-
-        <a class="item right floated" href="/accounts/register">
+        &nbsp;
+        &nbsp;
+        &nbsp;
+         <a href="/accounts/register">
             Register
-        </a>
+        </a> 
+        </div>
+        
+
 
         {% endif %}
 
