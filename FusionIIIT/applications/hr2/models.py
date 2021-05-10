@@ -1,6 +1,6 @@
 from django.db import models
 from applications.globals.models import ExtraInfo
-
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Constants:
     # Class for various choices on the enumerations
@@ -77,7 +77,9 @@ class EmpConfidentialDetails(models.Model):
     table for employee  confidential details
     """
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    aadhar_no = models.IntegerField(default=0)
+    aadhar_no = models.BigIntegerField(default=0, max_length=12, 
+                              validators=[MaxValueValidator(999999999999),MinValueValidator(99999999999)])
+                              
     maritial_status = models.CharField(
         max_length=50, null=False, choices=Constants.MARITIAL_STATUS)
     bank_account_no = models.IntegerField(default=0)

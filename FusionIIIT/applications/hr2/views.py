@@ -280,14 +280,17 @@ def add_new_user(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, "New User added Successfully")
-        # else:
-        #     messages.error(request,"Some error occured please try again later")
+        elif not form.is_valid:
+            print(form.errors)
+            messages.error(request,"Some error occured please try again later")
 
-        if eform.is_valid():
+        elif eform.is_valid():
             eform.save()
             messages.success(request, "Extra info of user saved successfully")
-        # else:
-        #     messages.error(request,"Some error occured please try again later")
+        elif not eform.is_valid:
+        
+            print(eform.errors)
+            messages.error(request,"Some error occured please try again later")
 
     form = NewUserForm
     eform = AddExtraInfo
