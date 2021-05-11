@@ -10,6 +10,9 @@ from django.contrib.auth.decorators import login_required
 import datetime,time
 from notification.views import office_module_DeanS_notif
 from django.views.decorators.csrf import csrf_protect
+import re
+from applications.academic_information.models import Student
+from applications.hostel_management.models import Hall, HallRoom
 
 """
     Universal context :
@@ -240,11 +243,58 @@ def hostelRoomAllotment(request):
             capacity.current_capacity = int(capacity.current_capacity) - int(num_students)
             capacity.save()
             success_msg = 'Hall Alloted Successfully'
-            Superintendent = HoldsDesignation.objects.filter(designation=Designation.objects.filter(name='Junior Superintendent')).first()
-            office_module_DeanS_notif(request.user, Superintendent, 'hostel_alloted')
+            Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
+            # office_module_DeanS_notif(request.user, Superintendent, 'hostel_alloted')
         else:
             err_msg = 'Hostel Limit Exceeded!'
     print("error msg : " + err_msg)
+
+    # new implemented for hostel_management module
+    hall_num=re.findall('[0-9]+',str(hall_no))
+    count=0
+    students = Student.objects.filter(batch=year)
+    get_student=[]
+    for i in students:
+        if(i.hall_no==0):
+            i.hall_no=hall_num[0]
+            i.save()
+            count=count+1
+            get_student.append(i)
+        if(count>=int(num_students)):
+            break
+    
+    print("total student="+str(len(get_student)))
+
+    get_hall=Hall.objects.get(hall_id="hall"+str(hall_num[0]))
+    get_room=HallRoom.objects.filter(hall=get_hall)
+
+    print(get_room)
+
+    count=0
+    for room in get_room:
+        capacity=room.room_cap
+        current=room.room_occupied
+        loop_break=0
+        print("room==="+str(room.block_no)+str(room.room_no))
+
+        while(current+1<=capacity):
+            if(count>=int(num_students)):
+                loop_break=1
+                break
+
+            get_student[count].room_no=str(room.block_no)+"-"+str(room.room_no)
+            get_student[count].save()
+            count=count+1
+            current=current+1
+
+        room.room_occupied=current
+        room.save()
+
+        if(loop_break==1):
+            break
+        if(count>=int(num_students)):
+            break
+
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request,page=7,err_msg=err_msg,success_msg=success_msg, flag_superintendent=True))
 
 """
@@ -277,6 +327,33 @@ def deleteHostelRoomAllotment(request):
 
         hostel_allotment.objects.get(id=id).delete()
         success_msg = 'Hostel Allotment Deleted Successfully'
+
+        # new implemented for hostel_management module
+        hall_num=re.findall('[0-9]+',str(hall_no))
+        for i in range(0,10):
+            print(hall_num[0])
+        total_students=Student.objects.filter(hall_no=int(str(hall_num[0])))
+        count=0
+        for i in total_students:
+            if count+1<=num_students and str(i.hall_no)!="0":
+                # //////
+                temp=str(i.room_no)
+                block=str(temp[0])
+                room=str(temp[2])+str(temp[3])+str(temp[4])
+                hall_no=Hall.objects.get(hall_id="hall"+str(hall_num[0]))
+                get_room=HallRoom.objects.get(hall=hall_no,block_no=block,room_no=room)
+                get_room.room_occupied=get_room.room_occupied-1
+                get_room.save()
+                # ////////
+
+                i.hall_no=0
+                i.save()
+                count=count+1
+            if(count>=num_students):
+                break
+        # //////////
+
+
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request, page=7, success_msg=success_msg, err_msg=err_msg, flag_superintendent=True))
 
 """
@@ -299,6 +376,18 @@ def deleteAllHostelRoomAllotment(request):
             item.current_capacity = item.total_capacity
             item.save()
 
+        # new implemented for hostel_management module
+        students = Student.objects.all()
+        for student in students:
+            student.hall_no = 0
+            student.save()
+
+        hall_rooms = HallRoom.objects.all()
+        for hall_room in hall_rooms:
+            hall_room.room_occupied = 0
+            hall_room.save()
+        # ----------------------------------------------------
+        
         success_msg = 'All Allotments Deleted Successfully'
     else:
         success_msg = 'No records to delete'
