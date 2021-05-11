@@ -2,21 +2,18 @@
 
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="current">
+    {% comment %} <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="History">
             Current Status
         </a>
+    </div> {% endcomment %}
 
-        <a class="item" data-tab="history">
-            History
-        </a>
-    </div>
-
-    <div class="ui active tab" data-tab="current">
+    <div class="ui active tab" data-tab="History">
         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-            <div class="ui header">
+            {% comment %} <div class="ui header">
                 Status of issues :
-            </div>
+            </div> {% endcomment %}
+
 
             <div class="content">
                 <div class="description">
@@ -30,7 +27,7 @@
                         <thead>
                         <tr>
                             <th>
-                                Date
+                                Issues Raised On
                             </th>
 
                             <th>
@@ -43,115 +40,47 @@
 
                             <th>
                                 Remarks
-                            </th>
+                            </th> 
+                            <th>
+                                Resolved by
+                            </th> 
                         </tr>
                         </thead>
 
-                        {% comment %} <tbody>
-                        
-                            {% for winner in mcm %}
-                                {% if winner.student.id == request.user.extrainfo.student.id %}
-                                    
-                        <tr>
-                            {% if winner.status != 'ACCEPT' %}
-                            <td>
-                                {{winner.award_id}}
-                            </td>
-                                
-                            <td>
-                                {{request.user.extrainfo.student.id}}
-                            </td>
+                        <tbody>
+                {% for  status in statuses %}
+                <tr>
+                    <td>
+                        {{ status.issue_raised_date}}
+                    </td>
 
-                            <td>
-                                {{winner.date}}
-                            </td>
+                    <td>
+                        {{ status.issue_category.category}}
+                    </td>
 
-                            <td>
-                                {{winner.status}}
-                            </td>
-                            {% endif %}
-                        </tr>
-                                {% endif %}
-                            
-                        {% endfor %}
+                    <td >
 
-                             {% for winner in dandm %}
-                                {% if winner.student.id == request.user.extrainfo.student.id %}
-                        <tr>
-                            {% if winner.status != 'ACCEPT' %}
-                            <td>
-                                {{winner.award_id}}
-                            </td>
-                                
-                            <td>
-                                {{request.user.extrainfo.student.id}}
-                            </td>
+                        {{ status.issue_status}}
+                    </td>
 
-                            <td>
-                                {{winner.date}}
-                            </td>
+                    <td default="-">
+                        {{ status.response_remark}}
+                    </td> 
+                    <td default="-">
+                        {{ status.resolved_by.user.first_name }} {{status.resolved_by.user.username}}
+                    </td> 
+                </tr>
+                {% endfor %}
+                </tbody>
 
-                            <td>
-                                {{winner.status}}
-                            </td>
-                            {% endif %} 
-                        </tr>
-                                {% endif %}
-                            {% endfor %}
-                             {% for winner in gold %}
-                                {% if winner.student.id == request.user.extrainfo.student.id %}
-                        <tr>
-                            {% if winner.status != 'ACCEPT' %}
-                            <td>
-                                {{winner.award_id}}
-                            </td>
-                                
-                            <td>
-                                {{request.user.extrainfo.student.id}}
-                            </td>
-
-                            <td>
-                                {{winner.date}}
-                            </td>
-
-                            <td>
-                                {{winner.status}}
-                            </td>
-                            {% endif %}
-                        </tr>
-                                {% endif %}
-                            {% endfor %}
-                             {% for winner in silver %}
-                                {% if winner.student.id == request.user.extrainfo.student.id %}
-                        <tr>
-                            {% if winner.status != 'ACCEPT' %}
-                            <td>
-                                {{winner.award_id}}
-                            </td>
-                                
-                            <td>
-                                {{request.user.extrainfo.student.id}}
-                            </td>
-
-                            <td>
-                                {{winner.date}}
-                            </td>
-
-                            <td>
-                                {{winner.status}}
-                            </td>
-                            {% endif %}
-                        </tr>
-                                {% endif %}
-                            {% endfor %} 
-                        </tbody>{% endcomment %}
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="ui tab" data-tab="history">
+    {% comment %} <div class="ui tab" data-tab="history">
+
         <div class="ui vertical segment">
             <div class="ui header">
                 Previous details of issues
@@ -205,6 +134,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    {% comment %} </div> {% endcomment %} 
+
 
 {%  endblock %} 
