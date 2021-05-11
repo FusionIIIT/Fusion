@@ -20,7 +20,7 @@ PAGE_SIZE = 4
 # Create your views here.
 @login_required
 def feeds(request):
-    query = AskaQuestion.objects.order_by('-uploaded_at')
+    query = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(query.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
@@ -32,9 +32,8 @@ def feeds(request):
     keyword = ""
     # query = paginator.page(current_page)
     if request.GET.get("search") and request.GET.get('keyword') :
-        print("searching")
         q = request.GET.get('keyword')
-        questions = AskaQuestion.objects.all()
+        questions = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').all()
         result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
         query = result
         paginator = Paginator(query, PAGE_SIZE)
@@ -45,7 +44,6 @@ def feeds(request):
     if request.method == 'POST':
 
         if request.POST.get('add_qus') :
-            print("Post a Question request received")
             question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
             question.description = request.POST.get('content')
@@ -66,7 +64,7 @@ def feeds(request):
             else:
                 question.anonymous_ask = False;
             question.save()
-            role_check = Roles.objects.filter(user=request.user)
+            role_check = Roles.objects.select_related().filter(user=request.user)
             if len(role_check) > 0 and request.POST.get("from_admin"):
                 access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
@@ -77,11 +75,11 @@ def feeds(request):
                     access.canComment = False
                 access.save()
                 return redirect("/feeds/admin")
-            query = AskaQuestion.objects.order_by('-uploaded_at')
+            query = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
 
         if request.POST.get('search'):
             q = request.POST.get('keyword')
-            questions = AskaQuestion.objects.all()
+            questions = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').all()
             result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
             query = result
             paginator = Paginator(query, PAGE_SIZE)
@@ -92,35 +90,33 @@ def feeds(request):
             a = []
             fav_tag = fav_tag[4:]
             a= [int(c) for c in fav_tag.split(",")]                             # listing queery objects
-            print(a)
+            
             for i in range(0, len(a)):                       
                 temp = AllTags.objects.get(pk=a[i])
                 new = tags.objects.create(user=request.user,my_subtag=temp)
                 new.my_tag = temp.tag
-                print(AllTags.objects.get(pk=a[i]))
                 new.save()
             return redirect("/feeds")
 
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
 
-    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
-    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
-    # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
+    user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     ques = []
     try:
         query = paginator.page(current_page)
     except:
         query = []
 
-    hid = hidden.objects.all()
+    hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').all()
     for q in query:
         isliked = 0
         isdisliked = 0
         hidd = 0
         isSpecial = 0
-        profi = Profile.objects.all().filter(user=q.user)
+        profi = Profile.objects.select_related().all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
         if(hid.all().filter(user=request.user, question = q).count()==1):
@@ -143,7 +139,7 @@ def feeds(request):
         ques.append(temp)
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
-    role_data = Roles.objects.all()
+    role_data = Roles.objects.select_related().all()
     context ={
         'role' : role_data,
         'hidden' : hid,
@@ -183,7 +179,6 @@ def feeds(request):
 
 def Request(request):
     question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
-    print('Python')
     question.is_requested = False
 
     if question.requests.filter(id=request.user.id).exists():
@@ -194,8 +189,6 @@ def Request(request):
         question.requests.add(request.user)
         question.is_requested = True
         question.save()
-        
-    print(question.total_requests())
 
     context ={
         'question' : question,
@@ -210,14 +203,11 @@ def Request(request):
 # Ajax called for comments to saved and display them
 def Comment_Text(request):
     if request.method == 'POST':
-        print('Ajax called')
         question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
         comment = Comments.objects.create(user=request.user,question=question)
         comment.comment_text = request.POST.get('comment_box')
         comment.save()
-        print(comment.id)
         msg = request.POST.get('comment_box', None)
-        print('saved')
 
         context = {
             'question': question,
@@ -235,17 +225,13 @@ def Comment_Text(request):
 
 def Reply_Text(request):
     if request.method == 'POST':
-        print('Ajax called')
         question = get_object_or_404(AskaQuestion, id=request.POST.get('ques_id'))
-        print(request.POST.get('ques_id'))
         comment = get_object_or_404(Comments, id=request.POST.get('id'))
         reply = Reply.objects.create(user=request.user, comment=comment)
         reply.content = request.POST.get('comment_box')
 
         reply.save()
-        print(comment.id)
         msg = request.POST.get('comment_box', None)
-        print('saved')
 
         context = {
             'question': question,
@@ -267,10 +253,6 @@ def LikeComment(request):
     # question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
     comment = Comments.objects.get(id=request.POST.get('id'))
     # comment.question = question
-    print('Liking comment')
-    # print(comment.likes_comment.filter(id=request.user.id).exists())
-
-    print(comment.is_liked)
 
     if comment.is_liked:
         comment.is_liked = False
@@ -279,7 +261,6 @@ def LikeComment(request):
     else:
         comment.is_liked = True
         comment.likes_comment.add(request.user)
-        print(comment.total_likes_comment())
         comment.save()
 
     context ={
@@ -296,26 +277,21 @@ def LikeComment(request):
 
 def delete_comment(request):
     if request.method == 'POST':
-        print("deleting comment")
         comment_id = request.POST.get("comment_id")
         comment = Comments.objects.filter(pk=comment_id)
         comment.delete()
-        print(comment)
         return JsonResponse({"done":1})
 
 def delete_answer(request):
     if request.method == 'POST':
-        print("deleting answer")
         answer_id = request.POST.get("answer_id")
-        print(answer_id)
         answer = AnsweraQuestion.objects.filter(pk=answer_id)
         answer.delete()
-        # print(answer)
         return JsonResponse({"done":1})
         
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
-        ques = AskaQuestion.objects.filter(pk=id)[0]
+        ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
         if ques.file:
             pth = os.path.join(settings.BASE_DIR, '..')
             default_storage.delete(pth+ques.file.url)
@@ -324,26 +300,22 @@ def delete_post(request, id):
 
 def hide_post(request, id):
     if request.method == 'POST' and request.POST.get("hide"):
-        ques = AskaQuestion.objects.filter(pk=id)[0]
-        print(ques)
+        ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
         hid = hidden(user = request.user, question = ques);
         hid.save()
-        print(hid,"sid")
     return redirect ('/feeds/')
 
 def unhide_post(request, id):
     if request.method == 'POST' and request.POST.get("unhide"):
-        ques = AskaQuestion.objects.filter(pk=id)[0]
-        print(ques)
-        hid = hidden.objects.filter(user=request.user )
+        ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
+        hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').filter(user=request.user )
         hid.delete()
     return redirect ('/feeds/')
 
 def update_post(request, id):
     redirect_to = "/feeds"
     if request.method == 'POST' and request.POST.get("update"):
-        print(request.POST.get('anonymous_update'))
-        question= AskaQuestion.objects.get(pk=id)
+        question= AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(pk=id)
         question.subject = request.POST.get('subject')
         question.description = request.POST.get('description')
 
@@ -366,7 +338,6 @@ def update_post(request, id):
         
         if request.POST.get("isSpecial"):
             access = QuestionAccessControl.objects.filter(question = question)[0]
-            print(access)
             if request.POST.get("RestrictVote"):
                 access.canVote = False
             else:
@@ -387,8 +358,7 @@ def update_post(request, id):
 
 @login_required
 def TagsBasedView(request, string):
-    print('Tag based View')
-    questions = AskaQuestion.objects.order_by('-uploaded_at')
+    questions = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
     
     result = questions.filter(Q(select_tag__subtag__icontains=string))
     
@@ -402,9 +372,9 @@ def TagsBasedView(request, string):
     next_page = current_page + 1
     # result = paginator.page(current_page)
     
-    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
-    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
@@ -412,13 +382,13 @@ def TagsBasedView(request, string):
     askqus_subtags = AllTags.objects.all()
     ques = []
     result = paginator.page(current_page)
-    hid = hidden.objects.all()
+    hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').all()
     for q in result:
         isliked = 0
         isdisliked = 0
         hidd = 0
         isSpecial = 0
-        profi = Profile.objects.all().filter(user=q.user)
+        profi = Profile.objects.select_related().all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
         if(hid.all().filter(user=request.user, question = q).count()==1):
@@ -439,7 +409,7 @@ def TagsBasedView(request, string):
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
-    role_data = Roles.objects.all()
+    role_data = Roles.objects.select_related().all()
     context = {
         "role":role_data,
         'form_answer': AnswerForm(),
@@ -479,8 +449,7 @@ def TagsBasedView(request, string):
 
 def RemoveTag(request):
     if request.method == 'POST':
-        print(request.POST.get('id'))
-        userTags = tags.objects.all().filter(Q(user=request.user))
+        userTags = tags.objects.select_related().all().filter(Q(user=request.user))
         tagto_delete = AllTags.objects.all().filter(Q(subtag=request.POST.get('id')))
         userTags.filter(Q(my_subtag__in=tagto_delete)).delete()
         return JsonResponse({"done":"1"})
@@ -489,23 +458,23 @@ def RemoveTag(request):
         
 
 def ParticularQuestion(request, id):
-    result = AskaQuestion.objects.get(id=id)
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    result = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=id)
+    a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     all_tags_list = AllTags.objects.all()
     all_tags_list= all_tags_list.exclude(pk__in=a_tags)
     all_tags = AllTags.objects.values('tag').distinct()
-    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
     askqus_subtags = AllTags.objects.all()
-    profile = Profile.objects.all().filter(user=result.user)
+    profile = Profile.objects.select_related().all().filter(user=result.user)
     isliked = 0
     isdisliked = 0
-    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
     if(result.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
     if(result.dislikes.all().filter(username=request.user.username).count()==1):
         isdisliked = 1
 
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
     isSpecial = 0
@@ -515,14 +484,13 @@ def ParticularQuestion(request, id):
 
     if request.method == 'POST':
         if request.POST.get("answer_button"):
-            print('Particular Question')
             form_answer = AnswerForm(request.POST)
             if form_answer.is_valid():
                 instance = form_answer.save(commit=False)
                 instance.question = result
                 instance.user = request.user
                 instance.save()
-                role_data = Roles.objects.all()
+                role_data = Roles.objects.select_related().all()
                 context = {
                     'access' : access_check,
                     'isSpecial' : isSpecial,
@@ -562,9 +530,8 @@ def ParticularQuestion(request, id):
     else:
         form = AnswerForm()
         # instance = AnsweraQuestion.objects.get(question__id=id)
-        # print(instance.content)
     
-    role_data = Roles.objects.all()
+    role_data = Roles.objects.select_related().all()
     context = {
         'access' : access_check,
         'isSpecial' : isSpecial,
@@ -604,7 +571,7 @@ def ParticularQuestion(request, id):
 @login_required
 def profile(request, string):
     if request.method == "POST":
-        profile = Profile.objects.all().filter(user=request.user)
+        profile = Profile.objects.select_related().all().filter(user=request.user)
         Pr = None
         if len(profile) == 0:
             Pr = Profile(user = request.user)
@@ -619,15 +586,14 @@ def profile(request, string):
                 default_storage.delete(pth+Pr.profile_picture.url)
             Pr.profile_picture = request.FILES["profile_img"]
         Pr.save()
-    print("Profile Loading ......")
     try:
         usr = User.objects.get(username=string)
     except:
         return redirect("/feeds")
-    profile = Profile.objects.all().filter(user=usr)
-    ques = AskaQuestion.objects.all().filter(user=usr)
+    profile = Profile.objects.select_related().all().filter(user=usr)
+    ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').all().filter(user=usr)
     ans = AnsweraQuestion.objects.all().filter(user=usr)
-    extra = ExtraInfo.objects.all().filter(user=usr)
+    extra = ExtraInfo.objects.select_related().all().filter(user=usr)
     tags = set()
     top_ques = ""
     top_ans = ans
@@ -655,7 +621,7 @@ def profile(request, string):
         ext = ""
     else:
         ext = extra[0]
-    hid = hidden.objects.all().filter(user = request.user)
+    hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').all().filter(user = request.user)
     context = {
         'profile': prf,
         # 'profile_image' : profile[0].profile_picture,
@@ -673,32 +639,8 @@ def profile(request, string):
     }
     return render(request, 'feeds/profile.html',context)
 
-def printques(a):
-    print(a.can_delete)
-    print(a.can_update)
-    print(a.user)
-    print(a.subject)
-    print(a.description)
-    print(a.select_tag)
-    print(a.file)
-    print(a.uploaded_at)
-    print(a.likes)
-    print(a.requests)
-	#dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
-    print(a.is_liked)
-    print(a.is_requested)
-    print(a.request)
-    print(a.anonymous_ask)
-    print(a.total_likes)
-    print(a.total_dislikes)
-
 def upvoteQuestion(request,id):
-    question = AskaQuestion.objects.get(id=request.POST.get('id'))
-    print('upvoting question')
-    print("-------------likes--------------")
-    print(question.likes.all())
-    print("-------------dislikes--------------")
-    print(question.dislikes.all())
+    question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=request.POST.get('id'))
     question.dislikes.remove(request.user)
     isupvoted = question.likes.all().filter(username=request.user.username).count()
     if request.is_ajax() and isupvoted == 0:
@@ -708,12 +650,7 @@ def upvoteQuestion(request,id):
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
 
 def downvoteQuestion(request,id):
-    question = AskaQuestion.objects.get(id=request.POST.get('id'))
-    print('upvoting question')
-    print("-------------likes--------------")
-    print(question.likes.all())
-    print("-------------dislikes--------------")
-    print(question.dislikes.all())
+    question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=request.POST.get('id'))
     question.likes.remove(request.user)
     isdownvoted = question.dislikes.all().filter(username=request.user.username).count()
     if request.is_ajax() and isdownvoted == 0:
@@ -724,11 +661,6 @@ def downvoteQuestion(request,id):
 
 def upvoteAnswer(request,id):
     answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
-    print('upvoting answer')
-    print("-------------likes--------------")
-    print(answer.likes.all())
-    print("-------------dislikes--------------")
-    print(answer.dislikes.all())
     answer.dislikes.remove(request.user)
     isupvoted = answer.likes.all().filter(username=request.user.username).count()
     if request.is_ajax() and isupvoted == 0:
@@ -739,11 +671,6 @@ def upvoteAnswer(request,id):
 
 def downvoteAnswer(request,id):
     answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
-    print('upvoting answer')
-    print("-------------likes--------------")
-    print(answer.likes.all())
-    print("-------------dislikes--------------")
-    print(answer.dislikes.all())
     answer.likes.remove(request.user)
     isdownvoted = answer.dislikes.all().filter(username=request.user.username).count()
     if request.is_ajax() and isdownvoted == 0:
@@ -757,7 +684,7 @@ def update_answer(request):
     try:
         ques_id = request.POST.get("ques_id")
         answer_id = request.POST.get("answer_id")
-        question = AskaQuestion.objects.get(pk=ques_id)
+        question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(pk=ques_id)
         answer = AnsweraQuestion.objects.get(pk=answer_id)
         new_answer = request.POST.get("comment_box")
         answer.content = new_answer
@@ -772,10 +699,9 @@ def update_comment(request):
     try:
         ques_id = request.POST.get("ques_id")
         comment_id = request.POST.get("comment_id")
-        question = AskaQuestion.objects.get(pk=ques_id)
+        question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(pk=ques_id)
         comment = Comments.objects.get(pk=comment_id)
         new_comment = request.POST.get("comment_box")
-        print(new_comment)
         comment.comment_text = new_comment
         comment.save()
         if request.is_ajax():
@@ -810,15 +736,13 @@ def admin(request):
         "user":"",
         }
     if request.method == 'POST' and request.POST.get("addrole"):
-        print(request.POST.get("addrole"))
         user = request.POST.get("user")
         role = request.POST.get("role")
         try:
             user_check = User.objects.get(username=user)
-            print(user_check)
-            role_check = Roles.objects.filter(user=user_check)
+            role_check = Roles.objects.select_related().filter(user=user_check)
             if(len(role_check)==0):
-                role_check_role = Roles.objects.filter(role__iexact=role)
+                role_check_role = Roles.objects.select_related().filter(role__iexact=role)
                 if(len(role_check_role)==0):
                     role = Roles.objects.create(user=user_check, role=role)
                     success["user"] = "Role added."
@@ -832,7 +756,7 @@ def admin(request):
     if request.method == 'POST' and request.POST.get("unassignrole"):
         if request.POST.get("unassignrole_value"):
             try:
-                role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+                role_unassign = Roles.objects.select_related().get(role = request.POST.get("unassignrole_value"))
                 role_unassign.active = False
                 role_unassign.save()
                 success["update"] = "Role Unassigned."
@@ -842,7 +766,7 @@ def admin(request):
     if request.method == 'POST' and request.POST.get("reassignrole"):
         if request.POST.get("reassignrole_value"):
             try:
-                role_unassign = Roles.objects.get(role = request.POST.get("reassignrole_value"))
+                role_unassign = Roles.objects.select_related().get(role = request.POST.get("reassignrole_value"))
                 role_unassign.active = True
                 role_unassign.save()
                 success["updatere"] = "Role Reassigned."
@@ -852,7 +776,7 @@ def admin(request):
     
     if request.method == 'POST' and request.POST.get("unassignrole_update"):
         try:
-            role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+            role_unassign = Roles.objects.select_related().get(role = request.POST.get("unassignrole_value"))
             user_check = User.objects.get(username=request.POST.get("unassignrole_update"))
             role_unassign.user = user_check
             role_unassign.save()
@@ -860,7 +784,7 @@ def admin(request):
         except :
             error["updateerror"] = "Incorrect Username provided."
 
-    role_data = Roles.objects.all()
+    role_data = Roles.objects.select_related().all()
     role_user = ""
     askqus_subtags = AllTags.objects.all()
     isAdmin = False
@@ -873,7 +797,7 @@ def admin(request):
         isAdmin = False
         
     try:
-        admin_role = Roles.objects.filter(user = request.user)
+        admin_role = Roles.objects.select_related().filter(user = request.user)
         if len(admin_role) >0 :
             if admin_role[0].active == True:
                 role_user = admin_role[0].role
@@ -882,7 +806,6 @@ def admin(request):
                 role_user = ""
     except:
         administrativeRole = False
-    print(role_user)
     context = {
         "role_user" : role_user, 
         "administrativeRole" : administrativeRole,
@@ -897,15 +820,13 @@ def admin(request):
 
 @login_required
 def administrativeView(request, string):
-    print('administrative View')
     # questions = AskaQuestion.objects.order_by('-uploaded_at')
-    role_user = Roles.objects.filter(role=string)
+    role_user = Roles.objects.select_related().filter(role=string)
     try :
         role_user = role_user[0]
     except:
         redirect("/feeds")
-    # print(QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user))
-    result = QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user).order_by('-created_at')
+    result = QuestionAccessControl.objects.select_related('posted_by__user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').filter(posted_by=role_user).order_by('-created_at')
     paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
@@ -916,9 +837,9 @@ def administrativeView(request, string):
     next_page = current_page + 1
     # result = paginator.page(current_page)
     
-    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
-    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
@@ -926,13 +847,13 @@ def administrativeView(request, string):
     askqus_subtags = AllTags.objects.all()
     ques = []
     result = paginator.page(current_page)
-    hid = hidden.objects.all()
+    hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').all()
     for q in result:
         isliked = 0
         isdisliked = 0
         hidd = 0
         isSpecial = 0
-        profi = Profile.objects.all().filter(user=q.question.user)
+        profi = Profile.objects.select_related().all().filter(user=q.question.user)
         if(q.question.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
         if(hid.all().filter(user=request.user, question = q.question).count()==1):
@@ -952,7 +873,7 @@ def administrativeView(request, string):
             'votes':q.question.total_likes() - q.question.total_dislikes(),
         }
         ques.append(temp)
-    role_data = Roles.objects.all()
+    role_data = Roles.objects.select_related().all()
     context = {
         "role":role_data,
         'form_answer': AnswerForm(),

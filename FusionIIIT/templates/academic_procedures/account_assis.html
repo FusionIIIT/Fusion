@@ -1,0 +1,361 @@
+{% load static %}
+<style>
+.account_assis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.thesis:hover {
+  background-color: #ddd; 
+}
+.pthesis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.pthesis:hover {
+  background-color: #ddd; 
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+table{
+    border: 1px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+
+.td1{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td2{
+    width: 30%;
+        padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td3{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td4{
+    width: 30%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td5{
+    width: 2%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+.previous:hover {
+      background-color: #ddd;
+  color: black;
+}
+.bn button{
+    float: right;
+}
+.approve{
+    background-color: #55DB86;
+    color: white;
+}
+.approve:hover{
+    background-color: #2CC764;
+    color:white;
+}
+.disapprove{
+    background-color: #F54D69;
+    color: white;
+}
+.disapprove:hover{
+    background-color: #C54257;
+    color:white;
+}
+
+
+</style>
+
+
+
+
+<div class="ui pointing secondary menu" >
+    <a class="active item" data-tab="pending_account_assis"  onclick="m1()" style="width: 30%;">
+       <p style="margin-left: 15%;">Pending</p>
+    </a>
+
+    <a class="item" data-tab="account_approve_assis" onclick="m()" style="width: 30%;">
+        <p style="margin-left: 20%;">Approved</p>  
+    </a>
+
+</div>
+
+
+
+<!--  pending requests -->
+<div class="ui active tab segment" data-tab="pending_account_assis" id="acc1">
+    <div  class="ui vertical segment" >
+        {% if assistant_account_list %}
+            {% for obj in assistant_account_list reversed %}
+                {% if obj.acad_approval == True and obj.account_approval == False %}
+                    <div  class="account_assis" id_thesis="account_assis{{forloop.counter}}" id_object="{{obj.id}}">{{obj.student.id.user.username}}</div>
+                    <div class="panel" id="account_assis{{forloop.counter}}" hidden>
+                    
+                        <table>
+                            <tr>
+                                <td class="td1">Roll No.</td>
+                                <td class="td5">:</td>
+                                <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                                <td class="td3">Programme</td>
+                                <td class="td5">:</td>
+                                <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Month</td>
+                                <td class="td5">:</td>
+                                <td class="td2" style="font-weight: bold;">{{obj.month}}</td>
+                                <td class="td3">Year</td>
+                                <td class="td5">:</td>
+                                <td class="td4" style="font-weight: bold;">{{obj.year}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Bank Account</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.bank_account}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Stipend amount</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.stipend}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                {%endif%}
+            {% endfor %}
+            <div class="form_class" hidden>
+                <form id="account_assis_form" >{% csrf_token %}
+                    <div class="ui form" style="border: black" >
+                        
+                        <br>
+                        <div class="ui divider"></div><br>
+                        <div class="bn">
+                            <div href="" class="previous" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back
+                            </div>
+                            <button class="ui primary button" style="background-color: green" name="approve" value="yes">Approve</button> 
+                        </div> 
+                    </div>
+                </form>
+            </div>
+            
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+
+<!--  approved requests -->
+<div class="ui tab segment" data-tab="account_approve_assis" id="acc2" >
+    {% if assistant_account_list %}
+        {% for obj in assistant_account_list reversed %}
+            {% if obj.account_approval %}
+                 
+                <div class="pthesis" id="accountassisapproved{{forloop.counter}}">{{obj.student.id.user.username}}</div>
+                <div class="ui modal accountassisapproved{{forloop.counter}}">
+                    <i class="close icon"></i>
+                    <div class="image content" hidden>
+                        <table>
+                            <tr>
+                                <td class="td1">Roll No.</td>
+                                <td class="td5">:</td>
+                                <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                                <td class="td3">Programme</td>
+                                <td class="td5">:</td>
+                                <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Month</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.month}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Year</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.year}}</td>
+                            </tr>                        
+                            <tr>
+                                <td class="td1">Bank Account</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.bank_account}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Stipend amount</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.stipend}}</td>
+                            </tr>
+
+                        </table> 
+                    </div>
+                </div>
+                
+                <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+                    <script type="text/javascript">
+                        $(function () {
+                        $("#accountassisapproved{{forloop.counter}}").click(function () {
+                            $(".accountassisapproved{{forloop.counter}}").modal('show');
+                        });
+                        $(".accountassisapproved{{forloop.counter}}").modal({
+                            closable: true
+                        });
+                        });
+                    </script>
+              
+           {% endif %}
+
+        {% endfor %}
+    {%else%}
+    <h3>nothing here</h3>
+    {% endif %}
+</div>
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+function m(){
+    
+    document.getElementById('acc1').style="display:none";
+    document.getElementById('acc2').style="display:block";
+}
+function m1(){
+    
+    document.getElementById('acc1').style="display:block";
+    document.getElementById('acc2').style="display:none";
+}
+
+
+
+
+$(function() {
+    
+    var obj_id;
+    $(".account_assis").click(function(){
+        id = $(this).attr("id_thesis");
+        $("#"+id).show();
+        $(".account_assis").hide();
+        $(".form_class").show();
+        obj_id = $(this).attr("id_object");
+    });
+    $(".previous").click(function(){
+        $("#"+id).hide();
+        $(".account_assis").show();
+        $(".form_class").hide();
+    });
+ 
+
+
+    $("#account_assis_form").submit(function(event) {
+
+    event.preventDefault();
+   
+
+    $.ajax({
+    type:"POST",
+    url: "/academic-procedures/update_account_assistantship/",
+    data:{
+         obj_id : obj_id,
+         csrfmiddlewaretoken: '{{ csrf_token }}'
+    },
+    success: function( data ) 
+    {
+        $(".succ").modal("show");
+        window.location = "/academic-procedures/account/";
+    }
+    });
+    
+    
+  });
+
+});
+
+
+</script> 
+
+
+ 
+

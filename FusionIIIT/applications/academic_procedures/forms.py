@@ -1,7 +1,7 @@
 from django import forms
 
 from applications.academic_information.models import Course
-from .models import BranchChange
+from .models import BranchChange, AssistantshipClaim
 
 """
 class AddDropCourseForm(forms.ModelForm):
@@ -20,3 +20,8 @@ class BranchChangeForm(forms.ModelForm):
     class Meta:
         model=BranchChange
         fields=('branches',)
+
+# class AssistantshipClaimForm(forms.ModelForm):
+#     class Meta:
+#         model = AssistantshipClaim
+#         fields = ('month', 'year', 'bank_account', 'applicability', 'ta_supervisor', 'thesis_supervisor',)

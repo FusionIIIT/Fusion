@@ -1,0 +1,132 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Create Form
+{% endblock %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/site.css' %}">
+
+
+{% endblock %}
+
+{% block body %}
+
+{% block navBar %}
+{% include 'recruitment/navbar.html' %}
+{% endblock %}
+
+<h2 class="ui header" style="margin-left: 41%;">
+    <img class="ui image" src="https://image.flaticon.com/icons/png/512/69/69146.png">
+    <div class="content">
+        Dynamic Form
+    </div>
+</h2>
+<div class="ui grid">
+    <div class="six wide column">
+        <form class="ui-form">
+
+            <div style="text-align:center">
+                <h3 style="text-align:center">Add Label and Field here</h3>
+                <div class="ui input">
+                    <input id="test" type="text">
+                </div>
+
+
+                <input class="ui secondary button" value="Addlabel" type="button" onClick="addlabel()">
+                <br>
+                <br>
+
+                <select name="element" class="ui dropdown">
+                    <option value="Submit">Submit</option>
+                    <option value="text">TextBox</option>
+                    <option value="password">Password</option>
+                    <option value="file">File</option>
+                    <option value="email">Email</option>
+                    <option value="radio">Radio</option>
+                    <option value="checkbox">checkbox</option>
+                    <option value="color">Color</option>
+                    <option value="date">Date</option>
+                    <option value="datetime-local">Date-Time Local</option>
+                    <option value="hidden">Hidden</option>
+                    <option value="image">Image</option>
+                    <option value="month">Month</option>
+                    <option value="number">Number</option>
+                    <option value="range">Range</option>
+                    <option value="reset">Reset</option>
+                    <option value="search">Search</option>
+                    <option value="tel">Tel</option>
+                    <option value="time">Time</option>
+                    <option value="url">URL</option>
+                    <option value="week">Week</option>
+                </select>
+
+
+
+                <input class="ui secondary button" type="button" value="AddField"
+                    onclick="add(document.forms[0].element.value)" />
+
+            </div>
+
+    </div>
+
+    <div class="six wide column">
+
+        <span id="fooBar"></span>
+
+    </div>
+
+
+    </form>
+
+</div>
+
+
+<script>
+    let p = 1;
+    let i = 1;
+
+    function add(type) {
+
+        //Create an input type dynamically.
+        var element = document.createElement("input");
+
+        //Assign different attributes to the element.
+        element.setAttribute("type", type);
+        if (type != "text")
+            element.setAttribute("value", type);
+        element.setAttribute("name", type);
+        element.setAttribute("id", p);
+        element.setAttribute("class", "ui input");
+
+
+        p++;
+        var foo = document.getElementById("fooBar");
+
+        //Append the element in page (in span).
+        foo.appendChild(element);
+
+
+    }
+
+
+    function addlabel() {
+        if (document.getElementById('test').value != '') {
+            i++;
+            var title = document.getElementById('test').value;
+            var node = document.createElement('div');
+            //node.setAttribute("class", "ui input");
+            node.innerHTML = '<label for="check' + i + '">' + title + '</label>';
+            document.getElementById('fooBar').appendChild(node);
+
+            var node = document.createElement('br');
+            var f = document.getElementById(p - 1);
+            f.appendChild(node);
+        }
+    }
+</script>
+
+{% endblock %}
