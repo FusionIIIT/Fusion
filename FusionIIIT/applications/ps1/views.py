@@ -421,7 +421,7 @@ def outward(request):
 @login_required(login_url = "/accounts/login")
 def inward(request):
     """
-            The function is used to get all the files received by user(employee) from other
+            The function is used to get all the Indent files received by user(employee) from other
             employees which are filtered from Tracking(table) objects by current user i.e.receiver_id.
             It displays files received by user from other employees of a Tracking(table) of
             filetracking(model) in the 'Inbox' tab of template.
@@ -454,7 +454,7 @@ def confirmdelete(request,id):
 @login_required(login_url = "/accounts/login")
 def forwardindent(request, id):
     """
-            The function is used to forward files received by user(employee) from other
+            The function is used to forward Indent files received by user(employee) from other
             employees which are filtered from Tracking(table) objects by current user
             i.e. receiver_id to other employees.
             It also gets track of file created by uploader through all users involved in file
@@ -574,12 +574,10 @@ def forwardindent(request, id):
 
 
                 if val=="accept":
-                    print("correct")
                     if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=True
                     elif "director" in designs:
                         indent.director_approval=True
-                    elif "asst. registrar fa" in designs:
                         indent.financial_approval=True
                 
                 else:
@@ -587,14 +585,13 @@ def forwardindent(request, id):
                         indent.head_approval=True
                     elif "director" in designs:
                         indent.director_approval=True
-                    elif "asst. registrar fa" in designs:
                         indent.financial_approval=True
                     
 
                 indent.save()
 
 
-            messages.success(request, 'File sent successfully')
+            messages.success(request, 'Indent File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
@@ -614,13 +611,7 @@ def forwardindent(request, id):
 @login_required(login_url = "/accounts/login")
 def createdindent(request, id):
     """
-            The function is used to forward files received by user(employee) from other
-            employees which are filtered from Tracking(table) objects by current user
-            i.e. receiver_id to other employees.
-            It also gets track of file created by uploader through all users involved in file
-            along with their remarks and attachments
-            It displays details file of a File(table) and remarks and attachments of user involved
-            in file of Tracking(table) of filetracking(model) in the template.
+            The function is used to forward created indent files by user(employee) .
             @param:
                     request - trivial.
                     id - id of the file object which the user intends to forward to other employee.
@@ -705,7 +696,7 @@ def createdindent(request, id):
                 )
 
 
-            messages.success(request, 'File sent successfully')
+            messages.success(request, 'Indent File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
