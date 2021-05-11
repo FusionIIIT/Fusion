@@ -34,7 +34,7 @@
                 margin: auto;">
                 <thead>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td><h4>Course Code</h4></td>
                         <td><h4>Course Name</h4></td>
                         <td><h4>Credits</h4></td>
@@ -54,5 +54,20 @@
             </table>
         </div>
     </div>
+</div>
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+<div class="ui center aligned segment">
+    <div class="ui horizontal divider">FILTER SEARCH</div>
+    <form class="ui small form"  method="get">
+            {{ coursefilter.form }}
+            <br>
+        <button class="ui tiny basic primary button" type="Submit" name="Submit">
+            <i class="search icon"></i>
+            Search
+        </button>
+    </form>
 </div>
 {% endblock %}

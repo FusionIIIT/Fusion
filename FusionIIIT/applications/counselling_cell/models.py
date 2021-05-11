@@ -2,6 +2,8 @@ from django.db import models
 from applications.academic_information.models import Student
 from django.contrib.auth.models import User
 from applications.globals.models import Faculty,ExtraInfo
+from datetime import datetime
+
 # Create your models here.
 
 class CounsellingCellConstants :
@@ -46,12 +48,11 @@ class StudentCounsellingTeam(models.Model):
         return f"{self.student} - {self.student_position}"
 
 class StudentCounsellingInfo(models.Model):
-    faculty_counsellor = models.ForeignKey(FacultyCounsellingTeam ,on_delete=models.CASCADE)
     student_guide = models.ForeignKey(StudentCounsellingTeam,on_delete=models.CASCADE)
     student = models.OneToOneField(Student,on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.faculty} - {self.student_guide} - {self.student}"
+        return f"{self.student_guide} - {self.student}"
 
 class CounsellingIssueCategory(models.Model):
     category_id = models.CharField(max_length=40,unique=True)
@@ -63,11 +64,14 @@ class CounsellingIssueCategory(models.Model):
         return f"{self.category}"
 
 class CounsellingIssue(models.Model):
+    issue_raised_date = models.DateTimeField(default=datetime.now)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     issue_category = models.ForeignKey(CounsellingIssueCategory,on_delete=models.CASCADE)
     issue = models.TextField(max_length=500,)
     issue_status = models.CharField(max_length=20,choices=CounsellingCellConstants.ISSUE_STATUS,default="status_unresolved")
-
+    response_remark = models.TextField(max_length=500,null=True)
+    resolved_by = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,null=True)
+    
     def __str__(self):
         return f"{self.issue} - {student}"
 

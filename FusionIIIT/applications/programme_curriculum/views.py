@@ -82,7 +82,7 @@ def view_curriculums_of_a_programme(request, programme_id):
     working_curriculums = curriculums.filter(working_curriculum=1)
     past_curriculums = curriculums.filter(working_curriculum=0)
 
-    return render(request,'programme_curriculum/view_curriculums_of_a_programme.html', {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums})
+    return render(request,'programme_curriculum/view_curriculums_of_a_programme.html', {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums, 'curriculumfilter': curriculumfilter})
 
 
 def view_all_working_curriculums(request):
@@ -834,7 +834,7 @@ def instigate_semester(request, semester_id):
                 semester.instigate_semester = form.cleaned_data['instigate_semester']
                 semester.semester_info = form.cleaned_data['semester_info']
                 semester.save()
-                messages.success(request, "Updated "+ str(semester) +" successful")
+                messages.success(request, "Instigated "+ str(semester) +" successful")
                 return HttpResponseRedirect('/programme_curriculum/admin_curriculum_semesters/' + str(semester.curriculum.id) + '/')
 
     return render(request,'programme_curriculum/acad_admin/instigate_semester_form.html',{'semester':semester, 'form':form, 'submitbutton':submitbutton, 'curriculum_id':curriculum_id})
