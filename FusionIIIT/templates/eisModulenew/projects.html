@@ -493,7 +493,7 @@
             </thead>
 
             <tbody>
-            {% for patent in patents %}
+            {% for patent in emp_patents %}
                 <tr id="r1">
                      <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter|add:sr6 }}.</td>
                      <td id="patent{{ forloop.counter }}A">{{ patent.p_no }}</td>

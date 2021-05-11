@@ -1,0 +1,76 @@
+{% load static %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="current">
+            Current Status
+        </a>
+    </div>
+    <style >
+        td{
+           word-break: break-all;
+        }
+    </style>
+    <div class="ui active tab" data-tab="current">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Status of Patent
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;"
+                                                              >
+                        <thead>
+                        <tr>
+                            <th>
+                                Patend ID
+                            </th>
+                            <th>
+                                IPD form
+                            </th>
+                            <th>
+                                patent PDF
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+                            
+                        </tr>
+                        </thead>
+
+                        
+                        
+                            {% comment %} <!--{% if pat.faculty.id == request.user.extrainfo.faculty.id %} -->{% endcomment %}
+                            
+                            {% for i in val  %}          
+                        <tr>
+                            <td>
+                                {{i.application_id}}
+                            </td>
+                            <td>
+                            <a href="{{i.file1}}">{{i.ipd_form}}</a>
+                            </td>
+                            <td>
+                                <a href="{{i.file2}}">{{i.project_details}}</a>
+                                </td>
+                            <td>
+                                {{i.status}}
+                            </td>
+                        </tr>{% endfor %}
+                                 
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    

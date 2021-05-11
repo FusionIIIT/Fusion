@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^acad_person/branch_change/$', views.acad_branch_change, name='acad_branch_change'),
     url(r'^stu/', views.academic_procedures_student),
     url(r'^fac/', views.academic_procedures_faculty, name='faculty_procedures'),
+    url(r'^account/$', views.account),
     url(r'^addThesis/$', views.add_thesis, name='add_thesis'),
     url(r'^process_verification_request/$', views.process_verification_request),
     url(r'^teaching_credit/$', views.teaching_credit_register),
@@ -35,9 +36,17 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$',views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
-    url(r'^acad_person/addCourse_list$', views.addCourse_list, name='addcourselist'),
-    url(r'^verify_addCourse/$', views.verify_addCourse, name='verifyaddcourse'),
-    
-    
-
+    url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
+    url(r'^ACF/$', views.ACF, name='ACF'),
+    url(r'^MTSGF/$', views.MTSGF),
+    url(r'^PHDPE/$', views.PHDPE),
+    url(r'^update_assistantship/$', views.update_assistantship),
+    url(r'^update_mtechsg/$', views.update_mtechsg),
+    url(r'^update_phdform/$' , views.update_phdform),
+    url(r'^update_dues/$' , views.update_dues),
+    url(r'^dues_pdf/$' , views.dues_pdf),
+    url(r'^acad_person/gen_course_list$', views.gen_course_list, name='gen_course_list'),
+    url(r'^update_acad_assistantship/$' , views.update_acad_assis),
+    url(r'^update_account_assistantship/$' , views.update_account_assistantship),
+    url(r'^mdue/$', views.mdue),
 ]

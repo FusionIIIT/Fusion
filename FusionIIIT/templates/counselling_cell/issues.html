@@ -23,6 +23,7 @@
                 {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
                     <div class="ui header">
                         Raise issue Form :
                     </div>
@@ -38,6 +39,7 @@
                                     {% for category in categories%}
                                     <option value="{{category.id}}">{{category}}</option>
                                     {% endfor %}
+
                                 </select>
                             </div>
 
@@ -67,6 +69,7 @@
     </div>
 
     <div class="ui tab" data-tab="viewissues">
+
     {% block viewstatus %}
             {% include 'counselling_cell/Status.html' %}
             {% endblock %}

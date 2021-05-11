@@ -3,6 +3,7 @@ from applications.academic_information.models import Student
 from django.contrib.auth.models import User
 from applications.globals.models import Faculty,ExtraInfo
 from datetime import datetime
+
 # Create your models here.
 
 class CounsellingCellConstants :

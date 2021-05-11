@@ -1,0 +1,358 @@
+{% load static %}
+
+{% block ECE_Dep %}
+
+    <h1><center> Welcome to ECE Department </center></h1>
+
+    {% comment %} tabs ui {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="about-us">
+            About Us
+        </a>
+        
+        <a class="item" data-tab="facilities">
+            Facilities
+        </a>
+        
+        <a class="item" data-tab="faculty">
+            Faculty
+        </a>
+
+        <a class="item" data-tab="students">
+            Students
+        </a>
+
+        <a class="item" data-tab="announcement">
+            Announcements
+        </a>
+
+        <a class="item" data-tab="Request">
+            Requests
+        </a>
+
+    </div>
+
+
+    {% comment %} active tab content {% endcomment %}
+    <div class="ui active tab" data-tab="about-us">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <h3>
+                            Our Mission :
+                        </h3>
+                        <p>
+                            The discipline of Electronics and Communication Engineering (ECE) has a perfect combination of teaching and research activities pertaining to field of Electronics and Communication. Since its inception the main objective of discipline is to impart quality education, hands-on training and research in the frontier areas of Electronics & Communication Engineering with broad focus on IT enabled design and manufacturing.
+                        </p>
+                        <h3>
+                            Our Vision :
+                        </h3>
+                        <p>
+                            The vision of ECE department is to become pioneer in higher learning and research and to produce creative solution to societal needs. To provide excellence in education, research and public service. To provide quality education and to make the students entrepreneur and employable.
+                        </p>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content facilities {% endcomment %}
+    <div class="ui tab" data-tab="facilities">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <h3>
+                            Central Library :
+                        </h3>
+                        <p>
+                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
+                        </p>
+                        <h3>
+                            Lab Infrastructure :
+                        </h3>
+                        <ol>
+                            <li>
+                                <p>
+                                    <b>Circuits and Innovation Lab :</b>This laboratory is dedicated to circuits designing, is intended to serve its facilities as one of the teaching labs and also to facilitate teaching projects and research projects. These projects and teaching work include the experimental and innovative study in the field of analog and digital circuits, microcontrollers and its applications.
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Basic Electronics lab :</b> This Laboratory is dedicated to the concepts and implementation of basic circuits designing. It serves its facilities as one of the teaching labs and also to facilitate course projects
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>RF&Applied Electromagnetics :</b> This Laboratory acts as a research lab to researchscholars,research associatives. Main research areas of lab include understanding of high frequency devices ,Antenna theory concepts and design fields.
+                                </p>
+                            </li>
+                        </ol>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content faculty {% endcomment %}
+   {% comment %}The tab menu starts here!{% endcomment %}
+        <div class="ui tab" data-tab="faculty">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" >
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <td> id </td>
+                                    <td> faculty name </td>
+                                    <!-- <td> title </td> -->
+                                    <td> sex </td>
+                                    <td> date_of_birth </td>
+                                    <td> address </td>
+                                    <td> phone_no </td>
+                                    {% comment %} <td> user_type </td>
+                                    <td> department </td>
+                                    <td> github </td> {% endcomment %}
+
+                                </thead>
+
+                                {% for fcu in fac_list.ece_f %}
+                                <tr>
+                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
+                                    <td>{{ fcu.id }}</td>
+                                    <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+                                    <!-- <td>{{ fcu.title }}</td> -->
+                                    <td>{{ fcu.sex }}</td>
+                                    <td>{{ fcu.date_of_birth }}</td>
+                                    <td>{{ fcu.address }}</td>
+                                    <td>{{ fcu.phone_no }}</td>
+                                    {% comment %} <td>{{ fcu.user_type }}</td>
+                                    <td>{{ fcu.department.name }}</td>
+                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                                    {% endwith %}
+                                </tr>
+
+                                {% endfor %}
+
+                            </table>
+
+                        </div>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     {% comment %} tabs contains Announcement_List {% endcomment %}
+    <div class="ui tab" data-tab="announcement">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.ece %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                                {% for stu in announcements.all %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
+                        </div>
+                        
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     {% comment %} tabs content students {% endcomment %}
+    <div class="ui tab" data-tab="students">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        {% comment %}Get student Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                            <div class="content">
+                                <a class="active item" href="./All_Students/{{2111111}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        PhD ECE Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                Mtech Students
+                            </div>
+                            <div class="content">
+                                <a class="active item" href="./All_Students/{{21111}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;" >
+                                        M.Tech First Year
+                                    </button>
+                                </a>
+                                <a class="active item" href="./All_Students/{{211111}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        M.Tech Second Year
+                                    </button>
+                                </a>
+                                <br>     
+                            </div>
+                        </div>
+                            
+                        
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                               B.Tech Students
+                            </div>
+                            <div class="content">
+                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
+                                <a class="active item" href="./All_Students/{{2}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        B.Tech First Year
+                                    </button>
+                                </a>
+                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
+                                <a class="active item" href="./All_Students/{{21}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        B.Tech Second Year
+                                    </button>
+                                </a>
+                                <a class="active item" href="./All_Students/{{211}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        B.Tech Third Year
+                                    </button>
+                                </a>
+                                <a class="active item" href="./All_Students/{{2111}}">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        B.Tech Final Year
+                                    </button>
+                                </a>
+                                <br>
+                            </div>
+                        </div>
+
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="Request">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <div class="ui pointing secondary menu">
+                            <a class="active item" data-tab="file-request">
+                                File Requests
+                            </a>
+                            
+                            <a class="item" data-tab="request-history">
+                                Request History
+                            </a>
+
+                        </div>
+
+                        <div class="ui active tab" data-tab="file-request">
+                            <div class="ui vertical segment">
+                                <div class="content">
+                                    <div class="description">
+                                        <span>
+                                            {% with fac_list.ece_f as faculty %}
+                                                {% block file-requests %}
+                                                    {% include "department/file_request.html" %}
+                                                {% endblock %}
+                                            {% endwith %}
+                                        </span>
+                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="request-history">
+                            <div class="ui vertical segment">
+                                <div class="content">
+                                    <div class="description">
+                                        <span>
+                                            {% block request_history %}
+                                                {% include "department/request_history.html" %}
+                                            {% endblock %}
+                                        </span>
+                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </span>
+                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

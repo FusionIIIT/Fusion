@@ -9,6 +9,7 @@ import django. utils. timezone as timezone
 from xlsxwriter.workbook import Workbook
 from collections import defaultdict
 import xlrd
+
 from django.views.generic import (
     ListView,
     DeleteView,
@@ -22,6 +23,7 @@ from .models import (
     CounsellingIssueCategory,
     StudentCounsellingTeam,
     StudentCounsellingInfo
+
 )
 from .handlers import (
     add_counselling_faq,
@@ -40,11 +42,11 @@ from applications.academic_information.models import Student,ExtraInfo
 # faq = CounsellingIssueCategory.objects.all()
 # print(faq) 
 
+
 def counselling_cell(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     user_role = extra_info.user_type
-    # print(user_role)
     year = timezone.now().year
     third_year_students = Student.objects.filter(batch=year-3)
     second_year_students = Student.objects.filter(batch=year-2)
@@ -74,6 +76,7 @@ def counselling_cell(request):
             # print(student_des)
             if student.student_position == "student_guide" :
                 issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student])
+
     context = {
         "faqs":faqs,
         "categories":categories,
@@ -200,3 +203,4 @@ def assign_student_to_sg(request):
 # mappedStudent = StudentCounsellingInfo(student_guide=sg,student_id=Student(id=ExtraInfo(user=User(username="2019185"))))
 # mappedStudent.save()  
 # StudentCounsellingInfo.objects.all().delete()
+

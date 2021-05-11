@@ -1,0 +1,93 @@
+{% block staff_schedule %}
+<div class="ui pointing secondary menu">
+  <a class="item active" data-tab="hall1_staff">
+    Hall 1 Staff
+  </a>
+
+  <a class="item" data-tab="hall3_staff">
+     Hall 3 Staff
+  </a>
+
+  <a class="item" data-tab="hall4_staff">
+    Hall 4 Staff
+  </a>
+
+  {% if user in hall_caretaker%}
+    <a class="item" data-tab="hall_staff_edit">
+        Add/Edit Staff
+    </a>
+
+    <a class="item" data-tab="worker_report">
+        Worker Report
+    </a>
+
+    <a class="item" data-tab="view_report">
+        View Report
+    </a>
+  {% endif %}
+  
+  
+    
+</div>
+
+
+<div class="ui active tab" data-tab="hall1_staff" >
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+        {% block hall1_staff %}
+            {% comment %} {% include 'hostelmanagement/hall1.html' %} {% endcomment %}
+            {% include 'hostelmanagement/hall1_staff.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+
+<div class="ui tab" data-tab="hall3_staff">
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+        {% block hall3_staff %}
+            {% include 'hostelmanagement/hall3_staff.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+
+<div class="ui tab" data-tab="hall4_staff">
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+            {% block hall4_staff %}
+                {% comment %} {% include 'hostelmanagement/hall4.html' %} {% endcomment %}
+                {% include 'hostelmanagement/hall4_staff.html' %}
+            {% endblock %}
+        
+    </div>
+</div>
+
+
+<div class="ui tab" data-tab="hall_staff_edit">
+    <div class="ui vertical segment">
+        {% block hall_staff_edit %}
+            {% include 'hostelmanagement/hall_staff_edit.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="worker_report">
+    <div class="ui vertical segment">
+        {% block worker_report %}
+            {% include 'hostelmanagement/worker_report_upload.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="view_report">
+    <div class="ui vertical segment">
+        {% block view_report %}
+            {% include 'hostelmanagement/view_report.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+
+{% endblock %}
