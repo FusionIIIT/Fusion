@@ -7,6 +7,7 @@ app_name = 'ps1'
 urlpatterns = [
 
     url(r'^$', views.ps1, name='ps1'),
+    url(r'^compose_indent/$', views.compose_indent, name='compose_indent'),
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
     url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
     url(r'^drafts/$', views.drafts, name='drafts'),
