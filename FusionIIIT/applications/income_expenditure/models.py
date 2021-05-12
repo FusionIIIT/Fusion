@@ -9,6 +9,14 @@ class ExpenditureType(models.Model):
 	def __str__(self):
 		return self.expenditure_type
 
+class ExpenditureSubType(models.Model):
+	expenditure_sub_type = models.CharField(max_length=100)
+	expenditure_type = models.ForeignKey(ExpenditureType, related_name="expenditure_category", on_delete=models.PROTECT)
+
+	def __str__(self):
+		return self.expenditure_sub_type
+
+
 class Expenditure(models.Model):
 	spent_on = models.ForeignKey(ExpenditureType, related_name="expenditureType", on_delete=models.PROTECT)
 	sub_type = models.ForeignKey(ExpenditureSubType, related_name="expenditureSubType", on_delete=models.PROTECT)
@@ -21,10 +29,6 @@ class Expenditure(models.Model):
 		return str(self.amount)
 
 
-class ExpenditureSubType(models.Model):
-	expenditure_sub_type = models.CharField(max_length=100)
-	expenditure_type = models.ForeignKey(ExpenditureType, related_name="expenditureType", on_delete=models.PROTECT)
-
 
 class IncomeSource(models.Model):
 	income_source = models.CharField(max_length=100)
@@ -35,7 +39,10 @@ class IncomeSource(models.Model):
 
 class IncomeSubType(models.Model):
 	income_sub_type = models.CharField(max_length=100)
-	income_type = models.ForeignKey(IncomeSource, related_name="incomeSource", on_delete=models.PROTECT)
+	income_type = models.ForeignKey(IncomeSource, related_name="income_category", on_delete=models.PROTECT)
+
+	def __str__(self):
+		return self.income_sub_type
 
 
 class Income(models.Model):

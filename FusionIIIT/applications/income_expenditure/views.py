@@ -1,6 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet, IncomeSubType, ExpenditureSubType)
+from .models import (
+					ExpenditureType, 
+					Expenditure, 
+					IncomeSource, 
+					Income, 
+					FixedAttributes, 
+					BalanceSheet, 
+					IncomeSubType, 
+					ExpenditureSubType,
+					)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 
@@ -10,6 +19,9 @@ from django.template.loader import get_template
 from io import BytesIO
 from xhtml2pdf import pisa
 from django.core.files import File
+
+import json as simplejson
+
 
 from django.db.models import Min,Max
 
@@ -176,23 +188,25 @@ def main_page(request):
 def add_income(request):
 	if(request.method == 'POST'):
 		source = request.POST.get('income_source')
-		source = IncomeSource.objects.filter(id=source).first()
+		source = IncomeSource.objects.get(id=source)
+
+		sub_type = request.POST.get('income_sub_type')
+		sub_type = IncomeSubType.objects.get(id=sub_type)
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_recieved')
-		receipt = request.POST.get('income_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_i = Income(
 						source = source,
+						sub_type=sub_type,
 						amount = amount,
 						date_added = date,
-						receipt = receipt,
 						remarks = remarks
 						)
 		
 		new_i.save()
-		balanceSheet_table() 
+		balanceSheet_table()
 	return redirect('main-page')
 
 
@@ -212,18 +226,20 @@ def add_income(request):
 def add_expenditure(request):
 	if(request.method == 'POST'):
 		spent_on = request.POST.get('spent_on')
-		spent_on = ExpenditureType.objects.filter(id=spent_on).first()
+		spent_on = ExpenditureType.objects.get(id=spent_on)
+
+		sub_type = request.POST.get('expenditure_sub_type')
+		sub_type = ExpenditureType.objects.get(id=sub_type)
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
-		receipt = request.POST.get('expenditure_receipt')
 		remarks = request.POST.get('remarks')
 
 		new_e = Expenditure(
 						spent_on = spent_on,
+						sub_type=sub_type,
 						amount = amount,
 						date_added = date,
-						expenditure_receipt = receipt,
 						remarks = remarks,
 						)
 		new_e.save()
@@ -247,6 +263,20 @@ def add_income_source():
 			new_source = IncomeSource(income_source = i,)
 			new_source.save()
 
+
+def add_income_sub_type(request):
+	if request.method == 'POST':
+		i_type = request.POST.get('income_source')
+		i_type = IncomeSource.objects.get(id=i_type)
+		sub_type = request.POST.get('sub_type')
+		new_i = IncomeSubType(income_sub_type=sub_type, income_type=i_type,)
+		new_i.save()
+	return redirect('main-page')
+
+
+
+
+
 '''
 	used to maintain fixed list of expenditure types
         Parameters:
@@ -262,6 +292,17 @@ def add_expenditure_type():
 			new_type = ExpenditureType(expenditure_type = i,)
 			new_type.save()
 
+
+def add_expenditure_sub_type(request):
+	if request.method == 'POST':
+		e_type = request.POST.get('expenditure_type')
+		e_type = ExpenditureType.objects.get(id=e_type)
+		sub_type = request.POST.get('sub_type')
+		new_e = ExpenditureSubType(expenditure_sub_type=sub_type, expenditure_type=e_type,)
+		new_e.save()
+	return redirect('main-page')
+
+
 def updateFixedValues(request):
 	if(request.method == 'POST'):
 		for i in fixed_attributes_list:
@@ -272,6 +313,34 @@ def updateFixedValues(request):
 			balanceSheet_table()
 
 	return redirect('main-page')
+
+
+def get_income_sub_types(request):
+
+	income_source = request.GET['income_source']
+
+	result_set = []
+	income_source = IncomeSource.objects.get(income_source=income_source)
+
+	income_sub_types = IncomeSubType.objects.filter(income_type=income_source)
+	for income_sub_type in income_sub_types:
+		result_set.append({'name': income_sub_type.income_sub_type, 'id':income_sub_type.id})
+
+	return HttpResponse(simplejson.dumps(result_set), content_type='application/json')
+
+
+def get_expenditure_sub_types(request):
+	expenditure_type = request.GET['expenditure_type']
+
+	result_set = []
+	expenditure_type = ExpenditureType.objects.get(expenditure_type=expenditure_type)
+
+	expenditure_sub_types = ExpenditureSubType.objects.filter(expenditure_type=expenditure_type)
+	for expenditure_sub_type in expenditure_sub_types:
+		result_set.append({'name': expenditure_sub_type.expenditure_sub_type, 'id':expenditure_sub_type.id})
+
+	return HttpResponse(simplejson.dumps(result_set), content_type='application/json')
+
 
 '''
 	delete's an expense
@@ -319,7 +388,7 @@ def del_income(request):
 
 
 
-def balanceSheet_table():
+def balanceSheet_table(request):
 	fixed_attributes = FixedAttributes.objects.all()
 
 
@@ -341,9 +410,6 @@ def balanceSheet_table():
 
 
 	balance = incomeSum - expenditureSum
-
-    	
-
 
 	 
 	pdf = render_to_pdf('incomeExpenditure/balanceSheet_pdf.html',{'fixedDetails':fixed_attributes,'incomeDetails':income_dic,'incomeTypes':income_type_ob,'expenditureDetails':expenditure_dic,'expenditureTypes':expenditure_type_ob,'incomeSum':incomeSum,'expenditureSum':expenditureSum,'balance':balance,})
@@ -373,10 +439,6 @@ def balanceSheet_table():
 
 
 def balanceSheet(request):
-	
-
-
-
 	if request.method =='POST' :
 		fin_year = request.POST.get('fin_year')
 		balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)

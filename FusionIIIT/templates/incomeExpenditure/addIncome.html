@@ -3,6 +3,34 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="http://yourjavascript.com/7174319415/script.js"></script>
+<script>
+    $(document).ready(function(){
+         $('select#income_source').change(function () {
+             var optionSelected = $(this).find("option:selected");
+             var income_source   = optionSelected.text();
+
+             var sel = document.getElementById('income_sub_type');
+             for (i = sel. length - 1; i >= 0; i--) {
+                sel.remove(i);
+             }
+             data = {'income_source' : income_source };
+             ajax('../getIncomeSubTypes/',data,function(result){
+                    var select = document.getElementById('income_sub_type');
+                    for (var i = 0; i<result.length; i++){
+                        var opt = document.createElement('option');
+                        opt.value = result[i].id;
+                        opt.innerHTML = result[i].name;
+                        select.appendChild(opt);
+                    }
+
+                    
+                 });
+         });
+    });
+</script>
+
     
 <div class="ui vertical segment">
     
@@ -10,12 +38,16 @@
         <div class="ui form" style="border: black" > 
 
             <div class="field">
-                <select class="ui dropdown" name="income_source">
+                <select class="ui dropdown" name="income_source" id="income_source">
                     <option value="">Income Source</option>
                     {% for i in income_sources %}
-                        <option value="{{ i.id }}">{{ i }}</option>>
+                        <option value="{{ i.id }}">{{ i }}</option>
                     {% endfor%}
                 </select>
+            </div>
+
+            <div class="field">
+                <select class="ui dropdown" name="income_sub_type" id="income_sub_type"></select>
             </div>
 
             <div class="field">          
@@ -24,18 +56,11 @@
 
             <div class="two fields">
                 <div class = "field">
-                    <input  name = "date_recieved" required="true" type="date" min="{{min_date}}" max="{{max1_date}}" >
+                    <input  name = "date_recieved" required="true" type="date" min="{{min_date}}" max="{{max1_date}}">
                 </div>
-                <div class = "field">
-                    <input hidden placeholder ="Choose File" name = "income_receipt"  type="file">
-                </div>
-            </div>
-           
-            <div class="two fields">
                 <div class = "field">
                     <input placeholder ="Remarks" name = "remarks"  type="text">
                 </div>
-                
             </div>
             
             <br>

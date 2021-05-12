@@ -68,6 +68,9 @@
                     <a class="item" data-tab="view_income_history" style="width: 33%;">
                         <p style="margin-left: 25%;">View History</p>
                     </a>
+                    <a class="item" data-tab="add_income_type" style="width: 33%;">
+                        <p style="margin-left: 25%;">Add Income Type</p>
+                    </a>
                
                 </div>
 
@@ -77,6 +80,10 @@
 
                 <div class="ui tab segment" data-tab="view_income_history">
                     {%  include 'incomeExpenditure/viewIncomeHistory.html' %}
+                </div>
+
+                <div class="ui tab segment" data-tab="add_income_type">
+                    {%  include 'incomeExpenditure/addIncomeType.html' %}
                 </div>
 
                 
@@ -91,6 +98,9 @@
                     <a class="item" data-tab="view_expenditure_history" style="width: 33%;">
                         <p style="margin-left: 25%;">View History</p>
                     </a>
+                    <a class="item" data-tab="add_expenditure_type" style="width: 33%;">
+                        <p style="margin-left: 25%;">Add Expenditure Type</p>
+                    </a>
                    
                 </div>
 
@@ -102,6 +112,9 @@
                     {%  include 'incomeExpenditure/viewExpenditureHistory.html' %}
                 </div>
 
+                <div class="ui tab segment" data-tab="add_expenditure_type">
+                    {%  include 'incomeExpenditure/addExpenditureType.html' %}
+                </div>
                 
 
             </div>
