@@ -52,11 +52,23 @@
                                         
                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Type:</b> {{indent.indent_type}}</pre>
                                         
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Nature:</b> {{indent.nature}}</pre>
+                                        {% if indent.nature == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Nature: </b>Consumable</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Nature: </b>Non Consumable</pre>
+                                        {% endif %}
                                         
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> {{indent.indigenous}}</pre>
+                                        {% if indent.indigenous == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> No</pre>
+                                        {% endif %}
                                         
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> {{indent.replaced }}</pre>
+                                        {% if indent.replaced == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> No</pre>
+                                        {% endif %}
                                         
                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Budgetary Head:</b> {{indent.budgetary_head}}</pre>
                                         
@@ -64,13 +76,30 @@
                                         
                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Sources of Supply:</b> {{indent.sources_of_supply}}</pre>
                                         
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> {{indent.head_approval}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> {{indent.director_approval}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> {{indent.financial_approval}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> {{indent.purchased }}</pre>
+                                        {% if indent.head_approval == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> Yes</pre>
+                                        {% else %}
+                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> No</pre>
+                                        {% endif %}
+
+                                        {% if indent.director_approval == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> No</pre>
+                                        {% endif %}
+
+                                        {% if indent.financial_approval == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> No</pre>
+                                        {% endif %}
+
+                                        {% if indent.purchased == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> No</pre>
+                                        {% endif %}
+
                                         <div class="ui divider"></div>
                                     </div>
 
