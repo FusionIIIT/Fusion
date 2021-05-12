@@ -9,7 +9,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="composefile">
-            Compose New Indent
+            File New Indent
             </a>
         </h3>
     </div>
@@ -21,55 +21,55 @@
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
                 <div class="field">
-                        <label>Title of Indent File</label>
+                        <label>Title of Indent File*</label>
                         <textarea rows="1" name="title" required></textarea>
                 </div>
 
 
 
                 <div class="field">
-                    <label>Description</label>
+                    <label>Description*</label>
                     <textarea rows="3" name="desc" required></textarea>
                 </div>
 
 
                 <div class="field">
-                    <label>Item Name</label>
+                    <label>Item Name*</label>
                     <textarea rows="1" name="item_name" required></textarea>
                 </div>
 
 
                 <div class="field">
-                    <label>Quantity</label>
+                    <label>Quantity*</label>
                     <input type="number" name="quantity" required></input>
                 </div>
 
 
                 <div class="field">
-                    <label>Present Stock</label>
+                    <label>Present Stock*</label>
                     <input type="number"  name="present_stock" required></input>
                 </div>
 
                 <div class="field">
-                    <label>Estimated Cost</label>
+                    <label>Estimated Cost*</label>
                     <input type="number"  name="estimated_cost" required></input>
                 </div>
 
 
                 <div class="field">
-                    <label>Purpose</label>
+                    <label>Purpose*</label>
                     <textarea rows="3" name="purpose" required></textarea>
                 </div>
 
 
                 <div class="field">
                     <label>Specification</label>
-                    <textarea rows="3" name="specification" required></textarea>
+                    <textarea rows="3" name="specification"></textarea>
                 </div>
 
 
                 <div class="field">
-                    <label>Indent Type</label>
+                    <label>Item Type*</label>
                     <select name="indent_type">  
                         <option value = "Equipment">Equipment</option>  
                         <option value = "Machinery">Machinery</option>  
@@ -81,23 +81,23 @@
 
                 <div class="field">
                     <label>Budgetary Head</label>
-                    <textarea rows="2" name="budgetary_head" required></textarea>
+                    <textarea rows="2" name="budgetary_head"></textarea>
                 </div>
 
 
                 <div class="field">
-                    <label>Expected Delivery</label>
+                    <label>Expected Delivery*</label>
                     <input type="date" id="start" name="expected_delivery">
                 </div>
 
 
                 <div class="field">
-                    <label>Sources of Supply</label>
+                    <label>Sources of Supply*</label>
                     <textarea rows="3" name="sources_of_supply" required></textarea>
                 </div>
                 
                 <div class="field">
-                    <h5>Nature of Indent</h5>
+                    <h5>Nature of Item*</h5>
                     <label class="radio-inline">
                         <input type="radio" name="nature" value="True"> Consumable 
                     </label>
@@ -108,7 +108,7 @@
 
 
                 <div class="field">
-                   <h5>Indigenous</h5>
+                   <h5>Indigenous*</h5>
                    <label class="radio-inline">
                        <input type="radio" name="indigenous" value="True"> Yes
                    </label>
@@ -120,7 +120,7 @@
 
 
                 <div class="field">
-                   <h5>Replaced</h5>
+                   <h5>Replaced*</h5>
                    <label class="radio-inline">
                        <input type="radio" name="replaced" value="True"> Yes
                    </label>
