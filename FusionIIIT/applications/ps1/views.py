@@ -356,26 +356,7 @@ def draftview(request,id):
     }
     return render(request, 'ps1/draftview.html', context)
 
-@login_required(login_url = "/accounts/login")
-def fileview1(request,id):
 
-
-
-    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
-
-
-
-
-    #print (File.designation)
-    abcd = HoldsDesignation.objects.get(pk=id)
-
-
-    context = {
-
-        'out': out,
-        'abcd': abcd,
-    }
-    return render(request, 'filetracking/fileview1.html', context)
 @login_required(login_url = "/accounts/login")
 def indentview2(request,id):
 
@@ -383,7 +364,7 @@ def indentview2(request,id):
 
     indent_files = IndentFile.objects.all().values('file_info')
     print(indent_files)
-    in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user)
+    in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
 
     #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
@@ -396,26 +377,6 @@ def indentview2(request,id):
         'designations': designations,
     }
     return render(request, 'ps1/indentview2.html', context)
-
-@login_required(login_url = "/accounts/login")
-def outward(request):
-    """
-        The function is used to get all the files sent by user(employee) to other employees
-        which are filtered from Tracking(table) objects by current user i.e. current_id.
-        It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
-        in the 'Outbox' tab of template.
-        @param:
-                request - trivial.
-        @variables:
-                out - The Tracking object filtered by current_id i.e, present working user.
-                context - Holds data needed to make necessary changes in the template.
-    """
-    designation = HoldsDesignation.objects.filter(user=request.user)
-
-    context = {
-        'designation': designation,
-    }
-    return render( request, 'filetracking/outward.html', context)
 
 
 @login_required(login_url = "/accounts/login")
@@ -582,10 +543,10 @@ def forwardindent(request, id):
                 
                 else:
                     if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
-                        indent.head_approval=True
+                        indent.head_approval=False
                     elif "director" in designs:
-                        indent.director_approval=True
-                        indent.financial_approval=True
+                        indent.director_approval=False
+                        indent.financial_approval=False
                     
 
                 indent.save()
@@ -713,17 +674,8 @@ def createdindent(request, id):
 
     return render(request, 'ps1/createdindent.html', context)
 
-@login_required(login_url = "/accounts/login")
-def archive(request):
-    return render(request, 'filetracking/archive.html')
 
 
-@login_required(login_url = "/accounts/login")
-def finish(request, id):
-    file = get_object_or_404(File, ref_id=id)
-    track = Tracking.objects.filter(file_id=file)
-
-    return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
 
 def AjaxDropdown1(request):
     print('brefore post')
@@ -788,23 +740,7 @@ def delete(request,id):
 
     return redirect('/ps1/composed_indents/')
 
-def forward_inward(request,id):
-    file = get_object_or_404(File, id=id)
-    file.is_read = True
-    track = Tracking.objects.filter(file_id=file)
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
 
-    context = {
-        # 'extrainfo': extrainfo,
-        # 'holdsdesignations': holdsdesignations,
-        'designations':designations,
-        'file': file,
-        'track': track,
-    }
-    print(file.is_read)
-    return render(request, 'filetracking/forward.html', context)
 @login_required(login_url = "/accounts/login")
 
 def Stock_Entry(request):
