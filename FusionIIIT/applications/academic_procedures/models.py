@@ -244,6 +244,42 @@ class Dues(models.Model):
     class Meta:
         db_table = 'Dues'
 
+
+class MessDue(models.Model):
+    Month_Choices = [
+        ('Jan', 'January'),
+        ('Feb', 'Febuary'),
+        ('Mar', 'March'),
+        ('Apr', 'April'),
+        ('May', 'May'),
+        ('Jun', 'June'),
+        ('Jul', 'July'),
+        ('Aug', 'August'),
+        ('Sep', 'September'),
+        ('Oct', 'October'),
+        ('Nov', 'November'),
+        ('Dec', 'December'),
+
+    ]
+
+    Year_Choices = [
+        (datetime.date.today().year, datetime.date.today().year),
+        (datetime.date.today().year-1, datetime.date.today().year-1)
+    ]
+    paid_choice = [
+        ('Stu_paid', 'Paid'),
+        ('Stu_due' , 'Due')
+    ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    month = models.CharField(max_length=10, choices=Month_Choices, null=False , blank=False)
+    year = models.IntegerField(choices=Year_Choices)
+    description = models.CharField(max_length=15,choices=paid_choice)
+    amount = models.IntegerField()
+    remaining_amount = models.IntegerField()
+    
+
+
+
 class Bonafide(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     student_name = models.CharField(max_length=50)
@@ -292,7 +328,9 @@ class AssistantshipClaim(models.Model):
     ta_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='TA_SUPERVISOR')
     thesis_supervisor_remark = models.BooleanField(default=False)
     thesis_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE,related_name='THESIS_SUPERVISOR')
-    hod_approval = models.BooleanField(default=False)
+    acad_approval = models.BooleanField(default=False)
+    account_approval = models.BooleanField(default=False)
+    stipend = models.IntegerField(default=0)
 
     class meta:
         db_table = 'AssistantshipClaim' 

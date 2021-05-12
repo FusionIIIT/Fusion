@@ -14,7 +14,15 @@
 
   {% if user in hall_caretaker%}
     <a class="item" data-tab="hall_staff_edit">
-        Edit Staff
+        Add/Edit Staff
+    </a>
+
+    <a class="item" data-tab="worker_report">
+        Worker Report
+    </a>
+
+    <a class="item" data-tab="view_report">
+        View Report
     </a>
   {% endif %}
   
@@ -57,6 +65,22 @@
     <div class="ui vertical segment">
         {% block hall_staff_edit %}
             {% include 'hostelmanagement/hall_staff_edit.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="worker_report">
+    <div class="ui vertical segment">
+        {% block worker_report %}
+            {% include 'hostelmanagement/worker_report_upload.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="view_report">
+    <div class="ui vertical segment">
+        {% block view_report %}
+            {% include 'hostelmanagement/view_report.html' %}
         {% endblock %}
     </div>
 </div>

@@ -74,7 +74,7 @@ class Student(models.Model):
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
-    hall_no = models.IntegerField(default=1)
+    hall_no = models.IntegerField(default=0)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
     curr_semester_no = models.IntegerField(default=1)

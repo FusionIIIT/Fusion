@@ -4,7 +4,7 @@ from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, 
 
 
 class ProgrammeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category',)
+    list_display = ('name', 'category')
     list_filter = ('category',)
 
 class DisciplineAdmin(admin.ModelAdmin):
@@ -16,7 +16,7 @@ class CurriculumAdmin(admin.ModelAdmin):
     list_filter = ('programme', 'working_curriculum',)
 
 class SemesterAdmin(admin.ModelAdmin):
-    list_display = ('curriculum', 'semester_no',)
+    list_display = ('curriculum', 'semester_no', 'instigate_semester', 'start_semester', 'end_semester')
     list_filter = ('curriculum',)
 
 class CourseAdmin(admin.ModelAdmin):
@@ -27,8 +27,8 @@ class BatchAdmin(admin.ModelAdmin):
     list_filter = ('discipline', 'year', 'curriculum',)
 
 class CourseSlotAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'semester', 'course_slot_info',)
-    list_filter = ('semester', 'type', 'courses',)
+    list_display = ('name', 'type', 'course_slot_info','semester')
+    list_filter = ('type', 'courses',)
 
 
 # Register your models here.

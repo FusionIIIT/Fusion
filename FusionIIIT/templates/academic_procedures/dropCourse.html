@@ -9,7 +9,8 @@
                     {% if drop_courses_options %}
                         <form id='drop_courses' action='/academic-procedures/drop_course/'>
                         {% csrf_token %}
-                                <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
+                            <input type="text" hidden="true" id="min_credit" value="{{ curr_sem.curriculum.min_credit }}">
+                            <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
                             <table  class="ui very basic collapsing celled sortable table"               
                                     style= "padding-left: 2.5%;
                                             padding-right: 2.5%;
@@ -67,6 +68,7 @@ $(function() {
     $("#drop_courses").submit(function(event) {
 
         var credits = parseInt(document.getElementById("cr_count").value);
+        var min_credits = parseInt(document.getElementById("min_credit").value);
         var checkboxing = document.getElementsByClassName("choice1");
         var test =0;
         console.log(checkboxing)
@@ -78,8 +80,8 @@ $(function() {
             }
         }
 
-        if(credits <= 11 ){
-            alert("You need to earn at least 12 credits in one semester");
+        if(credits < min_credits ){
+            alert("You need to earn at least " + min_credits.toString() + " credits in one semester ");
             window.location = "/academic-procedures/main/" ;           
         }else if(test ==0 ){
             alert("please Select a course");

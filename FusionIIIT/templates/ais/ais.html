@@ -17,7 +17,21 @@ Academic Information System
 {% block navBar %}
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
-
+<style>
+    span.circle {
+      background: orange;
+      border-radius: 50%;
+      -moz-border-radius: 50%;
+      -webkit-border-radius: 50%;
+      color: black;
+      display: inline-block;
+      font-weight: bold;
+      line-height: 25px;
+      margin-right: 5px;
+      text-align: center;
+      width: 25px;
+    }
+  </style>
 
 <div class="ui stackable doubling grid">
 
@@ -65,11 +79,10 @@ Academic Information System
                 Curriculum
                 <i class="right floated chevron right icon"></i>
             </a>
-            <a class="item" data-tab="seventh">
-                Verify Added Courses
+            <a class="item" data-tab="vassis" id="va">Verify Assistantship &ensp; <span class="circle">{{assistant_list_length}}</span>
                 <i class="right floated chevron right icon"></i>
             </a>
-
+ 
         </div>
         <br><br>
 
@@ -96,6 +109,9 @@ Academic Information System
         <div class="ui tab segment" data-tab="proced_results">
             {%  include 'academic_procedures/result.html' %}
         </div>
+        <div class="ui tab segment" data-tab="vassis">
+            {% include 'academic_procedures/acad_assis.html'  %}
+        </div>
 
         <div class="ui tab segment" data-tab="third">
             {% block calendar %}
@@ -119,10 +135,6 @@ Academic Information System
             {% block curriculum %}
             {% include 'ais/curriculum.html' %}
             {% endblock %}
-        </div>
-
-        <div class="ui tab segment" data-tab="seventh">
-            {% include 'academic_procedures/verifyCourse.html' %}
         </div>
 
     </div>

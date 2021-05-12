@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
@@ -26,8 +26,10 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instru
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
 
 
+
 from applications.academic_procedures.views import acad_proced_global_context
 from applications.programme_curriculum.models import Batch
+
 
 
 @login_required
@@ -107,7 +109,6 @@ def get_context(request):
 
     procedures_context = acad_proced_global_context()
 
-
     try:
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
@@ -115,10 +116,13 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
+        
         courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
+        assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+        assistant_list_length = len(assistant_list.filter(acad_approval = False))
     except Exception as e:
         examTtForm = ""
         acadTtForm = ""
@@ -132,19 +136,21 @@ def get_context(request):
         pass
 
     context = {
-         'acadTtForm': acadTtForm,
-         'examTtForm': examTtForm,
-         'courses': courses,
-          'courses_list': courses_list,
-         'course_type': course_type,
-         'exam': exam_t,
-         'timetable': timetable,
-         'academic_calendar': calendar,
-         'next_sem_course': next_sem_courses,
-         'this_sem_course': this_sem_courses,
-         'curriculum': curriculum,
-         'tab_id': ['1','1'],
-         'context': procedures_context['context'],
+        'acadTtForm': acadTtForm,
+        'examTtForm': examTtForm,
+        'courses': courses,
+        'courses_list': courses_list,
+        'course_type': course_type,
+        'exam': exam_t,
+        'timetable': timetable,
+        'academic_calendar': calendar,
+        'next_sem_course': next_sem_courses,
+        'this_sem_course': this_sem_courses,
+        'curriculum': curriculum,
+        'assistant_list' : assistant_list,
+        'assistant_list_length' : assistant_list_length,
+        'tab_id': ['1','1'],
+        'context': procedures_context['context'],
         'lists': procedures_context['lists'],
         'date': procedures_context['date'],
         'query_option1': procedures_context['query_option1'],
@@ -189,11 +195,12 @@ def homepage(request):
         context - the datas to be displayed in the webpage
 
     """
-
+    print(22222222222222222222222222222222222222222222222222222222)
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
+    print(context['courses_list'])
 
     return render(request, "ais/ais.html", context)
 
@@ -1019,7 +1026,7 @@ def generate_preregistration_report(request):
 
 
 @login_required
-def add_new_profile(request):
+def add_new_profile (request):
     """
     To add details of new upcoming students in the database.User must be logged in and must be acadadmin
 
@@ -1101,7 +1108,7 @@ def add_new_profile(request):
             programme_name=request.POST['Programme']
             batch_year=request.POST['Batch']
 
-            batch = Batch.objects.all().filter(name = programme_name+" "+dept+" "+str(batch_year)).first()
+            batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
 
             user = User.objects.create_user(
                 username=roll_no,
@@ -1906,29 +1913,3 @@ def confirm_grades(request):
     return HttpResponseRedirect('/aims/')
 
 
-def populate_student_db(request):
-    lis = Student.objects.select_related('id__department').all()
-    stu_list = list(lis)
-
-    batches = Batch.objects.all()
-    batch_dict = {}
-
-    for batch in batches:
-        batch_dict[batch.name] = batch
-
-    for stu in stu_list:
-        name = stu.programme+" "+stu.id.department.name+" "+str(stu.batch)
-        batch = Batch.objects.filter(name=name)
-        if name in batch_dict.keys():
-            stu.batch_id = batch_dict[name]
-
-        if stu.batch == 2019:
-            stu.curr_semester_no = 4
-        elif stu.batch == 2018:
-            stu. curr_semester_no = 6
-        else:
-            stu.curr_semester_no = 8
-
-    Student.objects.bulk_update(stu_list, ['batch_id', 'curr_semester_no'])
-
-    return HttpResponse('hello')

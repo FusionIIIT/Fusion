@@ -18,7 +18,14 @@
         Reviewed
     </a>
 </div>
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+</style>
 
 
 
@@ -35,13 +42,7 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
         <div class="description">
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
-                <div class="field">
-                    {% render_field cpda_form.pf_number %}
-                </div>
-                <br>
-                <div class="field">
-                    {% render_field cpda_form.purpose %}
-                </div>
+                
                 <br>
                 <div class="field">
                     <b>Block</b> {{ block_period }}
@@ -49,12 +50,22 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                     <b>Total Advance Availed</b> : Rs {{ total_advance_by_user }}
                     <br><br>
                     <b>Advance Limit</b> : Rs 3 Lakh per 3 year block
-                    <br><br>
-                    <b> Max Eligible Advance Amount</b> : Rs {{ remaining_advance }}
+                    <br>
+                </div>
+                
+                
+                <div class="field disabled">
+                    
+                    {% render_field cpda_form.pf_number %}
                 </div>
                 <br>
                 <div class="field">
-                    <b>Advance Requested</b>
+                    {% render_field cpda_form.purpose %}
+                </div>
+                <br>
+                
+                <div class="field">
+                    <b>Advance Amount</b>
                     <br><br>
                     <input id="numberbox" type='number' name='advance' max='{{ remaining_advance }}' required>
                 </div>
@@ -89,18 +100,17 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                         <div class="content">
                             <div class="header">Status : {{app.status|title}}</div>
                             {% if app.status == 'requested' or app.status == 'adjustments_pending' %}
-                                {% if app.tracking_info.review_status != 'to_assign' %}
-                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by
-                                        {% if app.tracking_info.current_reviwerid == 1 %}
-                                            {{app.tracking_info.reviewer_id.first_name}} ({{app.tracking_info.reviewer_design}})
-                                        {% elif app.tracking_info.current_reviwerid == 2 %}
-                                            {{app.tracking_info.reviewer_id2.first_name}} ({{app.tracking_info.reviewer_design2}})
+                                
+                                    <div class="meta">
+                                        Review Status : 
+                                        {% if app.tracking_info.review_status == 'reviewed' %}
+                                            Pending approval by HR Admin
+                                        {% elif app.tracking_info.review_status == 'to_assign' %}
+                                            In process
                                         {% else %}
-                                            {{app.tracking_info.reviewer_id3.first_name}} ({{app.tracking_info.reviewer_design3}})
+                                            {{app.tracking_info.review_status|title}}
                                         {% endif %}
                                     </div>
-
-                                {% endif %}
                             {% endif %}
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
@@ -187,7 +197,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                 {% for app in cpda_archive_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status|title}}</a>
+                            <a class="header">Status : {% if app.status == 'finished' %} Adjustments Approved {% else %} Rejected {%endif%}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -212,10 +222,8 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <label>PF Number : {{ app.pf_number }}</label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                                 <label>Purpose : {{ app.purpose }}</label><br>
-                                <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
-                                <label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label><br>
-                                <label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label><br>
-                                <label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label><br>
+                                <label>Remarks from HR Admin : {{app.tracking_info.remarks}}</label><br>
+                                
 
                                 {% if app.status == 'finished' %}
                                     <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
@@ -288,17 +296,15 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
                                 {% endif %}
-                                <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
-                                <label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label><br>
-                                <label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label><br>
-                                <label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label><br>
+                                <label>Remarks from HR Admin. : {{app.tracking_info.remarks}}</label><br>
+                    
                                 {% render_field app.reviewform.app_id %}
                                 <div class="field">
                                     {% render_field app.reviewform.remarks %}
                                 </div>
                                 <br>
                                 <button type="submit" name="cpda_review" class="ui large primary button">
-                                    Forward
+                                    Approve
                                 </button>
                                 <button type="submit" name="cpda_reject" class="ui large primary button">
                                     Reject
@@ -330,9 +336,8 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                             {% endif %}
                             <div class="meta"> Purpose : {{app.purpose}}</div>
 
-                                <div class="meta"><label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label></div>
-                                <div class="meta"><label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label></div>
-                                <div class="meta"><label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label></div><br>
+                                <div class="meta"><label>Your Remarks : {{app.tracking_info.remarks_rev1}}</label></div>
+                                
 
                         </div>
                     </div>

@@ -125,10 +125,10 @@ table{
 
 
 <!--  pending requests -->
-<div class="ui active tab segment" data-tab="pending_assis">
-    <div id="a1" class="ui vertical segment">
+<div class="ui active tab segment" data-tab="pending_assis" id="a1">
+    <div  class="ui vertical segment">
         {% if assistantship_request_list %}
-            {% for obj in assistantship_request_list %}
+            {% for obj in assistantship_request_list reversed %}
                 {% if fac_id == obj.ta_supervisor.id and obj.ta_supervisor_remark == False or fac_id == obj.thesis_supervisor.id and obj.thesis_supervisor_remark == False %}
                     <div  class="assis" id_thesis="assis{{forloop.counter}}" id_object="{{obj.id}}">{{obj.student.id.user.username}}</div>
                 <div class="panel" id="assis{{forloop.counter}}" hidden>
@@ -202,7 +202,7 @@ table{
 <!--  approved requests -->
 <div class="ui tab segment" data-tab="approve_assis" id="a2" >
     {% if approved_assistantship_request_list %}
-        {% for obj in approved_assistantship_request_list %}
+        {% for obj in approved_assistantship_request_list reversed %}
             {% if fac_id == obj.ta_supervisor.id or fac_id == obj.thesis_supervisor.id %}
               {% if obj.ta_supervisor_remark or obj.thesis_supervisor_remark  %}   
                 <div class="pthesis" id="assisapproved{{forloop.counter}}">{{obj.student.id.user.username}}</div>
@@ -252,6 +252,41 @@ table{
     <h3>nothing here</h3>
     {% endif %}
 </div>
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
 
 
 {% endblock %}
