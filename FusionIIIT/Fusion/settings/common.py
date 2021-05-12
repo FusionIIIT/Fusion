@@ -138,10 +138,7 @@ INSTALLED_APPS = [
     'applications.hostel_management',
     'applications.hr2',
     'applications.department',
-<<<<<<< HEAD
-=======
     'applications.iwdModuleV2',
->>>>>>> dac01288ebedf664f7a32bec64c57c37b5700126
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

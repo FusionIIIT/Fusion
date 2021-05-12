@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet, IncomeSubType, ExpenditureSubType)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 
@@ -98,6 +98,11 @@ def main_page(request):
 	income_history = Income.objects.all()
 	income_history = income_history[::-1]
 
+
+	income_sub_types = IncomeSubType.objects.all()
+	expenditure_sub_types = ExpenditureSubType.objects.all()
+
+
 	expenditure_history = Expenditure.objects.all()
 	expenditure_history = expenditure_history[::-1]
 
@@ -146,6 +151,8 @@ def main_page(request):
 					'max1_date':max_date,
 					'inc_fin_years':inc_fin_years,
 					'exp_fin_years':exp_fin_years,
+					'income_sub_types':income_sub_types,
+					'expenditure_sub_types':expenditure_sub_types,
 				})
 
 
