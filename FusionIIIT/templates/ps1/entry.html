@@ -24,56 +24,7 @@
 
 </div>       
 
-    <!-- {% if ent %}
-    <table >
-        <thread>
-            <tr>
-                <th scope="col">File_Info  </th>
-                
-                <th scope="col">Quantity  </th>
-                <th scope="col">Item Name  </th>
-                
-                <th scope="col">Action  </th>
-
-            </tr>
-        </thread>
-        <tbody>
-            {% for s in ent %}
-            {% if s.head_approval %}
-            {% if s.director_approval %}
-            {% if s.financial_approval %}
-            {% if s.purchased == false %}
-            
-            <tr>
-                     <th scope="row"> {{s.file_info.id}}</th>
-                     <td>{{s.quantity}}</td>
-                     <td>{{s.item_name}}</td>
-                    
-                     
-                     <td>
-                        <form action="/ps1/entry/" method="POST" id="file_info">{% csrf_token %}
-                            <input hidden  name = 'id' value="{{ s.file_info.id}}">
-                            <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Enter stock details</button>
-                          </form> 
-
-                         
-                          
-                        
-                          
-                     </td>
-                    
-
-                    </td>
-            </tr>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            
-            {% endfor %}
-        </tbody>
-    </table> -->
-
+   
     <div class="ui divider"></div>
     {% if ent %}
     <table class="ui very basic celled sortable table">
@@ -95,7 +46,7 @@
                  <td>{{s.quantity}}</td>
                  <td>{{s.item_name}}</td>
                  
-                 <td><form action="/ps1/entry/" method="POST" id="file_info">{% csrf_token %}
+                 <td><form action="/purchase-and-store/entry/" method="POST" id="file_info">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.file_info.id}}"><button class="ui primary button">
                               Enter stock details
                     </button></form</td>
