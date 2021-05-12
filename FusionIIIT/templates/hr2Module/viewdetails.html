@@ -85,7 +85,7 @@ Module
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="item" href="{% url 'globals:profile' %}{{user.username}}">
-                View E-ServiceBook
+                View Profile
                 <i class="right floated chevron right icon"></i>
             </a>
 
@@ -113,12 +113,20 @@ Module
 
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
-            <a class="active item" data-tab="first">Lien</a>
-            <a class="item" data-tab="second">Deputation</a>
-            <a class="item" data-tab="third">Other</a>
-            <a class="item" data-tab="fourth">Appraisal form</a>
+
+            <a class=" active item" data-tab="fifth">E-serviceBook</a>
+
+            <!-- <a class="item" data-tab="fourth">Appraisal form</a> -->
         </div>
-        <div class="ui bottom attached active tab segment" data-tab="first">
+
+
+
+
+
+
+
+
+        <div class="ui bottom attached active tab segment" data-tab="fifth">
             <div id="textSegmentDiv">
 
                 {% comment %}
@@ -128,442 +136,390 @@ Module
                 </div>
                 {% endcomment %}
 
-                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
 
-                    {% if not lienServiceBooks %}
-                    No entry found
-                    {% endif%}
-
-                    {% for serviceBook in lienServiceBooks%}
-                    <div class="ui one cards" style="padding: 2px;">
-                        <div class="ui blue card" id="noti">
-                            <div class="content">
-
-                                <table class="ui orange table">
-                                    <thead>
-                                        <tr>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-
-                                        <tr>
-                                            <!-- <td><a href=""></a></td> -->
-                                            <td>Name</td>
-                                            <td>{{serviceBook.extra_info.user.first_name}}
-                                                {{serviceBook.extra_info.user.last_name}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Start Date</td>
-                                            <td>{{serviceBook.start_date}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>End Date</td>
-                                            <td>---</td>
-
-                                            <!-- <td>{{fService.end_date}}</td> -->
-
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Job Title</td>
-                                            <td>{{serviceBook.job_title}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Organisation</td>
-                                            <td>{{serviceBook.organisation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Description</td>
-                                            <td>{{serviceBook.description}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Salary Source</td>
-                                            <td>{{serviceBook.salary_source}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Designation</td>
-                                            <td>{{serviceBook.designation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Service Type</td>
-                                            <td>{{serviceBook.service_type}}</td>
-
-                                        </tr>
-
-
-                                    </tbody>
-                                </table>
-
-
-
-
-
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor%}
-
-
-
-                </div>
-            </div>
-
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="second">
-
-
-
-            <div id="textSegmentDiv">
-
-                {% comment %}
-                TODO: Loader required?
-                <div class="ui active large text loader" id="loader">
-                    Loading ...
-                </div>
-                {% endcomment %}
-
-                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                    {% block alerts %}
-
-
-                    {% if not deputationServiceBooks %}
-                    No entry found
-                    {% endif%}
-
-
-                    {% for serviceBook in deputationServiceBooks%}
-                    <div class="ui one cards" style="padding: 2px;">
-                        <div class="ui blue card" id="noti">
-                            <div class="content">
-
-                                <table class="ui orange table">
-                                    <thead>
-                                        <tr>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-
-                                        <tr>
-                                            <!-- <td><a href=""></a></td> -->
-                                            <td>Name</td>
-                                            <td>{{serviceBook.extra_info.user.first_name}}
-                                                {{serviceBook.extra_info.user.last_name}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Start Date</td>
-                                            <td>{{serviceBook.start_date}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>End Date</td>
-                                            <td>---</td>
-
-                                            <!-- <td>{{fService.end_date}}</td> -->
-
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Job Title</td>
-                                            <td>{{serviceBook.job_title}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Organisation</td>
-                                            <td>{{serviceBook.organisation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Description</td>
-                                            <td>{{serviceBook.description}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Salary Source</td>
-                                            <td>{{serviceBook.salary_source}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Designation</td>
-                                            <td>{{serviceBook.designation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Service Type</td>
-                                            <td>{{serviceBook.service_type}}</td>
-
-                                        </tr>
-
-
-                                    </tbody>
-                                </table>
-
-
-
-
-
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor%}
-
-
-
-                    {% endblock %}
-                </div>
-            </div>
-
-
-
-
-
-
-
-
-
-
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="third">
-
-            <div id="textSegmentDiv">
-
-                {% comment %}
-                TODO: Loader required?
-                <div class="ui active large text loader" id="loader">
-                    Loading ...
-                </div>
-                {% endcomment %}
 
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
 
+                    <div>
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
 
-                    {% if not otherServiceBooks %}
-                    No entry found
-                    {% endif%}
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Personal Details:-</th>
+                                        </thead>
+                                        <tbody>
 
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>{{user.id}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Title</td>
+                                                <td>{{user.extrainfo.title}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Type</td>
+                                                <td>{{user.extrainfo.user_type}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Name</td>
+                                                <td>{{user.extrainfo.user.first_name}}
+                                                    {{user.extrainfo.user.last_name}}</td>
 
-                    {% for serviceBook in otherServiceBooks%}
-                    <div class="ui one cards" style="padding: 2px;">
-                        <div class="ui blue card" id="noti">
-                            <div class="content">
+                                            </tr>
+                                            <tr>
+                                                <td>email</td>
+                                                <td>{{user.extrainfo.user.email}}</td>
 
-                                <table class="ui orange table">
-                                    <thead>
-                                        <tr>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                            </tr>
 
+                                            <tr>
+                                                <td>Gender</td>
+                                                <td>{{user.extrainfo.sex}}</td>
 
-                                        <tr>
-                                            <!-- <td><a href=""></a></td> -->
-                                            <td>Name</td>
-                                            <td>{{serviceBook.extra_info.user.first_name}}
-                                                {{serviceBook.extra_info.user.last_name}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>date_of_birth</td>
+                                                <td>{{user.extrainfo.date_of_birth}}</td>
 
-                                        </tr>
+                                            </tr>
+                                            <tr>
+                                                <td>address</td>
+                                                <td>{{user.extrainfo.address}}</td>
 
-                                        <tr>
+                                            </tr>
+                                            <tr>
+                                                <td>Phone number</td>
 
-                                            <td>Start Date</td>
-                                            <td>{{serviceBook.start_date}}</td>
+                                                <td>{{user.extrainfo.phone_no}}</td>
 
-                                        </tr>
+                                            </tr>
 
-                                        <tr>
+                                            <tr>
+                                                <td>Date Of joining</td>
+                                                <td>{{user.faculty_about.doj}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>department</td>
+                                                <td>{{user.extrainfo.department.name}}</td>
+                                            </tr>
 
-                                            <td>End Date</td>
-                                            <td>---</td>
-
-                                            <!-- <td>{{fService.end_date}}</td> -->
-
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Job Title</td>
-                                            <td>{{serviceBook.job_title}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Organisation</td>
-                                            <td>{{serviceBook.organisation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Description</td>
-                                            <td>{{serviceBook.description}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Salary Source</td>
-                                            <td>{{serviceBook.salary_source}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Designation</td>
-                                            <td>{{serviceBook.designation}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Service Type</td>
-                                            <td>{{serviceBook.service_type}}</td>
-
-                                        </tr>
-
-
-                                    </tbody>
-                                </table>
-
-
-
-
-
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor%}
+
+
+
+                        <!-- work Assignment -->
+
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>workAssignemnt :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Orders Copy</th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
 
 
 
 
-                </div>
-            </div>
+                                            {% if not workAssignment %}
+                                            <h1>No entry found</h1>
+                                            {% endif%}
 
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="fourth">
-            <div id="textSegmentDiv">
-
-                {% comment %}
-                TODO: Loader required?
-                <div class="ui active large text loader" id="loader">
-                    Loading ...
-                </div>
-                {% endcomment %}
-
-                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-
-                    {% if not appraisalForm %}
-                    No entry found
-                    {% endif%}
-
-                    {% for appraisal in appraisalForm %}
-                    <div class="ui one cards" style="padding: 2px;">
-                        <div class="ui blue card" id="noti">
-                            <div class="content">
-
-                                <table class="ui orange table">
-                                    <thead>
-                                        <tr>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                            {% for serviceBook in workAssignment %}
 
 
-                                        <tr>
-                                            <!-- <td><a href=""></a></td> -->
-                                            <td>Name</td>
-                                            <td>{{appraisal.extra_info.user.first_name}}
-                                                {{appraisal.extra_info.user.last_name}}</td>
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">
 
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Year</td>
-                                            <td>{{appraisal.year}}</td>
-
-                                        </tr>
-
-                                        <tr>
-
-                                        </tr>
-
-                                        <tr>
-
-                                            <td>Appraisal Form</td>
-                                            <td>
-                                                <a class="ui inverted circular icon button" style="margin: auto;"
-                                                    target="_blank" href="{{appraisal.appraisal_form.url }}">
-                                                    <i class="large attach black icon"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
+                                                    <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                            class="large attach black icon"></i>
+                                                    </a>
 
 
+                                                </td>
 
-
-
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+
+
+
+
+
+
+
+
                         </div>
+
+
+
+                        <!-- workassignemnt end -->
+
+
+
+                        <!-- Lien -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Lien :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+
+                                            {% if not lienServiceBooks %}
+                                            <h1>No entry found</h1>
+                                            {% endif%}
+
+
+                                            {% for serviceBook in lienServiceBooks%}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+                        <!-- Deputation -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Deputation :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            {% if not deputationServiceBooks %}
+                                            No entry found
+                                            {% endif%}
+
+
+                                            {% for serviceBook in deputationServiceBooks%}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+
+
+
+                        <!-- others -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Others :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+
+                                            {% if not otherServiceBooks %}
+                                            <h1> No entry found</h1>
+                                            {% endif%}
+
+
+                                            {% for serviceBook in otherServiceBooks%}
+
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
                     </div>
-                    {% endfor%}
+
+
+
+
+
+
 
 
 
                 </div>
+
             </div>
+            <!-- end testing  -->
 
         </div>
+
+
+
+
+
+
+
 
     </div>
 
     {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+
 
 
 

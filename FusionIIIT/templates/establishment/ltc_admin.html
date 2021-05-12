@@ -18,8 +18,18 @@
         Eligible Users
     </a>
 </div>
-
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+    .req:after {
+    content:" *";
+    color: red;
+  }
+</style>
 <!--
 pending ltc applications
 -->
@@ -55,7 +65,6 @@ pending ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -117,29 +126,42 @@ pending ltc applications
                                     </table>
                                 </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
-
+                                
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        {% render_field app.assign_form.assign_status %}
+                                           
+                                        <select id='status' name='status' onchange="ltc_assign(this);" required>
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="assign_fields" class="field" style="display: block;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
-                                    </div>
-                                    <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Assign Reviewer
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -194,7 +216,6 @@ under_review ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -274,7 +295,6 @@ under_review ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -341,24 +361,38 @@ under_review ltc applications
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
                                     {% render_field app.assign_form.app_id %}
+                                    <label class="req">Status</label><br>
                                     <div class="field">
-                                        {% render_field app.assign_form.status %}
+                                           
+                                        <select id='status' name='status' onchange="ltc_assign(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="assign_fields2" class="field" style="display: block;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_id %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.reviewer_design3 %}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Assign Reviewer
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -391,10 +425,9 @@ reviewed ltc applications
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
-                            <div class="meta"> Remarks by Reviewer : {{app.tracking_info.remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.assign_ltc-{{app.id}}').modal('show')">
-                                    Approve/Reject
+                                    View
                                 </button>
                             </div>
                         </div>
@@ -411,7 +444,6 @@ reviewed ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -480,19 +512,55 @@ reviewed ltc applications
                                     {% render_field app.assign_form.app_id %}
 
                                     <div class="field">
-                                        Remarks from Director : {{ app.tracking_info.remarks }}
+                                        {% for key, value in remarks_list.items %}    
+                                        {% if key == app %}
+                                            
+                                             
+                                            {% for x in value %}
+                                            Remarks from 
+                                            {{x.0}} : {{x.1}}
+                                            <br>             
+                                            {% endfor %}
+                                            
+                                        {%endif%}
+                                        {% endfor %}
+                                        
+                                        <br>
+                                    </div>
+
+                                    <br>
+                                    <label class="req">Status</label><br>
+                                    <div class="field">
+                                           
+                                        <select id='status' name='status' onchange="ltc_assign(this);">
+                                            <option value="" selected>Select</option>
+                                            <option value="requested" >Requested</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        
+                                        </select>
+                                        
+                                        
+                                    </div><br>
+                                    
+                                    <div id="assign_fields2" class="field" style="display: block;">
+                                        <b>Forward to</b>
+                                    <br>
+                                        {% render_field app.assign_form.reviewer_id %} 
+                                    
+                                    <br>
+                                    
+                                        {% render_field app.assign_form.reviewer_design %} 
                                     </div>
                                     <br>
+                                    
+                                    
                                     <div class="field">
-                                        {% render_field app.assign_form.accept_status%}
-                                    </div>
-                                    <br>
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %}
+                                        {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
                                     <button type="submit" name="ltc_assign_form" class="ui large primary button">
-                                        Approve/Reject
+                                        Submit
                                     </button>
                                 </form>
                             </div>
@@ -528,6 +596,7 @@ archived ltc applications
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Your Remarks : {{app.tracking_info.admin_remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
@@ -546,7 +615,6 @@ archived ltc applications
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
