@@ -7,13 +7,22 @@ SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 ALLOWED_HOSTS = []
 
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
         'HOST': 'localhost',
         'USER': 'postgres',
         'PASSWORD': '12345678',
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
 }
 
 #DATABASES = {
@@ -33,7 +42,7 @@ if DEBUG:
         'django_extensions',
         )
 
-    
+
     ###############################
     # DJANGO_EXTENSIONS SETTINGS: #
     ###############################

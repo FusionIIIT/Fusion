@@ -20,7 +20,14 @@
         Review
     </a>
 </div>
-
+<style>
+    * { font: 17px Calibri; }
+    table { width: 70%; }
+    table, th, td { border: solid 1px #DDD;
+        border-collapse: collapse; padding: 2px 3px; text-align: center;
+    }
+    th {background-color:#f1f1c1}
+</style>
 
 <!--    LTC INFORMATION   -->
 <div class="ui bottom attached tab segment active" data-tab="ltczero">
@@ -35,16 +42,11 @@
                 <h2>You have less than 1 year of service.</h2>
             {% endif %}
             {% if ltc_info.eligible %}
+            <h2>2018-2021 LTC Block</h2>
             <h2>Years of job : {{ ltc_info.years_of_job }} years</h2>
             <h2>Total LTC remaining : {{ ltc_info.total_ltc_remaining }} </h2>
             <h2>"Hometown" LTC remaining : {{ ltc_info.hometown_ltc_remaining }} </h2>
             <h2>"Anywhere in India" LTC remaining : {{ ltc_info.elsewhere_ltc_remaining }} </h2>
-            <h2>2018-2021 LTC Block</h2>
-            <h2>Note:</h2>
-            <h3>You should have served atleast 1 year of Service.</h3>
-            <h3>You can avail 2 Hometown LTC in the 4 year block.</h3>
-            <h3>One Hometown LTC can be converted into Elsewhere.</h3>
-            <h3>You can avail leave encashment for a maximum of 10 days and a total of 60 days in your career.</h3>
 
             {% endif %}
         </div>
@@ -68,16 +70,13 @@
         <div class="description">
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
-                <div class="field">
+                <br>
+
+                <div class="field disabled">
                     {% render_field ltc_form.pf_number %}
                 </div>
-                <br>
                 <div class="field">
                     {% render_field ltc_form.basic_pay %}
-                </div>
-                <br>
-                <div class="field">
-                    {% render_field ltc_form.is_leave_req %}
                 </div>
                 <br>
                 <div class="field">
@@ -176,7 +175,7 @@
                             <div class="header">Status : {{app.status|title}}</div>
                             {% if app.status == 'requested' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
-                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}} ({{app.tracking_info.reviewer_design}})</div>
+                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}}</div>
                                 {% endif %}
                                 {% if app.tracking_info.review_status == 'to_assign' %}
                                     <div class="meta">Review Status : Reviewer is not assigned</div>
@@ -203,7 +202,6 @@
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -301,6 +299,7 @@
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Remarks from HR Admin : {{app.tracking_info.admin_remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
@@ -319,7 +318,6 @@
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
-                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
                                 <label>Start of leave : {{ app.leave_start }}</label><br>
                                 <label>End of leave : {{ app.leave_end }}</label><br>
                                 <label>Family departure date : {{ app.family_departure_date }}</label><br>
@@ -456,11 +454,6 @@
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>Is leave required : {{ app.is_leave_required }}</label>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <div class="disabled field">
                                         <label>Start of leave : {{ app.leave_start }}</label>
                                     </div>
                                 </div>
@@ -564,9 +557,6 @@
                                         <label>Requested advance : {{ app.requested_advance }}</label>
                                     </div>
                                 </div>
-
-                                <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
-
                                 {% render_field app.reviewform.app_id %}
                                 <div class="field">
                                     {% render_field app.reviewform.remarks %}

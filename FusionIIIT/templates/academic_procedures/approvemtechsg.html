@@ -206,7 +206,7 @@ table{
         <form id="mtech_form" >{% csrf_token %}
             <div class="ui form" style="border: black" >
                 <div class="field">
-                    <select class="ui dropdown" name="qlow" required>
+                    <select class="ui dropdown" name="quality_of_work" >
                         <option selected disabled value="">Quality of work</option>
                         <option value="Excellent">Excellent</option>
                         <option value="Good">Good</option>
@@ -215,7 +215,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="qnow" required>
+                    <select class="ui dropdown" name="quantity_of_work" >
                         <option selected disabled value="">Quantity of work</option>
                         <option value="Enough">Enough</option>
                         <option value="Just Sufficient ">Just Sufficient</option>
@@ -223,7 +223,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="grade" required>
+                    <select class="ui dropdown" name="grade" >
                         <option selected disabled value="">Grade</option>
                         <option value="A+">A+</option>
                         <option value="A">A</option>
@@ -238,7 +238,7 @@ table{
                     </select>
                 </div>
                 <div class="field">
-                    <select class="ui dropdown" name="panel" required>
+                    <select class="ui dropdown" name="panel" >
                         <option selected disabled value="">Panel Report</option>
                         <option value="Give again">Give again</option>
                         <option value="Not applicable">Not Applicable</option>
@@ -247,7 +247,7 @@ table{
                 </div>
                 <div class="field">
                     <label>Suggestion</label>
-                    <textarea rows="2" name="Suggestion" required /></textarea>
+                    <textarea rows="2" name="Suggestion" /></textarea>
                 </div>
                 <br>
                 <div class="ui divider"></div><br>
@@ -256,7 +256,7 @@ table{
                                                                                 padding: 8px 16px;
                                                                                 cursor: pointer;">&laquo; Back</div>
                 <button class="ui primary button" style="background-color: green" name="approve" value="yes">Submit</button> 
-                    
+                </div>
             </div>
         </form>
         </div>
@@ -319,12 +319,25 @@ $(function() {
     $("#mtech_form").submit(function(event) {
 
     event.preventDefault();
-    var quality = $('[name=qlow]').val();
-    var quantity = $('[name=qnow').val();
+    var form = document.getElementById("mtech_form");
+    var quality = $('[name=quality_of_work]').val();
+    var quantity = $('[name=quantity_of_work').val();
     var grade = $('[name=grade]').val();
     var panel_report = $('[name=panel]').val();
     var suggestion = $('[name=Suggestion]').val();
 
+    var message="";
+    for(var i=0;i<form.length;i++){
+        if( form.elements[i].value==="")
+        message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+    }
+
+    if(message != "")
+    {   console.log(message);
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show") ;
+    }
+    else{
     $.ajax({
     type:"POST",
     url: "/academic-procedures/update_mtechsg/",
@@ -339,11 +352,11 @@ $(function() {
     },
     success: function( data ) 
     {
-        alert('done');
+        $(".succ").modal("show");
         window.location = "/academic-procedures/fac/";
     }
     });
-
+    }
   });
 
 });

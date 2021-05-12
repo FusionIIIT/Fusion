@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url,include
 
 from . import views
 
@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'^delete-leave/', views.delete_leave, name='delete_leave'),
     url(r'^generate_form', views.generate_form, name='generate_form'),
     url(r'^generate_form_offline', views.generate_form_offline, name='generate_form_offline'),
-    url(r'^leavemanager', views.leavemanager, name='leavemanager')
+    url(r'^leavemanager', views.leavemanager, name='leavemanager'),
+    url(r'^api/',include('applications.leave.api.urls'))
 ]

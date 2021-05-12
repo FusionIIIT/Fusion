@@ -2,31 +2,41 @@
     <div class="ui vertical segment">
         <form method="post" id="editDetail" enctype="multipart/form-data">
             {% csrf_token %}
-            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                 <div class="three fields">
-                    <div class="eight wide field">
+                    <div class="eight wide field" style="display: none;">
                         <label for="post_title">Select user</label>
 
-                        {{form.extra_info}}
-                        {{form.extra_info.errors}}
+                        <select name="extra_info" required id="id_extra_info">
+                            <option value="{{employee.id}}" selected>{{employee}}</option>
+                        </select>
+
                     </div>
+
+                    <div class="eight wide field">
+                        <label for="post_title">User</label>
+                        <select>
+                            <option value="" disabled selected>{{employee}}</option>
+                        </select>
+                    </div>
+
+
                     <div class="eight wide field">
                         <label for="post_title">Joining Date</label>
 
-                        {{form.start_date}}
+                        <input type="date" name="start_date" id="id_start_date">
 
-                        {{form.start_date.errors}}
+
                     </div>
                     <div class="eight wide field">
 
 
                         <label for="post_title">End date</label>
 
-                        {{form.end_date}}
+                        <input type="date" name="end_date" id="id_end_date">
 
-                        {{form.end_date.errors}}
+
 
 
                     </div>
@@ -37,9 +47,9 @@
                     <div class="eight wide field">
                         <label for="post_title">Job Title</label>
 
-                        {{form.job_title}}
+                        <input type="text" name="job_title" maxlength="50" required="" id="id_job_title">
 
-                        {{form.job_title.errors}}
+
 
 
 
@@ -49,9 +59,9 @@
                     <div class="eight wide field">
                         <label for="post_title">Organisation</label>
 
-                        {{form.organisation}}
+                        <input type="text" name="organisation" maxlength="100" required="" id="id_organisation">
 
-                        {{form.organisation.errors}}
+
 
                     </div>
 
@@ -62,15 +72,15 @@
                     <div class="eight wide field">
                         <label for="post_title">Description</label>
 
-                        {{form.description}}
-                        {{form.description.errors}}
+                        <input type="text" name="description" maxlength="300" required="" id="id_description">
+
                     </div>
                     <div class="eight wide field">
 
 
                         <label for="post_title">Saraly Source</label>
 
-                        {{form.salary_source}}
+                        <input type="text" name="salary_source" maxlength="100" required="" id="id_salary_source">
 
 
                     </div>
@@ -81,25 +91,43 @@
 
                         <label for="post_title">Designation</label>
 
-                        {{form.designation}}
-                        {{form.designation.errors}}
+                        <input type="text" name="designation" maxlength="100" required="" id="id_designation">
+
                     </div>
                     <div class="eight wide field">
                         <label for="post_title">Service type</label>
 
-                        {{form.service_type}}
-                        {{form.service_type.errors}}
+                        <select name="service_type" required="" id="id_service_type">
+                            <option value="" selected="">---------</option>
+
+                            <option value="LIEN">LIEN</option>
+
+                            <option value="DEPUTATION">DEPUTATION</option>
+
+                            <option value="OTHER">OTHER</option>
+
+                        </select>
+
                     </div>
                 </div>
 
 
 
-
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
 
 
 
             </div>
         </form>
+
+
+
+
+
         <br>
         <br>
 

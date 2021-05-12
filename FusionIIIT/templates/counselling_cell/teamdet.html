@@ -1,0 +1,97 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block team_details %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Team Details
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="feedback" id="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Student Coordinators :
+                    </div>
+                    {% for counsellor in student_counsellors %}
+                    <div class="item">
+                    
+                        <div class="description">
+                            <div class="ui header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}}</div>
+                            <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
+                            <!-- <div class="header">Answer {{forloop.counter}} :</div>
+                            <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                        </div> 
+                        
+                    </div>
+                    {% endfor %}
+                    <div class="ui header">
+                        Student Guide :
+                    </div>
+                    {% for counsellor in student_guide %}
+                    <div class="item">
+                    
+                        <div class="description">
+                            <div class="ui header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}}</div>
+                            <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
+                            <!-- <div class="header">Answer {{forloop.counter}} :</div>
+                            <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                        </div> 
+                        
+                    </div>
+                    {% endfor %}
+                    <div class="ui header">
+                        Mapping Between Student Guide and Student:
+                    </div>
+                    <div class="ui list">
+                    {% for student_guide,students in student_and_student_guide.items %}
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui">Student Guide {{forloop.counter}} :</div>
+                            <div class="ui header">{{student_guide.student.id.user.username}} {{student_guide.student.id.user.first_name}}</div>
+                                <div class="list">
+                                    {% for student in students %}
+                                    <div class="item">
+                                    <div class="header">Student  {{forloop.counter}} :</div>
+                                    <div class="content">
+                                        <div class="header">{{student.id.user.username}} {{student.id.user.first_name}}</div>
+                                        <div class="description">{{student.hall_no}} {{student.room_no}}</div>
+                                    </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    
+                    {% endfor %}
+                </div>
+
+                   
+                   
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% comment %} {% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock %} {% endcomment %}

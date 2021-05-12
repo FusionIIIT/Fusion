@@ -9,8 +9,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.programme_curriculum, name='programme_curriculum'),
 
-
-    path('mainpage/', views.main_page, name='main_page'),
     path('programmes/', views.view_all_programmes, name='view_all_programmes'),
     path('working_curriculums/', views.view_all_working_curriculums, name='view_all_working_curriculums'),
     path('curriculums/<programme_id>/', views.view_curriculums_of_a_programme, name='view_curriculums_of_a_programme'),
@@ -22,7 +20,6 @@ urlpatterns = [
     path('disciplines/', views.view_all_discplines, name='view_all_discplines'),
     path('batches/', views.view_all_batches, name='view_all_batches'),
 
-    path('admin_mainpage/', views.admin_main_page, name='admin_mainpage'),
     path('admin_programmes/', views.admin_view_all_programmes, name='admin_view_all_programmes'),
     path('admin_working_curriculums/', views.admin_view_all_working_curriculums, name='admin_view_all_working_curriculums'),
     path('admin_curriculums/<programme_id>/', views.admin_view_curriculums_of_a_programme, name='admin_view_curriculums_of_a_programme'),
@@ -46,7 +43,9 @@ urlpatterns = [
     path('admin_edit_curriculum/<curriculum_id>/', views.edit_curriculum_form, name='edit_curriculum_form'),
     path('admin_edit_programme/<programme_id>/', views.edit_programme_form, name='edit_programme_form'),
     path('admin_edit_courseslot/<courseslot_id>/', views.edit_courseslot_form, name='edit_courseslot_form'),
+    path('admin_delete_courseslot/<courseslot_id>/', views.delete_courseslot, name='delete_courseslot'),
     path('admin_edit_batch/<batch_id>/', views.edit_batch_form, name='edit_batch_form'),
     path('admin_edit_discipline/<discipline_id>/', views.edit_discipline_form, name='edit_discipline_form'),
-
+    path('admin_instigate_semester/<semester_id>/', views.instigate_semester, name='instigate_semester'),
+    path('admin_replicate_curriculum/<curriculum_id>/', views.replicate_curriculum, name='replicate_curriculum'),
 ]
