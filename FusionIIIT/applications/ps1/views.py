@@ -50,7 +50,7 @@ def ps1(request):
     if  str(des.designation) == "student":
           return redirect('/dashboard')
     if request.user.extrainfo.id == '132':
-          return redirect("/ps1/entry/")
+          return redirect("/purchase-and-store/entry/")
     if request.method =="POST":
         try:
             if 'save' in request.POST:
