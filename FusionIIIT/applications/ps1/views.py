@@ -284,30 +284,17 @@ def indentview(request,id):
 
     tracking_objects=Tracking.objects.all()
     tracking_obj_ids=[obj.file_id for obj in tracking_objects]
-    # print(request.user.extrainfo.uploaded_files.all())
-    draft_indent1 = IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
-    draft_indent = IndentFile.objects.filter(file_info__in=tracking_obj_ids).select_related('file_info')
-    # print(draft_indent)
-    draft = [ indent.file_info for indent in draft_indent ]    
-
+    draft_indent = IndentFile.objects.filter(file_info__in=tracking_obj_ids)
+    draft=[indent.file_info.id for indent in draft_indent]
+    draft_files=File.objects.filter(id__in=draft).order_by('-upload_date')
+    indents=[file.indentfile for file in draft_files]
     extrainfo = ExtraInfo.objects.all()
-    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
-    #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
-    #designations = HoldsDesignation.objects.filter(user=request.user)
-    # for x in designations:
-    #  if abcd==x:
-    #      print (abcd)
-    #      print ("dcdsdcsd ")
-    #      designations=abcd
-    #      print (designations)
-
+    
     context = {
-
-        'draft': draft,
-        'indents' : draft_indent,
+        'indents' : indents,
         'extrainfo': extrainfo,
         'designations': designations,
     }
@@ -316,46 +303,24 @@ def indentview(request,id):
 @login_required(login_url = "/accounts/login")
 def draftview(request,id):
 
-
-
-    # print(request.user.extrainfo.uploaded_files.all())
     indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
     indent_ids=[indent.file_info for indent in indents]
-    # draft=Tracking.objects.filter(receiver_id__isnull=True).values('file_id')
-    # all_tracking_ids=[obj.file_id for obj in all_tracking]
     filed_indents=Tracking.objects.filter(file_id__in=indent_ids)
     filed_indent_ids=[indent.file_id for indent in filed_indents]
     draft = list(set(indent_ids) - set(filed_indent_ids))
-    # print(all_tracking_ids)
-    # print(filed_indents)
-    print(draft)
-    draft_indent=IndentFile.objects.filter(file_info__in=draft)
-    # print(draft_indent)
-    # draft = [ indent.file_info for indent in draft_indent ]    
-
+    draft_indent=IndentFile.objects.filter(file_info__in=draft).values("file_info")
+    draft_files=File.objects.filter(id__in=draft_indent).order_by('-upload_date')
     extrainfo = ExtraInfo.objects.all()
-    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
-    #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
-    #designations = HoldsDesignation.objects.filter(user=request.user)
-    # for x in designations:
-    #  if abcd==x:
-    #      print (abcd)
-    #      print ("dcdsdcsd ")
-    #      designations=abcd
-    #      print (designations)
-
+    
     context = {
-
-        'draft': draft,
-        'indents' : draft_indent,
+        'draft': draft_files,
         'extrainfo': extrainfo,
         'designations': designations,
     }
     return render(request, 'ps1/draftview.html', context)
-
 
 @login_required(login_url = "/accounts/login")
 def indentview2(request,id):
