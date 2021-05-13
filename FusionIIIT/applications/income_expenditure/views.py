@@ -229,7 +229,7 @@ def add_expenditure(request):
 		spent_on = ExpenditureType.objects.get(id=spent_on)
 
 		sub_type = request.POST.get('expenditure_sub_type')
-		sub_type = ExpenditureType.objects.get(id=sub_type)
+		sub_type = ExpenditureSubType.objects.get(id=sub_type)
 
 		amount = request.POST.get('amount')
 		date = request.POST.get('date_spent')
@@ -388,7 +388,7 @@ def del_income(request):
 
 
 
-def balanceSheet_table(request):
+def balanceSheet_table():
 	fixed_attributes = FixedAttributes.objects.all()
 
 
@@ -426,14 +426,13 @@ def balanceSheet_table(request):
 		#update_balanceSheet.save()
 		update_balanceSheet.balanceSheet.save(filename,File(BytesIO(pdf.content)))
 
-	else:  
+	else:
 		new = BalanceSheet(
 			balanceSheet = File(BytesIO(pdf.content)),
 			date_added=fin_year,
-
 		)
 		new.balanceSheet.save(filename,File(BytesIO(pdf.content)))
-		#new.save()
+		# new.save()
 	
 	
 
