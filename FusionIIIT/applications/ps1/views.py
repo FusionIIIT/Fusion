@@ -216,20 +216,20 @@ def ps1(request):
     }
     return render(request, 'ps1/composeIndent.html', context)
 
-@login_required(login_url = "/accounts/login")
-def compose_indent(request):
-    file = File.objects.select_related('uploader__user','uploader__department','designation').all()
-    extrainfo = ExtraInfo.objects.select_related('user','department').all()
-    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
-    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+# @login_required(login_url = "/accounts/login")
+# def compose_indent(request):
+#     file = File.objects.select_related('uploader__user','uploader__department','designation').all()
+#     extrainfo = ExtraInfo.objects.select_related('user','department').all()
+#     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+#     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
 
-    context = {
-        'file': file,
-        'extrainfo': extrainfo,
-        'holdsdesignations': holdsdesignations,
-        'designations': designations,
-    }
-    return render(request, 'ps1/composeIndent.html', context)
+#     context = {
+#         'file': file,
+#         'extrainfo': extrainfo,
+#         'holdsdesignations': holdsdesignations,
+#         'designations': designations,
+#     }
+#     return render(request, 'ps1/composeIndent.html', context)
     
 
 @login_required(login_url = "/accounts/login")
