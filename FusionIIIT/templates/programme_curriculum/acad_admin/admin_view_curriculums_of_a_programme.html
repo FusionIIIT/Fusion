@@ -160,48 +160,64 @@
 <br>
 <br>
 <div class="ui center aligned segment">
-    <a class="fluid ui large positive animated button"  tabindex="0"
-    href="{% url 'programme_curriculum:edit_programme_form' program.id %}"
-    type="Submit" name="Submit">
-        <div class="visible content">EDIT PROGRAMME</div>
-        <div class="hidden content">
-        <i class="edit icon"></i>
-        </div>
-    </a>
-    <br>
-    <a class="fluid ui large primary animated button"  tabindex="0"
-        href="{% url 'programme_curriculum:add_curriculum_form' %}?programme_id={{ program.id }}"
-        type="Submit" name="Submit" target="_blank" rel="noopener">
-        <div class="visible content">ADD CURRICULUM</div>
-        <div class="hidden content">
-        <i class="add icon"></i>
-        </div>
-    </a>
-    <br>
-    <div class="fluid ui right pointing search dropdown link item">
-        <div class="fluid ui right labeled icon large secondary animated button">
-            
-            <i class="dropdown icon"></i>
-            <div class="visible content">ADD NEW FROM REPLICATE CURRICULUM</div>
-            <div class="hidden content">
-                <i class="add icon"></i><i class="paste icon"></i>
+    <div class="fluid ui large floating labeled icon dropdown teal button">
+        <i class="options icon"></i>
+        OPTIONS
+        <div class="ui left menu">
+            <div class="header">
+                Programme
             </div>
-        </div>
-        <div class="menu">
-            {% if working_curriculums.count == 0 and past_curriculums.count == 0 %}
-                <div class="item"><I>No Curriculum to Replicate</I></div>
-            {% else %}
-                {% for curriculum in working_curriculums %}
-                    <a class="item" 
-                    href="{% url 'programme_curriculum:replicate_curriculum' curriculum.id %}"
-                    type="Submit" name="Submit" target="_blank" rel="noopener"><i class="paste icon"></i>{{ curriculum }}</a>
-                {% endfor %}
-                {% for curriculum in past_curriculums %}
-                    <a class="item" 
-                    href="{% url 'programme_curriculum:replicate_curriculum' curriculum.id %}"
-                    type="Submit" name="Submit" target="_blank" rel="noopener"><i class="paste icon"></i>{{ curriculum }}</a>
-                {% endfor %}
-            {% endif %}
+            <div class="divider"></div>
+            <div class="fitted item">
+                <a class="fluid ui large positive animated button"
+                    href="{% url 'programme_curriculum:edit_programme_form' program.id %}"
+                    type="Submit" name="Submit">
+                    <div class="visible content">EDIT PROGRAMME</div>
+                    <div class="hidden content">
+                    <i class="edit icon"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="header">
+                Curriculum
+            </div>
+            <div class="divider"></div>
+            <div class="fitted item">
+                <a class="fluid ui large primary animated button"
+                    href="{% url 'programme_curriculum:add_curriculum_form' %}?programme_id={{ program.id }}"
+                    type="Submit" name="Submit" target="_blank" rel="noopener">
+                    <div class="visible content">ADD CURRICULUM</div>
+                    <div class="hidden content">
+                    <i class="add icon"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="fitted item">
+                <div class="fluid ui large secondary animated button">
+                        
+                    <i class="dropdown icon"></i>
+                    <div class="visible content">ADD NEW FROM<br>REPLICATE CURRICULUM</div>
+                    <div class="hidden content">
+                        <i class="add icon"></i><i class="paste icon"></i>
+                    </div>
+                </div>
+                <div class="ui vertical left menu">
+                    {% if working_curriculums.count == 0 and past_curriculums.count == 0 %}
+                        <div class="item"><I>No Curriculum to Replicate</I></div>
+                    {% else %}
+                        {% for curriculum in working_curriculums %}
+                            <a class="item" 
+                            href="{% url 'programme_curriculum:replicate_curriculum' curriculum.id %}"
+                            type="Submit" name="Submit" target="_blank" rel="noopener"><i class="paste icon"></i>{{ curriculum }}</a>
+                        {% endfor %}
+                        {% for curriculum in past_curriculums %}
+                            <a class="item" 
+                            href="{% url 'programme_curriculum:replicate_curriculum' curriculum.id %}"
+                            type="Submit" name="Submit" target="_blank" rel="noopener"><i class="paste icon"></i>{{ curriculum }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
     <div class="ui horizontal divider">FILTER SEARCH</div>
