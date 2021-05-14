@@ -5,7 +5,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="inward">
-            All Filed Indents
+            Saved Indents
             </a>
         </h3>
 
@@ -14,7 +14,7 @@
 <div class="field">
                     <label>Select designation:
                              {% for designation in designation %}
-                             <td> <a href="{% url 'ps1:indentview' designation.id %}"><button class="ui primary button">
+                             <td> <a href="{% url 'ps1:draftview' designation.id %}"><button class="ui primary button">
                                  {{designation}}
                              </button></a></td>
                             {% endfor %}
