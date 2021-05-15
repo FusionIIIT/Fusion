@@ -374,6 +374,39 @@ def del_income(request):
 	return redirect('main-page')
 
 
+def view_income_history(request):
+	if(request.method == 'POST'):
+		start_date = request.POST.get('start_date')
+		end_date = request.POST.get('end_date')
+
+		income_history = Income.objects.filter(date_added__range=[start_date, end_date])
+		return render(
+						request,
+						'../templates/incomeExpenditure/incomeHistory.html',
+						{
+							'income_history':income_history,
+							'start_date':start_date,
+							'end_date':end_date,
+						})
+
+
+def view_expenditure_history(request):
+	if(request.method == 'POST'):
+		start_date = request.POST.get('start_date')
+		end_date = request.POST.get('end_date')
+
+		expenditure_history = Expenditure.objects.filter(date_added__range=[start_date, end_date])
+		return render(
+						request,
+						'../templates/incomeExpenditure/expenditureHistory.html',
+						{
+							'expenditure_history':expenditure_history,
+							'start_date':start_date,
+							'end_date':end_date,
+						})
+
+
+
 '''
 	download's balancesheet
         Parameters:

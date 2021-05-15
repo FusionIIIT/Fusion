@@ -1,0 +1,75 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    stats
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<div class="eight wide column">
+  <div class="ui active tab segment" data-tab="one" >
+    <h1>Income History from {{ start_date }} to {{ end_date }}</h1>
+
+    {% if not income_history %}
+    <h1> Nothing to show</h1>
+    {% endif %}
+    
+    {% for items in income_history %}
+    
+      <div class="card" style = "margin-bottom: 5%;
+      border-style: groove;
+      padding: 2%;">
+        <div class="card-body">
+          <h5 class="card-title">Purpose : {{items.source}} </h5>
+          <p class="card-text">Sub Type : {{items.sub_type}}
+            <br>
+            Date added : {{items.date_added}}
+            <br>
+            Amount : {{items.amount}}
+            <br>
+            Remarks: {{items.remarks}}
+          </p>
+          <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
+            <input hidden  name = 'id' value="{{ items.id }}">
+            <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Delete</button>
+            <button class="ui primary button" type='submit' style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Edit</button>
+          </form>
+        </div>
+        </div>
+
+    {% endfor %}
+
+
+</div>
+</div>
+
+{% endblock %}

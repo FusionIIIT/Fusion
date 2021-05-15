@@ -3,8 +3,23 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 <div class="ui vertical segment">
+
+  <form id="view_expenditure_history_form" method='POST' action='/income-expenditure/viewExpenditureHistory/' target="_blank">{% csrf_token %}
+      <div class="ui form" style="border: black" > 
+        <div class="two fields">
+            <div class = "field">
+                <input  name = "start_date" required="true" type="date" min="{{min_date}}" max="{{max1_date}}">
+            </div>
+            <div class = "field">
+                <input  name = "end_date" required="true" type="date" min="{{min_date}}" max="{{max1_date}}">
+            </div>
+        </div>
+      </div><br>
+      <div class="ui divider"></div><br>
+      <center> <button class="ui primary button" type='submit'>Get History</button></center>
+    </form>
       
-     {% for items in expenditure_history %} 
+     <!-- {% for items in expenditure_history %} 
     
     <div class="card" style = "margin-bottom: 5%;
     border-style: groove;
@@ -21,9 +36,6 @@
           Amount : {{items.amount}}
           <br>
           Remarks : {{items.remarks}}
-         <!---- <br>
-          Receipt : <a href="#">view</a>
-          <br>-->
         </p>
         <form action="/income-expenditure/deleteExpenditureHistory/" method="POST" id="del_expenditure">{% csrf_token %}
         <input hidden type="text" name = 'id' value="{{ items.id }}">
@@ -31,7 +43,7 @@
       </form>
       </div>
       </div>
-      {% endfor %}
+      {% endfor %} -->
 
   </div>
 
