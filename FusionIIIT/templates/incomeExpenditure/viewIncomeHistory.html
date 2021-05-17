@@ -19,40 +19,89 @@
       <center> <button class="ui primary button" type='submit'>Get History</button></center>
     </form>
 
-    <!-- {% for items in income_history %}
+     {% for items in income_history %}
     
-    <div class="card" style = "margin-bottom: 5%;
+    <div class="card" style = "margin-bottom: 5%; margin-top: 5%;
     border-style: groove;
     padding: 2%;">
       <div class="card-body">
-        <h5 class="card-title">Purpose : {{items.source}} </h5>
-        <p class="card-text">Sub Type : {{items.sub_type}}
+        <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
+        <h5 class="card-title">Purpose :  <input type="text" id="Purpose{{items.id}}" class="form-control mx-sm-3" value='{{items.source}}' style="border-style: hidden;" disabled>
+        </h5>
+        <p class="card-text">
+          Sub Type : 
+          <select class="ui dropdown" name="income_sub_type" id="subType{{items.id}}" value="{{items.sub_type}}" disabled>
+            {% for z in income_sub_types %}
+            {% ifequal z.income_type  items.source%}
+            <option value="{{z.income_sub_type}}">{{ z.income_sub_type }}</option>
+            {% endifequal %}
+            {% endfor %}
+          </select>
+
           <br>
+          <br>
+
           Date added : {{items.date_added}}
           <br>
-          Amount : {{items.amount}}
           <br>
-          Remarks: {{items.remarks}}
+          Amount : <i class="rupee sign icon" style="margin-right: 0;"></i><b><input type="number" name="amount" id="amount{{items.id}}" value="{{items.amount}}" style="border-style: hidden;" disabled> </b>
+          <br>
+          <br>
+          Remarks:  <input name="remarks" type="text" id="remarks{{items.id}}" value="{{items.remarks}}" style="border-style: hidden;" disabled> </input>
           
-         -- <br>
-          Receipt : <a href="#">view</a> 
+         <br>
         </p>
-        <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
-          <input hidden  name = 'id' value="{{ items.id }}">
-          <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Delete</button>
-        </form>
+        
+        <input name="delete" value="Delete"  type='submit' id="delete{{items.id}}" class="ui primary button" style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">
+        <input  name="edit" id="edit{{items.id}}" type="button" value="Edit"  class="ui primary button"  style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">
+        <input name="update" id="update{{items.id}}" type ="hidden" value="Update"  class="ui primary button"  formaction="/income-expenditure/updateIncomeHistory" style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;" hidden>
+      </form>
       </div>
       </div>
 
-        {% endfor %} -->
+        {% endfor %} 
 
-
+ 
 
 </div>
 
 
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+ 
+  var el = document.getElementByName('edit');
+  for(var i=0;i<el.length;i++){
+    el[i].addEventListener('click',action(i));
+  }
+function action(){
+
+  var i = arguments[0];
+
+  document.getElementByName('income_sub_type')[i].disabled = false;
+  document.getElementByName('amount')[i].disabled = false;
+  document.getElementByName('remarks')[i].disabled = false;
+    
+  document.getElementByName('income_sub_type')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+  document.getElementByName('amount')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+  document.getElementByName('remarks')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+      
+  
+      
+      
+  document.getElementByName('edit')[i].type = "hidden";   
+  document.getElementByName('update')[i].type = "submit";
+  document.getElementByName('delete')[i].type = "hidden";
+
+
+}
+
+  
+  
+  </script>
+
+
+
 <script type="text/javascript">
 $(function() {
     $("#del_income").submit(function(event) {
