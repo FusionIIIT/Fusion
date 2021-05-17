@@ -15,13 +15,13 @@ class HostelManagementConstants:
         )
 
     DAYS_OF_WEEK = (
-            (0, 'Monday'),
-            (1, 'Tuesday'),
-            (2, 'Wednesday'),
-            (3, 'Thursday'),
-            (4, 'Friday'),
-            (5, 'Saturday'),
-            (6, 'Sunday')
+            ('Monday', 'Monday'),
+            ('Tuesday', 'Tuesday'),
+            ('Wednesday', 'Wednesday'),
+            ('Thursday', 'Thursday'),
+            ('Friday', 'Friday'),
+            ('Saturday', 'Saturday'),
+            ('Sunday', 'Sunday')
         )
 
     BOOKING_STATUS = (
@@ -51,7 +51,7 @@ class HallCaretaker(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall + self.staff
+        return str(self.hall) + '  (' + str(self.staff.id.user.username) + ')'
 
 
 class HallWarden(models.Model):
@@ -59,7 +59,7 @@ class HallWarden(models.Model):
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall + self.faculty
+        return str(self.hall) + '  (' + str(self.faculty.id.user.username) + ')'
     
 
 class GuestRoomDetail(models.Model):
@@ -73,7 +73,7 @@ class GuestRoomDetail(models.Model):
 
 class GuestRoomBooking(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    intender = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    intender = models.ForeignKey(User, on_delete=models.CASCADE)
     guest_name = models.CharField(max_length=100)
     guest_phone = models.CharField(max_length=15)
     guest_email = models.CharField(max_length=40, blank=True)
@@ -91,13 +91,14 @@ class GuestRoomBooking(models.Model):
     nationality = models.CharField(max_length=20, blank=True)
     
     def __str__(self):
-        return '%s ----> %s - %s' % (self.id, self.guest_id, self.status)
+        return '%s ----> %s - %s' % (self.id, self.guest_name, self.status)
 
 
 class StaffSchedule(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
-    day = models.IntegerField(choices=HostelManagementConstants.DAYS_OF_WEEK)
+    staff_type = models.CharField(max_length=100, default='Caretaker')
+    day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
     start_time = models.TimeField(null=True,blank=True)
     end_time = models.TimeField(null=True,blank=True)
 
@@ -125,4 +126,26 @@ class HostelStudentAttendence(models.Model):
         return str(self.student_id) + '->' + str(self.date) + '-' + str(self.present)
 
 
-    
+class HallRoom(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room_no = models.CharField(max_length=4) 
+    block_no = models.CharField(max_length=1)
+    room_cap = models.IntegerField(default=3)
+    room_occupied = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.hall) + str(self.block_no) + str(self.room_no) + str(self.room_cap) + str(self.room_occupied)
+
+
+class WorkerReport(models.Model):
+    worker_id = models.CharField(max_length=10)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    worker_name = models.CharField(max_length=50)
+    year =  models.IntegerField(default=2020)
+    month = models.IntegerField(default=1)
+    absent = models.IntegerField(default= 0)
+    total_day = models.IntegerField(default=31)
+    remark = models.CharField(max_length=100)
+
+    def str(self):
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   

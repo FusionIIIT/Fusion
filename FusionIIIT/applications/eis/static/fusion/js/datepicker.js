@@ -33,3 +33,12 @@ $('#rangeend3').calendar({
     type: 'date',
     startCalendar: $('#rangestart3')
 });
+// changes
+$('#rangestart8').calendar({
+    type: 'date',
+    endCalendar: $('#rangeend8')
+});
+$('#rangeend8').calendar({
+    type: 'date',
+    startCalendar: $('#rangestart8')
+});

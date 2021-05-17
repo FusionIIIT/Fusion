@@ -1,0 +1,152 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    Agreement Letter:
+</div>
+
+AGREEMENT made on {{agreement.date}} between the
+PDPM-IIITDM Jabalpur registered under society registration Act Madhya Pradesh 1973 No.
+04/14/01/08097/05 dated 24.01.2005 through its Acting Registrar (hereinafter referred to as
+“The Institute”) and {{agreement.agencyName}}
+(hereinafter referred to as “The Contractor”)
+which expression shall include his/ their respective heirs, executors, administrators and
+assigns of the other part.<br><br>
+
+WHEREAS the Institute is desirous for the work of {{agreement.workName}}<br><br>
+AND WHEREAS the Contractor has deposited a FDR of a sum of Rs. {{agreement.fdrSum}} with the Institute for the due
+performance of this agreement.<br><br>
+
+<div class="ui header">
+
+NOW IT IS HEREBY AGREED AS FOLLOWS
+</div>
+1. In consideration of the payments to be made to the contractor as hereinafter provided the
+Contractor shall upon and subject to the said conditions to execute and complete the works
+shown upon the said drawing and such further detailed drawing as may be furnished to him
+by the said Institute and described in the specification, and the said priced of quantities.
+<br><br>
+2. The Institute shall pay the Contractor such sums as shall become payable hereunder all the
+time and in the manner specified in the said conditions.
+<br><br>
+3. Time is the essence of the agreement. In the event of Contractor failing to comply with
+these conditions he shall be liable to pay compensation as per General conditions of
+contract-2019 and Correction slip which shall be final and binding on the Contractor.
+<br><br>
+4. The Drawings, specification and priced schedule of quantities as mentioned above shall
+form the basis of this contract and the decision of the Director or Arbitrator or umpire as
+mentioned in the conditions of contract in reference to all matters or dispute as to material,
+workmanship or account and as to the intended interpretation of the clause of this agreement
+of any other document attached here to shall be final and binding on both parties and may
+be made a rule of court.
+<br><br>
+5. The said contract comprise the work above mentioned and all the subsidiary work
+connected therewith within the same site all may be recorded to be done from time to time
+by the Institute even though such works may not be shown on the drawings of described in
+the said specifications of the priced schedule of quantities.
+<br><br>
+6. The Institute reserve the right of altering the drawings and nature of the work and of adding
+or to omitting any items of work or of having portions of the same carried out
+departmentally or otherwise and such alterations or variations shall not vitiate this contract.
+<br><br>
+7. The said conditions and appendix there to shall be read and construed as forming part of this
+agreement and the parties here to will respectively abide by and submit themselves to the
+conditions and stipulations and perform the agreement on their parts respectively in such
+condition contained.
+<br><br>
+8. All disputes arising out of or in any way connected with this agreement shall be deemed to
+have arisen in Jabalpur and only courts in Jabalpur shall have jurisdiction to determine the
+same.
+<br><br>
+9. The several parts of this contract have been read to us and fully understood by us. IN
+WITNESS WHEREOF the parties hereto have set their respective hands the day the year
+hereinabove written.
+
+                <div class="field">
+                    <label><br></label>
+
+
+                </div>
+
+
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

@@ -17,7 +17,7 @@ from applications.scholarships.models import Mcm
 from applications.filetracking.models import (File, Tracking)
 from applications.eis.models import emp_research_projects, emp_patents, emp_consultancy_projects
 
-from notification.views import office_dean_PnD_notif
+from notification.views import office_dean_PnD_notif,office_module_DeanRSPC_notif
 
 from .forms import *
 from .models import *
@@ -693,6 +693,8 @@ def project_registration_permission(request):
                     emp_projects.save()
                 obj.DRSPC_response = "Approve"
                 obj.save()
+                # notification for dean RSPC
+                office_module_DeanRSPC_notif(request.user, obj.PI_id.user,obj.DRSPC_response)
 
     elif "forward" in request.POST:
         id_list = request.POST.getlist('id[]')
@@ -711,6 +713,8 @@ def project_registration_permission(request):
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = "Disapprove"
                 obj.save()
+                # notification for dean RSPC
+                office_module_DeanRSPC_notif(request.user, obj.PI_id.user,obj.DRSPC_response)
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 

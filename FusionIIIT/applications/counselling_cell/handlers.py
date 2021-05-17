@@ -51,8 +51,6 @@ def add_student_counsellors(request):
     
     extrainfo = ExtraInfo(user=user)
     student = Student(id=extrainfo)
-    # print(user,extrainfo,student)
-    # student = student
     position = request.POST.get('position')
     # position="student_coordinator"
     student_counsellor_object = StudentCounsellingTeam(student_id=student,student_position=position)
@@ -83,7 +81,7 @@ def remove_student_coordinator(request):
     category = CounsellingIssueCategory.objects.filter(category_id=request.POST.get('category')).first()
     question = request.POST.get('question')
     faq_object = CounsellingFAQ(counselling_answer=answer,counselling_question=question,counselling_category=category)
-    
+
     faq_object.save()
     data = {
         'status': 1

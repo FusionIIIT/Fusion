@@ -1,0 +1,298 @@
+{% extends 'ps1/ps1.html' %}
+{% load static %}
+
+
+{% block filetracking_tab %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            File New Indent
+            </a>
+        </h3>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            {% csrf_token %}
+                <div class="field">
+                        <label>Title of Indent File*</label>
+                        <textarea rows="1" name="title" required></textarea>
+                </div>
+
+
+
+                <div class="field">
+                    <label>Description*</label>
+                    <textarea rows="3" name="desc" required></textarea>
+                </div>
+
+
+                <div class="field">
+                    <label>Item Name*</label>
+                    <textarea rows="1" name="item_name" required></textarea>
+                </div>
+
+
+                <div class="field">
+                    <label>Quantity*</label>
+                    <input type="number" name="quantity" required></input>
+                </div>
+
+
+                <div class="field">
+                    <label>Present Stock*</label>
+                    <input type="number"  name="present_stock" required></input>
+                </div>
+
+                <div class="field">
+                    <label>Estimated Cost*</label>
+                    <input type="number"  name="estimated_cost" required></input>
+                </div>
+
+
+                <div class="field">
+                    <label>Purpose*</label>
+                    <textarea rows="3" name="purpose" required></textarea>
+                </div>
+
+
+                <div class="field">
+                    <label>Specification</label>
+                    <textarea rows="3" name="specification"></textarea>
+                </div>
+
+
+                <div class="field">
+                    <label>Item Type*</label>
+                    <select name="indent_type">  
+                        <option value = "Equipment">Equipment</option>  
+                        <option value = "Machinery">Machinery</option>  
+                        <option value = "Furniture">Furniture</option>  
+                        <option value = "Fixture"> Fixture</option>  
+                    </select>  
+                </div>
+
+
+                <div class="field">
+                    <label>Budgetary Head</label>
+                    <textarea rows="2" name="budgetary_head"></textarea>
+                </div>
+
+
+                <div class="field">
+                    <label>Expected Delivery*</label>
+                    <input type="date" id="start" name="expected_delivery">
+                </div>
+
+
+                <div class="field">
+                    <label>Sources of Supply*</label>
+                    <textarea rows="3" name="sources_of_supply" required></textarea>
+                </div>
+                
+                <div class="field">
+                    <h5>Nature of Item*</h5>
+                    <label class="radio-inline">
+                        <input type="radio" name="nature" value="True"> Consumable 
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="nature" value="False"> Non Consumable
+                    </label>
+                 </div>
+
+
+                <div class="field">
+                   <h5>Indigenous*</h5>
+                   <label class="radio-inline">
+                       <input type="radio" name="indigenous" value="True"> Yes
+                   </label>
+                   <label class="radio-inline">
+                       <input type="radio" name="indigenous" value="False"> No
+                   </label>
+                </div>
+
+
+
+                <div class="field">
+                   <h5>Replaced*</h5>
+                   <label class="radio-inline">
+                       <input type="radio" name="replaced" value="True"> Yes
+                   </label>
+                   <label class="radio-inline">
+                       <input type="radio" name="replaced" value="False"> No
+                   </label>
+                </div>
+
+                <div class="field">
+                    <label>Create as:
+                        <select required class="ui fluid search selection dropdown" name="design">
+                           <option selected hidden>Select</option>
+
+                             {% for designations in designations %}
+                            <option value="{{designations.id}}">{{designations}}</option>
+                            {% endfor %}
+
+                        </select>
+                    </label>
+                </div>
+
+                <br>
+
+                <div class = "left floated item">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                </div>
+
+                <br>
+
+                <div>
+                    <a class="right floated item">
+
+                        <button type="submit" name="save" class="ui large right floated primary button">
+                            Save to drafts<i class="ui save icon right floated"></i>
+                        </button>
+                    </a>
+                </div>
+
+                <br>
+                <br>
+                <div class="field">
+                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                </div>
+
+                <div class="field">
+                            <label>Forward To:
+
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <datalist  id="input_list">
+
+                                    </datalist>
+                               
+                            </label>
+                </div>
+
+                <div class="field">
+                    <label>Receiver Designation:
+                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                            <datalist  id="input_list1">
+
+                            </datalist>
+
+
+                       
+                    </label>
+                </div>
+
+
+                <div>
+                    <a class="right floated item">
+
+                        <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
+                                Send<i class="ui send icon right floated"></i>
+                            </button>
+                    </a>
+                </div>
+
+
+
+            </form>
+
+            <br>
+
+        </div>
+
+        <br>
+        <div class="extra content"></div>
+    </div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
+
+
+<script type="text/javascript">
+
+
+        $('#input_search1').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for(var i=0;i<all_designations.length;i++){
+                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+</script>
+
+{% endblock %}
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>
+
+

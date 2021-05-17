@@ -1,0 +1,192 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Compose New Procurement File
+            </a>
+        </h3>
+    </div>
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form">
+           <input type="hidden" name="item_id" id="item_id" required maxlength="20"  value="{{StockEntry.item_id}}"> -->
+            {% csrf_token %}
+            
+
+                <!--<div class="field">
+                    <label>File ID.</label>
+                    <div class="ui fluid input">
+                        <input type="number" min="1" max="9999" size="4" name="fileid" required>
+                    </div>
+                </div>
+                {% if IntegrityError %}
+                    <span>FileID already exists</span>
+                {% endif %}-->
+
+                <!--<div class="field">
+                    <label>Designation</label>
+                    <select class="ui fluid search selection dropdown" name="receiver">
+                        <option selected hidden>Select</option>
+                    </select>
+                </div>-->
+
+
+                <div class="field">
+                        <label>Dealing Assistant ID</label><br>
+                        
+                        <input type="text" name="dealing_assistant_id" value={{StockEntry.dealing_assistant_id}}>
+                </div>
+                
+                <div class="field">
+                    <label>Item id</label><br>
+                    
+                    <input type="text" name="item_id" value={{StockEntry.item_id}} readonly>
+            </div>
+
+
+                <div class="field">
+                        <label>Name of the purchasing Item/Equipment</label><br>
+                        
+                        <input type="text" name="item_name" value={{StockEntry.item_name}}>
+                </div>
+
+
+        
+                <div class="field">
+                        <label>Vendor</label><br>
+                        <input type="text" name="vendor" value={{StockEntry.vendor}}>
+                        
+                </div>
+
+
+                <div class="field">
+                        <label>Current stock</label><br>
+                        <input type="text" name="current_stock" value={{StockEntry.current_stock}} >
+                        
+                </div>
+
+        
+                <div class="field">
+                        <label>Received date</label><br>
+                        <input type="date" name="recieved_date" value={{StockEntry.recieved_date}} >
+                </div>
+
+
+                <br>
+
+                
+                <div class = "left floated item">
+                      <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
+                      <input type="file" id="file" name="bill" value={{StockEntry.bill}} accept=".pdf, .jpg, .jpeg, .png" >
+                </div>
+
+                <br>
+
+        
+                <div>
+                     <a class="right floated item" >
+
+                        <button type="submit" name="save" class="ui large right floated primary button">
+                            Modify<i class="ui save icon right floated"></i>
+                        </button>
+                    </a>
+                </div>
+
+                <br>
+                <br>
+
+
+        </form>
+
+            <br>
+
+        </div>
+
+        <script type="text/javascript">
+
+
+            $('#input_search1').keyup(function(){
+    
+                console.log('asdasd');
+                value = $('#input_search1').val();
+    
+                  $.ajax({
+                    type: 'POST',
+                    url: '/filetracking/ajax/',
+                    data: {
+                        'value': value,
+                        'csrfmiddlewaretoken': '{{csrf_token}}'
+                    },
+                    dataType: 'json',
+                    success: function(response){
+                        console.log('coming-----------------------');
+    
+                        console.log(response.holds[0]);
+    
+                        all_designations = JSON.parse(response.holds);
+                        console.log(all_designations[0].fields.name);
+                        app = []
+                        $('#input_list1').html('');
+                        for(var i=0;i<all_designations.length;i++){
+                           $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                        }
+                    },
+                    error: function(rs, e){
+                        console.log('error-------');
+                    },
+                });
+                console.log("dsfagdfdshadf");
+            });
+        </script>
+    
+        <script type="text/javascript">
+            $('#input_search').keyup(function(){
+    
+                console.log('asdasd');
+                value = $('#input_search').val();
+    
+                  $.ajax({
+                    type: 'POST',
+                    url: '/filetracking/ajax_dropdown/',
+                    data: {
+                        'value': value,
+                        'csrfmiddlewaretoken': '{{csrf_token}}'
+                    },
+                    dataType: 'json',
+                    success: function(response){
+                        console.log('coming-----------------------');
+    
+    
+    
+                        all_users = JSON.parse(response.users);
+                        console.log(all_users[0].fields.username);
+                        app = []
+                        $('#input_list').html('');
+                        for(var i=0;i<all_users.length;i++){
+                           $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                        }
+                    },
+                    error: function(rs, e){
+                        console.log('error-------');
+                    },
+                });
+                console.log("dsfagdfdshadf");
+            });
+    </script>
+    
+    {% endblock %}
+    
+    <script type="text/javascript">
+        function ShowHideDiv() {
+            var chkAddress = document.getElementById("chkAddress");
+            var leaveAddress = document.getElementById("leaveAddress");
+            leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+        }
+    </script>

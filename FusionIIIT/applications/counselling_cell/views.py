@@ -9,6 +9,7 @@ import django. utils. timezone as timezone
 from collections import defaultdict
 import openpyxl
 
+
 from .models import (
     CounsellingFAQ,
     CounsellingIssue,
@@ -16,6 +17,7 @@ from .models import (
     StudentCounsellingTeam,
     StudentCounsellingInfo,
     CounsellingMeeting
+
 )
 from .handlers import (
     add_counselling_faq,
@@ -24,21 +26,11 @@ from .handlers import (
 from applications.academic_information.models import Student,ExtraInfo
 # Create your views here.
 
-# user = User.objects.filter(username=2017167).first()
-# extra_info = ExtraInfo.objects.get(user=user)
-# student = Student.objects.get(id=extra_info)
-# print(extra_info.user_type)
-# StudentCounsellingTeam.objects.filter(student=)
-# category = CounsellingIssueCategory(category_id="others",category="Others")
-# category.save()
-# faq = CounsellingIssueCategory.objects.all()
-# print(faq) 
 
 def counselling_cell(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     user_role = extra_info.user_type
-    # print(user_role)
     meetings = CounsellingMeeting.objects.all()
     year = timezone.now().year
     third_year_students = Student.objects.filter(batch=year-3)
@@ -69,6 +61,7 @@ def counselling_cell(request):
             # print(student_des)
             if student.student_position == "student_guide" :
                 issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student])
+
     context = {
         "faqs":faqs,
         "meetings":meetings,
@@ -211,13 +204,3 @@ def assign_student_to_sg(request):
     #     print(studentToStudentGuide)
     return HttpResponseRedirect("/counselling/")
     
-    # return JsonResponse({
-    #     'status':1,
-    #     'message':"Student and Student Guides Inserted Successfully"
-    # })
-
-# checkForSG = StudentCounsellingTeam.objects.filter(student_id="2018323",student_position="student_guide").delete()
-# print(checkForSG)
-# sg = StudentCounsellingTeam.objects.filter(student_id="2019034",student_position="student_guide").first()
-# mappedStudent = StudentCounsellingInfo(student_guide=sg,student_id=Student(id=ExtraInfo(user=User(username="2019185"))))
-# mappedStudent.save()  
