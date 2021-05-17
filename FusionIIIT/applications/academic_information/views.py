@@ -6,6 +6,7 @@ import logging
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from xhtml2pdf import pisa
+
 from itertools import chain
 
 from django.contrib.auth.models import User
