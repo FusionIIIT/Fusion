@@ -390,6 +390,7 @@ def view_income_history(request):
 						})
 
 
+
 def view_expenditure_history(request):
 	if(request.method == 'POST'):
 		start_date = request.POST.get('start_date')
@@ -404,6 +405,66 @@ def view_expenditure_history(request):
 							'start_date':start_date,
 							'end_date':end_date,
 						})
+
+
+
+
+def edit_income_history(request):
+	if(request.method == 'POST'):
+		in_id = request.POST.get('id')
+		income = Income.objects.get(id=in_id)
+		sub_types = IncomeSubType.objects.filter(income_type=income.source)
+
+		#adding date constraints
+
+		date_added = income.date_added
+		current_date = timezone.now()
+		current_year = current_date.year
+		added_year = date_added.year
+		current_month = str(current_date.month)
+		current_day = str(current_date.day)
+		current_month = current_month if len(current_month) > 1 else '0'+current_month
+		current_day = current_day if len(current_day) > 1 else '0'+current_day
+
+		if current_year == added_year :
+			min1_date = str(current_year)+'-04-01'
+			max1_date = str(current_year)+'-'+current_month+'-'+current_day
+		elif current_year-added_year == 1 and current_year.month < 4:
+			min1_date = str(added_year)+'-04-01'
+			max1_date = str(current_year)+'-'+current_month+'-'+current_day
+
+		#completed date constraints
+		
+
+		return render(
+						request,
+						'../templates/incomeExpenditure/editIncome.html',
+						{
+							'income':income,
+							'income_sub_types': sub_types,
+							'minDate':min1_date,
+							'maxDate':max1_date,
+							
+						})
+
+def update_income_history(request):
+	if(request.method == 'POST'):
+		income_id = request.POST.get('id')
+		income_ob = Income.objects.get(id=income_id)
+		sub_type = request.POST.get('income_sub_type')
+		income_ob.sub_type = IncomeSubType.objects.get(id=sub_type)
+		income_ob.amount = request.POST.get('amount')
+		
+		income_ob.date_added = request.POST.get('date_recieved')
+		income_ob.remarks = request.POST.get('remarks')
+
+		income_ob.save()
+
+		return redirect('main-page')
+
+
+
+
 
 
 
@@ -526,7 +587,7 @@ def view_income_stats(request):
 						{
 							'income_data':income_data,
 							'income_labels':income_labels,
-							'fin_year':fin_year,
+							'fin_year':fin_year, 
 						})
 
 '''

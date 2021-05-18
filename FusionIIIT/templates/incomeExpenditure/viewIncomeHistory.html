@@ -25,18 +25,11 @@
     border-style: groove;
     padding: 2%;">
       <div class="card-body">
-        <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
-        <h5 class="card-title">Purpose :  <input type="text" id="Purpose{{items.id}}" class="form-control mx-sm-3" value='{{items.source}}' style="border-style: hidden;" disabled>
+        <h5 class="card-title">Purpose : {{items.source}}
         </h5>
         <p class="card-text">
-          Sub Type : 
-          <select class="ui dropdown" name="income_sub_type" id="subType{{items.id}}" value="{{items.sub_type}}" disabled>
-            {% for z in income_sub_types %}
-            {% ifequal z.income_type  items.source%}
-            <option value="{{z.income_sub_type}}">{{ z.income_sub_type }}</option>
-            {% endifequal %}
-            {% endfor %}
-          </select>
+          Sub Type : {{items.sub_type}}
+          
 
           <br>
           <br>
@@ -44,17 +37,20 @@
           Date added : {{items.date_added}}
           <br>
           <br>
-          Amount : <i class="rupee sign icon" style="margin-right: 0;"></i><b><input type="number" name="amount" id="amount{{items.id}}" value="{{items.amount}}" style="border-style: hidden;" disabled> </b>
+          Amount : <i class="rupee sign icon" style="margin-right: 0;"></i><b>{{items.amount}} </b>
           <br>
           <br>
-          Remarks:  <input name="remarks" type="text" id="remarks{{items.id}}" value="{{items.remarks}}" style="border-style: hidden;" disabled> </input>
+          Remarks: {{items.remarks}}
           
          <br>
         </p>
-        
-        <input name="delete" value="Delete"  type='submit' id="delete{{items.id}}" class="ui primary button" style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">
-        <input  name="edit" id="edit{{items.id}}" type="button" value="Edit"  class="ui primary button"  style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">
-        <input name="update" id="update{{items.id}}" type ="hidden" value="Update"  class="ui primary button"  formaction="/income-expenditure/updateIncomeHistory" style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;" hidden>
+        <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
+        <input value="{{items.id}}" name='id' hidden>
+        <button name="delete"   type='submit' id="delete" class="ui primary button" style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Delete</button>
+      </form>
+      <form action="/income-expenditure/editIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
+        <input value="{{items.id}}" name='id' hidden>
+        <button  name="edit" id="edit" type="submit"  class="ui primary button" formaction='/income-expenditure/editIncomeHistory/' style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Edit</button>
       </form>
       </div>
       </div>
