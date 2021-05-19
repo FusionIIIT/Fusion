@@ -81,7 +81,7 @@ def hostel_view(request, context={}):
     for h_c in hall_caretaker:
         hall_caretaker_user.append(h_c.staff.id.user)      
 
-    worker_report = WorkerReport.objects.all()
+    worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall)
 
     context = {
         'hall_1_student': hall_1_student,
@@ -240,7 +240,15 @@ def render_to_pdf(template_src, context_dict={}):
 class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
         template = get_template('hostelmanagement/view_report.html')
-        worker_report = WorkerReport.objects.all()
+
+        hall_caretaker = HallCaretaker.objects.all()
+        get_hall=""
+        for i in hall_caretaker:
+            if i.staff.id.user==request.user:
+                get_hall=i.hall
+                break
+
+        worker_report = WorkerReport.objects.filter(hall=get_hall)
         worker = {
             'worker_report' : worker_report
         }
