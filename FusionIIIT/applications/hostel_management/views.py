@@ -38,9 +38,13 @@ def hostel_view(request, context={}):
     hall_3_student = Student.objects.filter(hall_no=3)[:10]
     hall_4_student = Student.objects.filter(hall_no=4)[:10]
     all_hall = Hall.objects.all()
-    # halls_student = {}
-    # for hall in all_hall:
-    #     halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+    halls_student = {}
+    for hall in all_hall:
+        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+
+    hall_staffs = {}
+    for hall in all_hall:
+        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall)
 
     all_notice = HostelNoticeBoard.objects.all().order_by("-id")
 
@@ -93,8 +97,9 @@ def hostel_view(request, context={}):
         'room_avail' : get_avail_room,
         'hall_student':hall_student,
         'worker_report': worker_report,
-        # 'halls_student': halls_student,
+        'halls_student': halls_student,
         'current_hall' : current_hall,
+        'hall_staffs': hall_staffs,
         **context
     }
 
