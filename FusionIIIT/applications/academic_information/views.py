@@ -935,8 +935,7 @@ def generate_preregistration_report(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
         
-    if request.method == "POST":   
-        print(request.POST)
+    if request.method == "POST":
         sem = request.POST.get('semester_no')
         batch_id=request.POST.get('batch_branch')
         batch = Batch.objects.filter(id = batch_id).first()

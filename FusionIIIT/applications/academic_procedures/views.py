@@ -1138,7 +1138,6 @@ def get_acad_year(user_sem, year):
         return acad_year
 
 def pre_registration(request):
-    print(request.method)
     if request.method == 'POST':
         try:
             current_user = get_object_or_404(User, username=request.POST.get('user'))
