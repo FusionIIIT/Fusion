@@ -9,7 +9,7 @@ from applications.academic_information.models import Student
 from applications.academic_information.models import *
 from django.db.models import Q
 import datetime
-from datetime import time, datetime
+from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
@@ -20,6 +20,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.views.generic import View
+from django.db.models import Q
 
 
 @login_required
@@ -81,7 +82,14 @@ def hostel_view(request, context={}):
     for h_c in hall_caretaker:
         hall_caretaker_user.append(h_c.staff.id.user)      
 
-    worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall)
+    todays_date = date.today()
+    current_year = todays_date.year
+    current_month = todays_date.month
+
+    if current_month != 1:
+        worker_report = WorkerReport.objects.filter(Q(hall__hall_id=current_hall, year=current_year, month=current_month) | Q(hall__hall_id=current_hall, year=current_year, month=current_month-1))
+    else:
+        worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
 
     context = {
         'hall_1_student': hall_1_student,
@@ -239,6 +247,15 @@ def render_to_pdf(template_src, context_dict={}):
 
 class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
+        if request.method == "GET":
+            months = request.GET.get('months')
+        print("dddddddddddgggggggggggggggghhyyyyyyyyyh", months)
+
+        months = int(months)
+        todays_date = date.today()
+        current_year = todays_date.year
+        current_month = todays_date.month
+
         template = get_template('hostelmanagement/view_report.html')
 
         hall_caretaker = HallCaretaker.objects.all()
@@ -248,7 +265,21 @@ class GeneratePDF(View):
                 get_hall=i.hall
                 break
 
-        worker_report = WorkerReport.objects.filter(hall=get_hall)
+        # worker_report = WorkerReport.objects.filter(hall=get_hall, month_gte=current_month-months, year=current_year)
+        # final_worker_report = []
+        if months < current_month:
+            worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)
+            # for i in worker_report:
+            #     if i.month >= current_month-months and i.year == current_year:
+            #         final_worker_report.append(i)
+                
+        
+        else:
+            worker_report = WorkerReport.objects.filter(Q(hall=get_hall, year=current_year, month__lte=current_month) | Q(hall=get_hall, year=current_year-1, month__gte=12-months+current_month))
+            # month__gte=12-months-current_month
+            # final_worker_report.append()
+
+
         worker = {
             'worker_report' : worker_report
         }
