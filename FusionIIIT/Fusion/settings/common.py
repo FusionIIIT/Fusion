@@ -136,7 +136,6 @@ INSTALLED_APPS = [
     'applications.hostel_management',
     'applications.research_procedures',
     'applications.income_expenditure',
-    'applications.hostel_management',
     'applications.hr2',
     'applications.department',
     'applications.iwdModuleV2',
