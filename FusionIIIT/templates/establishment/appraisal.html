@@ -14,7 +14,15 @@
             Archived
         </a>
     </div>
-
+<script type="text/javascript">
+      function printDiv(divName) {
+          var printContents = document.getElementById(divName).innerHTML;
+          w=window.open();
+          w.document.write(printContents);
+          w.print();
+          w.close();
+      }
+  </script>
 
 <!-- Appraisal Form -->
 <div class="ui bottom attached tab segment active" data-tab="appraisal_one">
@@ -424,8 +432,9 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description">
-
+                      <div class="description" id='appraisal_form_v'>
+                        <label>Appraisal form details </label><br><br>
+                        <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
@@ -731,6 +740,7 @@
 
 
                       </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">
@@ -776,8 +786,9 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description">
-
+                      <div class="description" id='appraisal_form_v1'>
+                        <label>Appraisal form details </label><br><br>
+                          <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
@@ -1082,6 +1093,7 @@
 
 
                       </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v1')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">

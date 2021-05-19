@@ -63,7 +63,12 @@ class Establishment_variables(models.Model):
 
 
 class Cpda_application(models.Model):
-    status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
+    status = models.CharField(max_length=20, null=True, choices=(
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('adjustments_pending', 'Adjustments Pending'),
+        ('finished', 'Finished')))
 
     # CPDA Request fields
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -100,13 +105,17 @@ class Cpda_tracking(models.Model):
     remarks_rev2 = models.CharField(max_length=250, null=True, blank=True)
     remarks_rev3 = models.CharField(max_length=250, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
+    bill = models.FileField(blank=True,null=True)
 
     def __str__(self):
         return 'cpda id ' + str(self.application.id) + ' tracking'
 
     class Meta:
         db_table = 'Cpda Tracking'
-
+        
+class CpdaBalance(models.Model):
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    cpda_balance=models.PositiveIntegerField(default=300000)
 
 class Cpda_bill(models.Model):
     application = models.ForeignKey(Cpda_application, on_delete=models.CASCADE, null=True)
@@ -120,7 +129,10 @@ class Cpda_bill(models.Model):
 
 
 class Ltc_application(models.Model):
-    status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
+    status = models.CharField(max_length=20, null=True, choices=(
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')))
 
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     pf_number = models.CharField(max_length=50, default='')

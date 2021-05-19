@@ -6,13 +6,7 @@
         Pending
     </a>
     <a class="item" data-tab="cpdatwo">
-        Under Review
-    </a>
-    <a class="item" data-tab="cpdathree">
-        Approved
-    </a>
-    <a class="item" data-tab="cpdafour">
-        Archived
+        Reviewed
     </a>
 </div>
 
@@ -35,15 +29,14 @@ pending cpda applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in cpda_pending_apps %}
+                {% for app in cpda_to_review_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status|title}}</a>
+
+                            <a class="header">Application id : {{app.id}}</a>
                             <div class="meta"> 
-                                <span>Requested Advance : ₹ {{app.requested_advance}}</span>
+                                <span>Applicant : {{app.applicant.first_name}}</span>
                             </div>
-                            <div class="meta"> Purpose : {{app.purpose}}</div>
-                            
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.assign_cpda-{{app.id}}').modal('show')">
                                     View
@@ -60,72 +53,32 @@ pending cpda applications
                         <div class="content">
                             <div class="description">
                                 <!-- Add condition if it's requested or adj_pending -->
+                                <label>Application id : {{ app.id }}</label><br>
+                                <label>Applicant : {{ app.applicant.first_name }}</label><br>
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF Number : {{ app.pf_number }}</label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                                 <label>Purpose : {{ app.purpose }}</label><br>
+                                {% if app.status == 'adjustments_pending' %}
+                                    <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
+                                    <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
+                                    <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
+                                {% endif %}
+                                <br>
+                                <label>HOD Remarks : {{ app.tracking_info.remarks_rev1 }}</label><br>
 
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                                     {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
-                                    
-                                    <br>
-                                    {% if app.tracking_info.review_status == 'to_assign' %}
-                                    {% else %}
-                                        {% for key, value in remarks_list.items %}    
-                                        {% if key == app %}
-                                            {% for x in value %}
-                                            Remarks from 
-                                            {{x.0}} : {{x.1}}
-                                            <br>             
-                                            {% endfor %}
-                                            {%endif%}
-                                        {% endfor %}
-                                        
-                                        <br>
-                                    {% endif %}
-
-                                    <label class="req">Status</label>
-                                    <div class='field'>
-                                        <br>
-                                        {% if app.status == 'requested' %}    
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
-                                            <option value="" selected>Select</option>
-                                            <option value="requested" >Requested</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="rejected">Rejected</option>
-                                        
-                                        </select>
-                                        {% else %}
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
-                                            <option value="" selected>Select</option>
-                                            <option value="adjustments_pending" >Adjustments Pending</option>
-                                            <option value="approve">Approved</option>
-                                            <option value="reject">Rejected</option>
-                                        
-                                        </select>
-                                        {% endif %}
-                                        
-                                    </div><br>
-                                    
-                                    <div id="cpda_assign" class="field" style="display: block;">
-                                        <b>Forward to</b>
-                                    <br>
-                                        {% render_field app.assign_form.reviewer_id %} 
-                                    
-                                    <br>
-                                    
-                                        {% render_field app.assign_form.reviewer_design %} 
-                                    </div>
-                                    <br>
-                                    
-                                    
+                                    {% render_field app.reviewform.app_id %} 
                                     <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
+                                        {% render_field app.reviewform.remarks %} 
                                     </div>
                                     <button type="submit" name="cpda_assign_form" class="ui large primary button">
-                                        Submit
+                                        Verify
+                                    </button>
+                                    <button type="submit" name="cpda_assign_form_deny" class="ui large primary button">
+                                        Deny
                                     </button>
                                 </form>
                             </div>
@@ -144,16 +97,16 @@ pending cpda applications
 
 
 <!--
-under_review cpda applications 
+Reviewed cpda applications 
 -->
 <div class="ui tab segment" data-tab="cpdatwo">
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in cpda_under_review_apps %}
+                {% for app in cpda_reviewed_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status|title}}</a>
+                            <a class="header">Status : {% if app.status == 'requested' %} Verified {% elif app.status == 'finished' %} Adjustments Approved {%else%}{{app.status|title}} {%endif%}</a>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
@@ -162,156 +115,7 @@ under_review cpda applications
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_cpda-{{app.id}}').modal('show')">
                                     View
                                 </button>
-                                <button class="ui large primary button" onclick="$('.ui.modal.assign_cpda-{{app.id}}').modal('show')">
-                                    Re-assign
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div class="ui modal view_cpda-{{app.id}}">
-                        <i class="close icon"></i>
-                        <div class="header">
-                            View CPDA
-                        </div>
-                        <div class="content">
-                            <div class="description">
-                                <label>Status : {{ app.status|title }}</label><br>
-                                <label>PF Number : {{ app.pf_number }}</label><br>
-                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
-                                <label>Purpose : {{ app.purpose }}</label><br>
-                                <label>Assigned to : {{app.tracking_info.reviewer_id.first_name}}</label><br>
                                 
-                                {% if app.status == 'finished' %}
-
-                                    <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
-                                    <label>No. of Bills : {{ app.bills_attached }}</label><br>
-                                    <!-- add preview of bills here  -->
-                                    <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
-
-                                    {{ app.total_bills_amount }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ui modal assign_cpda-{{app.id}}">
-                        <i class="close icon"></i>
-                        <div class="header">
-                            Re-assign reviewer
-                        </div>
-                        <div class="content">
-                            <div class="description">
-                                <!-- Add condition if it's requested or adj_pending -->
-                                <label>Status : {{ app.status|title }}</label><br>
-                                <label>PF Number : {{ app.pf_number }}</label><br>
-                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
-                                <label>Purpose : {{ app.purpose }}</label><br>
-                                {% if app.status == 'finished' %}
-                                    <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
-                                    <label>No. of Bills : {{ app.bills_attached }}</label><br>
-                                    <!-- add preview of bills here  -->
-                                    <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
-                                {% endif %}
-
-                                <!-- Add form here -->
-                                <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
-                                    {% csrf_token %}
-                                    {% render_field app.assign_form.app_id %} 
-                                    
-                                    <br>
-                                    {% if app.tracking_info.review_status == 'to_assign' %}
-                                    {% else %}
-                                        {% for key, value in remarks_list.items %}    
-                                        {% if key == app %}
-                                            {% for x in value %}
-                                            Remarks from 
-                                            {{x.0}} : {{x.1}}
-                                            <br>             
-                                            {% endfor %}
-                                            {%endif%}
-                                        {% endfor %}
-                                        
-                                        <br>
-                                    {% endif %}
-                                    <label class="req">Status</label><br>
-                                    <div class="field">
-                                        {% if app.status == 'requested' %}    
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
-                                            <option value="" selected>Select</option>
-                                            <option value="requested" >Requested</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="rejected">Rejected</option>
-                                        
-                                        </select>
-                                        {% else %}
-                                        <select id='staus' name='status' onchange="yesnoCheck(this);">
-                                            <option value="" selected>Select</option>
-                                            <option value="adjustments_pending" >Adjustments Pending</option>
-                                            <option value="approve">Approved</option>
-                                            <option value="reject">Rejected</option>
-                                        
-                                        </select>
-                                        {% endif %}
-                                        
-                                    </div><br>
-                                    
-                                    <div id="cpda_assign" class="field" style="display: block;">
-                                        <b>Forward to</b>
-                                    <br>
-                                        {% render_field app.assign_form.reviewer_id %} 
-                                    
-                                    <br>
-                                    
-                                        {% render_field app.assign_form.reviewer_design %} 
-                                    </div>
-                                    <br>
-                                    
-                                    
-                                    <div class="field">
-                                        {% render_field app.assign_form.remarks %} 
-                                    </div>
-                                    <button type="submit" name="cpda_assign_form" class="ui large primary button">
-                                        Submit
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!--
-approved cpda applications 
--->
-<div class="ui tab segment" data-tab="cpdathree">
-    <div class="content">
-        <div class="description">
-            <div class="ui items">
-                {% for app in cpda_approved_apps %}
-                    <div class="item">
-                        <div class="content">
-                            <a class="header">Status : {{app.status|title}}</a>
-                            <div class="meta">
-                                <span>Requested Advance : ₹ {{app.requested_advance}}</span>
-                            </div>
-                            <div class="meta"> Purpose : {{app.purpose}}</div>
-                            <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.view_cpda-{{app.id}}').modal('show')">
-                                    View
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -323,69 +127,22 @@ approved cpda applications
                         </div>
                         <div class="content">
                             <div class="description">
+                                <label>Application id : {{ app.id }}</label><br>
+                                <label>Applicant : {{ app.applicant.first_name }}</label><br>
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF Number : {{ app.pf_number }}</label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                                 <label>Purpose : {{ app.purpose }}</label><br>
-                                {% if app.status == 'finished' %}
-                                    <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
-                                    <label>No. of Bills : {{ app.bills_attached }}</label><br>
-                                    <!-- add preview of bills here  -->
-                                    <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <div class="ui black deny button">
-                                Cancel
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
+                                <label>HOD Remarks : {{app.tracking_info.remarks_rev1}}</label><br>
+                                <label>Your Remarks : {{app.tracking_info.remarks_rev2}}</label><br>
+                                
+                                {% if app.status == 'finished' or app.status == 'adjustments_pending' %}
 
-<!--
-archived cpda applications 
--->
-<div class="ui tab segment" data-tab="cpdafour">
-    <div class="content">
-        <div class="description">
-            <div class="ui items">
-                {% for app in cpda_archived_apps %}
-                    <div class="item">
-                        <div class="content">
-                            <a class="header">Status : {% if app.status == 'finished' %} Adjustments Approved {%endif%}</a>
-                            <div class="meta">
-                                <span>Requested Advance : ₹ {{app.requested_advance}}</span>
-                            </div>
-                            <div class="meta"> Purpose : {{app.purpose}}</div>
-                            <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.view_cpda-{{app.id}}').modal('show')">
-                                    View
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div class="ui modal view_cpda-{{app.id}}">
-                        <i class="close icon"></i>
-                        <div class="header">
-                            View CPDA
-                        </div>
-                        <div class="content">
-                            <div class="description">
-                                <label>Status : {% if app.status == 'finished' %} Adjustments Approved {%endif%}</label><br>
-                                <label>PF Number : {{ app.pf_number }}</label><br>
-                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
-                                <label>Purpose : {{ app.purpose }}</label><br>
-                                {% if app.status == 'finished' %}
                                     <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
                                     <label>No. of Bills : {{ app.bills_attached }}</label><br>
                                     <!-- add preview of bills here  -->
                                     <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
+                                    <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
                                 {% endif %}
                             </div>
                         </div>
@@ -395,6 +152,7 @@ archived cpda applications
                             </div>
                         </div>
                     </div>
+                    
                 {% endfor %}
             </div>
         </div>
