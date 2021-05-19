@@ -1,0 +1,161 @@
+{% load static %}
+{% block make_announcements %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="dep">
+            Announcement
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="dep">
+        <div class="ui vertical segment">
+            <!-- fill the form details -->
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="">
+                {% csrf_token %}
+                <div class="ui header">
+                    Make a new Announcement:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Programme Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="programme" type="hidden" placeholder="programme" required='true'>
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Department Type</div>
+
+                            <div class="menu" >
+                                <div class="item" data-value="B.tech" >
+                                    B.tech
+                                </div>
+
+                                <div class="item" data-value="M.tech" >
+                                    M.tech
+                                </div>
+
+                                <div class="item" data-value="P.hD">
+                                    P.hD
+                                </div>
+                            
+                                <div class="item" data-value="other" >
+                                    Other
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Batch </label>
+                        <div class="ui selection dropdown">
+                            <input name="batch" type="hidden" required='TRUE'>
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Batch</div>
+
+                            <div class="menu" id="batch">
+                                <div class="item" data-value="All">
+                                    ALL
+                                </div>
+
+                                <div class="item" data-value="Year-1">
+                                    Year-1
+                                </div>
+
+                                <div class="item" data-value="Year-2">
+                                    Year-2
+                                </div>
+
+                                <div class="item" data-value="Year-3">
+                                    Year-3
+                                </div>
+
+                                <div class="item" data-value="Year-4">
+                                    Year-4
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Department<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="department" type="hidden" placeholder="department" required='true'>
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Department Type</div>
+
+                            <div class="menu" >
+                                <div class="item" data-value="ALL" >
+                                    ALL
+                                </div>
+
+                                <div class="item" data-value="CSE" >
+                                    CSE
+                                </div>
+
+                                <div class="item" data-value="ECE">
+                                    ECE
+                                </div>
+                            
+                                <div class="item" data-value="ME" >
+                                    ME
+                                </div>
+
+                                <div class="item" data-value="SM" >
+                                    SM
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Announcement Details<sup><i class="small red asterisk icon"></i></sup></label>
+                    <input placeholder="What is the Announcement?" name="announcement" required></textarea>
+                </div>
+
+                <div class = "file">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png" >
+                </div>
+
+                    
+
+                <br>
+
+                <button class="ui large primary button right floated" onclick= "announce()">
+                    Publish
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+   
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+{% endblock %}

@@ -71,7 +71,6 @@ class hostel_guestroom_approval(models.Model):
 class hostel_allotment(models.Model):
     id = models.AutoField(primary_key=True)
     program = models.CharField(max_length=30, choices=Constants.PROGRAM, default='')
-    # year = models.CharField(max_length=30, choices=Constants.YEARS, default='')
     year = models.IntegerField(default=2016)
     gender = models.CharField(max_length=10, choices=Constants.GENDER, default='')
     hall_no = models.CharField(max_length=15, choices=Constants.HALL_NO, default='')

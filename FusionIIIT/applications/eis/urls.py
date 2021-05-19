@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^achv/(?P<pk>[0-9]+)/$', views.achievementDelete, name='achievement_delete'),
     url(r'^emp_confrence_organisedDelete/(?P<pk>[0-9]+)/$', views.emp_confrence_organisedDelete, name='emp_confrence_organisedDelete'),
     url(r'^emp_consultancy_projectsDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_consultancy_projectsDelete, name='emp_consultancy_projectsDelete'),
-    
+
     #url(r'^emp_confrence_organisedDelete/(?P<sr>[0-9]+)/$', views.emp_confrence_organisedDelete, name='emp_confrence_organisedDelete'),
     url(r'^emp_event_organizedDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_event_organizedDelete, name='emp_event_organizedDelete'),
     url(r'^emp_expert_lecturesDelete/(?P<pk>[0-9]+)/$', views.emp_expert_lecturesDelete, name='emp_expert_lecturesDelete'),
@@ -65,5 +65,8 @@ urlpatterns = [
     # generate report
     url(r'^report/$', views.generate_report, name='generate_report'),
     url(r'^rspc_report/$', views.rspc_generate_report, name='rspc_generate_report'),
+
+    #api urls
+    url(r'^api/', include('applications.eis.api.urls')),
 
 ]

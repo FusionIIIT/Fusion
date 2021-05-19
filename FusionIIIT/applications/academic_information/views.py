@@ -6,6 +6,7 @@ import logging
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from xhtml2pdf import pisa
+
 from itertools import chain
 
 from django.contrib.auth.models import User
@@ -16,16 +17,20 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistrations
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
+
 
 
 from applications.academic_procedures.views import acad_proced_global_context
+from applications.programme_curriculum.models import Batch
+
 
 
 @login_required
@@ -105,7 +110,6 @@ def get_context(request):
 
     procedures_context = acad_proced_global_context()
 
-
     try:
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
@@ -113,9 +117,13 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
+        
+        courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
+        assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+        assistant_list_length = len(assistant_list.filter(acad_approval = False))
     except Exception as e:
         examTtForm = ""
         acadTtForm = ""
@@ -129,18 +137,21 @@ def get_context(request):
         pass
 
     context = {
-         'acadTtForm': acadTtForm,
-         'examTtForm': examTtForm,
-         'courses': courses,
-         'course_type': course_type,
-         'exam': exam_t,
-         'timetable': timetable,
-         'academic_calendar': calendar,
-         'next_sem_course': next_sem_courses,
-         'this_sem_course': this_sem_courses,
-         'curriculum': curriculum,
-         'tab_id': ['1','1'],
-         'context': procedures_context['context'],
+        'acadTtForm': acadTtForm,
+        'examTtForm': examTtForm,
+        'courses': courses,
+        'courses_list': courses_list,
+        'course_type': course_type,
+        'exam': exam_t,
+        'timetable': timetable,
+        'academic_calendar': calendar,
+        'next_sem_course': next_sem_courses,
+        'this_sem_course': this_sem_courses,
+        'curriculum': curriculum,
+        'assistant_list' : assistant_list,
+        'assistant_list_length' : assistant_list_length,
+        'tab_id': ['1','1'],
+        'context': procedures_context['context'],
         'lists': procedures_context['lists'],
         'date': procedures_context['date'],
         'query_option1': procedures_context['query_option1'],
@@ -148,7 +159,8 @@ def get_context(request):
         'course_verification_date' : procedures_context['course_verification_date'],
         'submitted_course_list' : procedures_context['submitted_course_list'],
         'result_year' : procedures_context['result_year'],
-        'batch_grade_data' : procedures_context['batch_grade_data']
+        'batch_grade_data' : procedures_context['batch_grade_data'],
+        'batch_branch_data' : procedures_context['batch_branch_data']
     }
 
     return context
@@ -184,11 +196,12 @@ def homepage(request):
         context - the datas to be displayed in the webpage
 
     """
-
+    print(22222222222222222222222222222222222222222222222222222222)
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
+    print(context['courses_list'])
 
     return render(request, "ais/ais.html", context)
 
@@ -812,19 +825,23 @@ def generatexlsheet(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-        
+    
     try:
         batch = request.POST['batch']
-        curr_key = Curriculum.objects.get(course_code = request.POST['course'])
-        course = curr_key.course_id
-        obj = Register.objects.all().filter(curr_id = curr_key).filter(year=batch)
+        course = Courses.objects.get(id = request.POST['course'])
+        obj = course_registration.objects.all().filter(course_id = course)
     except Exception as e:
         batch=""
         course=""
         curr_key=""
         obj=""
-    ans = []
+
+    registered_courses = []
     for i in obj:
+        if i.student_id.batch_id.year == int(batch):
+            registered_courses.append(i)
+    ans = []
+    for i in registered_courses:
         k = []
         k.append(i.student_id.id.id)
         k.append(i.student_id.id.user.first_name)
@@ -849,7 +866,7 @@ def generatexlsheet(request):
                                 'valign': 'vcenter'})
     sheet = book.add_worksheet()
 
-    title_text = ((str(course.course_name)+" : "+str(str(batch))))
+    title_text = ((str(course.name)+" : "+str(str(batch))))
     sheet.set_default_row(25)
 
     sheet.merge_range('A2:E2', title_text, title)
@@ -879,7 +896,7 @@ def generatexlsheet(request):
     book.close()
     output.seek(0)
     response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
-    st = 'attachment; filename = ' + curr_key.course_code + '.xlsx'
+    st = 'attachment; filename = ' + course.code + '.xlsx'
     response['Content-Disposition'] = st
     return response
 
@@ -931,7 +948,7 @@ def generate_preregistration_report(request):
             sem = sem[year-int(batch)]
         sem+=1
         sem=6
-        obj = InitialRegistrations.objects.select_related('curr_id','curr_id__course_id','student_id','student_id__id','student_id__id__user','student_id__id__department'
+        obj = InitialRegistration.objects.select_related('curr_id','curr_id__course_id','student_id','student_id__id','student_id__id__user','student_id__id__department'
 ).filter(batch=batch).filter(semester=sem)
         data = []
         m = 1
@@ -1010,7 +1027,7 @@ def generate_preregistration_report(request):
 
 
 @login_required
-def add_new_profile(request):
+def add_new_profile (request):
     """
     To add details of new upcoming students in the database.User must be logged in and must be acadadmin
 
@@ -1057,13 +1074,13 @@ def add_new_profile(request):
         profiles=request.FILES['profiles']
         excel = xlrd.open_workbook(file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(6,sheet.nrows):
+        for i in range(sheet.nrows):
             roll_no=int(sheet.cell(i,0).value)
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
             email=str(sheet.cell(i,3).value)
             sex=str(sheet.cell(i,4).value)
-            if sex is 'F':
+            if sex == 'F':
                 title='Ms.'
             else:
                 title='Mr.'
@@ -1076,17 +1093,23 @@ def add_new_profile(request):
             phone_no=int(sheet.cell(i,9).value)
             address=str(sheet.cell(i,10).value)
             dept=str(sheet.cell(i,11).value)
-            department=DepartmentInfo.objects.get(name=dept)
             specialization=str(sheet.cell(i,12).value)
-            if specialization is "":
-                specialization="None"
             hall_no=sheet.cell(i,13 ).value
-            if hall_no is "":
+
+            department=DepartmentInfo.objects.all().filter(name=dept).first()
+
+            if specialization == "":
+                specialization="None"
+
+            if hall_no == None:
                 hall_no=3
             else:
                 hall_no=int(hall_no)
-            programme=request.POST['Programme']
-            batch=request.POST['Batch']
+
+            programme_name=request.POST['Programme']
+            batch_year=request.POST['Batch']
+
+            batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
 
             user = User.objects.create_user(
                 username=roll_no,
@@ -1108,16 +1131,21 @@ def add_new_profile(request):
                 department=department,
             )
 
+            sem=1
+
             stud_data = Student.objects.create(
                 id=einfo,
-                programme=programme,
-                batch=batch,
-                cpi=0,
-                category=category,
-                father_name=fathers_name,
-                mother_name=mothers_name,
-                hall_no=hall_no,
-                specialization=specialization,
+                programme = programme_name,
+                batch=batch_year,
+                batch_id = batch,
+                father_name = fathers_name,
+                mother_name = mothers_name,
+                cpi = 0,
+                category = category,
+                hall_no = hall_no,
+                specialization = specialization,
+                curr_semester_no=sem,
+                
             )
 
             desig = Designation.objects.get(name='student')
@@ -1126,19 +1154,21 @@ def add_new_profile(request):
                 working=user,
                 designation=desig,
             )
-            
-            sem=1
-            currs = Curriculum.objects.select_related().filter(batch=batch).filter(sem=sem)
+
+            sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
+            course_slots = CourseSlot.objects.all().filter(semester = sem_id)
+            courses = []
+            for course_slot in course_slots:
+                courses += course_slot.courses.all()
             new_reg=[]
-            for c in currs:
-                reg=Register(
-                    curr_id=c,
-                    year=batch,
-                    semester=1,
+            for c in courses:
+                reg=course_registration(
+                    course_id = c,
+                    semester_id=sem_id,
                     student_id=stud_data
                 )
                 new_reg.append(reg)
-            Register.objects.bulk_create(new_reg)
+            course_registration.objects.bulk_create(new_reg)
 
     else:
         return render(request, "ais/ais.html", context)

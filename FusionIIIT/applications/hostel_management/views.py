@@ -55,6 +55,7 @@ def hostel_view(request, context={}):
 
     hall_student=""
     get_hall=""
+    current_hall=""
     get_avail_room=[]
     for i in hall_caretaker:
         if i.staff.id.user==request.user:
@@ -69,6 +70,8 @@ def hostel_view(request, context={}):
 
         get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
         hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0])))
+        current_hall='hall'+str(get_hall_num[0])
+
 
     hall_caretaker_user=[]
     for h_c in hall_caretaker:
@@ -91,6 +94,7 @@ def hostel_view(request, context={}):
         'hall_student':hall_student,
         'worker_report': worker_report,
         # 'halls_student': halls_student,
+        'current_hall' : current_hall,
         **context
     }
 

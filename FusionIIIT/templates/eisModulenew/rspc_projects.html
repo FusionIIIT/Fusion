@@ -244,7 +244,7 @@
             </thead>
 
             <tbody>
-           {% for techtransfer in techtransfers %}
+           {% for techtransfer in emp_techtransfers %}
             <tr>
                 <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter }}.</td>
                 <td class="" colspan="4" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>

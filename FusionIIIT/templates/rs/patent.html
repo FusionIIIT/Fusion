@@ -1,0 +1,81 @@
+
+{% load static %}
+{% block Issues %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            FILE PATENT
+        </a>
+
+    
+       
+    </div>
+
+    <div class="ui active tab" data-tab="feedback" id="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        patent form:
+                    </div>
+
+                    <br>
+
+                    
+                    <div class="field">
+                        <label>Faculty Name*</label>
+                        <input  id="fname" name="fname" required="true"/>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Title Of the Patent*</label>
+                        <textarea rows="2" id="title" name="title" required="true"></textarea>
+                    </div>
+
+                    <div class = "left floated item">
+                        <label for="file">Attach IPD Form ( PDF)</label>
+                        <input type="file" id="file1" name="file1" accept=".pdf" >
+                  </div><br>
+                    
+                  <div class = "left floated item">
+                    <label for="file">Attach Project details( PDF)</label>
+                    <input type="file" id="file2" name="file2" accept=".pdf" required="true" >
+              </div>
+                    
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+    {% block viewstatus %}
+            {% include 'rs/Status.html' %}
+            {% endblock %}
+    </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock javascript %}
+
+

@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url,include
 
 from . import views
 
@@ -35,5 +35,6 @@ urlpatterns = [
     url(r'^caretaker/(?P<comp_id>[0-9]+)/$', views.assign_worker),
     url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
 
+    url(r'^api/',include('applications.complaint_system.api.urls'))
 
 ]

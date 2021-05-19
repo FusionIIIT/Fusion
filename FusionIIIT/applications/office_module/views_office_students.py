@@ -14,7 +14,6 @@ import re
 from applications.academic_information.models import Student
 from applications.hostel_management.models import Hall, HallRoom
 
-
 """
     Universal context :
     Function to create and return context from every view
@@ -329,7 +328,7 @@ def deleteHostelRoomAllotment(request):
         hostel_allotment.objects.get(id=id).delete()
         success_msg = 'Hostel Allotment Deleted Successfully'
 
-        # ////////
+        # new implemented for hostel_management module
         hall_num=re.findall('[0-9]+',str(hall_no))
         for i in range(0,10):
             print(hall_num[0])
@@ -377,6 +376,18 @@ def deleteAllHostelRoomAllotment(request):
             item.current_capacity = item.total_capacity
             item.save()
 
+        # new implemented for hostel_management module
+        students = Student.objects.all()
+        for student in students:
+            student.hall_no = 0
+            student.save()
+
+        hall_rooms = HallRoom.objects.all()
+        for hall_room in hall_rooms:
+            hall_room.room_occupied = 0
+            hall_room.save()
+        # ----------------------------------------------------
+        
         success_msg = 'All Allotments Deleted Successfully'
     else:
         success_msg = 'No records to delete'

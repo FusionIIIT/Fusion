@@ -1,0 +1,48 @@
+
+    <table class="ui celled table"
+    style="padding-left: 2.5%;
+            padding-right: 2.5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            width: 100%">
+        <thead>
+            <tr style="border-radius: 3px;">
+                <th rowspan="2">Month</th>
+                <th rowspan="2">Year</th>
+                <th rowspan="2">Amount</th>
+                <th rowspan="2">Description</th>
+                <th rowspan="2">Rebate count</th>
+                <th rowspan="2">Rebate Amount</th>
+                <th rowspan="2">Total Bill</th>
+        
+            </tr>
+        </thead>
+        <tbody>
+            
+        {% if Mess_pay %}
+        {% for obj in Mess_pay %}
+            <td></td>
+            <td>{{ obj.year }}</td>
+            <td>{{ obj.amount_paid }}</td>
+            <td>Paid</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        {% endfor %}
+        {% endif %}
+        {% for obj in Mess_bill %}
+         <tr >                
+            
+            <td>{{obj.month}}</td>
+            <td>{{ obj.year }}</td>
+            <td>{{ obj.amount }}</td>
+            <td>Due</td>
+            <td>{{ obj.rebate_count }}</td>
+            <td>{{ obj.rebate_amount }}</td>
+            <td>{{ obj.total_bill }}</td>
+
+         </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    

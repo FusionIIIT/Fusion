@@ -1,0 +1,556 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+
+
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                <img src="{% static 'globals/img/zlatan.jpg' %}">
+            </div>
+
+            <div class="content">
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                {% if user %}
+                <div class="ui large header" href="">
+                    {{ user.first_name}}
+                    {{ user.last_name}}
+                    <span class="right floated meta">
+                        {{ extrainfo.department.name}}
+                    </span>
+                </div>
+                {% else %}
+                <div class="ui large header" href="">
+                    {{ request.user.first_name}}
+                    {{ request.user.last_name}}
+                    <span class="right floated meta">
+                        {{ request.user.extrainfo.department.name}}
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="meta">
+                    {% for i in Curr_desig %}
+                    <span> {% comment %}Should this be inside if else?{% endcomment %}
+                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                        {% else %}
+                        {{ i }}
+                        {% endif %}
+                    </span>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="{% url 'globals:profile' %}{{user.username}}">
+                View Profile
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+
+
+
+
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+
+            <a class=" active item" data-tab="fifth">E-serviceBook</a>
+
+            <!-- <a class="item" data-tab="fourth">Appraisal form</a> -->
+        </div>
+
+
+
+
+
+
+
+
+        <div class="ui bottom attached active tab segment" data-tab="fifth">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    <div>
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Personal Details:-</th>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>{{user.id}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Title</td>
+                                                <td>{{user.extrainfo.title}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Type</td>
+                                                <td>{{user.extrainfo.user_type}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Name</td>
+                                                <td>{{user.extrainfo.user.first_name}}
+                                                    {{user.extrainfo.user.last_name}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>email</td>
+                                                <td>{{user.extrainfo.user.email}}</td>
+
+                                            </tr>
+
+                                            <tr>
+                                                <td>Gender</td>
+                                                <td>{{user.extrainfo.sex}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>date_of_birth</td>
+                                                <td>{{user.extrainfo.date_of_birth}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>address</td>
+                                                <td>{{user.extrainfo.address}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>Phone number</td>
+
+                                                <td>{{user.extrainfo.phone_no}}</td>
+
+                                            </tr>
+
+                                            <tr>
+                                                <td>Date Of joining</td>
+                                                <td>{{user.faculty_about.doj}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>department</td>
+                                                <td>{{user.extrainfo.department.name}}</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- work Assignment -->
+
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>workAssignemnt :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Orders Copy</th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+
+                                            {% if not workAssignment %}
+                                            <h1>No entry found</h1>
+                                            {% endif%}
+
+                                            {% for serviceBook in workAssignment %}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">
+
+                                                    <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                            class="large attach black icon"></i>
+                                                    </a>
+
+
+                                                </td>
+
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+
+
+                        <!-- workassignemnt end -->
+
+
+
+                        <!-- Lien -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Lien :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+
+                                            {% if not lienServiceBooks %}
+                                            <h1>No entry found</h1>
+                                            {% endif%}
+
+
+                                            {% for serviceBook in lienServiceBooks%}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+                        <!-- Deputation -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Deputation :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            {% if not deputationServiceBooks %}
+                                            No entry found
+                                            {% endif%}
+
+
+                                            {% for serviceBook in deputationServiceBooks%}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+
+
+
+                        <!-- others -->
+                        <div class="ui one cards" style="padding: 2px;">
+
+
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Others :-</th>
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Job Title</th>
+                                                <th>Organisation</th>
+                                                <th>Description</th>
+
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+
+                                            {% if not otherServiceBooks %}
+                                            <h1> No entry found</h1>
+                                            {% endif%}
+
+
+                                            {% for serviceBook in otherServiceBooks%}
+
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                            </tr>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                </div>
+
+            </div>
+            <!-- end testing  -->
+
+        </div>
+
+
+
+
+
+
+
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+
+
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+</script>
+{% endblock %}

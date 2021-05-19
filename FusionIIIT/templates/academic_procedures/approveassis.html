@@ -1,0 +1,391 @@
+{% load static %}
+<style>
+.assis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.thesis:hover {
+  background-color: #ddd; 
+}
+.pthesis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.pthesis:hover {
+  background-color: #ddd; 
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+table{
+    border: 1px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+
+.td1{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td2{
+    width: 30%;
+        padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td3{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td4{
+    width: 30%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td5{
+    width: 2%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+.previous:hover {
+      background-color: #ddd;
+  color: black;
+}
+.bn button{
+    float: right;
+}
+.approve{
+    background-color: #55DB86;
+    color: white;
+}
+.approve:hover{
+    background-color: #2CC764;
+    color:white;
+}
+.disapprove{
+    background-color: #F54D69;
+    color: white;
+}
+.disapprove:hover{
+    background-color: #C54257;
+    color:white;
+}
+
+
+</style>
+
+
+{% block approveassis %}
+
+<div class="ui pointing secondary menu" id="p1">
+    <a class="active item" data-tab="pending_assis"  onclick="mfun1()" style="width: 30%;">
+       <p style="margin-left: 15%;">Pending</p>
+    </a>
+
+    <a class="item" data-tab="approve_assis" onclick="mfun()" style="width: 30%;">
+        <p style="margin-left: 20%;">Approved</p>  
+    </a>
+
+</div>
+
+
+
+<!--  pending requests -->
+<div class="ui active tab segment" data-tab="pending_assis" id="a1">
+    <div  class="ui vertical segment">
+        {% if assistantship_request_list %}
+            {% for obj in assistantship_request_list reversed %}
+                {% if fac_id == obj.ta_supervisor.id and obj.ta_supervisor_remark == False or fac_id == obj.thesis_supervisor.id and obj.thesis_supervisor_remark == False %}
+                    <div  class="assis" id_thesis="assis{{forloop.counter}}" id_object="{{obj.id}}">{{obj.student.id.user.username}}</div>
+                <div class="panel" id="assis{{forloop.counter}}" hidden>
+                    
+                    <table>
+                        <tr>
+                            <td class="td1">Roll No.</td>
+                            <td class="td5">:</td>
+                            <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                            <td class="td3">Programme</td>
+                            <td class="td5">:</td>
+                            <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Month</td>
+                            <td class="td5">:</td>
+                            <td class="td2" style="font-weight: bold;">{{obj.month}}</td>
+                            <td class="td3">Year</td>
+                            <td class="td5">:</td>
+                            <td class="td4" style="font-weight: bold;">{{obj.year}}</td>
+                        </tr>
+                        {% if fac_id == obj.thesis_supervisor.id %}
+                        <tr>
+                            <td class="td1">Thesis Supervisor</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{fac_name}}</td>
+                        </tr>
+                        {%endif%}
+                        {% if fac_id == obj.ta_supervisor.id %}
+                        <tr>
+                            <td class="td1">TA Supervisor</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{fac_name}}</td>
+                        </tr>
+                        {%endif%}
+
+
+
+                    </table>
+                </div>
+            {% endif %}
+            {% endfor %}
+        <div class="form_class" hidden>
+        <form id="assis_form" >{% csrf_token %}
+            <div class="ui form" style="border: black" >
+                <div class="field">
+                    <select class="ui dropdown" name="remark">
+                        <option selected disabled value="">Remark</option>
+                        <option value="Unsatisfactory">Unsatisfactory</option>
+                        <option value="Satisfactory">Satisfatory</option>
+                    </select>
+                </div>
+                <br>
+                <div class="ui divider"></div><br>
+                <div class="bn"><div href="" class="previous" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                <button class="ui primary button" style="background-color: green" name="approve" value="yes">Submit</button> 
+                </div> 
+            </div>
+        </form>
+        </div>
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+
+<!--  approved requests -->
+<div class="ui tab segment" data-tab="approve_assis" id="a2" >
+    {% if approved_assistantship_request_list %}
+        {% for obj in approved_assistantship_request_list reversed %}
+            {% if fac_id == obj.ta_supervisor.id or fac_id == obj.thesis_supervisor.id %}
+              {% if obj.ta_supervisor_remark or obj.thesis_supervisor_remark  %}   
+                <div class="pthesis" id="assisapproved{{forloop.counter}}">{{obj.student.id.user.username}}</div>
+                <div class="ui modal assisapproved{{forloop.counter}}">
+                    <i class="close icon"></i>
+                    <div class="image content" hidden>
+                        <table>
+                            <tr>
+                                <td class="td1">Roll No.</td>
+                                <td class="td5">:</td>
+                                <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                                <td class="td3">Programme</td>
+                                <td class="td5">:</td>
+                                <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Month</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.month}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Year</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.year}}</td>
+                            </tr>                        
+                    
+
+                        </table> 
+                    </div>
+                </div>
+                <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+                    <script type="text/javascript">
+                        $(function () {
+                        $("#assisapproved{{forloop.counter}}").click(function () {
+                            $(".assisapproved{{forloop.counter}}").modal('show');
+                        });
+                        $(".assisapproved{{forloop.counter}}").modal({
+                            closable: true
+                        });
+                        });
+                    </script>
+              {% endif %}
+           {% endif %}
+
+        {% endfor %}
+    {%else%}
+    <h3>nothing here</h3>
+    {% endif %}
+</div>
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}
+
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+function mfun(){
+    
+    document.getElementById('a1').style="display:none";
+    document.getElementById('a2').style="display:block";
+    document.getElementById('a3').style="display:none";
+    document.getElementById('myid').style="display:none";
+    document.getElementById('myid2').style="display:none";
+    document.getElementById('myid3').style="display:none";
+    
+
+}
+function mfun1(){
+    
+    document.getElementById('a1').style="display:block";
+    document.getElementById('a2').style="display:none";
+    document.getElementById('a3').style="display:none";
+    document.getElementById('myid').style="display:none";
+    document.getElementById('myid2').style="display:none";
+    document.getElementById('myid3').style="display:none";
+
+
+}
+
+function mfun2(){
+    
+    document.getElementById('a1').style="display:none";
+    document.getElementById('a2').style="display:none";
+    document.getElementById('a3').style="display:block";
+    document.getElementById('myid').style="display:none";
+    document.getElementById('myid2').style="display:none";
+    document.getElementById('myid3').style="display:none";
+
+}
+
+
+$(function() {
+    
+    var obj_id;
+    $(".assis").click(function(){
+        id = $(this).attr("id_thesis");
+        $("#"+id).show();
+        $(".assis").hide();
+        $(".form_class").show();
+        obj_id = $(this).attr("id_object");
+    });
+    $(".previous").click(function(){
+        $("#"+id).hide();
+        $(".assis").show();
+        $(".form_class").hide();
+    });
+
+
+    $("#assis_form").submit(function(event) {
+
+    event.preventDefault();
+    var remark = $('[name=remark]').val();
+    console.log(remark);
+    var message = "" ;
+    if(remark == null)
+    {   console.log("ad");
+        message="Please fill remark field";
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show") ;
+    }
+    else{
+
+    $.ajax({
+    type:"POST",
+    url: "/academic-procedures/update_assistantship/",
+    data:{
+         remark :remark,
+         obj_id : obj_id,
+         csrfmiddlewaretoken: '{{ csrf_token }}'
+    },
+    success: function( data ) 
+    {
+        $(".succ").modal("show");
+        window.location = "/academic-procedures/fac/";
+    }
+    });
+    
+    }
+  });
+
+});
+
+
+</script> 
+
+
+ 
+

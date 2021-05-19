@@ -1,0 +1,46 @@
+{% block request_history %}
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <span>
+
+                    <div class="ui vertical segment" data-tab="Year-1">
+
+                        {% comment %} {% if ann_list %} {% endcomment %}
+                        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                            <thead>
+                                <th>Request Date</th>
+                                <th>Request To</th>
+                                <th>Brief &nbsp</th>
+                                <th>Details &nbsp</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+
+                            </thead>
+
+                            {% for stu in requests_made.all %}
+                                <tr>
+                                    <td>{{ stu.request_date.date }}</td>
+                                    <td>{{ stu.request_receiver }}</td>
+                                    <td>{{ stu.brief }}</td>
+                                    <td>{{ stu.request_details }}</td>
+                                    <td>{{ stu.status }}</td>
+                                    <td>{{ stu.remarks }}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </table>
+                        {% comment %} {% endif %} {% endcomment %}
+                        <br><div class="ui divider"></div><br>
+                    </div>
+                    {% comment %} <a class="active item" href="/dep/browse_announcements/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;" >
+                            Browse Announcement
+                        </button>
+                    </a> {% endcomment %}
+                </span>
+            </div>
+        </div>
+    </div>
+{% endblock %}

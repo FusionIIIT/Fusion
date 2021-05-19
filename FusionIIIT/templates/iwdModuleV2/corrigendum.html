@@ -1,0 +1,141 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    CORRIGENDUM:
+</div>
+
+Dated: {{corrigendum.issueDate}}
+
+Ref No: Our NIT No.
+{{corrigendum.nitNo}}
+
+Name of work: {{corrigendum.name}}
+<br>
+<br>
+This is for information to all: In reference to above work the crucial dates of tender
+are being changed as under. The other terms & conditions of the tender shall remain
+the same.
+<br><br>
+
+The last date & time of submission of bid:
+<div class="fields">
+    <!-- <div class="" -->
+    {{corrigendum.lastDate}}
+    {{corrigendum.lastTime}}
+
+</div>
+<br>
+
+Date for opening of bid (envelop-1):
+<div class="fields">
+    <!-- <div class="" -->
+    {{corrigendum.env1BidOpeningDate}}
+    {{corrigendum.env1BidOpeningTime}}
+
+</div>
+<br>
+
+
+Date of opening of bid (envelop-2):
+<div class="fields">
+    <!-- <div class="" -->
+    {{corrigendum.env2BidOpeningDate}}
+    {{corrigendum.env2BidOpeningTime}}
+
+</div>
+<br>
+
+
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+
+                    </div>
+
+                </div>
+
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}
