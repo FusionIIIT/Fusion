@@ -10,7 +10,12 @@ class Constants:
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
-        ('finished', 'Finished')
+        ('finished', 'Finished'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -43,8 +48,14 @@ class Constants:
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('forwarded', 'Forwarded'),
-        ('auto rejected', 'Auto Rejected')
+        ('auto rejected', 'Auto Rejected'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellant'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
+
 
 
 class Establishment_variables(models.Model):
@@ -56,7 +67,7 @@ class Cpda_application(models.Model):
 
     # CPDA Request fields
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
-    pf_number = models.CharField(max_length=50, default='')
+    pf_number = models.CharField(max_length=50, default='1',null=True)
     purpose = models.CharField(max_length=500, default='', blank=True)
     requested_advance = models.IntegerField(blank=True)
     request_timestamp = models.DateTimeField(auto_now=True, null=True)
@@ -114,8 +125,6 @@ class Ltc_application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     pf_number = models.CharField(max_length=50, default='')
     basic_pay = models.IntegerField(blank=True)
-
-    is_leave_required = models.CharField(choices=Constants.LTC_LEAVE, max_length=50)
     leave_start = models.DateField()
     leave_end = models.DateField()
     family_departure_date = models.DateField()
@@ -152,8 +161,10 @@ class Ltc_tracking(models.Model):
     application = models.OneToOneField(Ltc_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
     reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
     reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
-    remarks = models.CharField(max_length=250, null=True, blank=True)
+    designations=  models.CharField(max_length=350, null=True, blank=True)
+    remarks = models.CharField(max_length=350, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
+    admin_remarks=models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return 'ltc id ' + str(self.application.id) + ' tracking'
@@ -198,17 +209,23 @@ class Ltc_eligible_user(models.Model):
         return "{:.2f}".format(ret.years + ret.months/12 + ret.days/365)
 
     def total_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed+self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def hometown_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed)
+        x=max(x,0)
+        return x
 
     def elsewhere_ltc_remaining(self):
-        return (self.elsewhere_ltc_allowed
+        x=(self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def __str__(self):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
@@ -234,6 +251,8 @@ class Appraisal(models.Model):
     sevice_to_ins=models.CharField(max_length=20, blank=True, null=True, default='')
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
     def __str__(self):
         return str(self.applicant.username) + ' -- ' + str(self.id)

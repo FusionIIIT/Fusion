@@ -343,3 +343,23 @@ def department_notif(sender, recipient, type):
                 module=module,
                 verb=verb,
                 flag=flag)
+
+
+
+
+def office_module_DeanRSPC_notif(sender, recipient, type):
+    url='office:officeOfDeanRSPC'
+    module='Office Module'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == 'Approve':
+        verb = "Your Project request has been accepted"
+    elif type == 'Disapprove':
+        verb = "Your project request got rejected ."
+    elif type == 'Pending':
+        verb = "Kindly wait for the response"
+
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

@@ -6,6 +6,7 @@ import logging
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from xhtml2pdf import pisa
+
 from itertools import chain
 
 from django.contrib.auth.models import User
@@ -16,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
@@ -26,8 +27,10 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instru
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
 
 
+
 from applications.academic_procedures.views import acad_proced_global_context
 from applications.programme_curriculum.models import Batch
+
 
 
 @login_required
@@ -114,10 +117,13 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
+        
         courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
+        assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+        assistant_list_length = len(assistant_list.filter(acad_approval = False))
     except Exception as e:
         examTtForm = ""
         acadTtForm = ""
@@ -142,6 +148,8 @@ def get_context(request):
         'next_sem_course': next_sem_courses,
         'this_sem_course': this_sem_courses,
         'curriculum': curriculum,
+        'assistant_list' : assistant_list,
+        'assistant_list_length' : assistant_list_length,
         'tab_id': ['1','1'],
         'context': procedures_context['context'],
         'lists': procedures_context['lists'],

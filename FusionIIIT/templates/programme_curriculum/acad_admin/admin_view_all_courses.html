@@ -34,7 +34,7 @@
                 margin: auto;">
                 <thead>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td><h4>Course Code</h4></td>
                         <td><h4>Course Name</h4></td>
                         <td><h4>Credits</h4></td>
@@ -49,7 +49,7 @@
                             <td>{{ course.credit }}</td>
                             <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
                                 href="{% url 'programme_curriculum:update_course_form' course.id%}"
-                                type="Submit" name="Submit" target="_blank" rel="noopener">
+                                type="Submit" name="Submit">
                                     <div class="visible content">EDIT</div>
                                     <div class="hidden content">
                                     <i class="edit icon"></i>
@@ -69,9 +69,8 @@
 {% block rightcontent %}
 <br>
 <br>
-<div class="ui center aligned segment"
-    style="padding-top: 40px;">
-    <div class="description" style="overflow: auto; height: 495px">
+<div class="ui center aligned segment">
+    <div class="description" style="overflow: auto; height: 400px">
         <a class="fluid ui large primary animated button" tabindex="0"
             href="{% url 'programme_curriculum:add_course_form' %}"
             type="Submit" name="Submit">

@@ -26,9 +26,16 @@ COURSESLOT_TYPE_CHOICES = [
     ('Design', 'Design'),
     ('Manufacturing', 'Manufacturing'),
     ('Management Science', 'Management Science'),
+    ('Optional Elective', 'Optional Elective'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
     ('Others', 'Others')
+]
+
+BATCH_NAMES = [
+    ('B.Tech', 'B.Tech'),
+    ('M.Tech', 'M.Tech'),
+    ('Phd', 'Phd')
 ]
 
 class Programme(models.Model):
@@ -58,7 +65,7 @@ class Discipline(models.Model):
 
     @property
     def batches(self):
-        return Batch.objects.filter(discipline=self.id)
+        return Batch.objects.filter(discipline=self.id).order_by('year')
         
 
 class Curriculum(models.Model):
@@ -77,7 +84,7 @@ class Curriculum(models.Model):
 
     @property
     def batches(self):
-        return Batch.objects.filter(curriculum=self.id)
+        return Batch.objects.filter(curriculum=self.id).order_by('year')
 
 
     @property
@@ -119,9 +126,10 @@ class Course(models.Model):
     syllabus = models.TextField()
     percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
     percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
-    percent_quiz_2 = models.PositiveIntegerField(default=15, null=False, blank=False)
-    percent_endsem = models.PositiveIntegerField(default=35, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
     percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
     percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
     ref_books = models.TextField()
     working_course = models.BooleanField(default=True)
@@ -139,7 +147,7 @@ class Course(models.Model):
 
 
 class Batch(models.Model):
-    name = models.CharField(max_length=50, null=False, blank=False)
+    name = models.CharField(choices=BATCH_NAMES, max_length=50, null=False, blank=False)
     discipline = models.ForeignKey(Discipline, null=False, on_delete=models.CASCADE)
     year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
     curriculum = models.ForeignKey(Curriculum, null=True, blank=True, on_delete=models.SET_NULL)
@@ -163,7 +171,7 @@ class CourseSlot(models.Model):
 
 
     def __str__(self):
-        return str(Semester.__str__(self.semester) + ", " + self.name + ", id = " + str(self.id))
+        return str(Semester.__str__(self.semester) + ", " + self.name)
 
     class Meta:
         unique_together = ('semester', 'name', 'type')

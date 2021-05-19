@@ -111,6 +111,7 @@ class CourseForm(ModelForm):
                 + cleaned_data.get("percent_quiz_2")
                 + cleaned_data.get("percent_endsem")
                 + cleaned_data.get("percent_project")
+                + cleaned_data.get("percent_lab_evaluation")
                 + cleaned_data.get("percent_course_attendance")
             )
 
@@ -121,6 +122,7 @@ class CourseForm(ModelForm):
             self.add_error('percent_quiz_2', msg)
             self.add_error('percent_endsem', msg)
             self.add_error('percent_project', msg)
+            self.add_error('percent_lab_evaluation', msg)
             self.add_error('percent_course_attendance', msg)
 
         return cleaned_data
@@ -142,13 +144,13 @@ class CourseForm(ModelForm):
             'pre_requisits' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
             'pre_requisit_courses' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
             'syllabus' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
-            # 'evaluation_schema' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}), 
             'ref_books' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
             'percent_quiz_1' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
             'percent_midsem' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
             'percent_quiz_2' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_endsem' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
         }
         labels = {
@@ -163,13 +165,13 @@ class CourseForm(ModelForm):
             'pre_requisits' : 'Pre-requisits',
             'pre_requisit_courses' : 'Pre-requisit Courses',
             'syllabus' : 'Syllabus',
-            # 'evaluation_schema' : 'Evaluation Schema', 
             'ref_books' : 'References & Books',
             'percent_quiz_1' : 'percent_quiz_1',
             'percent_midsem' : 'percent_midsem',
             'percent_quiz_2' : 'percent_quiz_2',
             'percent_endsem' : 'percent_endsem',
             'percent_project' : 'percent_project',
+            'percent_lab_evaluation' : 'percent_lab_evaluation',
             'percent_course_attendance' : 'percent_course_attendance',
             'working_course' : 'working_course',
             'disciplines' : 'disciplines'
@@ -181,7 +183,7 @@ class BatchForm(ModelForm):
         model = Batch
         fields = '__all__'
         widgets = {
-            'name' : forms.TextInput(attrs={'placeholder': 'Enter Unique Batch Name','max_length': 50,'class':'field'}),
+            'name' : forms.Select(attrs={'placeholder': 'Enter Unique Batch Name','class':'ui fluid search selection dropdown'},),
             'discipline' : forms.Select(attrs={'class':'ui fluid search selection dropdown'},),
             'year' : forms.NumberInput(attrs={'placeholder' : 'Enter Batch Year','class':'field'}),
             'curriculum' : forms.Select(attrs={'class':'ui fluid search selection dropdown'},),

@@ -1,0 +1,58 @@
+{% load custom_tags %}
+{% comment %} {% for hall in all_hall %} {% endcomment %}
+    {% block {{hall_id}} %}
+        <table class="ui very basic collapsing celled sortable table"
+      style="padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;"> 
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            Roll No
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Program
+        </th>
+
+        <th class="four wide column">
+            Room No{{halls_student.hall_id}}
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for student in halls_student|get_hall_no:hall_id %}
+    <tr>
+    
+        <td>
+            {{student.id.id}}
+        </td>
+
+        <td>
+            {{student.id.user.first_name}} {{student.id.user.last_name}}
+        </td>
+
+        <td>
+            {{student.programme}}
+        </td>
+
+        <td>
+            {{student.room_no}}
+        </td>
+
+    </tr>
+     {% endfor %} 
+
+    </tbody>
+</table>
+    {% endblock  %}
+{% comment %} {% endfor %} {% endcomment %}

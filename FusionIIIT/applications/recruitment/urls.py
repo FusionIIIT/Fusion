@@ -13,4 +13,5 @@ urlpatterns = [
     path('non-teaching/',views.non_teaching,name='non_teaching'),
     path('teaching/apply',views.apply_teaching,name='apply_teaching'),
     path('non-teaching/apply',views.apply_non_teaching,name='apply_non_teaching'),
+    path('create',views.create,name='create'),
 ]
