@@ -151,105 +151,118 @@
 <br>
 <br>
 <div class="ui center aligned segment">
-    <a class="fluid ui large positive animated button"  tabindex="0"
-        href="{% url 'programme_curriculum:edit_curriculum_form' curriculum.id %}"
-        type="Submit" name="Submit">
-        <div class="visible content">EDIT CURRICULUM</div>
-        <div class="hidden content">
-        <i class="edit icon"></i>
-        </div>
-    </a>
-    <br>
-    <div class="fluid ui right pointing dropdown link item">
-        <div class="fluid ui right labeled icon large secondary animated button">
-
-            <i class="dropdown icon"></i>
-            <div class="visible content">INSTIGATE SEMESTER</div>
-            <div class="hidden content">
-                <i class="bell icon"></i>
+    <div class="fluid ui large labeled icon floating link dropdown teal button">
+        <i class="options icon"></i>
+        OPTIONS
+        <div class="ui left menu">
+            <div class="header">
+                Curriculum
             </div>
-        </div>
-        <div class="menu">
-            {% for semester in semesters %}
-                <a class="item" 
-                href="{% url 'programme_curriculum:instigate_semester' semester.id %}?curriculum_id={{ semester.curriculum.id }}"
-                type="Submit" name="Submit"><i class="bell icon"></i>Semester {{ semester.semester_no }}</a>
-            {% endfor %}
-        </div>
-    </div>
-    <br>
-    <div class="fluid ui right pointing dropdown link item">
-        <div class="fluid ui right labeled icon large primary animated button">
-            
-            <i class="dropdown icon"></i>
-            <div class="visible content">ADD COURSE SLOT</div>
-            <div class="hidden content">
-                <i class="add icon"></i>
+            <div class="ui divider"></div>
+            <div class="ui fitted item">
+                <a class="fluid ui large positive animated button"
+                    href="{% url 'programme_curriculum:edit_curriculum_form' curriculum.id %}"
+                    type="Submit" name="Submit">
+                    <div class="visible content">EDIT CURRICULUM</div>
+                    <div class="hidden content">
+                    <i class="edit icon"></i>
+                    </div>
+                </a>
             </div>
-        </div>
-        <div class="menu">
-            {% if semesters.count < 1 %}
-                <div class="item">No Semesters for this Curriculum</div>
-            {% else %}
-                {% for semester in semesters %}
-                    <a class="item" 
-                    href="{% url 'programme_curriculum:add_courseslot_form' %}?semester_id={{ semester.id }}&curriculum_id={{ curriculum.id }}"
-                    type="Submit" name="Submit"><i class="add icon"></i>Semester {{ semester.semester_no }}</a>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-    <br>
-    <a class="fluid ui large primary animated button" tabindex="0"
-        href="{% url 'programme_curriculum:add_batch_form' %}?curriculum_id={{ curriculum.id }}"
-        type="Submit" name="Submit" target="_blank" rel="noopener">
-        <div class="visible content">NEW BATCH</div>
-        <div class="hidden content">
-        <i class="add icon"></i>
-        </div>
-    </a>
-    <br>
-    <div class="fluid ui right pointing dropdown link item">
-        <div class="fluid ui right labeled icon large positive animated button">
-
-            <i class="dropdown icon"></i>
-            <div class="visible content">EDIT BATCH</div>
-            <div class="hidden content">
-                <i class="edit icon"></i>
+            <div class="ui fitted item">
+                <div class="fluid ui large secondary animated button">
+        
+                    <i class="dropdown icon"></i>
+                    <div class="visible content">INSTIGATE SEMESTER</div>
+                    <div class="hidden content">
+                        <i class="bell icon"></i>
+                    </div>
+                </div>
+                <div class="ui vertical left menu">
+                    {% for semester in semesters %}
+                        <a class="item" 
+                        href="{% url 'programme_curriculum:instigate_semester' semester.id %}?curriculum_id={{ semester.curriculum.id }}"
+                        type="Submit" name="Submit"><i class="bell icon"></i>Semester {{ semester.semester_no }}</a>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-        <div class="menu">
-            {% if curriculum.batches.count < 1 %}
-                <div class="item">No batches linked to this Curriculum</div>
-            {% else %}
-                {% for batch in curriculum.batches %}
-                    <a class="item" 
-                    href="{% url 'programme_curriculum:edit_batch_form' batch.id %}"
-                    type="Submit" name="Submit" target="_blank" rel="noopener"><i class="edit icon"></i>{{ batch }}</a>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-    <br>
-    <div class="fluid ui right search dropdown link item">
-        <div class="fluid ui right labeled icon large secondary animated button">
-
-            <i class="dropdown icon"></i>
-            <div class="visible content">LINK BATCH</div>
-            <div class="hidden content">
-                <i class="tag icon"></i>
+            <div class="ui fitted item">
+                <div class="fluid ui large primary animated button">
+                    
+                    <i class="dropdown icon"></i>
+                    <div class="visible content">ADD COURSE SLOT</div>
+                    <div class="hidden content">
+                        <i class="add icon"></i>
+                    </div>
+                </div>
+                <div class="ui vertical left menu">
+                    {% if semesters.count < 1 %}
+                        <div class="item">No Semesters for this Curriculum</div>
+                    {% else %}
+                        {% for semester in semesters %}
+                            <a class="item" 
+                            href="{% url 'programme_curriculum:add_courseslot_form' %}?semester_id={{ semester.id }}&curriculum_id={{ curriculum.id }}"
+                            type="Submit" name="Submit"><i class="add icon"></i>Semester {{ semester.semester_no }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        <div class="menu">
-            {% if all_batches.count < 1 %}
-                <div class="item">No other batches avaliable</div>
-            {% else %}
-                {% for a_batch in all_batches %}
-                    <a class="item" 
-                    href="{% url 'programme_curriculum:edit_batch_form' a_batch.id %}?curriculum_id={{ curriculum.id }}"
-                    type="Submit" name="Submit" target="_blank" rel="noopener"><i class="tag icon"></i>{{ a_batch }}</a>
-                {% endfor %}
-            {% endif %}
+            <div class="header">
+                Batches
+            </div>
+            <div class="ui divider"></div>
+            <div class="ui fitted item">
+                <a class="fluid ui large primary animated button"
+                    href="{% url 'programme_curriculum:add_batch_form' %}?curriculum_id={{ curriculum.id }}"
+                    type="Submit" name="Submit" target="_blank" rel="noopener">
+                    <div class="visible content">NEW BATCH</div>
+                    <div class="hidden content">
+                    <i class="add icon"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="ui fitted item">
+                <div class="fluid ui large positive animated button">
+        
+                    <i class="dropdown icon"></i>
+                    <div class="visible content">EDIT BATCH</div>
+                    <div class="hidden content">
+                        <i class="edit icon"></i>
+                    </div>
+                </div>
+                <div class="ui left vertical menu">
+                    {% if curriculum.batches.count < 1 %}
+                        <div class="item">No batches linked to this Curriculum</div>
+                    {% else %}
+                        {% for batch in curriculum.batches %}
+                            <a class="item" 
+                            href="{% url 'programme_curriculum:edit_batch_form' batch.id %}"
+                            type="Submit" name="Submit" target="_blank" rel="noopener"><i class="edit icon"></i>{{ batch }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="ui fitted item">
+                <div class="fluid ui large secondary animated button">
+        
+                    <i class="dropdown icon"></i>
+                    <div class="visible content">LINK BATCH</div>
+                    <div class="hidden content">
+                        <i class="tag icon"></i>
+                    </div>
+                </div>
+                <div class="ui vertical left menu">
+                    {% if all_batches.count < 1 %}
+                        <div class="item">No other batches avaliable</div>
+                    {% else %}
+                        {% for a_batch in all_batches %}
+                            <a class="item" 
+                            href="{% url 'programme_curriculum:edit_batch_form' a_batch.id %}?curriculum_id={{ curriculum.id }}"
+                            type="Submit" name="Submit" target="_blank" rel="noopener"><i class="tag icon"></i>{{ a_batch }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

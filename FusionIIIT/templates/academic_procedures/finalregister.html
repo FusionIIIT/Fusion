@@ -75,11 +75,10 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Slot name</th>
-                            <th>Slot type</th>
-                            <th>Semester</th>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
                             <th>Credits</th>
-                            <th>Select</th>
+                            <th>Semester</th>
                         </tr>
                     </thead>
 
@@ -167,17 +166,17 @@
                         <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
                         <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
                         {% for item in final_registration_choice %}
-                        <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.id }}' hidden="True">
+                        <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.0.id }}' hidden="True">
                         <tr>
                             <td>{{forloop.counter}}.</td>
-                            <td>{{item.name}}</td>
-                            <td>{{item.type}}</td>
+                            <td>{{item.0.name}}</td>
+                            <td>{{item.0.type}}</td>
                             <td>{{next_sem.semester_no}}</td>
-                            <td>{{item.courses.all.0.credit}} </td>
+                            <td>{{item.0.courses.all.0.credit}} </td>
                             <td>
-                                {% if item.type == "Professional Core" %}
+                                {% if item.0.type == "Professional Core" %}
                                 <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                                    {% for items in item.courses.all %}
+                                    {% for items in item.1 %}
                                     <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}"
                                         selected>
                                         {{items.code}}-{{ items.name }}</option>
@@ -185,8 +184,8 @@
                                 </select>
                                 {% else %}
                                 <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                                    <option value="0">Select course</option>
-                                    {% for items in item.courses.all %}
+                                    <option value="0">Select Course</option>
+                                    {% for items in item.1 %}
                                     <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}">
                                         {{items.code}}-{{ items.name }}</option>
                                     {% endfor %}
@@ -201,6 +200,17 @@
                     </tbody>
                 </table>
                 <input type="text" name="type_reg" value="change_register" hidden="True">
+
+                <div class="ui divider"></div>
+
+                <div>
+                    <h5>Unavailable Courses:</h5>
+                    <ul>
+                        {% for course in unavailable_courses_nextsem %}
+                            <li>{{course.code}}-{{course.name}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
 
                 <div class="ui divider"></div>
 

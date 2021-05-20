@@ -277,7 +277,7 @@ def academic_procedures_student(request):
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
-        final_registration_choice = next_sem_branch_course
+        final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(current_sem_branch_course,batch.year)
         currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
         current_credits = get_current_credits(currently_registered_course)
 
@@ -409,6 +409,7 @@ def academic_procedures_student(request):
                             'fee_payment_mode_list' : fee_payment_mode_list,
                             'next_sem_registration_courses': next_sem_registration_courses,
                             'final_registration_choice' : final_registration_choice,
+                            'unavailable_courses_nextsem' : unavailable_courses_nextsem,
                             'performance_list' : performance_list,
                             'faculty_list' : faculty_list,
                             'thesis_request_list' : thesis_request_list,
@@ -1142,7 +1143,6 @@ def pre_registration(request):
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
-
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
             count = request.POST.get('ct')
             count = int(count)
@@ -1151,7 +1151,7 @@ def pre_registration(request):
                 i = str(i)
                 choice = "choice["+i+"]"
                 slot = "slot["+i+"]"
-                try:
+                if request.POST.get(choice)!='0':
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
                     p = InitialRegistration(
@@ -1160,8 +1160,8 @@ def pre_registration(request):
                         student_id = current_user,
                         course_slot_id = courseslot_id
                         )
-                except Exception as e:
-                    return HttpResponseRedirect('/academic-procedures/main')
+                else:
+                    continue
                 reg_curr.append(p)
             InitialRegistration.objects.bulk_create(reg_curr)
             try:
@@ -1207,16 +1207,21 @@ def final_registration(request):
 
                 f_reg = []
                 for x in range(values_length):
-                    course_id = Courses.objects.get(id = choice[x])
-                    courseslot_id = CourseSlot.objects.get(id = slot[x])
-                    p = FinalRegistration(
-                        course_id = course_id,
-                        semester_id=sem_id,
-                        student_id= current_user,
-                        course_slot_id = courseslot_id,
-                        verified = False
-                        )
-                    f_reg.append(p)
+                    if choice[x] != '0':
+                        course_id = Courses.objects.get(id = choice[x])
+                        courseslot_id = CourseSlot.objects.get(id = slot[x])
+                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() <= courseslot_id.max_registration_limit:
+                            p = FinalRegistration(
+                                course_id = course_id,
+                                semester_id=sem_id,
+                                student_id= current_user,
+                                course_slot_id = courseslot_id,
+                                verified = False
+                                )
+                            f_reg.append(p)
+                        else:
+                            messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
+                            return HttpResponseRedirect('/academic-procedures/main')
                 FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
@@ -1255,19 +1260,24 @@ def final_registration(request):
                     i = str(i)
                     choice = "choice["+i+"]"
                     slot = "slot["+i+"]"
-                    try:
-                        course_id = Courses.objects.get(id = request.POST.get(choice))
-                        courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                        p = FinalRegistration(
-                            course_id = course_id,
-                            semester_id=sem_id,
-                            student_id= current_user,
-                            course_slot_id = courseslot_id,
-                            verified = False
-                            )
-                        f_reg.append(p)
-                    except Exception as e:
-                        return HttpResponseRedirect('/academic-procedures/main')
+                    if request.POST.get(choice) != '0':
+                        try:
+                            course_id = Courses.objects.get(id = request.POST.get(choice))
+                            courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
+                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() <= courseslot_id.max_registration_limit:
+                                p = FinalRegistration(
+                                    course_id = course_id,
+                                    semester_id=sem_id,
+                                    student_id= current_user,
+                                    course_slot_id = courseslot_id,
+                                    verified = False
+                                    )
+                                f_reg.append(p)
+                            else:
+                                messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
+                                return HttpResponseRedirect('/academic-procedures/main')
+                        except Exception as e:
+                            return HttpResponseRedirect('/academic-procedures/main')
                 FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
@@ -1509,6 +1519,19 @@ def add_thesis(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
+def get_final_registration_choices(branch_courses,batch):
+    course_option = []
+    unavailable_courses = []
+    for courseslot in branch_courses:
+        max_limit = courseslot.max_registration_limit
+        lis = []
+        for course in courseslot.courses.all():
+            if FinalRegistration .objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
+                lis.append(course)
+            else:
+                unavailable_courses.append(course)
+        course_option.append((courseslot, lis))
+    return course_option, unavailable_courses
 
 def get_add_course_options(branch_courses, current_register, batch):
 
@@ -2066,6 +2089,7 @@ def verify_registration(request):
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
     elif request.POST.get('status_req') == "reject" :
+        reject_reason = request.POST.get('reason')
         student_id = request.POST.get('student_id')
         student_id = Student.objects.get(id = student_id)
 
@@ -2078,7 +2102,7 @@ def verify_registration(request):
             FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
             StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
             FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
-            academics_module_notif(academicadmin, student_id.id.user, 'registration_declined_fee')
+            academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
 

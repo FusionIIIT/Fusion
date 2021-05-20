@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 appname = 'procedures'
@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$',views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
+    url(r'^api/', include('applications.academic_procedures.api.urls')),
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
     url(r'^ACF/$', views.ACF, name='ACF'),
     url(r'^MTSGF/$', views.MTSGF),
@@ -50,3 +51,4 @@ urlpatterns = [
     url(r'^update_account_assistantship/$' , views.update_account_assistantship),
     url(r'^mdue/$', views.mdue),
 ]
+

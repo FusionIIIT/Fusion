@@ -35,9 +35,12 @@
                       <div class="pay" id="tran{{forloop.counter}}" hidden>
                         
                         <table style="border-width: 0px;width: 100%">
-                          <td style="width: 80%">
+                          <td style="width: 40%">
                             <p>Payment Mode : {{stu.1.mode}}</p>
-                        <p>Transaction ID : {{stu.1.transaction_id}}</p>
+                            <p>Transaction ID : {{stu.1.transaction_id}}</p>
+                          </td>
+                          <td style="width: 40%">
+                            <input type="text" id="fname" class="reason">
                           </td>
                           <td style="width: 20%"><div data='{{ stu.0.id.user.username }}' data-two="{{forloop.counter}}" class="reg-disapprove ui basic red button" style="margin-right: 10px">Decline</div></td>
                         </table><br><br>
@@ -106,12 +109,14 @@ var i;
         $('.reg-disapprove').on('click', function(e){
             var id = $(this).attr('data-two');
             var student_id = $(this).attr('data');
+            var reason = $('#fname').val();
             $.ajax({
                 type: 'post',
                 url: '/academic-procedures/process_verification_request/',
                 data: {
                     student_id: student_id,
                     status_req: 'reject',
+                    reason: reason,
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
                 success: function(data) {

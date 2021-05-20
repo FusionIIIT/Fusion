@@ -45,10 +45,10 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
+                    {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
                         Book Guest Room 
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> {% endcomment %}
                 </div>
 
             </div>
@@ -70,7 +70,7 @@
 
             <div class="ui tab segment" data-tab="third">
                 {% block notice_board %}
-                    {% include 'hostelmanagement/notice_form.html'%}
+                    {% include 'hostelmanagement/notice.html'%}
                 {% endblock %}
             </div>
 

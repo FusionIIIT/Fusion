@@ -51,8 +51,6 @@ def add_student_counsellors(request):
     
     extrainfo = ExtraInfo(user=user)
     student = Student(id=extrainfo)
-    print(user,extrainfo,student)
-    student = student
     position = request.POST.get('position')
     # position="student_coordinator"
     student_counsellor_object = StudentCounsellingTeam(student_id=student,student_position=position)

@@ -446,7 +446,6 @@ def about(request):
                }
     return render(request, "globals/about.html", context)
 
-
 def login(request):
     context = {}
     return render(request, "globals/login.html", context)
