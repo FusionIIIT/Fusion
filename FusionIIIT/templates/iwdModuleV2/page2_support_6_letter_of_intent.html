@@ -1,0 +1,139 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    Letter of Intent:
+</div>
+
+<form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="">{% csrf_token %}
+<div class="fields">
+    <div class="eight wide field">
+      <label>Dated:</label>
+      <input type="date" placeholder="Select" id="issue_date" name="dateOfOpening"  ><br><br>
+     </div>
+
+
+     <div class="eight wide field">
+        <label>NIT/NIQ No:</label>
+        <textarea id="nit_niq_no" class="ui textarea" rows="1" name="nitNiqNo" type="text"  ></textarea><br>
+       </div>
+
+    </div>
+
+Agency: <textarea id="agency_name" class="ui textarea" rows="1" name="agency" type="text"  ></textarea>
+        <br>
+
+
+ Name of work: <textarea id="name" class="ui textarea" rows="1" name="name" type="text"  ></textarea>
+<br>
+<br>
+I am pleased to inform that your lowest tender for the work mentioned above has been
+accepted, on behalf of the Board of Governors, PDPM-IIITDM, Jabalpur, for a tender value
+of Rs.  <textarea id="amount" class="ui textarea" rows="1" name="tenderValue" type="text"  >0/-</textarea>
+<br> <br>
+
+You are supposed to submit performance guarantee for 5% of the tendered amountwith in ten days of
+issue of this letter, as per clause - 1 'Performance Guarantee' of general conditions of contract
+of PDPM IIITDM works 2019.<br><br>
+
+The performance guarantee shall be in the form of Government securities or fixed deposit
+receipt or guarantee bonds issued from any scheduled bank and in favour of PDPM IIITDM,
+Jabalpur.<br><br>
+The award letter for the work shall be issued only after submission of performance guarantee
+by your company / firm.<br>
+You are requested to contact the undersigned regarding clarification if any.
+
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+                      <input type="submit" name="Submit" value="Next" class="ui small right floated primary button" />
+                      </a>
+                    </div>
+                    <a href="http://172.27.16.216/iwdModuleV2/workOrderForm/">Next</a>
+                </div>
+            </form>
+
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}
