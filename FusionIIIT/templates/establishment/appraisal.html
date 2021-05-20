@@ -14,15 +14,6 @@
             Archived
         </a>
     </div>
-<script type="text/javascript">
-      function printDiv(divName) {
-          var printContents = document.getElementById(divName).innerHTML;
-          w=window.open();
-          w.document.write(printContents);
-          w.print();
-          w.close();
-      }
-  </script>
 
 <!-- Appraisal Form -->
 <div class="ui bottom attached tab segment active" data-tab="appraisal_one">
@@ -1118,7 +1109,13 @@
 
 {% block javascript %}
 <script type="text/javascript">
-  
+  function printDiv(divName) {
+          var printContents = document.getElementById(divName).innerHTML;
+          w=window.open();
+          w.document.write(printContents);
+          w.print();
+          w.close();
+      }
   var count2 = 0;
   var counter_string2 = "0";
   var arrHead2 = new Array();	// array for header.

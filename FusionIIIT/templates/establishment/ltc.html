@@ -23,15 +23,7 @@
     {% endif %}
 
 </div>
-<script type="text/javascript">
-    function printDiv(divName) {
-        var printContents = document.getElementById(divName).innerHTML;
-        w=window.open();
-        w.document.write(printContents);
-        w.print();
-        w.close();
-    }
-</script>
+
 <style>
     * { font: 17px Calibri; }
     table { width: 70%; }
@@ -289,6 +281,7 @@
                             </div>
                         </div>
                     </div>
+                    <br>
                 {% endfor %}
             </div>
         </div>
@@ -414,6 +407,7 @@
                             </div>
                         </div>
                     </div>
+                    <br>
                 {% endfor %}
             </div>
         </div>
@@ -624,6 +618,13 @@
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript">
+function printDiv(divName) {
+        var printContents = document.getElementById(divName).innerHTML;
+        w=window.open();
+        w.document.write(printContents);
+        w.print();
+        w.close();
+    }
 
 var count21 = 0;
 var counter_string21 = "0";

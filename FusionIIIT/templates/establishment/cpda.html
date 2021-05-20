@@ -13,15 +13,6 @@
     </a>
 </div>
 
-<script type="text/javascript">
-    function printDiv(divName) {
-        var printContents = document.getElementById(divName).innerHTML;
-        w=window.open();
-        w.document.write(printContents);
-        w.print();
-        w.close();
-    }
-</script>
 <style>
     * { font: 17px Calibri; }
     table { width: 70%; }
@@ -293,8 +284,15 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
 
 
 {% endblock %}
-{% block javascript %}
-<script>
 
+{% block javascript %}
+<script type="text/javascript">
+function printDiv(divName) {
+        var printContents = document.getElementById(divName).innerHTML;
+        w=window.open();
+        w.document.write(printContents);
+        w.print();
+        w.close();
+    }
 </script>
 {% endblock %}
