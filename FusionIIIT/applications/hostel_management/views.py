@@ -48,6 +48,9 @@ def hostel_view(request, context={}):
         hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall)
 
     all_notice = HostelNoticeBoard.objects.all().order_by("-id")
+    hall_notices = {}
+    for hall in all_hall:
+        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall)
 
     Staff_obj = Staff.objects.all()
     hall1 = Hall.objects.get(hall_id='hall1')
@@ -108,6 +111,7 @@ def hostel_view(request, context={}):
         'halls_student': halls_student,
         'current_hall' : current_hall,
         'hall_staffs': hall_staffs,
+        'hall_notices': hall_notices,
         **context
     }
 
@@ -176,6 +180,15 @@ def notice_board(request):
             new_notice.save()
                 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+@login_required
+def delete_notice(request):
+    if request.method == 'POST':
+        notice_id=request.POST["dlt_notice"]
+        notice=HostelNoticeBoard.objects.get(pk=notice_id)
+        notice.delete()
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 def edit_student_room(request):
@@ -249,7 +262,6 @@ class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
         if request.method == "GET":
             months = request.GET.get('months')
-        print("dddddddddddgggggggggggggggghhyyyyyyyyyh", months)
 
         months = int(months)
         todays_date = date.today()
@@ -265,21 +277,11 @@ class GeneratePDF(View):
                 get_hall=i.hall
                 break
 
-        # worker_report = WorkerReport.objects.filter(hall=get_hall, month_gte=current_month-months, year=current_year)
-        # final_worker_report = []
         if months < current_month:
             worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)
-            # for i in worker_report:
-            #     if i.month >= current_month-months and i.year == current_year:
-            #         final_worker_report.append(i)
-                
-        
         else:
             worker_report = WorkerReport.objects.filter(Q(hall=get_hall, year=current_year, month__lte=current_month) | Q(hall=get_hall, year=current_year-1, month__gte=12-months+current_month))
-            # month__gte=12-months-current_month
-            # final_worker_report.append()
-
-
+            
         worker = {
             'worker_report' : worker_report
         }
