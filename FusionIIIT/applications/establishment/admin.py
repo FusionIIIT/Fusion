@@ -15,7 +15,7 @@ class Cpda_track_admin(admin.ModelAdmin):
 admin.site.register(Cpda_application, Cpda_app_admin)
 admin.site.register(Cpda_tracking, Cpda_track_admin)
 admin.site.register(Cpda_bill)
-
+admin.site.register(CpdaBalance)
 admin.site.register(Ltc_application)
 admin.site.register(Ltc_tracking)
 admin.site.register(Ltc_eligible_user)

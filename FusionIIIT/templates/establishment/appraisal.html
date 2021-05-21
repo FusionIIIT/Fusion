@@ -15,7 +15,6 @@
         </a>
     </div>
 
-
 <!-- Appraisal Form -->
 <div class="ui bottom attached tab segment active" data-tab="appraisal_one">
     <div class="content">
@@ -144,7 +143,7 @@
               <!--
                 Table for NewCourseMaterial
               -->
-                <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                <h3>1.3 &emsp; New Course Material / Instructional Software Developed </h3>
                 <div id="new_courses_material"></div>  
                 <table id="NewCourseMaterial">
                   <tr>
@@ -424,8 +423,9 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description">
-
+                      <div class="description" id='appraisal_form_v'>
+                        <label>Appraisal form details </label><br><br>
+                        <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
@@ -478,7 +478,7 @@
                             {% endfor %}
                           </table>
 
-                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
                           <table>
                             <tr>
                               <th>Course-Name</th>
@@ -731,6 +731,7 @@
 
 
                       </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">
@@ -776,8 +777,9 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description">
-
+                      <div class="description" id='appraisal_form_v1'>
+                        <label>Appraisal form details </label><br><br>
+                          <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
@@ -830,7 +832,7 @@
                             {% endfor %}
                           </table>
 
-                          <h3>1.3 &emsp; New Course Material Developed/Instructional Software Developed</h3>
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed </h3>
                           <table>
                             <tr>
                               <th>Course-Name</th>
@@ -1082,6 +1084,7 @@
 
 
                       </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v1')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">
@@ -1106,7 +1109,13 @@
 
 {% block javascript %}
 <script type="text/javascript">
-  
+  function printDiv(divName) {
+          var printContents = document.getElementById(divName).innerHTML;
+          w=window.open();
+          w.document.write(printContents);
+          w.print();
+          w.close();
+      }
   var count2 = 0;
   var counter_string2 = "0";
   var arrHead2 = new Array();	// array for header.
