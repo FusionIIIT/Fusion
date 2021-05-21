@@ -143,7 +143,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                                     <label>No. of Bills : {{ app.bills_attached }}</label><br><br>
                                     <!-- add preview of bills here  -->
                                     <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br><br>
-                                    {% if app.tracking_info.bills %}
+                                    {% if app.tracking_info.bill %}
                                     <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
                                     {%endif%}
                                 {% endif %}
@@ -347,8 +347,9 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 {% if app.status == 'adjustments_pending' %}
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
+                                    {% if app.tracking_info.bill %}
                                     <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
-                                    
+                                    {%endif%}
                                 {% endif %}
                                 {% if app.tracking_info.current_reviewer_id > 1 %}
                                     HOD Remarks : {{app.tracking_info.remarks_rev1}}<br>

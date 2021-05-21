@@ -62,7 +62,9 @@ pending cpda applications
                                 {% if app.status == 'adjustments_pending' %}
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
+                                    {% if app.tracking_info.bill %}
                                     <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
+                                    {%endif%}
                                 {% endif %}
                                 <br>
                                 <label>HOD Remarks : {{ app.tracking_info.remarks_rev1 }}</label><br>
@@ -77,9 +79,7 @@ pending cpda applications
                                     <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         Verify
                                     </button>
-                                    <button type="submit" name="cpda_assign_form_deny" class="ui large primary button">
-                                        Deny
-                                    </button>
+                                    
                                 </form>
                             </div>
                         </div>
@@ -142,7 +142,9 @@ Reviewed cpda applications
                                     <label>No. of Bills : {{ app.bills_attached }}</label><br>
                                     <!-- add preview of bills here  -->
                                     <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
+                                    {% if app.tracking_info.bill %}
                                     <label>Bill :  <a href="{{app.tracking_info.bill.url}}"> CLick to View Bill</a></label><br>
+                                    {%endif%}
                                 {% endif %}
                             </div>
                         </div>

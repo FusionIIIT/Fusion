@@ -15,13 +15,13 @@
         <a class="item" data-tab="ltcthree">
             Archived
         </a>
+    
+    {% endif %}
     {% if director %}
     <a class="item" data-tab="ltcfour">
         Review
     </a>
     {%endif%}
-    {% endif %}
-
 </div>
 
 <style>
@@ -588,7 +588,7 @@
                                 </div>
                                 <div class="field">
                                     <div >
-                                        <label>HR Admin Remarks : {{ app.admin_remarks }}</label>
+                                        <label>HR Admin Remarks : {{ app.tracking_info.admin_remarks }}</label>
                                     </div>
                                 </div>
                                 

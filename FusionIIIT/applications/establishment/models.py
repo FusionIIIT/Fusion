@@ -12,7 +12,7 @@ class Constants:
         ('adjustments_pending', 'Adjustments Pending'),
         ('finished', 'Finished'),
         ('outstanding', 'Outstanding'),
-        ('excellant','Excellant'),
+        ('excellant','Excellent'),
         ('very good','Very Good'),
         ('good','Good'),
         ('poor','Poor')
@@ -50,7 +50,7 @@ class Constants:
         ('forwarded', 'Forwarded'),
         ('auto rejected', 'Auto Rejected'),
         ('outstanding', 'Outstanding'),
-        ('excellant','Excellant'),
+        ('excellant','Excellent'),
         ('very good','Very Good'),
         ('good','Good'),
         ('poor','Poor')
@@ -360,6 +360,7 @@ class AppraisalRequest(models.Model):
     status_director = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
     permission = models.CharField(max_length=20, default='sanc_auth',
                                   choices=Constants.APPRAISAL_PERMISSIONS, blank=True,null=True)
+    request_timestamp = models.DateTimeField(auto_now=True, null=True)
 
 class AppraisalAdministrators(models.Model):
     """ Stores the appraisal administrators info and permissions related to :model:'auth.User' and :model:'globals.Designation' """

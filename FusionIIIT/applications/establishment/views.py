@@ -328,13 +328,13 @@ def generate_cpda_admin_lists(request):
                     .exclude(status='approved')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
-    #print(to_review_apps)
+   
     reviewed_apps= (Cpda_application.objects.select_related('applicant')
                     .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id__gte=2) |
                             Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id__gte=3) |
                             Q(tracking_info__reviewer_id3=request.user,tracking_info__current_reviewer_id__gte=4))
                     .order_by('-request_timestamp'))
-    print("hello",reviewed_apps)
+    
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
         
@@ -457,7 +457,7 @@ def generate_ltc_admin_lists(request):
             if(remarks[i]!=''):
                 rev_list.append([desig[i],remarks[i]])
         reviewer_remarks[app.tracking_info.application]=rev_list
-    print(reviewer_remarks)
+    
     response = {
         'admin': True,
         'ltc_eligible_users': current_eligible_users,
@@ -529,7 +529,7 @@ def handle_cpda_eligible(request):
         holds_designation = HoldsDesignation.objects.filter(designation = designation[0])
         dir_desig=designation[0]
         director = holds_designation[0].user
-        print(hod,director)
+        
         # next 3 lines are working magically, DON'T TOUCH THEM
         track = Cpda_tracking.objects.create(
             application = application,
@@ -576,6 +576,7 @@ def handle_cpda_eligible(request):
         application.tracking_info.remarks_rev2="Not Reviewed yet"
         application.tracking_info.remarks_rev3="Not Reviewed yet"
         application.status = 'adjustments_pending'
+        application.tracking_info.bill=upload_file
         application.save()
 
         # get tracking info of a particular application
@@ -589,7 +590,8 @@ def handle_cpda_eligible(request):
         # verify that app_id is not changed, ie untampered
         review_comment = request.POST.get('remarks')
         application = Cpda_application.objects.get(id=app_id)
-        cpda_bal=CpdaBalance.objects.get(user=request.user)
+        cpda_bal=CpdaBalance.objects.get(user=application.applicant)
+        
         if(application.tracking_info.current_reviewer_id==1):
             application.tracking_info.remarks_rev1 = review_comment
         elif(application.tracking_info.current_reviewer_id==2):
@@ -600,17 +602,18 @@ def handle_cpda_eligible(request):
             application.tracking_info.review_status = 'reviewed'
             if(application.status=='adjustments_pending'):
                 application.status='finished'
-                if((application.total_bills_amount-application.requested_amount)>0):
-                    cpda_bal.cpda_balance=cpda_bal.cpda_balance-(application.total_bills_amount-application.requested_amount)
+                if((application.total_bills_amount- application.requested_advance)>0):
+                    cpda_bal.cpda_balance=cpda_bal.cpda_balance-(application.total_bills_amount-application.requested_advance)
                 else:
-                    cpda_bal.cpda_balance=cpda_bal.cpda_balance+(application.total_bills_amount-application.requested_amount)
+                    cpda_bal.cpda_balance=cpda_bal.cpda_balance+(application.total_bills_amount-application.requested_advance)
             else:
-                print('hello')
+                
                 cpda_bal.cpda_balance=cpda_bal.cpda_balance-application.requested_advance
                 application.status='approved'
         application.tracking_info.current_reviewer_id +=1
         application.tracking_info.save()
         application.save()
+        cpda_bal.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
 
@@ -952,7 +955,6 @@ def generate_cpda_eligible_lists(request):
                     .exclude(status='approved')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
-    print(to_review_apps)
     reviewed_apps= (Cpda_application.objects.select_related('applicant')
                     .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id__gte=2) |
                             Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id__gte=3) |
@@ -965,7 +967,7 @@ def generate_cpda_eligible_lists(request):
     pf_number=1234
     if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
         pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
-    print(pf_number)
+    
     form = Cpda_Form(initial={'pf_number':pf_number})
     bill_forms = {}
     apps = Cpda_application.objects.select_related('applicant').filter(applicant=request.user).filter(status='approved')
@@ -1062,7 +1064,6 @@ def generate_ltc_eligible_lists(request):
     
     dir=is_director(request)
 
-
     response = {
         'director':dir,
         'ltc_info': ltc_info,
@@ -1143,8 +1144,8 @@ def generate_appraisal_lists_hod(request):
         with designation "HOD".
     """
     response = {}
-    review_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).filter(status_hod = 'pending')
-    reviewed_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'pending')
+    review_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).filter(status_hod = 'pending').order_by('-request_timestamp')
+    reviewed_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'pending').order_by('-request_timestamp')
     course_objects_all = Curriculum_Instructor.objects.all()
     consultancy_projects_all = emp_consultancy_projects.objects.all()
     research_projects_all = emp_research_projects.objects.all()
@@ -1185,8 +1186,8 @@ def generate_appraisal_lists_director(request):
         with designation "Director".
     """
     response = {}
-    review_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).filter(status_director = 'pending').exclude(status_hod = 'pending')
-    reviewed_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_director = 'pending')
+    review_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).filter(status_director = 'pending').exclude(status_hod = 'pending').order_by('-request_timestamp')
+    reviewed_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_director = 'pending').order_by('-request_timestamp')
     course_objects_all = Curriculum_Instructor.objects.all()
     consultancy_projects_all = emp_consultancy_projects.objects.all()
     research_projects_all = emp_research_projects.objects.all()
@@ -1240,8 +1241,7 @@ def generate_appraisal_lists_admin(request):
     appraisal_all = Appraisal.objects.select_related('applicant').all()
     new_courses_offered_all = NewCoursesOffered.objects.all()
     new_courses_material_all = NewCourseMaterial.objects.all()
-    for em in appraisal_requests:
-        print(em)
+    
     response.update({
         'admin': True,
         'course_objects_all': course_objects_all,
