@@ -19,8 +19,8 @@ from django.http import HttpResponseRedirect
 
 def dashboard(request):
     eligible = False
-    userObj = User.objects.get(id=request.user.id)
-    userDesignationObjects = HoldsDesignation.objects.filter(working=userObj)
+    userObj = request.user
+    userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
     for p in userDesignationObjects:
         if p.designation.name == 'Admin IWD':
             eligible = True
