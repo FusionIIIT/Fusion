@@ -21,7 +21,7 @@ class PageOneDetails(models.Model):
 
 
 class AESDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=100)
     descOfItems = models.CharField(max_length=200)
     unit = models.CharField(max_length=200)
@@ -149,7 +149,7 @@ class PageThreeDetails(models.Model):
 
 
 class ExtensionOfTimeDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
     sNo = models.CharField(max_length=200)
     hindrance = models.CharField(max_length=200)
     periodOfHindrance = models.IntegerField()
