@@ -203,7 +203,7 @@
                             View LTC
                         </div>
                         <div class="content">
-                            <div class="description" id='ltc_form_v'>
+                            <div class="description" id='ltc_form_v{{app.id}}'>
                                 <br>
                                 LTC Form Details<br><br>
                                 <label>Application id : {{ app.id }}</label><br>
@@ -273,7 +273,7 @@
                                 </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div><br>
-                            <button class="ui large primary button" onclick="printDiv('ltc_form_v')" value="Print">Print </button>
+                            <button class="ui large primary button" onclick="printDiv('ltc_form_v{{app.id}}')" value="Print">Print </button>
                         </div>
                         <div class="actions">
                             <div class="ui black deny button">
@@ -329,7 +329,7 @@
                             View LTC
                         </div>
                         <div class="content">
-                            <div class="description" id='ltc_form_v1'>
+                            <div class="description" id='ltc_form_v_a{{app.id}}'>
                                 <br>
                                 LTC Form Details<br><br>
                                 <label>Application id : {{ app.id }}</label><br>
@@ -399,7 +399,7 @@
                                 </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div><br>
-                            <button class="ui large primary button" onclick="printDiv('ltc_form_v1')" value="Print">Print </button>
+                            <button class="ui large primary button" onclick="printDiv('ltc_form_v_a{{app.id}}')" value="Print">Print </button>
                         </div>
                         <div class="actions">
                             <div class="ui black deny button">

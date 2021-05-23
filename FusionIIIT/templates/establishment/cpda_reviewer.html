@@ -127,7 +127,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                         </div>
                         <div class="content">
                             
-                            <div class="description" id='cpda_form_v'>
+                            <div class="description" id='cpda_form_v{{app.id}}'>
                                 CPDA Form details<br>
                                 <br>
                                 <label>Application id : {{ app.id }}</label><br><br>
@@ -152,7 +152,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                                 
                                 </div>
                         
-                                <button class="ui large primary button" onclick="printDiv('cpda_form_v')" value="Print">Print </button>           
+                                <button class="ui large primary button" onclick="printDiv('cpda_form_v{{app.id}}')" value="Print">Print </button>           
                     </div>
                     
                     </div>   
@@ -251,7 +251,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                              CPDA Application
                         </div>
                         <div class="content">
-                            <div class="description" id='cpda_form_v1'>
+                            <div class="description" id='cpda_form_v_a{{app.id}}'>
 
                                  CPDA Form details<br>
                                 <br>
@@ -277,7 +277,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <label> Director Remarks : {{app.tracking_info.remarks_rev3}}</label><br><br>
                                 
                             </div>
-                            <button class="ui large primary button" onclick="printDiv('cpda_form_v1')" value="Print">Print </button>
+                            <button class="ui large primary button" onclick="printDiv('cpda_form_v_a{{app.id}}')" value="Print">Print </button>
                         </div>
                         
                     </div>
