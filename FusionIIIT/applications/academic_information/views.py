@@ -121,6 +121,7 @@ def get_context(request):
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
+        pgstudent = Student.objects.filter(programme = "M.Tech") | Student.objects.filter(programme = "PhD")
         assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
         assistant_list_length = len(assistant_list.filter(acad_approval = False))
     except Exception as e:
@@ -147,6 +148,7 @@ def get_context(request):
         'next_sem_course': next_sem_courses,
         'this_sem_course': this_sem_courses,
         'curriculum': curriculum,
+        'pgstudent' : pgstudent,
         'assistant_list' : assistant_list,
         'assistant_list_length' : assistant_list_length,
         'tab_id': ['1','1'],

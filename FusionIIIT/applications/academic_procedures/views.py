@@ -158,7 +158,7 @@ def academic_procedures_faculty(request):
                             'mtechseminar_request_list' : mtechseminar_request_list,
                             'phdprogress_request_list' : phdprogress_request_list,
                             'r' : r,
-                         })
+                        })
     else:
         HttpResponse("user not found")
 
@@ -2881,7 +2881,7 @@ def update_acad_assis(request):
     if request.method == 'POST':
         i = request.POST.get('obj_id')
         sti = request.POST.get('stipend')
-        aobj= AssistantshipClaim.objects.get(id = i)
+        aobj = AssistantshipClaim.objects.get(id = i)
         recipient = User.objects.get(username = "rizwan")
         aobj.stipend = sti
         aobj.acad_approval = True
