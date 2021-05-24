@@ -10,7 +10,12 @@ class Constants:
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
-        ('finished', 'Adjustments Approved')
+        ('finished', 'Finished'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellent'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -43,8 +48,14 @@ class Constants:
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('forwarded', 'Forwarded'),
-        ('auto rejected', 'Auto Rejected')
+        ('auto rejected', 'Auto Rejected'),
+        ('outstanding', 'Outstanding'),
+        ('excellant','Excellent'),
+        ('very good','Very Good'),
+        ('good','Good'),
+        ('poor','Poor')
     )
+
 
 
 class Establishment_variables(models.Model):
@@ -52,7 +63,12 @@ class Establishment_variables(models.Model):
 
 
 class Cpda_application(models.Model):
-    status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
+    status = models.CharField(max_length=20, null=True, choices=(
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('adjustments_pending', 'Adjustments Pending'),
+        ('finished', 'Finished')))
 
     # CPDA Request fields
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -89,13 +105,17 @@ class Cpda_tracking(models.Model):
     remarks_rev2 = models.CharField(max_length=250, null=True, blank=True)
     remarks_rev3 = models.CharField(max_length=250, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
+    bill = models.FileField(blank=True,null=True)
 
     def __str__(self):
         return 'cpda id ' + str(self.application.id) + ' tracking'
 
     class Meta:
         db_table = 'Cpda Tracking'
-
+        
+class CpdaBalance(models.Model):
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    cpda_balance=models.PositiveIntegerField(default=300000)
 
 class Cpda_bill(models.Model):
     application = models.ForeignKey(Cpda_application, on_delete=models.CASCADE, null=True)
@@ -109,7 +129,10 @@ class Cpda_bill(models.Model):
 
 
 class Ltc_application(models.Model):
-    status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
+    status = models.CharField(max_length=20, null=True, choices=(
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')))
 
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     pf_number = models.CharField(max_length=50, default='')
@@ -198,17 +221,23 @@ class Ltc_eligible_user(models.Model):
         return "{:.2f}".format(ret.years + ret.months/12 + ret.days/365)
 
     def total_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed+self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def hometown_ltc_remaining(self):
-        return (self.hometown_ltc_allowed
+        x=(self.hometown_ltc_allowed
             - self.hometown_ltc_availed)
+        x=max(x,0)
+        return x
 
     def elsewhere_ltc_remaining(self):
-        return (self.elsewhere_ltc_allowed
+        x=(self.elsewhere_ltc_allowed
             - self.elsewhere_ltc_availed)
+        x=max(x,0)
+        return x
 
     def __str__(self):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
@@ -234,6 +263,8 @@ class Appraisal(models.Model):
     sevice_to_ins=models.CharField(max_length=20, blank=True, null=True, default='')
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
     def __str__(self):
         return str(self.applicant.username) + ' -- ' + str(self.id)
@@ -329,6 +360,7 @@ class AppraisalRequest(models.Model):
     status_director = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
     permission = models.CharField(max_length=20, default='sanc_auth',
                                   choices=Constants.APPRAISAL_PERMISSIONS, blank=True,null=True)
+    request_timestamp = models.DateTimeField(auto_now=True, null=True)
 
 class AppraisalAdministrators(models.Model):
     """ Stores the appraisal administrators info and permissions related to :model:'auth.User' and :model:'globals.Designation' """

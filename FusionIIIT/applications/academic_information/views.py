@@ -6,6 +6,7 @@ import logging
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from xhtml2pdf import pisa
+
 from itertools import chain
 
 from django.contrib.auth.models import User
@@ -197,12 +198,10 @@ def homepage(request):
         context - the datas to be displayed in the webpage
 
     """
-    print(22222222222222222222222222222222222222222222222222222222)
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
-    print(context['courses_list'])
 
     return render(request, "ais/ais.html", context)
 
@@ -938,33 +937,40 @@ def generate_preregistration_report(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
         
-    if request.method == "POST":   
-        sem = sem_for_generate_sheet()
-        now = datetime.datetime.now()
-        year = int(now.year)
-        batch=request.POST['batch']
-        if sem[0] == 2:
-            sem = sem[year-int(batch)-1]
-        else:
-            sem = sem[year-int(batch)]
-        sem+=1
-        sem=6
-        obj = InitialRegistration.objects.select_related('curr_id','curr_id__course_id','student_id','student_id__id','student_id__id__user','student_id__id__department'
-).filter(batch=batch).filter(semester=sem)
+    if request.method == "POST":
+        sem = request.POST.get('semester_no')
+        batch_id=request.POST.get('batch_branch')
+        batch = Batch.objects.filter(id = batch_id).first()
+        obj = InitialRegistration.objects.filter(student_id__batch_id=batch_id, semester_id__semester_no=sem)
+        registered_students = set()
+        unregistered_students = set()
+        for stu in obj:
+            registered_students.add(stu.student_id)
+        students = Student.objects.filter(batch_id = batch_id)
+        for stu in students:
+            if stu not in registered_students:
+                unregistered_students.add(stu)
+
         data = []
         m = 1
-        for i in obj:
+        for i in unregistered_students:
             z = []
             z.append(m)
             m += 1
-            z.append(i.student_id.id.user.username)
-            z.append(str(i.student_id.id.user.first_name)+" "+str(i.student_id.id.user.last_name))
-            z.append(i.student_id.id.department.name)
-            z.append(i.curr_id.credits)
-            z.append(i.curr_id.course_code)
-            z.append(i.curr_id.course_id)
+            z.append(i.id.user.username)
+            z.append(str(i.id.user.first_name)+" "+str(i.id.user.last_name))
+            z.append(i.id.department.name)
+            z.append('not registered')
             data.append(z)
-        data.sort()
+        for i in registered_students:
+            z = []
+            z.append(m)
+            m += 1
+            z.append(i.id.user.username)
+            z.append(str(i.id.user.first_name)+" "+str(i.id.user.last_name))
+            z.append(i.id.department.name)
+            z.append('registered')
+            data.append(z)
         output = BytesIO()
 
         book = Workbook(output,{'in_memory':True})
@@ -982,7 +988,7 @@ def generate_preregistration_report(request):
                                     'valign': 'vcenter'})
         sheet = book.add_worksheet()
 
-        title_text = (("Pre-registeration : Batch - "+str(str(batch))))
+        title_text = ("Pre-registeration : "+ batch.name + str(" ") + batch.discipline.acronym + str(" ") + str(batch.year))
         sheet.set_default_row(25)
 
         sheet.merge_range('A2:E2', title_text, title)
@@ -990,39 +996,29 @@ def generate_preregistration_report(request):
         sheet.write_string('B3',"Roll No",subtitle)
         sheet.write_string('C3',"Name",subtitle)
         sheet.write_string('D3',"Discipline",subtitle)
-        sheet.write_string('E3','Credits',subtitle)
-        sheet.write_string('F3','Course Code',subtitle)
-        sheet.write_string('G3','Course Name',subtitle)
-        sheet.write_string('H3','Signature',subtitle)
+        sheet.write_string('E3','Status',subtitle)
         sheet.set_column('A:A',20)
         sheet.set_column('B:B',20)
         sheet.set_column('C:C',50)
         sheet.set_column('D:D',15)
         sheet.set_column('E:E',15)
-        sheet.set_column('F:F',20)
-        sheet.set_column('G:G',60)
-        sheet.set_column('H:H',15)
         k = 4
         num = 1
         for i in data:
             sheet.write_number('A'+str(k),num,normaltext)
             num+=1
             z,b,c = str(i[0]),i[1],i[2]
-            a,b,c,d,e,f,g = str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4]),str(i[5]),str(i[6])
-            name = str(b)+" "+str(c)
+            a,b,c,d,e = str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4])
             temp = str(i[3]).split()
-            dep = str(temp[len(temp)-1])
             sheet.write_string('B'+str(k),b,normaltext)
             sheet.write_string('C'+str(k),c,normaltext)
             sheet.write_string('D'+str(k),d,normaltext)
             sheet.write_string('E'+str(k),e,normaltext)
-            sheet.write_string('F'+str(k),f,normaltext)
-            sheet.write_string('G'+str(k),g,normaltext)
             k+=1
         book.close()
         output.seek(0)
         response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
-        st = 'attachment; filename = ' + str(batch) + '-preresgistration.xlsx'
+        st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
         response['Content-Disposition'] = st
         return response
 

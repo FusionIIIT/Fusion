@@ -1,62 +1,68 @@
 {% block staff_schedule %}
-<div class="ui pointing secondary menu">
-  <a class="item active" data-tab="hall1_staff">
-    Hall 1 Staff
-  </a>
+<div class="ui secondary menu">
 
-  <a class="item" data-tab="hall3_staff">
-     Hall 3 Staff
-  </a>
+    <div class="ui floating dropdown labeled icon button">
+    <i class="home icon"></i>
+    <span class="text">Select Hall</span>
+        <div class="menu">
+        {% for hall in all_hall %}
+            <a class="{% if hall.hall_id == 'hall1' %}item active{% else %}item{% endif %}" data-tab={{hall.hall_id}}_staff>
+                Hall {{hall.hall_id.4}} Staff
+            </a>
+        {% endfor %}
+        </div>
+    </div>
 
-  <a class="item" data-tab="hall4_staff">
-    Hall 4 Staff
-  </a>
-
+<div class="right menu">
   {% if user in hall_caretaker%}
     <a class="item" data-tab="hall_staff_edit">
-        Edit Staff
+        <i class="edit icon"></i>Add/Edit Staff
+    </a>
+
+    <a class="item" data-tab="worker_report">
+        <i class="file icon"></i>Worker Report
+    </a>
+
+    <a class="item" data-tab="view_report">
+        <i class="eye icon"></i>View Report
     </a>
   {% endif %}
+</div>
   
   
     
 </div>
 
-
-<div class="ui active tab" data-tab="hall1_staff" >
-    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
-        {% block hall1_staff %}
-            {% comment %} {% include 'hostelmanagement/hall1.html' %} {% endcomment %}
-            {% include 'hostelmanagement/hall1_staff.html' %}
-        {% endblock %}
-    </div>
-</div>
-
-
-<div class="ui tab" data-tab="hall3_staff">
-    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
-        {% block hall3_staff %}
-            {% include 'hostelmanagement/hall3_staff.html' %}
-        {% endblock %}
-    </div>
-</div>
-
-
-<div class="ui tab" data-tab="hall4_staff">
-    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
-            {% block hall4_staff %}
-                {% comment %} {% include 'hostelmanagement/hall4.html' %} {% endcomment %}
-                {% include 'hostelmanagement/hall4_staff.html' %}
+{% for hall in all_hall %}
+    <div class="{% if hall.hall_id == 'hall1' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_staff>
+        <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+            {% block {{hall.hall_id}} %}
+                {% include 'hostelmanagement/hall_staffs.html' with hall_id=hall.hall_id %}
             {% endblock %}
-        
+        </div>
     </div>
-</div>
-
+{% endfor %}
 
 <div class="ui tab" data-tab="hall_staff_edit">
     <div class="ui vertical segment">
         {% block hall_staff_edit %}
             {% include 'hostelmanagement/hall_staff_edit.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="worker_report">
+    <div class="ui vertical segment">
+        {% block worker_report %}
+            {% include 'hostelmanagement/worker_report_upload.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<div class="ui tab" data-tab="view_report">
+    <div class="ui vertical segment">
+        {% block view_report %}
+            {% include 'hostelmanagement/view_report.html' %}
         {% endblock %}
     </div>
 </div>

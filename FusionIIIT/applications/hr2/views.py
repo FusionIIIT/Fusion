@@ -225,7 +225,7 @@ def administrative_profile(request, username=None):
     user = get_object_or_404(
         User, username=username) if username else request.user
     extra_info = get_object_or_404(ExtraInfo, user=user)
-    if extra_info.user_type != 'faculty':
+    if extra_info.user_type != 'faculty' and extra_info.user_type != 'staff':
         return redirect('/')
     pf = extra_info.id
 
@@ -280,14 +280,17 @@ def add_new_user(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, "New User added Successfully")
-        # else:
-        #     messages.error(request,"Some error occured please try again later")
+        elif not form.is_valid:
+            print(form.errors)
+            messages.error(request,"Some error occured please try again later")
 
-        if eform.is_valid():
+        elif eform.is_valid():
             eform.save()
             messages.success(request, "Extra info of user saved successfully")
-        # else:
-        #     messages.error(request,"Some error occured please try again later")
+        elif not eform.is_valid:
+        
+            print(eform.errors)
+            messages.error(request,"Some error occured please try again later")
 
     form = NewUserForm
     eform = AddExtraInfo

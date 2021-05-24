@@ -35,7 +35,7 @@ Module
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="item" href="{% url 'globals:profile' %}">
-                View E-ServiceBook
+                View Profile
                 <i class="right floated chevron right icon"></i>
             </a>
 
@@ -50,9 +50,39 @@ Module
             </a>
 
         </div>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
+            <a class="item" href="/establishment/cpda/">
+                CPDA
+                <i class="right floated chevron right icon"></i>
+            </a>
 
+        </div>
 
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/establishment/ltc/">
+                LTC
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/establishment/appraisal/">
+                Appraisal
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/leave/">
+                Leave
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
 
 
         {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -346,7 +376,6 @@ Module
         $("#replacement-card").toggle();
         setTimeout(loader, 1750);
     });
-
     function loader() {
         $("#textLoader").toggle();
         $("#replacement-card").toggle();

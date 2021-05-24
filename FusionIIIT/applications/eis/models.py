@@ -29,6 +29,8 @@ class emp_techtransfer(models.Model):
     pf_no = models.IntegerField()
     details = models.CharField(max_length=500, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
 
 class emp_session_chair(models.Model):
@@ -47,6 +49,7 @@ class emp_session_chair(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    remarks = models.CharField(default = " ", max_length=1000)
 
     def __str__(self):
         return 'PF No.: {}   Name: {}'.format(self.pf_no,self.name)
@@ -99,7 +102,7 @@ class emp_research_papers(models.Model):
     )
     is_sci = models.CharField(max_length=6, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     isbn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.DateField(null=True, blank=True)
+    doi = models.CharField(max_length=1000,null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)
@@ -147,7 +150,8 @@ class emp_published_books(models.Model):
     pyear = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     authors = models.CharField(max_length=250, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    publication_date = models.DateField(null=True,blank=True)
+    
     def __str__(self):
         return 'PF No.: {}   Type: {}  Title: {}'.format(self.pf_no,self.p_type, self.title)
 
@@ -174,7 +178,8 @@ class emp_patents(models.Model):
         MONTH_CHOICES.append((r, r))
     a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
     def __str__(self):
         return 'PF No.: {}   Status: {}  Title: {}'.format(self.pf_no,self.status, self.title)
 
@@ -197,6 +202,16 @@ class emp_mtechphd_thesis(models.Model):
         MONTH_CHOICES.append((r, r))
     a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
+    semester=models.IntegerField(default = 1, blank=True, null=True)
+    STATUS_TYPE_CHOICES = (
+        ('Awarded', 'Awarded'),
+        ('Submitted', 'Submitted'),
+        ('Ongoing', 'Ongoing'),
+        ('Completed', 'Completed')
+    )
+    status = models.CharField(max_length = 10, choices = STATUS_TYPE_CHOICES, null=True, blank=True)
 
     def __str__(self):
         return 'PF No.: {}   Supervisor: {}  Title: {}'.format(self.pf_no,self.supervisors, self.title)
@@ -295,7 +310,13 @@ class emp_consultancy_projects(models.Model):
     end_date = models.DateField(null=True, blank=True)
     duration = models.CharField(max_length=500, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    STATUS_TYPE_CHOICES = (
+        ('Completed', 'Completed'),
+        ('Submitted', 'Submitted'),
+        ('Ongoing', 'Ongoing')
+    )
+    status = models.CharField(default = 'Ongoing', max_length = 10, choices = STATUS_TYPE_CHOICES, null=True, blank=True)
+    remarks = models.CharField(max_length=1000, null=True, blank=True)
     def __str__(self):
         return 'PF No.: {}  Consultants: {}'.format(self.pf_no, self.consultants)
 
@@ -332,7 +353,7 @@ class emp_confrence_organised(models.Model):
 
 class emp_achievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField(default=1)
+    pf_no = models.IntegerField()
     A_TYPE_CHOICES = (
         ('Award', 'Award'),
         ('Honour', 'Honour'),
@@ -354,7 +375,8 @@ class emp_achievement(models.Model):
         YEAR_CHOICES.append((r, r))
     a_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     date_entry = models.DateField(default=datetime.datetime.now)
-
+    achievment_date = models.DateField(null=True, blank=True)
+    
     def __str__(self):
         return 'PF No.: {} {} : {}'.format(self.pf_no, self.a_type,self.details)
 

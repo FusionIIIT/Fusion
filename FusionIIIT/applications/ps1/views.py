@@ -15,9 +15,8 @@ from notification.views import office_module_notif
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
     """
-        The function is used to create files by current user(employee).
-        It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
-        if he intends to create file.
+        The function is used to create indents by faculty.
+        It adds the indent datails to the indet_table of Purchase and Store module
         @param:
                 request - trivial.
         @variables:
@@ -29,12 +28,29 @@ def ps1(request):
                 extrainfo - The Extrainfo object.
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
+                item_name- Name of the item to be procured
+                quantity - Qunat of the item to be procured
+                present_stock=request.POST.get('present_stock')
+                estimated_cost=request.POST.get('estimated_cost')
+                purpose=request.POST.get('purpose')
+                specification=request.POST.get('specification')
+                indent_type=request.POST.get('indent_type')
+                nature=request.POST.get('nature')
+                indigenous=request.POST.get('indigenous')
+                replaced =request.POST.get('replaced')
+                budgetary_head=request.POST.get('budgetary_head')
+                expected_delivery=request.POST.get('expected_delivery')
+                sources_of_supply=request.POST.get('sources_of_supply')
+                head_approval=False
+                director_approval=False
+                financial_approval=False
+                purchased =request.POST.get('purchased')
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
           return redirect('/dashboard')
     if request.user.extrainfo.id == '132':
-          return redirect("/ps1/entry/")
+          return redirect("/purchase-and-store/entry/")
     if request.method =="POST":
         try:
             if 'save' in request.POST:
@@ -62,7 +78,7 @@ def ps1(request):
                 head_approval=False
                 director_approval=False
                 financial_approval=False
-                purchased =request.POST.get('purchased')
+                purchased =False
 
                 file=File.objects.create(
                     uploader=uploader,
@@ -83,14 +99,14 @@ def ps1(request):
                     indent_type=indent_type,
                     nature=nature,
                     indigenous=indigenous, 
-               #     replaced = replaced ,
+                    replaced = replaced ,
                     budgetary_head=budgetary_head,
                     expected_delivery=expected_delivery,
                     sources_of_supply=sources_of_supply,
                     head_approval=head_approval,
                     director_approval=director_approval,
                     financial_approval=financial_approval,
-                 #   purchased =purchased,
+                    purchased =purchased,
                 )
 
             if 'send' in request.POST:
@@ -118,7 +134,7 @@ def ps1(request):
                 head_approval=False
                 director_approval=False
                 financial_approval=False
-                purchased =request.POST.get('purchased')
+                purchased = False
 
                 file = File.objects.create(
                     uploader=uploader,
@@ -147,7 +163,7 @@ def ps1(request):
                     head_approval=head_approval,
                     director_approval=director_approval,
                     financial_approval=financial_approval,
-                 #   purchased =purchased,
+                    purchased =purchased,
                 )
 
 
@@ -182,7 +198,7 @@ def ps1(request):
                     upload_file=upload_file,
                 )
                 office_module_notif(request.user, receiver_id)
-                messages.success(request,'File sent successfully')
+                messages.success(request,'Indent Filed Successfully!')
 
         finally:
             message = "FileID Already Taken.!!"
@@ -200,6 +216,21 @@ def ps1(request):
     }
     return render(request, 'ps1/composeIndent.html', context)
 
+# @login_required(login_url = "/accounts/login")
+# def compose_indent(request):
+#     file = File.objects.select_related('uploader__user','uploader__department','designation').all()
+#     extrainfo = ExtraInfo.objects.select_related('user','department').all()
+#     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+#     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+
+#     context = {
+#         'file': file,
+#         'extrainfo': extrainfo,
+#         'holdsdesignations': holdsdesignations,
+#         'designations': designations,
+#     }
+#     return render(request, 'ps1/composeIndent.html', context)
+    
 
 @login_required(login_url = "/accounts/login")
 def composed_indents(request):
@@ -232,68 +263,88 @@ def composed_indents(request):
     }
     return render(request, 'ps1/composed_indents.html', context)
 
+def drafts(request):
+    """
+        The function is used to get all the files created by user(employee).
+        It gets all files created by user by filtering file(table) object by user i.e, uploader.
+        It displays user and file details of a file(table) of filetracking(model) in the
+        template of 'Saved files' tab.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                draft - The File object filtered by uploader(user).
+                extrainfo - The Extrainfo object.
+                context - Holds data needed to make necessary changes in the template.
+    """
+
+    # draft = File.objects.filter(uploader=request.user.extrainfo)
+    # draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
+
+    # print(File.objects)
+    # extrainfo = ExtraInfo.objects.all()
+    # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    designation = HoldsDesignation.objects.filter(user=request.user)
+    context = {
+        # 'draft': draft,
+        # 'extrainfo': extrainfo,
+        'designation': designation,
+    }
+    return render(request, 'ps1/drafts.html', context)
 
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
 
 
-
-    # print(request.user.extrainfo.uploaded_files.all())
-    draft_indent = IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
-    # print(draft_indent)
-    draft = [ indent.file_info for indent in draft_indent ]    
-
+    tracking_objects=Tracking.objects.all()
+    tracking_obj_ids=[obj.file_id for obj in tracking_objects]
+    draft_indent = IndentFile.objects.filter(file_info__in=tracking_obj_ids)
+    draft=[indent.file_info.id for indent in draft_indent]
+    draft_files=File.objects.filter(id__in=draft).order_by('-upload_date')
+    indents=[file.indentfile for file in draft_files]
     extrainfo = ExtraInfo.objects.all()
-    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
-    #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
-    #designations = HoldsDesignation.objects.filter(user=request.user)
-    # for x in designations:
-    #  if abcd==x:
-    #      print (abcd)
-    #      print ("dcdsdcsd ")
-    #      designations=abcd
-    #      print (designations)
-
+    
     context = {
-
-        'draft': draft,
+        'indents' : indents,
         'extrainfo': extrainfo,
         'designations': designations,
     }
     return render(request, 'ps1/indentview.html', context)
 
 @login_required(login_url = "/accounts/login")
-def fileview1(request,id):
+def draftview(request,id):
 
-
-
-    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
-
-
-
-
-    #print (File.designation)
+    indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
+    indent_ids=[indent.file_info for indent in indents]
+    filed_indents=Tracking.objects.filter(file_id__in=indent_ids)
+    filed_indent_ids=[indent.file_id for indent in filed_indents]
+    draft = list(set(indent_ids) - set(filed_indent_ids))
+    draft_indent=IndentFile.objects.filter(file_info__in=draft).values("file_info")
+    draft_files=File.objects.filter(id__in=draft_indent).order_by('-upload_date')
+    extrainfo = ExtraInfo.objects.all()
     abcd = HoldsDesignation.objects.get(pk=id)
-
-
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    
     context = {
-
-        'out': out,
-        'abcd': abcd,
+        'draft': draft_files,
+        'extrainfo': extrainfo,
+        'designations': designations,
     }
-    return render(request, 'filetracking/fileview1.html', context)
+    return render(request, 'ps1/draftview.html', context)
+
 @login_required(login_url = "/accounts/login")
 def indentview2(request,id):
 
 
 
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
-
-
-
+    indent_files = IndentFile.objects.all().values('file_info')
+    print(indent_files)
+    in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
 
     #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
@@ -306,31 +357,12 @@ def indentview2(request,id):
         'designations': designations,
     }
     return render(request, 'ps1/indentview2.html', context)
-@login_required(login_url = "/accounts/login")
-def outward(request):
-    """
-        The function is used to get all the files sent by user(employee) to other employees
-        which are filtered from Tracking(table) objects by current user i.e. current_id.
-        It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
-        in the 'Outbox' tab of template.
-        @param:
-                request - trivial.
-        @variables:
-                out - The Tracking object filtered by current_id i.e, present working user.
-                context - Holds data needed to make necessary changes in the template.
-    """
-    designation = HoldsDesignation.objects.filter(user=request.user)
-
-    context = {
-        'designation': designation,
-    }
-    return render( request, 'filetracking/outward.html', context)
 
 
 @login_required(login_url = "/accounts/login")
 def inward(request):
     """
-            The function is used to get all the files received by user(employee) from other
+            The function is used to get all the Indent files received by user(employee) from other
             employees which are filtered from Tracking(table) objects by current user i.e.receiver_id.
             It displays files received by user from other employees of a Tracking(table) of
             filetracking(model) in the 'Inbox' tab of template.
@@ -341,7 +373,8 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
     designation = HoldsDesignation.objects.filter(user=request.user)
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+    in_file=Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+
 
     context = {
         'in_file': in_file,
@@ -362,7 +395,7 @@ def confirmdelete(request,id):
 @login_required(login_url = "/accounts/login")
 def forwardindent(request, id):
     """
-            The function is used to forward files received by user(employee) from other
+            The function is used to forward Indent files received by user(employee) from other
             employees which are filtered from Tracking(table) objects by current user
             i.e. receiver_id to other employees.
             It also gets track of file created by uploader through all users involved in file
@@ -454,29 +487,52 @@ def forwardindent(request, id):
 
                 check=str(request.user)
                 val=str(request.POST.get('approval'))
+                
+                
+                # if val=="accept":
+                #     print("correct")
+                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                #         indent.head_approval=True
+                #     elif check=="director":
+                #         indent.director_approval=True
+                #     elif check=="rizwan":
+                #         indent.financial_approval=True
+                
+                # else:
+                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                #         indent.head_approval=False
+                #     elif check=="director":
+                #         indent.director_approval=False
+                #     elif check=="rizwan":
+                #         indent.financial_approval=False
+
+                
+                designs =[] 
+                designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+                for designation in designations :
+                    s = str(designation).split(" - ")
+                    designs.append(s[1]) 
+
 
                 if val=="accept":
-                    print("correct")
-                    if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=True
-                    elif check=="director":
+                    elif "Director" in designs:
                         indent.director_approval=True
-                    elif check=="rizwan":
                         indent.financial_approval=True
                 
                 else:
-                    if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=False
-                    elif check=="director":
+                    elif "Director" in designs:
                         indent.director_approval=False
-                    elif check=="rizwan":
                         indent.financial_approval=False
                     
 
                 indent.save()
 
 
-            messages.success(request, 'File sent successfully')
+            messages.success(request, 'Indent File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
@@ -496,13 +552,7 @@ def forwardindent(request, id):
 @login_required(login_url = "/accounts/login")
 def createdindent(request, id):
     """
-            The function is used to forward files received by user(employee) from other
-            employees which are filtered from Tracking(table) objects by current user
-            i.e. receiver_id to other employees.
-            It also gets track of file created by uploader through all users involved in file
-            along with their remarks and attachments
-            It displays details file of a File(table) and remarks and attachments of user involved
-            in file of Tracking(table) of filetracking(model) in the template.
+            The function is used to forward created indent files by user(employee) .
             @param:
                     request - trivial.
                     id - id of the file object which the user intends to forward to other employee.
@@ -587,7 +637,7 @@ def createdindent(request, id):
                 )
 
 
-            messages.success(request, 'File sent successfully')
+            messages.success(request, 'Indent File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
@@ -604,17 +654,8 @@ def createdindent(request, id):
 
     return render(request, 'ps1/createdindent.html', context)
 
-@login_required(login_url = "/accounts/login")
-def archive(request):
-    return render(request, 'filetracking/archive.html')
 
 
-@login_required(login_url = "/accounts/login")
-def finish(request, id):
-    file = get_object_or_404(File, ref_id=id)
-    track = Tracking.objects.filter(file_id=file)
-
-    return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
 
 def AjaxDropdown1(request):
     print('brefore post')
@@ -679,23 +720,7 @@ def delete(request,id):
 
     return redirect('/ps1/composed_indents/')
 
-def forward_inward(request,id):
-    file = get_object_or_404(File, id=id)
-    file.is_read = True
-    track = Tracking.objects.filter(file_id=file)
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
 
-    context = {
-        # 'extrainfo': extrainfo,
-        # 'holdsdesignations': holdsdesignations,
-        'designations':designations,
-        'file': file,
-        'track': track,
-    }
-    print(file.is_read)
-    return render(request, 'filetracking/forward.html', context)
 @login_required(login_url = "/accounts/login")
 
 def Stock_Entry(request):
@@ -819,7 +844,9 @@ def entry(request):
 
     if request.method=='POST':
         id=request.POST.get('id')
-        return render(request,'ps1/StockEntry.html',{'id':id})
+        temp=File.objects.get(id=id)
+        temp1=IndentFile.objects.get(file_info=temp)
+        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':temp1})
         
         
 

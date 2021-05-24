@@ -35,7 +35,7 @@
                 margin: auto;">
                 <thead>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td><h4>Name</h4></td>
                         <td><h4>Discipline</h4></td>
                         <td><h4>Year</h4></td>
@@ -72,7 +72,7 @@
                 margin: auto;">
                 <thead>
                     <tr style="font-size: medium;
-                        background-color: aliceblue;">
+                        background-color: whitesmoke;">
                         <td><h4>Name</h4></td>
                         <td><h4>Discipline</h4></td>
                         <td><h4>Year</h4></td>
@@ -98,5 +98,20 @@
             </table>
         </div>
     </div>
+</div>
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+<div class="ui center aligned segment">
+    <div class="ui horizontal divider">FILTER SEARCH</div>
+    <form class="ui small form"  method="get">
+            {{ batchfilter.form }}
+            <br>
+        <button class="ui tiny basic primary button" type="Submit" name="Submit">
+            <i class="search icon"></i>
+            Search
+        </button>
+    </form>
 </div>
 {% endblock %}

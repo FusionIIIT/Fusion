@@ -1,7 +1,6 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
-
 {% block title %}
     Academic
 {% endblock %}
@@ -52,8 +51,10 @@
         {% comment %}the doctor appointment tab starts here {% endcomment %}
         <div class="ui active tab" data-tab="doctorappointment">
             <div class="ui vertical segment">
-                <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="">{% csrf_token %}
+                <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="" onsubmit="setTimeout(function(){window.location.reload();},10);">{% csrf_token %}
 
+                
+                    <!-- S. no button starts here-->
 
                     <div class="fields">
                         <div class="eight wide field">
@@ -107,17 +108,23 @@
 
                     </div>
 
-
+              
+                   
+                    <!-- Submit button goes here-->
                     <div class="field">
                         <label><br></label>
-
-                        <div >
+                        <div>
                           <input type="submit" name="Submit" value="Submit" class="ui small right floated primary button" />
                           </a>
                         </div>
 
                     </div>
                 </form>
+
+                <form action="http://172.27.16.216/iwdModuleV2" style="margin-right:3%;">
+                    <br><br>
+                    <input class="ui small right floated primary button" type="Submit" value="Next" style="background-color:#2ECC71 ;" />
+                        </form>
 
 
                 <br>
@@ -155,5 +162,22 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-</script>
+<!-- 
+<script>
+
+$(document).ready(function() {
+
+    // alert("Hello! I am an alert box!!");
+
+
+var no_of_values = prompt("No of Entries: ", 1);
+for (var i = 0; i < no_of_values-1; i++){
+    $('#results_no_of_entries').append($('#line_break').clone());
+     $('#results_no_of_entries').append($('#dvMain').clone());	
+}
+     
+});
+
+</script> -->
+
 {% endblock %}
