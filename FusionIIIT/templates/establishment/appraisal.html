@@ -423,7 +423,7 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description" id='appraisal_form_v'>
+                      <div class="description" id='appraisal_form_v{{app.id}}'>
                         <label>Appraisal form details </label><br><br>
                         <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
@@ -731,7 +731,7 @@
 
 
                       </div>
-                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v')" value="Print">Print </button>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v{{app.id}}')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">
@@ -777,7 +777,7 @@
                       View Appraisal
                   </div>
                   <div class="content">
-                      <div class="description" id='appraisal_form_v1'>
+                      <div class="description" id='appraisal_form_v_a{{app.id}}'>
                         <label>Appraisal form details </label><br><br>
                           <label>Application id : {{ app.id }}</label><br>
                           <label>Status : {{ app.status }}</label><br>
@@ -1084,7 +1084,7 @@
 
 
                       </div>
-                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v1')" value="Print">Print </button>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v_a{{app.id}}')" value="Print">Print </button>
                   </div>
                   <div class="actions">
                       <div class="ui black deny button">
