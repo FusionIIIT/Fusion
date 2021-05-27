@@ -277,7 +277,7 @@ def academic_procedures_student(request):
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
-        final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(current_sem_branch_course,batch.year)
+        final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
         currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
         current_credits = get_current_credits(currently_registered_course)
 
@@ -1210,7 +1210,7 @@ def final_registration(request):
                     if choice[x] != '0':
                         course_id = Courses.objects.get(id = choice[x])
                         courseslot_id = CourseSlot.objects.get(id = slot[x])
-                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() <= courseslot_id.max_registration_limit:
+                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
                             p = FinalRegistration(
                                 course_id = course_id,
                                 semester_id=sem_id,
@@ -1264,7 +1264,7 @@ def final_registration(request):
                         try:
                             course_id = Courses.objects.get(id = request.POST.get(choice))
                             courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() <= courseslot_id.max_registration_limit:
+                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
                                 p = FinalRegistration(
                                     course_id = course_id,
                                     semester_id=sem_id,
@@ -1362,13 +1362,14 @@ def add_courses(request):
                 try:
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                    p = course_registration(
-                        course_id = course_id,
-                        student_id=current_user,
-                        course_slot_id = courseslot_id,
-                        semester_id=sem_id
-                        )
-                    reg_curr.append(p)
+                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                        p = course_registration(
+                            course_id = course_id,
+                            student_id=current_user,
+                            course_slot_id = courseslot_id,
+                            semester_id=sem_id
+                            )
+                        reg_curr.append(p)
                 except Exception as e:
                     continue
             course_registration.objects.bulk_create(reg_curr)
