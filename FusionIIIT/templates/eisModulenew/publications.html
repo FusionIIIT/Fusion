@@ -1,4 +1,3 @@
-
 {% load static %}
 
 {% block publications %}
@@ -720,37 +719,7 @@
 
                 <tbody>
 
-                    {% for book in books %}
-                       <tr>
-                            <td>{{ forloop.counter|add:sr2 }}</td>
-                            <td>{{ book.title }} </td>
-                            <td>{{ book.authors }} </td>
-                            <td>{{ book.p_type }} </td>
-                            <td>{{ book.pyear }}</td>
-                            <td>{{ book.publisher }}</td>
-                            {% if request.user == user %}
-                            <td>
-                                <button type="button"
-                                   id="editButton2"
-                                   class="ui button left floated" onclick="editbooks(
-                                    '{{ forloop.counter|add:sr2 }}','{{book.pk}}','{{book.title}}',
-                                    '{{book.authors}}', '{{book.p_type}}',
-                                    '{{book.pyear}}', '{{book.publisher}}')"
-                                   >
-                                   <i class="ui black edit icon"></i>
-                                </button>
-                                <a href="{% url 'eis:emp_published_booksDelete' book.pk forloop.counter|add:sr2 2%}"
-                                   id="editButton"
-                                   class="ui blue button left floated" onclick=""
-                                   value = "Delete">
-                                   <i class="ui red delete icon"></i>
-                                </a>
-                                
-                            </td>
-                        {% endif %}
-                        </tr>
-                    {% endfor %}
-
+                    
                 </tbody>
             </table>
             <div class="pagination">
@@ -775,8 +744,3 @@
 
   
   {% endblock %}
-
-
-
-
-  
