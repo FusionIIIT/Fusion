@@ -569,8 +569,8 @@ def project_register(request):
     """
 
     """Project Fields added"""
-    x = datetime.datetime.now()
-    y=x.strftime("%Y-%m-%d")
+    current = datetime.datetime.now()
+    currentDate=current.strftime("%Y-%m-%d")
     user = request.user
     extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     project_title = request.POST.get('project_title')
@@ -627,7 +627,7 @@ def project_register(request):
         messages.error(request, 'Error in Project Registration form: Project cannot be started before receiving fund')
         return HttpResponseRedirect('/profile/')
    
-    if y > start_date :
+    if currentDate > start_date :
         messages.error(request, 'Error in Project Registration form: You cannot start project without applying')
         return HttpResponseRedirect('/profile/')
     
