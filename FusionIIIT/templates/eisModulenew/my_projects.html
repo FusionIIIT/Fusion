@@ -14,6 +14,21 @@
         <a class="item" data-tab="patents">
             Patents
         </a>
+        <a class="item" data-tab="journals">
+            Journals
+        </a>
+        <a class="item" data-tab="conference">
+            Conference
+        </a>
+        <a class="item" data-tab="book">
+            Books
+        </a>
+        <a class="item" data-tab="event">
+            Events Org.
+        </a>
+        <a class="item" data-tab="fvisit">
+            Visits
+        </a>
 
     </div>
 
@@ -197,5 +212,186 @@
     </div>
 
     {% comment %}The Patent segment ends here!{% endcomment %}
+
+    {% comment %}The Journals segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="journals">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">Patent No.</th>
+                <th class="">Title</th>
+                <th class="">Status</th>
+                <th class="">Year</th>
+                <th class="">Earning(in Rs.)</th>
+                <th class="">Action</th>-->
+
+                <th class="sorted ascending" style="width: 7%;">User</th>
+                <th class="" style="width: 15%;" >Ptype</th>
+                <th class="" style="width: 20%;">Title</th>
+                <th class="" style="width: 20%;">Authors</th>
+
+                <th style="width:20%">Publisher</th>
+                <th style="width:20%">Year Of Publ.</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for journal in journal %}
+            <tr>
+                <td id="journal{{ forloop.counter }}Z"><div style="display: none;">{{ journal.user }}</div>{{ forloop.counter }}.</td>
+                <td id="journal{{ forloop.counter }}A">{{ journal.rtype }}</td>
+                <td id="journal{{ forloop.counter }}B">{{ journal.title_paper }}</td>
+                <td id="journal{{ forloop.counter }}C">{{ journal.authors }}</td>
+                <td id="journal{{ forloop.counter }}D">{{ journal.co_authors }}</td>
+                <td id="journal{{ forloop.counter }}E">{{ journal.year }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% comment %}The Conferences segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="conference">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                <th class="sorted ascending" style="width: 7%;">User</th>
+                <th class="" style="width: 15%;" >Ptype</th>
+                <th class="" style="width: 20%;">Title</th>
+                <th class="" style="width: 20%;">Authors</th>
+
+                <th style="width:20%">Co authors</th>
+                <th style="width:20%">Year Of Publ.</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for conference in conference %}
+            <tr>
+                <td id="conference{{ forloop.counter }}Z"><div style="display: none;">{{ conference.user }}</div>{{ forloop.counter }}.</td>
+                <td id="conference{{ forloop.counter }}A">{{ conference.rtype }}</td>
+                <td id="conference{{ forloop.counter }}B">{{ conference.title_paper }}</td>
+                <td id="conference{{ forloop.counter }}C">{{ conference.authors }}</td>
+                <td id="conference{{ forloop.counter }}D">{{ conference.co_authors }}</td>
+                <td id="conference{{ forloop.counter }}E">{{ conference.year }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% comment %}The Books segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="book">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                <th class="sorted ascending" style="width: 7%;">User</th>
+                <th class="" style="width: 15%;" >Book type</th>
+                <th class="" style="width: 20%;">Title</th>
+                <th class="" style="width: 20%;">Publisher</th>
+
+                <th style="width:20%">Authors</th>
+                <th style="width:20%">Year Of Publ.</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for book in books %}
+            <tr>
+                <td id="conference{{ forloop.counter }}Z"><div style="display: none;">{{ book.user }}</div>{{ forloop.counter }}.</td>
+                <td id="conference{{ forloop.counter }}A">{{ book.p_type }}</td>
+                <td id="conference{{ forloop.counter }}B">{{ book.title }}</td>
+                <td id="conference{{ forloop.counter }}C">{{ book.publisher }}</td>
+                <td id="conference{{ forloop.counter }}D">{{ book.authors }}</td>
+                <td id="conference{{ forloop.counter }}E">{{ book.publication_date }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    {% comment %}The Events segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="event">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                <th class="sorted ascending" style="width: 7%;">User</th>
+                <th class="" style="width: 15%;" >Event type</th>
+                <th class="" style="width: 20%;">Name</th>
+                <th class="" style="width: 20%;">Sponsoring agency</th>
+
+                <th style="width:20%">Venue</th>
+                <th style="width:20%">Start date</th>
+                <th style="width:20%">End date</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for event in events %}
+            <tr>
+                <td id="event{{ forloop.counter }}Z"><div style="display: none;">{{ event.user }}</div>{{ forloop.counter }}.</td>
+                <td id="event{{ forloop.counter }}A">{{ event.type }}</td>
+                <td id="event{{ forloop.counter }}B">{{ event.name }}</td>
+                <td id="event{{ forloop.counter }}C">{{ event.sponsoring_agency }}</td>
+                <td id="event{{ forloop.counter }}D">{{ event.venue }}</td>
+                <td id="event{{ forloop.counter }}E">{{ event.start_date }}</td>
+                <td id="event{{ forloop.counter }}F">{{ event.end_date }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% comment %}The Events segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="fvisit">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                <th class="sorted ascending" style="width: 7%;">User</th>
+                <th class="" style="width: 15%;" >Visit type</th>
+                <th class="" style="width: 20%;">Country</th>
+                <th class="" style="width: 20%;">Purpose</th>
+
+                <th style="width:20%">place</th>
+                <th style="width:20%">Visit date</th>
+                <th style="width:20%">Entry date</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for visit in fvisits %}
+            <tr>
+                <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ visit.user }}</div>{{ forloop.counter }}.</td>
+                <td id="visit{{ forloop.counter }}A">{{ visit.v_type }}</td>
+                <td id="visit{{ forloop.counter }}B">{{ visit.country }}</td>
+                <td id="visit{{ forloop.counter }}C">{{ visit.purpose }}</td>
+                <td id="visit{{ forloop.counter }}D">{{ visit.place}}</td>
+                <td id="visit{{ forloop.counter }}E">{{ visit.start_date }}</td>
+                <td id="visit{{ forloop.counter }}F">{{ visit.entry_date }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}
