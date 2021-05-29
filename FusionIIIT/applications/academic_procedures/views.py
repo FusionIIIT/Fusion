@@ -2847,6 +2847,7 @@ def Bonafide_form(request):
 #         form = BonafideForm()
 
 #     return render(request, 'bonafide.html', {'form': form})
+
 @login_required
 def ACF(request):
         stu = Student.objects.get(id=request.user.username)

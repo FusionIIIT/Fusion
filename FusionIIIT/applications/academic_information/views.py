@@ -1752,6 +1752,7 @@ def add_advanced_profile(request):
 #     return HttpResponseRedirect('/academic-procedures/')
 
 
+
 def add_optional(request):
 #     """
 #     acadmic admin to update the additional courses
