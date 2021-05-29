@@ -2958,7 +2958,6 @@ def update_account_assistantship(request):
         acobj= AssistantshipClaim.objects.all()
         for obj in acobj:
             if obj.account_approval == False and str(obj.student) in dic.keys():
-                print(dic[str(obj.student)])
                 obj.account_approval = True
                 obj.save()
                 recipient = User.objects.get(username = obj.student)

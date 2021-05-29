@@ -1408,7 +1408,7 @@ def deleteSenator(request, pk):
 #                information that the particular student is a senator
 
 #     """
-    print(request.POST)
+    
 #     if request.POST:
 #         s = get_object_or_404(Designation, name="Senator")
 #         student = get_object_or_404(ExtraInfo, id=request.POST.getlist("senate_id")[0])
@@ -1764,7 +1764,7 @@ def add_optional(request):
 #         course - Course details which is selected by the academic admin.
 #     """
     if request.method == "POST":
-        print(request.POST)
+        # print(request.POST)
 #         choices = request.POST.getlist('choice')
 #         for i in choices:
 #             course = Course.objects.all().filter(course_id=i).first()
