@@ -329,6 +329,7 @@ class AssistantshipClaim(models.Model):
     ta_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='TA_SUPERVISOR')
     thesis_supervisor_remark = models.BooleanField(default=False)
     thesis_supervisor = models.ForeignKey(Faculty, on_delete=models.CASCADE,related_name='THESIS_SUPERVISOR')
+    hod_approval = models.BooleanField(default=False)
     acad_approval = models.BooleanField(default=False)
     account_approval = models.BooleanField(default=False)
     stipend = models.IntegerField(default=0)
@@ -470,6 +471,12 @@ class PhDProgressExamination(models.Model):
     commments = models.TextField(null=True)
           
 
+class Assistantship_status(models.Model):
+    student_status = models.BooleanField(null=False)
+    hod_status = models.BooleanField(null=False)
+    account_status = models.BooleanField(null=False)
+
+    
 
 # THESE ARE THE NEW TABLES AND REPLACEMENT OF THOSE ABOVE.
 # PLEASE USE THESE TABLES FOR FURTHER WORK.

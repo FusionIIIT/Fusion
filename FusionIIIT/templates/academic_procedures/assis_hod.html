@@ -1,6 +1,6 @@
 {% load static %}
 <style>
-.account_assis {
+.acad_assis {
   background-color: #f1f1f1;
   color: #444;
   cursor: pointer;
@@ -109,7 +109,7 @@ table{
     color: white;
 }
 .disapprove:hover{
-    background-color: #C54257;
+    background-color: #61c542;
     color:white;
 }
 
@@ -119,13 +119,13 @@ table{
 
 
 
-<div class="ui pointing secondary menu" >
-    <a class="active item" data-tab="pending_account_assis" onclick="ma1()"  style="width: 30%;">
-       <p style="margin-left: 15%;">Pending</p>
+<div class="ui pointing  menu"  style="width: 100%;">
+    <a class="active item" data-tab="pending_acad_assis"  onclick="m1()" style="width: 50%;">
+       <p style="margin-left: 20%;">Pending</p>
     </a>
 
-    <a class="item" data-tab="account_approve_assis" onclick="ma()"  style="width: 30%;">
-        <p style="margin-left: 20%;">Approved</p>  
+    <a class="item" data-tab="acad_approve_assis" onclick="m()" style="width: 50%;">
+        <p style="margin-left: 40%;">Approved</p>  
     </a>
 
 </div>
@@ -133,19 +133,22 @@ table{
 
 
 <!--  pending requests -->
-<div class="ui active tab segment" data-tab="pending_account_assis" id="acc1">
+<div class="ui active tab segment" data-tab="pending_acad_assis" id="pa1" style="width: 100%;">
     <div  class="ui vertical segment" >
-        {% if assistant_pen_list %}
-        <form class="acc_form" id="ac_assis_form">
-
-            <table class="ui celled table"
-            style="padding-left: 2.5%;
-            padding-right: 2.5%;
-            padding-top: 1%;
-            padding-bottom: 1.5%;
-            width: 100%" id="at">
-
-                <thead>
+        {% if hod_flag == "True" %}
+            {% if hod_assistantship_request_list %}
+                <form class="form_class" id="acad_assis_form">
+            
+                    <table class="ui celled table"
+                    style="padding-left: 2.5%;
+                    padding-right: 2.5%;
+                    padding-top: 1%;
+                    padding-bottom: 1.5%;
+                    width: 100%" id="as">
+            
+               
+                    <thead>
+                
                     <tr style="border-radius: 3px;">
                         <th rowspan="2">#</th>
                         <th rowspan="2">Name</th>
@@ -153,64 +156,73 @@ table{
                         <th rowspan="2">Programme</th>
                         <th rowspan="2">Month</th>
                         <th rowspan="2">Year</th>
-                        <th rowspan="2"><center>Stipend</center></th>
                         <th rowspan="2">Approval</th>
-                        <th rowspan="2">Bank Account No.</th>
+                        
                     </tr>
-                </thead>
-
-                <tbody>
-                    {% for obj in assistant_pen_list reversed %}
-                        {% if obj.account_approval == False %}
-                            
-                            <tr>
-                                <td>{{forloop.counter}}</td>
-                                <td>{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}</td>
-                                <td>{{obj.student.id.user.username}}</td>
-                                <td>{{obj.student.programme}}</td>
-                                <td>{{obj.month}}</td>
-                                <td>{{obj.year}}</td>
-                                <td>{{obj.stipend}}</td>
-                                <td><center><input type="checkbox" id="{{forloop.counter}}checkacc" /></center></td>
-                                <td>{{obj.bank_account}}</td>
-                            </tr>
+                    
+                    </thead>
+                
+            
+        
+                    <tbody>
+                
+                    {% for obj in hod_assistantship_request_list reversed %}
+                        {% if obj.student.id.department.name == department.name %}
+                             
+                                <tr id="{{forloop.counter}}as">
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}</td>
+                                    <td>{{obj.student.id.user.username}}</td>
+                                    <td>{{obj.student.programme}}</td>
+                                    <td>{{obj.month}}</td>
+                                    <td>{{obj.year}}</td>
+                                    <td><center><input type="checkbox" id="{{forloop.counter}}check" /></center></td>
+                                </tr>
+                                
                         {%endif%}
-                    {% endfor %}
-                </tbody>
-            </table>
+                    {% endfor %} 
+                       
+                    </tbody>            
+                </table> 
+           
             <div class="two fields">
-                <button class="ui primary button left floated " type="button" id="disapprove_acc" style=" margin-left: 1%;padding: 10px 10px;">
+                <button class="ui primary button left floated " type="button" id="disapprove" style=" margin-left: 1%;padding: 10px 10px;">
                     Disapprove all
                 </button>
-                <button class="ui primary button left floated " type="button" id="approve_acc" style=" margin-left: 1%;padding: 10px 10px;">
+                <button class="ui primary button left floated " type="button" id="approve" style=" margin-left: 1%;padding: 10px 10px;">
                     Approve all
                 </button>
             </div>
             <div class="field">
-                <button class="ui primary button right floated" type="submit" id="su_acc"  style="padding: 10px 10px; margin-right: 13%;" >
+                <button class="ui primary button right floated" type="submit" id="su"  style="padding: 10px 10px; margin-right: 13%;" >
                     Submit
                 </button>
-            </div>
-            
-        </form>  
+            </div> 
+        
+        
+        </form>
         {% else %}
-       <h3>no requests</h3>
-       {% endif %}
-
+            <h3>no requests</h3>
+        {%endif%}
+        {%else%}
+            <h3>Not opened yet</h3>
+        {%endif%}
     </div>
+
 </div>
 
-<!--  approved requests -->
-<div class="ui tab segment" data-tab="account_approve_assis" id="acc2" >
-    {% if assistant_account_list %}
-        {% for obj in assistant_account_list reversed %}
-            {% if obj.account_approval %}
-                <div class="as_app" hidden>{{forloop.counter}}</div>
-                <div class="pthesis assis_app" id="accountassisapproved{{forloop.counter}}">{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}&emsp;&emsp;&emsp;&emsp;{{obj.student.id.user.username}}&emsp;&emsp;{{obj.month}},{{obj.year}}</div>
-                <div class="ui modal accountassisapproved{{forloop.counter}}">
+
+<!--  approved requests  -->
+<div class="ui tab segment " data-tab="acad_approve_assis" id="paa2" style="width: 100%;" >
+    {% if hod_approved_assistantship %}
+        {% for obj in hod_approved_assistantship reversed %}
+            {% if obj.hod_approval %}
+                <div class="app" hidden>{{forloop.counter}}</div> 
+                <div class="pthesis acad_app" id="acadassisapproved{{forloop.counter}}">{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}&emsp;&emsp;&emsp;&emsp;{{obj.student.id.user.username}}&emsp;&emsp;{{obj.month}},{{obj.year}}<i hidden>{{obj.student.batch}}</i></div>
+                <div class="ui modal acadassisapproved{{forloop.counter}}">
                     <i class="close icon"></i>
                     <div class="image content" hidden>
-                        <table>
+                        <table >
                             <tr>
                                 <td class="td1">Roll No.</td>
                                 <td class="td5">:</td>
@@ -235,7 +247,7 @@ table{
                                 <td colspan="4" style="font-weight: bold;">{{obj.bank_account}}</td>
                             </tr>
                             <tr>
-                                <td class="td1">Stipend amount</td>
+                                <td class="td1">Stipend</td>
                                 <td class="td5">:</td>
                                 <td colspan="4" style="font-weight: bold;">{{obj.stipend}}</td>
                             </tr>
@@ -243,14 +255,13 @@ table{
                         </table> 
                     </div>
                 </div>
-                
                 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
                     <script type="text/javascript">
                         $(function () {
-                        $("#accountassisapproved{{forloop.counter}}").click(function () {
-                            $(".accountassisapproved{{forloop.counter}}").modal('show');
+                        $("#acadassisapproved{{forloop.counter}}").click(function () {
+                            $(".acadassisapproved{{forloop.counter}}").modal('show');
                         });
-                        $(".accountassisapproved{{forloop.counter}}").modal({
+                        $(".acadassisapproved{{forloop.counter}}").modal({
                             closable: true
                         });
                         });
@@ -262,10 +273,9 @@ table{
     {%else%}
     <h3>nothing here</h3>
     {% endif %}
-
     <div class="ui vertical segment">
         <br>
-        <button class="ui primary button left floated" type="submit" id="filter_acc"  style="padding: 10px 10px; margin-right: 13%;" >
+        <button class="ui primary button left floated" type="submit" id="filter"  style="padding: 10px 10px; margin-right: 13%;" >
             Filter
         </button>
         <br>
@@ -283,7 +293,7 @@ table{
                 <td class="td7"><strong><u>Batch</u></strong></td>
                 <td class="td6"><input type="text" id="batch" value="" size="7"/></td>
                 <td style="margin: 20px 0;">
-                    <button class="ui primary button " type="button" id="search" onclick="assis_search()" style=" margin-left: 1%;padding: 10px 10px;">
+                    <button class="ui primary button " type="button" id="search" onclick="search()" style=" margin-left: 1%;padding: 10px 10px;">
                         Search
                     </button> 
                 </td>
@@ -293,10 +303,13 @@ table{
                     </button> 
                 </td>
             </tr>
-        </table> 
-        
+        </table>         
     </div>
 </div>
+ 
+
+
+
 <div class="ui basic modal succ">
     <div class="ui icon header">
       <i class="bell icon"></i>
@@ -306,10 +319,10 @@ table{
       <p><center><b>Successfully Submitted</b></center></p>
     </div>
     <div class="actions">
-        <div class="ui red basic cancel inverted button">
-            <i class="remove icon"></i>
-            Cancel
-        </div>
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
     </div>
 </div>
 
@@ -337,33 +350,34 @@ table{
 
 
 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
 
-function ma(){
+function m(){
     
-    document.getElementById('acc1').style="display:none";
-    document.getElementById('acc2').style="display:block";
+    document.getElementById('pa1').style="display:none";
+    document.getElementById('paa2').style="display:block";
 }
-function ma1(){
+function m1(){
     
-    document.getElementById('acc1').style="display:block";
-    document.getElementById('acc2').style="display:none";
+    document.getElementById('pa1').style="display:block";
+    document.getElementById('paa2').style="display:none";
 }
-function assis_search()
+
+function search()
 {
     var rollno = document.getElementById("rollno").value;
     var month = document.getElementById("mon").value;
     var year = document.getElementById("yea").value;
     var batch = document.getElementById("batch").value; 
-    var len = document.getElementsByClassName("as_app").length;
+    var len = document.getElementsByClassName("app").length;
     
-    $(".assis_app").hide();
+    $(".acad_app").hide();
     $("#back").show();
     for(var i=1 ; i<=len; i++)
     {
-        var ids = "accountassisapproved"+i;
+        var ids = "acadassisapproved"+i;
         var name = document.getElementById(ids).innerText;
         if(name.search(rollno) !=-1 && name.search(month)!=-1 && name.search(year)!=-1 && name.search(batch)!=-1)
         {
@@ -376,14 +390,13 @@ function assis_search()
 function back()
 {
     $("#back").hide();
-    $(".assis_app").show();
+    $(".acad_app").show();
 }
-
 var count=0;
-
-$("#filter_acc").click(function(){
-    var btn = document.getElementById("filter_acc");
+$("#filter").click(function(){
+    var btn = document.getElementById("filter");
     count++;
+    console.log(count);
     if(count%2==1)
         $("#SB").show();
     else
@@ -392,15 +405,14 @@ $("#filter_acc").click(function(){
         
 });
 
-
 $(function() {
     
-    $("#disapprove_acc").click(function(){
-        var length = $("#at tr").length;
+    $("#disapprove").click(function(){
+        var length = $("#as tr").length;
         for(var i=1;i<length;i++)
         {
             
-            id = i + "checkacc";
+            id = i + "check";
             if(document.getElementById(id).checked == true)
             {  
                 document.getElementById(id).checked=false;
@@ -409,13 +421,12 @@ $(function() {
         }
         
     });
-    $("#approve_acc").click(function(){
-    
-        var length = $("#at tr").length;
+    $("#approve").click(function(){
+        var length = $("#as tr").length;
         for(var i=1;i<length;i++)
         {
             
-            id = i + "checkacc";
+            id = i + "check";
             if(document.getElementById(id).checked == false)
             {  
                 document.getElementById(id).checked=true;
@@ -424,47 +435,45 @@ $(function() {
         }
         
     });
-    
-});
 
-    $("#ac_assis_form").submit(function(event) {
+
+    $("#acad_assis_form").submit(function(event) {
+
     event.preventDefault();
-    var flag=1;
-    var len = $("#at tr").length;
     var dic = {};
+    var len = $("#as tr").length;
     var message="";
     for(var i=1;i<len;i++)
     {
-        id=i + "checkacc";
-        
+        id=i+"check";
         if(document.getElementById(id).checked == true)
         {
-            var key=document.getElementById("at").rows[i].cells[2].innerHTML;
-            dic[key] = true;
+            var key=document.getElementById("as").rows[i].cells[2].innerHTML; 
+            dic[key]=true;
+
         }
     }
-    var dict =JSON.stringify(dic);
+
+    var dict = JSON.stringify(dic);
 
     $.ajax({
     type:"POST",
-    url: "/academic-procedures/update_account_assistantship/",
+    url: "/academic-procedures/update_hod_assistantship/",
     data:{
-        'dict' : dict,
+        dict : dict,
         csrfmiddlewaretoken: '{{ csrf_token }}'
-    },
+        },
     success: function( data ) 
-    {   
+        {
         $(".succ").modal("show");
-        window.location = "/academic-procedures/account/";
-    }
+        window.location = "/academic-procedures/fac/";
+        }
     });
-    
+
     
   });
 
+});
+
 
 </script> 
-
-
- 
-

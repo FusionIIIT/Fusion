@@ -17,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
@@ -122,8 +122,16 @@ def get_context(request):
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
-        assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+        pgstudent = Student.objects.filter(programme = "M.Tech") | Student.objects.filter(programme = "PhD")
+        assistant_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval =True).filter(acad_approval = False)
+        assistant_approve_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval =True).filter(hod_approval = True)
         assistant_list_length = len(assistant_list.filter(acad_approval = False))
+        assis_stat = Assistantship_status.objects.all()
+        for obj in assis_stat:
+            assistant_flag = obj.student_status
+            hod_flag = obj.hod_status
+            account_flag = obj.account_status
+            
     except Exception as e:
         examTtForm = ""
         acadTtForm = ""
@@ -148,7 +156,9 @@ def get_context(request):
         'next_sem_course': next_sem_courses,
         'this_sem_course': this_sem_courses,
         'curriculum': curriculum,
+        'pgstudent' : pgstudent,
         'assistant_list' : assistant_list,
+        'assistant_approve_list' : assistant_approve_list,
         'assistant_list_length' : assistant_list_length,
         'tab_id': ['1','1'],
         'context': procedures_context['context'],
@@ -160,7 +170,10 @@ def get_context(request):
         'submitted_course_list' : procedures_context['submitted_course_list'],
         'result_year' : procedures_context['result_year'],
         'batch_grade_data' : procedures_context['batch_grade_data'],
-        'batch_branch_data' : procedures_context['batch_branch_data']
+        'batch_branch_data' : procedures_context['batch_branch_data'],
+        'assistant_flag' : assistant_flag,
+        'hod_flag' : hod_flag,
+        'account_flag' : account_flag
     }
 
     return context
@@ -1395,7 +1408,7 @@ def deleteSenator(request, pk):
 #                information that the particular student is a senator
 
 #     """
-    print(request.POST)
+    
 #     if request.POST:
 #         s = get_object_or_404(Designation, name="Senator")
 #         student = get_object_or_404(ExtraInfo, id=request.POST.getlist("senate_id")[0])
@@ -1739,6 +1752,7 @@ def add_advanced_profile(request):
 #     return HttpResponseRedirect('/academic-procedures/')
 
 
+
 def add_optional(request):
 #     """
 #     acadmic admin to update the additional courses
@@ -1751,7 +1765,7 @@ def add_optional(request):
 #         course - Course details which is selected by the academic admin.
 #     """
     if request.method == "POST":
-        print(request.POST)
+        # print(request.POST)
 #         choices = request.POST.getlist('choice')
 #         for i in choices:
 #             course = Course.objects.all().filter(course_id=i).first()
