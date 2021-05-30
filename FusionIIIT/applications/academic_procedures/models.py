@@ -34,6 +34,7 @@ class Constants:
     )
 
     PaymentMode = (
+        ('Online Payment','Online Payment'),
         ('NEFT','NEFT'),
         ('RTGS','RTGS'),
         ('Bank Challan','Bank Challan')
