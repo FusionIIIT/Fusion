@@ -47,12 +47,12 @@ student_status = None
 hod_status = None
 account_status = None
 
-assistantship_status = Assistantship_status.objects.all()
+# assistantship_status = Assistantship_status.objects.all()
 
-for obj in assistantship_status:
-    student_status = obj.student_status
-    hod_status = obj.hod_status
-    account_status = obj.account_status
+# for obj in assistantship_status:
+#     student_status = obj.student_status
+#     hod_status = obj.hod_status
+#     account_status = obj.account_status
 
 
 @login_required(login_url='/accounts/login')
