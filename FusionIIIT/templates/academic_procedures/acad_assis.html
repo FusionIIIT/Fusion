@@ -1,0 +1,769 @@
+{% load static %}
+<style>
+.acad_assis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.thesis:hover {
+  background-color: #ddd; 
+}
+.pthesis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.pthesis:hover {
+  background-color: #ddd; 
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+table{
+    border: 1px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.td6
+{
+    padding:0 15px;
+    
+}
+.td7
+{
+    padding:0 5px;
+}
+.td1{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td2{
+    width: 30%;
+        padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td3{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td4{
+    width: 30%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td5{
+    width: 2%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+.previous:hover {
+      background-color: #ddd;
+  color: black;
+}
+.bn button{
+    float: right;
+}
+.approve{
+    background-color: #55DB86;
+    color: white;
+}
+.approve:hover{
+    background-color: #2CC764;
+    color:white;
+}
+.disapprove{
+    background-color: #F54D69;
+    color: white;
+}
+.disapprove:hover{
+    background-color: #61c542;
+    color:white;
+}
+.gfg {
+    border-collapse:separate;
+    border-spacing:0 20px;
+}
+
+</style>
+
+
+
+
+<div class="ui pointing  menu"  style="width: 100%;">
+    <a class="active item" data-tab="pending_acad_assis"  onclick="m1()" style="width: 33%;">
+       <p style="margin-left: 20%;">Pending</p>
+    </a>
+
+    <a class="item" data-tab="acad_approve_assis" onclick="m()" style="width: 33%;">
+        <p style="margin-left: 40%;">Approved</p>  
+    </a>
+    <a class="item" data-tab="operation_pallet" onclick="m2()" style="width: 34%;">
+        <p style="margin-left: 40%;">Operation Pallet</p>  
+    </a>
+
+</div>
+
+
+
+<!--  pending requests -->
+<div class="ui active tab segment" data-tab="pending_acad_assis" id="pa1" style="width: 100%;">
+    <div  class="ui vertical segment" >
+        {% if assistant_list %}
+        <form class="form_class" id="acad_assis_form">
+            
+            <table class="ui celled table"
+            style="padding-left: 2.5%;
+            padding-right: 2.5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            width: 100%" id="as">
+            
+               
+                <thead>
+                
+                    <tr style="border-radius: 3px;">
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Name</th>
+                        <th rowspan="2">Roll No.</th>
+                        <th rowspan="2">Programme</th>
+                        <th rowspan="2">Month</th>
+                        <th rowspan="2">Year</th>
+                        <th rowspan="2"><center>Stipend</center></th>
+                        <th rowspan="2">Approval</th>
+                        <th rowspan="2">Bank Account No.</th>
+
+                    </tr>
+                
+                </thead>
+                
+            
+        
+                <tbody>
+                
+                    {% for obj in assistant_list reversed %}
+                        {% if obj.acad_approval == False  %} 
+                                <tr id="{{forloop.counter}}as">
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}</td>
+                                    <td>{{obj.student.id.user.username}}</td>
+                                    <td>{{obj.student.programme}}</td>
+                                    <td>{{obj.month}}</td>
+                                    <td>{{obj.year}}</td>
+                                    <td><center><input type="number" id="stipend{{obj.student.id.user.username}}" style="width: 70%;" /></center></td>
+                                    <td><center><input type="checkbox" id="{{forloop.counter}}check" /></center></td>
+                                    <td>{{obj.bank_account}}</td>
+                                </tr>
+                                
+                        {%endif%}
+                    {% endfor %} 
+                       
+                </tbody>            
+            </table> 
+           
+            <div class="two fields">
+                <button class="ui primary button left floated " type="button" id="disapprove" style=" margin-left: 1%;padding: 10px 10px;">
+                    Disapprove all
+                </button>
+                <button class="ui primary button left floated " type="button" id="approve" style=" margin-left: 1%;padding: 10px 10px;">
+                    Approve all
+                </button>
+            </div>
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" id="su"  style="padding: 10px 10px; margin-right: 13%;" >
+                    Submit
+                </button>
+            </div> 
+        
+        
+        </form>
+        {% else %}
+            <h3>no requests</h3>
+        {%endif%}
+    </div>
+
+</div>
+
+
+<!--  approved requests  -->
+<div class="ui tab segment " data-tab="acad_approve_assis" id="paa2" style="width: 100%;" >
+    {% if assistant_approve_list %}
+        {% for obj in assistant_approve_list reversed %}
+            {% if obj.acad_approval %}
+                <div class="app" hidden>{{forloop.counter}}</div> 
+                <div class="pthesis acad_app" id="acadassisapproved{{forloop.counter}}">{{obj.student.id.user.first_name}}&ensp;{{obj.student.id.user.last_name}}&emsp;&emsp;&emsp;&emsp;{{obj.student.id.user.username}}&emsp;&emsp;{{obj.month}},{{obj.year}}<i hidden>{{obj.student.batch}}</i></div>
+                <div class="ui modal acadassisapproved{{forloop.counter}}">
+                    <i class="close icon"></i>
+                    <div class="image content" hidden>
+                        <table >
+                            <tr>
+                                <td class="td1">Roll No.</td>
+                                <td class="td5">:</td>
+                                <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                                <td class="td3">Programme</td>
+                                <td class="td5">:</td>
+                                <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Month</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.month}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Year</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.year}}</td>
+                            </tr>                        
+                            <tr>
+                                <td class="td1">Bank Account</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.bank_account}}</td>
+                            </tr>
+                            <tr>
+                                <td class="td1">Stipend</td>
+                                <td class="td5">:</td>
+                                <td colspan="4" style="font-weight: bold;">{{obj.stipend}}</td>
+                            </tr>
+
+                        </table> 
+                    </div>
+                </div>
+                <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+                    <script type="text/javascript">
+                        $(function () {
+                        $("#acadassisapproved{{forloop.counter}}").click(function () {
+                            $(".acadassisapproved{{forloop.counter}}").modal('show');
+                        });
+                        $(".acadassisapproved{{forloop.counter}}").modal({
+                            closable: true
+                        });
+                        });
+                    </script>
+              
+           {% endif %}
+
+        {% endfor %}
+    {%else%}
+    <h3>nothing here</h3>
+    {% endif %}
+    <div class="ui vertical segment">
+        <br>
+        <button class="ui primary button left floated" type="submit" id="filter"  style="padding: 10px 10px; margin-right: 13%;" >
+            Filter
+        </button>
+        <br>
+    </div>
+    <div class="ui vertical segment" style="width:40%" id="SB" hidden>
+        <h3><strong><i style="background-color: #61c542;width: 25px;border: 1px solid green;padding: 5px; margin: 2px;border-radius: 8px;">Search By</i></strong></h3>
+        <table>
+            <tr>
+                <td class="td7" style="width: fit-content;"><strong><u>RollNo.</u></strong></td>
+                <td class="td6"><input type="text" id="rollno" value="" size="8"/></td>
+                <td class="td7"><strong><u>Month</u></strong></td>
+                <td class="td6"><input type="text" id="mon" value="" size="3"/></td>
+                <td class="td7"><strong><u>Year</u></strong></td>
+                <td class="td6"><input type="text" id="yea" value="" size="7"/></td>
+                <td class="td7"><strong><u>Batch</u></strong></td>
+                <td class="td6"><input type="text" id="batch" value="" size="7"/></td>
+                <td style="margin: 20px 0;">
+                    <button class="ui primary button " type="button" id="search" onclick="search()" style=" margin-left: 1%;padding: 10px 10px;">
+                        Search
+                    </button> 
+                </td>
+                <td style="margin: 20px 0;">
+                    <button class="ui primary button " type="button" id="back" onclick="back()" style=" margin-left: 1%;padding: 10px 10px; display: none;" hidden>
+                        Back
+                    </button> 
+                </td>
+            </tr>
+        </table> 
+        
+    </div>
+</div>
+ 
+<div class="ui tab segment" data-tab="operation_pallet" id="op" style="width: 100%;">
+    <style>
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+
+        /* toggle in label designing */
+        .toggle {
+            position : relative ;
+            display : inline-block;
+            width : 100px;
+            height : 52px;
+            background-color: red;
+            border-radius: 30px;
+            border: 2px solid gray;
+        }
+                
+        /* After slide changes */
+        .toggle:after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: gray;
+            top: 1px; 
+            left: 1px;
+            transition:  all 0.5s;
+        }
+                
+        /* Toggle text */
+        p {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+        }
+                
+        /* Checkbox cheked effect */
+        .checkbox:checked + .toggle::after {
+            left : 49px; 
+        }
+                
+        /* Checkbox cheked toggle label bg color */
+        .checkbox:checked + .toggle {
+            background-color: green;
+        }
+                
+        /* Checkbox vanished */
+        .checkbox { 
+            display : none;
+        }
+    
+        
+        .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+        
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+        
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+        
+        input:focus + .slider {
+          box-shadow: 0 0 1px #2196F3;
+        }
+        
+        input:checked + .slider:before {
+          -webkit-transform: translateX(26px);
+          -ms-transform: translateX(26px);
+          transform: translateX(26px);
+        }
+        
+        /* Rounded sliders */
+        .slider.round {
+          border-radius: 34px;
+        }
+        
+        .slider.round:before {
+          border-radius: 50%;
+        }
+    </style>
+        
+        <table class="gfg">
+            <tr>
+                <td><h2><strong>ASSISTANTSHIP FORM STATUS FOR STUDENT: </strong></h2></td>
+                <td>
+                    <label class="switch" style="margin-right: 80px;">
+                        {% if assistant_flag %}
+                        <input type="checkbox" id="live" checked />
+                        {% else %}
+                        <input type="checkbox" id="live" unchecked />
+                        {% endif %}
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+                {% if assistant_flag %}
+                <td id="lstatus">ONLINE</td>
+                {% else %}
+                <td id="lstatus">OFFLINE</td>
+                {% endif %}
+            </tr>
+
+            <tr>
+                <td style="border-spacing:0 90px;"><h2><strong>ASSISTANTSHIP FORM STATUS FOR HOD's:</strong></h2></td>
+                <td>
+                    <label class="switch" style="margin-right: 80px;">
+                        {% if hod_flag %}
+                        <input type="checkbox" id="hodlive" checked />
+                        {%else%}
+                        <input type="checkbox" id="hodlive" unchecked />
+                        {%endif%}
+                        <span class="slider round"></span>
+                    </label>
+                    {% if hod_flag %}
+                    <td id="hodstatus">ONLINE</td>
+                    {% else %}
+                    <td id="hodstatus">OFFLINE</td>
+                    {%endif%}
+                </td>
+            </tr>
+            <tr>
+                <td style="border-spacing:0 90px;"><h2><strong>ASSISTANTSHIP FORM STATUS FOR ACCOUNT DEPARTMENT:</strong></h2></td>
+                <td>
+                    <label class="switch" style="margin-right: 80px;">
+                        {% if account_flag %}
+                        <input type="checkbox" id="acclive" checked />
+                        {%else%}
+                        <input type="checkbox" id="acclive" unchecked />
+                        {%endif%}
+                        <span class="slider round"></span>
+                    </label>
+                    {% if account_flag %}
+                    <td id="accstatus">ONLINE</td>
+                    {% else %}
+                    <td id="accstatus">OFFLINE</td>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        
+        
+        
+
+</div>
+
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+</div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+function m(){
+    
+    document.getElementById('pa1').style="display:none";
+    document.getElementById('paa2').style="display:block";
+    document.getElementById('op').style="dispaly:none";
+}
+function m1(){
+    
+    document.getElementById('pa1').style="display:block";
+    document.getElementById('paa2').style="display:none";
+    document.getElementById('op').style="dispaly:none";
+}
+
+function m2(){
+    
+    document.getElementById('pa1').style="display:none";
+    document.getElementById('paa2').style="display:none";
+    document.getElementById('op').style="dispaly:block";
+}
+
+function search()
+{
+    var rollno = document.getElementById("rollno").value;
+    var month = document.getElementById("mon").value;
+    var year = document.getElementById("yea").value;
+    var batch = document.getElementById("batch").value; 
+    var len = document.getElementsByClassName("app").length;
+    
+    $(".acad_app").hide();
+    $("#back").show();
+    for(var i=1 ; i<=len; i++)
+    {
+        var ids = "acadassisapproved"+i;
+        var name = document.getElementById(ids).innerText;
+        if(name.search(rollno) !=-1 && name.search(month)!=-1 && name.search(year)!=-1 && name.search(batch)!=-1)
+        {
+            $("#"+ids).show();
+        }
+    }
+
+}
+
+function back()
+{
+    $("#back").hide();
+    $(".acad_app").show();
+}
+var count=0;
+$("#filter").click(function(){
+    var btn = document.getElementById("filter");
+    count++;
+    console.log(count);
+    if(count%2==1)
+        $("#SB").show();
+    else
+        $("#SB").hide();
+            
+        
+});
+$("#hodlive").click(function(){
+    var shod;
+    if($("#hodlive").prop('checked'))
+    {
+        document.getElementById("hodstatus").innerHTML="ONLINE";
+        shod="hodtrue";
+    }
+    else 
+    {
+        document.getElementById("hodstatus").innerHTML="OFFLINE";
+        shod="hodfalse";
+    }
+
+    $.ajax({
+        type:"POST" ,
+        url : "/academic-procedures/assis_stat/",
+        data:{
+            'flag' : shod,
+            csrfmiddlewaretoken : '{{ csrf_token }}'
+        },
+        success: function( data )
+        {
+        }
+    });
+});
+$("#live").click(function(){
+    var sstud;
+
+
+    if($("#live").prop('checked'))
+    {
+        document.getElementById("lstatus").innerHTML="ONLINE";
+        sstud="studenttrue";
+    }
+    else 
+    {
+        document.getElementById("lstatus").innerHTML="OFFLINE";
+        sstud="studentfalse";
+
+    }
+    $.ajax({
+        type:"POST" ,
+        url : "/academic-procedures/assis_stat/",
+        data:{
+            'flag' : sstud,
+            csrfmiddlewaretoken : '{{ csrf_token }}'
+        },
+        success: function( data )
+        {
+        }
+    });
+});
+
+$("#acclive").click(function(){
+    var sacc;
+    if($("#acclive").prop('checked'))
+    {
+        document.getElementById("accstatus").innerHTML="ONLINE";
+        sacc="accounttrue";
+    }
+    else 
+    {
+        document.getElementById("accstatus").innerHTML="OFFLINE";
+        sacc="accountfalse";
+    }
+
+    $.ajax({
+        type:"POST" ,
+        url : "/academic-procedures/assis_stat/",
+        data:{
+            'flag' : sacc,
+            csrfmiddlewaretoken : '{{ csrf_token }}'
+        },
+        success: function( data )
+        {
+        }
+    });
+});
+$(function() {
+    
+    $("#disapprove").click(function(){
+        var length = $("#as tr").length;
+        for(var i=1;i<length;i++)
+        {
+            
+            id = i + "check";
+            if(document.getElementById(id).checked == true)
+            {  
+                document.getElementById(id).checked=false;
+            }
+
+        }
+        
+    });
+    $("#approve").click(function(){
+        var length = $("#as tr").length;
+        for(var i=1;i<length;i++)
+        {
+            
+            id = i + "check";
+            if(document.getElementById(id).checked == false)
+            {  
+                document.getElementById(id).checked=true;
+            }
+
+        }
+        
+    });
+
+
+    $("#acad_assis_form").submit(function(event) {
+
+    event.preventDefault();
+    var flag=-1;
+    var dic = {};
+    var len = $("#as tr").length;
+    var message="";
+    for(var i=1;i<len;i++)
+    {
+        id=i+"check";
+        if(document.getElementById(id).checked == true)
+        {
+            var key=document.getElementById("as").rows[i].cells[2].innerHTML;
+            var val="stipend"+key;
+            var element=document.getElementById(val).value;
+            console.log(element);
+            
+            if(element != '' )
+            {  
+                dic[key]=element;
+                flag=0;
+            }
+            else
+            {
+                message +="<p><b>Please fill stipend value for " +key + "student</b></p>";
+                flag=1;
+                break;
+            }
+            
+
+        }
+    }
+    if(flag==-1)
+    {
+        $("#errorContent").html("No Data!!!");
+        $(".formErrors").modal("show");
+    }
+    else if (flag==1)
+    {
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show");
+    }
+    else if(flag==0)
+    {
+
+        var dict = JSON.stringify(dic);
+
+        $.ajax({
+        type:"POST",
+        url: "/academic-procedures/update_acad_assistantship/",
+        data:{
+            dict : dict,
+            length : length,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function( data ) 
+        {
+            $(".succ").modal("show");
+            window.location = "/aims/";
+        }
+        });
+    }
+    
+  });
+
+});
+
+
+</script> 

@@ -14,9 +14,18 @@ EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
+        'NAME': 'fusionlab1',
         'HOST': 'localhost',
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
 }

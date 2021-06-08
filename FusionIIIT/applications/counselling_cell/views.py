@@ -9,6 +9,7 @@ import django. utils. timezone as timezone
 from collections import defaultdict
 import openpyxl
 
+
 from .models import (
     CounsellingFAQ,
     CounsellingIssue,
@@ -16,6 +17,7 @@ from .models import (
     StudentCounsellingTeam,
     StudentCounsellingInfo,
     CounsellingMeeting
+
 )
 from .handlers import (
     add_counselling_faq,
@@ -30,7 +32,6 @@ def counselling_cell(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     user_role = extra_info.user_type
-    # print(user_role)
     meetings = CounsellingMeeting.objects.all()
     year = timezone.now().year
     third_year_students = Student.objects.filter(batch=year-3)

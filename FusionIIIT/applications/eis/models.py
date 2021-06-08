@@ -1,11 +1,12 @@
+  
 import datetime
-
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
-
+from applications.globals.models import ExtraInfo
 
 class emp_visits(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.CharField(max_length=20)
     v_type = models.IntegerField(default = 1)
     country = models.CharField(max_length=500, default=" ")
@@ -24,12 +25,16 @@ class emp_visits(models.Model):
 
 
 class emp_techtransfer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     details = models.CharField(max_length=500, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
 
 
 class emp_session_chair(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     name = models.CharField(max_length=500, default=" ")
     event = models.TextField(max_length=2500, default=" ")
@@ -44,12 +49,14 @@ class emp_session_chair(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    remarks = models.CharField(default = " ", max_length=1000)
 
     def __str__(self):
         return 'PF No.: {}   Name: {}'.format(self.pf_no,self.name)
 
 
 class emp_research_projects(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     ptype = models.CharField(max_length=100, default="Research")
     pi = models.CharField(max_length=1000, default=" ")
@@ -74,6 +81,7 @@ class emp_research_projects(models.Model):
 
 
 class emp_research_papers(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     R_TYPE_CHOICES = (
         ('Journal', 'Journal'),
@@ -94,7 +102,7 @@ class emp_research_papers(models.Model):
     )
     is_sci = models.CharField(max_length=6, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     isbn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.DateField(null=True, blank=True)
+    doi = models.CharField(max_length=1000,null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)
@@ -124,6 +132,7 @@ class emp_research_papers(models.Model):
 
 
 class emp_published_books(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     PTYPE_TYPE_CHOICES = (
         ('Book', 'Book'),
@@ -141,12 +150,14 @@ class emp_published_books(models.Model):
     pyear = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     authors = models.CharField(max_length=250, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    publication_date = models.DateField(null=True,blank=True)
+    
     def __str__(self):
         return 'PF No.: {}   Type: {}  Title: {}'.format(self.pf_no,self.p_type, self.title)
 
 
 class emp_patents(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     p_no = models.CharField(max_length=150)
     title = models.CharField(max_length=1500)
@@ -167,12 +178,14 @@ class emp_patents(models.Model):
         MONTH_CHOICES.append((r, r))
     a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
     def __str__(self):
         return 'PF No.: {}   Status: {}  Title: {}'.format(self.pf_no,self.status, self.title)
 
 
 class emp_mtechphd_thesis(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     degree_type = models.IntegerField(default=1)
     title = models.CharField(max_length=250)
@@ -189,12 +202,23 @@ class emp_mtechphd_thesis(models.Model):
         MONTH_CHOICES.append((r, r))
     a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
+    semester=models.IntegerField(default = 1, blank=True, null=True)
+    STATUS_TYPE_CHOICES = (
+        ('Awarded', 'Awarded'),
+        ('Submitted', 'Submitted'),
+        ('Ongoing', 'Ongoing'),
+        ('Completed', 'Completed')
+    )
+    status = models.CharField(max_length = 10, choices = STATUS_TYPE_CHOICES, null=True, blank=True)
 
     def __str__(self):
         return 'PF No.: {}   Supervisor: {}  Title: {}'.format(self.pf_no,self.supervisors, self.title)
 
 
 class emp_keynote_address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     KEYNOTE_TYPE_CHOICES = (
         ('Keynote', 'Keynote'),
@@ -223,6 +247,7 @@ class emp_keynote_address(models.Model):
 
 
 class emp_expert_lectures(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     LECTURE_TYPE_CHOICES = (
         ('Expert Lecture', 'Expert Lecture'),
@@ -247,6 +272,7 @@ class emp_expert_lectures(models.Model):
 
 
 class emp_event_organized(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     TYPE_CHOICES = (
         ('Training Program', 'Training Program'),
@@ -274,6 +300,7 @@ class emp_event_organized(models.Model):
 
 
 class emp_consultancy_projects(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     consultants = models.CharField(max_length=150)
     title = models.CharField(max_length=1000)
@@ -283,12 +310,19 @@ class emp_consultancy_projects(models.Model):
     end_date = models.DateField(null=True, blank=True)
     duration = models.CharField(max_length=500, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
-
+    STATUS_TYPE_CHOICES = (
+        ('Completed', 'Completed'),
+        ('Submitted', 'Submitted'),
+        ('Ongoing', 'Ongoing')
+    )
+    status = models.CharField(default = 'Ongoing', max_length = 10, choices = STATUS_TYPE_CHOICES, null=True, blank=True)
+    remarks = models.CharField(max_length=1000, null=True, blank=True)
     def __str__(self):
         return 'PF No.: {}  Consultants: {}'.format(self.pf_no, self.consultants)
 
 
 class emp_confrence_organised(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
     pf_no = models.IntegerField()
     name = models.CharField(max_length=500)
     venue = models.CharField(max_length=500)
@@ -318,7 +352,8 @@ class emp_confrence_organised(models.Model):
 
 
 class emp_achievement(models.Model):
-    pf_no = models.IntegerField(default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
+    pf_no = models.IntegerField()
     A_TYPE_CHOICES = (
         ('Award', 'Award'),
         ('Honour', 'Honour'),
@@ -340,15 +375,18 @@ class emp_achievement(models.Model):
         YEAR_CHOICES.append((r, r))
     a_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     date_entry = models.DateField(default=datetime.datetime.now)
-
+    achievment_date = models.DateField(null=True, blank=True)
+    
     def __str__(self):
         return 'PF No.: {} {} : {}'.format(self.pf_no, self.a_type,self.details)
 
     def get_absolute_url(self):
         return reverse('eis:profile')
 
+
 class faculty_about(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    # id= models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     about = models.TextField(max_length=1000)
     doj = models.DateField(default=datetime.datetime.now)
     education = models.TextField(max_length=500)

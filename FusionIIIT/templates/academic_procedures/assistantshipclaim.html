@@ -1,0 +1,313 @@
+{% block applyform %}
+{% load static %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="assistantship">
+            Assistantship Claim Form
+        </a>
+        <a class="item" data-tab="status">
+           Status
+        </a>
+
+    </div>
+    
+    <div class="ui active tab" data-tab="assistantship">
+        <div class="ui vertical segment">
+            {% if assistantship_flag == "True" %}
+            <form method="post" id="new_assistantshipclaim" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="two fields">
+                        <div class="three wide field">
+                            <label>Year</label>
+                            <div class="ui selection dropdown">
+                                <input type="hidden" name="year" id="ye" required/>
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select</div>
+                                <div class="menu" required>
+                                    <div class="item" id = "1" ></div>
+                                    <div class="item" id = "2" ></div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="three wide field" style="margin-left:300px">
+                            <label>Month</label>
+                            <div class="ui selection dropdown" >
+                                <input type="hidden" name="month" id="mo" required>
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select</div>
+                                <div class="menu">
+                                        <div class="item" data-value="January">January</div>
+                                        <div class="item" data-value="Febuary">Febuary</div>
+                                        <div class="item" data-value="March">March</div>
+                                        <div class="item" data-value="April">April</div>
+                                        <div class="item" data-value="May">May</div>
+                                        <div class="item" data-value="June">June</div>
+                                        <div class="item" data-value="July">July</div>
+                                        <div class="item" data-value="August">August</div>
+                                        <div class="item" data-value="September">September</div>
+                                        <div class="item" data-value="October">October</div>
+                                        <div class="item" data-value="November">November</div>
+                                        <div class="item" data-value="December">December</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+
+                    <div class="one fields">
+                        <div class="eight wide field">
+                            
+                            <label for="bank">Bank Account Number</label>
+                            <input type="text" name="bank_account" id="bank" oninvalid="InvalidMsg(this);" oninput="InvalidMsg(this)" maxlength="11"  />
+                        </div>
+                    </div>
+                    
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Thesis Suervisor</label>
+                            <input list="dropdown-menu3" name="thesis_supervisor" id="faculty_Search" type="text" />
+                                <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                        </div>
+
+                        <div class="eight wide field" style="margin-left: 185px">
+                            <label>TA Supervisor</label>
+                            <input list="dropdown-menu3" name=" ta_supervisor" id="faculty_Search" type="text"/>
+                                <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                        </div>
+
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Applicability</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="applicability" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                    <div class="item" data-value="GATE">GATE</div>
+                                    <div class="item" data-value="CEED">CEED</div>
+                                    <div class="item" data-value="NET">NET</div>
+                            </div>
+                        </div>
+                    </div> 
+
+                </div>
+
+    
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" onclick="validateAssistantship('new_assistantshipclaim',event)" >
+                            Submit
+                    </button>
+                </div>            
+                
+            </form>
+            {%else%}
+            <h3>Not Available</h3>
+            {%endif%}
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    <div class="ui tab" data-tab="status" >
+        <table class="ui celled table"
+        style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                width: 100%" id="stat">
+            <thead>
+                <tr style="border-radius: 3px;">
+                    <th rowspan="2">Month</th>
+                    <th rowspan="2">Year</th>
+                    <th rowspan="2">TA Supervisor</th>
+                    <th rowspan="2">Thesis Supervisor</th>
+                    <th rowspan="2">Academic department</th>
+                    <th rowspan="2">Account department</th>
+            
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in assistantship_list reversed%}
+             <tr id="statusid{{forloop.counter}}">                
+                <td>{{obj.month}}</td>
+                <td>{{ obj.year }}</td>
+                <td>
+                    {% if obj.ta_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.ta_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.thesis_supervisor_remark == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.thesis_supervisor_remark == False %}
+                        <center><i class="ui orange hourglass half icon" ></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.ta_supervisor_remark == False or obj.thesis_supervisor_remark == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.acad_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.acad_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if obj.acad_approval == False %}
+                        <center><strong>Not forwaded</strong></center>
+                    {% elif obj.account_approval == True %}
+                        <center><i class="ui green checkmark icon " ></i></center>
+                    {% elif obj.account_approval == False %}
+                        <center><i class="ui orange hourglass half icon"></i></center>
+                    {% endif %}
+                </td>
+             </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    
+    </div>
+    <div hidden>
+        <center><i class="ui orange hourglass half icon" id="hg"></i>
+
+    </div>
+    
+    
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    
+    //setting the year drop down menu
+    var d =new Date();
+        document.getElementById("1").innerHTML = d.getFullYear()-1;
+        var a = d.getFullYear()-1;
+        document.getElementById("1").value=a;
+
+        document.getElementById("2").innerHTML = d.getFullYear();
+        var b = d.getFullYear() - 1;
+        document.getElementById("2").value=b;
+
+
+    $('#faculty_Search').on('input', function(){
+            current_value = $('#faculty_Search').val();
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/academic-procedures/faculty_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu3').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i]);
+                        $('#dropdown-menu3').append('<option value="'+response[i]+'">'+response[i]+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        });
+
+    
+    function ValidateExtension() {
+        var allowedFiles = [".doc", ".docx", ".pdf"];
+        var fileUpload = document.getElementById("fileUpload");
+        var lblError = document.getElementById("lblError");
+        var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+        if (!regex.test(fileUpload.value.toLowerCase())) {
+            lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+            return false;
+        }
+        lblError.innerHTML = "";
+        return true;
+    }
+  
+
+    function validateAssistantship(form,event){
+            event.preventDefault();
+            var form = document.getElementById(form);
+            var i ;
+            var message = "" ;
+            for(i=0 ; i<form.length ; i++){
+                if(form.elements[i].name != "" && form.elements[i].value==="")
+                {
+                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+                }
+                else if((form.elements[i].name === "bank_account" && form.elements[i].value.length<11))//|| alphanumeric(form.elements[i])
+                {
+                    message = message +"<p><b>Please fill the valid " + form.elements[i].name + " field.</b></p>";
+                }
+            }
+            var ret = 0 ;
+            if (message != ""){
+                ret = 1 ;
+                $("#errorContent").html(message);
+                $(".formErrors").modal("show") ;
+            }
+
+            if(ret == 0)
+            {
+                var formData = new FormData(form);
+                console.log(formData);
+                
+                $.ajax({
+                    url: '/academic-procedures/ACF/',
+                    data: formData,
+                    enctype: "multipart/form-data",
+                    type: 'POST',
+                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                    processData: false, // NEEDED, DON'T OMIT THIS
+                    // ... Other options like success and etc
+                    success: function(response) {
+                        response = JSON.parse(response);
+                        console.log(response);
+                        console.log("here") ;
+                        // $("#modalHeader").html(response.status);
+                        if (response.status == "success"){
+                            $(".succ").modal("show");
+                            var len = document.getElementById("stat").rows.length;
+                            var table = document.getElementById("stat").getElementsByTagName('tbody')[0];
+                            var row = table.insertRow(0);
+                            row.insertCell().innerHTML=document.getElementById("mo").value;
+                            row.insertCell().innerHTML=document.getElementById("ye").value;
+                            row.insertCell().innerHTML="<center><strong>Pending</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Pending</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Not forwaded</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Not forwaded</strong></center>";
+                        }
+                        else
+                        {
+                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
+                            $(".formErrors").modal('show');
+                        }
+                        form.reset();
+                    }
+                });
+            }
+            
+               
+
+        
+        }
+    
+    
+</script> 
+
+{% endblock %}

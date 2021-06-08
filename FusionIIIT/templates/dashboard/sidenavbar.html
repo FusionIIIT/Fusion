@@ -1,3 +1,4 @@
+
 {% load static %}
 
 {% block sidenav %}
@@ -46,10 +47,16 @@
 			        <h4> Academics Module </h4>
 			    </a>
 			    {% endif %}
+                <a class="item" href="/programme_curriculum">
+                    <h4> Programme & Curriculum Module </h4>
+                </a>
                 <a class = "item" href="/gymkhana">
                     <h4> Gymkhana Module </h4>
                 </a>
-                <a class = "item" href="/establishment">
+				<a class="item" href="/iwdModuleV2">
+                                <h4>IWD Module</h4>
+                            </a>
+                <a class = "item" href="/hr2/administrativeProfile/">
                     <h4> Establishment Module </h4>
                 </a>
                 <a class = "item" href="/library/library">
@@ -71,20 +78,18 @@
                             <a class="item" href="{% url 'feeds:feeds' %}">
                                 <h4>Feeds Module</h4>
                             </a>
+                            
 
                             <a class="item" href="{% url 'healthcenter:healthcenter' %}">
                                 <h4>Health Center Module</h4>
-                            </a>
-                            <a class="item" href="/counselling">
-                                <h4>Counselling cell Module</h4>
                             </a>
 
                             <a class="item" href="{% url 'leave:leave' %}">
                                 <h4>Leave Module</h4>
                             </a>
 
-                            <a class="item" href="{% url 'feeds:feeds' %}">
-                                <h4>Feeds Module</h4>
+                             <a class="item" href="/counselling">
+                                <h4>Counselling cell Module</h4>
                             </a>
 
                             <a class="item" href="{% url 'placement:placement' %}">
@@ -93,6 +98,10 @@
 
                             <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
                                 <h4>Visitor Hostel Module</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'hostelmanagement:hostel_view' %}">
+                                <h4>Hostel Module</h4>
                             </a>
 			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
@@ -167,7 +176,6 @@
     <i class="large inverted briefcase icon right floated"></i>
 </a>
             {% comment %}The email Item ends here!{% endcomment %}
-
 
 
 

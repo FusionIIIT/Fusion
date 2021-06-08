@@ -17,7 +17,7 @@ from applications.scholarships.models import Mcm
 from applications.filetracking.models import (File, Tracking)
 from applications.eis.models import emp_research_projects, emp_patents, emp_consultancy_projects
 
-from notification.views import office_dean_PnD_notif
+from notification.views import office_dean_PnD_notif,office_module_DeanRSPC_notif
 
 from .forms import *
 from .models import *
@@ -569,6 +569,8 @@ def project_register(request):
     """
 
     """Project Fields added"""
+    current = datetime.datetime.now()
+    currentDate=current.strftime("%Y-%m-%d")
     user = request.user
     extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     project_title = request.POST.get('project_title')
@@ -624,6 +626,11 @@ def project_register(request):
     if fund_recieved_date is not None and start_date < fund_recieved_date:
         messages.error(request, 'Error in Project Registration form: Project cannot be started before receiving fund')
         return HttpResponseRedirect('/profile/')
+   
+    if currentDate > start_date :
+        messages.error(request, 'Error in Project Registration form: You cannot start project without applying')
+        return HttpResponseRedirect('/profile/')
+    
 
     """Save the Details to Project_Registration Table"""
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
@@ -693,6 +700,8 @@ def project_registration_permission(request):
                     emp_projects.save()
                 obj.DRSPC_response = "Approve"
                 obj.save()
+                # notification for dean RSPC
+                office_module_DeanRSPC_notif(request.user, obj.PI_id.user,obj.DRSPC_response)
 
     elif "forward" in request.POST:
         id_list = request.POST.getlist('id[]')
@@ -711,6 +720,8 @@ def project_registration_permission(request):
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = "Disapprove"
                 obj.save()
+                # notification for dean RSPC
+                office_module_DeanRSPC_notif(request.user, obj.PI_id.user,obj.DRSPC_response)
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 
