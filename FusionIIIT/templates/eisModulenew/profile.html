@@ -294,10 +294,10 @@ Profile
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             {% if request.user == user %}
-            <!-- <center>
+            <center>
                 <div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">
                     Generate Report <i class="dropdown icon"></i></div>
-            </center> -->
+            </center>
             <div class="row" style="display: none;" id="report_tab">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}

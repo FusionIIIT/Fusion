@@ -374,9 +374,9 @@
             </thead>
 
             <tbody>
-                {% for f_visit in foreign_visits %}
+                {% for f_visit in fvisits %}
                     <tr>
-                        <td>{{ forloop.counter|add:sr10 }}</td>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                             <i class="{{ f_visit.country|lower }} flag"></i>
                             {{ f_visit.country }}
@@ -389,13 +389,13 @@
                                 <button type="button"
                                    id="editButton10"
                                    class="ui button left floated" onclick="editforeignvisit(
-                                    '{{ forloop.counter|add:sr10 }}','{{f_visit.pk}}','{{f_visit.country}}',
+                                    '{{ forloop.counter}}','{{f_visit.pk}}','{{f_visit.country}}',
                                     '{{f_visit.place}}', '{{f_visit.purpose}}',
                                     '{{f_visit.start_date}}', '{{f_visit.end_date}}')"
                                    >
                                    <i class="ui black edit icon"></i>
                                 </button>
-                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter|add:sr10 10%}"
+                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter 10%}"
                                    id="editButton"
                                    class="ui blue button left floated" onclick=""
                                    value = "Delete">
@@ -546,9 +546,9 @@
             </thead>
 
             <tbody>
-                {% for f_visit in indian_visits %}
+                {% for f_visit in ivisits %}
                     <tr>
-                        <td>{{ forloop.counter|add:sr11 }}</td>
+                        <td>{{ forloop.counter}}</td>
                         <td>
                             <i class="in flag"></i> IN
                         </td>
@@ -560,13 +560,13 @@
                                 <button type="button"
                                    id="editButton11"
                                    class="ui button left floated" onclick="editindianvisit(
-                                    '{{ forloop.counter|add:sr11 }}','{{f_visit.pk}}','{{f_visit.country}}',
+                                    '{{ forloop.counter}}','{{f_visit.pk}}','{{f_visit.country}}',
                                     '{{f_visit.place}}', '{{f_visit.purpose}}',
                                     '{{f_visit.start_date}}', '{{f_visit.end_date}}')"
                                    >
                                    <i class="ui black edit icon"></i>
                                 </button>
-                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter|add:sr11 11%}"
+                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter 11%}"
                                    id="editButton"
                                    class="ui blue button left floated" onclick=""
                                    value = "Delete">

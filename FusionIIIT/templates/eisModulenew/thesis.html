@@ -125,15 +125,15 @@
             </thead>
 
             <tbody>
-            {% for mtech in thesis %}
+            {% for mtech in mtechs %}
                 <tr>
-                    <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ mtech.id }}</div> {{ forloop.counter|add:sr8 }}.</td>
+                    <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ mtech.id }}</div> {{ forloop.counter}}.</td>
                     <td id="s{{ forloop.counter }}A"><b>Name: </b>{{ mtech.s_name }}<br/><b>Roll No.: </b>{{ mtech.rollno }}</td>
                     <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
                     <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}</td>
                     <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
                      {% if request.user == user %}
-                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id sr8 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
+                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id forloop.counter 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -277,7 +277,7 @@
             </thead>
 
             <tbody>
-            {% for phd in phdthesis %}
+            {% for phd in phds %}
                 <tr>
                     <td id="phd{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div>{{ forloop.counter }}.</td>
                 <td id="phd{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
@@ -285,7 +285,7 @@
                 <td id="phd{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
                 <td id="phd{{ forloop.counter }}D">{{ phd.supervisors }}</td>
                  {% if request.user == user %}
-                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td>
+                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id forloop.counter 2%}"><i id="bt" class="red delete icon"></i></a> </td>
                  {% endif %}
 
 
