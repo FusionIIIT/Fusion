@@ -24,6 +24,7 @@ from .handlers import (
     add_student_counsellors
 )
 from applications.academic_information.models import Student,ExtraInfo
+from applications.globals.models import HoldsDesignation,Designation
 # Create your views here.
 
 
@@ -61,7 +62,11 @@ def counselling_cell(request):
             # print(student_des)
             if student.student_position == "student_guide" :
                 issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student])
-
+    elif extra_info.user_type == 'faculty':
+        designation = Designation.objects.filter(name= "counselling_head").first()
+        user_designation = HoldsDesignation.objects.filter(designation = designation).first()
+        if user_designation.user  == user:
+            user_role = "faculty_counsellor"
     context = {
         "faqs":faqs,
         "meetings":meetings,
@@ -113,15 +118,6 @@ def schedule_meeting(request):
         meeting_host = user
         extra_info = ExtraInfo.objects.get(user=user)
         meeting = CounsellingMeeting.objects.create(meeting_host=extra_info,meeting_date = date,meeting_time=time,agenda=agenda,venue=venue,student_invities=' '.join(temp))
-        # meeting.student_invities.set(temp)
-        # meeting = CounsellingMeeting(
-        #     agenda = agenda,
-        #     venue = venue,
-        #     student_invities = student,
-        #     meeting_date = date,
-        #     meeting_time = time,
-        #     meeting_host = extra_info,
-        # )
         meeting.save()
         
     return HttpResponseRedirect("/counselling/") 
@@ -201,6 +197,5 @@ def assign_student_to_sg(request):
             for student in students:    
                 mappedStudent = StudentCounsellingInfo(student_guide=sg,student_id=Student(id=ExtraInfo(user=User(username=student))))
                 mappedStudent.save()    
-    #     print(studentToStudentGuide)
     return HttpResponseRedirect("/counselling/")
     
