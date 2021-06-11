@@ -175,9 +175,9 @@
             </tr>
             </thead>
             <tbody>
-                {% for e in emp_event_organized %}
+                {% for e in events %}
                     <tr>
-                        <td>{{ forloop.counter|add:sr12 }}</td>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                             {{ e.role }}
                         </td>
@@ -190,13 +190,13 @@
                                 <button type="button"
                                    id="editButton10"
                                    class="ui button left floated" onclick="editevent(
-                                    '{{ forloop.counter|add:sr12 }}','{{e.pk}}','{{e.role}}',
+                                    '{{ forloop.counter }}','{{e.pk}}','{{e.role}}',
                                     '{{e.sponsoring_agency}}', '{{e.venue}}',
                                     '{{e.start_date}}', '{{e.end_date}}', '{{e.type}}', '{{e.name}}')"
                                    >
                                    <i class="ui black edit icon"></i>
                                 </button>
-                                <a href="{% url 'eis:emp_event_organizedDelete' e.pk forloop.counter|add:sr12 12%}"
+                                <a href="{% url 'eis:emp_event_organizedDelete' e.pk forloop.counter 12%}"
                                    id="editButton"
                                    class="ui blue button left floated" onclick=""
                                    value = "Delete">
