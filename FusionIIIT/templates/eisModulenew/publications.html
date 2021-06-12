@@ -1,4 +1,3 @@
-
 {% load static %}
 
 {% block publications %}
@@ -238,18 +237,18 @@
 
                 <tbody>
 
-                    {% for publication in publications %}
+                    {% for publication in journal %}
                         
 
 
 
                         <tr>
-                            <td>{{ forloop.counter|add:sr }}</td>
+                            <td>{{ forloop.counter}}</td>
                             <td>{{ publication.title_paper }}</td>
                             <td>{{ publication.authors }}</td>
                             <td> <input type="button" id="view"
                                    class="ui red mini button left floated" 
-                                   onclick="viewpaper('{{ forloop.counter|add:sr }}', '{{publication.name}}',
+                                   onclick="viewpaper('{{ forloop.counter}}', '{{publication.name}}',
                                     '{{publication.authors}}','{{publication.co_authors}}', '{{publication.title_paper}}',
                                      '{{publication.year}}','{{publication.volume_no}}', '{{publication.page_no}}',
                                     '{{publication.reference_number}}','{{publication.date_submission}}', 
@@ -261,7 +260,7 @@
                                 <button type="button"
                                    id="editButton"
                                    class="ui button left floated" onclick="editpaper(
-                                    '{{ forloop.counter|add:sr }}','{{publication.pk}}',
+                                    '{{ forloop.counter }}','{{publication.pk}}',
                                     '{{publication.name}}','{{publication.authors}}',
                                     '{{publication.co_authors}}', '{{publication.title_paper}}', '{{publication.year}}',
                                     '{{publication.volume_no}}', '{{publication.page_no}}',
@@ -272,7 +271,7 @@
                                    <i class="ui black edit icon"></i>
                                 </button>
                             
-                                <a href="{% url 'eis:emp_research_papersDelete' publication.pk forloop.counter|add:sr 1%}"
+                                <a href="{% url 'eis:emp_research_papersDelete' publication.pk forloop.counter 1%}"
                                    id="editButton"
                                    class="ui blue button left floated" onclick=""
                                    value = "Delete">
@@ -521,10 +520,10 @@
 
             <tbody>
 
-                {% for conference in conferences %}
+                {% for conference in conference %}
 
                     <tr>
-                        <td>{{ forloop.counter|add:sr3 }}</td>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ conference.title_paper }}</td>
                         <td>{{ conference.authors }}</td>
                         <td> <input type="button" id="view"
@@ -541,7 +540,7 @@
                             <button
                                id="editButton"
                                class="ui button left floated" onclick="editconference( 
-                                '{{conference.pk}}','{{ forloop.counter|add:sr3 }}',
+                                '{{conference.pk}}','{{ forloop.counter }}',
                                 '{{conference.name}}','{{conference.authors}}',
                                 '{{conference.co_authors}}', '{{conference.title_paper}}', '{{conference.year}}',
                                 '{{conference.venue}}', '{{conference.date_submission}}',
@@ -551,7 +550,7 @@
                                ><i class="ui black edit icon"></i>
                             </button>
                         
-                            <a href="{% url 'eis:emp_research_papersDelete' conference.pk forloop.counter|add:sr3 2 %}" 
+                            <a href="{% url 'eis:emp_research_papersDelete' conference.pk forloop.counter 2 %}" 
                                id="deleteButton"
                                class="ui blue button left floated" onclick=""
                                ><i class="ui red delete icon"></i>
@@ -720,37 +719,7 @@
 
                 <tbody>
 
-                    {% for book in books %}
-                       <tr>
-                            <td>{{ forloop.counter|add:sr2 }}</td>
-                            <td>{{ book.title }} </td>
-                            <td>{{ book.authors }} </td>
-                            <td>{{ book.p_type }} </td>
-                            <td>{{ book.pyear }}</td>
-                            <td>{{ book.publisher }}</td>
-                            {% if request.user == user %}
-                            <td>
-                                <button type="button"
-                                   id="editButton2"
-                                   class="ui button left floated" onclick="editbooks(
-                                    '{{ forloop.counter|add:sr2 }}','{{book.pk}}','{{book.title}}',
-                                    '{{book.authors}}', '{{book.p_type}}',
-                                    '{{book.pyear}}', '{{book.publisher}}')"
-                                   >
-                                   <i class="ui black edit icon"></i>
-                                </button>
-                                <a href="{% url 'eis:emp_published_booksDelete' book.pk forloop.counter|add:sr2 2%}"
-                                   id="editButton"
-                                   class="ui blue button left floated" onclick=""
-                                   value = "Delete">
-                                   <i class="ui red delete icon"></i>
-                                </a>
-                                
-                            </td>
-                        {% endif %}
-                        </tr>
-                    {% endfor %}
-
+                    
                 </tbody>
             </table>
             <div class="pagination">
@@ -775,8 +744,3 @@
 
   
   {% endblock %}
-
-
-
-
-  

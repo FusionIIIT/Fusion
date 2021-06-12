@@ -165,9 +165,9 @@
             </thead>
 
             <tbody>
-                {% for e in confs %}
+                {% for e in consymps %}
                     <tr>
-                        <td>{{ forloop.counter|add:sr13 }}</td>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                             {% if e.role1 == "Organised" %}
                                 {{ e.role1 }} - {{ e.role2 }}
@@ -184,7 +184,7 @@
                                 <button type="button"
                                    id="editButton13"
                                    class="ui button left floated" onclick="editconference2(
-                                    '{{ forloop.counter|add:sr13 }}','{{ e.pk }}', {% if e.role1 == 'Organised' %}
+                                    '{{ forloop.counter }}','{{ e.pk }}', {% if e.role1 == 'Organised' %}
                                     '{{e.role1}}', '{{e.role2}}', 
                                     {% else %} '{{e.role1}}', 'None', 
                                     {% endif %}
@@ -193,7 +193,7 @@
                                    >
                                    <i class="ui black edit icon"></i>
                                 </button>
-                                <a href="{% url 'eis:emp_consymDelete' e.pk forloop.counter|add:sr13 13%}"
+                                <a href="{% url 'eis:emp_consymDelete' e.pk forloop.counter 13%}"
                                    id="editButton"
                                    class="ui blue button left floated" onclick=""
                                    value = "Delete">

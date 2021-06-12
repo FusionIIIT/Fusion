@@ -36,9 +36,9 @@
     <a class="active item" data-tab="this">
         This Semester
     </a>
-    <!-- <a class="item" data-tab="prereg">
+    <a class="item" data-tab="prereg">
         Pre Registration Report
-    </a>-->
+    </a>
 </div> 
 
 <div class="ui active tab segment" data-tab="this">
@@ -91,14 +91,22 @@
     <form class="ui form" action="/aims/generate_preregistration_report" method="post" id="form_10">
         {% csrf_token %}
         <div class="field">
-            <label>Batch</label>
-            <input type="number" name="batch" required>
+          <label>Select Batch</label>
+          <select class="ui dropdown" id="batch_branch" name="batch_branch" required="true">
+            <option value=""> Select Batch </option>
+            {% for batch in batch_branch_data %}
+            <option value="{{batch.id}}">{{batch.name}} {{batch.discipline.acronym}}  {{batch.year}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Select Semester</label>
+          <input type="number" id="semester_no" name="semester_no" required>
         </div>
         <div class="field">
             <button class="ui fluid primary button" type="submit">Generate PreRegistration Summary</button>
         </div>
     </form>
-    <div style="color:red;"> Warning : This might take a few minutes </div>
 </div>
     {% comment %}
 </div> {% endcomment %}

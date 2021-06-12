@@ -47,7 +47,7 @@ class ExtraInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtraInfo
         fields = ('department','id','title','sex','date_of_birth',
-                'address','phone_no','user_type','about_me')
+                'address','phone_no','user_type','user_status','about_me')
 
 class UserSerializer(serializers.ModelSerializer):
 

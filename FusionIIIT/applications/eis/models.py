@@ -102,7 +102,7 @@ class emp_research_papers(models.Model):
     )
     is_sci = models.CharField(max_length=6, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     isbn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.DateField(null=True, blank=True)
+    doi = models.CharField(max_length=1000,null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)

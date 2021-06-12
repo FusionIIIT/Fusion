@@ -5,7 +5,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="inward">
-            All Created Indents
+            All Filed Indents
             </a>
         </h3>
 
@@ -21,24 +21,33 @@
             <th>Subject</th>
             <th>Date</th>
             <th>View Indent</th>
-            <th>Delete Indent</th>
+            <th>Indent Status</th>
         </tr>
         </thead>
         <tbody>
-        {% for j in draft %}
-          {% ifequal designations j.designation|stringformat:'s' %}
+        {% for indent in indents %}
+          {% ifequal designations indent.file_info.designation|stringformat:'s' %}
              <tr>
-                 <td>{{j.uploader.user}} - {{j.designation}}</td>
-                 <td>{{request.user.extrainfo.department.name}}-{{j.upload_date.year}}-{{j.upload_date.month}}-#{{j.id}}</td>
-                 <td>{{j.subject}}</td>
-                 <td>{{j.upload_date}}</td>
-                 <td><a href="{% url 'ps1:createdindent' j.id %}"><button class="ui primary button">
+                 <td>{{indent.file_info.uploader.user}} - {{indent.file_info.designation}}</td>
+                 <td>{{request.user.extrainfo.department.name}}-{{indent.file_info.upload_date.year}}-{{indent.file_info.upload_date.month}}-#{{indent.file_info.id}}</td>
+                 <td>{{indent.file_info.subject}}</td>
+                 <td>{{indent.file_info.upload_date}}</td>
+                 <td><a href="{% url 'ps1:createdindent' indent.file_info.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
-
-                 <td><a href="{% url 'ps1:confirm_delete' j.id%}"> <button class="ui primary button">
-                     Delete
-                 </button></a></td>
+                 {% if indent.head_approval == False or indent.director_approval == False or indent.financial_approval == False %}
+                 <td> <button class="ui red button">
+                     Pending
+                 </button></td>
+                 {% elif indent.head_approval == True and indent.director_approval == True and indent.financial_approval == True and indent.purchased == False %}
+                 <td> <button class="ui yellow button">
+                     Approved
+                 </button></td>
+                 {% elif indent.head_approval == True and indent.director_approval == True and indent.financial_approval == True and indent.purchased == True %}
+                 <td> <button class="ui green button">
+                     Purchased
+                 </button></td>
+                 {% endif %}
               </tr>
           {% endifequal %}
         {% endfor %}

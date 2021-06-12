@@ -15,11 +15,15 @@
         <a class="item" data-tab="ltcthree">
             Archived
         </a>
+    
     {% endif %}
+    {% if director %}
     <a class="item" data-tab="ltcfour">
         Review
     </a>
+    {%endif%}
 </div>
+
 <style>
     * { font: 17px Calibri; }
     table { width: 70%; }
@@ -167,12 +171,13 @@
 -->
 <div class="ui tab segment" data-tab="ltctwo">
     <div class="content">
-        <div class="description">
+        <div class="description" >
             <div class="ui items">
                 {% for app in ltc_active_apps %}
                     <div class="item">
                         <div class="content">
-                            <div class="header">Status : {{app.status|title}}</div>
+                            <div class="header">Application id : {{app.id}}</div>
+                            <div class="meta">Status : {{app.status|title}}</div>
                             {% if app.status == 'requested' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
                                     <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}}</div>
@@ -184,7 +189,7 @@
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
-                            <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Leave Type : {{app.is_hometown_or_elsewhere}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
@@ -198,7 +203,11 @@
                             View LTC
                         </div>
                         <div class="content">
-                            <div class="description">
+                            <div class="description" id='ltc_form_v{{app.id}}'>
+                                <br>
+                                LTC Form Details<br><br>
+                                <label>Application id : {{ app.id }}</label><br>
+                                <label>Applicant : {{ app.applicant.first_name }}</label><br>
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
@@ -263,7 +272,8 @@
                                 </table>
                                 </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
-                            </div>
+                            </div><br>
+                            <button class="ui large primary button" onclick="printDiv('ltc_form_v{{app.id}}')" value="Print">Print </button>
                         </div>
                         <div class="actions">
                             <div class="ui black deny button">
@@ -271,6 +281,7 @@
                             </div>
                         </div>
                     </div>
+                    <br>
                 {% endfor %}
             </div>
         </div>
@@ -294,12 +305,16 @@
                 {% for app in ltc_archive_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status|title}}</a>
+                            
+                            <a class="header">Application id : {{app.id}}</a>
+                            <br>
+                            <div class="meta">Status : {{app.status|title}}</div>
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>
-                            <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Leave Type : {{app.is_hometown_or_elsewhere}}</div>
                             <div class="meta"> Remarks from HR Admin : {{app.tracking_info.admin_remarks}}</div>
+                            <div class="meta"> Remarks from Director : {{app.tracking_info.remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.view_ltc-{{app.id}}').modal('show')">
                                     View
@@ -314,7 +329,11 @@
                             View LTC
                         </div>
                         <div class="content">
-                            <div class="description">
+                            <div class="description" id='ltc_form_v_a{{app.id}}'>
+                                <br>
+                                LTC Form Details<br><br>
+                                <label>Application id : {{ app.id }}</label><br>
+                                <label>Applicant : {{ app.applicant.first_name }}</label><br>
                                 <label>Status : {{ app.status|title }}</label><br>
                                 <label>PF number : {{ app.pf_number }}</label><br>
                                 <label>Basic pay : {{ app.basic_pay }}</label><br>
@@ -328,58 +347,59 @@
                                 <label>Phone number : {{ app.phone_number }}</label><br>
                                 <label>Mode of travel : {{ app.travel_mode }}</label><br>
                                 <label>Details of family members who have already availed ltc in this block
-                                    <table border = '2'><th>Name</th><th>Age</th>
-                                        {% for app2 in ltc_availed_archived %}
-                                        {% if app2.ltc == app %}
-                                        <tr>
-                                            <td>
-                                                {{ app2.name }}
-                                            </td>
-                                            <td>
-                                                {{ app2.age }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </table>
-                                    </label><br>
-                                    <label>Details of family members who will avail ltc
-                                    <table border = '2'><th>Name</th><th>Age</th>
-                                        {% for app2 in ltc_to_avail_archived %}
-                                        {% if app2.ltc == app %}
-                                        <tr>
-                                            <td>
-                                                {{ app2.name }}
-                                            </td>
-                                            <td>
-                                                {{ app2.age }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </table>
-                                    </label><br>
-                                    <label>Details of dependents
-                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
-                                        {% for app2 in dependent_archived %}
-                                        {% if app2.ltc == app %}
-                                        <tr>
-                                            <td>
-                                                {{ app2.name }}
-                                            </td>
-                                            <td>
-                                                {{ app2.age }}
-                                            </td>
-                                            <td>
-                                                {{ app2.depend }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </table>
-                                    </label><br>
+                                <table border = '2'><th>Name</th><th>Age</th>
+                                    {% for app2 in ltc_availed_active %}
+                                    {% if app2.ltc == app %}
+                                    <tr>
+                                        <td>
+                                            {{ app2.name }}
+                                        </td>
+                                        <td>
+                                            {{ app2.age }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                <table border = '2'><th>Name</th><th>Age</th>
+                                    {% for app2 in ltc_to_avail_active %}
+                                    {% if app2.ltc == app %}
+                                    <tr>
+                                        <td>
+                                            {{ app2.name }}
+                                        </td>
+                                        <td>
+                                            {{ app2.age }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
+                                </label><br>
+                                <label>Details of dependents
+                                 <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                    {% for app2 in dependent_active %}
+                                    {% if app2.ltc == app %}
+                                    <tr>
+                                        <td>
+                                            {{ app2.name }}
+                                        </td>
+                                        <td>
+                                            {{ app2.age }}
+                                        </td>
+                                        <td>
+                                            {{ app2.depend }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
+                                </label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
-                            </div>
+                            </div><br>
+                            <button class="ui large primary button" onclick="printDiv('ltc_form_v_a{{app.id}}')" value="Print">Print </button>
                         </div>
                         <div class="actions">
                             <div class="ui black deny button">
@@ -387,6 +407,7 @@
                             </div>
                         </div>
                     </div>
+                    <br>
                 {% endfor %}
             </div>
         </div>
@@ -403,12 +424,9 @@
                 {% for app in ltc_to_review_apps %}
                     <div class="item">
                         <div class="content">
-                            <div class="header">Applicant : {{app.applicant}}</div>
-                            {% if app.status == 'requested' %}
-                                <div class="meta">Requested Advance : ₹ {{app.requested_advance}}</div>
-                            {% else%}
-                                <div class="meta">Requested Adjustment Amount : ₹ {{app.adjustment_amount}}</div>
-                            {% endif %}
+                            <div class="header">Application id : {{app.id}}</div>
+                            <div class='meta'>Applicant : {{app.applicant.first_name}}</div>
+                            <div class="meta">Requested Advance : ₹ {{app.requested_advance}}</div>
                             <div class="meta"> Purpose : {{app.purpose}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.review_ltc-{{app.id}}').modal('show')">
@@ -427,6 +445,17 @@
                             <div class="description">
                             <form class="ui large form" method="post" enctype="multipart/form-data" id="form2">
                                 {% csrf_token %}
+                                <div class="field">
+                                    <div class="disabled field">
+                                        <label>Applicaiton id : {{ app.id }}</label>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="disabled field">
+                                        <label>Applicant : {{ app.applicant.first_name }}</label>
+                                    </div>
+                                </div>
+                                
                                 <div class="field">
                                     <div class="disabled field">
                                         <label>PF Number : {{ app.pf_number }}</label>
@@ -557,13 +586,22 @@
                                         <label>Requested advance : {{ app.requested_advance }}</label>
                                     </div>
                                 </div>
+                                <div class="field">
+                                    <div >
+                                        <label>HR Admin Remarks : {{ app.tracking_info.admin_remarks }}</label>
+                                    </div>
+                                </div>
+                                
                                 {% render_field app.reviewform.app_id %}
                                 <div class="field">
                                     {% render_field app.reviewform.remarks %}
                                 </div>
                                 <br>
-                                <button type="submit" name="ltc_review" class="ui large primary button">
-                                    Submit Review
+                                <button type="submit" name="ltc_review_approve" class="ui large primary button">
+                                    Approve
+                                </button>
+                                <button type="submit" name="ltc_review_reject" class="ui large primary button">
+                                    Reject
                                 </button>
                             </form>
                             </div>
@@ -580,6 +618,13 @@
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript">
+function printDiv(divName) {
+        var printContents = document.getElementById(divName).innerHTML;
+        w=window.open();
+        w.document.write(printContents);
+        w.print();
+        w.close();
+    }
 
 var count21 = 0;
 var counter_string21 = "0";

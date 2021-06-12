@@ -15,12 +15,12 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form" method="POST" action="/ps1/StockEntry/" enctype="multipart/form-data" id="stock1">
+        <form class="ui large form" method="POST" action="/purchase-and-store/StockEntry/" enctype="multipart/form-data" id="stock1">
             {% csrf_token %}
             <input hidden  name = 'id' value="{{id}}">
              <div class="field">
                         <label>Name of the purchasing Item/Equipment</label><br>
-                        <input type="text" name="item_name"  required>
+                        <input type="text" name="item_name"  value="{{indent.item_name}}" readonly>
                 </div>
 
 

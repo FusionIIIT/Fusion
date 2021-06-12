@@ -1,7 +1,7 @@
 {% block applyform %}
 {% load static %}
     {% comment %}The tab menu starts here!{% endcomment %}
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="assistantship">
             Assistantship Claim Form
@@ -14,6 +14,7 @@
     
     <div class="ui active tab" data-tab="assistantship">
         <div class="ui vertical segment">
+            {% if assistantship_flag == "True" %}
             <form method="post" id="new_assistantshipclaim" enctype="multipart/form-data">
             {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
@@ -22,7 +23,7 @@
                         <div class="three wide field">
                             <label>Year</label>
                             <div class="ui selection dropdown">
-                                <input type="hidden" name="year" required/>
+                                <input type="hidden" name="year" id="ye" required/>
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Select</div>
                                 <div class="menu" required>
@@ -36,7 +37,7 @@
                         <div class="three wide field" style="margin-left:300px">
                             <label>Month</label>
                             <div class="ui selection dropdown" >
-                                <input type="hidden" name="month" required>
+                                <input type="hidden" name="month" id="mo" required>
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Select</div>
                                 <div class="menu">
@@ -106,6 +107,9 @@
                 </div>            
                 
             </form>
+            {%else%}
+            <h3>Not Available</h3>
+            {%endif%}
             <br>
             <br>
         </div>
@@ -119,10 +123,9 @@
                 padding-right: 2.5%;
                 padding-top: 1%;
                 padding-bottom: 1.5%;
-                width: 100%">
+                width: 100%" id="stat">
             <thead>
                 <tr style="border-radius: 3px;">
-                    <th rowspan="2">#</th>
                     <th rowspan="2">Month</th>
                     <th rowspan="2">Year</th>
                     <th rowspan="2">TA Supervisor</th>
@@ -134,8 +137,7 @@
             </thead>
             <tbody>
             {% for obj in assistantship_list reversed%}
-             <tr >                
-                <td>{{forloop.counter}}.</td>
+             <tr id="statusid{{forloop.counter}}">                
                 <td>{{obj.month}}</td>
                 <td>{{ obj.year }}</td>
                 <td>
@@ -149,7 +151,7 @@
                     {% if obj.thesis_supervisor_remark == True %}
                         <center><i class="ui green checkmark icon " ></i></center>
                     {% elif obj.thesis_supervisor_remark == False %}
-                        <center><i class="ui orange hourglass half icon"></i></center>
+                        <center><i class="ui orange hourglass half icon" ></i></center>
                     {% endif %}
                 </td>
                 <td>
@@ -176,7 +178,10 @@
         </table>
     
     </div>
+    <div hidden>
+        <center><i class="ui orange hourglass half icon" id="hg"></i>
 
+    </div>
     
     
 {% endblock %}
@@ -233,20 +238,6 @@
         lblError.innerHTML = "";
         return true;
     }
-    
-    // Function to check letters and numbers
-    // function alphanumeric(inputtxt)
-    // {
-    //    var letterNumber = /^[0-9A-Z]+$/;
-    //    if((inputtxt.value.match(letterNumber)))
-    //    {
-    //     return true;
-    //    }
-    //   else
-    //    {  
-    //     return false; 
-    //    }
-    // }
   
 
     function validateAssistantship(form,event){
@@ -275,7 +266,7 @@
             {
                 var formData = new FormData(form);
                 console.log(formData);
-                form.reset();
+                
                 $.ajax({
                     url: '/academic-procedures/ACF/',
                     data: formData,
@@ -291,6 +282,15 @@
                         // $("#modalHeader").html(response.status);
                         if (response.status == "success"){
                             $(".succ").modal("show");
+                            var len = document.getElementById("stat").rows.length;
+                            var table = document.getElementById("stat").getElementsByTagName('tbody')[0];
+                            var row = table.insertRow(0);
+                            row.insertCell().innerHTML=document.getElementById("mo").value;
+                            row.insertCell().innerHTML=document.getElementById("ye").value;
+                            row.insertCell().innerHTML="<center><strong>Pending</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Pending</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Not forwaded</strong></center>";
+                            row.insertCell().innerHTML="<center><strong>Not forwaded</strong></center>";
                         }
                         else
                         {

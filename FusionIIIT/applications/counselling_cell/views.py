@@ -6,23 +6,17 @@ from django.http import HttpResponse,JsonResponse,HttpResponseRedirect
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 import django. utils. timezone as timezone
-from xlsxwriter.workbook import Workbook
 from collections import defaultdict
-import xlrd
+import openpyxl
 
-from django.views.generic import (
-    ListView,
-    DeleteView,
-    DetailView,
-    UpdateView,
-    CreateView
-)
+
 from .models import (
     CounsellingFAQ,
     CounsellingIssue,
     CounsellingIssueCategory,
     StudentCounsellingTeam,
-    StudentCounsellingInfo
+    StudentCounsellingInfo,
+    CounsellingMeeting
 
 )
 from .handlers import (
@@ -30,23 +24,15 @@ from .handlers import (
     add_student_counsellors
 )
 from applications.academic_information.models import Student,ExtraInfo
+from applications.globals.models import HoldsDesignation,Designation
 # Create your views here.
-
-# user = User.objects.filter(username=2017167).first()
-# extra_info = ExtraInfo.objects.get(user=user)
-# student = Student.objects.get(id=extra_info)
-# print(extra_info.user_type)
-# StudentCounsellingTeam.objects.filter(student=)
-# category = CounsellingIssueCategory(category_id="others",category="Others")
-# category.save()
-# faq = CounsellingIssueCategory.objects.all()
-# print(faq) 
 
 
 def counselling_cell(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     user_role = extra_info.user_type
+    meetings = CounsellingMeeting.objects.all()
     year = timezone.now().year
     third_year_students = Student.objects.filter(batch=year-3)
     second_year_students = Student.objects.filter(batch=year-2)
@@ -76,9 +62,14 @@ def counselling_cell(request):
             # print(student_des)
             if student.student_position == "student_guide" :
                 issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student])
-
+    elif extra_info.user_type == 'faculty':
+        designation = Designation.objects.filter(name= "counselling_head").first()
+        user_designation = HoldsDesignation.objects.filter(designation = designation).first()
+        if user_designation.user  == user:
+            user_role = "faculty_counsellor"
     context = {
         "faqs":faqs,
+        "meetings":meetings,
         "categories":categories,
         "third_year_students":third_year_students,
         "second_year_students":second_year_students,
@@ -110,6 +101,26 @@ def raise_issue(request):
         issue.save()
     
     return HttpResponseRedirect("/counselling/")
+
+@csrf_exempt
+def schedule_meeting(request):
+    if request.method == 'POST':
+        student_invities = request.POST.getlist("student")
+        print(student_invities)
+        temp=[]
+        for i in student_invities:
+            temp.append(i)
+        venue = request.POST.get("venue")
+        agenda = request.POST.get("agenda")
+        date = request.POST.get("meeting_date")
+        time = request.POST.get("meeting_time")
+        user = request.user
+        meeting_host = user
+        extra_info = ExtraInfo.objects.get(user=user)
+        meeting = CounsellingMeeting.objects.create(meeting_host=extra_info,meeting_date = date,meeting_time=time,agenda=agenda,venue=venue,student_invities=' '.join(temp))
+        meeting.save()
+        
+    return HttpResponseRedirect("/counselling/") 
 
 @csrf_exempt
 def respond_issue(request):
@@ -165,13 +176,14 @@ def assign_student_to_sg(request):
     
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['mappedStudent']
-        excel = xlrd.open_workbook(file_contents=profiles.read())
-        sheet=excel.sheet_by_index(0)
-        for i in range(1,sheet.nrows):
+        # excel = xlrd.open_workbook(file_contents=profiles.read())
+        wb_obj = openpyxl.load_workbook(profiles)
+        sheet = wb_obj.active
+        for i in range(2,sheet.max_row+1):
+            if sheet.cell(i,2).value : 
+                student_roll_no=str(int(sheet.cell(i,2).value))
             if sheet.cell(i,1).value : 
-                student_roll_no=str(int(sheet.cell(i,1).value))
-            if sheet.cell(i,0).value : 
-                sg_roll_no=str(int(sheet.cell(i,0).value))
+                sg_roll_no=str(int(sheet.cell(i,1).value))  
 
                 checkForSG = StudentCounsellingTeam.objects.filter(student_id=sg_roll_no,student_position="student_guide")
                 if  len(checkForSG) == 0:
@@ -180,27 +192,10 @@ def assign_student_to_sg(request):
                             'message':"Student Guide Not Found"
                         })
             studentToStudentGuide[sg_roll_no].append(student_roll_no)
-            
         for sg,students in studentToStudentGuide.items() :
             sg = StudentCounsellingTeam.objects.filter(student_id=sg,student_position="student_guide").first()
             for student in students:    
                 mappedStudent = StudentCounsellingInfo(student_guide=sg,student_id=Student(id=ExtraInfo(user=User(username=student))))
                 mappedStudent.save()    
-    #     print(studentToStudentGuide)
     return HttpResponseRedirect("/counselling/")
-    return JsonResponse({
-                            'status':1,
-                            'message':"Student Guide and Assigned Student inserted successfully"
-                })  
-    # return JsonResponse({
-    #     'status':1,
-    #     'message':"Student and Student Guides Inserted Successfully"
-    # })
-
-# checkForSG = StudentCounsellingTeam.objects.filter(student_id="2018323",student_position="student_guide").delete()
-# print(checkForSG)
-# sg = StudentCounsellingTeam.objects.filter(student_id="2019034",student_position="student_guide").first()
-# mappedStudent = StudentCounsellingInfo(student_guide=sg,student_id=Student(id=ExtraInfo(user=User(username="2019185"))))
-# mappedStudent.save()  
-# StudentCounsellingInfo.objects.all().delete()
-
+    

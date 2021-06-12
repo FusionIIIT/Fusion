@@ -52,7 +52,7 @@
     {% comment %}the doctor appointment tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="doctorappointment">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="">{% csrf_token %}
+            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="" onsubmit="setTimeout(function(){window.location.reload();},10);">{% csrf_token %}
 
                 <div class="field">
                     <label>Sl. No.</label><p id="sl_no"></p>
@@ -83,14 +83,18 @@
           </div>
 
 
-                <div class="field">
-                    <label><br></label>
-
-                    <div >
-                      <input type="submit" name="Submit" value="Submit" class="ui small right floated primary button" />
-                    </div>
-                </div>
-            </form>
+          <div >
+            <input type="submit" name="submit" value="Submit" class="ui small right floated primary button" />
+            </a>
+          </div>
+      </div>
+      </form>
+      
+      <form action="http://172.27.16.216/iwdModuleV2" style="margin-right:3%;">
+          <br><br>
+          <input class="ui small right floated primary button" type="Submit" value="Next" style="background-color:#2ECC71 ;" />
+              </form>
+      
 
 
             <br>

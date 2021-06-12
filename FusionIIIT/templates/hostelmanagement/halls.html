@@ -1,5 +1,6 @@
-{% for hall in all_hall %}
-    {% block {{hall.hall_id}} %}
+{% load custom_tags %}
+{% comment %} {% for hall in all_hall %} {% endcomment %}
+    {% block {{hall_id}} %}
         <table class="ui very basic collapsing celled sortable table"
       style="padding-left: 5%;
             padding-right: 5%;
@@ -22,14 +23,14 @@
         </th>
 
         <th class="four wide column">
-            Room No
+            Room No{{halls_student.hall_id}}
         </th>
 
     </tr>
     </thead>
 
     <tbody>
-    {% for student in {{halls_student.{{hall.hall_id}}}} %}
+    {% for student in halls_student|get_hall_no:hall_id %}
     <tr>
     
         <td>
@@ -54,4 +55,4 @@
     </tbody>
 </table>
     {% endblock  %}
-{% endfor %}
+{% comment %} {% endfor %} {% endcomment %}

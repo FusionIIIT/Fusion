@@ -2,23 +2,10 @@ from django.shortcuts import render, redirect
 
 from applications.globals.models import *
 from .models import *
+from django.http import HttpResponseRedirect
+
 
 # Create your views here.
-
-listOfContractors = []
-numberOfAESTimes = 0
-theTurnOfAES = 0
-fromAES = False
-numberOfPreBidTimes = 0
-theTurnOfPreBid = 0
-fromPreBid = False
-numberOfTechnicalBidTimes = 0
-numberOfTimesMilestones = 0
-fromMilestone = False
-fromExtension = False
-theTurnOfMilestone = 0
-numberOfEntriesExtension = 0
-theTurnOfExtension = 0
 
 
 # The names of the Functions and the corresponding indication of redirection of the logic inside their body is very well
@@ -38,7 +25,7 @@ def dashboard(request):
         if p.designation.name == 'Admin IWD':
             eligible = True
             break
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible':eligible})
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 
 def page1_1(request):
@@ -49,43 +36,28 @@ def page1_1(request):
         project.id = request.session['projectId']
         project.save()
         formObject.id = project
-        if 'aes_file' in request.POST:
+        if 'aes_file' in request.POST and request.POST['aes_file'] != "":
             formObject.AESFile = request.POST['aes_file']
-        if 'dASAName' in request.POST:
+        if 'dASAName' in request.POST and request.POST['dASAName'] != "":
             formObject.dASA = request.POST['dASAName']
-        if 'nitNiqNo' in request.POST:
+        if 'nitNiqNo' in request.POST and request.POST['nitNiqNo'] != "":
             formObject.nitNiqNo = request.POST['nitNiqNo']
-        if 'proTh' in request.POST:
+        if 'proTh' in request.POST and request.POST['proTh'] != "":
             formObject.proTh = request.POST['proTh']
-        if 'emdDetails' in request.POST:
+        if 'emdDetails' in request.POST and request.POST['emdDetails'] != "":
             formObject.emdDetails = request.POST['emdDetails']
-        if 'preBidDate' in request.POST:
+        if 'preBidDate' in request.POST and request.POST['preBidDate'] != "":
             formObject.preBidDate = request.POST['preBidDate']
-        if 'technicalBidDate' in request.POST:
+        if 'technicalBidDate' in request.POST and request.POST['technicalBidDate'] != "":
             formObject.technicalBidDate = request.POST['technicalBidDate']
-        if 'financialBidDate' in request.POST:
+        if 'financialBidDate' in request.POST and request.POST['financialBidDate'] != "":
             formObject.financialBidDate = request.POST['financialBidDate']
         formObject.save()
-        return redirect('iwdModuleV2/noOfEntriesAES')
+        return redirect('iwdModuleV2/AESForm')
     return render(request, 'iwdModuleV2/page1_create.html', {})
 
 
-def noOfEntriesAES(request):
-    global numberOfAESTimes, theTurnOfAES, fromAES
-    if request.method == 'POST' or fromAES:
-        if not fromAES:
-            numberOfAESTimes = int(request.POST['number'])
-        if theTurnOfAES < numberOfAESTimes:
-            theTurnOfAES = theTurnOfAES + 1
-            return redirect('iwdModuleV2/AESForm')
-        fromAES = False
-        theTurnOfAES = 0
-        return redirect('/iwdModuleV2')
-    return render(request, 'iwdModuleV2/no_of_entries.html', {})
-
-
 def AESForm(request):
-    global fromAES
     if request.method == 'POST':
         formObject = AESDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
@@ -97,7 +69,7 @@ def AESForm(request):
         formObject.amount = request.POST['amount']
         formObject.save()
         fromAES = True
-        return redirect('iwdModuleV2/noOfEntriesAES')
+        return redirect('iwdModuleV2/AESForm')
     return render(request, 'iwdModuleV2/page1_support_1_aes.html', {})
 
 
@@ -106,27 +78,27 @@ def page2_1(request):
         request.session['projectId'] = request.POST['id']
         formObject = PageTwoDetails()
         formObject.id = Projects.objects.get(id=request.session['projectId'])
-        if 'corrigendum' in request.POST:
+        if 'corrigendum' in request.POST and request.POST['corrigendum'] != "":
             formObject.corrigendum = request.POST['corrigendum']
-        if 'addendum' in request.POST:
+        if 'addendum' in request.POST and request.POST['addendum'] != "":
             formObject.addendum = request.POST['addendum']
-        if 'preBid' in request.POST:
+        if 'preBid' in request.POST and request.POST['preBid'] != "":
             formObject.preBidMeetingDetails = request.POST['preBid']
-        if 'technicalBid' in request.POST:
+        if 'technicalBid' in request.POST and request.POST['technicalBid'] != "":
             formObject.technicalBidMeetingDetails = request.POST['technicalBid']
-        if 'qualifiedAgencies' in request.POST:
+        if 'qualifiedAgencies' in request.POST and request.POST['qualifiedAgencies'] != "":
             formObject.technicallyQualifiedAgencies = request.POST['qualifiedAgencies']
-        if 'financialBid' in request.POST:
+        if 'financialBid' in request.POST and request.POST['financialBid'] != "":
             formObject.financialBidMeetingDetails = request.POST['financialBid']
-        if 'lowAgency' in request.POST:
+        if 'lowAgency' in request.POST and request.POST['lowAgency'] != "":
             formObject.nameOfLowestAgency = request.POST['lowAgency']
-        if 'letterOfIntent' in request.POST:
+        if 'letterOfIntent' in request.POST and request.POST['letterOfIntent'] != "":
             formObject.letterOfIntent = request.POST['letterOfIntent']
-        if 'workOrder' in request.POST:
+        if 'workOrder' in request.POST and request.POST['workOrder'] != "":
             formObject.workOrder = request.POST['workOrder']
-        if 'agreementLetter' in request.POST:
+        if 'agreementLetter' in request.POST and request.POST['agreementLetter'] != "":
             formObject.agreementLetter = request.POST['agreementLetter']
-        if 'milestones' in request.POST:
+        if 'milestones' in request.POST and request.POST['milestones'] != "":
             formObject.milestones = request.POST['milestones']
         formObject.save()
         return redirect('iwdModuleV2/corrigendumInput')
@@ -135,6 +107,9 @@ def page2_1(request):
 
 def corrigendumInput(request):
     if request.method == 'POST':
+        existingObject = CorrigendumTable.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = CorrigendumTable()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
@@ -153,6 +128,9 @@ def corrigendumInput(request):
 
 def addendumInput(request):
     if request.method == 'POST':
+        existingObject = Addendum.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = Addendum()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
@@ -161,27 +139,15 @@ def addendumInput(request):
         formObject.openTime = request.POST['openTime']
         formObject.name = request.POST['workName']
         formObject.save()
-        return redirect('iwdModuleV2/noOfEntriesPreBid')
+        return redirect('iwdModuleV2/preBidForm')
     return render(request, 'iwdModuleV2/page2_support_2_addendum.html', {})
 
 
-def noOfEntriesPreBid(request):
-    global numberOfPreBidTimes, theTurnOfPreBid, fromPreBid
-    if request.method == 'POST' or fromPreBid:
-        if not fromPreBid:
-            numberOfPreBidTimes = int(request.POST['number'])
-        if theTurnOfPreBid < numberOfPreBidTimes:
-            theTurnOfPreBid = theTurnOfPreBid + 1
-            return redirect('iwdModuleV2/preBidForm')
-        fromPreBid = False
-        theTurnOfPreBid = 0
-        return redirect('iwdModuleV2/noOfEntriesTechnicalBid')
-    return render(request, 'iwdModuleV2/no_of_entries.html', {})
-
-
 def PreBidForm(request):
-    global fromPreBid
     if request.method == 'POST':
+        existingObject = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = PreBidDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
@@ -189,34 +155,40 @@ def PreBidForm(request):
         formObject.issuesRaised = request.POST['issuesRaised']
         formObject.responseDecision = request.POST['responseDecision']
         formObject.save()
-        fromPreBid = True
-        return redirect('iwdModuleV2/noOfEntriesPreBid')
+        return redirect('iwdModuleV2/noOfEntriesTechnicalBid')
     return render(request, 'iwdModuleV2/page2_support_3_prebid.html', {})
 
 
 def noOfEntriesTechnicalBid(request):
-    global numberOfTechnicalBidTimes
+    formNoTechnicalObjects = NoOfTechnicalBidTimes()
+    formNoTechnicalObjects.key = Projects.objects.get(id=request.session['projectId'])
     if request.method == 'POST':
-        numberOfTechnicalBidTimes = int(request.POST['number'])
+        existingObject = NoOfTechnicalBidTimes.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
+        formNoTechnicalObjects.number = int(request.POST['number'])
+        formNoTechnicalObjects.save()
         return redirect('iwdModuleV2/technicalBidForm')
     return render(request, 'iwdModuleV2/no_of_entries.html', {})
 
 
 def TechnicalBidForm(request):
     formObject = TechnicalBidDetails()
+    numberOfTechnicalBidTimes = NoOfTechnicalBidTimes.objects.get(key=Projects.objects.get(id=request.session['projectId'])).number
     if request.method == 'POST':
-        global listOfContractors
+        existingObject = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = TechnicalBidDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
         formObject.requirements = request.POST['requirements']
         formObject.save()
-        listOfContractors.clear()
+        TechnicalBidContractorDetails.objects.filter(key=formObject).all().delete()
         for w in range(numberOfTechnicalBidTimes):
             formContractorObject = TechnicalBidContractorDetails()
             formContractorObject.key = formObject
             formContractorObject.name = request.POST[str(w) + 'name']
-            listOfContractors.append(formContractorObject.name)
             formContractorObject.description = request.POST[str(w) + 'Description']
             formContractorObject.save()
         return redirect('iwdModuleV2/noOfEntriesFinancialBid')
@@ -225,8 +197,15 @@ def TechnicalBidForm(request):
 
 
 def noOfEntriesFinancialBid(request):
-    global listOfContractors
+    listOfContractors = []
+    objectTechnicalBid = TechnicalBidDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    objects = TechnicalBidContractorDetails.objects.filter(key=objectTechnicalBid)
+    for t in objects:
+        listOfContractors.append(t.name)
     if request.method == 'POST':
+        existingObject = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = FinancialBidDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.sNo = request.POST['sNo']
@@ -248,6 +227,9 @@ def noOfEntriesFinancialBid(request):
 
 def letterOfIntent(request):
     if request.method == 'POST':
+        existingObject = LetterOfIntentDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = LetterOfIntentDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.name = request.POST['name']
@@ -262,6 +244,9 @@ def letterOfIntent(request):
 
 def workOrderForm(request):
     if request.method == 'POST':
+        existingObject = WorkOrderForm.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = WorkOrderForm()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.issueDate = request.POST['issueDate']
@@ -282,6 +267,9 @@ def workOrderForm(request):
 
 def AgreementInput(request):
     if request.method == 'POST':
+        existingObject = Agreement.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        if existingObject.count() == 1:
+            existingObject.delete()
         formObject = Agreement()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
         formObject.date = request.POST['date']
@@ -289,26 +277,11 @@ def AgreementInput(request):
         formObject.workName = request.POST['workName']
         formObject.agencyName = request.POST['agencyName']
         formObject.save()
-        return redirect('iwdModuleV2/noOfEntriesMilestones')
+        return redirect('iwdModuleV2/milestoneForm')
     return render(request, 'iwdModuleV2/page2_support_8_aggrement.html', {})
 
 
-def noOfEntriesMilestones(request):
-    global numberOfTimesMilestones, fromMilestone, theTurnOfMilestone
-    if request.method == 'POST' or fromMilestone:
-        if not fromMilestone:
-            numberOfTimesMilestones = int(request.POST['number'])
-        if theTurnOfMilestone < numberOfTimesMilestones:
-            theTurnOfMilestone = theTurnOfMilestone + 1
-            return redirect('iwdModuleV2/milestoneForm')
-        theTurnOfMilestone = 0
-        fromMilestone = False
-        return redirect('/iwdModuleV2')
-    return render(request, 'iwdModuleV2/no_of_entries.html', {})
-
-
 def milestonesForm(request):
-    global fromMilestone
     if request.method == 'POST':
         formObject = Milestones()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
@@ -317,8 +290,8 @@ def milestonesForm(request):
         formObject.amountWithheld = request.POST['amountWithheld']
         formObject.timeAllowed = request.POST['timeAllowed']
         formObject.save()
-        fromMilestone = True
-        return redirect('iwdModuleV2/noOfEntriesMilestones')
+        return redirect('iwdModuleV2/page3_1')
+    Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId'])).all().delete()
     return render(request, 'iwdModuleV2/page2_support_9_milestone.html', {})
 
 
@@ -330,26 +303,11 @@ def page3_1(request):
         formObject.extensionOfTime = request.POST['extensionPDF']
         formObject.actualCostOfBuilding = request.POST['actualCost']
         formObject.save()
-        return redirect('iwdModuleV2/noOfEntriesExtensionOfTime')
+        return redirect('iwdModuleV2/extensionForm')
     return render(request, 'iwdModuleV2/page3_create.html', {})
 
 
-def noOfEntriesExtensionOfTime(request):
-    global numberOfEntriesExtension, theTurnOfExtension, fromExtension
-    if request.method == 'POST' or fromExtension:
-        if not fromExtension:
-            numberOfEntriesExtension = int(request.POST['number'])
-        if theTurnOfExtension < numberOfEntriesExtension:
-            theTurnOfExtension = theTurnOfExtension + 1
-            return redirect('iwdModuleV2/extensionForm')
-        fromExtension = False
-        theTurnOfExtension = 0
-        return redirect('/iwdModuleV2')
-    return render(request, 'iwdModuleV2/no_of_entries.html', {})
-
-
 def ExtensionOfTimeForm(request):
-    global fromExtension
     if request.method == 'POST':
         formObject = ExtensionOfTimeDetails()
         formObject.key = Projects.objects.get(id=request.session['projectId'])
@@ -357,9 +315,8 @@ def ExtensionOfTimeForm(request):
         formObject.hindrance = request.POST['hindrance']
         formObject.periodOfHindrance = request.POST['periodHindrance']
         formObject.periodOfExtension = request.POST['periodExtension']
-        fromExtension = True
         formObject.save()
-        return redirect('iwdModuleV2/noOfEntriesExtensionOfTime')
+        return redirect('iwdModuleV2/extensionForm')
     return render(request, 'iwdModuleV2/page3_support_1_extension_of_time.html', {})
 
 

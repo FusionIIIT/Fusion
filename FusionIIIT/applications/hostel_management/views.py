@@ -9,7 +9,7 @@ from applications.academic_information.models import Student
 from applications.academic_information.models import *
 from django.db.models import Q
 import datetime
-from datetime import time, datetime
+from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
@@ -20,6 +20,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.views.generic import View
+from django.db.models import Q
 
 
 @login_required
@@ -38,11 +39,18 @@ def hostel_view(request, context={}):
     hall_3_student = Student.objects.filter(hall_no=3)[:10]
     hall_4_student = Student.objects.filter(hall_no=4)[:10]
     all_hall = Hall.objects.all()
-    # halls_student = {}
-    # for hall in all_hall:
-    #     halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+    halls_student = {}
+    for hall in all_hall:
+        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+
+    hall_staffs = {}
+    for hall in all_hall:
+        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall)
 
     all_notice = HostelNoticeBoard.objects.all().order_by("-id")
+    hall_notices = {}
+    for hall in all_hall:
+        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall)
 
     Staff_obj = Staff.objects.all()
     hall1 = Hall.objects.get(hall_id='hall1')
@@ -77,7 +85,14 @@ def hostel_view(request, context={}):
     for h_c in hall_caretaker:
         hall_caretaker_user.append(h_c.staff.id.user)      
 
-    worker_report = WorkerReport.objects.all()
+    todays_date = date.today()
+    current_year = todays_date.year
+    current_month = todays_date.month
+
+    if current_month != 1:
+        worker_report = WorkerReport.objects.filter(Q(hall__hall_id=current_hall, year=current_year, month=current_month) | Q(hall__hall_id=current_hall, year=current_year, month=current_month-1))
+    else:
+        worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
 
     context = {
         'hall_1_student': hall_1_student,
@@ -93,8 +108,10 @@ def hostel_view(request, context={}):
         'room_avail' : get_avail_room,
         'hall_student':hall_student,
         'worker_report': worker_report,
-        # 'halls_student': halls_student,
+        'halls_student': halls_student,
         'current_hall' : current_hall,
+        'hall_staffs': hall_staffs,
+        'hall_notices': hall_notices,
         **context
     }
 
@@ -163,6 +180,15 @@ def notice_board(request):
             new_notice.save()
                 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+@login_required
+def delete_notice(request):
+    if request.method == 'POST':
+        notice_id=request.POST["dlt_notice"]
+        notice=HostelNoticeBoard.objects.get(pk=notice_id)
+        notice.delete()
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 def edit_student_room(request):
@@ -234,8 +260,28 @@ def render_to_pdf(template_src, context_dict={}):
 
 class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
+        if request.method == "GET":
+            months = request.GET.get('months')
+
+        months = int(months)
+        todays_date = date.today()
+        current_year = todays_date.year
+        current_month = todays_date.month
+
         template = get_template('hostelmanagement/view_report.html')
-        worker_report = WorkerReport.objects.all()
+
+        hall_caretaker = HallCaretaker.objects.all()
+        get_hall=""
+        for i in hall_caretaker:
+            if i.staff.id.user==request.user:
+                get_hall=i.hall
+                break
+
+        if months < current_month:
+            worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)
+        else:
+            worker_report = WorkerReport.objects.filter(Q(hall=get_hall, year=current_year, month__lte=current_month) | Q(hall=get_hall, year=current_year-1, month__gte=12-months+current_month))
+            
         worker = {
             'worker_report' : worker_report
         }

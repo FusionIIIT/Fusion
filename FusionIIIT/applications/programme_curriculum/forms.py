@@ -144,7 +144,6 @@ class CourseForm(ModelForm):
             'pre_requisits' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
             'pre_requisit_courses' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
             'syllabus' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
-            # 'evaluation_schema' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}), 
             'ref_books' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
             'percent_quiz_1' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
             'percent_midsem' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
@@ -166,7 +165,6 @@ class CourseForm(ModelForm):
             'pre_requisits' : 'Pre-requisits',
             'pre_requisit_courses' : 'Pre-requisit Courses',
             'syllabus' : 'Syllabus',
-            # 'evaluation_schema' : 'Evaluation Schema', 
             'ref_books' : 'References & Books',
             'percent_quiz_1' : 'percent_quiz_1',
             'percent_midsem' : 'percent_midsem',
@@ -185,7 +183,7 @@ class BatchForm(ModelForm):
         model = Batch
         fields = '__all__'
         widgets = {
-            'name' : forms.TextInput(attrs={'placeholder': 'Enter Unique Batch Name','max_length': 50,'class':'field'}),
+            'name' : forms.Select(attrs={'placeholder': 'Enter Unique Batch Name','class':'ui fluid search selection dropdown'},),
             'discipline' : forms.Select(attrs={'class':'ui fluid search selection dropdown'},),
             'year' : forms.NumberInput(attrs={'placeholder' : 'Enter Batch Year','class':'field'}),
             'curriculum' : forms.Select(attrs={'class':'ui fluid search selection dropdown'},),
