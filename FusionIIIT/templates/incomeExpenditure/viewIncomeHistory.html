@@ -19,40 +19,85 @@
       <center> <button class="ui primary button" type='submit'>Get History</button></center>
     </form>
 
-    <!-- {% for items in income_history %}
+     {% for items in income_history %}
     
-    <div class="card" style = "margin-bottom: 5%;
+    <div class="card" style = "margin-bottom: 5%; margin-top: 5%;
     border-style: groove;
     padding: 2%;">
       <div class="card-body">
-        <h5 class="card-title">Purpose : {{items.source}} </h5>
-        <p class="card-text">Sub Type : {{items.sub_type}}
+        <h5 class="card-title">Purpose : {{items.source}}
+        </h5>
+        <p class="card-text">
+          Sub Type : {{items.sub_type}}
+          
+
           <br>
+          <br>
+
           Date added : {{items.date_added}}
           <br>
-          Amount : {{items.amount}}
+          <br>
+          Amount : <i class="rupee sign icon" style="margin-right: 0;"></i><b>{{items.amount}} </b>
+          <br>
           <br>
           Remarks: {{items.remarks}}
           
-         -- <br>
-          Receipt : <a href="#">view</a> 
+         <br>
         </p>
         <form action="/income-expenditure/deleteIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
-          <input hidden  name = 'id' value="{{ items.id }}">
-          <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Delete</button>
-        </form>
+        <input value="{{items.id}}" name='id' hidden>
+        <button name="delete"   type='submit' id="delete" class="ui primary button" style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Delete</button>
+      </form>
+      <form action="/income-expenditure/editIncomeHistory/" method="POST" id="del_income">{% csrf_token %}
+        <input value="{{items.id}}" name='id' hidden>
+        <button  name="edit" id="edit" type="submit"  class="ui primary button" formaction='/income-expenditure/editIncomeHistory/' style="background-color: #32CD32; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Edit</button>
+      </form>
       </div>
       </div>
 
-        {% endfor %} -->
+        {% endfor %} 
 
-
+ 
 
 </div>
 
 
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+ 
+  var el = document.getElementByName('edit');
+  for(var i=0;i<el.length;i++){
+    el[i].addEventListener('click',action(i));
+  }
+function action(){
+
+  var i = arguments[0];
+
+  document.getElementByName('income_sub_type')[i].disabled = false;
+  document.getElementByName('amount')[i].disabled = false;
+  document.getElementByName('remarks')[i].disabled = false;
+    
+  document.getElementByName('income_sub_type')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+  document.getElementByName('amount')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+  document.getElementByName('remarks')[i].style = "border: 1px solid #ccc; border-radius: 5%;";
+      
+  
+      
+      
+  document.getElementByName('edit')[i].type = "hidden";   
+  document.getElementByName('update')[i].type = "submit";
+  document.getElementByName('delete')[i].type = "hidden";
+
+
+}
+
+  
+  
+  </script>
+
+
+
 <script type="text/javascript">
 $(function() {
     $("#del_income").submit(function(event) {

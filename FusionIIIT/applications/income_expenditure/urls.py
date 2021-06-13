@@ -20,4 +20,6 @@ urlpatterns = [
     url(r'^getExpenditureSubTypes/',views.get_expenditure_sub_types,name='get-expenditure-sub-types'),
     url(r'^viewIncomeHistory/',views.view_income_history,name='view-income-history'),
     url(r'^viewExpenditureHistory/',views.view_expenditure_history,name='view-expenditure-history'),
+    url(r'^editIncomeHistory/',views.edit_income_history,name='edit-income-history'),
+    url(r'^updateIncome/',views.update_income_history,name='update-income-history'), 
 ]
