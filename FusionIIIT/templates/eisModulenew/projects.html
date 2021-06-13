@@ -164,16 +164,16 @@
                     {% endblock %}
 
             <tbody>
-            {% for project in research_projects %}
+            {% for project in projects %}
                 <tr>
-                    <td id="research{{ forloop.counter|add:sr4 }}Z"><div style="display: none;">{{ project.id }}</div>{{ forloop.counter }}.</td>
+                    <td id="research{{ forloop.counter }}Z"><div style="display: none;">{{ project.id }}</div>{{ forloop.counter }}.</td>
                     <td id="research{{ forloop.counter }}A"><b>PI: </b>{{ project.pi }}<br><b>Co-PI: </b>{{ project.co_pi }}</td>
                     <td id="research{{ forloop.counter }}B">{{ project.title }}</td>
                     <td id="research{{ forloop.counter }}C">{{ project.funding_agency }}</td>
                     <td id="research{{ forloop.counter }}D">
                         <input type="button" id="view"
                            class="ui red mini button left floated" 
-                           onclick="viewproject('{{ forloop.counter|add:sr4 }}', '{{ project.pi }}',
+                           onclick="viewproject('{{ forloop.counter }}', '{{ project.pi }}',
                             '{{ project.co_pi }}','{{ project.title }}','{{ project.funding_agency }}',
                             '{{ project.date_submission }}','{{ project.start_date }}','{{ project.finish_date }}',
                             '{{ project.financial_outlay }}','{{ project.status }}')" value = "View">
@@ -182,7 +182,7 @@
                     {% if request.user == user %}
                     <td>
                     <a class="ui button left floated" onclick="updateRESEARCH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>     
-                    <a class="ui blue button left floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter|add:sr4 1%}"><i id="bt" class="ui red delete icon"></i>
+                    <a class="ui blue button left floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter 1%}"><i id="bt" class="ui red delete icon"></i>
                                 </a>
                      </td>
                      {% endif %}
@@ -320,9 +320,9 @@
             </thead>
 
             <tbody>
-            {% for consult in consultancy_projects %}
+            {% for consult in consultancy %}
                 <tr id="r1">
-                     <td id="consultancy{{ forloop.counter }}Z"><div style="display: none;">{{ consult.id }}</div>{{ forloop.counter|add:sr5 }}.</td>
+                     <td id="consultancy{{ forloop.counter }}Z"><div style="display: none;">{{ consult.id }}</div>{{ forloop.counter }}.</td>
                      <td id="consultancy{{ forloop.counter }}A">{{ consult.consultants }}</td>
                      <td id="consultancy{{ forloop.counter }}B">{{ consult.title }}</td>
                      <td id="consultancy{{ forloop.counter }}C">{{ consult.client }}</td>
@@ -330,7 +330,7 @@
                      <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
                      {% if request.user == user %}
                     <td><a class="ui button left floated" onclick="updateCONSULTANCY({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>
-                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
+                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk forloop.counter 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -493,16 +493,16 @@
             </thead>
 
             <tbody>
-            {% for patent in emp_patents %}
+            {% for patent in patents %}
                 <tr id="r1">
-                     <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter|add:sr6 }}.</td>
+                     <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter}}.</td>
                      <td id="patent{{ forloop.counter }}A">{{ patent.p_no }}</td>
                      <td id="patent{{ forloop.counter }}B">{{ patent.title }}</td>
                      <td id="patent{{ forloop.counter }}C">{{ patent.status }}</td>
                      <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
                      <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
                      {% if request.user == user %}
-                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
+                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk forloop.counter 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
                     {% endif %}
                 </tr>
             {% endfor %}
@@ -588,9 +588,9 @@
             <tbody>
             {% for techtransfer in techtransfers %}
                 <tr>
-                    <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter|add:sr7 }}.</td>
+                    <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter }}.</td>
                     <td class="" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>
-                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk sr7 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
+                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk forloop.counter 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>

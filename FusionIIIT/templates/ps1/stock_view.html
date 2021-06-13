@@ -169,12 +169,12 @@
                 <td>{{s.recieved_date}}</td>
                 <td>{{s.bill}}</td>
                  
-                 <td><form action="/ps1/stock_edit/" method="POST" id="item_id">{% csrf_token %}
+                 <td><form action="/purchase-and-store/stock_edit/" method="POST" id="item_id">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
                     <button class="ui primary button" >Edit</button>
                   </form></td>
                   <td>
-                    <form action="/ps1/stock_delete/" method="POST" id="item_id">{% csrf_token %}
+                    <form action="/purchase-and-store/stock_delete/" method="POST" id="item_id">{% csrf_token %}
                         <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
                         <button class="ui primary button" >Delete</button>
                       </form> 

@@ -37,6 +37,12 @@
                         Approve
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    {% if request.user.username == "atul" or request.user.username == "ptandon" or request.user.username == "subirs" or request.user.username == "prabin16" or request.user.username == "prabir" %}
+                    <a class="item" data-tab="hod">
+                        Combined Assistantship
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
                 {% endif %}
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -126,7 +132,9 @@
                     {%  include 'academic_procedures/manual_grade_submission.html' %}
                 </div>
             </div>
-        
+            <div class="ui tab segment" data-tab="hod" style="width: 120%;">
+                {% include 'academic_procedures/assis_hod.html' %}
+            </div>
         
         
             {% comment %}The grid ends here!{% endcomment %}

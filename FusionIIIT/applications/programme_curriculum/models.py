@@ -26,9 +26,16 @@ COURSESLOT_TYPE_CHOICES = [
     ('Design', 'Design'),
     ('Manufacturing', 'Manufacturing'),
     ('Management Science', 'Management Science'),
+    ('Optional Elective', 'Optional Elective'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
     ('Others', 'Others')
+]
+
+BATCH_NAMES = [
+    ('B.Tech', 'B.Tech'),
+    ('M.Tech', 'M.Tech'),
+    ('Phd', 'Phd')
 ]
 
 class Programme(models.Model):
@@ -58,7 +65,7 @@ class Discipline(models.Model):
 
     @property
     def batches(self):
-        return Batch.objects.filter(discipline=self.id)
+        return Batch.objects.filter(discipline=self.id).order_by('year')
         
 
 class Curriculum(models.Model):
@@ -77,7 +84,7 @@ class Curriculum(models.Model):
 
     @property
     def batches(self):
-        return Batch.objects.filter(curriculum=self.id)
+        return Batch.objects.filter(curriculum=self.id).order_by('year')
 
 
     @property
@@ -140,7 +147,7 @@ class Course(models.Model):
 
 
 class Batch(models.Model):
-    name = models.CharField(max_length=50, null=False, blank=False)
+    name = models.CharField(choices=BATCH_NAMES, max_length=50, null=False, blank=False)
     discipline = models.ForeignKey(Discipline, null=False, on_delete=models.CASCADE)
     year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
     curriculum = models.ForeignKey(Curriculum, null=True, blank=True, on_delete=models.SET_NULL)

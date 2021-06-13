@@ -72,7 +72,7 @@ def view_curriculums_of_a_programme(request, programme_id):
         working_curriculum - Curriculums that are affective
         past_curriculum - Curriculums thet are obsolete
     """
-    program = Programme.objects.get(id=programme_id)
+    program = get_object_or_404(Programme, Q(id=programme_id))
     curriculums = program.curriculums
 
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
@@ -108,7 +108,7 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
         transpose_semester_slots - semester_slots 2D list is transpose for viewing in HTML <table>.
         semester_credits - Total Credits for each semester.
     """
-    curriculum = Curriculum.objects.get(id=curriculum_id)
+    curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
     semesters = curriculum.semesters
     semester_slots = []
     for sem in semesters:
@@ -144,7 +144,7 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
 def view_a_semester_of_a_curriculum(request, semester_id):
     """ views a specfic semester of a specfic curriculum """
 
-    semester = Semester.objects.get(id=semester_id)
+    semester = get_object_or_404(Semester, Q(id=semester_id))
     course_slots = semester.courseslots
 
     return render(request, 'programme_curriculum/view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
@@ -152,7 +152,7 @@ def view_a_semester_of_a_curriculum(request, semester_id):
 
 def view_a_courseslot(request, courseslot_id):
     """ view a course slot """
-    course_slot = CourseSlot.objects.get(id=courseslot_id)
+    course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     return render(request, 'programme_curriculum/view_a_courseslot.html', {'course_slot': course_slot})
 
 
@@ -168,7 +168,7 @@ def view_all_courses(request):
 
 def view_a_course(request, course_id):
     """ views the details of a Course """
-    course = Course.objects.get(id=course_id)
+    course = get_object_or_404(Course, Q(id=course_id))
     return render(request, 'programme_curriculum/view_a_course.html', {'course': course})
 
 
@@ -182,7 +182,7 @@ def view_all_discplines(request):
 def view_all_batches(request):
     """ views the details of a Course """
 
-    batches = Batch.objects.all()
+    batches = Batch.objects.all().order_by('year')
 
     batchfilter = BatchFilter(request.GET, queryset=batches)
 
@@ -244,7 +244,7 @@ def admin_view_curriculums_of_a_programme(request, programme_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    program = Programme.objects.get(id=programme_id)
+    program = get_object_or_404(Programme, Q(id=programme_id))
     curriculums = program.curriculums
 
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
@@ -288,7 +288,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    curriculum = Curriculum.objects.get(id=curriculum_id)
+    curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
     semesters = curriculum.semesters
     semester_slots = []
     for sem in semesters:
@@ -318,7 +318,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     
     transpose_semester_slots = list(zip(*semester_slots))
 
-    all_batches = Batch.objects.filter(running_batch=True).exclude(curriculum=curriculum_id)
+    all_batches = Batch.objects.filter(running_batch=True).exclude(curriculum=curriculum_id).order_by('year')
 
     return render(request, 'programme_curriculum/acad_admin/admin_view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits, 'all_batches':all_batches})
 
@@ -342,7 +342,7 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    semester = Semester.objects.get(id=semester_id)
+    semester = get_object_or_404(Semester, Q(id=semester_id))
     course_slots = semester.courseslots
 
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
@@ -361,7 +361,7 @@ def admin_view_a_courseslot(request, courseslot_id):
         pass
     
     edit = request.POST.get('edit', -1)
-    course_slot = CourseSlot.objects.get(id=courseslot_id)
+    course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     if edit == course_slot.id:
         return render(request, 'programme_curriculum/acad_admin/admin_edit_semesters_view_a_courseslot.html', {'course_slot': course_slot})
     
@@ -400,7 +400,7 @@ def admin_view_a_course(request, course_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    course = Course.objects.get(id=course_id)
+    course = get_object_or_404(Course, Q(id=course_id))
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_course.html', {'course': course})
 
 
@@ -430,7 +430,7 @@ def admin_view_all_batches(request):
     elif str(request.user) == "acadadmin" :
         pass
     
-    batches = Batch.objects.all()
+    batches = Batch.objects.all().order_by('year')
 
     batchfilter = BatchFilter(request.GET, queryset=batches)
 
@@ -476,7 +476,7 @@ def edit_discipline_form(request, discipline_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    discipline = Discipline.objects.get(id=discipline_id)
+    discipline = get_object_or_404(Discipline, Q(id=discipline_id))
     form = DisciplineForm(instance=discipline)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
@@ -523,7 +523,7 @@ def edit_programme_form(request, programme_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    programme = Programme.objects.get(id=programme_id)
+    programme = get_object_or_404(Programme, Q(id=programme_id))
     form = ProgrammeForm(instance=programme)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
@@ -593,7 +593,7 @@ def edit_curriculum_form(request, curriculum_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    curriculum = Curriculum.objects.get(id=curriculum_id)
+    curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
 
     form = CurriculumForm(instance=curriculum)
     submitbutton= request.POST.get('Submit')
@@ -663,7 +663,7 @@ def update_course_form(request, course_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    course = Course.objects.get(id=course_id)
+    course = get_object_or_404(Course, Q(id=course_id))
     form = CourseForm(instance=course)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
@@ -713,7 +713,7 @@ def edit_courseslot_form(request, courseslot_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    courseslot = CourseSlot.objects.get(id=courseslot_id)
+    courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     curriculum_id = courseslot.semester.curriculum.id
     form = CourseSlotForm(instance=courseslot)
     submitbutton= request.POST.get('Submit')
@@ -736,7 +736,7 @@ def delete_courseslot(request, courseslot_id):
     elif str(request.user) == "acadadmin" :
         pass
     
-    courseslot = CourseSlot.objects.get(id=courseslot_id)
+    courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     submitbutton= request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
@@ -783,7 +783,7 @@ def edit_batch_form(request, batch_id):
         pass
     
     curriculum_id = request.GET.get('curriculum_id', -1)
-    batch = Batch.objects.get(id=batch_id)
+    batch = get_object_or_404(Batch, Q(id=batch_id))
     if curriculum_id != -1:
         batch.curriculum = Curriculum.objects.get(id=curriculum_id)
     form = BatchForm(instance=batch)
@@ -817,7 +817,7 @@ def instigate_semester(request, semester_id):
         pass
     
     
-    semester = Semester.objects.get(id=semester_id)
+    semester = get_object_or_404(Semester, Q(id=semester_id))
     sdate = semester.start_semester
     edate = semester.end_semester
     isem = semester.instigate_semester
@@ -856,7 +856,7 @@ def replicate_curriculum(request, curriculum_id):
     elif str(request.user) == "acadadmin" :
         pass
 
-    old_curriculum = Curriculum.objects.get(id=curriculum_id)
+    old_curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
     programme = old_curriculum.programme
     name = old_curriculum.name
     version = int(old_curriculum.version) + 1

@@ -32,7 +32,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      MinimumCredits, Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue)
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 
@@ -43,6 +43,16 @@ demo_date = timezone.now()
 # demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
 # demo_date = demo_date - datetime.timedelta(days = 5)
+student_status = None
+hod_status = None
+account_status = None
+
+# assistantship_status = Assistantship_status.objects.all()
+
+# for obj in assistantship_status:
+#     student_status = obj.student_status
+#     hod_status = obj.hod_status
+#     account_status = obj.account_status
 
 
 @login_required(login_url='/accounts/login')
@@ -123,6 +133,7 @@ def academic_procedures_faculty(request):
             sem = [2,4,6,8]
         student_flag = False
         fac_flag = True
+        Faculty_department =user_details.department
         # temp = Curriculum.objects.all().filter(course_code = "CS315L").first()
         # Curriculum_Instructor.objects.create(curriculum_id = temp, instructor_id = user_details)
         #thesis_supervision_request_list = ThesisTopicProcess.objects.all()
@@ -131,6 +142,8 @@ def academic_procedures_faculty(request):
         pending_thesis_request_list = thesis_supervision_request_list.filter(pending_supervisor = True)
         faculty_list = get_faculty_list()
         assistantship_request_list = AssistantshipClaim.objects.all()
+        hod_assistantship_request_list = assistantship_request_list.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval = False)
+        hod_approved_assistantship = assistantship_request_list.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(acad_approval = False)
         ta_approved_assistantship_request_list = AssistantshipClaim.objects.all().filter(ta_supervisor_remark=True)
         thesis_approved_assistantship_request_list = AssistantshipClaim.objects.all().filter(thesis_supervisor_remark=True)
         approved_assistantship_request_list = ta_approved_assistantship_request_list | thesis_approved_assistantship_request_list
@@ -146,6 +159,7 @@ def academic_procedures_faculty(request):
                          {
                             'student_flag' : student_flag,
                             'fac_flag' : fac_flag,
+                            'hod_flag' : hod_status,
                             'thesis_supervision_request_list' : thesis_supervision_request_list,
                             'pending_thesis_request_list' : pending_thesis_request_list,
                             'approved_thesis_request_list' : approved_thesis_request_list,
@@ -153,12 +167,15 @@ def academic_procedures_faculty(request):
                             'courses_list' : courses_list,
                             'fac_id': fac_id,
                             'fac_name' : fac_name,
+                            'department' : Faculty_department,
                             'assistantship_request_list' : assistantship_request_list,
                             'approved_assistantship_request_list' : approved_assistantship_request_list,
+                            'hod_assistantship_request_list' : hod_assistantship_request_list,
+                            'hod_approved_assistantship' : hod_approved_assistantship,
                             'mtechseminar_request_list' : mtechseminar_request_list,
                             'phdprogress_request_list' : phdprogress_request_list,
                             'r' : r,
-                         })
+                        })
     else:
         HttpResponse("user not found")
 
@@ -166,12 +183,15 @@ def academic_procedures_faculty(request):
 @login_required(login_url='/accounts/login')
 def account(request):
     assistant_account_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
+    assistant_pen_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(acad_approval = True).filter(account_approval = False)
     assistant_account_length = len(assistant_account_list.filter(acad_approval = True).filter(account_approval = False))
     return render(request,
                         '../templates/ais/account.html' ,
                         {
                             'assistant_account_length' : assistant_account_length,
                             'assistant_account_list' : assistant_account_list ,
+                            'assistant_pen_list' : assistant_pen_list,
+                            'account_flag' : account_status,
                         })
 
 
@@ -277,7 +297,7 @@ def academic_procedures_student(request):
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
-        final_registration_choice = next_sem_branch_course
+        final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
         currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
         current_credits = get_current_credits(currently_registered_course)
 
@@ -409,6 +429,7 @@ def academic_procedures_student(request):
                             'fee_payment_mode_list' : fee_payment_mode_list,
                             'next_sem_registration_courses': next_sem_registration_courses,
                             'final_registration_choice' : final_registration_choice,
+                            'unavailable_courses_nextsem' : unavailable_courses_nextsem,
                             'performance_list' : performance_list,
                             'faculty_list' : faculty_list,
                             'thesis_request_list' : thesis_request_list,
@@ -452,7 +473,8 @@ def academic_procedures_student(request):
                             'tot_d':tot_d,
                            'attendence':attendence,
                            'BranchChangeForm': BranchChangeForm(),
-                           'BranchFlag':branchchange_flag
+                           'BranchFlag':branchchange_flag,
+                           'assistantship_flag' : student_status,
                            }
                 )
 
@@ -1142,7 +1164,6 @@ def pre_registration(request):
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
-
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
             count = request.POST.get('ct')
             count = int(count)
@@ -1151,7 +1172,7 @@ def pre_registration(request):
                 i = str(i)
                 choice = "choice["+i+"]"
                 slot = "slot["+i+"]"
-                try:
+                if request.POST.get(choice)!='0':
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
                     p = InitialRegistration(
@@ -1160,8 +1181,8 @@ def pre_registration(request):
                         student_id = current_user,
                         course_slot_id = courseslot_id
                         )
-                except Exception as e:
-                    return HttpResponseRedirect('/academic-procedures/main')
+                else:
+                    continue
                 reg_curr.append(p)
             InitialRegistration.objects.bulk_create(reg_curr)
             try:
@@ -1207,16 +1228,21 @@ def final_registration(request):
 
                 f_reg = []
                 for x in range(values_length):
-                    course_id = Courses.objects.get(id = choice[x])
-                    courseslot_id = CourseSlot.objects.get(id = slot[x])
-                    p = FinalRegistration(
-                        course_id = course_id,
-                        semester_id=sem_id,
-                        student_id= current_user,
-                        course_slot_id = courseslot_id,
-                        verified = False
-                        )
-                    f_reg.append(p)
+                    if choice[x] != '0':
+                        course_id = Courses.objects.get(id = choice[x])
+                        courseslot_id = CourseSlot.objects.get(id = slot[x])
+                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                            p = FinalRegistration(
+                                course_id = course_id,
+                                semester_id=sem_id,
+                                student_id= current_user,
+                                course_slot_id = courseslot_id,
+                                verified = False
+                                )
+                            f_reg.append(p)
+                        else:
+                            messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
+                            return HttpResponseRedirect('/academic-procedures/main')
                 FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
@@ -1255,19 +1281,24 @@ def final_registration(request):
                     i = str(i)
                     choice = "choice["+i+"]"
                     slot = "slot["+i+"]"
-                    try:
-                        course_id = Courses.objects.get(id = request.POST.get(choice))
-                        courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                        p = FinalRegistration(
-                            course_id = course_id,
-                            semester_id=sem_id,
-                            student_id= current_user,
-                            course_slot_id = courseslot_id,
-                            verified = False
-                            )
-                        f_reg.append(p)
-                    except Exception as e:
-                        return HttpResponseRedirect('/academic-procedures/main')
+                    if request.POST.get(choice) != '0':
+                        try:
+                            course_id = Courses.objects.get(id = request.POST.get(choice))
+                            courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
+                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                                p = FinalRegistration(
+                                    course_id = course_id,
+                                    semester_id=sem_id,
+                                    student_id= current_user,
+                                    course_slot_id = courseslot_id,
+                                    verified = False
+                                    )
+                                f_reg.append(p)
+                            else:
+                                messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
+                                return HttpResponseRedirect('/academic-procedures/main')
+                        except Exception as e:
+                            return HttpResponseRedirect('/academic-procedures/main')
                 FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
@@ -1352,13 +1383,14 @@ def add_courses(request):
                 try:
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                    p = course_registration(
-                        course_id = course_id,
-                        student_id=current_user,
-                        course_slot_id = courseslot_id,
-                        semester_id=sem_id
-                        )
-                    reg_curr.append(p)
+                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                        p = course_registration(
+                            course_id = course_id,
+                            student_id=current_user,
+                            course_slot_id = courseslot_id,
+                            semester_id=sem_id
+                            )
+                        reg_curr.append(p)
                 except Exception as e:
                     continue
             course_registration.objects.bulk_create(reg_curr)
@@ -1509,6 +1541,19 @@ def add_thesis(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
+def get_final_registration_choices(branch_courses,batch):
+    course_option = []
+    unavailable_courses = []
+    for courseslot in branch_courses:
+        max_limit = courseslot.max_registration_limit
+        lis = []
+        for course in courseslot.courses.all():
+            if FinalRegistration .objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
+                lis.append(course)
+            else:
+                unavailable_courses.append(course)
+        course_option.append((courseslot, lis))
+    return course_option, unavailable_courses
 
 def get_add_course_options(branch_courses, current_register, batch):
 
@@ -2066,6 +2111,7 @@ def verify_registration(request):
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
     elif request.POST.get('status_req') == "reject" :
+        reject_reason = request.POST.get('reason')
         student_id = request.POST.get('student_id')
         student_id = Student.objects.get(id = student_id)
 
@@ -2078,7 +2124,7 @@ def verify_registration(request):
             FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
             StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
             FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
-            academics_module_notif(academicadmin, student_id.id.user, 'registration_declined_fee')
+            academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
 
@@ -2802,56 +2848,56 @@ def Bonafide_form(request):
 #         form = BonafideForm()
 
 #     return render(request, 'bonafide.html', {'form': form})
+
 @login_required
 def ACF(request):
-    if request.method == 'POST':
-            stu = Student.objects.get(id=request.user.username)
-            month = request.POST.get('month')
-            year= request.POST.get('year') 
-            account = request.POST.get('bank_account')
-            thesis = request.POST.get('thesis_supervisor')
-            ta = request.POST.get('ta_supervisor')
-            appli = request.POST.get('applicability')
-            FACUL1 = None
-            FACUL2 = None
-            message = ""
-            faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
-            res = "error"
-            for j in range(2):
-             for i in faculties:
-                 checkName = i.user.first_name + " " + i.user.last_name
-                 if j==0 and ta == checkName:
+        stu = Student.objects.get(id=request.user.username)
+        month = request.POST.get('month')
+        year= request.POST.get('year') 
+        account = request.POST.get('bank_account')
+        thesis = request.POST.get('thesis_supervisor')
+        ta = request.POST.get('ta_supervisor')
+        appli = request.POST.get('applicability')
+        FACUL1 = None
+        FACUL2 = None
+        message = ""
+        faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
+        res = "error"
+        for j in range(2):
+            for i in faculties:
+                checkName = i.user.first_name + " " + i.user.last_name
+                if j==0 and ta == checkName:
                     res = "success"
                     FACUL1 = i
-                 elif j==1 and thesis == checkName:
+                elif j==1 and thesis == checkName:
                     res = "success"
                     FACUL2 = i
 
-             if (res == "error"):
+            if (res == "error"):
                 message = message + "The entered faculty incharge does not exist"
                 content = {
-                      'status' : res,
-                      'message' : message
+                    'status' : res,
+                    'message' : message
                 } 
                 content = json.dumps(content) 
                 return HttpResponse(content)
                
             
-            faculty_inc1 = get_object_or_404(Faculty, id = FACUL1)
-            faculty_inc2 = get_object_or_404(Faculty, id = FACUL2)
-            acf = AssistantshipClaim(student=stu,month=month, year=year, bank_account=account, thesis_supervisor=faculty_inc2, ta_supervisor=faculty_inc1, applicability= appli)
-            acf.save()
-            message= message + "Form submitted succesfully"
-            content = {
-            'status' : res,
-            'message' : message
-            } 
-            sender1 = ExtraInfo.objects.get(id = str(FACUL1)[:4]).user
-            sender2 = ExtraInfo.objects.get(id = str(FACUL2)[:4]).user
-            content = json.dumps(content)
-            AssistantshipClaim_faculty_notify(request.user,sender1)
-            AssistantshipClaim_faculty_notify(request.user,sender2)
-            return HttpResponse(content)
+        faculty_inc1 = get_object_or_404(Faculty, id = FACUL1)
+        faculty_inc2 = get_object_or_404(Faculty, id = FACUL2)
+        acf = AssistantshipClaim(student=stu,month=month, year=year, bank_account=account, thesis_supervisor=faculty_inc2, ta_supervisor=faculty_inc1, applicability= appli)
+        acf.save()
+        message= message + "Form submitted succesfully"
+        content = {
+        'status' : res,
+        'message' : message
+        } 
+        sender1 = ExtraInfo.objects.get(id = str(FACUL1)[:4]).user
+        sender2 = ExtraInfo.objects.get(id = str(FACUL2)[:4]).user
+        content = json.dumps(content)
+        AssistantshipClaim_faculty_notify(request.user,sender1)
+        AssistantshipClaim_faculty_notify(request.user,sender2)
+        return HttpResponse(content)
 
 
 def update_assistantship(request):
@@ -2875,30 +2921,71 @@ def update_assistantship(request):
             AssistantshipClaim_acad_notify(sender,recipient)
    
     return HttpResponseRedirect('/academic-procedures/main/')
-        
+
+
+def update_hod_assistantship(request):
+    if request.method == 'POST':
+        d = request.POST.get('dict')
+        dic = json.loads(d)
+        assisobj = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval = False)
+
+        for obj in assisobj:
+            if str(obj.student) in dic.keys():
+                obj.hod_approval =True
+                obj.save()
+        return HttpResponse('success')
+
+
 
 def update_acad_assis(request):
     if request.method == 'POST':
-        i = request.POST.get('obj_id')
-        sti = request.POST.get('stipend')
-        aobj= AssistantshipClaim.objects.get(id = i)
-        recipient = User.objects.get(username = "rizwan")
-        aobj.stipend = sti
-        aobj.acad_approval = True
-        aobj.save()
-        AssistantshipClaim_account_notify(request.user,aobj.student,recipient)         
+        d = request.POST.get('dict')
+        dic = json.loads(d)
+        aobj= AssistantshipClaim.objects.all()
+
+        for obj in aobj:
+            if obj.acad_approval == False and str(obj.student) in dic.keys():
+                obj.stipend = dic[str(obj.student)]
+                obj.acad_approval=True
+                obj.save()
+                              
         return HttpResponse('success')
 
 
 def update_account_assistantship(request):
     if request.method == 'POST':
-        i = request.POST.get('obj_id')
-        acobj= AssistantshipClaim.objects.get(id = i)
-        acobj.account_approval = True
-        recipient = User.objects.get(username = acobj.student)
-        acobj.save()
-        AssistantshipClaim_notify(request.user,recipient,acobj.month,acobj.year)
-        return HttpResponse('success')
+        di = request.POST.get('dict')
+        dic = json.loads(di)
+
+        acobj= AssistantshipClaim.objects.all()
+        for obj in acobj:
+            if obj.account_approval == False and str(obj.student) in dic.keys():
+                obj.account_approval = True
+                obj.save()
+                recipient = User.objects.get(username = obj.student)
+                AssistantshipClaim_notify(request.user,recipient,obj.month,obj.year)
+                
+            return HttpResponse('success')
+
+def assis_stat(request):
+    if request.method == 'POST':
+        flag= request.POST.get('flag')
+        assis_status = Assistantship_status.objects.all()
+        for obj in assis_status:
+            if flag == "studenttrue" :
+                obj.student_status= True
+            elif flag == "studentfalse":
+                obj.student_status = False
+            elif flag == "hodtrue" :
+                obj.hod_status= True
+            elif flag == "hodfalse":
+                obj.hod_status = False
+            elif flag == "accounttrue" :
+                obj.account_status= True
+            elif flag == "accountfalse":
+                obj.account_status = False
+            obj.save()
+    return HttpResponse('success')
 
 
 @login_required

@@ -161,7 +161,7 @@ def holdingMeeting(request):
             p.save()
             success_msg="Meeting created successfully. Waiting for Suprintendent for the MOM"
             Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
-            Superintendent = HoldsDesignation.objects.filter(designation=Designation.objects.filter(name='Junior Superintendent')).first()
+            Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
             office_module_DeanS_notif(request.user, Dean, 'meeting_booked')
             office_module_DeanS_notif(request.user, Superintendent, 'meeting_booked')
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request, page=1, success_msg=success_msg, err_msg=err_msg, flag_dean_s=True))
@@ -189,7 +189,7 @@ def meetingMinutes(request):
         meeting_object.save()
         success_msg="MOM uploaded successfully"
         Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
-        Superintendent = HoldsDesignation.objects.filter(designation=Designation.objects.filter(name='Junior Superintendent')).first()
+        Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
         office_module_DeanS_notif(request.user, Dean, 'MOM_submitted')
         office_module_DeanS_notif(request.user, Superintendent, 'MOM_submitted')
         # office_module_DeanS_notif(request.user, 'gymkhana', 'meeting_booked')
@@ -420,7 +420,7 @@ def budgetApproval(request):
             success_msg = "Club Budget approved succesfully"
             office_module_DeanS_notif(request.user, request.user, 'budget_approved')
             Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
-            Superintendent = HoldsDesignation.objects.filter(designation=Designation.objects.filter(name='Junior Superintendent')).first()
+            Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
             office_module_DeanS_notif(request.user, Dean, 'budget_approved')
             office_module_DeanS_notif(request.user, Superintendent, 'budget_approved')
             # office_module_DeanS_notif(request.user, Co, 'budget_approved')

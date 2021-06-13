@@ -15,7 +15,7 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form" action="/ps1/stock_update/" >
+        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form" action="/purchase-and-store/stock_update/" >
            <input hidden  name = 'id' value="{{ StockEntry.item_id.file_info.id }}"> 
             
             {% csrf_token %}
