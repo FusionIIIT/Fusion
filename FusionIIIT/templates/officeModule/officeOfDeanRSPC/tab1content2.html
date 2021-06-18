@@ -66,5 +66,36 @@
 
 <br>
 <br>
+<h4 class="ui dividing header">Report:</h4>
+
+<table class="ui fixed sortable celled table">
+    <thead>
+    <tr>
+
+        <th class="sorted ascending" style="width: 7%;">User</th>
+        <th class="" style="width: 15%;" >Project ID</th>
+        <th class="" style="width: 20%;">Project Title</th>
+        <th class="" style="width: 20%;">Rspc res.</th>
+
+        <th style="width:20%">Extended duration</th>
+        <th style="width:20%">Date</th>
+     
+
+    </tr>
+    </thead>
+
+    <tbody>{% for pr in project_ext %}
+    <tr>
+        <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ pr.project_id_id }}</div>{{ forloop.counter }}.</td>
+        <td id="pr{{ forloop.counter }}A">{{ pr.project_id_id }}</td>
+        <td id="pr{{ forloop.counter }}B">{{ pr.project_id.project_title}}</td>
+        <td id="pr{{ forloop.counter }}C">{{ pr.DRSPC_response }}</td>
+        <td id="pr{{ forloop.counter }}D">{{ pr.extended_duration}}</td>
+        <td id="pr{{ forloop.counter }}E">{{ pr.date }}</td>
+       
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 <div class="ui divider"></div>
   {% endblock %}

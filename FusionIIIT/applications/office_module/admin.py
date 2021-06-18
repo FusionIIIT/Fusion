@@ -17,3 +17,16 @@ admin.site.register(registrar_director_section)
 admin.site.register(Assistantship)
 admin.site.register(hostel_allotment)
 admin.site.register(hostel_capacity)
+
+# registering Dean RSPC project management models
+
+admin.site.register(Project_Registration)
+admin.site.register(Project_Extension)
+admin.site.register(Project_Closure)
+admin.site.register(Project_Reallocation)
+
+admin.site.register(Member)
+admin.site.register(Registrar)
+admin.site.register(vendor)
+admin.site.register(purchase_commitee)
+admin.site.register(LTC)

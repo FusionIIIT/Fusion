@@ -99,5 +99,42 @@
 
 <br>
 <br>
+<h4 class="ui dividing header">Report:</h4>
+
+<table class="ui fixed sortable celled table">
+    <thead>
+    <tr>
+
+        <th class="sorted ascending" style="width: 7%;">PR Id</th>
+        <th class="" style="width: 15%;" >Project Title</th>
+        <th class="" style="width: 20%;">sponser</th>
+        <th class="" style="width: 20%;">Rspc res.</th>
+
+        <th style="width:20%">Project Type</th>
+        <th style="width:20%">duration</th>
+        <th style="width:20%">Start date</th>
+        
+
+
+    </tr>
+    </thead>
+
+    <tbody>{% for pr in project_r %}
+    <tr>
+        <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ pr.id }}</div>{{ pr.id }}.</td>
+        <td id="pr{{ forloop.counter }}A">{{ pr.project_title }}</td>
+        <td id="pr{{ forloop.counter }}B">{{ pr.sponsored_agency }}</td>
+        <td id="pr{{ forloop.counter }}C">{{ pr.DRSPC_response }}</td>
+        <td id="pr{{ forloop.counter }}D">{{ pr.project_type}}</td>
+        <td id="pr{{ forloop.counter }}E">{{ pr.duration}}</td>
+        <td id="pr{{ forloop.counter }}F">{{ pr.start_date  }}</td>
+        
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
 <div class="ui divider"></div>
+
   {% endblock %}
