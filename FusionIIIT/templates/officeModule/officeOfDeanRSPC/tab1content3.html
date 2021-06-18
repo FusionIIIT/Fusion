@@ -66,5 +66,36 @@
 
 <br>
 <br>
+<h4 class="ui dividing header">Report:</h4>
+
+<table class="ui fixed sortable celled table">
+    <thead>
+    <tr>
+
+        <th class="sorted ascending" style="width: 7%;">Project ID</th>
+        <th class="" style="width: 15%;" >Project title</th>
+        <th class="" style="width: 20%;">Budget Allotted</th>
+        <th class="" style="width: 20%;">Budget Remaining</th>
+
+        <th style="width:20%">Reason</th>
+        <th style="width:20%">Date</th>
+       
+
+    </tr>
+    </thead>
+
+    <tbody>{% for pr in project_reall %}
+    <tr>
+        <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ pr.project_id_id }}</div>{{ forloop.counter }}.</td>
+        <td id="pr{{ forloop.counter }}A">{{ pr.project_id.project_title}}</td>
+        <td id="pr{{ forloop.counter }}B">{{ pr.previous_amount }}</td>
+        <td id="pr{{ forloop.counter }}C">{{ pr.new_amount }}</td>
+        <td id="pr{{ forloop.counter }}D">{{ pr.transfer_reason}}</td>
+        <td id="pr{{ forloop.counter }}E">{{ pr.date }}</td>
+        
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 <div class="ui divider"></div>
   {% endblock %}

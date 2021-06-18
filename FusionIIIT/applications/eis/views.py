@@ -16,6 +16,7 @@ from xhtml2pdf import pisa
 from applications.eis import admin
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from django.http.response import JsonResponse
+from applications.office_module.models import (Project_Closure, Project_Extension, Project_Reallocation,Project_Registration)
 from .forms import *
 from .models import *
 from django.core.files.storage import FileSystemStorage
@@ -282,6 +283,14 @@ def profile(request, username=None):
 
     form = ConfrenceForm()
 
+    # project management views
+
+    project_r=Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
+    project_ext=Project_Extension.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_closure=Project_Closure.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_reall=Project_Reallocation.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    ############################
+
     journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
     conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
     books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
@@ -346,7 +355,12 @@ def profile(request, username=None):
                'keynotes':keynotes,
                'events':events,
                'year_range':y,
-               'pers':pers
+               'pers':pers,
+               'project_r':project_r,
+               'project_ext':project_ext,
+               'project_closure':project_closure,
+               'project_reall':project_reall
+
                }
     return render(request, 'eisModulenew/profile.html', context)
 
@@ -2551,14 +2565,14 @@ def rspc_generate_report(request):
     star_date = start + '-01-01'
     en = request.POST.get('lmonth')
     if(request.POST.get('journal_select')=="journal"):
-        journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-date_entry')
+        journal = emp_research_papers.objects.filter(rtype='Journal').filter(year__range=[start,end]).order_by('-date_entry')
         journal_req="1"
     else:
         journal=""
         journal_req="0"
 
     if (request.POST.get('conference_select') == "conference"):
-        conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-date_entry')
+        conference = emp_research_papers.objects.filter(rtype='Conference').filter(year__range=[start,end]).order_by('-date_entry')
         conference_req = "1"
     else:
         conference=""

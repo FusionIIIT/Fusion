@@ -11,7 +11,7 @@
         <th class="one wide column">
         </th>
 
-        <th class="one wide column">
+        <th class="three wide column">
             Faculty Name
         </th>
 
@@ -23,7 +23,7 @@
             project type
         </th>
 
-        <th class="four wide column">
+        <th class="two wide column">
             Status
         </th>
 
@@ -45,7 +45,7 @@
 
         <td class="collapsing">
             <div class="ui fitted checkbox">
-                {% if "Dean (R&D)" in desig %}
+                {% if "dean_rspc"  in desig %}
                 <input type="checkbox" value={{pr.id}} name="id[]"><label></label>
                 {% endif %}
                 <!--<input type="checkbox" value={{pr.id}} name="id"> <label></label>-->
@@ -77,18 +77,19 @@
             {%endfor%}
 
         </td>
-
+<center>
         <td>
             {% if pr.DRSPC_response == "Approve" %}
-            <i class="large green checkmark icon">{{pr.DRSPC_response}}</i>
+            <i class="large green checkmark icon"></i>
             {% elif pr.DRSPC_response == "Pending" %}
-            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            <i class="large orange warning icon"></i>
             {% elif pr.DRSPC_response == "Disapprove" %}
-            <i class="large red x icon">{{pr.DRSPC_response}}</i>
+            <i class="large red x icon"></i>
             {% elif pr.DRSPC_response == "Forward" %}
-            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            <i class="large orange warning icon"></i>
             {% endif %}
         </td>
+    </center>
 
         <td>
             {% for pr1 in project %}
@@ -156,7 +157,7 @@
 
 <!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
 <!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
-{% if "Dean (R&D)" in desig %}
+{% if "dean_rspc" in desig %}
 <button class="ui primary right floated button" type="submit"  name="approve" value="approve" >Approve</button>
 <button class="ui primary right floated button" type="submit"  name="reject" value="reject">Reject</button>
 <button class="ui primary right floated button" type="submit"  name="forward" value="approve" >Forward</button>
