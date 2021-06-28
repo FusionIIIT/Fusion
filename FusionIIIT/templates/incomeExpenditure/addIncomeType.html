@@ -1,0 +1,53 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+
+    
+<div class="ui vertical segment">
+    
+    <form id="add_income_type_form" method='POST' action='/income-expenditure/addIncomeSubType/'>{% csrf_token %}
+        <div class="ui form" style="border: black" >
+
+            <div class="field">
+                <select class="ui dropdown" name="income_source">
+                    <option value="">Income Source</option>
+                    {% for i in income_sources %}
+                        <option value="{{ i.id }}">{{ i }}</option>
+                    {% endfor%}
+                </select>
+            </div>
+
+            <div class="field">          
+                <input placeholder="Sub Type" name='sub_type' required="true" type="text"><br>            
+            </div>
+            
+            <br>
+
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type='submit'>Add Income Type</button></center>
+    </form>
+</div>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#add_income_type_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+        posting.done(function(data) {
+            alert('New Income Type added succesfully');
+            window.location = "/income-expenditure/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to add income type');
+            window.location = "/income-expenditure/main/";
+        });
+    });
+});
+</script>
+
