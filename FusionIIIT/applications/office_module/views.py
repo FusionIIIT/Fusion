@@ -2185,7 +2185,8 @@ def viewHOD(request):
 
 def officeOfDeanAcademics(request):
     student= Student.objects.all()
-    instructor= Curriculum_Instructor.objects.all()
+    instructor = Curriculum_Instructor.objects.all()
+    
     spi=Spi.objects.select_related('student_id__id__user','student_id__id__department').all()
     grades=Grades.objects.all()
     course=Course.objects.all()
