@@ -8,13 +8,11 @@
         </a>
     </div>
 
-    <script type="text/javascript">
-        function display() {
-            // body...
-            var data = document.getElementById('club_name').value;
-           // alert(data);
-            document.getElementById(data).hidden=false;
-            //alert("dd");
+   <script type="text/javascript">
+        window.onclick = function(e){
+            if(document.activeElement != document.querySelector('[data-tab="memberrecords"] input.search')){
+                $('div[data-tab="memberrecords"] .dropdown').dropdown('hide');
+            }
         }
     </script>
 
