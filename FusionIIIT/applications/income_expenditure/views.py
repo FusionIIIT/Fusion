@@ -131,7 +131,7 @@ def main_page(request):
 			entry.save()
 		fixed_attributes = FixedAttributes.objects.all()
     
-	if(request.user.username=="acadadmin"):
+	if(request.user.is_staff==True):
 		return render(
 				request,
 				'../templates/incomeExpenditure/ie.html',
@@ -179,9 +179,7 @@ def main_page(request):
 
 #view to add income
 def add_income(request):
-	username=request.user.username
-	
-	if(request.method == 'POST' and username=='acadadmin'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		source = request.POST.get('income_source')
 		source = IncomeSource.objects.filter(id=source).first()
 
@@ -217,8 +215,7 @@ def add_income(request):
 '''
 
 def add_expenditure(request):
-	username=request.user.username
-	if(request.method == 'POST' and username=="acadadmin"):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		spent_on = request.POST.get('spent_on')
 		spent_on = ExpenditureType.objects.filter(id=spent_on).first()
 
@@ -271,8 +268,7 @@ def add_expenditure_type():
 			new_type.save()
 
 def updateFixedValues(request):
-	username=request.user.username
-	if(request.method == 'POST' and username=="acadadmin"):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		for i in fixed_attributes_list:
 			update_ob = FixedAttributes.objects.get(attribute=i)
 			up_val = request.POST.get(i)
@@ -290,7 +286,7 @@ def updateFixedValues(request):
 
 
 def del_expenditure(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		ex_id = request.POST.get('id')
 		Expenditure.objects.get(id=ex_id).delete()
 		balanceSheet_table()
@@ -306,7 +302,7 @@ def del_expenditure(request):
 
 
 def del_income(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		in_id = request.POST.get('id')
 		Income.objects.get(id=in_id).delete()
 		balanceSheet_table()
