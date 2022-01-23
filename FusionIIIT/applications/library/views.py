@@ -178,6 +178,7 @@ def libraryModule(request):
                           'ctl00$ContentPlaceHolder1$cmdSearch': 'Search'}
         rb3 = requests.post(url1 + url4, cookies=r1.cookies, data=formfields)
         soupb2 = BeautifulSoup(rb3.content, "html5lib")
+        # To remove span items around searched keyword
         for match in soupb2.findAll('span'):
             match.unwrap()
         # textb=soupb2.get_text()

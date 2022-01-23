@@ -66,12 +66,12 @@ $(document).ready(function() {
                         value: unsortedValues[i]
                     });
                 }
-
+                // Different sorting for date and text
                 sortedMap.sort(function(a, b) {
-                    let aa=Date.parse(a.value);
-                    let bb=Date.parse(b.value);
-                    if(!isNaN(aa))
-                        return self.settings.compare(aa, bb) * direction;
+                    let date1=Date.parse(a.value);
+                    let date2=Date.parse(b.value);
+                    if(!isNaN(date1))
+                        return self.settings.compare(date1, date2) * direction;
                     else
                         return self.settings.compare(a.value, b.value) * direction;
                 });
