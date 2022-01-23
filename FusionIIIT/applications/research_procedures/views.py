@@ -17,23 +17,23 @@ def IPR(request):
     context={}
     
     if request.method=='POST':
-        pat.faculty_id=extrainfo
-        pat.title=request.POST.get('title')
-        pat.ipd_form=request.FILES['file1']
-        file1=request.FILES['file1']
-        fs=FileSystemStorage()
-        name1=fs.save(file1.name,file1)
-        pat.file1=fs.url(name1)
+        if(extrainfo.user_type == "faculty"):
+            pat.faculty_id=extrainfo
+            pat.title=request.POST.get('title')
+            pat.ipd_form=request.FILES['file1']
+            file1=request.FILES['file1']
+            fs=FileSystemStorage()
+            name1=fs.save(file1.name,file1)
+            pat.file1=fs.url(name1)
 
-        pat.project_details=request.FILES['file2']
-        file2=request.FILES['file2']
-        fs=FileSystemStorage()
-        name2=fs.save(file2.name,file2)
-        pat.file2=fs.url(name2)
+            pat.project_details=request.FILES['file2']
+            file2=request.FILES['file2']
+            fs=FileSystemStorage()
+            name2=fs.save(file2.name,file2)
+            pat.file2=fs.url(name2)
 
-        pat.status='Pending'
-        pat.save()
-
+            pat.status='Pending'
+            pat.save()
     pat=Patent.objects.all() 
     context['pat']=pat
     context['use']=extrainfo
@@ -48,11 +48,12 @@ def update(request):
     desig = holds_designations
     pat=Patent()
     if request.method=='POST':
-        iid=request.POST.get('id')
-        pat=Patent.objects.get(application_id=iid)
-        pat.status=request.POST.get('status')
-        pat.save()
-
+        if(desig.exists()):
+            if(desig.first().designation.name == "dean_rspc" and extrainfo.user_type == "faculty"):
+                iid=request.POST.get('id')
+                pat=Patent.objects.get(application_id=iid)
+                pat.status=request.POST.get('status')
+                pat.save()
     pat=Patent.objects.all() 
     return render(request ,"rs/research.html",{'pat':pat,'use':extrainfo,'desig':desig})
 
