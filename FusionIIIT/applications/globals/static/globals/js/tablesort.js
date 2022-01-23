@@ -68,7 +68,12 @@ $(document).ready(function() {
                 }
 
                 sortedMap.sort(function(a, b) {
-                    return self.settings.compare(a.value, b.value) * direction;
+                    let aa=Date.parse(a.value);
+                    let bb=Date.parse(b.value);
+                    if(!isNaN(aa))
+                        return self.settings.compare(aa, bb) * direction;
+                    else
+                        return self.settings.compare(a.value, b.value) * direction;
                 });
 
                 $.each(sortedMap, function(i, entry) {

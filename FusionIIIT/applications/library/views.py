@@ -178,6 +178,8 @@ def libraryModule(request):
                           'ctl00$ContentPlaceHolder1$cmdSearch': 'Search'}
         rb3 = requests.post(url1 + url4, cookies=r1.cookies, data=formfields)
         soupb2 = BeautifulSoup(rb3.content, "html5lib")
+        for match in soupb2.findAll('span'):
+            match.unwrap()
         # textb=soupb2.get_text()
         text = html_text.extract_text(str(soupb2))
         text = text.split("Central Library", 1)[1]
