@@ -1397,7 +1397,7 @@ def add_courses(request):
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
                     # Check if maximum course registration limit has not reached and student has not already registered for that course
-                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit and (course_registration.objects.filter(course_id=course_id, student_id=current_user, semester_id=sem_id,course_slot_id = courseslot_id,).count() == 0):
+                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit and (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
                         p = course_registration(
                             course_id = course_id,
                             student_id=current_user,
