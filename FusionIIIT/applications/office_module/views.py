@@ -1713,16 +1713,16 @@ def directorOffice(request):
         user=ExtraInfo.objects.select_related('user','department').all().filter(user=user_name).first()
         holds=HoldsDesignation.objects.select_related('user','designation','working').filter(user=user.user)
         deslist1=['Director']
-        # context={ }
-
-        if user.user_type == 'faculty': 
-            context={ }
-            return render(request, "officeModule/directorOffice/directorOffice.html", context)
+        context={ }
 
         # if user.user_type == 'faculty': 
+        #     context={ }
         #     return render(request, "officeModule/directorOffice/directorOffice.html", context)
-        # else:
-        #     return render(request, "officeModule/directorOffice/directorOffice.html", context)
+
+        if user.user_type == 'faculty': 
+            return render(request, "officeModule/directorOffice/directorOffice.html", context)
+        else:
+            return render(request, "officeModule/directorOffice/unauthorised.html", context)
 
 #function gets the count of faculties department wise and top scoring students yearwise and department wise
 def viewProfile(request):
@@ -2187,7 +2187,7 @@ def officeOfDeanAcademics(request):
     student= Student.objects.all()
     instructor = Curriculum_Instructor.objects.all()
 
-    
+
     spi=Spi.objects.select_related('student_id__id__user','student_id__id__department').all()
     grades=Grades.objects.all()
     course=Course.objects.all()
