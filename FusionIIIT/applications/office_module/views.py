@@ -2184,9 +2184,9 @@ def viewHOD(request):
 
 
 def officeOfDeanAcademics(request):
+
     student= Student.objects.all()
     instructor = Curriculum_Instructor.objects.all()
-
 
     spi=Spi.objects.select_related('student_id__id__user','student_id__id__department').all()
     grades=Grades.objects.all()
@@ -2212,8 +2212,19 @@ def officeOfDeanAcademics(request):
                 'meetingMinutes':minutes,
                 'final_minutes':final_minutes,
                 'all_desig':all_designation,}
+    
+    user_name=get_object_or_404(User,username=request.user.username)
+    user=ExtraInfo.objects.select_related('user','department').all().filter(user=user_name).first()
+    holds=HoldsDesignation.objects.select_related('user','designation','working').filter(user=user.user)
+    deslist1=['Director']
 
-    return render(request, "officeModule/officeOfDeanAcademics/officeOfDeanAcademics.html", context)
+
+    if user.user_type == 'faculty': 
+        return render(request, "officeModule/officeOfDeanAcademics/officeOfDeanAcademics.html", context)
+    else:
+        return render(request, "officeModule/directorOffice/unauthorised.html", context)
+    
+   
 
 def assistantship(request):
     # print(request.POST.getlist('check'))
