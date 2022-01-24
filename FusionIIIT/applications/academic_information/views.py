@@ -288,7 +288,6 @@ def curriculum(request):
         return HttpResponse(obj,content_type='application/json')
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -381,7 +380,6 @@ def add_curriculum(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -467,7 +465,6 @@ def edit_curriculum(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -549,7 +546,11 @@ def next_curriculum(request):
                     course_type=i.course_type,
                 )
                 new_curriculum.append(ins)
-            Curriculum.objects.bulk_create(new_curriculum)
+            try:
+                Curriculum.objects.bulk_create(new_curriculum)
+            except Exception as e:
+                print("Exception occured")
+                print("e")
             
 
         elif request.POST['option'] == '2':
@@ -567,14 +568,19 @@ def next_curriculum(request):
                     course_type=i.course_type,
                 )
                 new_curriculum.append(ins)
-            Curriculum.objects.bulk_create(new_curriculum)
-            batch=batch+1
-            curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
-            context= {
-                'curriculumm' :curriculum,
-                'tab_id' :['3','3']
-            }
-            return render(request, "ais/ais.html", context)
+            try:
+                Curriculum.objects.bulk_create(new_curriculum)
+            except Exception as e:
+                print("Exception occured!")
+                print(e)
+            finally:
+                batch=batch+1
+                curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
+                context= {
+                    'curriculumm' :curriculum,
+                    'tab_id' :['3','3']
+                }
+                return render(request, "ais/ais.html", context)
         else:
             context= {
             'tab_id' :['3','2']
@@ -616,7 +622,6 @@ def add_timetable(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
