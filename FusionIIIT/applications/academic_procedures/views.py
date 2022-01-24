@@ -680,7 +680,7 @@ def branch_change_request(request):
                 current_user - details of the current user.
                 student - details of the logged in student.
                 extraInfo_user - gets the user details from the extrainfo model.
-                department - user's branch.
+                department - user's applied brach.
     '''
 
     if request.method == 'POST':
@@ -693,10 +693,8 @@ def branch_change_request(request):
             user=student
             )
         change_save.save()
-        messages.info(request, 'Apply for branch change successfull')
         return HttpResponseRedirect('/academic-procedures/main')
     else:
-        messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
 
 
