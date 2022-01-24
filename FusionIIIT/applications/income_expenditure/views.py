@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, request
 from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet)
 import django. utils. timezone as timezone
 from django.db.models import Sum
-
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.template.loader import get_template
@@ -130,9 +130,9 @@ def main_page(request):
 			entry = FixedAttributes(attribute=i)
 			entry.save()
 		fixed_attributes = FixedAttributes.objects.all()
-
-
-	return render(
+    
+	if(request.user.is_staff==True):
+		return render(
 				request,
 				'../templates/incomeExpenditure/ie.html',
 				{
@@ -147,6 +147,18 @@ def main_page(request):
 					'inc_fin_years':inc_fin_years,
 					'exp_fin_years':exp_fin_years,
 				})
+	else:
+		return render(
+				request,
+				'../templates/incomeExpenditure/iesu.html',
+				{
+					'fin_years':fin_years,
+					'min_date':min_date,
+					'max1_date':max_date,
+					'inc_fin_years':inc_fin_years,
+					'exp_fin_years':exp_fin_years,
+				})
+	
 
 
 
@@ -167,7 +179,7 @@ def main_page(request):
 
 #view to add income
 def add_income(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		source = request.POST.get('income_source')
 		source = IncomeSource.objects.filter(id=source).first()
 
@@ -203,7 +215,7 @@ def add_income(request):
 '''
 
 def add_expenditure(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		spent_on = request.POST.get('spent_on')
 		spent_on = ExpenditureType.objects.filter(id=spent_on).first()
 
@@ -256,7 +268,7 @@ def add_expenditure_type():
 			new_type.save()
 
 def updateFixedValues(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		for i in fixed_attributes_list:
 			update_ob = FixedAttributes.objects.get(attribute=i)
 			up_val = request.POST.get(i)
@@ -274,7 +286,7 @@ def updateFixedValues(request):
 
 
 def del_expenditure(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		ex_id = request.POST.get('id')
 		Expenditure.objects.get(id=ex_id).delete()
 		balanceSheet_table()
@@ -290,7 +302,7 @@ def del_expenditure(request):
 
 
 def del_income(request):
-	if(request.method == 'POST'):
+	if(request.method == 'POST' and request.user.is_staff==True):
 		in_id = request.POST.get('id')
 		Income.objects.get(id=in_id).delete()
 		balanceSheet_table()
