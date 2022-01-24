@@ -127,6 +127,11 @@ def get_context(request):
         assistant_approve_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval =True).filter(hod_approval = True)
         assistant_list_length = len(assistant_list.filter(acad_approval = False))
         assis_stat = Assistantship_status.objects.all()
+
+        assistant_flag=""
+        hod_flag=""
+        account_flag=""
+
         for obj in assis_stat:
             assistant_flag = obj.student_status
             hod_flag = obj.hod_status
