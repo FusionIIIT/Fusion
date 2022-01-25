@@ -49,7 +49,13 @@
                     View Payroll
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+				<a class="item" data-tab="third">
+                    View Your Salary
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
+
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
@@ -72,6 +78,12 @@
             <div class="ui tab segment" data-tab="second">
                 {% block tab7 %}
                     {% include 'financeAndAccountsModule/payroll.html' %}
+                {% endblock %}
+            </div>
+
+			<div class="ui tab segment" data-tab="third">
+                {% block tab8 %}
+                    {% include 'financeAndAccountsModule/employee.html' %}
                 {% endblock %}
             </div>
         </div>

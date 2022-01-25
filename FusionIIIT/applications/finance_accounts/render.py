@@ -10,9 +10,13 @@ class Render:
     def render(path: str, params: dict):
         template = get_template(path)
         html = template.render(params)
-        response = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            return HttpResponse(response.getvalue(), content_type='application/salary')
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="salary.pdf"'
+        # create a pdf
+        pisa_status = pisa.CreatePDF(
+            html, dest=response)
+        # if error then show some funy view
+        if pisa_status.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
+        return response
