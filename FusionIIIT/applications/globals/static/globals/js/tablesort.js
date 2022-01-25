@@ -69,7 +69,7 @@ $(document).ready(function() {
                 // Different sorting for date and text
                 // Date.parse returns the number of milliseconds since January 1, 1970, 00:00:00
                 // or NaN if the string is unrecognized or contains illegal date values
-                // Then a normal sorint is applied
+                // Then a normal sorting is applied
                 sortedMap.sort(function(a, b) {
                     let date1=Date.parse(a.value);
                     let date2=Date.parse(b.value);
