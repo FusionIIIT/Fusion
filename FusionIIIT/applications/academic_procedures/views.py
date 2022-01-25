@@ -407,16 +407,13 @@ def academic_procedures_student(request):
         
 
         # Branch Change Form save
-        # The form will no longer save here. There is different function named as branch_change_request that will handle branch change request
         if request.method=='POST':
-            
-            form=BranchChangeForm(request.POST)
-            if form.is_valid():
-                branch_id = int(request.POST['branches'])
-                d_info = DepartmentInfo.objects.get(id = branch_id)
-                s_id = ExtraInfo.objects.get(id = request.user)
-                s_info = Student.objects.get(id = s_id)
-                objb = BranchChange(user = s_info,branches = d_info)
+            if True:
+                # Processing Branch Change form
+                objb = BranchChange()
+                form=BranchChangeForm(request.POST, instance=objb)
+                objb = BranchChange()
+                objb.branches=request.POST['branches']
                 objb.save()
 
         return render(
