@@ -9,11 +9,14 @@
     </div>
 
    <script type="text/javascript">
-        window.onclick = function(e){
-            if(document.activeElement != document.querySelector('[data-tab="memberrecords"] input.search')){
-                $('div[data-tab="memberrecords"] .dropdown').dropdown('hide');
-            }
-        }
+       function display() {
+        // body...
+        var data = document.getElementById("club_name").value;
+        // alert(data);
+        $("#record_table tbody tr").prop("hidden", true);
+        $(".clubname-" + data).removeAttr("hidden");
+        //alert("dd");
+      }
     </script>
 
     <div class="ui active tab" data-tab="memberrecords">
