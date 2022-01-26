@@ -13,7 +13,7 @@ class PatentAdmin(admin.ModelAdmin):
             color = "red"
         return format_html('<span style="color: %s"><b>%s</b></span>' % (color, obj.status))
 
-    list_display = ["faculty_id.user","title","_status"]
+    list_display = ["faculty_id","title","_status"]
 
 # Register your models here.
 admin.site.register(Patent,PatentAdmin)
