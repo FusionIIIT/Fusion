@@ -120,7 +120,7 @@ def academic_procedures_faculty(request):
     if str(des.designation) == "student":
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(request.user) == "acadadmin" :
+    elif str(request.user) == "acadadmin":
         return HttpResponseRedirect('/academic-procedures/main/')
 
     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
@@ -415,6 +415,7 @@ def academic_procedures_student(request):
                 objb = BranchChange()
                 objb.branches=request.POST['branches']
                 objb.save()
+
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -676,24 +677,22 @@ def branch_change_request(request):
                 current_user - details of the current user.
                 student - details of the logged in student.
                 extraInfo_user - gets the user details from the extrainfo model.
-                department - user's branch.
+                department - user's applied brach.
     '''
+
     if request.method == 'POST':
         current_user = get_object_or_404(User, username=request.user.username)
         extraInfo_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
         student = Student.objects.all().select_related('id','id__user','id__department').filter(id=extraInfo_user.id).first()
-        department = DepartmentInfo.objects.all().filter(name=request.POST['change']).first()
+        department = DepartmentInfo.objects.all().filter(id=int(request.POST['branches'])).first()
         change_save = BranchChange(
             branches=department,
             user=student
             )
         change_save.save()
-        messages.info(request, 'Apply for branch change successfull')
         return HttpResponseRedirect('/academic-procedures/main')
     else:
-        messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
-    return HttpResponseRedirect('/academic-procedures/main')
 
 
 
@@ -2367,12 +2366,14 @@ def verify_course_marks_data(request):
 ########################################
 ##########GLOBAL VARIABLE###############
 ########################################
+
 verified_marks_students = [[]]
 verified_marks_students_curr = None 
 
 ########################################
 ##########GLOBAL VARIABLE###############
 ########################################
+
 def verify_marks(request):
     try:
         global verified_marks_students
