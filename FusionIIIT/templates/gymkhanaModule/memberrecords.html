@@ -13,6 +13,11 @@ here!{% endcomment %}
     $(".clubname-" + data).removeAttr("hidden");
     //alert("dd");
   }
+  window.onclick = function(e){
+            if(document.activeElement != document.querySelector('[data-tab="memberrecords"] input.search')){
+                $('div[data-tab="memberrecords"] .dropdown').dropdown('hide');
+            }
+        }
 </script>
 
 <div class="ui active tab" data-tab="memberrecords">
