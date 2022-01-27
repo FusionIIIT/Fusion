@@ -20,15 +20,33 @@
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
-                    <div class="ui header">
-                        Student Coordinators :
+                    <div class="ui header"  >
+                       <b>Student Coordinators :</b> 
                     </div>
+                    <table style="border: 2px solid black; width:100%">
+                        <tr>
+                          <th>Student Name</th>
+                          <th>Roll Number</th>
+                          <th>Room Number</th>
+                          <th>Hall Number</th>
+                        </tr>
+                      </table>
                     {% for counsellor in student_counsellors %}
                     <div class="item">
                     
                         <div class="description">
-                            <div class="ui header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}}</div>
-                            <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
+                            <div class="ui header">
+                                <table style="border: 2px solid black; width:100%">
+                                   
+                                    <tr>
+                                      <td>{{ counsellor.student.id.user.first_name}}</td>
+                                      <td>{{counsellor.student.id.user.username}}</td>
+                                      <td>{{counsellor.student.room_no}}</td>
+                                      <td>{{counsellor.student.hall_no}}</td>
+                                    </tr>
+                                  </table>
+                            </div>
+                            <!-- <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1> -->
                             <!-- <div class="header">Answer {{forloop.counter}} :</div>
                             <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
                         </div> 
@@ -36,37 +54,85 @@
                     </div>
                     {% endfor %}
                     <div class="ui header">
-                        Student Guide :
+                        <b>Student Guide :</b>
                     </div>
+                    <table style="border: 2px solid black; width:100%">
+                        <tr>
+                          <th>Student Name</th>
+                          <th>Roll Number</th>
+                          <th>Room Number</th>
+                          <th>Hall Number</th>
+                        </tr>
+                      </table>
                     {% for counsellor in student_guide %}
                     <div class="item">
                     
                         <div class="description">
-                            <div class="ui header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}}</div>
-                            <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
+                            <div class="ui header">
+                                <table style="border: 2px solid black; width:100%">
+                                   
+                                    <tr>
+                                      <td>{{ counsellor.student.id.user.first_name}}</td>
+                                      <td>{{counsellor.student.id.user.username}}</td>
+                                      <td>{{counsellor.student.room_no}}</td>
+                                      <td>{{counsellor.student.hall_no}}</td>
+                                    </tr>
+                                  </table>
+
+                            </div>
+                            
+                            
+                            <!-- <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1> -->
                             <!-- <div class="header">Answer {{forloop.counter}} :</div>
                             <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
                         </div> 
                         
                     </div>
                     {% endfor %}
+                    <br>
                     <div class="ui header">
                         Mapping Between Student Guide and Student:
                     </div>
+
+                    <table style="border: 2px solid black; width:100%">
+                        
+                      </table>
                     <div class="ui list">
                     {% for student_guide,students in student_and_student_guide.items %}
-                        <div class="item">
+                        
+                    <div class="item">
                             <div class="content">
-                                <div class="ui">Student Guide {{forloop.counter}} :</div>
-                            <div class="ui header">{{student_guide.student.id.user.username}} {{student_guide.student.id.user.first_name}}</div>
+                                <!-- <div class="ui">Student Guide {{forloop.counter}} :</div> -->
+                            <div class="ui header">
+                                <br>
+                                <table style="border: 2px solid black; width:100%">
+                                    <tr>
+                                        <th>Student Guide {{forloop.counter}} :</th>
+                                        <th>{{student_guide.student.id.user.first_name}}</th>
+                                        <th>{{student_guide.student.id.user.username}}</th>
+                                      </tr>
+                                  </table>
+                            </div>
                                 <div class="list">
                                     {% for student in students %}
                                     <div class="item">
-                                    <div class="header">Student  {{forloop.counter}} :</div>
-                                    <div class="content">
+                                    <div class="header">
+                                        <table style="border: 2px solid black; width:100%">
+                                   
+                                            <tr>
+                                              <td>Student {{forloop.counter}} :</td>
+                                              <td>{{student.id.user.username}}</td>
+                                              <td>{{student.id.user.first_name}}</td>
+                                              <td>{{student.hall_no}}</td>
+                                              <td>{{student.room_no}}</td>
+                                            </tr>
+                                          </table>
+
+                                    </div>
+                                    <!-- <div class="content">
                                         <div class="header">{{student.id.user.username}} {{student.id.user.first_name}}</div>
                                         <div class="description">{{student.hall_no}} {{student.room_no}}</div>
-                                    </div>
+                                    </div> -->
                                     </div>
                                     {% endfor %}
                                 </div>
