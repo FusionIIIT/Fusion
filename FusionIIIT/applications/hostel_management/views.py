@@ -21,7 +21,7 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.views.generic import View
 from django.db.models import Q
-
+from django.contrib import messages
 
 @login_required
 def hostel_view(request, context={}):
@@ -178,7 +178,7 @@ def notice_board(request):
                                             description=description)
 
             new_notice.save()
-                
+ 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
@@ -221,6 +221,7 @@ def edit_student_room(request):
 @login_required
 def generate_worker_report(request):
     if request.method == "POST":
+      try:
         files = request.FILES['upload_report']
         excel = xlrd.open_workbook(file_contents=files.read())
         user_id = request.user.extrainfo.id
@@ -246,6 +247,9 @@ def generate_worker_report(request):
                 return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+      except: 
+          messages.error(request,"Please upload a file in valid format before submitting")
+          return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 def render_to_pdf(template_src, context_dict={}):
