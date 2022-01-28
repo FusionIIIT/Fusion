@@ -111,7 +111,7 @@ def dep_main(request):
         user_designation = "faculty"
     elif student:
         user_designation = "student"
-    elif staff:
+    else:
         user_designation = "staff"
 
     if request.method == 'POST':
@@ -138,7 +138,7 @@ def dep_main(request):
     elif user_designation=="faculty":
         return HttpResponseRedirect("facView")
     elif user_designation=="staff":
-        return HttpResponseRedirect("facView")
+        return HttpResponseRedirect("staffView")
 
 def faculty_view(request):
     """
@@ -185,6 +185,50 @@ def faculty_view(request):
                                                             "request_to":requests_received
                                                         })
 
+def staff_view(request):
+    """
+    This function is contains data for Requests and Announcement Related methods.
+    Data is added to Announcement Table using this function.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        usrnm, user_info, ann_maker_id - Stores data needed for maker
+        batch, programme, message, upload_announcement,
+        department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
+
+    """
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    num = 1
+    ann_maker_id = user_info.id
+    requests_received = get_to_request(usrnm)
+    if request.method == 'POST':
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('announcement', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        department = request.POST.get('department')
+        ann_date = date.today()
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)
+
+        obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
+                                    batch=batch,
+                                    programme=programme,
+                                    message=message,
+                                    upload_announcement=upload_announcement,
+                                    department = department,
+                                    ann_date=ann_date)
+        department_notif(usrnm, recipients , message)
+        
+    context = browse_announcements()
+    return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
+                                                            "announcements":context,
+                                                            "request_to":requests_received
+                                                        })
 
 @login_required(login_url='/accounts/login')
 def all_students(request,bid):
