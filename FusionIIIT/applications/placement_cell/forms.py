@@ -484,7 +484,6 @@ class AddSchedule(forms.Form):
         return company_name
 
 def current_year():
-    # return datetime.date.today().year --- Issue # 2, 3 & 4
     return date.today().year
 
 def max_value_current_year(value):
