@@ -378,16 +378,14 @@ def balanceSheet_table():
 
 
 def balanceSheet(request):
-	
-
-
-
 	if request.method =='POST' :
-		fin_year = request.POST.get('fin_year')
-		balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)
-		response = HttpResponse(balance_sheet_ob.balanceSheet,content_type='application/pdf')
-		response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
-		return response
+		try:
+			balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)
+			response = HttpResponse(balance_sheet_ob.balanceSheet,content_type='application/pdf')
+			response['Content-Disposition'] = 'attachment; filename=BalanceSheet.pdf'
+			return response
+		except Exception as e:
+			return render(request,"../templates/incomeExpenditure/balanceSheetNotExists.html")
 
 
 def render_to_pdf(template_src, context_dict={}):
