@@ -378,7 +378,9 @@ def balanceSheet_table():
 
 
 def balanceSheet(request):
+	
 	if request.method =='POST' :
+		fin_year = request.POST.get('fin_year')
 		try:
 			balance_sheet_ob = BalanceSheet.objects.get(date_added=fin_year)
 			response = HttpResponse(balance_sheet_ob.balanceSheet,content_type='application/pdf')
