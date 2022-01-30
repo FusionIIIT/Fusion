@@ -231,3 +231,12 @@ class Exam_timetable(models.Model):
 
     class Meta:
         db_table = 'Exam_Timetable'
+
+class Course_Registration:
+    sno=models.IntegerField()
+    course_code=models.CharField(max_length=10)
+    rollno=models.CharField(max_length=10)
+    name=models.CharField(max_length=200)
+    discipline=models.CharField(max_length=10, options=Constants.BRANCH)
+    email=models.CharField(max_length=200)
+    verified=models.BooleanField(default=FALSE)
