@@ -86,8 +86,10 @@ class Student(models.Model):
 
 
 class Course(models.Model):
+    course_code=models.CharField(max_length=10)
     course_name = models.CharField(max_length=600)
     course_details = models.TextField(max_length=500)
+    instructor_code=models.CharField(max_length=5)
 
     class Meta:
         db_table = 'Course'
@@ -228,4 +230,4 @@ class Exam_timetable(models.Model):
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
 
     class Meta:
-        db_table = 'Exam_Timetable'
+        db_table = 'Exam_Timetable' 
