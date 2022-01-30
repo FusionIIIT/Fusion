@@ -1,6 +1,5 @@
 from pickle import FALSE, TRUE
 from django.db import models
-from pandas import options
 
 from applications.globals.models import ExtraInfo
 
@@ -237,6 +236,6 @@ class Course_Registration:
     course_code=models.CharField(max_length=10)
     rollno=models.CharField(max_length=10)
     name=models.CharField(max_length=200)
-    discipline=models.CharField(max_length=10, options=Constants.BRANCH)
+    discipline=models.CharField(max_length=10, choices=Constants.BRANCH)
     email=models.CharField(max_length=200)
     verified=models.BooleanField(default=FALSE)
