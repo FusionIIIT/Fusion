@@ -1,4 +1,6 @@
+from pickle import FALSE, TRUE
 from django.db import models
+from pandas import options
 
 from applications.globals.models import ExtraInfo
 
