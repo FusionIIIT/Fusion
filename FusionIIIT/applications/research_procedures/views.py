@@ -16,28 +16,39 @@ def IPR(request):
     pat=Patent()
     context={}
     
+    context['pat']=Patent.objects.all()
+    context['use']=extrainfo
+    context['desig']=desig
+    
     if request.method=='POST':
         if(extrainfo.user_type == "faculty"):
             pat.faculty_id=extrainfo
             pat.title=request.POST.get('title')
-            pat.ipd_form=request.FILES['file1']
             file1=request.FILES['file1']
-            fs=FileSystemStorage()
-            name1=fs.save(file1.name,file1)
-            pat.file1=fs.url(name1)
-
-            pat.project_details=request.FILES['file2']
+            if(file1.name.endswith('.pdf')):
+                pat.ipd_form=request.FILES['file1']
+                fs=FileSystemStorage()
+                name1=fs.save(file1.name,file1)
+                pat.file1=fs.url(name1)
+            else:
+                messages.error(request, 'Please upload pdf file')
+                return render(request ,"rs/research.html",context)
+            
             file2=request.FILES['file2']
-            fs=FileSystemStorage()
-            name2=fs.save(file2.name,file2)
-            pat.file2=fs.url(name2)
+            if(file2.name.endswith('.pdf')):
+                pat.project_details=request.FILES['file2']
+                fs=FileSystemStorage()
+                name2=fs.save(file2.name,file2)
+                pat.file2=fs.url(name2)
+                messages.success(request, 'Patent filed successfully')
+            else:
+                messages.error(request, 'Please upload pdf file')
+                return render(request ,"rs/research.html",context)
 
             pat.status='Pending'
             pat.save()
     pat=Patent.objects.all() 
     context['pat']=pat
-    context['use']=extrainfo
-    context['desig']=desig
     return render(request ,"rs/research.html",context)
 
  #dean_rspc can update status of patent.   
