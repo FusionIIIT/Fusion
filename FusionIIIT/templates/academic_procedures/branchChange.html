@@ -10,7 +10,7 @@
 
     <div class="ui active tab" data-tab="complainthistory">
     <div class="ui vertical segment">
-            <form name="branch_change" id='branch_change' method="post" action="/academic-procedures/stu/">
+            <form name="branch_change" id='branch_change' method="post" action="/academic-procedures/brach-change-request/">
             {% csrf_token %}
             {{ BranchChangeForm }}
                 <input type="submit">

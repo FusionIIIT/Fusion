@@ -72,7 +72,11 @@
                 {% comment %}Make announcement{% endcomment %}
                 <div class="ui active tab segment" data-tab="first">
                     {% block make_announcement %}
-                        {% include "department/make_announcements_fac.html" %}
+                        {% if user_designation == "faculty" %}
+                                {% include "department/make_announcements_fac.html" %}
+                        {% elif user_designation == "staff" %}
+                                {% include "department/make_announcements_staff.html" %}
+                        {% endif %}
                     {% endblock %}
                 </div>
                 {% comment %}Make announcement{% endcomment %}
@@ -80,7 +84,11 @@
                 {% comment %}See announcement{% endcomment %}
                 <div class="ui tab segment" data-tab="second">
                     {% block browse_announcement %}
-                        {% include "department/browse_announcements.html" %}
+                        {% if user_designation == "faculty" %}
+                            {% include "department/browse_announcements.html" %}
+                        {% elif user_designation == "staff" %}
+                            {% include "department/browse_announcements_staff.html" %}
+                        {% endif %}
                     {% endblock %}
                 </div>
                 {% comment %}See announcement{% endcomment %}

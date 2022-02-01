@@ -189,7 +189,7 @@ def fileview1(request,id):
 
 
 
-    abcd = HoldsDesignation.objects.select_related('user','working','designation').objects.get(pk=id)
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
 
 
     context = {

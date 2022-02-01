@@ -123,7 +123,7 @@ def academic_procedures_faculty(request):
     if str(des.designation) == "student":
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(request.user) == "acadadmin" :
+    elif str(request.user) == "acadadmin":
         return HttpResponseRedirect('/academic-procedures/main/')
 
     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
@@ -208,7 +208,6 @@ def academic_procedures_student(request):
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
-        
         if obj.programme.upper() == "PHD" :
             student_flag = True
             ug_flag = False
@@ -419,6 +418,7 @@ def academic_procedures_student(request):
                 objb = BranchChange()
                 objb.branches=request.POST['branches']
                 objb.save()
+
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -680,24 +680,22 @@ def branch_change_request(request):
                 current_user - details of the current user.
                 student - details of the logged in student.
                 extraInfo_user - gets the user details from the extrainfo model.
-                department - user's branch.
+                department - user's applied brach.
     '''
+
     if request.method == 'POST':
         current_user = get_object_or_404(User, username=request.user.username)
         extraInfo_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
         student = Student.objects.all().select_related('id','id__user','id__department').filter(id=extraInfo_user.id).first()
-        department = DepartmentInfo.objects.all().filter(name=request.POST['change']).first()
+        department = DepartmentInfo.objects.all().filter(id=int(request.POST['branches'])).first()
         change_save = BranchChange(
             branches=department,
             user=student
             )
         change_save.save()
-        messages.info(request, 'Apply for branch change successfull')
         return HttpResponseRedirect('/academic-procedures/main')
     else:
-        messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
-    return HttpResponseRedirect('/academic-procedures/main')
 
 
 
@@ -1368,8 +1366,22 @@ def register(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
-
 def add_courses(request):
+    """
+    This function is used to add courses for currernt semester
+    @param:
+        request - contains metadata about the requested page
+    @variables:
+        current_user - contains current logged in user
+        sem_id - contains current semester id
+        count - no of courses to be added
+        course_id - contains course id for a particular course
+        course_slot_id - contains course slot id for a particular course
+        reg_curr - list of registered courses object
+        choice - contains choice of a particular course
+        slot - contains slot of a particular course
+        # gg and cs
+    """
     if request.method == 'POST':
         try:
             current_user = get_object_or_404(User, username=request.POST.get('user'))
@@ -1386,14 +1398,16 @@ def add_courses(request):
                 try:
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                    # Check if maximum course registration limit has not reached and student has not already registered for that course
+                    if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit and (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
                         p = course_registration(
                             course_id = course_id,
                             student_id=current_user,
                             course_slot_id = courseslot_id,
                             semester_id=sem_id
                             )
-                        reg_curr.append(p)
+                        if p not in reg_curr:
+                            reg_curr.append(p)
                 except Exception as e:
                     continue
             course_registration.objects.bulk_create(reg_curr)
@@ -2355,12 +2369,14 @@ def verify_course_marks_data(request):
 ########################################
 ##########GLOBAL VARIABLE###############
 ########################################
+
 verified_marks_students = [[]]
 verified_marks_students_curr = None 
 
 ########################################
 ##########GLOBAL VARIABLE###############
 ########################################
+
 def verify_marks(request):
     try:
         global verified_marks_students

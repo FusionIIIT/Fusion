@@ -33,8 +33,8 @@ function announce(event)
 
                     alert("Announcement successfully made!!");
                     setTimeout(function() {
-                window.location.reload();
-            }, 1500);
+                        window.location.reload();
+                    }, 1500);
 
                     
                 },
