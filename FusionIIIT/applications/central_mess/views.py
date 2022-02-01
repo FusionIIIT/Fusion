@@ -68,7 +68,13 @@ def mess(request):
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
-        mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+        try:
+            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+        except:
+            dummy_user = User.objects.get(username = "2019023")
+            dummy_user_extrainfo = ExtraInfo.objects.select_related().get(user=dummy_user)
+            dummu_student = Student.objects.select_related('id','id__user','id__department').get(id=dummy_user_extrainfo)
+            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=dummu_student)
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1

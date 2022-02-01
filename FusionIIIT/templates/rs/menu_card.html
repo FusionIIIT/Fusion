@@ -19,17 +19,13 @@
     {% endfor %}
     
 
-    {% if info.user_type == 'faculty' %}
-    
+    {% if info.user_type == 'faculty' or info.user_type == 'student' %} 
+        {% if info.user_type == 'faculty' %}
+            <a class="item"  data-tab="fourth">File Patent</a>
+        {% endif %}
         
-
-            <a class="item"  data-tab="fourth">
-           File Patent
-            </a>
-
-            <a class="item" data-tab="first">
-            View Status
-            </a>{% endif %}
+        <a class="item" data-tab="first">View Status</a>
+    {% endif %}
             
 
 {% endblock %}
