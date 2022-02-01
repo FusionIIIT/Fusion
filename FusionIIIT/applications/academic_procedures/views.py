@@ -716,9 +716,6 @@ def approve_branch_change(request):
     '''
     if request.method == 'POST':
         values_length = len(request.POST.getlist('choices'))
-        if values_length==0:
-            messages.success(request, 'Please select atleast one student')
-            return
         choices = []
         branches = []
         for i in range(values_length):
