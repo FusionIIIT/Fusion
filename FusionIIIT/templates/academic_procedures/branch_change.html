@@ -89,7 +89,7 @@ $(function() {
         const branchChangeBoxes = [...document.querySelectorAll('input[name=choice')];
         // console.log("88",branchChangeBoxes);
         const frm1box = document.querySelectorAll('input[name=choice]');
-        const totalchecked = 0
+        let totalchecked = 0;
         console.log("127>>",frm1box);
         frm1box.forEach(bx =>{
             if(bx.checked===true){
@@ -97,15 +97,18 @@ $(function() {
             }
         });
 
-
         if(totalchecked===0)
             alert("Please select atleast one request to approve");
         else{
             var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
             posting.done(function(data) {
-            alert('Change Successful');
-            window.location = "/academic-procedures/main/";
-        });
+                alert('Change Successful');
+                window.location = "/academic-procedures/acad_person/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to Change');
+                window.location = "/academic-procedures/acad_person/";
+            });
         }
         
     });
