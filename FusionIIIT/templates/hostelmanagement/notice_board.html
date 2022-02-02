@@ -3,8 +3,7 @@
 
     {% for notice in hall_notices|get_hall_no:hall_id %}
 
-        <div style="margin-top: 20px;border-style: outset;border-radius: 7px;border-width: 2.5px;" 
-        class="ui container">
+    <div class="ui tertiary segment">
         <div class="ui raised segment" >
             <h2 class="ui center aligned header">{{notice.head_line|truncatechars_html:50}}</h2>
             <h4 style="text-align:right;">{{notice.posted_by.user.first_name}} {{notice.posted_by.user.last_name}} - {{notice.posted_by.user.username}}</h4>
