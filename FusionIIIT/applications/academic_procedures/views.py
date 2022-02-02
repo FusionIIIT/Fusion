@@ -715,7 +715,7 @@ def approve_branch_change(request):
                 branch - branch of the current user.
     '''
     if request.method == 'POST':
-        values_length = len(request.POST.getlist('choices'))
+        values_length = len(request.POST.getlist('choice'))
         choices = []
         branches = []
         for i in range(values_length):
@@ -733,8 +733,8 @@ def approve_branch_change(request):
             branch = DepartmentInfo.objects.all().filter(name=branches[i])
             get_student.department = branch[0]
             changed_branch.append(get_student)
-            student = Student.objects.all().select_related('id','id_user','id_department').filter(id=choices[i][:7]).first()
-            change = BranchChange.objects.select_related('branches','user','user_id','useriduser','userid_department').all().filter(user=student)
+            student = Student.objects.all().select_related('id','id__user','id__department').filter(id=choices[i][:7]).first()
+            change = BranchChange.objects.select_related('branches','user','user__id','user__id__user','user__id__department').all().filter(user=student)
             change = change[0]
             change.delete()
         try:
