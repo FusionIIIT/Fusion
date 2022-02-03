@@ -5,8 +5,6 @@ from . import views
 app_name="research_procedures"#IPR module
 
 urlpatterns = [
-     url(r'^$', views.IPR, name='IPR'),
+      url(r'^$', views.IPR, name='IPR'),
       url(r'^update$', views.update, name='status_update'),
-
-    
 ]
