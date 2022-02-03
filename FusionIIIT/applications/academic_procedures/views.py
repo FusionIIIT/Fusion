@@ -715,10 +715,7 @@ def approve_branch_change(request):
                 branch - branch of the current user.
     '''
     if request.method == 'POST':
-        values_length = 0
-        for key, values in request.POST.lists():
-            values_length = len(values)
-            break
+        values_length = len(request.POST.getlist('choice'))
         choices = []
         branches = []
         for i in range(values_length):
@@ -740,14 +737,16 @@ def approve_branch_change(request):
             change = BranchChange.objects.select_related('branches','user','user__id','user__id__user','user__id__department').all().filter(user=student)
             change = change[0]
             change.delete()
-        ExtraInfo.objects.bulk_update(changed_branch,['department'])
-        messages.info(request, 'Apply for branch change successfull')
+        try:
+            ExtraInfo.objects.bulk_update(changed_branch,['department'])
+            messages.info(request, 'Apply for branch change successfull')
+        except:
+            messages.info(request, 'Unable to proceed, we will get back to you very soon')
         return HttpResponseRedirect('/academic-procedures/main')
 
     else:
         messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
-
 
 # Function returning Branch , Banch data which was required many times
 def get_batch_query_detail(month, year):
@@ -971,6 +970,8 @@ def acad_branch_change(request):
             available_seats.append(available_ece_seats)
         elif i.branches.name == 'ME':
             available_seats.append(available_me_seats)
+        else:
+            available_seats.append(0)
     lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
     tag = False
     if len(initial_branch) > 0:
