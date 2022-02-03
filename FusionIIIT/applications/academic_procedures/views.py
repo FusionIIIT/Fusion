@@ -414,8 +414,6 @@ def academic_procedures_student(request):
             if True:
                 # Processing Branch Change form
                 objb = BranchChange()
-                form=BranchChangeForm(request.POST, instance=objb)
-                objb = BranchChange()
                 objb.branches=request.POST['branches']
                 objb.save()
 
