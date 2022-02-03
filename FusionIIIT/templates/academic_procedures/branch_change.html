@@ -47,15 +47,15 @@
                 <tbody>
                 <form method='POST' id='branch_change_form' action='/academic-procedures/branch-validate/'>
                 {% csrf_token %}
-                {% for a,b,c,d,e in lists %}
+                {% for applied_by, change_branch, initial_branch, available_seats, cpi in lists %}
                     <tr>
-                        <td>{{ a }}</td>
-                        <td>{{ b }}</td>
-                        <td>{{ c }}</td>
-                        <td>{{ d }}</td>
-                        <td>{{ e }}</td>
+                        <td>{{ applied_by }}</td>
+                        <td>{{ change_branch }}</td>
+                        <td>{{ initial_branch }}</td>
+                        <td>{{ available_seats }}</td>
+                        <td>{{ cpi }}</td>
                         <td>
-                            <input name="choice" type="checkbox" value="{{ a }}" required="required">
+                            <input name="choice" class="bsdk" type="checkbox" value="{{ applied_by }}" >
                             <input type="text" name="branch" value="{{ b }}" hidden="True">
                         </td>
                     </tr>
