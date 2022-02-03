@@ -46,9 +46,9 @@ demo_date = timezone.now()
 student_status = None
 hod_status = None
 account_status = None
-available_cse_seats = 0
-available_ece_seats = 0
-available_me_seats = 0
+available_cse_seats = 100
+available_ece_seats = 100
+available_me_seats = 100
 
 # assistantship_status = Assistantship_status.objects.all()
 
