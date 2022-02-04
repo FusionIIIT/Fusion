@@ -66,9 +66,17 @@ $(document).ready(function() {
                         value: unsortedValues[i]
                     });
                 }
-
+                // Different sorting for date and text
+                // Date.parse returns the number of milliseconds since January 1, 1970, 00:00:00
+                // or NaN if the string is unrecognized or contains illegal date values
+                // Then a normal sorting is applied
                 sortedMap.sort(function(a, b) {
-                    return self.settings.compare(a.value, b.value) * direction;
+                    let date1=Date.parse(a.value);
+                    let date2=Date.parse(b.value);
+                    if(!isNaN(date1))
+                        return self.settings.compare(date1, date2) * direction;
+                    else
+                        return self.settings.compare(a.value, b.value) * direction;
                 });
 
                 $.each(sortedMap, function(i, entry) {

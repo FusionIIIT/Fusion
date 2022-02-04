@@ -15,10 +15,10 @@ class Patent(models.Model):
     application_id = models.AutoField(primary_key=True)
     faculty_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    ipd_form = models.FileField(null=True)
-    project_details = models.FileField(null=True)
-    file1=models.TextField(null=True)
-    file2=models.TextField(null=True)
+    ipd_form = models.FileField()
+    project_details = models.FileField()
+    file1=models.TextField()
+    file2=models.TextField()
     status = models.CharField(choices=Constants.RESPONSE_TYPE, max_length=20, default='Pending')
 
     def _str_(self):
