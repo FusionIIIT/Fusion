@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm
+from .forms import MinuteForm, MessInfoForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
@@ -71,10 +71,7 @@ def mess(request):
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         except:
-            dummy_user = User.objects.get(username = "2019023")
-            dummy_user_extrainfo = ExtraInfo.objects.select_related().get(user=dummy_user)
-            dummu_student = Student.objects.select_related('id','id__user','id__department').get(id=dummy_user_extrainfo)
-            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=dummu_student)
+            return HttpResponseRedirect("/mess/info-form")
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
@@ -394,6 +391,22 @@ def mess(request):
         }
         return render(request, 'messModule/mess.html', context)
 
+@login_required
+@transaction.atomic
+@csrf_exempt
+def mess_info(request):
+    if (request.method == "POST"):
+        user_id = request.user
+        student_id = Student.objects.select_related('id','id__user','id__department').get(id__id=user_id)
+        mess_option = request.POST.get('mess_option')
+        Messinfo.objects.create(student_id=student_id, mess_option=mess_option)
+        return HttpResponseRedirect("/mess")
+
+    form = MessInfoForm()
+    context = {
+        "form": form
+    }
+    return render(request, "messModule/messInfoForm.html", context)
 
 @login_required
 @transaction.atomic
