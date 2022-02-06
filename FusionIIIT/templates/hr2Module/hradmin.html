@@ -171,12 +171,6 @@ Module
                                     status
                                 </div> -->
                                 <div class="two wide column">
-                                    <!-- <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
-                                        <div class="ui right floated blue button notif-status" id="notif-status">
-                                            <div id="notif-sp">Edit personal details</div>
-                                        </div>
-                                    </a> -->
-
                                     <a href="{%url 'hr2:viewEmployeeDetails' emp.id %}">
                                         <div class="ui right floated blue button notif-status" id="notif-status">
                                             <div id="notif-sp">View</div>
@@ -188,7 +182,12 @@ Module
                                             <div id="notif-sp">Edit E-ServiceBook</div>
                                         </div>
                                     </a>
-
+                                    
+                                    <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Edit User Details</div>
+                                        </div>
+                                    </a>
                                 </div>
 
                                 <!-- <div class="ui right floated button notif-status" id="notif-status">
