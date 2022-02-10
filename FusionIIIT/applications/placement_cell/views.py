@@ -145,7 +145,6 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience, 
 logger = logging.getLogger('django.server')
 
 def get_reference_list(request):
-    context = {}
     if request.method == 'POST':
         # arr = request.POST.getlist('arr[]')
         # print(arr)
@@ -160,12 +159,11 @@ def get_reference_list(request):
         context = {
             'reference_objs': reference_objects
         }
-    return HttpResponse(context)
+        return JsonResponse(context)
 
 
 # Ajax for the company name dropdown for CompanyName when filling AddSchedule
 def company_name_dropdown(request):
-    context = {}
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
         company_names = CompanyDetails.objects.filter(Q(company_name__startswith=current_value))
@@ -177,20 +175,18 @@ def company_name_dropdown(request):
             'company_names': company_name
         }
 
-    return HttpResponse(context)
+        return JsonResponse(context)
 
 
 # Ajax for all the roles in the dropdown
 def checking_roles(request):
-    context = {}
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
         all_roles = Role.objects.filter(Q(role__startswith=current_value))
         role_name = []
         for role in all_roles:
             role_name.append(role.role)
-            context = {'all_roles': role_name}
-    return HttpResponse(context)
+        return JsonResponse({all_roles: role_name})
 
 
 @login_required
