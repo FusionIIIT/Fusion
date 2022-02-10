@@ -53,4 +53,3 @@ urlpatterns = [
     url(r'^mdue/$', views.mdue),
     url(r'^assis_stat/$' , views.assis_stat),
 ]
-
