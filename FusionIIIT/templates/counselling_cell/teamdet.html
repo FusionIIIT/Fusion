@@ -23,12 +23,20 @@
                     <div class="ui header"  >
                        <b>Student Coordinators :</b> 
                     </div>
-                    <table style="border: 2px solid black; width:100%">
+                    <table style="border: 2px solid black; width:100%" class="ui header">
+                        <colgroup>
+                            <col span="1" style="width: 2%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 23%;">
+                            <col span="1" style="width: 20%;">
+                         </colgroup>                      
                         <tr>
-                          <th>Student Name</th>
-                          <th>Roll Number</th>
-                          <th>Room Number</th>
-                          <th>Hall Number</th>
+                          <td> </td>
+                          <td>Student Name</td>
+                          <td>Roll Number</td>
+                          <td>Room Number</td>
+                          <td>Hall Number</td>
                         </tr>
                       </table>
                     {% for counsellor in student_counsellors %}
@@ -37,8 +45,15 @@
                         <div class="description">
                             <div class="ui header">
                                 <table style="border: 2px solid black; width:100%">
-                                   
+                                    <colgroup>
+                                        <col span="1" style="width: 5%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 26%;">
+                                        <col span="1" style="width: 19%;">
+                                     </colgroup>
                                     <tr>
+                                      <td> </td>
                                       <td>{{ counsellor.student.id.user.first_name}}</td>
                                       <td>{{counsellor.student.id.user.username}}</td>
                                       <td>{{counsellor.student.room_no}}</td>
@@ -56,22 +71,38 @@
                     <div class="ui header">
                         <b>Student Guide :</b>
                     </div>
-                    <table style="border: 2px solid black; width:100%">
-                        <tr>
-                          <th>Student Name</th>
-                          <th>Roll Number</th>
-                          <th>Room Number</th>
-                          <th>Hall Number</th>
-                        </tr>
+                    <table style="border: 2px solid black; width:100%" class="ui header">
+                        <colgroup>
+                            <col span="1" style="width: 2%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 23%;">
+                            <col span="1" style="width: 20%;">
+                         </colgroup>
+                        <b><tr>
+                          <td> </td>
+                          <td>Student Name</td>
+                          <td>Roll Number</td>
+                          <td>Room Number</td>
+                          <td>Hall Number</td>
+                        </tr></b>
                       </table>
+                    
                     {% for counsellor in student_guide %}
                     <div class="item">
                     
                         <div class="description">
                             <div class="ui header">
                                 <table style="border: 2px solid black; width:100%">
-                                   
+                                    <colgroup>
+                                        <col span="1" style="width: 5%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 26%;">
+                                        <col span="1" style="width: 19%;">
+                                     </colgroup>
                                     <tr>
+                                      <td> </td>
                                       <td>{{ counsellor.student.id.user.first_name}}</td>
                                       <td>{{counsellor.student.id.user.username}}</td>
                                       <td>{{counsellor.student.room_no}}</td>
@@ -105,7 +136,13 @@
                                 <!-- <div class="ui">Student Guide {{forloop.counter}} :</div> -->
                             <div class="ui header">
                                 <br>
-                                <table style="border: 2px solid black; width:100%">
+                                <table style="border: 2px solid black; width:100%; margin-left: auto; margin-right: auto;">
+                                    <colgroup>
+                                        <col span="1" style="width: 34%;">
+                                        <col span="1" style="width: 33%;">
+                                        <col span="1" style="width: 33%;">
+                                        
+                                     </colgroup>
                                     <tr>
                                         <th>Student Guide {{forloop.counter}} :</th>
                                         <th>{{student_guide.student.id.user.first_name}}</th>
@@ -117,10 +154,18 @@
                                     {% for student in students %}
                                     <div class="item">
                                     <div class="header">
-                                        <table style="border: 2px solid black; width:100%">
-                                   
+                                        <table style="border: 2px solid black; width:100%; overflow-x:auto;">
+                                            <colgroup>
+                                                <col span="1" style="width: 2%;">
+                                                <col span="1" style="width: 19%;">
+                                                <col span="1" style="width: 19%;">
+                                                <col span="1" style="width: 25%;">
+                                                <col span="1" style="width: 14%;">
+                                                <col span="1" style="width: 19%;">
+                                             </colgroup>
                                             <tr>
-                                              <td>Student {{forloop.counter}} :</td>
+                                              <td > </td>
+                                              <td >Student {{forloop.counter}} :</td>
                                               <td>{{student.id.user.username}}</td>
                                               <td>{{student.id.user.first_name}}</td>
                                               <td>{{student.hall_no}}</td>
