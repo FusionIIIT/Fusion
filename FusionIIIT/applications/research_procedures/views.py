@@ -5,6 +5,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
+from notification.views import research_procedures_notif
 
 
 # Faculty can file patent and view status of it.
@@ -45,6 +46,10 @@ def IPR(request):
                 messages.error(request, 'Please upload pdf file')
                 return render(request ,"rs/research.html",context)
 
+            # creating notifications for user and dean_rspc about the patent
+            dean_rspc = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
+            research_procedures_notif(request.user,request.user,"submitted")
+            research_procedures_notif(request.user,dean_rspc,"created")
             pat.status='Pending'
             pat.save()
     pat=Patent.objects.all() 
@@ -65,6 +70,10 @@ def update(request):
                 pat=Patent.objects.get(application_id=iid)
                 pat.status=request.POST.get('status')
                 pat.save()
+
+                # Create a notification for the user about the patent status update
+                dean_rspc = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
+                research_procedures_notif(dean_rspc,pat.faculty_id.user,request.POST.get('status'))
     pat=Patent.objects.all() 
     return render(request ,"rs/research.html",{'pat':pat,'use':extrainfo,'desig':desig})
 
