@@ -2532,7 +2532,7 @@ def cv(request, username):
     # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    now = datetime.datetime.now()
+    now = datetime.now()
     if int(str(profile.id)[:2]) == 20:
         if (now.month>4):
           roll = 1+now.year-int(str(profile.id)[:4])
@@ -2556,7 +2556,7 @@ def cv(request, username):
     conference = Conference.objects.select_related('unique_id').filter(Q(unique_id=student))
     publication = Publication.objects.select_related('unique_id').filter(Q(unique_id=student))
     patent = Patent.objects.select_related('unique_id').filter(Q(unique_id=student))
-    today = datetime.date.today()
+    today = date.today()
 
     if len(reference) == 0:
         referencecheck = '0'
