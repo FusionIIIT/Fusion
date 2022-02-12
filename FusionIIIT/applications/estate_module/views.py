@@ -77,13 +77,13 @@ def estate(request):
     }
 
     inventory_consumable_data = {
-        'all': InventoryConsumable.objects.all(),
+        'All': InventoryConsumable.objects.all(),
         'form': InventoryConsumableForm(),
         'template_dir': 'estate_module/Inventory/Consumable'
     }
 
     inventory_non_consumable_data = {
-        'all': InventoryNonConsumable.objects.all(),
+        'All': InventoryNonConsumable.objects.all(),
         'form': InventoryNonConsumableForm(),
         'template_dir': 'estate_module/Inventory/NonConsumable'
     }
@@ -94,7 +94,7 @@ def estate(request):
     }
 
     subWork_data = {
-        'all': SubWork.objects.all(),
+        'All': SubWork.objects.all(),
         'form': SubWorkForm(),
         'template_dir': 'estate_module/SubWork'
     }
