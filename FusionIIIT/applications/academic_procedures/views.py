@@ -798,12 +798,8 @@ def dropcourseadmin(request):
                 rid - Registration ID of Registers table
                 response_data - data to be responded.
     '''
-    print("INSIDE DROP COURSE ")
-    print(request.GET)
     data = request.GET.get('id')
-    print(data, "  ",type(data))
     data = data.split(" - ")
-    print(data)
     course_code = data[1]
     # need to add batch and programme
     curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
@@ -856,12 +852,6 @@ def verify_course(request):
                 month - current month.
                 date - current date.
     '''
-    # obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
-    # batch = obj.batch_id
-    # curr_id = batch.curriculum
-    # curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
-    # currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
-    # currently_registered_courses = get_currently_registered_courses(rollNo, user_sem)
     if(request.POST):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
@@ -882,15 +872,14 @@ def verify_course(request):
         obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj2)
         curr_sem_id = obj2.curr_semester_no
         details = []
-        print("obj2",obj2)
-        print("curr_sem_id",curr_sem_id)
+        # print("obj2",obj2)
+        # print("curr_sem_id",curr_sem_id)
         current_sem_courses = get_currently_registered_course(roll_no,curr_sem_id)
-        print("current_sem_courses",current_sem_courses)
+        # print("current_sem_courses",current_sem_courses)
         idd = obj2
         for z in current_sem_courses:
             z=z[1]
             course_code,course_name= str(z).split(" - ")
-            print(z," ",type(z))
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
@@ -898,7 +887,6 @@ def verify_course(request):
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
             courseobj2 = Curriculum.objects.all().filter(course_code = course_code)
-            print(courseobj2)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
