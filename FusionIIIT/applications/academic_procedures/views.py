@@ -886,13 +886,14 @@ def verify_course(request):
             k['reg_id'] = roll_no+" - "+course_code
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
-            courseobj2 = Curriculum.objects.all().filter(course_code = course_code)
+            courseobj2 = Courses.objects.all().filter(code = course_code)
+            print(courseobj2)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
                 k['course_name'] = course_name
-                k['sem'] = p.sem
-                k['credits'] = p.credits
+                k['sem'] = curr_sem_id
+                k['credits'] = p.credit
             details.append(k)
 
 
