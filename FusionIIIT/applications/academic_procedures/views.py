@@ -799,12 +799,40 @@ def dropcourseadmin(request):
                 response_data - data to be responded.
     '''
     data = request.GET.get('id')
-    data = data.split("+")
-    rid = data[0]
-    Register.objects.filter(r_id=rid).delete()
+    data = data.split(" - ")
+    course_code = data[1]
+    # need to add batch and programme
+    curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
+    try:
+        Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
+    except:
+        print("hello ")
     response_data = {}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+@login_required(login_url='/accounts/login')
+def gen_course_list(request):
+    if(request.POST):
+        try:
+            batch = request.POST['batch']
+            course_id = request.POST['course']
+            course = Courses.objects.get(id = course_id)
+            obj = course_registration.objects.all().filter(course_id = course)
+        except Exception as e:
+            batch=""
+            course=""
+            obj=""
+
+        students = []
+        for i in obj:
+            if i.student_id.batch_id.year == int(batch):
+                students.append(i.student_id)
+        html = render_to_string('academic_procedures/gen_course_list.html',
+                                {'students': students, 'batch':batch, 'course':course_id}, request)
+
+        maindict = {'html': html}
+        obj = json.dumps(maindict)
+        return HttpResponse(obj, content_type='application/json')
 
 # view where Admin verifies the registered courses of every student
 @login_required(login_url='/accounts/login')
@@ -824,63 +852,69 @@ def verify_course(request):
                 month - current month.
                 date - current date.
     '''
-    current_user = get_object_or_404(User, username=request.user.username)
-    user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
-    acadadmin = temp.working
-    k = str(user_details).split()
-    final_user = k[2]
+    if(request.POST):
+        current_user = get_object_or_404(User, username=request.user.username)
+        user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+        desig_id = Designation.objects.all().filter(name='adminstrator').first()
+        temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
+        acadadmin = temp.working
+        k = str(user_details).split()
+        final_user = k[2]
 
-    if (str(acadadmin) != str(final_user)):
-        return HttpResponseRedirect('/academic-procedures/')
-    roll_no = request.GET.get('id')
-    obj = ExtraInfo.objects.all().select_related('user','department').filter(id=roll_no).first()
-    firstname = obj.user.first_name
-    lastname = obj.user.last_name
-    dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
-    obj2 = Student.objects.all().select_related('id','id__user','id__department').filter(id=roll_no)
-    obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department')
-
-    details = []
-    for a in obj2:
-        idd = a.id
-        for z in obj:
+        if (str(acadadmin) != str(final_user)):
+            return HttpResponseRedirect('/academic-procedures/')
+        roll_no = request.POST["rollNo"]
+        obj = ExtraInfo.objects.all().select_related('user','department').filter(id=roll_no).first()
+        firstname = obj.user.first_name
+        lastname = obj.user.last_name
+        dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
+        obj2 = Student.objects.all().select_related('id','id__user','id__department').filter(id=roll_no).first()
+        obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj2)
+        curr_sem_id = obj2.curr_semester_no
+        details = []
+        # print("obj2",obj2)
+        # print("curr_sem_id",curr_sem_id)
+        current_sem_courses = get_currently_registered_course(roll_no,curr_sem_id)
+        # print("current_sem_courses",current_sem_courses)
+        idd = obj2
+        for z in current_sem_courses:
+            z=z[1]
+            course_code,course_name= str(z).split(" - ")
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
-            k['reg_id'] = str(z.r_id) + "+" + str(roll_no)
-            k['rid'] = z.r_id
+            k['reg_id'] = roll_no+" - "+course_code
+            k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
-            courseobj2 = Course.objects.all().filter(course_name=z.course_id)
-            if(str(z.student_id) == str(idd)):
-                for p in courseobj2:
-                    k['course_id'] = p.course_id
-                    k['course_name'] = p.course_name
-                    k['sem'] = p.sem
-                    k['credits'] = p.credits
-                details.append(k)
+            courseobj2 = Curriculum.objects.all().filter(course_code = course_code)
+            # if(str(z.student_id) == str(idd)):
+            for p in courseobj2:
+                k['course_id'] = course_code
+                k['course_name'] = course_name
+                k['sem'] = p.sem
+                k['credits'] = p.credits
+            details.append(k)
 
-    # year = datetime.datetime.now().year
-    # month = datetime.datetime.now().month
 
-    year = demo_date.year
-    month = demo_date.month
-    yearr = str(year) + "-" + str(year+1)
-    semflag = 0
-    if(month >= 7):
-        semflag = 1
-    else:
-        semflag = 2
-    # TO DO Bdes
-    date = {'year': yearr, 'semflag': semflag}
-    return render(
-                    request,
-                    '../templates/academic_procedures/show_courses.html',
-                    {'details': details,
-                        'dict2': dict2,
-                        'date': date})
+        year = demo_date.year
+        month = demo_date.month
+        yearr = str(year) + "-" + str(year+1)
+        semflag = 0
+        if(month >= 7):
+            semflag = 1
+        else:
+            semflag = 2
+        # TO DO Bdes
+        date = {'year': yearr, 'semflag': semflag}
 
+        html = render_to_string('academic_procedures/studentCourses.html',
+                                    {'details': details,
+                            'dict2': dict2,
+                            'date': date}, request)
+
+        maindict = {'html': html}
+        obj = json.dumps(maindict)
+        return HttpResponse(obj, content_type='application/json')
 
 # view to generate all list of students
 
@@ -1445,29 +1479,7 @@ def drop_course(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
-@login_required(login_url='/accounts/login')
-def gen_course_list(request):
-    if(request.POST):
-        try:
-            batch = request.POST['batch']
-            course_id = request.POST['course']
-            course = Courses.objects.get(id = course_id)
-            obj = course_registration.objects.all().filter(course_id = course)
-        except Exception as e:
-            batch=""
-            course=""
-            obj=""
 
-        students = []
-        for i in obj:
-            if i.student_id.batch_id.year == int(batch):
-                students.append(i.student_id)
-        html = render_to_string('academic_procedures/gen_course_list.html',
-                                {'students': students, 'batch':batch, 'course':course_id}, request)
-
-        maindict = {'html': html}
-        obj = json.dumps(maindict)
-        return HttpResponse(obj, content_type='application/json')
 
 
 def add_thesis(request):
