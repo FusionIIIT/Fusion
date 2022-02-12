@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from .models import (Bonafide, BranchChange, CourseRequested, CoursesMtech, FeePayments, FinalRegistration, InitialRegistration, InitialRegistrations,
-                     MinimumCredits, Register, StudentRegistrationChecks, Thesis,
+from .models import (BranchChange, CoursesMtech, InitialRegistrations,
+                     MinimumCredits, Register, Thesis,
                      StudentRegistrationCheck, FinalRegistrations,
                      ThesisTopicProcess, FeePayment, TeachingCreditRegistration,
-                     SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,MessDue,Assistantship_status, course_registration)
+                     SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,MessDue,Assistantship_status)
 
 class RegisterAdmin(admin.ModelAdmin):
     model = Register
@@ -39,11 +39,3 @@ admin.site.register(PhDProgressExamination)
 admin.site.register(MTechGraduateSeminarReport)
 admin.site.register(MessDue)
 admin.site.register(Assistantship_status)
-#These are new tables as a replcement of existing ones
-admin.site.register(course_registration)
-admin.site.register(FeePayments)
-admin.site.register(CourseRequested)
-admin.site.register(InitialRegistration)
-admin.site.register(FinalRegistration)
-admin.site.register(StudentRegistrationChecks)
-#TODO: Remove the old tables
