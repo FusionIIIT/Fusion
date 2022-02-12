@@ -35,6 +35,8 @@ COURSESLOT_TYPE_CHOICES = [
 BATCH_NAMES = [
     ('B.Tech', 'B.Tech'),
     ('M.Tech', 'M.Tech'),
+    ('B.Des','B.Des'),
+    ('M.Des','M.Des'),
     ('Phd', 'Phd')
 ]
 
