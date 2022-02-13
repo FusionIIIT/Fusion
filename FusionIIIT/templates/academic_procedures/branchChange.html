@@ -12,7 +12,15 @@
     <div class="ui vertical segment">
             <form name="branch_change" id='branch_change' method="post" action="/academic-procedures/brach-change-request/">
             {% csrf_token %}
-            {{ BranchChangeForm }}
+            {% comment %} Rendering fields manually {% endcomment %}
+            <label for="id_branches">Branches:</label>
+            <select name = "branches" required id = "id_branches">
+                <option value selected>-------</option>
+                <option value="51">Computer Science Engineering</option>
+                <option value="30">Electronics and Communication Engineering</option>
+                <option value="37">Mechanical Engineering</option>
+                <option value="53">Smart Manufacturing</option>
+            </select>
                 <input type="submit">
             </form>
         </div>
