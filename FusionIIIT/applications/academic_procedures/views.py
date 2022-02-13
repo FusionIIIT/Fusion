@@ -872,10 +872,7 @@ def verify_course(request):
         obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj2)
         curr_sem_id = obj2.curr_semester_no
         details = []
-        # print("obj2",obj2)
-        # print("curr_sem_id",curr_sem_id)
         current_sem_courses = get_currently_registered_course(roll_no,curr_sem_id)
-        # print("current_sem_courses",current_sem_courses)
         idd = obj2
         for z in current_sem_courses:
             z=z[1]
@@ -887,7 +884,6 @@ def verify_course(request):
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
             courseobj2 = Courses.objects.all().filter(code = course_code)
-            # print(courseobj2)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
