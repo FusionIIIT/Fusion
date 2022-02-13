@@ -887,7 +887,7 @@ def verify_course(request):
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
             courseobj2 = Courses.objects.all().filter(code = course_code)
-            print(courseobj2)
+            # print(courseobj2)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
