@@ -1613,8 +1613,11 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
     now = demo_date
     year, month = now.year, int(now.month)
     y = str(year)
-    if(ug_flag):        
-        roll = int(roll[:4])        
+    if(ug_flag):
+        if(roll[2].isdigit()):
+            roll = int(roll[:4])
+        else:
+            roll = int("20"+roll[:2])        
         user_year = year - roll
     elif(masters_flag or phd_flag):
         roll =  int(roll[:2])
