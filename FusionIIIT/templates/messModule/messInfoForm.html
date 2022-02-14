@@ -2,6 +2,7 @@
 
 {% block body %}
 <form action="{% url 'mess:info' %}" method="post">
+  {% csrf_token %}
   {{ form }}
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>

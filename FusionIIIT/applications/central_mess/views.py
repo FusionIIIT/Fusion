@@ -393,13 +393,14 @@ def mess(request):
 
 @login_required
 @transaction.atomic
-@csrf_exempt
 def mess_info(request):
     if (request.method == "POST"):
         user_id = request.user
-        student_id = Student.objects.select_related('id','id__user','id__department').get(id__id=user_id)
-        mess_option = request.POST.get('mess_option')
-        Messinfo.objects.create(student_id=student_id, mess_option=mess_option)
+        student_id = Student.objects.select_related('id').only('id__id').get(id__id=user_id)
+        form = MessInfoForm(request.POST)
+        if form.is_valid():
+            mess_option =  form.cleaned_data['mess_option']
+            Messinfo.objects.create(student_id=student_id, mess_option=mess_option)
         return HttpResponseRedirect("/mess")
 
     form = MessInfoForm()
