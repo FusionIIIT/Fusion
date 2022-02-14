@@ -61,7 +61,7 @@ IPR
         <div class="ui huge fluid vertical pointing menu"
              style="max-width: 320px;">
             {% block menucard %}
-                {% include 'rs/menu_card.html' with info=use d=desig %}
+                {% include 'rs/menu_card.html' with user_extra_info=user_extra_info designations=user_designations %}
             {% endblock %}
 
         </div>
@@ -80,7 +80,7 @@ IPR
         {% comment %}The ... start here!{% endcomment %}
         <div class="ui tab segment" data-tab="first">
             {% block faq %}
-            {% include 'rs/Status.html' with val=pat %}
+            {% include 'rs/Status.html' with patents=patents %}
             {% endblock %}
         </div>
 
@@ -101,7 +101,7 @@ IPR
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="forteenth">
             {% block view_feedback %}
-            {% include 'rs/Status.html'  with val=pat %}
+            {% include 'rs/Status.html' with patents=patents %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
@@ -110,7 +110,7 @@ IPR
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixteenth">
             {% block statistics %}
-            {% include 'rs/change_status.html' with val=pat %}
+            {% include 'rs/change_status.html' with patents=patents %}
             {% endblock %}
         </div>
 
