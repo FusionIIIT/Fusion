@@ -576,7 +576,7 @@ def student_view(request):                                                      
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule, 'users': users})
+                           'prescription': prescription, 'schedule': schedule, 'users': users, 'curr_date': datetime.now().date()})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
