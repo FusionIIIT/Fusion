@@ -208,6 +208,7 @@ def academic_procedures_student(request):
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
+
         if obj.programme.upper() == "PHD" :
             student_flag = True
             ug_flag = False
@@ -300,7 +301,8 @@ def academic_procedures_student(request):
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
-        currently_registered_course = get_currently_registered_course(obj, curr_sem_id)
+        currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+
         current_credits = get_current_credits(currently_registered_course)
 
         cur_cpi=0.0
@@ -870,7 +872,10 @@ def verify_course(request):
         obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj2)
         curr_sem_id = obj2.curr_semester_no
         details = []
+
         current_sem_courses = get_currently_registered_course(roll_no,curr_sem_id)
+
+
         idd = obj2
         for z in current_sem_courses:
             z=z[1]
