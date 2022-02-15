@@ -18,8 +18,8 @@ os.environ['NO_PROXY'] = 'iiitdmj.ac.in'
 #    The parsed web page can be accessed using beautiful soup.
 # @variables:
 #       context-holds data to make necessary changes in the template
-#       r1-url1 = "http://172.27.20.250/webopac/"
-#       r2-requests.get(url1+url2,cookies=r1.cookies)
+#       r1-library_home_url = "http://172.27.20.250/webopac/"
+#       r2-requests.get(library_home_url+library_details_url,cookies=r1.cookies)
 #       r3-for cookies as requests (using beautiful soup with cookies)
 #       status- status of the issued items
 #       memberid-of the current user
@@ -31,16 +31,16 @@ os.environ['NO_PROXY'] = 'iiitdmj.ac.in'
 @csrf_exempt
 def libraryModule(request):
     issue_details = {}
-    due_details1 = {}
-    due_details2 = {}
-    textb = ""
+    due_details_non_returned = {}
+    due_details_returned = {}
+    book_results = ""
     due = 0
     j = 0
-    url1 = "http://softgranth.iiitdmj.ac.in/webopac/"
-    url2 = "frmissuesofuser.aspx?title=Issue%20Details%20of%20The%20%20Members"
-    # r2 = requests.get(url1+url2)
-    r1 = requests.get(url1)
-    r2 = requests.get(url1 + url2, cookies=r1.cookies)
+    library_home_url = "http://softgranth.iiitdmj.ac.in/webopac/"
+    library_issue_details_url = "frmissuesofuser.aspx?title=Issue%20Details%20of%20The%20%20Members"
+    # r2 = requests.get(library_home_url+library_issue_details_url)
+    r1 = requests.get(library_home_url)
+    r2 = requests.get(library_home_url + library_issue_details_url, cookies=r1.cookies)
     soup = BeautifulSoup(r2.content, "html5lib")
     # Hidden Values that are sent along with the form detailes
     viewstate = soup.find(id="__VIEWSTATE")['value']
@@ -59,12 +59,10 @@ def libraryModule(request):
                   'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
 
     # Requesting server with the member detailes and form values
-    r3 = requests.post(url1 + url2, cookies=r1.cookies, data=formfields)
+    r3 = requests.post(library_home_url + library_issue_details_url, cookies=r1.cookies, data=formfields)
 
     # Extracting the result of the above request r3
     soup = BeautifulSoup(r3.content, "html5lib")
-    print("")
-    print("Technically Processed Items")
 
     # Extracting the required detailes(Book name, ISBN number, Date of Isuue, Return date ..) from the resultant soup
     for div in soup.find_all("div", {'id': 'print13'}):
@@ -84,8 +82,8 @@ def libraryModule(request):
             print("No Records Found")
 
     # Url for checking the dues of the members
-    url2 = "CircTotalFineUserWise.aspx?title=Over%20Due%20Details%20of%20MembersD"
-    r2 = requests.get(url1 + url2, cookies=r1.cookies)
+    library_due_details_url = "CircTotalFineUserWise.aspx?title=Over%20Due%20Details%20of%20MembersD"
+    r2 = requests.get(library_home_url + library_due_details_url, cookies=r1.cookies)
     soup = BeautifulSoup(r2.content, "html5lib")
 
     # Hidden Values that are sent along with the form detailes
@@ -102,7 +100,7 @@ def libraryModule(request):
 
     # Requesting server with the member detailes and form values
 
-    r3 = requests.post(url1 + url2, cookies=r1.cookies, data=formfields)
+    r3 = requests.post(library_home_url + library_due_details_url, cookies=r1.cookies, data=formfields)
 
     # Extracting the result of the above request r3
     soup2 = BeautifulSoup(r3.content, "html5lib")
@@ -121,7 +119,7 @@ def libraryModule(request):
                                  "tdod": tr.contents[3].text,
                                  "tod": tr.contents[4].text}}
                 j = j + 1
-                due_details1.update(temp)
+                due_details_non_returned.update(temp)
         else:
             print("No Records Found")
 
@@ -135,7 +133,7 @@ def libraryModule(request):
                                  "tod": tr.contents[5].text,
                                  "cause": tr.contents[6].text}}
                 j = j + 1
-                due_details2.update(temp)
+                due_details_returned.update(temp)
 
         else:
             print("No Records Found")
@@ -151,8 +149,8 @@ def libraryModule(request):
 
         url3 = "BasicSearch.aspx?title=Basic%20Catalogue%20Search"
         url4 = "searchresult.aspx"
-        rb1 = requests.get(url1)
-        rb2 = requests.get(url1 + url3, cookies=r1.cookies)
+        rb1 = requests.get(library_home_url)
+        rb2 = requests.get(library_home_url + url3, cookies=r1.cookies)
         soupb = BeautifulSoup(rb2.content, "html5lib")
         viewstate = soupb.find(id="__VIEWSTATE")['value']
         viewgen = soupb.find(id="__VIEWSTATEGENERATOR")['value']
@@ -176,24 +174,23 @@ def libraryModule(request):
                           'ctl00$ContentPlaceHolder1$lstSearchType': 'Author',
                           'ctl00$ContentPlaceHolder1$SelectPageSize': '100',
                           'ctl00$ContentPlaceHolder1$cmdSearch': 'Search'}
-        rb3 = requests.post(url1 + url4, cookies=r1.cookies, data=formfields)
+        rb3 = requests.post(library_home_url + url4, cookies=r1.cookies, data=formfields)
         soupb2 = BeautifulSoup(rb3.content, "html5lib")
         # To remove span items around searched keyword
         for match in soupb2.findAll('span'):
             match.unwrap()
-        # textb=soupb2.get_text()
+        # book_results=soupb2.get_text()
         text = html_text.extract_text(str(soupb2))
         text = text.split("Central Library", 1)[1]
         if text == '\nNo Result Found.\nNew Search':
-            textb = "N"
+            book_results = "N"
         else:
             start = "Search Results"
             end = "Total Records"
-            textb = (text.split(start))[1].split(end)[0]
-            textb = textb.replace("Copies Information Reserve Add Keyword(s) Add To Cart Content Author Info Book Info",
+            book_results = (text.split(start))[1].split(end)[0]
+            book_results = book_results.replace("Copies Information Reserve Add Keyword(s) Add To Cart Content Author Info Book Info",
                                   "\n")
-            textb = textb.split("\n")
+            book_results = book_results.split("\n")
 
-    context = {"data1": issue_details, "due": due, "data2": due_details1, "data3": due_details2, "bookresults": textb}
-    print(request.user)
+    context = {"data1": issue_details, "due": due, "data2": due_details_non_returned, "data3": due_details_returned, "bookresults": book_results}
     return render(request, "libraryModule/libraryModule.html", context)
