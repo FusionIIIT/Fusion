@@ -3,61 +3,38 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
 
-<form id="income" method='POST' action='/income-expenditure/viewIncomeStats/' target="_blank">{% csrf_token %}
+<form method='POST' action='/income-expenditure/viewIncomeStats/' target="_blank">{% csrf_token %}
   <div id="view_stats" class="field" style="border : 0">
-    <h2>View Income Stats</h2><br>
-    <select id="incomeYear" class="ui dropdown" name="year">
-      <option value="">Select Financial Year</option>
+     <h2>View Income Stats</h2><br>
+      <select class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
 
-      {% for year in inc_fin_years %}
-      <option value={{year}}>{{year}} - {{year|add:1}}</option>
-      {% endfor %}
-
-    </select>
-    <button class="ui primary button" style="float: right;">Get Stats</button>
-  </div>
+         {% for year in inc_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;">Get Stats</button>
+</div>
 </form>
 
 <br>
 <br>
 <br>
 
-<form id="expenditure" method='POST' action='/income-expenditure/viewExpenditureStats/' target="_blank">{% csrf_token %}
-  <div id="view_stats" class="field" style="border : 0">
-    <h2>View Expenditure Stats</h2><br>
-    <select id="expenditureYear" class="ui dropdown" name="year">
-      <option value="">Select Financial Year</option>
+<form method='POST' action='/income-expenditure/viewExpenditureStats/' target="_blank">{% csrf_token %}
+      <div id="view_stats" class="field" style="border : 0">
+        <h2>View Expenditure Stats</h2><br>
+      <select class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
 
-      {% for year in exp_fin_years %}
-      <option value={{year}}>{{year}} - {{year|add:1}}</option>
-      {% endfor %}
-
-    </select>
-    <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
+         {% for year in exp_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
   </div>
 </form>
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-
-<script>
-
-  const income = document.getElementById('income');
-  const expenditure = document.getElementById('expenditure');
-  const incomeYear = document.getElementById('incomeYear');
-  const expenditureYear = document.getElementById('expenditureYear');
-
-  income.addEventListener('submit', (event) => {
-    if (incomeYear.value === "") {
-      event.preventDefault();
-      alert("Please Select a Financial Year");
-    }
-  })
-
-  expenditure.addEventListener('submit', (event) => {
-    if (expenditureYear.value === "") {
-      event.preventDefault();
-      alert("Please Select a Financial Year");
-    }
-  })
-
-</script>
