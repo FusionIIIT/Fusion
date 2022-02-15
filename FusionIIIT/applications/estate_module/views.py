@@ -79,13 +79,13 @@ def estate(request):
     inventory_consumable_data = {
         'All': InventoryConsumable.objects.all(),
         'form': InventoryConsumableForm(),
-        'template_dir': 'estate_module/Inventory/Consumable'
+        'template_dir': 'estate_module/Inventory/Consumable',
     }
 
     inventory_non_consumable_data = {
         'All': InventoryNonConsumable.objects.all(),
         'form': InventoryNonConsumableForm(),
-        'template_dir': 'estate_module/Inventory/NonConsumable'
+        'template_dir': 'estate_module/Inventory/NonConsumable',
     }
 
     inventory_data = {
@@ -112,15 +112,15 @@ def estate(request):
 @require_POST
 def newBuilding(request):
 
-    newBuildingForm = BuildingForm(request.POST)
+    new_building_form = BuildingForm(request.POST)
 
-    if newBuildingForm.is_valid():
-        new_Building = newBuildingForm.save()
+    if new_building_form.is_valid():
+        new_building = new_building_form.save()
         messages.success(
-            request, f'New Building Created: { new_Building.name }')
+            request, f'New Building Created: { new_building.name }')
         return redirect('estate_module_home')
 
-    for label, errors in newBuildingForm.errors.items():
+    for label, errors in new_building_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -131,14 +131,14 @@ def editBuilding(request, building_id):
 
     building = Building.objects.get(pk=building_id)
 
-    editBuildingForm = BuildingForm(request.POST, instance=building)
+    edit_building_form = BuildingForm(request.POST, instance=building)
 
-    if editBuildingForm.is_valid():
-        editedBuilding = editBuildingForm.save()
-        messages.success(request, f'Building Updated: { editedBuilding.name }')
+    if edit_building_form.is_valid():
+        edited_building = edit_building_form.save()
+        messages.success(request, f'Building Updated: { edited_building.name }')
         return redirect('estate_module_home')
 
-    for label, errors in editBuildingForm.errors.items():
+    for label, errors in edit_building_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -157,15 +157,15 @@ def deleteBuilding(request, building_id):
 @require_POST
 def newWork(request):
 
-    newWorkForm = WorkForm(request.POST)
+    new_work_form = WorkForm(request.POST)
 
-    if newWorkForm.is_valid():
-        new_work = newWorkForm.save()
+    if new_work_form.is_valid():
+        new_work = new_work_form.save()
         messages.success(
             request, f'New { new_work.get_workType_display() } Work Created: { new_work.name }')
         return redirect('estate_module_home')
 
-    for label, errors in newBuildingForm.errors.items():
+    for label, errors in new_work_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -176,15 +176,15 @@ def editWork(request, work_id):
 
     work = Work.objects.get(pk=work_id)
 
-    editWorkForm = WorkForm(request.POST, instance=work)
+    edit_work_form = WorkForm(request.POST, instance=work)
 
-    if editWorkForm.is_valid():
-        editedWork = editWorkForm.save()
+    if edit_work_form.is_valid():
+        edited_work = edit_work_form.save()
         messages.success(
-            request, f'Updated { editedWork.get_workType_display() } Work: { editedWork.name }')
+            request, f'Updated { edited_work.get_workType_display() } Work: { edited_work.name }')
         return redirect('estate_module_home')
 
-    for label, errors in editWorkForm.errors.items():
+    for label, errors in edit_work_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -195,25 +195,25 @@ def deleteWork(request, work_id):
 
     work = Work.objects.get(pk=work_id)
     work_name = work.name
-    work_Type = work.get_workType_display()
+    work_type = work.get_workType_display()
     work.delete()
 
-    messages.success(request, f'{ work_Type } Work Deleted: { work_name }')
+    messages.success(request, f'{ work_type } Work Deleted: { work_name }')
     return redirect('estate_module_home')
 
 
 @require_POST
 def newSubWork(request):
 
-    newSubWorkForm = SubWorkForm(request.POST)
+    new_sub_work_form = SubWorkForm(request.POST)
 
-    if newSubWorkForm.is_valid():
-        new_SubWork = newSubWorkForm.save()
+    if new_sub_work_form.is_valid():
+        new_sub_work = new_sub_work_form.save()
         messages.success(
-            request, f'New SubWork Created: { new_SubWork.name }')
+            request, f'New SubWork Created: { new_sub_work.name }')
         return redirect('estate_module_home')
 
-    for label, errors in newSubWorkForm.errors.items():
+    for label, errors in new_sub_work_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -222,16 +222,16 @@ def newSubWork(request):
 @require_POST
 def editSubWork(request, subWork_id):
 
-    subWork = SubWork.objects.get(pk=subWork_id)
+    sub_work = SubWork.objects.get(pk=subWork_id)
 
-    editSubWorkForm = SubWorkForm(request.POST, instance=subWork)
+    edit_sub_work_form = SubWorkForm(request.POST, instance=sub_work)
 
-    if editSubWorkForm.is_valid():
-        editedSubWork = editSubWorkForm.save()
-        messages.success(request, f'SubWork Updated: { editedSubWork.name }')
+    if edit_sub_work_form.is_valid():
+        edited_sub_work = edit_sub_work_form.save()
+        messages.success(request, f'SubWork Updated: { edited_sub_work.name }')
         return redirect('estate_module_home')
 
-    for label, errors in editSubWorkForm.errors.items():
+    for label, errors in edit_sub_work_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -240,25 +240,25 @@ def editSubWork(request, subWork_id):
 @require_POST
 def deleteSubWork(request, subWork_id):
 
-    subWork = SubWork.objects.get(pk=subWork_id)
-    subWork_name = subWork.name
-    subWork.delete()
-    messages.success(request, f'SubWork Deleted: { subWork_name }')
+    sub_work = SubWork.objects.get(pk=subWork_id)
+    sub_work_name = sub_work.name
+    sub_work.delete()
+    messages.success(request, f'SubWork Deleted: { sub_work_name }')
     return redirect('estate_module_home')
 
 
 @require_POST
 def newInventoryType(request):
 
-    newInventoryTypeForm = InventoryTypeForm(request.POST)
+    new_inventory_type_form = InventoryTypeForm(request.POST)
 
-    if newInventoryTypeForm.is_valid():
-        new_InventoryType = newInventoryTypeForm.save()
+    if new_inventory_type_form.is_valid():
+        new_inventory_type = new_inventory_type_form.save()
         messages.success(
-            request, f'New Inventory Type Created: { new_InventoryType.name }')
+            request, f'New Inventory Type Created: { new_inventory_type.name }')
         return redirect('estate_module_home')
 
-    for label, errors in newInventoryTypeForm.errors.items():
+    for label, errors in new_inventory_type_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -267,18 +267,18 @@ def newInventoryType(request):
 @require_POST
 def editInventoryType(request, inventoryType_id):
 
-    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
+    inventory_type = InventoryType.objects.get(pk=inventoryType_id)
 
-    editInventoryTypeForm = InventoryTypeForm(
-        request.POST, instance=inventoryType)
+    edit_inventory_type_form = InventoryTypeForm(
+        request.POST, instance=inventory_type)
 
-    if editInventoryTypeForm.is_valid():
-        editedInventoryType = editInventoryTypeForm.save()
+    if edit_inventory_type_form.is_valid():
+        edited_inventory_type = edit_inventory_type_form.save()
         messages.success(
-            request, f'Inventory Type Updated: { editedInventoryType.name }')
+            request, f'Inventory Type Updated: { edited_inventory_type.name }')
         return redirect('estate_module_home')
 
-    for label, errors in editInventoryTypeForm.errors.items():
+    for label, errors in edit_inventory_type_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -287,26 +287,26 @@ def editInventoryType(request, inventoryType_id):
 @require_POST
 def deleteInventoryType(request, inventoryType_id):
 
-    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
-    inventoryType_name = inventoryType.name
-    inventoryType.delete()
+    inventory_type = InventoryType.objects.get(pk=inventoryType_id)
+    inventory_type_name = inventory_type.name
+    inventory_type.delete()
     messages.success(
-        request, f'Inventory Type Deleted: { inventoryType_name }')
+        request, f'Inventory Type Deleted: { inventory_type_name }')
     return redirect('estate_module_home')
 
 
 @require_POST
 def newInventoryConsumable(request):
 
-    newInventoryConsumableForm = InventoryConsumableForm(request.POST)
+    new_inventory_consumable_form = InventoryConsumableForm(request.POST)
 
-    if newInventoryConsumableForm.is_valid():
-        new_InventoryConsumable = newInventoryConsumableForm.save()
+    if new_inventory_consumable_form.is_valid():
+        new_inventory_consumable = new_inventory_consumable_form.save()
         messages.success(
-            request, f'New Consumable Inventory Created: { new_InventoryConsumable }')
+            request, f'New Consumable Inventory Created: { new_inventory_consumable }')
         return redirect('estate_module_home')
 
-    for label, errors in newInventoryConsumableForm.errors.items():
+    for label, errors in new_inventory_consumable_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -318,16 +318,16 @@ def editInventoryConsumable(request, inventory_consumable_id):
     inventory_consumable = InventoryConsumable.objects.get(
         pk=inventory_consumable_id)
 
-    editInventoryConsumableForm = InventoryConsumableForm(
+    edit_inventory_consumable_form = InventoryConsumableForm(
         request.POST, instance=inventory_consumable)
 
-    if editInventoryConsumableForm.is_valid():
-        editedInventoryConsumable = editInventoryConsumableForm.save()
+    if edit_inventory_consumable_form.is_valid():
+        edited_inventory_consumable = edit_inventory_consumable_form.save()
         messages.success(
-            request, f'Consumable Inventory Updated: { editedInventoryConsumable }')
+            request, f'Consumable Inventory Updated: { edited_inventory_consumable }')
         return redirect('estate_module_home')
 
-    for label, errors in editInventoryConsumableForm.errors.items():
+    for label, errors in edit_inventory_consumable_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -348,15 +348,15 @@ def deleteInventoryConsumable(request, inventory_consumable_id):
 @require_POST
 def newInventoryNonConsumable(request):
 
-    newInventoryNonConsumableForm = InventoryNonConsumableForm(request.POST)
+    new_inventory_non_consumable_form = InventoryNonConsumableForm(request.POST)
 
-    if newInventoryNonConsumableForm.is_valid():
-        new_InventoryNonConsumable = newInventoryNonConsumableForm.save()
+    if new_inventory_non_consumable_form.is_valid():
+        new_inventory_non_consumable = new_inventory_non_consumable_form.save()
         messages.success(
-            request, f'New Non-Consumable Inventory Created: { new_InventoryNonConsumable }')
+            request, f'New Non-Consumable Inventory Created: { new_inventory_non_consumable }')
         return redirect('estate_module_home')
 
-    for label, errors in newInventoryNonConsumableForm.errors.items():
+    for label, errors in new_inventory_non_consumable_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
@@ -368,16 +368,16 @@ def editInventoryNonConsumable(request, inventory_non_consumable_id):
     inventory_non_consumable = InventoryNonConsumable.objects.get(
         pk=inventory_non_consumable_id)
 
-    editInventoryNonConsumableForm = InventoryNonConsumableForm(
+    edit_inventory_non_consumable_form = InventoryNonConsumableForm(
         request.POST, instance=inventory_non_consumable)
 
-    if editInventoryNonConsumableForm.is_valid():
-        editedInventoryNonConsumable = editInventoryNonConsumableForm.save()
+    if edit_inventory_non_consumable_form.is_valid():
+        edited_inventory_non_consumable = edit_inventory_non_consumable_form.save()
         messages.success(
-            request, f'Non-Consumable Inventory Updated: { editedInventoryNonConsumable }')
+            request, f'Non-Consumable Inventory Updated: { edited_inventory_non_consumable }')
         return redirect('estate_module_home')
 
-    for label, errors in editInventoryNonConsumableForm.errors.items():
+    for label, errors in edit_inventory_non_consumable_form.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
