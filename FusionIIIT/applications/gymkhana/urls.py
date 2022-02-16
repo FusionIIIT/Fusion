@@ -1,11 +1,18 @@
 from django.conf.urls import url
-
+from rest_framework.urlpatterns import format_suffix_patterns
+from applications.gymkhana.api.views import clubname,Club_Details
 from . import views
+from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = 'gymkhana'
 
 urlpatterns = [
-
+    # This is post method which takes username and password to generates/return Token
+    url(r'^login/$', obtain_auth_token, name='login'),
+    # api for "clubdetails" method="get" with TokenAuthentication
+    url(r'^clubdetails/$', Club_Details.as_view()),
+    # api for "clubname" method="get" with TokenAuthentication
+    url(r'^clubname/$', clubname.as_view()),
     url(r'^$', views.gymkhana, name='gymkhana'),
     url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
     url(r'^form_avail/$', views.form_avail, name='form_avail'),
