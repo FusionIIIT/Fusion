@@ -1,9 +1,10 @@
 {% load custom_tags %}
 {% block {{hall.hall_id}} %}
-    
+
     {% for notice in hall_notices|get_hall_no:hall_id %}
-        <div class="ui icon warning message">
-        <div class="ui raised segment">
+
+    <div class="ui secondary segment">
+        <div class="ui segment" >
             <h2 class="ui center aligned header">{{notice.head_line|truncatechars_html:50}}</h2>
             <h4 style="text-align:right;">{{notice.posted_by.user.first_name}} {{notice.posted_by.user.last_name}} - {{notice.posted_by.user.username}}</h4>
 
@@ -39,6 +40,8 @@
                 {% endifequal %}
             {% endif %}
         </div>
-        </div>
+      </div>
+    
     {% endfor %}
+
 {% endblock %}
