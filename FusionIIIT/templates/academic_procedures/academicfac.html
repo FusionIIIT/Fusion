@@ -74,8 +74,8 @@
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="../../ocms/{{obj.curriculum_id.course_code}}/">{{obj.curriculum_id.course_code}}</a></td>
-                                <td>{{obj.curriculum_id.course_id.course_name}}</td>
+                                <td><a href="../../ocms/{{obj.course_id.code}}/">{{obj.course_id.code}}</a></td>
+                                <td>{{obj.course_id.name}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
