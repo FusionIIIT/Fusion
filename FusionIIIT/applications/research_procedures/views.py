@@ -1,10 +1,11 @@
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import redirect, render,HttpResponse
 from django.contrib import messages
 from applications.research_procedures.models import Patent
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.core.files.storage import FileSystemStorage
 from notification.views import research_procedures_notif
+from django.urls import reverse
 
 
 # Faculty can file patent and view status of it.
@@ -100,11 +101,9 @@ def patent_status_update(request):
                 patent = Patent.objects.get(application_id=patent_application_id)
                 patent.status = request.POST.get('status')
                 patent.save()
-
+                messages.success(request, 'Patent status updated successfully')
                 # Create a notification for the user about the patent status update
                 dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
                 research_procedures_notif(dean_rspc_user,patent.faculty_id.user,request.POST.get('status'))
     patents = Patent.objects.all() 
-    return render(request ,"rs/research.html",{'patents':patents,'user_extra_info':user_extra_info,'user_designations':user_designations})
-
-   
+    return redirect(reverse("research_procedures:patent_registration"))
