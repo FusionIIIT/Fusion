@@ -6,7 +6,7 @@ from django.db.models.fields import IntegerField, PositiveIntegerField
 from django.db.models import CheckConstraint, Q, F
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-
+from applications.globals.models import ExtraInfo
 
 # Create your models here.
 
@@ -113,7 +113,6 @@ class Semester(models.Model):
     def courseslots(self):
         return CourseSlot.objects.filter(semester=self.id).order_by("id")
 
-
 class Course(models.Model):
     code = models.CharField(max_length=10, null=False, unique=True, blank=False)
     name = models.CharField(max_length=100, null=False, unique=True, blank=False)
@@ -147,7 +146,6 @@ class Course(models.Model):
     def courseslots(self):
         return CourseSlot.objects.filter(courses=self.id)
 
-
 class Batch(models.Model):
     name = models.CharField(choices=BATCH_NAMES, max_length=50, null=False, blank=False)
     discipline = models.ForeignKey(Discipline, null=False, on_delete=models.CASCADE)
@@ -161,6 +159,7 @@ class Batch(models.Model):
     def __str__(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
 
+    
 class CourseSlot(models.Model):
     semester = models.ForeignKey(Semester, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -181,3 +180,12 @@ class CourseSlot(models.Model):
     @property
     def for_batches(self):
         return ((Semester.objects.get(id=self.semester.id)).curriculum).batches
+
+class CourseInstructor(models.Model):
+      course_id = models.ForeignKey(Course, on_delete = models.CASCADE)
+      instructor_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
+      
+
+      def __self__(self):
+            return '{} - {}'.format(self.course_id, self.instructor_id)
+        
