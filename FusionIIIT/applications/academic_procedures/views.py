@@ -817,22 +817,25 @@ def gen_course_list(request):
             batch = request.POST['batch']
             course_id = request.POST['course']
             course = Courses.objects.get(id = course_id)
-            obj = course_registration.objects.all().filter(course_id = course)
+            #obj = course_registration.objects.all().filter(course_id = course)
+            obj=course_registration.objects.filter(course_id__id=course_id, student_id__batch=batch).select_related(
+            'student_id__id__user','student_id__id__department').only('student_id__batch', 
+            'student_id__id__user__first_name', 'student_id__id__user__last_name',
+            'student_id__id__department__name','student_id__id__user__username')
         except Exception as e:
             batch=""
             course=""
             obj=""
-
         students = []
         for i in obj:
-            if i.student_id.batch_id.year == int(batch):
-                students.append(i.student_id)
+            students.append({"rollno":i.student_id.id.user.username, 
+            "name":i.student_id.id.user.first_name+" "+i.student_id.id.user.last_name, 
+            "department":i.student_id.id.department.name})
         html = render_to_string('academic_procedures/gen_course_list.html',
                                 {'students': students, 'batch':batch, 'course':course_id}, request)
-
         maindict = {'html': html}
         obj = json.dumps(maindict)
-        return HttpResponse(obj, content_type='application/json')
+        return HttpResponse(obj, content_type='application/json')    
 
 # view where Admin verifies the registered courses of every student
 @login_required(login_url='/accounts/login')
