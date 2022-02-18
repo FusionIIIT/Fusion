@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,CourseInstructor
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot
 
 
 class ProgrammeAdmin(admin.ModelAdmin):
@@ -39,4 +39,3 @@ admin.site.register(Semester, SemesterAdmin)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Batch, BatchAdmin)
 admin.site.register(CourseSlot, CourseSlotAdmin)
-admin.site.register(CourseInstructor)

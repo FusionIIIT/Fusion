@@ -160,7 +160,7 @@
             <td style="width: 10%"><center><input type="number" name="q2_marks" step=0.1 min="0" max="100" value="{{items.q2}}" onchange="change_grade()"></center></td>
             <td style="width: 10%"><center><input type="number" name="end_marks" step=0.1 min="0" max="100" value="{{items.end_term}}" onchange="change_grade()"></center></td>
             <td style="width: 10%"><center><input type="number" name="other_marks" step=0.1 min="0" max="100" value="{{items.other}}" onchange="change_grade()" ></center></td>
-            <td style="width: 15%"><center><input type="number" name="total_marks" step=0.1 min="0" max="100" value="0" readonly></center></td>
+            <td style="width: 15%"><center><input type="number" name="total_marks" step=0.1 min="0" max="100" value="0"></center></td>
             {% if grade_submission_date_eligibility %}
             <td style="width: 15%"><center><input type="text" name="grade" value="" required="True"></center></td>
             {% endif %}

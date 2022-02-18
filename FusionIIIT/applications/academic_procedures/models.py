@@ -65,17 +65,6 @@ class Constants:
 
 
 class Register(models.Model):
-    '''
-        Current Purpose : Deals with the information regarding the registration of a student in a course
-
-        ATTRIBUTES
-
-        curr_id(academic_information.Curriculum) - reference to the course 
-        year(Integer) - the year for which the course is being registered(can be the academic year)
-        student_id(acadmemic_information.Student) - reference to the student 
-        semester(Integer) - the semester for which the registration is done(format unclear [can be between 1-8 or based on academic year(I or II)])
-
-    '''
     curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -93,16 +82,6 @@ class Register(models.Model):
 
 
 class BranchChange(models.Model):
-    '''
-        Current Purpose : Deals with the branch change information for which a student applies
-
-        ATTRIBUTES
-
-        c_id(Autofield) -  primary key for the table
-        branches(globals.DepartmentInfo) - list of departments from which a student can choose the branch they aspire to be in
-        user(academic_information.Student) - reference to the student who has applied for branch change
-        appilied_date(DateField) - date of the application for branch change
-    '''
     c_id = models.AutoField(primary_key=True)
     branches = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE)
     user = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -113,16 +92,6 @@ class BranchChange(models.Model):
 
 
 class CoursesMtech(models.Model):
-    '''
-        Current Purpose : this table currently maps a course with the Mtech Specialization it is offered under
-
-        ATTRIBUTES
-        c_id(academic_information.Course) - reference to the Course 
-        specialization(Char) - the specialization (CAD/CSE etc)
-
-
-
-    '''
     c_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     specialization = models.CharField(max_length=40, choices=Constants.MTechSpecialization)
 
@@ -148,18 +117,6 @@ class MinimumCredits(models.Model):
 # THE THREE TABLES BELOW ARE OLD. PLEASE REFRAIN FROM USING THEM FURTHER.
 # USE THE TABLES AT THE BOTTOM OF THE FILE INSTEAD.
 class StudentRegistrationCheck(models.Model):
-    '''
-        Current Purpose : Deals with the students registration for a semester
-
-        ATTRIBUTES
-        student(academic_information.Student) - reference to the student
-        pre_registration_flag(Boolean) - to denote whether the pre registration is complete
-        final_registration_flag(Boolean) - to denote whether the final registration is complete
-        semester(Integer) - the semester for which the registration is relevant
-
-        
-    '''
-
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     pre_registration_flag = models.BooleanField(default = False)
     final_registration_flag = models.BooleanField(default = False)
@@ -170,8 +127,6 @@ class StudentRegistrationCheck(models.Model):
         
 
 class InitialRegistrations(models.Model):
-
-
     curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
     semester = models.IntegerField()
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -196,8 +151,6 @@ class FinalRegistrations(models.Model):
 
 
 class Thesis(models.Model):
-    
-
     reg_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     supervisor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
@@ -244,8 +197,6 @@ class FeePayment(models.Model):
     transaction_id = models.CharField(max_length = 40)
 
 class TeachingCreditRegistration(models.Model):
-    
-
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     curr_1 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr1')
     curr_2 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr2')
@@ -260,23 +211,6 @@ class TeachingCreditRegistration(models.Model):
 
 
 class SemesterMarks(models.Model):
-    '''
-            Current Purpose : stores information regarding the marks of a student in a course in a semester
-
-            ATTRIBUTES
-            student_id(academic_information.Student) - reference to the student
-            q1(float) - marks in quiz 1
-            mid_term(float) - marks in mid terms
-            q2(float) - marks in quiz 2
-            end_term(float) - marks in end terms
-            other(float) - marks for other categories
-            curr_id(academic_information.Curriculum) - the course for which the grade has been awarded
-
-
-        
-    '''
-
-
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     q1 = models.FloatField(default = None)
     mid_term = models.FloatField(default = None)
@@ -291,21 +225,6 @@ class SemesterMarks(models.Model):
 
 
 class MarkSubmissionCheck(models.Model):
-    '''
-            Current Purpose : keeps track of whether the grades of a course in a particular semester
-             have been submitted and verified
-
-            ATTRIBUTES
-            
-            curr_id(academic_information.Curriculum) - reference to the course
-            verified(Boolean) - check if the grades are verified or not
-            submitted(Boolean) - check if the grades are submitted or not
-            announced(Boolean) - check ifthe grades are announced are not
-
-
-        
-    '''
-
     curr_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
     verified = models.BooleanField(default = False)
     submitted = models.BooleanField(default = False)
@@ -524,7 +443,7 @@ class PhDProgressExamination(models.Model):
         ('yes', 'yes'),
         ('no', 'no'),
         ('not applicable', 'not applicable')
-    ]       
+    ]
 
 
     
@@ -562,21 +481,6 @@ class Assistantship_status(models.Model):
 # THESE ARE THE NEW TABLES AND REPLACEMENT OF THOSE ABOVE.
 # PLEASE USE THESE TABLES FOR FURTHER WORK.
 class StudentRegistrationChecks(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of registration of a student for a semester
-
-
-            ATTRIBUTES
-            student_id(academic_information.Student) - reference to the student
-            pre_registration_flag(Boolean) - to denote whether the pre registration is complete
-            final_registration_flag(boolean) - to denote whether the final registration is complete
-            semester_id(programme_curriculum.Semester) - reference to the semester for which the registration will be considered
-
-
-        
-    '''
-
-
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     pre_registration_flag = models.BooleanField(default=False)
     final_registration_flag = models.BooleanField(default=False)
@@ -587,22 +491,6 @@ class StudentRegistrationChecks(models.Model):
 
 
 class InitialRegistration(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of registration of a student for a course 
-
-
-            ATTRIBUTES
-            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
-            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
-            student_id(academic_information.Student) - reference to the student
-            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
-
-
-        
-    '''
-
-
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -613,23 +501,6 @@ class InitialRegistration(models.Model):
 
 
 class FinalRegistration(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of final(complete) registration of a student for a course 
-
-
-            ATTRIBUTES
-            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
-            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
-            student_id(academic_information.Student) - reference to the student
-            verified(Boolean) - denotes whether the registration is verified by academic department and complete
-            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
-
-
-        
-    '''
-
-
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -641,17 +512,6 @@ class FinalRegistration(models.Model):
 
 
 class CourseRequested(models.Model):
-    '''
-            Current Purpose : stores information regarding the courses for which a student has applied for (purpose is unclear and is open to interpretations)
-
-
-            ATTRIBUTES
-            course_id(programme_curriculum.Course) -  reference to the course details for which the student has applied
-            student_id(academic_information.Student) - reference to the student
-            
-        
-    '''
-
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 
@@ -669,22 +529,6 @@ class FeePayments(models.Model):
 
 
 class course_registration(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of registration of a student for a course 
-
-
-            ATTRIBUTES
-            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
-            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
-            student_id(academic_information.Student) - reference to the student
-            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
-
-
-        
-    '''
-
-
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
