@@ -24,7 +24,7 @@ from applications.academic_information.models import (Calendar, Course, Student,
                                                       
 from applications.central_mess.models import(Monthly_bill, Payments)
 
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester)
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
@@ -152,8 +152,8 @@ def academic_procedures_faculty(request):
         approved_assistantship_request_list = ta_approved_assistantship_request_list | thesis_approved_assistantship_request_list
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
-        courses_list = Curriculum_Instructor.objects.select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
-        
+        #courses_list = Curriculum_Instructor.objects.select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
+        courses_list = list(CourseInstructor.objects.select_related('course_id','instructor_id').filter(instructor_id=user_details))
         
         r = range(4)
         return render(

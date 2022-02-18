@@ -37,6 +37,7 @@
                         Approve
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    {% comment %} it should not be hard coded {% endcomment %}
                     {% if request.user.username == "atul" or request.user.username == "ptandon" or request.user.username == "subirs" or request.user.username == "prabin16" or request.user.username == "prabir" %}
                     <a class="item" data-tab="hod">
                         Combined Assistantship
@@ -67,15 +68,15 @@
                     <table class="ui orange table">
                         <thead>
                             <tr>
+                                <th>Course Code</th>
                                <th>Name Of the Courses</th>
-                               <th>Course Code</th>
                                </tr>
                         </thead>
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="../../ocms/{{obj.curriculum_id.course_code}}/">{{obj.curriculum_id.course_code}}</a></td>
-                                <td>{{obj.curriculum_id.course_id.course_name}}</td>
+                                <td><a href="../../ocms/{{obj.course_id.code}}/">{{obj.course_id.code}}</a></td>
+                                <td>{{obj.course_id.name}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
