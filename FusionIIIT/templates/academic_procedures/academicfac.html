@@ -69,7 +69,10 @@
                         <thead>
                             <tr>
                                 <th>Course Code</th>
+
                                 <th>Name Of the Course</th>
+                               <th>Batch</th>
+
                                </tr>
                         </thead>
                         <tbody>
@@ -77,6 +80,7 @@
                             <tr>
                                 <td><a href="../../ocms/{{obj.course_id.code}}/">{{obj.course_id.code}}</a></td>
                                 <td>{{obj.course_id.name}}</td>
+                                <td>{{ obj.batch_id }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
