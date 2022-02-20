@@ -484,13 +484,13 @@ class AddSchedule(forms.Form):
         return company_name
 
 def current_year():
-    return date.today().year
+    return datetime.date.today().year
 
 def max_value_current_year(value):
     return MaxValueValidator(current_year())(value)
 
 def year_choices():
-    return [(r,r) for r in range(1984, date.today().year+1)]    
+    return [(r,r) for r in range(1984, datetime.date.today().year+1)]    
 class SearchPlacementRecord(forms.Form):
     """
     The form is used to search from placement records based of various parameters.
