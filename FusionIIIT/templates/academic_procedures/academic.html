@@ -35,18 +35,20 @@
                         <B>Current Semester</B>
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="miscellaneous_1">
+                    <a class="item disabled" data-tab="miscellaneous_1">
                         Registration
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% if ug_flag %}
-                        {% if BranchFlag %}
+                        <!--
+                             {% if BranchFlag %}
                         <a class="item" data-tab="four">
                             Branch Change
                             <i class="right floated chevron right icon"></i>
                         </a>
-                        {%  endif %}
-                        <a class="item" data-tab="five">
+                        {%  endif %} 
+                        -->
+                        <a class="item disabled" data-tab="five">
                             Evaluate Teaching Credits
                             <i class="right floated chevron right icon"></i>
                         </a>
@@ -84,7 +86,7 @@
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
-                    <a class="item" data-tab="Miscellaneous">Miscellaneous
+                    <a class="item disabled" data-tab="Miscellaneous">Miscellaneous
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="eight" style="display: none;">
