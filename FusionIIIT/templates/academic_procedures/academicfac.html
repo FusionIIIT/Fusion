@@ -71,12 +71,13 @@
                                 <th>Course Code</th>
                                 <th>Name Of the Course</th>
                                <th>Batch</th>
+
                                </tr>
                         </thead>
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="../../ocms/{{obj.course_id.code}}/">{{obj.course_id.code}}</a></td>
+                                <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id.id %}">{{obj.course_id.code}}</a></td>
                                 <td>{{obj.course_id.name}}</td>
                                 <td>{{ obj.batch_id }}</td>
                             </tr>
