@@ -95,10 +95,10 @@ def main_page(request):
 			exp_fin_years.append(fin_year)
 
 
-	income_history = Income.objects.all()
+	income_history = Income.objects.all().order_by("date_added")
 	income_history = income_history[::-1]
 
-	expenditure_history = Expenditure.objects.all()
+	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
 
 	fixed_attributes = FixedAttributes.objects.all()

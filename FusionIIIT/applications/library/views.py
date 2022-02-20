@@ -54,12 +54,13 @@ def libraryModule(request):
     memberid = ExtraInfo.objects.get(user=request.user).id  # Userid of the member who logged in
 
     # Form values that need to be sent to the server
+    #All Issued books(Returned and Non-Returned will be fetched)
     formfields = {'__VIEWSTATE': viewstate,
                   "__VIEWSTATEGENERATOR": viewgen,
                   '__EVENTVALIDATION': eventvalid,
                   'ctl00$ContentPlaceHolder1$RadiobuttonList': Status,
                   'ctl00$ContentPlaceHolder1$txtuseridIOU': memberid,
-                  'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
+                  'ctl00$ContentPlaceHolder1$btnSearch': 'Search'}
 
     # Requesting server with the member detailes and form values
     issue_result = requests.post(library_home_url + library_issue_details_url, cookies=home_request.cookies, data=formfields)
