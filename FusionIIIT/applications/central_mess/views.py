@@ -707,7 +707,7 @@ def minutes(request):
 def invitation(request):
     """
     This function is to schedule a mess committee meeting
-    
+
     @param
         request: contains metadata about the requested page
     """
@@ -722,11 +722,17 @@ def invitation(request):
 @csrf_exempt
 def rebate_response(request):
     """
-       This function is to respond to rebate requests
-       :param request: user: Current user
-       @variables: designation : designation of the user
-       @return:
-            data: returns the status of the application
+    This function is to respond to rebate requests
+
+    @param request: 
+        request - contains metadata about the requested page 
+
+    @variables: 
+        user: Current user details
+        designation : designation of the user
+
+    @return:
+        data: returns the status of the application
     """
     data = {
         'status': 1
@@ -744,13 +750,17 @@ def rebate_response(request):
 @transaction.atomic
 @csrf_exempt
 def place_request(request):
-    # This is for placing special food request
     """
         This function is to place special food requests ( used by students )
+        
+        @params:
+            request - contains metadata about the requested page 
+
         @variables:
-        user: Current user
+            user: Current user details
+        
         @return:
-        data['status']: returns status of the application
+            data['status']: returns status of the application
     """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
@@ -780,8 +790,12 @@ def special_request_response(request):
 def update_cost(request):
     """
     This function is to update the base cost of the monthly central mess bill
-    :param request:
-    :return:
+    
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:  
+        user - contains user details
     """
     user = request.user
     # extrainfo = ExtraInfo.objects.get(user=user)
@@ -791,8 +805,12 @@ def update_cost(request):
 
 def generate_mess_bill(request):
     """
-        This function is to generate the bill of the students
-        @variables:
+    This function is to generate the bill of the students
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
         user: stores current user information
         nonveg_data : stores records of non-veg ordered by a student
         year_now: current year
@@ -801,7 +819,7 @@ def generate_mess_bill(request):
         students: information of all students
         mess_info: Mess Information, mainly choice of mess
         rebates: Rebate records of students
-        """
+    """
     # todo generate proper logic for generate_mess_bill
     user = request.user
     t1 = Thread(target=generate_bill, args=())
@@ -843,7 +861,16 @@ class MenuPDF(View):
 
 
 class MenuPDF1(View):
-    # This function is to generate the menu in pdf format (downloadable) for mess 1
+    """
+    This function is to generate the menu in pdf format (downloadable) for mess 1
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+    """
     def post(self, request, *args, **kwargs):
         user = request.user
         # extrainfo = ExtraInfo.objects.get(user=user)
@@ -856,12 +883,33 @@ class MenuPDF1(View):
 
 
 def menu_change_request(request):
+    """
+    This function is to request a change in menu
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        new_menu - the new menu to replace the previous menu
+    """
     newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(status=2)
     data = model_to_dict(newmenu)
     return JsonResponse(data)
 
 
 def submit_mess_committee(request):
+    """
+    This function is to add the new mess committee
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+    """
     roll_number = request.POST['rollnumber']
 
     data = add_mess_committee(request, roll_number)
@@ -869,6 +917,17 @@ def submit_mess_committee(request):
 
 
 def remove_mess_committee(request):
+    """
+    This function is to remove the current mess committee
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+
+    """
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
@@ -904,6 +963,19 @@ def get_leave_data(request):
 
 
 def accept_vacation_leaves(request):
+    """
+    This function is to accept vacation leave request
+
+    @param:
+        request - contains metadata about the requested page 
+        request - details about leave
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        start_date_leave - Starting date of leave
+        end_date_leave - Ending date of leave
+    """
     start_date_leave = request.GET['start_date']
     end_date_leave = request.GET['end_date']
     leave_data = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(start_date__gte=start_date_leave)
@@ -924,6 +996,21 @@ def accept_vacation_leaves(request):
 
 
 def select_mess_convener(request):
+    """
+    This function is to select a new convenor for mess
+
+    @param:
+        request - contains metadata about the requested page 
+        
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        designation - to get the designation of the user
+        first_day_of_the_month - first day of the month
+        last_day_of_the_month - last day of the month
+        previous_month - last month
+        bill_object - accessing the bill from Monthly bills
+    """
     member_id = request.POST['member_id_add']
     data_m = member_id.split("-")
     roll_number = data_m[1]
@@ -966,6 +1053,21 @@ def select_mess_convener(request):
 
 
 def download_bill_mess(request):
+    """
+    This function is to get the mess bill for current month
+
+    @param:
+        request - contains metadata about the requested page 
+        request - first day of the month and last day of the previous month
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+        first_day_of_the_month - first day of the month
+        last_day_of_the_month - last day of the month
+        previous_month - last month
+        bill_object - accessing the bill from Monthly bills
+    """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
     first_day_of_this_month = date.today().replace(day=1)
@@ -981,6 +1083,16 @@ def download_bill_mess(request):
 
 
 def get_nonveg_order(request):
+    """
+    This function is to apply for non-veg order
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+    """
     date_o = request.POST['order_date']
     nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=date_o) \
         .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
@@ -991,6 +1103,20 @@ def get_nonveg_order(request):
 
 
 def add_leave_manager(request):
+    """
+    This function is to apply for leave
+
+    @param:
+        request - contains metadata about the requested page 
+        request - start date, end date and type of leave
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+        start_date - starting date of the leave
+        end_data - ending date of leave
+        type - type of leave
+    """
     flag = 1
     start_date = request.POST.get('l_startd')
     end_date = request.POST.get('l_endd')
