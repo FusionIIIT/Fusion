@@ -1042,11 +1042,17 @@ def sendStudentRenderRequest(request, additionalParams={}):
                     update_con_flag = True
         else:
             if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
-                x = Notification.objects.select_related('student_id','release_id').get(
-                    student_id=request.user.extrainfo.id, release_id=dates.id).delete()
+                try:
+                    x = Notification.objects.select_related('student_id','release_id').get(
+                        student_id=request.user.extrainfo.id, release_id=dates.id).delete()
+                except:
+                    pass
             elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
-                x = Notification.objects.select_related('student_id','release_id').get(
-                    student_id=request.user.extrainfo.id, release_id=dates.id).delete()
+                try:
+                    x = Notification.objects.select_related('student_id','release_id').get(
+                        student_id=request.user.extrainfo.id, release_id=dates.id).delete()
+                except:
+                    pass
 
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
     show_mcm_flag = False
