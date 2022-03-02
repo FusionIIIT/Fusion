@@ -282,7 +282,7 @@ def add_new_user(request):
             messages.success(request, "New User added Successfully")
         else:
             print(form.errors)
-            messages.error(request,"Some error occured")
+            messages.error(request,"User cannot be added")
 
         if eform.is_valid():
             eform.save()
