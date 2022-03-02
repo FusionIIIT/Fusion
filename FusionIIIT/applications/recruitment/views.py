@@ -25,7 +25,10 @@ def apply_teaching(request):
 
 def apply_non_teaching(request):
     if request.user.is_authenticated:
-        return render(request,'recruitment/non-teaching.html')
+        if request.user.is_superuser:
+           return redirect('/recruitment') 
+        else:
+            return render(request,'recruitment/non-teaching.html')
     else:
         return redirect('/recruitment/login')
 
