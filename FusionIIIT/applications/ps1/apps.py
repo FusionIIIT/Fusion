@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class Ps1Config(AppConfig):
-    name = 'ps1'
+    name = 'applications.ps1'
