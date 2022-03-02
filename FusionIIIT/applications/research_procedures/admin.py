@@ -5,6 +5,9 @@ from django.utils.html import format_html
 # Adding a custom admin view for patent
 class PatentAdmin(admin.ModelAdmin):
 
+    list_filter = ('status',) 
+    search_fields = ['title', 'faculty_id', 'application_id']
+
     def _status(self, obj):
         color = "orange"
         if obj.status == "Approved":
