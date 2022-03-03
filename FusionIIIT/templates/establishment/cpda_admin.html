@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block cpda %}
@@ -89,6 +92,8 @@ pending cpda applications
                             </div>
                         </div>
                     </div>
+                    {% empty %}
+                        <tr><td colspan="3">No Pending Application</td><tr>
                 {% endfor %}
             </div>
         </div>
@@ -154,7 +159,9 @@ Reviewed cpda applications
                             </div>
                         </div>
                     </div>
-                    
+                    {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                            <hr>
                 {% endfor %}
             </div>
         </div>
@@ -162,6 +169,8 @@ Reviewed cpda applications
 </div>
 
 {% endblock %}
+{% endblock %}
+
 {% block javascript %}
 <script>
 
