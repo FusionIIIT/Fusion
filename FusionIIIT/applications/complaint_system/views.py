@@ -85,16 +85,24 @@ def complaint_reassign(request,wid,iid):
                       {'detail': detail, 'worker': worker, 'flag':
                           flag, 'total_caretaker': total_caretaker,'a':a, 'wid':wid, 'total_caretakers_in_area':total_caretakers_in_area})
 
+
+
 @login_required
 def complaint_reassign_super(request,caretaker_id,iid):
-    current_user = get_object_or_404(User, username=request.user.username)
-    y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-    sup = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id = y)
-    this_area = sup.area
-    if request.method == 'POST':
-        a = get_object_or_404(User, username=request.user.username)
-        y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-        comp_id = y.id
+    # current_user = get_object_or_404(User, username=request.user.username)
+    # y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+    # sup = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id = y)
+    # this_area = sup.area
+    # if request.method == 'POST':
+    #     a = get_object_or_404(User, username=request.user.username)
+    #     y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
+    #     comp_id = y.id
+    print(caretaker_id,iid)
+    print(caretaker_id,iid)
+    print(caretaker_id,iid)
+    print(caretaker_id,iid)
+    print(caretaker_id,iid)
+    print(caretaker_id,iid)
 
 
 
@@ -977,6 +985,14 @@ def detail3(request, detailcomp_id1):
     detail3 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=detailcomp_id1)
     a=User.objects.get(username=detail3.complainer.user.username)           
     y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
+    
+    if(detail3.worker_id is None):
+        worker_name=None
+        worker_id = detail3.worker_id
+    else:
+        worker_id = detail3.worker_id.id
+        worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=worker_id)
+        worker_name = worker_name
     num=0
     if detail3.upload_complaint != "":
         num = 1
@@ -984,4 +1000,10 @@ def detail3(request, detailcomp_id1):
     comp_id=temp.id 
     loc = detail3.location
     care = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=loc).first()
-    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care,"num":num})
+
+    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care,"num":num, "worker_name":worker_name, "wid":worker_id})
+    # return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care,"num":num, "worker_name":"kk"})
+
+
+
+
