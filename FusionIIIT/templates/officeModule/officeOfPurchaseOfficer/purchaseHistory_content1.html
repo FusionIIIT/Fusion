@@ -13,6 +13,7 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 <div class="ui stackable doubling grid">
+    <div class="column"></div>
   <div class="three wide column">
 
       {% comment %}The user image card starts here!{% endcomment %}
@@ -124,5 +125,35 @@
 <br>
 <br>
 </div>
-<div class="ui divider"></div></div>
+<div class="ui divider"></div>
+<div class="three wide column">
+    <div class="row">
+        <div class="ui row">
+            <h3 class="ui header" style="padding-left: 16px;">
+                Office Of Purchase Officer
+            </h3>
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <!-- <div class="row">
+        <div class="ui row">
+            <div id="textSegmentDiv">
+                <div class="ui active large text loader"
+                     id="loader">
+                    Loading ...
+                </div>
+
+                <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+                        {% include 'officeModule/officeOfPurchaseOfficer/alerts.html' %}
+                    {% endblock %}
+                </div>
+
+            </div>
+        </div>
+    </div> -->
+</div>
+</div>
 {% endblock %}

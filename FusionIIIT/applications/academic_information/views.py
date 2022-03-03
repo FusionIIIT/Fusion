@@ -127,6 +127,10 @@ def get_context(request):
         assistant_approve_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval =True).filter(hod_approval = True)
         assistant_list_length = len(assistant_list.filter(acad_approval = False))
         assis_stat = Assistantship_status.objects.all()
+        assistant_flag =""
+        hod_flag = ""
+        account_flag = ""
+
         for obj in assis_stat:
             assistant_flag = obj.student_status
             hod_flag = obj.hod_status
@@ -283,7 +287,6 @@ def curriculum(request):
         return HttpResponse(obj,content_type='application/json')
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -376,7 +379,6 @@ def add_curriculum(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -462,7 +464,6 @@ def edit_curriculum(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -544,7 +545,11 @@ def next_curriculum(request):
                     course_type=i.course_type,
                 )
                 new_curriculum.append(ins)
-            Curriculum.objects.bulk_create(new_curriculum)
+            try:
+                Curriculum.objects.bulk_create(new_curriculum)
+            except Exception as e:
+                print("Exception occured")
+                print("e")
             
 
         elif request.POST['option'] == '2':
@@ -562,14 +567,19 @@ def next_curriculum(request):
                     course_type=i.course_type,
                 )
                 new_curriculum.append(ins)
-            Curriculum.objects.bulk_create(new_curriculum)
-            batch=batch+1
-            curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
-            context= {
-                'curriculumm' :curriculum,
-                'tab_id' :['3','3']
-            }
-            return render(request, "ais/ais.html", context)
+            try:
+                Curriculum.objects.bulk_create(new_curriculum)
+            except Exception as e:
+                print("Exception occured!")
+                print(e)
+            finally:
+                batch=batch+1
+                curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
+                context= {
+                    'curriculumm' :curriculum,
+                    'tab_id' :['3','3']
+                }
+                return render(request, "ais/ais.html", context)
         else:
             context= {
             'tab_id' :['3','2']
@@ -611,7 +621,6 @@ def add_timetable(request):
         return render(request, "ais/ais.html", context)
     else:
         return render(request, "ais/ais.html", context)
-    return render(request, "ais/ais.html", context)
 
 
 @login_required
@@ -1083,26 +1092,28 @@ def add_new_profile (request):
         excel = xlrd.open_workbook(file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
         for i in range(sheet.nrows):
-            roll_no=int(sheet.cell(i,0).value)
+            roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
-            email=str(sheet.cell(i,3).value)
+            email=roll_no+'@iiitdmj.ac.in'
             sex=str(sheet.cell(i,4).value)
-            if sex == 'F':
+            if sex == 'Female':
                 title='Ms.'
+                sex='F'
             else:
                 title='Mr.'
-            dob_tmp=sheet.cell(i,5).value
-            dob_tmp=sheet.cell_value(rowx=i,colx=5)
-            dob=datetime.datetime(*xlrd.xldate_as_tuple(dob_tmp,excel.datemode))
-            fathers_name=str(sheet.cell(i,6).value)
-            mothers_name=str(sheet.cell(i,7).value)
-            category=str(sheet.cell(i,8).value)
-            phone_no=int(sheet.cell(i,9).value)
-            address=str(sheet.cell(i,10).value)
-            dept=str(sheet.cell(i,11).value)
+                sex='M'
+            #dob_tmp=sheet.cell(i,5).value
+            #dob_tmp=sheet.cell_value(rowx=i,colx=5)
+            dob=datetime.datetime.now()
+            fathers_name=""
+            mothers_name=""
+            category=""
+            phone_no=0
+            address=""
+            dept=str(sheet.cell(i,12).value)
             specialization=str(sheet.cell(i,12).value)
-            hall_no=sheet.cell(i,13 ).value
+            hall_no=None
 
             department=DepartmentInfo.objects.all().filter(name=dept).first()
 
@@ -1169,14 +1180,14 @@ def add_new_profile (request):
             for course_slot in course_slots:
                 courses += course_slot.courses.all()
             new_reg=[]
-            for c in courses:
+            '''for c in courses:
                 reg=course_registration(
                     course_id = c,
                     semester_id=sem_id,
                     student_id=stud_data
                 )
                 new_reg.append(reg)
-            course_registration.objects.bulk_create(new_reg)
+            course_registration.objects.bulk_create(new_reg)'''
 
     else:
         return render(request, "ais/ais.html", context)

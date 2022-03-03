@@ -17,7 +17,7 @@
             </div>
 
             <div class="field">          
-                <input placeholder="Amount" name='amount' required="true" type="number"><br>            
+                <input class="Amount" placeholder="Amount" name='amount' required="true" type="number"><br>            
             </div>
 
             <div class="two fields">
@@ -53,16 +53,23 @@ $(function() {
 
         event.preventDefault();
         var friendForm = $(this);
-
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        posting.done(function(data) {
-            alert('Expenditure added Successfully');
-            window.location = "/income-expenditure/main/";
-        });
-        posting.fail(function(data) {
-            alert('Failed to add Expenditure');
-            window.location = "/income-expenditure/main/";
-        });
+        var Amount = document.querySelector('.Amount')
+        if(Amount.value<=0)
+        {
+            alert("amount must be greater than 0");
+        }
+        else
+        {
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Expenditure added Successfully');
+                window.location = "/income-expenditure/main/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to add Expenditure');
+                window.location = "/income-expenditure/main/";
+            });
+        }
     });
 });
 </script>
