@@ -1,0 +1,85 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Income Expenditure
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu" id="vtab" 
+                 style="max-width: 320px;">
+              
+                <a class="item" data-tab="one">
+                    View Stats
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+           
+            
+           
+           
+            <div class="ui tab segment" data-tab="one" >
+                <div class="ui pointing secondary menu">
+                    <a class=" active item" data-tab="view_stats" style="width: 33%;">
+                        <p style="margin-left: 30%;">View Stats</p>
+                    </a>
+                    <a class="item" data-tab="balance_sheet" style="width: 33%;">
+                        <p style="margin-left: 25%;">Balance Sheet</p>
+                    </a>
+                    
+                </div>
+                <div class="ui active tab segment" data-tab="view_stats" >
+                    {%  include 'incomeExpenditure/viewStats.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="balance_sheet">
+                    {%  include 'incomeExpenditure/balanceSheet.html' %}
+                </div>
+                
+            </div>
+            
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

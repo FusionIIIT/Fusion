@@ -484,7 +484,7 @@ class AddSchedule(forms.Form):
         return company_name
 
 def current_year():
-    return datetime.date.today().year
+    return date.today().year
 
 def max_value_current_year(value):
     return MaxValueValidator(current_year())(value)

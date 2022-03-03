@@ -50,19 +50,19 @@
                         
                             {% comment %} <!--{% if pat.faculty.id == request.user.extrainfo.faculty.id %} -->{% endcomment %}
                             
-                            {% for i in val  %}          
+                            {% for patent in patents  %}          
                         <tr>
                             <td>
-                                {{i.application_id}}
+                                {{patent.application_id}}
                             </td>
                             <td>
-                            <a href="{{i.file1}}">{{i.ipd_form}}</a>
+                            <a href="{{patent.ipd_form_file}}">{{patent.ipd_form}}</a>
                             </td>
                             <td>
-                                <a href="{{i.file2}}">{{i.project_details}}</a>
+                                <a href="{{patent.project_details_file}}">{{patent.project_details}}</a>
                                 </td>
                             <td>
-                                {{i.status}}
+                                {{patent.status}}
                             </td>
                         </tr>{% endfor %}
                                  

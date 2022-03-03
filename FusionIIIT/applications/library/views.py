@@ -51,12 +51,13 @@ def libraryModule(request):
     memberid = ExtraInfo.objects.get(user=request.user).id  # Userid of the member who logged in
 
     # Form values that need to be sent to the server
+    #All Issued books(Returned and Non-Returned will be fetched)
     formfields = {'__VIEWSTATE': viewstate,
                   "__VIEWSTATEGENERATOR": viewgen,
                   '__EVENTVALIDATION': eventvalid,
                   'ctl00$ContentPlaceHolder1$RadiobuttonList': Status,
                   'ctl00$ContentPlaceHolder1$txtuseridIOU': memberid,
-                  'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
+                  'ctl00$ContentPlaceHolder1$btnSearch': 'Search'}
 
     # Requesting server with the member detailes and form values
     r3 = requests.post(url1 + url2, cookies=r1.cookies, data=formfields)
@@ -65,12 +66,12 @@ def libraryModule(request):
     soup = BeautifulSoup(r3.content, "html5lib")
     print("")
     print("Technically Processed Items")
-
+    
     # Extracting the required detailes(Book name, ISBN number, Date of Isuue, Return date ..) from the resultant soup
     for div in soup.find_all("div", {'id': 'print13'}):
         if div.find_all("tr", {'class': ['GridItem', 'GridAltItem']}):
             i = 0
-
+            
             for tr in div.find_all("tr", {'class': ['GridItem', 'GridAltItem']}):
                 temp = {str(i): {"assn": tr.contents[1].text,
                                  "book_name": tr.contents[3].text,
@@ -178,6 +179,9 @@ def libraryModule(request):
                           'ctl00$ContentPlaceHolder1$cmdSearch': 'Search'}
         rb3 = requests.post(url1 + url4, cookies=r1.cookies, data=formfields)
         soupb2 = BeautifulSoup(rb3.content, "html5lib")
+        # To remove span items around searched keyword
+        for match in soupb2.findAll('span'):
+            match.unwrap()
         # textb=soupb2.get_text()
         text = html_text.extract_text(str(soupb2))
         text = text.split("Central Library", 1)[1]

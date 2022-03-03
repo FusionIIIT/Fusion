@@ -5,6 +5,23 @@ from django.db import models
 
 
 class Building(models.Model):
+    """
+    Details of the building
+    @fields-
+        name: name of the building
+        dateIssued: date when the building was issued
+        dateConstructionStarted: date when construction of building was started
+        dateComstructionCompleted: date when construction of building was completed
+        dateOperational: date when building became operational
+        status: status of the building if it's work is on time or delayed
+        area: total area of the building
+        constructionCostEstimated: estimated cost of construction of building
+        constructionCostActual: actual cost of construction of building
+        numRooms: number of rooms in building
+        numWashrooms: number of washrooms in building
+        remarks: remarks for the building
+        verified: tells building is verified or not
+    """
     ON_SCHEDULE = 'OS'
     DELAYED = 'DL'
     STATUS_CHOICES = [
@@ -45,6 +62,23 @@ class Building(models.Model):
 
 class Work(models.Model):
 
+    """
+        Tells about the works
+        @fields-
+            name: name for the work
+            workType: type of the work
+            building: in which building work is done
+            contractorName: nsme of the contractor who is doing the work
+            status: status of the work
+            dateIssued: date when the work was issued
+            dateStarted: date when work was started
+            dateCompleted: date when work was completed
+            costEstimated: estimated cost of the work
+            costActual: actual cost of the work
+            remarks: remarks for the work
+            verified: work is verified or not
+    """
+
     CONSTRUCTION_WORK = 'CW'
     MAINTENANCE_WORK = 'MW'
     WORK_CHOICES = [
@@ -84,6 +118,18 @@ class Work(models.Model):
 
 
 class SubWork(models.Model):
+    """
+        Details about the subWork
+        @field-
+            name: name of the subWork
+            work: work under which the subWork is going
+            dateIssued: date when the subwork was issued
+            dateStarted: date when the subwork was started
+            dateCompleted: date when the subwork was completed
+            costEstimated: estimated cost of subwork
+            costActual: actual cost of subwork
+            remarks: remarks for the subWork
+    """
     name = models.CharField(max_length=100)
     work = models.ForeignKey(Work, on_delete=models.CASCADE)
     dateIssued = models.DateField()
@@ -101,6 +147,15 @@ class SubWork(models.Model):
 
 
 class InventoryType(models.Model):
+    """
+        Details about different type of inventory
+        @fields-
+            name: name of the inventory
+            rate: rate of the item in inventory
+            manufacturer: manufacturer of the item present in inventory
+            model: model of the item present in inventory
+            remarks: remarks for the item present in inventory
+    """
     name = models.CharField(max_length=100)
     rate = models.IntegerField()
     manufacturer = models.CharField(max_length=100, null=True, blank=True)
@@ -112,6 +167,17 @@ class InventoryType(models.Model):
 
 
 class InventoryCommon(models.Model):
+    """
+        Details about the common inventory
+        @field-
+            inventoryType: type of inventory
+            building: building where inventory is present
+            work: work associated with inventory
+            quantity: quantity of the inventory
+            dateOrdered: ordered date
+            dateRecieved: recieved date
+            remarks: remarks for the inventory
+    """
 
     inventoryType = models.ForeignKey(InventoryType, on_delete=models.CASCADE)
     building = models.ForeignKey(
@@ -135,10 +201,22 @@ class InventoryCommon(models.Model):
 
 
 class InventoryConsumable(InventoryCommon):
+    """
+        Details about consumable inventory
+        @fields-
+            presentQuantity: presentQuantity of the item present in inventory
+    """
     presentQuantity = models.IntegerField()
 
 
 class InventoryNonConsumable(InventoryCommon):
+    """
+        Details about non-consumable inventory
+        @fields-
+            serial_no: serial no of inventory
+            dateLastVerified: date when inventory was last verified
+            issued_to: details about user which has consumed the inventory
+    """
     serial_no = models.CharField(max_length=20)
     dateLastVerified = models.DateField()
     issued_to = models.ForeignKey(
