@@ -1,7 +1,7 @@
 {% block add_student %}
 <h3 align="center"> Student Room Allotment Application Form </h3><br><br>
 <!-- <form action="{%url 'office_module:teaching_form' %}" method ="POST"> -->
-<form action={% url 'hostelmanagement:edit_student_room' %} method ="POST">
+<form action={% url 'hostelmanagement:edit_student_room' %} method ="POST" id="edit_student_form">
    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         {% csrf_token %}
@@ -33,7 +33,7 @@
        </div>
 
        <div class="field">
-           <button class="ui primary button right floated" type="submit" onclick="checkInputs()">
+           <button class="ui primary button right floated" type="submit" onclick="checkInputs('edit_student_form')">
                Submit
            </button>
        </div>

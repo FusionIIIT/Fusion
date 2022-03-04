@@ -148,12 +148,13 @@ def staff_edit_schedule(request):
             staff_schedule.end_time=end_time
             staff_schedule.staff_type=staff_type
             staff_schedule.save()
+            messages.success(request, 'Staff schedule updated successfully.')
         except:
             hall_caretakers = HallCaretaker.objects.all()
             get_hall=""
             get_hall=get_caretaker_hall(hall_caretakers,request.user)
             StaffSchedule(hall=get_hall,staff_id=staff,day=day,staff_type=staff_type,start_time=start_time,end_time=end_time).save()
-
+            messages.success(request, 'Staff schedule created successfully.')
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
@@ -203,7 +204,7 @@ def notice_board(request):
                                             description=description)
 
             new_notice.save()
- 
+            messages.success(request, 'Notice created successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
@@ -245,7 +246,7 @@ def edit_student_room(request):
         for student in students:
             if str(student.id.user)==str(roll_no):
                 update_hostel_room(student,room_no)
-
+        messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 

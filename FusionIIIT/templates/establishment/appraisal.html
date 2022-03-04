@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block appraisal %}
@@ -29,16 +32,16 @@
                       <label>Start Date</label>
                         {% if start_date %}
                           <div class="ui calendar" id="rangestart">
-                                    <div class="ui input left icon">
-                                      <i class="calendar icon"></i>
-                                      <input type="text" placeholder="YYYY-MM-DD" name="start_date" id="start_date" value="{{start_date}}" required>
+                                    <div class="ui input">
+      
+                                      <input type="date" name="start_date" id="start_date" value="{{start_date}}" required>
                                     </div>
                           </div>
                         {% else %}
                           <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                              <i class="calendar icon"></i>
-                              <input type="text" placeholder="YYYY-MM-DD" name="start_date" id="start_date" required>
+                            <div class="ui input">
+                              <!-- <i class="calendar icon"></i> -->
+                              <input type="date" name="start_date" id="start_date" required>
                             </div>
                           </div>
                         {% endif %}
@@ -47,16 +50,16 @@
                       <label>End Date</label>
                           {% if end_date %}
                               <div class="ui calendar" id="rangeend">
-                                        <div class="ui input left icon">
-                                          <i class="calendar icon"></i>
-                                          <input type="text" placeholder="YYYY-MM-DD" name="end_date" id="end_date" value="{{end_date}}">
+                                        <div class="ui input">
+                                          <!-- <i class="calendar icon"></i> -->
+                                          <input type="date" name="end_date" id="end_date" value="{{end_date}}">
                                         </div>
                               </div>
                           {% else %}
                               <div class="ui calendar" id="rangeend">
-                                <div class="ui input left icon">
-                                  <i class="calendar icon"></i>
-                                  <input type="text" placeholder="YYYY-MM-DD" name="end_date" id="end_date">
+                                <div class="ui input">
+                                  <!-- <i class="calendar icon"></i> -->
+                                  <input type="date" name="end_date" id="end_date">
                                 </div>
                               </div>
                           {% endif %}
@@ -739,6 +742,9 @@
                       </div>
                   </div>
               </div>
+              {% empty %}
+                        <tr><td colspan="3">No Active Request</td><tr>
+                        <hr>
             {% endfor %}
           </div>
         </div>
@@ -1094,6 +1100,9 @@
               </div>
                 {% endif %}
               {% endfor %}
+              {% empty %}
+                  <tr><td colspan="3">No Archive Avaliable</td><tr>
+                  <hr>
             {% endfor %}
           </div>
         </div>
@@ -1103,6 +1112,7 @@
 
 
 
+{% endblock %}
 {% endblock %}
 
 
@@ -1187,7 +1197,6 @@ function removeRow(oButton) {
     var courseTab = document.getElementById('CoursesInstructed');
     courseTab.deleteRow(oButton.parentNode.parentNode.rowIndex); // button -> td -> tr.
 }
-
-
 </script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
 {% endblock %}

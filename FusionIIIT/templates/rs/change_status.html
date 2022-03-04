@@ -30,8 +30,8 @@
                             <div class="twelve wide field">
                                 <label>Patent ID*</label>
                                 <select class="ui dropdown" name="id" id="id">
-                                    {% for p in val %}
-                                    <option value="{{p.application_id}}">{{p.application_id}}</option>
+                                    {% for patent in patents %}
+                                    <option value="{{patent.application_id}}">{{patent.application_id}}</option>
                                     {% endfor %}
                                 </select>
                             </div>

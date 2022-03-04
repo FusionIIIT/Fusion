@@ -87,15 +87,17 @@
 {% endblock %}
 {% block javascript %}
 <script>
-    function checkInputs(){
-        $(":input").filter('[required]').each(function(){
-            if($(this).val()===''){
-                alert("Please fill the required details");
-                return false;
-            }
-        });
-        return true;
+function checkInputs(form_id) {
+    var inputs = document.getElementById(form_id).elements;
+
+    // Iterate over the form controls
+    for (i = 0; i < inputs.length; i++) {
+      if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
+        alert("Please fill the required details");
+        return;
+      }
     }
+};
 </script>
 {% endblock %}
 
