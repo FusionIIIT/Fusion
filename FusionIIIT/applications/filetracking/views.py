@@ -9,7 +9,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
-from notification.views import office_module_notif
+from notification.views import office_module_notif,file_tracking_notif
 from .utils import *
 
 
@@ -101,7 +101,8 @@ def filetracking(request):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-                office_module_notif(request.user, receiver_id)
+                #office_module_notif(request.user, receiver_id)
+                file_tracking_notif(request.user,receiver_id,subject)
                 messages.success(request,'File sent successfully')
 
         except IntegrityError:
@@ -399,16 +400,100 @@ def forward(request, id):
 
 
 @login_required(login_url = "/accounts/login")
-def archive(request):
-    return render(request, 'filetracking/archive.html')
+def archive_design(request):
+
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+    context = {
+        'designation': designation,
+    }
+    return render( request, 'filetracking/archive_design.html', context)
+    
+    
+
+
+
+@login_required(login_url = "/accounts/login")
+def archive(request , id):
+
+    draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(is_read=True).order_by('-upload_date')
+
+
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    #designations = HoldsDesignation.objects.filter(user=request.user)
+    # for x in designations:
+    #  if abcd==x:
+    #      designations=abcd
+
+    context = {
+
+        'draft': draft,
+        'extrainfo': extrainfo,
+        'designations': designations,
+    }
+
+
+
+
+    return render(request, 'filetracking/archive.html' , context)
+
+
+## team 24
+@login_required(login_url = "/accounts/login")
+def finish_design(request):
+
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+    context = {
+        'designation': designation,
+    }
+    return render( request, 'filetracking/finish_design.html', context)
+
+
+@login_required(login_url = "/accounts/login")
+def finish_fileview(request, id):
+
+    out = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id=request.user.extrainfo, is_read=False).order_by('-forward_date')
+
+
+
+
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
+
+
+    context = {
+
+        'out': out,
+        'abcd': abcd,
+    }
+    return render(request, 'filetracking/finish_fileview.html', context)
+
+
 
 
 @login_required(login_url = "/accounts/login")
 def finish(request, id):
-    file = get_object_or_404(File, ref_id=id)
-    track = Tracking.objects.filter(file_id=file)
+    file1 = get_object_or_404(File, id=id) ##file = get_object_or_404(File, ref_id=id)
+    track = Tracking.objects.filter(file_id=file1)
+    
 
-    return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
+    if request.method == "POST":
+            if 'Finished' in request.POST:
+                File.objects.filter(pk=id).update(is_read=True)
+                track.update(is_read=True)
+                
+                
+
+
+    
+
+    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track})
+
 
 
 
