@@ -859,8 +859,7 @@ def caretaker_id_know_more(request,caretaker_id):
     return render(request, "complaintModule/caretaker_id_know_more.html",{'this_caretaker':this_caretaker , 'list_pending_complaints':list_pending_complaints, 'num':num})
 
 
-def search_complaint(request):
-    return HttpResponseRedirect('/login/')
+
 
 @login_required
 def resolvepending(request, cid):
