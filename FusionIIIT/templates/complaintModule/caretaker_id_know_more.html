@@ -118,7 +118,7 @@
                             <img src="{% static 'complaint_system/img/boy.jpg'%}">
                             </a>
                             <div class="content">
-                            <a class="header">
+                            <a href="/complaint/supervisor/detail3/{{ i.id }}/" class="header">
                             {{i.complainer.user.first_name}} {{i.complainer.user.last_name}}</a>
                             <div class="meta">
                             <span><b>{{i.details}}</b></span><br>
@@ -183,6 +183,5 @@
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 
 {% endblock %}
-
 
 
