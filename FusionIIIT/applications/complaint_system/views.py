@@ -89,20 +89,15 @@ def complaint_reassign(request,wid,iid):
 
 @login_required
 def complaint_reassign_super(request,caretaker_id,iid):
-    # current_user = get_object_or_404(User, username=request.user.username)
-    # y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-    # sup = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id = y)
-    # this_area = sup.area
-    # if request.method == 'POST':
-    #     a = get_object_or_404(User, username=request.user.username)
-    #     y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-    #     comp_id = y.id
-    print(caretaker_id,iid)
-    print(caretaker_id,iid)
-    print(caretaker_id,iid)
-    print(caretaker_id,iid)
-    print(caretaker_id,iid)
-    print(caretaker_id,iid)
+    current_user = get_object_or_404(User, username=request.user.username)
+    y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+    sup = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id = y)
+    this_area = sup.area
+    if request.method == 'POST':
+        a = get_object_or_404(User, username=request.user.username)
+        y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
+        comp_id = y.id
+
 
 
 
