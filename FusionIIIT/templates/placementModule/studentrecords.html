@@ -106,9 +106,19 @@
                     {% endif %}
                 {% endfor %}
 
+                <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                  Placement Schedule
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                  Student Records
+                  <i class="right floated chevron right icon"></i>
                 </a>
 
             </div>
