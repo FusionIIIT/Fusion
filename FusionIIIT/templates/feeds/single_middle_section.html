@@ -17,7 +17,7 @@
 			overflow-x: hidden;
 			max-height: 500px;
 		}
-		
+
 		#style-1::-webkit-scrollbar-track
 		{
 			-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
@@ -42,7 +42,7 @@
 
 <!-- Middle section of the page -->
 <div>
-    {% if isSpecial == 1 %}
+    {% if is_special == 1 %}
     <div class="ui segment glowing-border" style="margin-bottom: 30px;">
     {% else %}
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
@@ -53,7 +53,7 @@
             {% if question.anonymous_ask is False %}
                 <a href="{% url 'feeds:profile' question.user.username%}">
             {% endif %}
-            {% if isSpecial == 1 %}
+            {% if is_special == 1 %}
                 <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'admin-settings-male.png' %}>
             {% elif profile.0.profile_picture and question.anonymous_ask is False%}
                 <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
@@ -109,12 +109,12 @@
                                     {% csrf_token %}
                                         <a class="ui item">
                                             <button class="ui button" type="submit" name="delete" value="delete">
-                                            <i class="trash icon" id="delete"></i>Delete Post 
+                                            <i class="trash icon" id="delete"></i>Delete Post
                                             </button>
                                         </a>
                                     </form>
                                 </div>
-                            </div> 
+                            </div>
 
                             <!-- Update Modal Starts here...... -->
                             <div class="ui modal" id="update_modal{{question.id}}">
@@ -161,20 +161,20 @@
                                             <div class="field">
                                                 <div class="ui black checkbox">
                                                     {% if question.anonymous_ask %}
-                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked"> 
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked">
                                                     <label>Ask Anonymously</label>
                                                     {% else %}
-                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" > 
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" >
                                                     <label>Ask Anonymously</label>
                                                     {% endif %}
                                                 </div>
                                             </div>
                                             <input type="text" id="from_url" name="from_url" value={{request.path}} hidden>
-                                            {% if isSpecial %}
-                                            <input type="text" id="isSpecial" name="isSpecial" value="isSpecial" hidden>
+                                            {% if is_special %}
+                                            <input type="text" id="is_special" name="is_special" value="is_special" hidden>
                                             <div class="field">
                                                 <div class="ui black checkbox">
-                                                    {% if access.0.canVote %}
+                                                    {% if access.0.can_vote %}
                                                         <input type="checkbox" id="RestrictVote" name="RestrictVote">
                                                     {% else %}
                                                         <input type="checkbox" id="RestrictVote" name="RestrictVote" checked>
@@ -184,7 +184,7 @@
                                             </div>
                                             <div class="field">
                                                 <div class="ui black checkbox">
-                                                {% if access.0.canAnswer %}
+                                                {% if access.0.can_answer %}
                                                     <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
                                                 {% else %}
                                                     <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer" checked>
@@ -194,7 +194,7 @@
                                             </div>
                                             <div class="field">
                                                 <div class="ui black checkbox">
-                                                {% if access.0.canComment %}
+                                                {% if access.0.can_comment %}
                                                     <input type="checkbox" id="RestrictComment" name="RestrictComment">
                                                 {% else %}
                                                     <input type="checkbox" id="RestrictComment" name="RestrictComment" checked>
@@ -213,7 +213,7 @@
                                     </form>
                                 </div>
                             </div>
-                            
+
                         {% endif %}
 
                         <div class="ui item">
@@ -239,12 +239,12 @@
                                 {% csrf_token %}
                                     <a class="ui item">
                                         <button class="ui button" type="submit" name="hide" value="hide">
-                                        <i class="trash icon" id="delete"></i>Hide Post for you 
+                                        <i class="trash icon" id="delete"></i>Hide Post for you
                                         </button>
                                     </a>
                                 </form>
                             </div>
-                        </div> 
+                        </div>
 
                     </div>
                 </div>
@@ -257,12 +257,12 @@
             <div class="row grid">
                 <div class="grid one wide column">
                     <div class="row">
-                    {% if isSpecial == 1 and not access.0.canVote%}
-                    <i id="upcaret{{question.id}}" class="icon big arrow alternate circle up {% if isliked == 1 %}{%else%}outline{% endif %}" 
+                    {% if is_special == 1 and not access.0.can_vote%}
+                    <i id="upcaret{{question.id}}" class="icon big arrow alternate circle up {% if isliked == 1 %}{%else%}outline{% endif %}"
                             style="cursor:not-allowed"></i>
                     {% else %}
-                        <i id="upcaret{{question.id}}" class="icon big arrow alternate circle up {% if isliked == 1 %}{%else%}outline{% endif %}" 
-                            onclick='upvote_post({{question.id}})' 
+                        <i id="upcaret{{question.id}}" class="icon big arrow alternate circle up {% if isliked == 1 %}{%else%}outline{% endif %}"
+                            onclick='upvote_post({{question.id}})'
                             style="cursor:pointer"></i>
                     {% endif %}
                     </div>
@@ -270,12 +270,12 @@
                         <i style="margin-left: 10px;">{{votes}}</i>
                     </div>
                     <div class="row">
-                    {% if isSpecial == 1 and not access.0.canVote%}
+                    {% if is_special == 1 and not access.0.can_vote%}
                     <i id="downcaret{{question.id}}" class="icon big arrow alternate circle down {% if disliked == 1 %}{%else%}outline{% endif %}"
                             style="cursor:not-allowed"></i>
                     {% else %}
                         <i id="downcaret{{question.id}}" class="icon big arrow alternate circle down {% if disliked == 1 %}{%else%}outline{% endif %}"
-                            onclick='downvote_post({{question.id}})' 
+                            onclick='downvote_post({{question.id}})'
                             style="cursor:pointer"></i>
                     {% endif %}
                     </div>
@@ -287,13 +287,13 @@
                     </h2>
                     <div class="row">
                         <a href="" style="color: rgba(0,0,0,.6);">
-                            {% if isSpecial %}
+                            {% if is_special %}
                                 {{access.0.posted_by.role}}
                             {% elif question.anonymous_ask is True %}
                                 <a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
                             {% else %}
                                 <a href="{% url 'feeds:profile' question.user.username%}">{{ question.user.username }}</a>
-                            {% endif %} 
+                            {% endif %}
                             {{extra.department}}- <span style="color: grey;font-size:12px;">{{ question.uploaded_at }}</span>
                         </a><br>
                     </div>
@@ -316,10 +316,10 @@
                         <label style="font-weight: bold;">Attached Files -</label>
                         <a href="{{question.file.url}}" target="_blank">Open File in new tab</a>
                     </div>
-                </div>	
+                </div>
             {% endif %}
 
-            {% if isSpecial == 0 or isSpecial == 1 and access.0.canAnswer %}
+            {% if is_special == 0 or is_special == 1 and access.0.can_answer %}
             <div class="row grid">
                 <div class="one wide column">
                 </div>
@@ -329,16 +329,16 @@
                         <button class="ui positive button" id="answer">answer</button>
                     </div>
                 </div>
-            </div>	
+            </div>
             {% endif %}
 
-            {% if isSpecial == 0 or isSpecial == 1 and access.0.canComment %}
+            {% if is_special == 0 or is_special == 1 and access.0.can_comment %}
             <div class="row grid">
                 <div class="one wide column">
                 </div>
                 <div class="fourteen wide column" >
                     <span style="padding-top: 7px; font-weight: 100; font-size: 13px;">
-                        <a href="" id="link1" onclick="toggle_to_div('{{question.id}}'); return false;" style="color: rgba(0,0,0,.6);">	{{question.comments_set.count}} comments | view comments</a> 
+                        <a href="" id="link1" onclick="toggle_to_div('{{question.id}}'); return false;" style="color: rgba(0,0,0,.6);">	{{question.comments_set.count}} comments | view comments</a>
                     </span>
                 </div>
             </div>
@@ -374,17 +374,17 @@
                 </div>
             </div>
             {% endif %}
-            
-            {% if isSpecial == 0 or isSpecial == 1 and access.0.canAnswer %}
+
+            {% if is_special == 0 or is_special == 1 and access.0.can_answer %}
             <div class="row grid">
                 <div class="one wide column">
                 </div>
                 <div class="fourteen wide column" >
                     <!-- Answer Section starts here -->
-                    
+
                     <div style="font-size: 20px;font-style: italic; font-weight: bold;" class="header">
                         <span id="answerCount">{{ question.answeraquestion_set.count }} Answers</span>
-                        <i class="ui right labeled icon caret right"></i>		
+                        <i class="ui right labeled icon caret right"></i>
                     </div>
                     <hr>
 
@@ -394,8 +394,8 @@
                             <div class="two wide column" style="width: 10% !important; padding-right: 0px;">
                                 <div class="grid one wide column">
                                     <div class="row">
-                                        <i id="answerupcaret{{answer.id}}" class="icon big arrow alternate circle up {% if request.user in answer.likes.all %}{%else%}outline{% endif %}" 
-                                            onclick='upvote_answer({{answer.id}})' 
+                                        <i id="answerupcaret{{answer.id}}" class="icon big arrow alternate circle up {% if request.user in answer.likes.all %}{%else%}outline{% endif %}"
+                                            onclick='upvote_answer({{answer.id}})'
                                             style="cursor:pointer"></i>
                                     </div>
                                     <div class="row center aligned container ui" id="answerupvoteCount{{answer.id}}">
@@ -403,7 +403,7 @@
                                     </div>
                                     <div class="row">
                                         <i id="answerdowncaret{{answer.id}}" class="icon big arrow alternate circle down {% if request.user in answer.dislikes.all %}{%else%}outline{% endif %}"
-                                            onclick='downvote_answer({{answer.id}})' 
+                                            onclick='downvote_answer({{answer.id}})'
                                             style="cursor:pointer"></i>
                                     </div>
                                 </div>
@@ -416,7 +416,7 @@
                                             {{answer.user}}
                                         </a>
                                         | {{answer.uploaded_at|timesince}} ago
-                                        {% if request.user.username == answer.user.username %} 
+                                        {% if request.user.username == answer.user.username %}
                                         | <span style="cursor:pointer;" id="edit_answer{{question.id}}-{{answer.id}}" onclick='edit_answer("{{question.id}}-{{answer.id}}")'><b>-edit</b></span>
                                         | <span style="cursor:pointer;" id="delete_answer{{question.id}}-{{answer.id}}" onclick='delete_answer("{{question.id}}-{{answer.id}}")'><b>-delete</b></span>
 
@@ -434,7 +434,7 @@
                                                 <form method="post"  class="delete_answer_form" id={{question.id}}-{{answer.id}}>
                                                     <a class="ui item">
                                                         <button class="ui button" type="submit" name="delete" value="delete">
-                                                        <i class="trash icon" id="delete"></i>Delete Answer 
+                                                        <i class="trash icon" id="delete"></i>Delete Answer
                                                         </button>
                                                     </a>
                                                 </form>
@@ -459,7 +459,7 @@
                                             </div>
                                         </div>
                                         <!-- Modal ends here -->
-                                        {% endif %} 
+                                        {% endif %}
                                     </span>
                                 </footer>
                             </div>
