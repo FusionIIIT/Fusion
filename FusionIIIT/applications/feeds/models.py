@@ -8,62 +8,66 @@ from applications.globals.models import ExtraInfo
 
 
 class Constants:
-
+	"""
+	contains record of all tags and subtags 
+	'TAG_LIST' - record of all tags
+	'SUBTAG_LIST' -  record of all subtags
+	"""
 	TAG_LIST = (
 		('CSE', 'CSE'),
 		('ECE', 'ECE'),
-		('Mechanical', 'Mechanical'),
-		('Technical-Clubs', 'Technical Clubs'),
-		('Cultural-Clubs', 'Cultural Clubs'),
-		('Sports-Clubs', 'Sports Clubs'),
-		('Business-and-Career', 'Business and Career'),
-		('Entertainment', 'Entertainment'),
-		('IIITDMJ-Campus', 'IIITDMJ Campus'),
-		('Jabalpur-city', 'Jabalpur city'),
-		('IIITDMJ-Rules-and-Regulations', 'IIITDMJ rules and regulations'),
-		('Academics', 'Academics'),
+		('MECHANICAL', 'MECHANICAL'),
+		('TECHNICAL-CLUBS', 'TECHNICAL CLUBS'),
+		('CULTURAL-CLUBS', 'CULTURAL CLUBS'),
+		('SPORTS-CLUBS', 'SPORTS CLUBS'),
+		('BUSINESS-AND-CAREER', 'BUSINESS AND CAREER'),
+		('ENTERTAINMENT', 'ENTERTAINMENT'),
+		('IIITDMJ-CAMPUS', 'IIITDMJ Campus'),
+		('JABALPUR-CITY', 'JABALPUR CITY'),
+		('IIITDMJ-RULES-AND-REGULATIONS', 'IIITDMJ RULES AND REGULATIONS'),
+		('ACADEMICS', 'ACADEMICS'),
 		('IIITDMJ', 'IIITDMJ'),
-		('Life-Relationship-and-Self', 'Life Relationship and Self'),
-		('Technology-and-Education', 'Technology and Education'),       
-		('Programmes', 'Programmes'),
-		('Others', 'Others'),
-		('Design', 'Design'),
+		('LIFE-RELATIONSHIPS-AND-SELF', 'LIFE RELATIONSHIPS AND SELF'),
+		('TECHNOLOGY-AND-EDUCATION', 'TECHNOLOGY AND EDUCATION'),       
+		('PROGRAMMES', 'PROGRAMMES'),
+		('OTHERS', 'OTHERS'),
+		('DESIGN', 'DESIGN'),
 	)
 
 	SUBTAG_LIST = (
-		('Web-Development', 'Web Development'),
-		('Competitive-Programming', 'Competitive Programming'),
-		('Programming-Languages', 'Programming-Languages'),
-		('Data-Science', 'Data-Science'),
-		('Ethical-Hacking-and-Cyber-Security', 'Ethical hacking and cyber security'),
-		('Cryptography-and-Network-Security', 'cryptography and network security'),
-		('Software-Engineering', 'Software-Engineering'),
-		('Algorithm', 'Algorithm'),
-		('Mobile-Development', 'Mobile-Development'),
-		('Game-Development', 'Game-Development'),
-		('Artificial-Intelligence', 'Artificial Intelligence'),
+		('WEB-DEVELOPMENT', 'WEB DEVELOPMENT'),
+		('COMPETITIVE-PROGRAMMING', 'COMPETITIVE PROGRAMMING'),
+		('PROGRAMMING-LANGUAGES', 'PROGRAMMING-LANGUAGES'),
+		('DATA-SCIENCE', 'DATA-SCIENCE'),
+		('ETHICAL-HACKING-AND-CYBER-SECURITY', 'ETHICAL HACKING AND CYBER SECURITY'),
+		('CRYPTOGRAPHY-AND-NETWORK-SECURITY', 'CRYPTOGRAPHY AND NETWORK SECURITY'),
+		('SOFTWARE-ENGINEERING', 'SOFTWARE-ENGINEERING'),
+		('ALGORITHM', 'ALGORITHM'),
+		('MOBILE-DEVELOPMENT', 'MOBILE-DEVELOPMENT'),
+		('GAME-DEVELOPMENT', 'GAME-DEVELOPMENT'),
+		('ARTIFICIAL-INTELLIGENCE', 'ARTIFICIAL INTELLIGENCE'),
 
-		('Electronics-Circuit-Design', 'Electronics Circuit Design'),
-		('Wireless-Communication', 'Wireless Communication'),
-		('Embedded-System', 'Embedded Systems'),
+		('ELECTRONICS-CIRCUIT-DESIGN', 'ELECTRONICS CIRCUIT DESIGN'),
+		('WIRELESS-COMMUNICATION', 'WIRELESS COMMUNICATION'),
+		('EMBEDDED-SYSTEM', 'EMBEDDED SYSTEM'),
 		('VLSI', 'VLSI'),
-		('Control-System', 'Control Systems'),
-		('Robotics-and-others', 'Robotics and Others'),
-		('Microcontrollers', 'Microcontrollers'),
+		('CONTROL-SYSTEM', 'CONTROL SYSTEM'),
+		('ROBOTICS-AND-OTHERS', 'ROBOTICS AND OTHES'),
+		('MICROCONTROLLES', 'MICROCONTROLLERS'),
 		('IOT', 'IOT'),
 
-		('Robotics', 'Robotics'),
-		('Thermodynamics', 'Thermodynamics'),
-		('Nanatechnology', 'Nanatechnology'),
-		('Manufacturing', 'Manufacturing'),
+		('ROBOTICS', 'ROBOTICS'),
+		('THERMODYNAMICS', 'THERMODYNAMICS'),
+		('NANATECHNOLOGY', 'NANATECHNOLOGY'),
+		('MANUFACTURING', 'MANUFACTURING'),
 
-		('Programming-and-Webix-Club', 'Programming and Webix Club'),
-		('Electronics-Club', 'Electronics Club'),
-		('Business-and-Management-Club', 'Business and Management Club'),
-		('Robotics-Club', 'Robotics Club'),
-		('CAD-Club', 'CAD Club'),
-		('Astronomy-and-Physics-Society', 'ASTRONOMY AND PHYSICS SOCIETY'),
-		('Aakriti-The-Film-Making-and-Photography-Club', 'AAKRITI-THE FILM MAKING AND PHOTOGRAPHY CLUB'),
+		('PROGRAMMING-AND-WEBIX-CLUB', 'PROGRAMMING AND WEBIX CLUB'),
+		('ELECTRONICS-CLUB', 'ELECTRONICS CLUB'),
+		('BUSINESS-AND-MANAGEMENT-CLUB', 'BUSINESS AND MANAGEMENT CLUB'),
+		('ROBOTICS-CLUB', 'ROBOTICS CLUB'),
+		('CAD-CLUB', 'CAD CLUB'),
+		('ASTRONOMY-AND-PHYSICS-SOCIETY', 'ASTRONOMY AND PHYSICS SOCIETY'),
+		('AAKRITI-THE-FILM-MAKING-AND-PHOTOGRAPHY-CLUB', 'AAKRITI-THE FILM MAKING AND PHOTOGRAPHY CLUB'),
 		('AUTOMOTIVE-AND-FABRICATION-CLUB', 'AUTOMOTIVE AND FABRICATION CLUB'),
 		('RACING-CLUB', 'RACING CLUB'),
 
@@ -82,69 +86,69 @@ class Constants:
 		('VOLLEYBALL-CLUB', 'VOLLEYBALL CLUB'),
 		('ATHLETICS-CLUB', 'ATHLETICS CLUB'),
 
-		('Business-Models-and-Strategies', 'Business Models and strategies'),
-		('Startups-and-Stratup-Strategies', 'Startups and Stratup Strategies'),
-		('Entrepreneurship', 'Entrepreneurship'),
-		('Finance', 'Finance'),
-		('Marketing', 'Marketing'),
-		('Stock-Market', 'Stock market'),
-		('Career-Advice', 'Career Advice'),
-		('Job-Interviews', 'Job Interviews'),
+		('BUSINES-MODELS-AND-STRATEGIES', 'BUSINES-MODELS-AND-STRATEGIES'),
+		('STARTUPS-AND-STARTUP-STRATEGIES', 'STARTUP AND STARTUP STRATEGIES'),
+		('ENTERPRENEURSHIP', 'ENTERPRENEURSHIP'),
+		('FINANCE', 'FINANCE'),
+		('MARKETING', 'MARKETING'),
+		('STOCK-MARKET', 'STOCK MARKET'),
+		('CAREER-ADVICE', 'CAREER ADVICE'),
+		('JOB-INTERVIEWS', 'JOB INTERVIEWS'),
 
-		('Journalism', 'Journalism'),
-		('Entertainment', 'Entertainment'),
-		('Hollywood-and-Movies', 'Hollywood and Movies'),
-		('Music', 'Music'),
-		('Fashion-and-Style', 'Fashion and Style'),
+		('JOURNALISM', 'JOURNALISM'),
+		('ENTERTAINMENT', 'ENTERTAINMENT'),
+		('HOLLYWOOD-AND-MOVIES', 'HOLLYWOOD AND MOVIES'),
+		('MUSIC', 'MUSIC'),
+		('FASHION-AND-STYLE', 'FASHION AND STYLE'),
 
-		('IIITDMJ-Campus', 'IIITDMJ-Campus'),
+		('IIITDMJ-CAMPUS', 'IIITDMJ-CAMPUS'),
 
-		('Jabalpur-City', 'Jabalpur City'),
+		('JABALPUR-CITY', 'JABALPUR CITY'),
 
-		('IIITDMJ-rules-and-Regulations', 'IIITDMJ rules and regulations'),
+		('IIITDMJ-RULES-AND-REGULATIONS', 'IIITDMJ RULES AND REGULATIONS'),
 
-		('Academic-Office-Stuffs', 'Academic office stuffs'),
-		('Academic-Courses', 'Academic courses'),
+		('ACADEMIC-OFFICE-STUFFS', 'ACADEMIC OFFICE STUFFS'),
+		('ACADEMIC-COURSES', 'ACADEMIC COURSES'),
 
-		('Central-Mess', 'Central Mess'),
-		('Alumni', 'Alumni'),
-		('Hostels', 'Hostels'),
+		('CENTRAL-MESS', 'CENTRAL MESS'),
+		('ALUMNI', 'ALUMNI'),
+		('HOSTELS', 'HOSTELS'),
 		('PHC', 'PHC'),
-		('Activities', 'Activities'),
+		('ACTIVITIES', 'ACTIVITIES'),
 		('Counselling', 'Counselling'),
-		('Achievments', 'Achievments'),
-		('Library', 'Library'),
-		('Faculty', 'Faculty'),
-		('Staff', 'Staff'),
-		('College-Fest', 'College Fest'),
-		('Workshops', 'Workshops'),
-		('Campus-Recruitments', 'Campus Recruitments'),
-		('Jagrati', 'Jagrati'),
+		('ACHIEVMENTS', 'ACHIEVMENTS'),
+		('LIBRARY', 'LIBRARY'),
+		('FACULTY', 'FACULTY'),
+		('STAFF', 'STAFF'),
+		('COLLEGE-FEST', 'COLLEGE FEST'),
+		('WORKSHOPS', 'WORKSHOPS'),
+		('CAMPUS-RECRUITMENTS', 'CAMPUS RECRUITMENTS'),
+		('JAGRATI', 'JAGRATI'),
 
-		('Self-Improvement', 'Self Improvement'),
-		('Friendship', 'Friendship'),
-		('Experiences', 'Experiences'),
-		('Dating-and-Relationships', 'Dating and Relationships'),
-		('Interpersonal-Interactions', 'Interpersonal Interactions'),
-		('Life-and-Social-Advice', 'Life and Social Advice'),
-		('Philosophy', 'Philosophy'),
+		('SELF-IMPROVEMENT', 'SELF IMPROVEMENT'),
+		('FRIENDSHIP', 'FRIENDSHIP'),
+		('EXPERIENCES', 'EXPERIENCES'),
+		('DATING-AND-RELATIONSHIPS', 'DATING AND RELATIONSHIPS'),
+		('INTERPERSONAL-INTERACTIONS', 'INTERPERSONAL INTERACTIONS'),
+		('LIFE-AND-SOCIAL-ADVICE', 'LIFE AND SOCIAL ADVICE'),
+		('PHILOSOPHY', 'PHILOSOPHY'),
 
-		('Technology-Trends', 'Technology Trends'),
+		('TECHNOLOGY-TRENDS', 'TECHNOLOGY TRENDS'),
 		('TED', 'TED'),
-		('Higher-Education', 'Higher Education'),
-		('Science-and-Universe', 'Science and Universe'),
-		('Social-Media', 'Social-Media'),
-		('Toron', 'Toron'),
-		('Jobs-and-Internships', 'Jobs and Internships'),
+		('HIGHER-EDUCATION', 'HIGHER EDUCATION'),
+		('SCIENCE-AND-UNIVERSE', 'SCIENCE AND UNIVERSE'),
+		('SOCIAL-MEDIA', 'SOCIAL-MEDIA'),
+		('TORON', 'TORON'),
+		('JOBS-AND-INTERNSHIPS', 'JOBS AND INTERNSHIPS'),
 
-		('Btech', 'Btech'),
-		('Mtech', 'Mtech'),
-		('Bdes', 'Bdes'),
-		('Mdes', 'Mdes'),
-		('Phd', 'Phd'),
-		('Mechatronics', 'Mechatronics'),
+		('BTECH', 'BTECH'),
+		('MTECH', 'MTECH'),
+		('BDES', 'BDES'),
+		('MDES', 'MDES'),
+		('PHD', 'PHD'),
+		('MECHATRONICS', 'MECHATRONICS'),
 
-		('others', 'others'),
+		('OTHERS', 'OTHERS'),
 
 	)
 
@@ -153,6 +157,9 @@ class Constants:
 
 
 class AllTags(models.Model):
+	"""
+	records tags and subtags in database 
+	"""
     # new = models.CharField(max_length=100, blank=True, null=True)
 	tag = models.CharField(max_length=100, default='CSE', choices=Constants.TAG_LIST)
 	subtag = models.CharField(max_length=100, unique=True, default='Web-Development', choices=Constants.SUBTAG_LIST)
@@ -161,6 +168,9 @@ class AllTags(models.Model):
 		return '{} - {}'.format(self.tag, self.subtag)
 
 class AskaQuestion(models.Model):
+	"""
+	Records questions asked by users
+	"""
 	can_delete=models.BooleanField(default=False)
 	can_update=models.BooleanField(default=False)
 	user = models.ForeignKey(User, default=1,on_delete=models.CASCADE)
@@ -201,6 +211,9 @@ class AskaQuestion(models.Model):
 		return '{} added ----> {} in {}'.format(self.user, self.subject, self.select_tag)
 
 class AnsweraQuestion(models.Model):
+	"""
+	Records answers on a question
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	content = models.TextField(max_length=1000, blank=False)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
@@ -236,6 +249,9 @@ class AnsweraQuestion(models.Model):
 		return self.answers.count()
 
 class Comments(models.Model):
+	"""
+	Records comments on posts
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1 , on_delete = models.CASCADE)
 	comment_text = models.CharField(max_length=5000)
@@ -251,6 +267,9 @@ class Comments(models.Model):
 		return self.likes_comment.count()
 
 class Reply(models.Model):
+	"""
+	Records replies on a post
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	comment = models.ForeignKey(Comments,default=1, on_delete=models.CASCADE)
 	msg = models.CharField(max_length=1000)
@@ -266,6 +285,9 @@ class Reply(models.Model):
 		return self.replies.count()
 
 class report(models.Model):
+	"""
+	records report on a quesiton
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete = models.CASCADE)
 	report_msg = models.CharField(max_length=1000,default="")
@@ -274,6 +296,9 @@ class report(models.Model):
 	# 	unique_together = ('user', 'question')
 
 class hidden(models.Model):
+	"""
+	records a hidden question
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
 	# hide = models.BooleanField(default=False)
@@ -285,6 +310,10 @@ class hidden(models.Model):
 		return '{} - hide - {}'.format(self.user, self.question)
 
 class tags(models.Model):
+	"""
+	records tags for a user
+	
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
 	my_subtag = models.ForeignKey(AllTags, default=1, on_delete = models.CASCADE)
@@ -296,6 +325,9 @@ class tags(models.Model):
 		return '%s is interested in ----> %s - %s' % (self.user, self.my_tag, self.my_subtag.subtag)
 
 class Profile(models.Model):
+	"""
+	records profile details of a user
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	bio = models.CharField(max_length=250,blank=True)
 	profile_picture = models.ImageField(null=True, blank=True, upload_to='feeds/profile_pictures')
@@ -304,6 +336,9 @@ class Profile(models.Model):
 		return '%s\'s Bio is  ----> %s' % (self.user, self.bio)
 
 class Roles(models.Model):
+	"""
+	Records role a for a user 
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	role = models.CharField(max_length=100, blank=False)
 	active = models.BooleanField(default=True)
@@ -311,12 +346,15 @@ class Roles(models.Model):
 	 return '%s is assigned %s role' % (self.user, self.role)
 
 class QuestionAccessControl(models.Model):
-	question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
-	canVote = models.BooleanField()
-	canAnswer = models.BooleanField()
-	canComment = models.BooleanField()
+	"""
+	records the different access permissions like the user can comment on a question or not, can vot or not for a user
+	"""
+	Question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
+	can_vote = models.BooleanField()
+	can_answer = models.BooleanField()
+	can_comment = models.BooleanField()
 	posted_by = models.ForeignKey(Roles, default=1, on_delete=models.CASCADE)
 	created_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	def __str__(self):
-		return "question number " + str(self.question.id)
+		return "question number " + str(self.Question.id)
 	
