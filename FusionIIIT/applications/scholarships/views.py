@@ -399,13 +399,13 @@ def getWinners(request):
         for winner in winners:
 
             extra_info = ExtraInfo.objects.get(id=winner.student_id)
-            s_id = Student.objects.get(id=extra_info)
-            s_name = extra_info.user.first_name
-            s_roll = winner.student_id
-            s_program = s_id.programme
-            context['student_name'].append(s_name)
-            context['roll'].append(s_roll)
-            context['student_program'].append(s_program)
+            student_id = Student.objects.get(id=extra_info)
+            student_name = extra_info.user.first_name
+            student_roll = winner.student_id
+            student_program = student_id.programme
+            context['student_name'].append(student_name)
+            context['roll'].append(student_roll)
+            context['student_program'].append(student_program)
 
         context['result'] = 'Success'
 
@@ -452,6 +452,9 @@ def getContent(request):
         award = Award_and_scholarship.objects.get(award_name=award_name)
         context['result'] = 'Success'
         context['content'] = award.catalog
+        print(type(award.catalog))
+        # context['content'] = 'Hi'
+
     except:
         context['result'] = 'Failure'
     return HttpResponse(json.dumps(context), content_type='getContent/json')
@@ -468,11 +471,11 @@ def checkDate(start_date, end_date):
 
 def updateEndDate(request):
     id = request.GET.get('up_id')
-    end_dat = request.GET.get('up_d')
-    re = Release.objects.filter(pk=id).update(enddate=end_dat)
+    end_date = request.GET.get('up_d')
+    is_released = Release.objects.filter(pk=id).update(enddate=end_date)
     request.session['last_clicked'] = "Enddate_updated"
     context = {}
-    if re:
+    if is_released:
         context['result'] = 'Success'
     else:
         context['result'] = 'Failure'
