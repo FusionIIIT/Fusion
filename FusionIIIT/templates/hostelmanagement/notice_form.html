@@ -1,5 +1,5 @@
 {% block notice_form %}
-<form method="POST" action="{% url 'hostelmanagement:notice_board' %}" class="ui form" role="form" enctype="multipart/form-data">
+<form method="POST" action="{% url 'hostelmanagement:notice_board' %}" class="ui form" role="form" enctype="multipart/form-data" id='notice_form'>
                 <div class="ui active accordion field">
                     <div class="title">
                         <i class="icon dropdown"></i>
@@ -49,7 +49,7 @@
                             <div class="two fields">
                               <div class="four wide field">
                                   <label><br></label>
-                                  <button class="ui fluid large primary button" type="submit">
+                                  <button class="ui fluid large primary button" type="submit" onclick="checkInputs('notice_form')">
                                       Submit
                                   </button>
                               </div>

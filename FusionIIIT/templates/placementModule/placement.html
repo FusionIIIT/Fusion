@@ -201,7 +201,34 @@
             <div class="ui vertical segment">
                 {% for c in current %}
                   {% if c.designation.name == 'student' %}
-                    {% if placementstatus %}
+                  {% if schedules %}
+                    {% for sch in schedules|dictsortreversed:"schedule_at" %}
+                                <div class="content_item" id="{{sch.notify_id.company_name}}">
+                                  <span>
+                                    <div class="ui segments">
+                                      <div class="ui horizontal segments">
+                                        <div class="ui segment">
+                                          <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }} | {{ sch.placement_date }}</h3></strong><br>
+                                          Time of Message: {{ sch.notify_id.timestamp }}
+
+                                      </div>
+                                        </div>
+                                        <div class="ui secondary segment">
+                                          <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                                          <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
+                                          <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                                          <p>Job Description: {{ sch.description }}</p>
+                                        </div>
+                                    </div>
+                                  </span><br>
+                                </div>
+                    {% endfor %}
+                    {% else %}
+                      <center><h5>No Activites Scheduled.</h5></center>
+                    {% endif %}
+                  {% endif %}
+
+                    {% comment %} {% if placementstatus %}
                       <!--The noticeboard card starts here!-->
                         <div class="content">
                             <div class="ui divider"></div>
@@ -249,7 +276,7 @@
                       <center><h5>There are no Activities Scheduled.</h5></center>
                     {% endif %}
 
-                  {% endif %}
+                  {% endif %} {% endcomment %}
                 {% endfor %}
 
                     {% for c1 in current1 %}

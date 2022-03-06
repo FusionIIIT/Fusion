@@ -1,85 +1,32 @@
-{% extends 'globals/base.html' %}
-{% load static %}
-{% block title %}
-     HR1 Module
-{% endblock %}
-{% block body %}
-    {% block navBar %}
-        {% include 'dashboard/navbar.html' %}
-    {% endblock %}
-    {% comment %}The grid starts here!{% endcomment %}
-    <div class="ui stackable doubling grid">
-        {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
-        {% comment %}The left-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            {% comment %}The user image card starts here!{% endcomment %}
-            {% block usercard %}
-                {% include 'globals/usercard.html' %}
-            {% endblock %}
-            {% comment %}The user image card ends here!{% endcomment %}
-            <div class="ui divider"></div>
-            
-        </div>
-        {% comment %}The left-rail segment ends here!{% endcomment %}
-        
-        {% comment %}The central-rail segment ends here!{% endcomment %}
-        <div class="eight wide column">
-               <!--{% block cpda %}-->
-               {% if cpda %}
-                    {% if admin %}
-                        {% include 'establishment/cpda_admin.html' %}
-                    {% elif reviewer %}
-                        {% include 'establishment/cpda_reviewer.html' %}
-                    {% else %}
-                        {% include 'establishment/cpda.html' %}
-                    {% endif %}
-                {% elif ltc %}
-                    {% if admin %}
-                        {% include 'establishment/ltc_admin.html' %}
-                    {% else %}
-                        {% include 'establishment/ltc.html' %}
-                    {% endif %}
-                {% elif appraisal %}
-                    {% if hod %}
-                        {% include 'establishment/appraisal_hod.html' %}
-                    {% elif director %}
-                        {% include 'establishment/appraisal_director.html' %}
-                    {% elif admin %}
-                        {% include 'establishment/appraisal_admin.html' %}
-                    {% else %}
-                        {% include 'establishment/appraisal.html' %}
-                    {% endif %}
-                {% endif %}
-                    <!--{% endblock %}-->
-        </div>
-        {% comment %}The central-rail segment ends here!{% endcomment %}
 
+    <div>
 
-
-        {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
-            </div>
-        </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
-
-
-        {% comment %}The right-margin segment!{% endcomment %}
-        <div class="column"></div>
+        {% if cpda %}
+    {% if admin %}
+    {% include 'establishment/cpda_admin.html' %}
+    {% elif reviewer %}
+    {% include 'establishment/cpda_reviewer.html' %}
+    {% else %}
+    {% include 'establishment/cpda.html' %}
+    {% endif %}
+    {% elif ltc %}
+    {% if admin %}
+    {% include 'establishment/ltc_admin.html' %}
+    {% else %}
+    {% include 'establishment/ltc.html' %}
+    {% endif %}
+    {% elif appraisal %}
+    {% if hod %}
+    {% include 'establishment/appraisal_hod.html' %}
+    {% elif director %}
+    {% include 'establishment/appraisal_director.html' %}
+    {% elif admin %}
+    {% include 'establishment/appraisal_admin.html' %}
+    {% else %}
+    {% include 'establishment/appraisal.html' %}
+    {% endif %}
+    {% endif %}
     </div>
+ 
 
 
-        {% comment %}The right-rail segment starts here!{% endcomment %}
-        
-        {% comment %}The right-rail segment ends here!{% endcomment %}
-
-
-        {% comment %}The right-margin segment!{% endcomment %}
-       <!-- <div class="column"></div>-->
-    </div>
-    {% comment %}The grid ends here!{% endcomment %}
-{% endblock %}

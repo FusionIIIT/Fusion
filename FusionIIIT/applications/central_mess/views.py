@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm
+from .forms import MinuteForm, MessInfoForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
@@ -43,6 +43,10 @@ previous_month = last_day_prev_month.strftime('%B')
 
 
 def mess(request):
+    """
+    This view get the access to the central mess dashboard. View all details and apply for any changes.
+    It also shows the previous feedback submitted by the user.
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     current_date = date.today()
@@ -71,10 +75,7 @@ def mess(request):
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         except:
-            dummy_user = User.objects.get(username = "2019023")
-            dummy_user_extrainfo = ExtraInfo.objects.select_related().get(user=dummy_user)
-            dummu_student = Student.objects.select_related('id','id__user','id__department').get(id=dummy_user_extrainfo)
-            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=dummu_student)
+            return HttpResponseRedirect("/mess/info-form")
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
@@ -394,6 +395,34 @@ def mess(request):
         }
         return render(request, 'messModule/mess.html', context)
 
+@login_required
+@transaction.atomic
+def mess_info(request):
+    """
+    Register someone in mess 1 or mess 2
+
+    @params:
+        request: contains metadata about the requested page
+
+    @variables:
+        user_id: user id of the current user
+        student_id: Student Object of given user_id
+        mess_option: requested mess : {"mess1" || "mess2"}
+    """
+    if (request.method == "POST"):
+        user_id = request.user
+        student_id = Student.objects.select_related('id').only('id__id').get(id__id=user_id)
+        form = MessInfoForm(request.POST)
+        if form.is_valid():
+            mess_option =  form.cleaned_data['mess_option']
+            Messinfo.objects.create(student_id=student_id, mess_option=mess_option)
+        return HttpResponseRedirect("/mess")
+
+    form = MessInfoForm()
+    context = {
+        "form": form
+    }
+    return render(request, "messModule/messInfoForm.html", context)
 
 @login_required
 @transaction.atomic
@@ -401,15 +430,17 @@ def mess(request):
 def place_order(request):
     """
     This function is to place non-veg food orders
-    :param request:
+
+    @param:
+        request: contains metadata about the requested page
+    
+    @variables:
         user: Current user
         order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
-    :variables:
         extra_info: Extra information about the current user. From model ExtraInfo
         student: Student information about the current user
         student_mess: Mess choices of the student
         dish_request: Predefined dish available
-    :return:
     """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
@@ -426,11 +457,15 @@ def place_order(request):
 def submit_mess_feedback(request):
     """
     This function is to record the feedback submitted
-    :param request:
+
+    @param:
+        request: contains metadata about the requested page
+
+    @variable:
         user: Current logged in user
-    :variable:
-         extra_info: Extra information of the user
-    :return:
+        extra_info: Extra information of the user
+
+    @return:
         data: to record success or any errors
     """
     user = request.user
@@ -448,10 +483,16 @@ def submit_mess_feedback(request):
 def mess_vacation_submit(request):
     """
     This function is to record vacation food requests
-    :param request:
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
         user: Current user information
-    :variables:
-    :return:
+        extra_info: Extra information of the user
+        student: Student information about the current user
+
+    @return:
         data: JsonResponse
     """
     user = request.user
@@ -468,9 +509,15 @@ def mess_vacation_submit(request):
 def submit_mess_menu(request):
     """
     This function is to record mess menu change requests by the  mess_committee
-    :param request:
-        user:Current user
-    :return:
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        holds_designations: designation of current user
+        extrainfo: Extra information of the user
+        student: Student information about the current user
     """
     # TODO add ajax for this
     user = request.user
@@ -493,9 +540,13 @@ def submit_mess_menu(request):
 def menu_change_response(request):
     """
     This function is to respond to mess menu requests
-    :param request:
-        user: Current user
-    :return:
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        holds_designations: designation of current user
     """
     user = request.user
     holds_designations = HoldsDesignation.objects.select_related().filter(user=user)
@@ -509,12 +560,13 @@ def menu_change_response(request):
 def response_vacation_food(request, ap_id):
     """
     This function records the response to vacation food requests
-    :param request:
-        user: Current user
-    :param ap_id:
-    :variables:
-        holds_designations: Designation of the current user
-    :return:
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        holds_designations: designation of current user
     """
     user = request.user
     # extra_info = ExtraInfo.objects.get(user=user)
@@ -530,7 +582,20 @@ def response_vacation_food(request, ap_id):
 @login_required
 @transaction.atomic
 def regsubmit(request):
+    """
+    This function ise used to change mess option
 
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        extrainfo: Extra information of the user
+        student: Student information about the current user
+        mess_info_inst: MessInfo Object of the current user
+        monthly_bill_obj: Monthly_bill Object of the current user
+        mess_monthly_bill: monthly bill of each month of a semester
+    """
     i = 0
     j = 0
     month_1 = ['January', 'February', 'March', 'April', 'May', 'June']
@@ -577,10 +642,14 @@ def regsubmit(request):
 @transaction.atomic
 def start_mess_registration(request):
     """
-       This function is to start mess registration
-       @request:
-           user: Current user
-           designation: designation of current user to validate proper platform
+    This function is to start mess registration
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        designation: designation of current user to validate proper platform
     """
     #   TODO ajax convert add a section to see previous sessions as well as close a session
     user = request.user
@@ -595,11 +664,15 @@ def start_mess_registration(request):
 @csrf_exempt
 def mess_leave_request(request):
     """
-        This function is to record and validate leave requests
-        @request:
-            user: Current user
-        @variables:
-            student: Information od student submitting the request
+    This function is to record and validate leave requests
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        user: Current user information
+        extra_info: Extra information of the user
+        student: Student information about the current user
     """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
@@ -612,9 +685,13 @@ def mess_leave_request(request):
 @transaction.atomic
 def minutes(request):
     """
-    To upload the minutes of the meeting
-    :param request:
-    :return:
+    This function is used to upload the minutes of the meeting
+
+    @param
+        request: contains metadata about the requested page
+
+    @variables:
+        form: MinuteForm Object to create minutes of the meeting
     """
     if request.method == 'POST' and request.FILES:
         form = MinuteForm(request.POST, request.FILES)
@@ -629,9 +706,10 @@ def minutes(request):
 @transaction.atomic
 def invitation(request):
     """
-       This function is to schedule a mess committee meeting
-       @request:
-       @variables:
+    This function is to schedule a mess committee meeting
+
+    @param
+        request: contains metadata about the requested page
     """
     # todo add ajax to this page as well
     data = add_mess_meeting_invitation(request)
@@ -644,11 +722,17 @@ def invitation(request):
 @csrf_exempt
 def rebate_response(request):
     """
-       This function is to respond to rebate requests
-       :param request: user: Current user
-       @variables: designation : designation of the user
-       @return:
-            data: returns the status of the application
+    This function is to respond to rebate requests
+
+    @param request: 
+        request - contains metadata about the requested page 
+
+    @variables: 
+        user: Current user details
+        designation : designation of the user
+
+    @return:
+        data: returns the status of the application
     """
     data = {
         'status': 1
@@ -666,13 +750,17 @@ def rebate_response(request):
 @transaction.atomic
 @csrf_exempt
 def place_request(request):
-    # This is for placing special food request
     """
         This function is to place special food requests ( used by students )
+        
+        @params:
+            request - contains metadata about the requested page 
+
         @variables:
-        user: Current user
+            user: Current user details
+        
         @return:
-        data['status']: returns status of the application
+            data['status']: returns status of the application
     """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
@@ -702,8 +790,12 @@ def special_request_response(request):
 def update_cost(request):
     """
     This function is to update the base cost of the monthly central mess bill
-    :param request:
-    :return:
+    
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:  
+        user - contains user details
     """
     user = request.user
     # extrainfo = ExtraInfo.objects.get(user=user)
@@ -713,8 +805,12 @@ def update_cost(request):
 
 def generate_mess_bill(request):
     """
-        This function is to generate the bill of the students
-        @variables:
+    This function is to generate the bill of the students
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
         user: stores current user information
         nonveg_data : stores records of non-veg ordered by a student
         year_now: current year
@@ -723,7 +819,7 @@ def generate_mess_bill(request):
         students: information of all students
         mess_info: Mess Information, mainly choice of mess
         rebates: Rebate records of students
-        """
+    """
     # todo generate proper logic for generate_mess_bill
     user = request.user
     t1 = Thread(target=generate_bill, args=())
@@ -765,7 +861,16 @@ class MenuPDF(View):
 
 
 class MenuPDF1(View):
-    # This function is to generate the menu in pdf format (downloadable) for mess 1
+    """
+    This function is to generate the menu in pdf format (downloadable) for mess 1
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+    """
     def post(self, request, *args, **kwargs):
         user = request.user
         # extrainfo = ExtraInfo.objects.get(user=user)
@@ -778,12 +883,33 @@ class MenuPDF1(View):
 
 
 def menu_change_request(request):
+    """
+    This function is to request a change in menu
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        new_menu - the new menu to replace the previous menu
+    """
     newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(status=2)
     data = model_to_dict(newmenu)
     return JsonResponse(data)
 
 
 def submit_mess_committee(request):
+    """
+    This function is to add the new mess committee
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+    """
     roll_number = request.POST['rollnumber']
 
     data = add_mess_committee(request, roll_number)
@@ -791,6 +917,17 @@ def submit_mess_committee(request):
 
 
 def remove_mess_committee(request):
+    """
+    This function is to remove the current mess committee
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+
+    """
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
@@ -826,6 +963,19 @@ def get_leave_data(request):
 
 
 def accept_vacation_leaves(request):
+    """
+    This function is to accept vacation leave request
+
+    @param:
+        request - contains metadata about the requested page 
+        request - details about leave
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        start_date_leave - Starting date of leave
+        end_date_leave - Ending date of leave
+    """
     start_date_leave = request.GET['start_date']
     end_date_leave = request.GET['end_date']
     leave_data = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(start_date__gte=start_date_leave)
@@ -846,6 +996,21 @@ def accept_vacation_leaves(request):
 
 
 def select_mess_convener(request):
+    """
+    This function is to select a new convenor for mess
+
+    @param:
+        request - contains metadata about the requested page 
+        
+    @variables:
+        current_user - get user from request
+        user_details - extract details and designation of the user from the database
+        designation - to get the designation of the user
+        first_day_of_the_month - first day of the month
+        last_day_of_the_month - last day of the month
+        previous_month - last month
+        bill_object - accessing the bill from Monthly bills
+    """
     member_id = request.POST['member_id_add']
     data_m = member_id.split("-")
     roll_number = data_m[1]
@@ -888,6 +1053,21 @@ def select_mess_convener(request):
 
 
 def download_bill_mess(request):
+    """
+    This function is to get the mess bill for current month
+
+    @param:
+        request - contains metadata about the requested page 
+        request - first day of the month and last day of the previous month
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+        first_day_of_the_month - first day of the month
+        last_day_of_the_month - last day of the month
+        previous_month - last month
+        bill_object - accessing the bill from Monthly bills
+    """
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
     first_day_of_this_month = date.today().replace(day=1)
@@ -903,6 +1083,16 @@ def download_bill_mess(request):
 
 
 def get_nonveg_order(request):
+    """
+    This function is to apply for non-veg order
+
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+    """
     date_o = request.POST['order_date']
     nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=date_o) \
         .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
@@ -913,6 +1103,20 @@ def get_nonveg_order(request):
 
 
 def add_leave_manager(request):
+    """
+    This function is to apply for leave
+
+    @param:
+        request - contains metadata about the requested page 
+        request - start date, end date and type of leave
+
+    @variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+        start_date - starting date of the leave
+        end_data - ending date of leave
+        type - type of leave
+    """
     flag = 1
     start_date = request.POST.get('l_startd')
     end_date = request.POST.get('l_endd')
