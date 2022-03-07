@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block appraisal %}
@@ -380,16 +383,17 @@
                     </div>
                 </div>
             </div>
+            {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
             {% endfor %}
           </div>
         </div>
     </div>
 </div>
 
-
-
-
 {% endblock %}
+{% endblock %}
+
 {% block javascript %}
 <script>
 

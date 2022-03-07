@@ -43,7 +43,7 @@ $(document).ready(function(){
                 },
                 success : function (data){
 
-                    alert("Complaint successfully lodged");
+                    // alert("Complaint successfully lodged");
                     setTimeout(function() {
                 window.location.replace('http://localhost:8000/complaint/user');
             }, 1500);

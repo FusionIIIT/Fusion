@@ -400,6 +400,8 @@ def user(request):
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
         # next = request.POST.get('next', '/')
+
+        messages.success(request,message)
         return HttpResponseRedirect('/complaint/user')
 
     else:

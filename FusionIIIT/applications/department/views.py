@@ -1,3 +1,4 @@
+from cgitb import html
 from datetime import date
 import json
 
@@ -100,13 +101,18 @@ def dep_main(request):
     
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
     student = request.user.holds_designations.filter(designation__name='student').exists()
+    staff = request.user.holds_designations.filter(designation__name='staff').exists()
+    
     context = browse_announcements()
     context_f = faculty()
     user_designation = ""
+    
     if fac_view:
         user_designation = "faculty"
     elif student:
         user_designation = "student"
+    else:
+        user_designation = "staff"
 
     if request.method == 'POST':
         request_type = request.POST.get('request_type', '')
@@ -128,8 +134,11 @@ def dep_main(request):
                                                         "fac_list" : context_f,
                                                         "requests_made" : requests_made
                                                     })
-    elif(str(user.extrainfo.user_type)=='faculty'):
+    # elif(str(user.extrainfo.user_type)=="faculty"):
+    elif user_designation=="faculty":
         return HttpResponseRedirect("facView")
+    elif user_designation=="staff":
+        return HttpResponseRedirect("staffView")
 
 def faculty_view(request):
     """
@@ -176,6 +185,50 @@ def faculty_view(request):
                                                             "request_to":requests_received
                                                         })
 
+def staff_view(request):
+    """
+    This function is contains data for Requests and Announcement Related methods.
+    Data is added to Announcement Table using this function.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        usrnm, user_info, ann_maker_id - Stores data needed for maker
+        batch, programme, message, upload_announcement,
+        department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
+
+    """
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    num = 1
+    ann_maker_id = user_info.id
+    requests_received = get_to_request(usrnm)
+    if request.method == 'POST':
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('announcement', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        department = request.POST.get('department')
+        ann_date = date.today()
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)
+
+        obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
+                                    batch=batch,
+                                    programme=programme,
+                                    message=message,
+                                    upload_announcement=upload_announcement,
+                                    department = department,
+                                    ann_date=ann_date)
+        department_notif(usrnm, recipients , message)
+        
+    context = browse_announcements()
+    return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
+                                                            "announcements":context,
+                                                            "request_to":requests_received
+                                                        })
 
 @login_required(login_url='/accounts/login')
 def all_students(request,bid):

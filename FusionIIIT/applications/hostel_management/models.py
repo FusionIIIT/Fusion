@@ -37,6 +37,13 @@ class HostelManagementConstants:
 
 
 class Hall(models.Model):
+    """
+    Records information related to various Hall of Residences.
+
+    'hall_id' and 'hall_name' store id and name of a Hall of Residence. 
+    'max_accomodation' stores maximum accomodation limit of a Hall of Residence.
+    'number_students' stores number of students currently residing in a Hall of Residence.
+    """
     hall_id = models.CharField(max_length=10)
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
@@ -47,6 +54,12 @@ class Hall(models.Model):
 
 
 class HallCaretaker(models.Model):
+    """
+    Records Caretakers of Hall of Residences.
+
+    'hall' refers to related Hall of Residence.
+    'staff' refers to related Staff details.
+    """
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
@@ -55,6 +68,12 @@ class HallCaretaker(models.Model):
 
 
 class HallWarden(models.Model):
+    """
+    Records Wardens of Hall of Residences.
+
+    'hall' refers to related Hall of Residence.
+    'faculty' refers to related Faculty details.
+    """
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 
@@ -63,6 +82,13 @@ class HallWarden(models.Model):
     
 
 class GuestRoomDetail(models.Model):
+    """
+    Records information related to guest rooms in Hall of Residences.
+
+    'hall' refers to the related Hall of Residence.
+    'room_no' stores the guest room number.
+    'room_status' stores the current status of the guest room from the available choices in 'ROOM_STATUS'.
+    """
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     room_no = models.CharField(max_length=4, unique=True)
     room_status  = models.CharField(max_length=20, choices=HostelManagementConstants.ROOM_STATUS, default='Available')
@@ -72,6 +98,22 @@ class GuestRoomDetail(models.Model):
 
 
 class GuestRoomBooking(models.Model):
+    """
+    Records information related to booking of guest rooms in various Hall of Residences.
+
+    'hall' refers to related Hall of Residence.
+    'intender' refers to the related User who has done the booking.
+    'guest_name','guest_phone','guest_email','guest_address' stores details of guests.
+    'rooms_required' stores the number of rooms booked.
+    'guest_room_id' refers to related guest room.
+    'total_guest' stores the number of guests.
+    'purpose' stores the purpose of stay of guests.
+    'arrival_date','arrival_time' stores the arrival date and time of the guests.
+    'departure_date','departure_time' stores the departure date and time of the guests.
+    'status' stores the status of booking from the available options in 'BOOKING_STATUS'.
+    'booking_date' stores the date of booking.
+    'nationality' stores the nationality of the guests.
+    """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     intender = models.ForeignKey(User, on_delete=models.CASCADE)
     guest_name = models.CharField(max_length=100)
@@ -95,6 +137,15 @@ class GuestRoomBooking(models.Model):
 
 
 class StaffSchedule(models.Model):
+    """
+    Records schedule of staffs in various Hall of Residences.
+
+    'hall_id' refers to the related Hall of Residence.
+    'staff_type' stores the type of staff , default is 'Caretaker'.
+    'day' stores the assigned  day of a schedule from the available choices in 'DAYS_OF_WEEK'.
+    'start_time' stores the start time of a schedule.
+    'end_time' stores the end time of a schedule.
+    """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
     staff_type = models.CharField(max_length=100, default='Caretaker')
@@ -107,6 +158,15 @@ class StaffSchedule(models.Model):
     
 
 class HostelNoticeBoard(models.Model):
+    """
+    Records notices of various Hall of Residences.
+
+    'hall' refers to the related Hall of Residence.
+    'posted_by' refers to information related to the user who posted it.
+    'head_line' stores the headline of the notice.
+    'content' stores any file uploaded by the user as a part of notice.
+    'description' stores description of a notice.
+    """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     posted_by = models.ForeignKey(ExtraInfo, on_delete=models.ForeignKey)
     head_line = models.CharField(max_length=100)
@@ -117,6 +177,14 @@ class HostelNoticeBoard(models.Model):
         return self.head_line
 
 class HostelStudentAttendence(models.Model):
+    """
+    Records attendance of students in various Hall of Residences.
+
+    'hall' refers to the related Hall of Residence. 
+    'student_id' refers to the related Student.
+    'date' stores the date for which attendance is being taken.
+    'present' stores whether the student was present on a particular date.
+    """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     date = models.DateField()
@@ -127,6 +195,15 @@ class HostelStudentAttendence(models.Model):
 
 
 class HallRoom(models.Model):
+    """
+    Records information related to rooms in various Hall of Residences
+
+    'hall' refers to the related Hall of Residence.
+    'room_no' stores the room number.
+    'block_no' stores the block number a room belongs to.
+    'room_cap' stores the maximum occupancy limit of a room.
+    'room_occupied' stores the current number of occupants of a room.
+    """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     room_no = models.CharField(max_length=4) 
     block_no = models.CharField(max_length=1)
@@ -138,6 +215,17 @@ class HallRoom(models.Model):
 
 
 class WorkerReport(models.Model):
+    """
+    Records report of workers related to various Hall of Residences.
+
+    'worker_id' stores the id of the worker. 
+    'hall' refers to the related Hall of Residence.
+    'worker_name' stores the name of the worker.
+    'year' and 'month' stores year and month respectively.
+    'absent' stores the number of days a worker was absent in a month.
+    'total_day' stores the number of days in a month.
+    'remark' stores remarks for a worker.
+    """
     worker_id = models.CharField(max_length=10)
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     worker_name = models.CharField(max_length=50)
