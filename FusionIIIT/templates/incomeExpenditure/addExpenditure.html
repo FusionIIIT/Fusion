@@ -23,7 +23,7 @@
             <div class="two fields">
                 <div class = "field">
                    
-                    <input  name = "date_spent" required="true" type="date" min="{{min_date}}" max="{{max1_date}}" >
+                    <input class="Date"  name = "date_spent" required="true" type="date" min="{{min_date}}" max="{{max1_date}}" >
                 </div>
                 
                 <div class = "field">
@@ -54,9 +54,20 @@ $(function() {
         event.preventDefault();
         var friendForm = $(this);
         var Amount = document.querySelector('.Amount')
+        var date = document.querySelector('.Date').value.toString();
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        var result = date.localeCompare(today);
+
         if(Amount.value<=0)
         {
             alert("amount must be greater than 0");
+        }
+        else if(result === 1) {
+            alert('You cannot add future date');
         }
         else
         {
