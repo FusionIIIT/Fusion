@@ -2,6 +2,7 @@
 {% load static %}
 {#{% block body %}#}
 {% block Issues %}
+{% comment %} Df-(,5{ {% endcomment %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="issues">
@@ -30,11 +31,11 @@
 
                     <br>
 
-                    <div class="two fields">
+                    <div class="two fields" style="margin-left: 1px;">
 
-                        <div class="two fields">
+                        <div class="two fields" >
                             <div class="twelve wide field">
-                                <label>Category*</label>
+                                <label>Category<span  style="color:red; "><b>*</b></span></label>
                                 <select class="ui dropdown" name="category" id="category">
                                     {% for category in categories%}
                                     <option value="{{category.id}}">{{category}}</option>
@@ -47,7 +48,7 @@
                     </div>
                     
                     <div class="field">
-                        <label>Description of issue*</label>
+                        <label>Description of Issue<span  style="color:red; "><b>*</b></span></label>
                         <textarea rows="10" id="description" name="description" required="true"></textarea>
                     </div>
                     

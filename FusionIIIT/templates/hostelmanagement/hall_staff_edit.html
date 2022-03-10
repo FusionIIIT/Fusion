@@ -1,6 +1,6 @@
 {% block hall_staff_edit %}
 <h3 align="center"> HALL STAFF EDIT </h3><br><br>
-<form action="{% url 'hostelmanagement:staff_edit_schedule' %}" method ="POST">
+<form action="{% url 'hostelmanagement:staff_edit_schedule' %}" method ="POST" id="hall_staff_edit_form">
    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         {% csrf_token %}
         
@@ -61,7 +61,7 @@
        </div>
 
        <div class="field">
-           <button class="ui primary button right floated" type="submit">
+           <button class="ui primary button right floated" type="submit" onclick="checkInputs('hall_staff_edit_form')">
                Submit
            </button>
        </div>

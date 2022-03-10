@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block ltc %}
@@ -282,6 +285,9 @@
                         </div>
                     </div>
                     <br>
+                    {% empty %}
+                        <tr><td colspan="3">No Active Request</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -408,6 +414,9 @@
                         </div>
                     </div>
                     <br>
+                    {% empty %}
+                        <tr><td colspan="3">No Archive Avaliable</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -608,6 +617,9 @@
                         </div>
     
                     </div>
+                    {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -616,6 +628,8 @@
 
 
 {% endblock %}
+{% endblock %}
+
 {% block javascript %}
 <script type="text/javascript">
 function printDiv(divName) {
