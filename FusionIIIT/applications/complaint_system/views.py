@@ -1,18 +1,30 @@
+# Imported for date and time
 import datetime
 from datetime import date, datetime, timedelta
 
+# Contrib imported
 from django.contrib import messages
-from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
+# Forms imported
+from django import forms
+
+# HTTP imported
+from django.http import HttpResponse, HttpResponseRedirect
+
+# Shortcuts imported
+from django.shortcuts import get_object_or_404, render
+
+# Models imported
+from applications.globals.models import User , ExtraInfo, HoldsDesignation
 from notifications.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers
+
+# Notification imported
 from notification.views import  complaint_system_notif
-#function for reassign to another worker
+
+# Function for reassign complaint to another worker by caretaker
 @login_required
 def complaint_reassign(request,wid,iid):
     current_user = get_object_or_404(User, username=request.user.username)
@@ -85,6 +97,7 @@ def complaint_reassign(request,wid,iid):
                       {'detail': detail, 'worker': worker, 'flag':
                           flag, 'total_caretaker': total_caretaker,'a':a, 'wid':wid, 'total_caretakers_in_area':total_caretakers_in_area})
 
+# Function to reassign complaint to another worker by supervisor
 @login_required
 def complaint_reassign_super(request,caretaker_id,iid):
     current_user = get_object_or_404(User, username=request.user.username)
@@ -99,7 +112,7 @@ def complaint_reassign_super(request,caretaker_id,iid):
 
 
 
-
+# Funtion to assign complaint to a worker by caretaker
 @login_required
 def assign_worker(request, comp_id1):
     current_user = get_object_or_404(User, username=request.user.username)
@@ -182,6 +195,8 @@ def assign_worker(request, comp_id1):
                       {'detail': detail, 'worker': worker, 'flag':
                           flag, 'total_caretaker': total_caretaker,'a':a, 'total_caretakers_in_area':total_caretakers_in_area})
 
+
+# Function to discharge a worker from a complaint by caretaker
 @login_required
 def discharge_worker(request,wid,cid):
     current_user = get_object_or_404(User, username=request.user.username)
@@ -202,13 +217,10 @@ def discharge_worker(request,wid,cid):
 
 
 
-
+# Function to deal with submission of complaint according to there type of caretaker
 @login_required
 def caretaker_feedback(request):
-    """
-    This function deals with submission of complaints for a particular type of caretaker 
-
-    """
+    
     a = get_object_or_404(User, username=request.user.username)
     if request.method == 'POST':
         
@@ -233,12 +245,10 @@ def caretaker_feedback(request):
         
         return render(request, "complaintModule/submit_feedback_caretaker.html", {'a': a})
 
-
+# Function to view pending complaints that are assigned to a worker
 @login_required
 def worker_id_know_more(request, work_id):
-    """
-    function to know pending complaints assigned to the worker
-    """
+    
     this_worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=work_id)
     num = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=this_worker).count();
     complaints_list = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=this_worker);
@@ -253,7 +263,7 @@ def worker_id_know_more(request, work_id):
 
 
 
-
+# Function to check the login type of user whether the user is student, facutly or staff
 @login_required
 def check(request):
     """
@@ -284,8 +294,8 @@ def check(request):
         return HttpResponseRedirect('/')
 
 
+# Function for user to register a complaint and fill details about it
 @login_required
-
 def user(request):
     """
     The function is used to register a complaint
@@ -457,6 +467,8 @@ def user(request):
 
     return render(request, "complaintModule/complaint_user.html",
                       {'history': history, 'comp_id': comp_id })
+
+# Function to save complaint and details registered by the user 
 @login_required
 def save_comp(request):
     """
@@ -508,6 +520,7 @@ def save_comp(request):
         # return HttpResponseRedirect('/complaint/user/')
         return HttpResponseRedirect('/complaint/user/')
 
+# Function to display details of complaints and workers to the caretaker 
 @login_required
 def caretaker(request):
     """
@@ -648,6 +661,8 @@ def caretaker(request):
                         'notification':notification,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
 
+
+# Function to remove the worker from a complaint by caretaker
 @login_required
 def remove_worker_from_complaint(request,complaint_id):
     """
@@ -662,7 +677,7 @@ def remove_worker_from_complaint(request,complaint_id):
 
 
 
-
+# Function to change status of complaint by caretaker
 @login_required
 def changestatus(request, complaint_id, status):
     """
@@ -691,7 +706,7 @@ def changestatus(request, complaint_id, status):
             update(status=status)
         return HttpResponseRedirect('/complaint/caretaker/')
 
-
+# Function to remove the worker from a complaint by caretaker
 @login_required
 def removew(request, work_id):
     """
@@ -714,7 +729,7 @@ def removew(request, work_id):
     else:
         return HttpResponse('<H1> Worker is assign some complaint</h1>')
 
-
+# Function to submit feedback by user after the complaint is resolved
 @login_required
 def submitfeedback(request, complaint_id):
     """
@@ -759,7 +774,7 @@ def submitfeedback(request, complaint_id):
 
 
 
-
+# Function to delete complaint by caretaker
 @login_required
 def deletecomplaint(request, comp_id1):
     """
@@ -768,7 +783,7 @@ def deletecomplaint(request, comp_id1):
     StudentComplain.objects.get(id=comp_id1).delete()
     return HttpResponseRedirect('/complaint/caretaker/')
 
-
+# Function to view registered complaints, status, details and feedback for supervisor
 @login_required
 def supervisor(request):
     """
@@ -841,6 +856,7 @@ def supervisor(request):
                     {'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
                    'overduecomplaint': overduecomplaint, 'area': area, 'num' : num})
 
+# Function to view details of caretakers for supervisor
 @login_required
 def caretaker_id_know_more(request,caretaker_id):
     this_caretaker = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(id = caretaker_id)
@@ -861,6 +877,7 @@ def caretaker_id_know_more(request,caretaker_id):
 
 
 
+# Function to view resolve and pending complaints
 @login_required
 def resolvepending(request, cid):
     a = get_object_or_404(User, username=request.user.username)
@@ -889,7 +906,7 @@ def resolvepending(request, cid):
         return render(request,"complaintModule/resolve_pending.html",{"a" : a,"thiscomplaint" : thiscomplaint})
 
 
-
+# Function to dispaly page if the any invalid details are entered
 def login1(request):
     if request.method == 'POST':
         u = request.POST.get('username', '')
@@ -906,6 +923,7 @@ def login1(request):
     else:
         return HttpResponseRedirect('/login/')
 
+# Function to view feedbacks of resolved complaints for supervisor
 @login_required
 def feedback_super(request, feedcomp_id):
     detail3 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=feedcomp_id)
@@ -917,7 +935,7 @@ def feedback_super(request, feedcomp_id):
     care = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=loc).first()
     return render(request, "complaintModule/feedback_super.html", {"detail3": detail3,"comp_id":comp_id,"care":care})
 
-
+# Function to view feedbacks of resolved complaints for supervisor under caretaker
 @login_required
 def feedback_care(request, feedcomp_id):
     detail2 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=feedcomp_id)
@@ -929,7 +947,7 @@ def feedback_care(request, feedcomp_id):
 
 
 
-
+# Function to view details of registered compalaints for user
 @login_required
 def detail(request, detailcomp_id1):
     """
@@ -952,6 +970,7 @@ def detail(request, detailcomp_id1):
     comp_id=temp.id 
     return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":detail.id,"num":num,"worker_name":worker_name})
 
+# Function to view details of registered compalaints for cartaker
 @login_required
 def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=detailcomp_id1)
@@ -971,6 +990,7 @@ def detail2(request, detailcomp_id1):
     comp_id=temp.id 
     return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name,"wid":worker_id})
 
+# Function to view details of registered compalaints for supervisor
 @login_required
 def detail3(request, detailcomp_id1):
     detail3 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=detailcomp_id1)
