@@ -1,14 +1,16 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from applications.gymkhana.api.views import clubname,Club_Details
+from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo
+from applications.gymkhana.api.views import session_details
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
-
-
 
 app_name = 'gymkhana'
 
 urlpatterns = [
+    url(r'^session_details/$',session_details.as_view()),
+    url(r'^event_info/$',club_events.as_view()),
+    url(r'^club_budgetinfo/$',club_budgetinfo.as_view()),
     #academic administration
     url(r'^club_approve/$', views.club_approve, name='club_approve'),
     url(r'^club_reject/$', views.club_reject, name='club_reject'),
