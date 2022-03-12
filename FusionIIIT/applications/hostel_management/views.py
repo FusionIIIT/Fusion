@@ -38,24 +38,24 @@ def hostel_view(request, context={}):
         all_hall - stores all the hall of residence
         all_notice - stores all notices of hostels (latest first)
     """
-    hall_1_student = Student.objects.filter(hall_no=1)[:10]
-    hall_3_student = Student.objects.filter(hall_no=3)[:10]
-    hall_4_student = Student.objects.filter(hall_no=4)[:10]
+    # hall_1_student = Student.objects.filter(hall_no=1)
+    # hall_3_student = Student.objects.filter(hall_no=3)
+    # hall_4_student = Student.objects.filter(hall_no=4)
     all_hall = Hall.objects.all()
     halls_student = {}
     for hall in all_hall:
-        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4])).select_related('id__user')
 
     hall_staffs = {}
     for hall in all_hall:
-        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall)
+        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall).select_related('staff_id__id__user')
 
     all_notice = HostelNoticeBoard.objects.all().order_by("-id")
     hall_notices = {}
     for hall in all_hall:
-        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall)
+        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall).select_related('hall','posted_by__user')
 
-    Staff_obj = Staff.objects.all()
+    Staff_obj = Staff.objects.all().select_related('id__user')
     hall1 = Hall.objects.get(hall_id='hall1')
     hall3=Hall.objects.get(hall_id='hall3')
     hall4=Hall.objects.get(hall_id='hall4')
@@ -75,7 +75,7 @@ def hostel_view(request, context={}):
                 get_avail_room.append(room)
 
         get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
-        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0])))
+        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
         current_hall='hall'+str(get_hall_num[0])
 
 
@@ -93,9 +93,9 @@ def hostel_view(request, context={}):
         worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
 
     context = {
-        'hall_1_student': hall_1_student,
-        'hall_3_student': hall_3_student,
-        'hall_4_student': hall_4_student,
+        # 'hall_1_student': hall_1_student,
+        # 'hall_3_student': hall_3_student,
+        # 'hall_4_student': hall_4_student,
         'all_hall': all_hall,
         'all_notice': all_notice,
         'staff':Staff_obj,
@@ -242,7 +242,7 @@ def edit_student_room(request):
         roll_no = request.POST["roll_no"]
         room_no = request.POST["room_no"]
         batch=str(roll_no[0])+str(roll_no[1])+str(roll_no[2])+str(roll_no[3])
-        students = Student.objects.filter(batch=int(batch))
+        students = Student.objects.filter(batch=int(batch)).select_related('id__user')
         for student in students:
             if str(student.id.user)==str(roll_no):
                 update_hostel_room(student,room_no)
