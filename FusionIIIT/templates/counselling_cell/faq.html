@@ -1,8 +1,7 @@
 {#{% extends 'globals/base.html'%}#}
 {% load static %}
 {#{% block body %}#}
-{% block faq %}
-{% comment %} this is page where students can see frequntly asked question,only student co ordinators have access to add FAQSS {% endcomment %}
+{% block team_details %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="viewfaq">
@@ -27,10 +26,14 @@
                     <a class="header">{{faq.counselling_category}}</a>
                 </div>
                 <div class="description">
-                    <div class="header">Question {{forloop.counter}} : </div>
-                    <h2 class="ui header">{{faq.counselling_question}}</h1>
-                    <div class="header">Answer {{forloop.counter}} :</div>
-                    <h3 class="ui header">{{faq.counselling_answer}}</h3>
+                    <h2 class="ui header">Question : {{forloop.counter}}</h2>
+                    <div class="ui header">{{faq.counselling_question}}</div>
+                        <br>
+                    <h2 class="ui header">Answer : {{forloop.counter}}</h2>
+                    <div class="ui header">{{faq.counselling_answer}}</div>
+                <br>
+                <br>
+               
                 </div> 
                 
             </div>
