@@ -29,6 +29,16 @@ from django.template.defaulttags import register
 
 
 def officeOfDeanRSPC(request):
+    '''
+    This function is called when the office of dean RSPC is called.
+    It returns the list of all the projects and the project extensions, project closures and project reallocations.
+
+    @param request: 
+        request from the page
+    @return: 
+        renders the page with all the projects and the project extensions, project closures and project reallocations.
+    '''
+
     project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
     project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
     project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
@@ -44,7 +54,7 @@ def officeOfDeanRSPC(request):
 
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
-def _list_find(lst, predicate):
+def _list_find(lists, predicate):
     """
     Find the first element in a list that satisfies the given predicate
     Arguments:
@@ -53,9 +63,9 @@ def _list_find(lst, predicate):
     Returns:
         The first element that satisfies the predicate otherwise None
     """
-    for v in lst:
-        if predicate(v):
-            return v
+    for list in lists:
+        if predicate(list):
+            return list
     return None
 
 def _req_history(req):
@@ -92,6 +102,16 @@ def officeOfDeanPnD(request):
                 to create work assignment from them.
             * View Assignments: Lists all assignments, incoming assignments and
                 outgoing assignments. Allows performing actions on incoming assignments.
+    
+    This function is called when the office of dean (p&d) is called.
+    It returns the list of all the requisitions, incoming requisitions, outgoing requisitions and
+    the history of all the requisitions.
+
+    @param request: 
+        request from the page
+    @return: 
+        renders the page with all the requisitions, incoming requisitions, outgoing requisitions and
+        the history of all the requisitions.
     """
     user = request.user
     extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
@@ -247,6 +267,32 @@ def officeOfDeanPnD(request):
 def submitRequest(request):
     """
         Endpoint used to create requisition
+    This function is used to create a new requisition.
+    It takes in the following parameters:
+    1. request - the request from the user
+    2. user - the user who has sent the request
+    3. extrainfo - the extraInfo object of the user
+    4. fdate - the current date
+    5. dept - the department of the requisition
+    6. building - the building of the requisition
+    7. title - the title of the requisition
+    8. description - the description of the requisition
+    9. tag - the tag of the requisition
+    10. file - the file of the requisition
+    11. req_date - the date of the requisition
+    12. assign_file - the assignment file of the requisition
+    13. assign_date - the date of the assignment
+    14. assign_desig - the designation of the assignment
+    15. assign_user - the user of the assignment
+    @param request: the request from the user
+    @param user: the user who has sent the request
+    @variable extrainfo: the extraInfo object of the user
+    @variable fdate: the current date
+    @variable dept: the department of the requisition
+    @variable building: the building of the requisition
+    @variable title: the title of the requisition
+    @variable description: the description of the requisition
+    @variable tag: the tag of the requisition
     """
     user = request.user
     extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
@@ -269,7 +315,18 @@ def submitRequest(request):
 @login_required
 def action(request):
     """
-        Endpoint handling actions on assignment.
+    Endpoint handling actions on assignment.
+    This function is used to handle the actions of the office of the Dean (P&D)
+    The actions are:
+    1. Send: Send the file to the next authority.
+    2. Reject: Reject the file and remove it from the system.
+    3. Approve: Approve the file and send it to the next authority.
+    4. Revert: Revert the file back to the previous authority.
+    5. Return: Return the file to the user.
+    The function also takes care of the notifications.
+    The function is called when the user clicks on the action button on the files.
+    The function is called on the files that have been sent to the user.
+    
     """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
@@ -378,6 +435,13 @@ def action(request):
 
 @login_required
 def frequest(request):
+    '''
+    This function is used to display the form for viewing the requisitions.
+    @param request:request from the page
+    @var form:the form to be displayed
+    @return:returns the path to the form page
+
+    '''
     if request.method=='POST':
         form=Requisitionform(request.POST)
         print("hi")
@@ -389,6 +453,17 @@ def frequest(request):
 
 
 def eisModulenew(request):
+    '''
+    This function is used to display the profile of the user.
+    It takes request from the user and checks the designation of the user.
+    If the designation is of type "supervisor" or "hod" it will display the profile of the user.
+    If the designation is of type "employee" it will display the profile of the employee.
+    If the designation is of type "admin" it will display the profile of the admin.
+    It returns the profile of the user.
+    @param request:request from the page
+    @var form:the form to be displayed
+    @return:returns the path to the form page
+    '''
     project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
     project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
     project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
@@ -407,18 +482,45 @@ def eisModulenew(request):
 
 
 def officeOfPurchaseOfficr(request):
+    '''
+   This function is used to render the office of the purchase officer.
+    @param request: request from the page
+    @var context: the context variable to be passed to the template.
+    @return: renders the office of the purchase officer page.
+    '''
     return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html", {})
 
 def admin_reject(request):
+    '''
+    This function is used to reject the selected applications.
+
+    Parameters:
+    request (HttpRequest): The request sent to the server by the client.
+
+    Returns:
+    HttpResponse: A response sent to the client.
+    '''
     if request.method == "POST":
         marked = request.POST.getlist("selected")
 
         return HttpResponse("Done!")
 
-
 def officeOfRegistrar(request):
 
-    """dashboard for the registrar to view files from different departments and navigate to a specific department"""
+    """
+    Dashboard for the registrar to view files from different departments and navigate to a specific department
+    This function is called when the office of the registrar is visited.
+    It returns the template for the office of the registrar with the required context variables.
+    The variables are:
+        1. archive_view: A dictionary of all the files that are archived.
+        2. director_track: A list of all the files that are currently being handled by the director.
+        3. director_view: A dictionary of all the files that are currently being handled by the director, but have not been responded to by the director yet.
+        4. view3: A list of all the files that are currently being handled by the establishment department.
+        5. view4: A list of all the files that are currently being handled by the purchasing department.
+        6. view5: A list of all the files that are currently being handled by the general administration department.
+        7. current_date: The current date and time.
+        8. general: A list of all the files that are currently being handled by the general administration department
+        ."""
 
     archive_view = {}
     archive_track = Registrar_response.objects.all()
@@ -453,7 +555,27 @@ def officeOfRegistrar(request):
 
 def officeOfRegistrar_ajax_submit(request):
 
-    """AJAX handler to handle request for approve/reject/forwarding of a file"""
+    """
+    AJAX handler to handle request for approve/reject/forwarding of a file
+    This function handles the request for approve/reject/forwarding of a file.
+    It takes the request from the user and returns the response.
+    It takes the request in the form of ajax and returns the response in the form of ajax.
+    The variables are:
+        1. file_id: The id of the file to be approved/rejected/forwarded.
+        2. action: The action to be performed on the file.
+        3. comment: The comment to be added to the file.
+        4. user_id: The id of the user who is performing the action.
+        5. user_name: The name of the user who is performing the action.
+        6. user_department: The department of the user who is performing the action.
+        7. user_designation: The designation of the user who is performing the action.
+        8. user_email: The email of the user who is performing the action.
+        9. user_phone: The phone number of the user who is performing the action.
+        10. user_address: The address of the user who is performing the action.
+        11. user_type: The type of the user who is performing the action.
+    @param request: request from the page
+    @var context: the context variable to be passed to the template.
+    @return: renders the office of the registrar page.
+    """
 
     #print("ajax")
     if request.method == "POST":
@@ -476,7 +598,20 @@ def officeOfRegistrar_forward(request, id):
 
 def officeOfRegistrar_forward_submit(request):
 
-    """Submit handler for the above form"""
+    """
+    Submit handler for the above form
+    This function is used to forward the file to the given receiver.
+    It takes the track_id of the file as input and then checks if the file is present in the database or not.
+    If the file is present, it checks if the receiver is present in the database or not.
+    If the receiver is present, it creates a new entry in the Tracking table with the current_id as the receiver and the receiver_id as the receiver.
+    If the receiver is not present, it returns an error message.
+    If the file is not present, it returns an error message.
+    It also creates a new entry in the Registrar_response table with the status as "forwarded" and the remark as "forwarded to <receiver>".
+    It returns a success message if the file is forwarded successfully.
+    @param request: request from the page
+    @var context: the context variable to be passed to the template.
+    @return: renders the office of the registrar page.
+    """
     
     if request.method == "POST":
         try:
@@ -515,6 +650,15 @@ def officeOfRegistrar_forward_submit(request):
 def officeOfRegistrar_view_file(request, id):
     """
         This is the view to handle registrar's request to view the details of a file, The file whoose id is passed is accessed through
+    This is the view to handle registrar's request to view the details of a file, The file whoose id is passed is accessed through
+    and the details of the file are displayed.
+    The file is accessed through the Tracking model and the file is accessed through the File model.
+    The file is then displayed.
+    The context passed in the form of a dictionary consists of the file, the track of the file and the designations of the user.
+    The template used is view_file.html which is present in the officeModule/officeOfRegistrar/templates folder.
+    @param request: request from the page
+    @var context: the context variable to be passed to the template.
+    @return: renders the office of the registrar page.
     """
     #file = get_object_or_404(File, id=id)
     
@@ -532,8 +676,15 @@ def officeOfRegistrar_view_file(request, id):
     print("view called")
     return render(request, 'officeModule/officeOfRegistrar/view_file.html', context)
 
-
 def upload(request):
+    '''
+    This function is used to upload the file in the server.
+    It takes request as the parameter.
+    It returns the HttpResponse.
+    It also saves the file in the database.
+    @param request: request from the page
+    @return: HttpResponse
+    '''
     print("asdasdasdasd")
     docname = request.POST.get("docname")
     purpose = request.POST.get("purpose")
@@ -548,6 +699,12 @@ def upload(request):
 
 @login_required(login_url='/accounts/login')
 def officeOfHOD(request):
+    '''
+    This function is used to render the office of HOD page.
+    It returns the office of HOD page with all the teaching credits not assigned and all the assigned teaching credits.
+    @param request: request from the page
+    @return: renders the office of HOD page.
+    '''
     pro = Teaching_credits1.objects.filter(tag=0)
     pro1 = Assigned_Teaching_credits.objects.all()
 
@@ -1014,23 +1171,51 @@ views for details page for Project Registration, Extension, Fund Reallocation, C
 
 
 def reg_details(request, pr_id):
+    """
+    This function accepts a request and a project id and returns a view for the details of the project.
+    It also accepts a request and a project id and returns a view for the details of the project.
+    """
     obj = get_object_or_404(Project_Registration, pk=pr_id)
     return render(request, "officeModule/officeOfDeanRSPC/view_details.html", {"obj": obj})
 
 
 def ext_details(request, pr_id):
+    """
+    This function is used to display the details of the extension request.
+    It takes the id of the extension request as input and displays the details of the extension request.
+    It also displays the details of the project to which the extension request is made.
+    It returns the html page which has the details of the extension request.
+    @param request: A request object used to generate a response.
+    @param pr_id: The id of the project for which the extension request is made.
+    @return: The html page which has the details of the extension request.
+    """
     pr = get_object_or_404(Project_Extension, pk=pr_id)
     obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
     return render(request, "officeModule/officeOfDeanRSPC/extension_details.html", {"obj": obj, 'pr': pr})
 
 
 def reallocate_details(request, pr_id):
+    """    
+    This function is used to display the details of the reallocation request.
+    @param request: Request from the webpage.
+    @param pr_id: The id of the reallocation request.
+    @return: Returns the webpage with the details of the reallocation request.
+    """
     pr = get_object_or_404(Project_Reallocation, pk=pr_id)
     obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
     return render(request, "officeModule/officeOfDeanRSPC/reallocation_details.html", {"obj": obj, 'pr': pr})
 
 
 def closure_details(request, pr_id):
+    """
+    This function is used to display the details of the project for which the closure is being done.
+    The function takes in a request and the id of the project for which the closure is being done.
+    It then fetches the project registration object for the given id and passes it to the template along with the project closure object.
+    The template then displays the project details.
+    @param request: Request from the webpage.
+    @param pr_id: The id of the project for which the closure is being done.
+    @return: Returns the webpage with the details of the project.
+    """
     pr = get_object_or_404(Project_Closure, pk=pr_id)
     obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
     return render(request, "officeModule/officeOfDeanRSPC/closure_details.html", {"obj": obj, 'pr': pr})
@@ -1041,6 +1226,17 @@ def closure_details(request, pr_id):
 
 
 def hod_action(request):
+    '''
+    This function is used to forward the project to the next authority.
+    It takes a request from the user and checks if the user is authenticated.
+    If yes, it takes the id of the project and checks if the project is eligible to be forwarded.
+    If yes, it forwards the project to the next authority.
+    It also saves the current date and time when the project was forwarded.
+    It also sets the HOD_response of the project to 'Forwarded'.
+    Then it redirects to the profile page of the user.
+    @param request: A request object used to generate a response.
+    @return: Redirects to the profile page of the user.
+    '''
     if 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=id)
@@ -1052,6 +1248,17 @@ def hod_action(request):
     return HttpResponseRedirect('/office/eisModulenew/profile/')
 
 def hod_closure(request):
+    """
+    This function is used to forward the project to the accounts section.
+    It takes a request from the user as the input.
+    Then it checks whether the project is eligible to be forwarded to the accounts section.
+    Then it checks whether the accounts section has already seen the project or not.
+    If it is already seen, then it forwards the project to the accounts section.
+    If it is not seen, then it forwards the project to the accounts section.
+    Then it returns a HttpResponseRedirect to the profile page.
+    @param request: A request object used to generate a response.
+    @return: Returns a HttpResponseRedirect to the profile page.
+    """
     if 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Closure.objects.get(pk=id)
@@ -1063,6 +1270,14 @@ def hod_closure(request):
     return HttpResponseRedirect('/office/eisModulenew/profile/')
 
 def hod_extension(request):
+    """
+    This function is used to forward the project extension request to the HOD.
+    It takes a request as an input and checks if the HOD_response is pending or not.
+    If the response is pending, it sets the HOD_response to 'Forwarded' and saves the object.
+    Then it redirects to the profile page.
+    @param request: A request object used to generate a response.
+    @return: Returns a HttpResponseRedirect to the profile page.
+    """
     if 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
@@ -1070,10 +1285,16 @@ def hod_extension(request):
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
             obj.save()
-
     return HttpResponseRedirect('/office/eisModulenew/profile/')
 
 def hod_allocation(request):
+    """  This function is used to forward the request to hod.
+    It takes a request as an input and checks if the HOD_response is pending or not.
+    If the response is pending, it sets the HOD_response to 'Forwarded' and saves the object.
+    Then it redirects to the profile page.
+    @param request: A request object used to generate a response.
+    @return: Returns a HttpResponseRedirect to the profile page.
+    """
     if 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
@@ -1084,30 +1305,29 @@ def hod_allocation(request):
 
     return HttpResponseRedirect('/office/eisModulenew/profile/')
 
-
-
 def pdf(request,pr_id):
+    '''
+    This function is used to display the details of the project to the office of dean RSPC.
+    It takes a request and pr_id as parameters.
+    It returns a response to the user.
+    @param request: default parameter - this is a django request parameter.
+    @param pr_id: default parameter - this is a unique id for each project.
+    @return: response to the user.
+    '''
     obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=pr_id)
     return render(request,"officeModule/officeOfDeanRSPC/view_details.html",{"obj":obj})
-
-
-
 
 def genericModule(request):
     context = {}
     return render(request, "officeModule/genericModule/genericModule.html", context)
 
-
-
-
-
-
-
-
-
-
 @login_required
 def teaching_form(request):
+    """
+    This function is used to add the courses to the Teaching_credits1 table.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    """
     roll_no=request.POST.get('roll_no')
     name=request.POST.get('name')
     programme=request.POST.get('programme')
@@ -1125,6 +1345,16 @@ def teaching_form(request):
 
 @login_required
 def hod_work(request):
+
+    """
+    This function is used to assign the courses to the students.
+    It takes the roll number and the course name as the input.
+    It saves the assigned course in the database.
+    It also updates the teaching credits table.
+    It returns the HttpResponseRedirect to the same page.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    """
     roll_no=request.POST.get('roll_no')
     tc = Teaching_credits1.objects.get(roll_no=roll_no)
     assigned_course=request.POST.get('assigned_course')
@@ -1137,16 +1367,20 @@ def hod_work(request):
     """return HttpResponseRedirect('')"""
     """return render(request,"officeModule/officeOfHOD/tab4content1.html",context)"""
 
-
-
 def genericModule(request):
     context = {}
-
     return render(request, "ofricModule/genericModule.html", context)
 
-
-
 def newordershod(request):
+    """
+    This function is used to approve the order by HOD.
+    It takes the id of the order as input and then checks for the existence of the order.
+    If the order exists, it sets the HOD_approve_tag to 1 and then saves the order.
+    If the order does not exist, it returns an error message.
+    It also sends a message to the user about the status of the order.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    """
     print("hello2")
     #this one creates and stores the data in django forms
     print("new ord caled")
@@ -1168,6 +1402,16 @@ def newordershod(request):
     return HttpResponse("you are the best ")
 
 def newordersregistrar(request):
+    '''
+    This function is used to approve the new orders by registrar.
+    It takes the request from the user and checks if the request is post or not.
+    If the request is post then it takes the object id from the request and checks if the object exists in the database or not.
+    If the object exists then it sets the registrar_approve_tag to 1 and director_approve_tag to 1.
+    Then it saves the object and returns a string message to the user.
+    If the object does not exist then it returns a string message to the user.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    '''
     print("hello2")
     #this one creates and stores the data in django forms
     print("new ord caled")
@@ -1189,6 +1433,16 @@ def newordersregistrar(request):
     return HttpResponse("you are the best ")
 
 def newordersregistrar2(request):
+    """
+    This function is used to approve the new orders by registrar.
+    It takes the request from the user and checks if the request is post or not.
+    If the request is post then it takes the object id from the form and checks if the object exists in the database or not.
+    If the object exists then it sets the registrar_approve_tag to 1 and saves the object.
+    If the object does not exist then it returns a message saying that the object does not exist.
+    If the request is not post then it returns a message saying that the request is not post.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    """
     print("hello2")
     #this one creates and stores the data in django forms
     print("new ord caled")
@@ -1208,8 +1462,17 @@ def newordersregistrar2(request):
             print("model not exists")
     return HttpResponse("you are the best ")
 
-
 def newordersdirector(request):
+    """
+    This function is used to approve the orders by the director.
+    It takes the request from the user and checks if the request is post or not.
+    If the request is post then it takes the id of the order and checks if the order exists or not.
+    If the order exists then it sets the director_approve_tag to 1 and saves the order.
+    If the order does not exist then it returns a message saying that the order does not exist.
+    If the request is not post then it returns a message saying that the request is not post.
+    @param request: Request Object contains the request to the page.
+    @return: Response Object containing appropriate response.
+    """
     print("hello2")
     #this one creates and stores the data in django forms
     print("new ord caled")
@@ -1231,6 +1494,16 @@ def newordersdirector(request):
 
 #on operation
 def newordersdirectorview(request):
+    """
+    This function is used to view the details of the orders placed by the different
+    indentors.
+    It takes a request as an input and returns the details of the orders placed by the
+    indentors.
+    It also takes the id of the order as an input and returns the details of the order
+    with the given id.
+    If the order with the given id is not found, it returns a message as an output.
+    If the order is found, it returns the details of the order as an output.
+    """
     print("metoo")
     #return HttpResponse("pis of")
     if request.method=='POST':
@@ -1245,9 +1518,12 @@ def newordersdirectorview(request):
         print("model not exists")
     return render(request, "officeModule/officeOfPurchaseOfficer/viewordersdirector.html",context=context)
 
-
-
 def newordersPO(request):
+    """
+    This function is used to update the status of the purchase order to new order.
+    It takes the id of the purchase order as input and updates the status of the purchase order to new order.
+    It returns a string "you are the best"
+    """
     if request.method=='POST':
         objid = request.POST.get('id')
         print(objid)
@@ -1260,6 +1536,11 @@ def newordersPO(request):
     return HttpResponse("you are the best ")
 
 def newordersPOonGem(request):
+    """
+    This function is used to update the status of the purchase order to the gem.
+    It takes the id of the purchase order as the input and updates the status of the purchase order to the gem.
+    It returns a string "you are the best"
+    """
     if request.method=='POST':
         objid = request.POST.get('id')
         print(objid)
@@ -1271,11 +1552,12 @@ def newordersPOonGem(request):
             print("model not exists")
     return HttpResponse("you are the best ")
 
-
-
 @login_required
-
 def apply_purchase(request):
+    """
+    This function is used to apply for purchase.
+    It takes request as an argument and returns the arguments.
+    """
     print("hello")
     #
 #    user = get_object_or_404(User,username=request.user.username)
@@ -1362,13 +1644,16 @@ def apply_purchase(request):
     else:
         return HttpResponseRedirect('/office/officeOfPurchaseOfficer/')
 
-
-
-
-
 @login_required
-
 def add_items(request):
+    """
+    Adds an item to the inventory.
+    Parameters:
+        request (HttpRequest): An HTTP Request objects which has the item details.
+    Returns:
+        HttpResponse: An HTTP Response message.
+    
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     print(current_user)
     user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
@@ -1403,22 +1688,27 @@ def add_items(request):
     else:
         return render(request, "officeModule/officeOfPurchaseOfficer/manageStore_content2.html",{})
 
-
-
 @login_required
-
 def view_items(request):
     return HttpResponse(1)
 
 
 def submit(request):
     context = {}
-
     return render(request, "officeModule/officeOfHOD/view_details.html", context)
-
 
 @login_required
 def after_purchase(request):
+    """
+    This function is used to update the amount and invoice number of the purchase after the purchase is done.
+    The function takes a POST request as its parameter.
+    On submission of the form, the function updates the amount and invoice number of the purchase.
+    The function then redirects to the after_purchase page.
+    Parameters:
+        request (HttpRequest): An HTTP Request objects which has the item details.
+    Returns:
+        HttpResponse: An HTTP Response message.
+    """
     if request.method == 'POST':
         '''if "submit" in request.POST:'''
         file_no=request.POST.get('file_no')
@@ -1430,9 +1720,19 @@ def after_purchase(request):
     else:
         return render(request, "officeModule/officeOfPurchaseOfficer/after_purchase.html",{})
 
-
-
 def officeOfPurchaseOfficer(request):
+    """
+    This function is used to render the template for the office of the purchase officer.
+    It takes request from the user and checks the designation of the user.
+   Ex.  If the designation is purchase officer, it renders the template for the purchase officer.
+   Ex. If the designation is not purchase officer, it redirects to the home page.
+   Ex. If the designation is HOD, it renders the template for the HOD.
+   Ex. If the designation is not HOD, it redirects to the home page.
+   Ex. If the designation is registrar, it renders the template for the registrar.
+    @param request: An HTTP Request object.
+    @return: An HTTP Response object.
+
+    """
     context={}
     current_user = get_object_or_404(User, username=request.user.username)
     #print(current_user)
@@ -1647,6 +1947,17 @@ def officeOfPurchaseOfficer(request):
     return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'p':p,'q':q,'ph':ph,'utype':utype,'utype2':utype2,'utype3':utype3,'des':user_type})
 
 def delete_item(request,id):
+    """
+    Deletes an item from the database.
+
+    @Parameters:
+        request (HttpRequest): An HTTP Request object.
+        id (int): The id of the item to be deleted.
+
+    @Returns:
+        HttpResponse: Directs the user to different pages, depending on the button clicked.
+    
+    """
     #template = 'officemodule/officeOfPurchaseOfficer/manageStore_content1.html'
     print("reached delete_item")
     if request.method=='POST':
@@ -1659,6 +1970,12 @@ def delete_item(request,id):
     return HttpResponse("Deleted successfully")
 
 def delete_vendor(request,id):
+    """
+    This function is used to delete the vendor.
+    It has one parameter named request.
+    @param request: It is an http request.
+    @return: It returns the response.
+    """
     #template = 'officemodule/officeOfPurchaseOfficerr/manageStore_content1.html'
     print(">>>>>>>")
     print(id)
@@ -1667,8 +1984,13 @@ def delete_vendor(request,id):
     return HttpResponse("Deleted successfully")
 
 def edit_vendor(request,id):
-
-
+    """
+    This function is used to edit the vendor details.
+    It takes the id of the vendor as the parameter and
+    returns the vendor details in the form of a html page.
+    It also returns the vendor details in a dictionary format
+    to the html page.
+    """
     p= get_object_or_404(vendor,id=id)
     context={
         'p' : p
@@ -2184,10 +2506,8 @@ def viewHOD(request):
 
 
 def officeOfDeanAcademics(request):
-
     student= Student.objects.all()
     instructor = Curriculum_Instructor.objects.all()
-
     spi=Spi.objects.select_related('student_id__id__user','student_id__id__department').all()
     grades=Grades.objects.all()
     course=Course.objects.all()
@@ -2202,6 +2522,9 @@ def officeOfDeanAcademics(request):
     for i in designation:
         all_designation.append(str(i.designation))
 
+
+
+
     context = {'student':student,
                 'instructor':instructor,
                 'assistantship':assistantship,
@@ -2212,7 +2535,6 @@ def officeOfDeanAcademics(request):
                 'meetingMinutes':minutes,
                 'final_minutes':final_minutes,
                 'all_desig':all_designation,}
-    
     user_name=get_object_or_404(User,username=request.user.username)
     user=ExtraInfo.objects.select_related('user','department').all().filter(user=user_name).first()
     holds=HoldsDesignation.objects.select_related('user','designation','working').filter(user=user.user)
@@ -2223,9 +2545,6 @@ def officeOfDeanAcademics(request):
         return render(request, "officeModule/officeOfDeanAcademics/officeOfDeanAcademics.html", context)
     else:
         return render(request, "officeModule/directorOffice/unauthorised.html", context)
-    
-   
-
 def assistantship(request):
     # print(request.POST.getlist('check'))
     ob=Assistantship.objects.all()
@@ -2253,8 +2572,8 @@ def scholarshipform(request):
     return HttpResponseRedirect('/office/officeOfDeanAcademics')
 
 def formsubmit(request):
-    a = request.POST.get('example');
-    comment = request.POST.get('comment');
+    a = request.POST.get('example')
+    comment = request.POST.get('comment')
     obj = Assistantship.objects.get(pk=a)
     if "approve" in request.POST:
         obj.action=1

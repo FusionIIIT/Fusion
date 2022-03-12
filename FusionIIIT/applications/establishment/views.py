@@ -1333,9 +1333,9 @@ def update_appraisal_lists(request):
 @login_required(login_url='/accounts/login')
 def establishment(request):
     """
-        Renders HR1 home page.
+        Renders ltc.
     """
-    return render(request, 'establishment/hr1.html')
+    return ltc(request)
 
 
 @login_required(login_url='/accounts/login')
@@ -1415,5 +1415,4 @@ def appraisal(request):
     if is_admin(request):
         response.update(generate_appraisal_lists_admin(request))
     response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
-    
     return render(request, 'establishment/hr1_form.html', response)

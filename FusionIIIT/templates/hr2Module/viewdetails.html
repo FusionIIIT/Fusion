@@ -116,15 +116,8 @@ Module
 
             <a class=" active item" data-tab="fifth">E-serviceBook</a>
 
-            <!-- <a class="item" data-tab="fourth">Appraisal form</a> -->
+            <a class="item" data-tab="fourth">Appraisal form</a>
         </div>
-
-
-
-
-
-
-
 
         <div class="ui bottom attached active tab segment" data-tab="fifth">
             <div id="textSegmentDiv">
@@ -295,13 +288,14 @@ Module
                                         <thead>
                                             <th>Lien :-</th>
                                             <tr>
-                                                <th>Sr.</th>
+                                                <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
                                                 <th>Job Title</th>
                                                 <th>Organisation</th>
                                                 <th>Description</th>
-
+                                                <th>Salary Source</th>
+                                                <th>Designation</th>
 
                                             </tr>
 
@@ -320,15 +314,16 @@ Module
 
 
                                             <tr>
-                                                <td>
+                                                <!-- <td>
                                                     {{forloop.counter }}.
-                                                </td>
+                                                </td> -->
                                                 <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
                                                 <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
-
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.salary_source}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.designation}}</td>
 
                                             </tr>
 
@@ -358,13 +353,14 @@ Module
                                         <thead>
                                             <th>Deputation :-</th>
                                             <tr>
-                                                <th>Sr.</th>
+                                                <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
                                                 <th>Job Title</th>
                                                 <th>Organisation</th>
                                                 <th>Description</th>
-
+                                                <th>Salary Source</th>
+                                                <th>Designation</th>
                                             </tr>
 
                                         </thead>
@@ -381,16 +377,16 @@ Module
 
 
                                             <tr>
-                                                <td>
-                                                    {{forloop.counter }}.
-                                                </td>
+                                                <!-- <td>
+                                                    {{forloop.counter}}.
+                                                </td> -->
                                                 <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
                                                 <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
-
-
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.salary_source}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.designation}}</td>
                                             </tr>
 
                                             {% endfor %}
@@ -422,14 +418,14 @@ Module
                                         <thead>
                                             <th>Others :-</th>
                                             <tr>
-                                                <th>Sr.</th>
+                                                <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
                                                 <th>Job Title</th>
                                                 <th>Organisation</th>
                                                 <th>Description</th>
-
-
+                                                <th>Salary Source</th>
+                                                <th>Designation</th>
                                             </tr>
 
                                         </thead>
@@ -448,16 +444,16 @@ Module
 
 
                                             <tr>
-                                                <td>
+                                                <!-- <td>
                                                     {{forloop.counter }}.
-                                                </td>
+                                                </td> -->
                                                 <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
                                                 <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
                                                 <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
-
-
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.salary_source}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.designation}}</td>
                                             </tr>
 
                                             {% endfor %}
@@ -498,12 +494,83 @@ Module
 
         </div>
 
+        <div class="ui bottom attached tab segment" data-tab="fourth">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    {% if not appraisalForm %}
+                    No entry found
+                    {% endif%}
+
+                    {% for appraisal in appraisalForm %}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                        <tr>
+                                            <!-- <td><a href=""></a></td> -->
+                                            <td>Name</td>
+                                            <td>{{appraisal.extra_info.user.first_name}}
+                                                {{appraisal.extra_info.user.last_name}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Year</td>
+                                            <td>{{appraisal.year}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Appraisal Form</td>
+                                            <td>
+                                                <a class="ui inverted circular icon button" style="margin: auto;"
+                                                    target="_blank" href="{{appraisal.appraisal_form.url }}">
+                                                    <i class="large attach black icon"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
 
 
 
 
 
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
 
+
+
+                </div>
+            </div>
+
+        </div>
 
     </div>
 
