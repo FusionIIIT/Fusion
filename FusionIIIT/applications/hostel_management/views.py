@@ -38,9 +38,7 @@ def hostel_view(request, context={}):
         all_hall - stores all the hall of residence
         all_notice - stores all notices of hostels (latest first)
     """
-    # hall_1_student = Student.objects.filter(hall_no=1)
-    # hall_3_student = Student.objects.filter(hall_no=3)
-    # hall_4_student = Student.objects.filter(hall_no=4)
+    
     all_hall = Hall.objects.all()
     halls_student = {}
     for hall in all_hall:
@@ -93,9 +91,7 @@ def hostel_view(request, context={}):
         worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
 
     context = {
-        # 'hall_1_student': hall_1_student,
-        # 'hall_3_student': hall_3_student,
-        # 'hall_4_student': hall_4_student,
+        
         'all_hall': all_hall,
         'all_notice': all_notice,
         'staff':Staff_obj,
