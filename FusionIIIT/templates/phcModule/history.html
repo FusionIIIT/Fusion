@@ -146,10 +146,10 @@
                         {{ambulance.end_date}}
                     </td>
 					<td>
-
-                        <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui red button" />
-
-                    </td> 
+                        {% if ambulance.end_date >= curr_date %}
+                           <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui red button" />
+                        {% endif %}
+                    </td>  
                 </tr>
                 {% endfor %}
                 </tbody>

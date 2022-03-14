@@ -1,19 +1,9 @@
-<form>
-  <div class="form-group">
-    <label for="userId">User ID</label>
-    <input type="text" class="form-control" id="userId" placeholder="Enter User ID">
-    <small id="emailHelp" class="form-text text-muted">Enter the User ID provided to you.</small>
-  </div>
-  <div class="form-group">
-    <label for="messOption">Mess Option</label>
-    <div class="custom-control custom-radio custom-control-inline">
-      <input type="radio" id="customRadioInline1" name="customRadioInline1" class="custom-control-input">
-      <label class="custom-control-label" for="customRadioInline1">Vegiterian Mess</label>
-    </div>
-    <div class="custom-control custom-radio custom-control-inline">
-      <input type="radio" id="customRadioInline2" name="customRadioInline1" class="custom-control-input">
-      <label class="custom-control-label" for="customRadioInline2">Non Vegiterian Mess</label>
-    </div>
-  </div>
+{% extends 'globals/base.html' %}
+
+{% block body %}
+<form action="{% url 'mess:info' %}" method="post">
+  {% csrf_token %}
+  {{ form }}
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+{% endblock %}

@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block ltc %}
@@ -30,6 +33,7 @@
     color: red;
   }
 </style>
+
 <!--
 pending ltc applications
 -->
@@ -37,7 +41,7 @@ pending ltc applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in ltc_pending_apps %}
+            {% for app in ltc_pending_apps %}
                 {% if app.tracking_info.review_status == 'to_assign' %}
                     <div class="item">
                         <div class="content">
@@ -149,6 +153,9 @@ pending ltc applications
                         </div>
                     </div>
                 {% endif %}
+                {% empty %}
+                        <tr><td colspan="3">No Pending Application</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -262,7 +269,9 @@ under_review ltc applications
                             </div>
                         </div>
                     </div>
-                    
+                    {% empty %}
+                        <tr><td colspan="3">No Under Review Application</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -276,7 +285,7 @@ reviewed ltc applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in ltc_pending_apps %}
+            {% for app in ltc_pending_apps %}
                 {% if app.tracking_info.review_status == 'reviewed' %}
                     <div class="item">
                         <div class="content">
@@ -379,6 +388,9 @@ reviewed ltc applications
                         </div>
                     </div>
                 {% endif %}
+                {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -494,6 +506,9 @@ archived ltc applications
                             </div>
                         </div>
                     </div>
+                    {% empty %}
+                        <tr><td colspan="3">No Archive Application</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -646,6 +661,9 @@ archived ltc applications
                             </div>
                         </div>
                     </div>
+                    {% empty %}
+                        <tr><td colspan="3">No Existing User</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -654,6 +672,8 @@ archived ltc applications
 
 
 {% endblock %}
+{% endblock %}
+
 {% block javascript %}
 <script>
 

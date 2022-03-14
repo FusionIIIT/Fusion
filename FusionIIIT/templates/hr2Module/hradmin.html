@@ -138,7 +138,7 @@ Module
                                 <div class="ui action input">
                                     <input type="text" name="search" placeholder="Search...">
                                     <button type="submit" class="ui button"><i class="search icon"></i></button>
-                                    <button type="reset" class="ui button"><i class="cross-icon">✕</i></button>
+                                    <button onclick="history.back()" class="ui button">✕</button>
                                 </div>
                                 <div class="results"></div>
                             </div>
@@ -164,8 +164,9 @@ Module
                                     </a>
                                 </div>
                                 <div class="meta">
-                                    Details updated 6hrs ago
-
+                                    <!-- This will need to be added to models and then migrated -->
+                                    <!-- date_modified = models.DateTimeField(auto_now=True) -->
+                                    Last updated on {{emp.user.extrainfo.date_of_birth}}
                                 </div>
 
                                 <!-- <div class="description">

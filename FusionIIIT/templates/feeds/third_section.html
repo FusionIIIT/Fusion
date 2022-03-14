@@ -4,7 +4,7 @@
         {% comment %} <div class="ui vertical buttons"> {% endcomment %}
             <button class="ui inverted  red button" id="modal-script">
             {% ifequal request.path "/feeds/admin" %}
-                {% if isAdmin or administrativeRole %}
+                {% if is_admin or administrative_role %}
                 Post update
                 {% else %}
                 Ask a Question?
@@ -35,7 +35,7 @@
             </div>
 
             <div class="ui divider"></div>
-            
+
             <div class="ui left labeled button" tabindex="0">
                 <a class="ui basic right pointing label" href={% url 'feeds:profile' request.user.username %}>
                     Show Activity
@@ -134,7 +134,7 @@
                     </div>
                 </div>
                 {% ifequal request.path "/feeds/admin" %}
-                    {% if isAdmin or administrativeRole %}
+                    {% if is_admin or administrative_role %}
                         <input type="text" id="from_admin" name="from_admin" value="from_admin" hidden>
                         <div class="field">
                             <div class="ui black checkbox">
