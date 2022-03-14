@@ -13,14 +13,13 @@
         </div>
     </div>
 
-
+{% if user in hall_caretaker %}
 <div class="right menu">
-  {% if user in hall_caretaker%}
     <a class="item" data-tab="add_student">
         <i class="edit icon"></i>Edit Student
     </a>
-  {% endif %}
 </div>
+{% endif %}
 
 </div>
 
