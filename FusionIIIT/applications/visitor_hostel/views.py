@@ -2,6 +2,7 @@ import datetime
 from datetime import date
 import xlrd
 import os
+import sys
 
 from django.core.files.storage import FileSystemStorage
 
@@ -284,7 +285,7 @@ def get_active_bookings(request):
 
 @login_required(login_url='/accounts/login/')
 def get_inactive_bookings(request):
-    if request.method == 'POST':
+    if request.method == 'POST' :
         inactive_bookings = BookingDetail.objects.select_related('intender','caretaker').filter(
             Q(status="Cancelled") | Q(status="Rejected") | Q(status="Complete"))
 
@@ -314,8 +315,10 @@ def request_booking(request):
         # getting details from request form
         intender = request.POST.get('intender')
         user = User.objects.get(id=intender)
+        print("jiihuhhih")
+        print(user)
         booking_id =  request.POST.get('booking-id')
-        category = request.POST.get('category')
+        category = request.POST.get('visitor-category')
         person_count = request.POST.get('number-of-people')
         bookingObject = []
         #if person_count and (int(person_count)<20):
@@ -333,33 +336,49 @@ def request_booking(request):
         remarks_during_booking_request = request.POST.get('remarks_during_booking_request')
         bill_to_be_settled_by = request.POST.get('bill_settlement')
         number_of_rooms = request.POST.get('number-of-rooms')
+        caretaker = 'shailesh'
 
      #   if (int(person_count)<int(number_of_rooms)):
       #      flag=1
 
       #  if flag ==0:
+        print(sys.getsizeof(arrival_tim0e))
+        print(sys.getsizeof(booking_from))
+        print(sys.getsizeof(purpose_of_visit))
+        print(sys.getsizeof(bill_to_be_settled_by))
+
         bookingObject = BookingDetail.objects.create(
+                                                     caretaker_id = 1812601,
                                                      purpose=purpose_of_visit,
                                                      intender=user,
                                                      booking_from=booking_from,
                                                      booking_to=booking_to,
                                                      visitor_category=category,
-                                                     person_count=number_of_people,
-                                                     category = category,
+                                                     person_count=person_count,
                                                      arrival_time=booking_from_time,
                                                      departure_time=booking_to_time,
-                                                     remark=remarks_during_booking_request,
+                                                     #remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
-                                                     bill_to_be_settled_by=bill_settlement)
-
-       
+                                                     bill_to_be_settled_by=bill_to_be_settled_by)
+        print (bookingObject)
+        print("Hello")
+#        {% if messages %}
+#   {% for message in messages %}
+#     <div class="alert alert-dismissible alert-success">
+#       <button type="button" class="close" data-dismiss="alert">
+#       ×
+#       </button>
+#       <strong>{{message}}<strong>
+#     </div>
+#  {% endfor %}
+# {% endif %}
 
         # in case of any attachment
 
         doc = request.FILES.get('files-during-booking-request')
         remark=remarks_during_booking_request,
         if doc:
-            #print("hello")
+            print("hello")
             filename, file_extenstion = os.path.splitext(request.FILES.get('files-during-booking-request').booking_id)
             filename = booking_id
             full_path = settings.MEDIA_ROOT + "/VhImage/"
