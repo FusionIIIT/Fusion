@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import datetime
 import json
 from itertools import chain
@@ -315,9 +316,14 @@ def academic_procedures_student(request):
 
 
         try:
-            pre_registered_course = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
-            pre_registered_course_show = pre_registered_course
-
+            pre_registered_courses = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            pre_registered_course_show = {}
+            print(pre_registered_course_show)
+            for pre_registered_course in pre_registered_courses:
+                if(pre_registered_course.course_slot_id.name not in pre_registered_course_show):
+                    pre_registered_course_show[pre_registered_course.course_slot_id.name] = [{"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority}]
+                else:
+                    pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
         except Exception as e:
             pre_registered_course =  None
             pre_registered_course_show = None
@@ -407,8 +413,6 @@ def academic_procedures_student(request):
         
         Mess_bill = Monthly_bill.objects.filter(student_id = obj)
         Mess_pay = Payments.objects.filter(student_id = obj)
-        
-
         # Branch Change Form save
         if request.method=='POST':
             if True:
@@ -1195,6 +1199,8 @@ def get_acad_year(user_sem, year):
             acad_year = str(year-1) + "-" + str(year)
         return acad_year
 
+@login_required(login_url='/accounts/login')
+@transaction.atomic
 def pre_registration(request):
     if request.method == 'POST':
         try:
@@ -1202,44 +1208,57 @@ def pre_registration(request):
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
-            count = request.POST.get('ct')
-            count = int(count)
-            reg_curr=[]
-            for i in range(1, count+1):
-                i = str(i)
-                choice = "choice["+i+"]"
-                slot = "slot["+i+"]"
-                if request.POST.get(choice)!='0':
-                    course_id = Courses.objects.get(id = request.POST.get(choice))
-                    courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
+            
+            course_slots=request.POST.getlist("course_slot")
+
+            try:
+                student_registeration_check=get_student_registrtion_check(current_user,sem_id)
+                print(student_registeration_check)
+                if(student_registeration_check.pre_registration_flag==True):
+                    messages.error(request,"You have already registered for next semester")
+                    return HttpResponseRedirect('/academic-procedures/main')
+            except Exception as e:
+                print(e)
+
+            reg_curr = []
+
+            for course_slot in course_slots :
+                course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
+                for course_priority in course_priorities:
+                    priority_of_current_course,course_id = map(int,course_priority.split("-"))
+
+                    # get course id for the model
+                    course_id_for_model = Courses.objects.get(id = course_id)
+                    
                     p = InitialRegistration(
-                        course_id = course_id,
+                        course_id = course_id_for_model,
                         semester_id = sem_id,
                         student_id = current_user,
-                        course_slot_id = courseslot_id
-                        )
-                else:
-                    continue
-                reg_curr.append(p)
-            InitialRegistration.objects.bulk_create(reg_curr)
+                        course_slot_id = course_slot_id_for_model,
+                        priority = priority_of_current_course
+                    )
+                    reg_curr.append(p)
+
             try:
-                check = StudentRegistrationChecks(
+                InitialRegistration.objects.bulk_create(reg_curr)
+                registration_check = StudentRegistrationChecks(
                             student_id = current_user,
                             pre_registration_flag = True,
                             final_registration_flag = False,
                             semester_id = sem_id
                         )
-                check.save()
-                messages.info(request, 'Pre-Registration Successful')
+                registration_check.save()
+                messages.successs(request, "Successfully Registered.")
+                return HttpResponseRedirect('/academic-procedures/stu')
             except Exception as e:
-                return HttpResponseRedirect('/academic-procedures/main')
-
-            return HttpResponseRedirect('/academic-procedures/main')
+                messages.error(request, "Error in Registration.")
+                return HttpResponseRedirect('/academic-procedures/stu') 
         except Exception as e:
+            messages.error(request, "Error in Registration.")
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
-
 
 
 def get_student_registrtion_check(obj, sem):
