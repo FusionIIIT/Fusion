@@ -209,6 +209,7 @@ def placement(request):
 
 
     form5 = AddSchedule(initial={})
+    current3 = HoldsDesignation.objects.filter(Q(working=user, designation__name="acadadmin"))
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
@@ -473,6 +474,7 @@ def placement(request):
         'current': current,
         'current1': current1,
         'current2': current2,
+        'current3' : current3,
         'schedule_tab': schedule_tab,
         'schedules': schedules,
         'placementstatus': placementstatus,
@@ -932,6 +934,8 @@ def student_records(request):
     form9 = ManagePbiRecord(initial={})
     form11 = ManagePlacementRecord(initial={})
     form13 = SendInvite(initial={})
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="acadadmin"))
+    current3 = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
 
@@ -1213,8 +1217,10 @@ def student_records(request):
         'form9': form9,
         'form11': form11,
         'form13': form13,
+        'current' : current,
         'current1': current1,
         'current2': current2,
+        'current3' : current3,
         'mnplacement_tab': mnplacement_tab,
         'strecord_tab': strecord_tab,
         'students': students,
@@ -1880,6 +1886,7 @@ def placement_statistics(request):
     form2 = SearchPlacementRecord(initial={})
     form3 = SearchPbiRecord(initial={})
     form4 = SearchHigherRecord(initial={})
+    current3 = HoldsDesignation.objects.filter(Q(working=user, designation__name="acadadmin"))
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
@@ -2411,6 +2418,7 @@ def placement_statistics(request):
         'current'           :          current,
         'current1'          :         current1,
         'current2'          :         current2,
+        'current3'          :         current3,
         'statistics_tab'    :   statistics_tab,
         'pbirecord'         :        pbirecord,
         'placementrecord'   :  placementrecord,

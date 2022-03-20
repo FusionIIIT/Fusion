@@ -111,6 +111,13 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+                {% if current1 or current2 or current3 %} 
+                <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                  Student Records
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
