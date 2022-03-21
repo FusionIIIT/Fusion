@@ -836,6 +836,8 @@ def gen_course_list(request):
         return HttpResponse(obj, content_type='application/json')    
 
 # view where Admin verifies the registered courses of every student
+
+
 @login_required(login_url='/accounts/login')
 def verify_course(request):
     '''
@@ -855,9 +857,11 @@ def verify_course(request):
     '''
     if(request.POST):
         current_user = get_object_or_404(User, username=request.user.username)
-        user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+        user_details = ExtraInfo.objects.all().select_related(
+            'user', 'department').filter(user=current_user).first()
         desig_id = Designation.objects.all().filter(name='adminstrator').first()
-        temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
+        temp = HoldsDesignation.objects.all().select_related().filter(
+            designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
@@ -865,29 +869,33 @@ def verify_course(request):
         if (str(acadadmin) != str(final_user)):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
-        obj = ExtraInfo.objects.all().select_related('user','department').filter(id=roll_no).first()
+        obj = ExtraInfo.objects.all().select_related(
+            'user', 'department').filter(id=roll_no).first()
         firstname = obj.user.first_name
         lastname = obj.user.last_name
-        dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
-        obj2 = Student.objects.all().select_related('id','id__user','id__department').filter(id=roll_no).first()
-        obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj2)
+        dict2 = {'roll_no': roll_no,
+                 'firstname': firstname, 'lastname': lastname}
+        obj2 = Student.objects.all().select_related(
+            'id', 'id__user', 'id__department').filter(id=roll_no).first()
+        obj = Register.objects.all().select_related('curr_id', 'student_id', 'curr_id__course_id',
+                                                    'student_id__id', 'student_id__id__user', 'student_id__id__department').filter(student_id=obj2)
         curr_sem_id = obj2.curr_semester_no
         details = []
 
-        current_sem_courses = get_currently_registered_course(roll_no,curr_sem_id)
-
+        current_sem_courses = get_currently_registered_course(
+            roll_no, curr_sem_id)
 
         idd = obj2
         for z in current_sem_courses:
-            z=z[1]
-            course_code,course_name= str(z).split(" - ")
+            z = z[1]
+            course_code, course_name = str(z).split(" - ")
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
             k['reg_id'] = roll_no+" - "+course_code
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
-            courseobj2 = Courses.objects.all().filter(code = course_code)
+            courseobj2 = Courses.objects.all().filter(code=course_code)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
@@ -895,7 +903,6 @@ def verify_course(request):
                 k['sem'] = curr_sem_id
                 k['credits'] = p.credit
             details.append(k)
-
 
         year = demo_date.year
         month = demo_date.month
@@ -907,17 +914,38 @@ def verify_course(request):
             semflag = 2
         # TO DO Bdes
         date = {'year': yearr, 'semflag': semflag}
-
+        course_list = Courses.objects.all()
+        semester_list = Semester.objects.all()
         html = render_to_string('academic_procedures/studentCourses.html',
-                                    {'details': details,
-                            'dict2': dict2,
-                            'date': date}, request)
+                                {'details': details,
+                                 'dict2': dict2,
+                                 'course_list': course_list,
+                                 'semester_list': semester_list,
+                                 'date': date}, request)
 
         maindict = {'html': html}
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
 
 # view to generate all list of students
+
+
+# view to add Course for a student
+def acad_add_course(request):
+    if(request.method == "POST"):
+        course_id = request.POST["course_id"]
+        course = Courses.objects.get(id=course_id)
+        roll_no = request.POST['roll_no']
+        student = Student.objects.all().select_related(
+            'id', 'id__user', 'id__department').filter(id=roll_no).first()
+        sem_id = request.POST['semester_id']
+        semester = Semester.objects.get(id=sem_id)
+        cr = course_registration(
+            course_id=course, student_id=student, semester_id=semester)
+        cr.save()
+
+    return HttpResponseRedirect('/academic-procedures/')
+   
 
 
 
