@@ -160,16 +160,18 @@ class StudentRegistrationCheck(models.Model):
 class InitialRegistrations(models.Model):
 
 
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    semester = models.IntegerField()
+    course_id = models.ForeignKey(Courses, null=True, blank=True, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester,null=True, blank=True, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    batch = models.IntegerField(default =datetime.datetime.now().year )
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    timestamp = models.DateTimeField(default=timezone.now)
+    priority = models.IntegerField(blank=True,null=True)
 
     class Meta:
         db_table = 'InitialRegistrations'
     
     def __str__(self):
-        return str(self.curr_id) + "-" + str(self.student_id)
+        return str(self.semester_id) + "-" + str(self.student_id)
 
 
 class FinalRegistrations(models.Model):
@@ -651,7 +653,8 @@ class FeePayments(models.Model):
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
     transaction_id = models.CharField(max_length = 40)
-
+    fee_receipt = models.FileField(null=True,upload_to='fee_receipt/')
+    
     class Meta:
         db_table = 'FeePayments'
 

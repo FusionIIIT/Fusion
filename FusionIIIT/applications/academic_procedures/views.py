@@ -272,6 +272,7 @@ def academic_procedures_student(request):
         except Exception as e:
             next_sem_id = curr_sem_id
 
+        print("current sem id is ",curr_sem_id," next sem id is ",next_sem_id)
         student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
         student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
 
@@ -287,6 +288,9 @@ def academic_procedures_student(request):
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
         final_registration_flag = False
+
+       # print("student registration check ----------> ",student_registration_check_pre.pre_registration_flag)
+
         if(student_registration_check_pre):
             pre_registration_flag = student_registration_check_pre.pre_registration_flag
         if(student_registration_check_final):
@@ -327,6 +331,7 @@ def academic_procedures_student(request):
         except Exception as e:
             pre_registered_course =  None
             pre_registered_course_show = None
+
         try:
             final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
@@ -413,6 +418,7 @@ def academic_procedures_student(request):
         
         Mess_bill = Monthly_bill.objects.filter(student_id = obj)
         Mess_pay = Payments.objects.filter(student_id = obj)
+
         # Branch Change Form save
         if request.method=='POST':
             if True:
@@ -1236,7 +1242,8 @@ def pre_registration(request):
             current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
-            
+            #print("sem id recerived from form is ",sem_id)
+
             course_slots=request.POST.getlist("course_slot")
 
             try:
@@ -1246,7 +1253,8 @@ def pre_registration(request):
                     messages.error(request,"You have already registered for next semester")
                     return HttpResponseRedirect('/academic-procedures/main')
             except Exception as e:
-                print(e)
+                #print(e)
+                pass
 
             reg_curr = []
 
@@ -1296,6 +1304,8 @@ def get_student_registrtion_check(obj, sem):
 def final_registration(request):
     if request.method == 'POST':
         if request.POST.get('type_reg') == "register" :
+            print("------------> request post is ",request.POST)
+            print("----------- > request file ",request.FILES)
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
@@ -1309,6 +1319,8 @@ def final_registration(request):
 
                 mode = str(request.POST.get('mode'))
                 transaction_id = str(request.POST.get('transaction_id'))
+                fee_receipt = request.FILES['fee_receipt']
+                print("--------- > ",fee_receipt)
 
                 f_reg = []
                 for x in range(values_length):
@@ -1321,8 +1333,8 @@ def final_registration(request):
                                 semester_id=sem_id,
                                 student_id= current_user,
                                 course_slot_id = courseslot_id,
-                                verified = False
-                                )
+                                verified = False,
+                                )                                
                             f_reg.append(p)
                         else:
                             messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
@@ -1332,7 +1344,8 @@ def final_registration(request):
                     student_id = current_user,
                     semester_id = sem_id,
                     mode = mode,
-                    transaction_id = transaction_id
+                    transaction_id = transaction_id,
+                    fee_receipt = fee_receipt
                     )
                 obj.save()
                 try:
@@ -1913,7 +1926,7 @@ def acad_proced_global_context():
             'date': date,
             'query_option1': query_option1,
             'query_option2': query_option2,
-            'course_verification_date' : course_verification_date,
+            'course_verification_date' : True,
             'submitted_course_list' : submitted_course_list,
             'result_year' : result_year,
             'batch_grade_data' : batch_grade_data,
@@ -2131,6 +2144,8 @@ def student_list(request):
             try:
                 reg = StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem_id).first()
                 pay = FeePayments.objects.all().filter(student_id = obj, semester_id = sem_id).first()
+                pay_fee_receipt_short_path = '/media/fee_receipt/'+pay.fee_receipt.path.split('\\')[-1]
+                #print("======================== > ",pay_fee_receipt_short_path)
                 final = FinalRegistration.objects.all().filter(student_id = obj, semester_id = sem_id,verified = False)
             except Exception as e:
                 reg = None
@@ -2138,7 +2153,7 @@ def student_list(request):
                 final = None
             if reg:
                 if reg.final_registration_flag == True and final:
-                    student.append((obj,pay,final))
+                    student.append((obj,pay,final,pay_fee_receipt_short_path))
                 else:
                     continue
             else:
