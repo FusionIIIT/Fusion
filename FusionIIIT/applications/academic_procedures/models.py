@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
@@ -148,18 +148,6 @@ class MinimumCredits(models.Model):
 # THE THREE TABLES BELOW ARE OLD. PLEASE REFRAIN FROM USING THEM FURTHER.
 # USE THE TABLES AT THE BOTTOM OF THE FILE INSTEAD.
 class StudentRegistrationCheck(models.Model):
-    '''
-        Current Purpose : Deals with the students registration for a semester
-
-        ATTRIBUTES
-        student(academic_information.Student) - reference to the student
-        pre_registration_flag(Boolean) - to denote whether the pre registration is complete
-        final_registration_flag(Boolean) - to denote whether the final registration is complete
-        semester(Integer) - the semester for which the registration is relevant
-
-        
-    '''
-
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     pre_registration_flag = models.BooleanField(default = False)
     final_registration_flag = models.BooleanField(default = False)
@@ -609,7 +597,7 @@ class InitialRegistration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
     priority = models.IntegerField(blank=True,null=True)
-
+    
     class Meta:
         db_table = 'InitialRegistration'
 
@@ -693,6 +681,7 @@ class course_registration(models.Model):
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
     # grade = models.CharField(max_length=10)
+    #course_registration_year = models.IntegerField()
 
     class Meta:
         db_table = 'course_registration'
