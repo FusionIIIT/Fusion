@@ -37,7 +37,8 @@ class Constants:
         ('Online Payment','Online Payment'),
         ('NEFT','NEFT'),
         ('RTGS','RTGS'),
-        ('Bank Challan','Bank Challan')
+        ('Bank Challan','Bank Challan'),
+        ('Edu Loan','Edu Loan')
         )
 
     BRANCH = (

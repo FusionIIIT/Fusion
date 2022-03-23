@@ -1304,8 +1304,8 @@ def get_student_registrtion_check(obj, sem):
 def final_registration(request):
     if request.method == 'POST':
         if request.POST.get('type_reg') == "register" :
-            print("------------> request post is ",request.POST)
-            print("----------- > request file ",request.FILES)
+            #print("------------> request post is ",request.POST)
+            #print("----------- > request file ",request.FILES)
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
@@ -1320,7 +1320,7 @@ def final_registration(request):
                 mode = str(request.POST.get('mode'))
                 transaction_id = str(request.POST.get('transaction_id'))
                 fee_receipt = request.FILES['fee_receipt']
-                print("--------- > ",fee_receipt)
+                #print("--------- > ",fee_receipt)
 
                 f_reg = []
                 for x in range(values_length):
@@ -1926,7 +1926,7 @@ def acad_proced_global_context():
             'date': date,
             'query_option1': query_option1,
             'query_option2': query_option2,
-            'course_verification_date' : True,
+            'course_verification_date' : course_verification_date,
             'submitted_course_list' : submitted_course_list,
             'result_year' : result_year,
             'batch_grade_data' : batch_grade_data,
