@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (BranchChange, CoursesMtech, InitialRegistrations,
                      MinimumCredits, Register, Thesis,
-                     StudentRegistrationCheck, FinalRegistrations,
+                     StudentRegistrationCheck, FinalRegistrations,InitialRegistration,
                      ThesisTopicProcess, FeePayment, TeachingCreditRegistration,
                      SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,MessDue,Assistantship_status)
 
@@ -39,3 +39,4 @@ admin.site.register(PhDProgressExamination)
 admin.site.register(MTechGraduateSeminarReport)
 admin.site.register(MessDue)
 admin.site.register(Assistantship_status)
+admin.site.register(InitialRegistration)

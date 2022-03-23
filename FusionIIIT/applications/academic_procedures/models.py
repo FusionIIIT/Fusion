@@ -1,4 +1,5 @@
 import datetime
+from tkinter.tix import Tree
 
 from django.db import models
 
@@ -596,17 +597,20 @@ class InitialRegistration(models.Model):
             semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
             student_id(academic_information.Student) - reference to the student
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
+            timestamp - the time this entry was generated
+            priority - priority of the selected course from the list of courses for the corresponding course_slot_it
 
 
         
     '''
 
 
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, null=True, blank=True, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester,null = True, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    timestamp = models.DateTimeField( blank=True,null = True,default=timezone.now)
+    priority = models.IntegerField(blank=True,null=True)
 
     class Meta:
         db_table = 'InitialRegistration'
