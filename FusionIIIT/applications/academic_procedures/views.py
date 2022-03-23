@@ -296,7 +296,7 @@ def academic_procedures_student(request):
         if(student_registration_check_final):
             final_registration_flag = student_registration_check_final.final_registration_flag
 
-
+        # print(">>>>>>>>>>>>>>>>>>>>>>",student_registration_check_pre.pre_registration_flag)
         acad_year = get_acad_year(user_sem, year)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
 

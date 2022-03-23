@@ -1,4 +1,5 @@
 import datetime
+from tkinter.tix import Tree
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -586,7 +587,8 @@ class InitialRegistration(models.Model):
             semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
             student_id(academic_information.Student) - reference to the student
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
+            timestamp - the time this entry was generated
+            priority - priority of the selected course from the list of courses for the corresponding course_slot_it
 
 
         
