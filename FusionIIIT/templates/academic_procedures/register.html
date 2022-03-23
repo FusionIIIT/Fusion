@@ -62,31 +62,57 @@
     </B></CENTER>
     <center><a id="viewbtn" class="btn" onclick="view()">View Courses</a></center>
     <center><a id="hidebtn" class="btn2" onclick="hide()">Hide courses</a></center>
-    <table class="ui very basic collapsing celled sortable table " id="view" style="display:none" style="padding-left: 2.5%;
+    <CENTER>
+        <table class="ui very basic collapsing celled sortable table " id="view" style="display:none" style="padding-left: 2.5%;
                                     padding-right: 2.5%;
                                     padding-top: 1%;
                                     padding-bottom: 1.5%;
                                     margin: auto;">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Course ID</th>
-                <th>Course Name</th>
-                <th>Credits</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for items in pre_registered_course_show %}
-            <tr>
-                <td>{{forloop.counter}}.</td>
-                <td>{{ items.course_id.code }}
-                </td>
-                <td>{{ items.course_id.name}}</td>
-                <td>{{items.course_id.credit}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Course Slot</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course_slot,courses in pre_registered_course_show.items %}
+                <tr>
+                    <td>{{forloop.counter}}.</td>
+                    <td>{{course_slot}}</td>
+
+                    <td>
+                        {% for course in courses %}
+                        {{ course.course_code }}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.course_name}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.course_credit}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.priority}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </CENTER>
     {% else %}
     <form id='student_register' action='/academic-procedures/pre_registration/'>
         {% csrf_token %}
@@ -154,6 +180,13 @@
             </div>
         </div>
     </form>
+
+    <br>
+    <br>
+    <CENTER>
+        <p>You need minimum {{curr_sem.curriculum.min_credit}} credits for semester {{next_sem.semester_no}}</p>
+    </CENTER>
+
     {% endif %}
     {% else %}
     <B>
@@ -218,7 +251,7 @@
                 event.preventDefault();
                 var friendForm = $(this);
                 var posting = $.post(friendForm.attr('action'), friendForm.serialize());
-                //if success
+                // if success
                 posting.done(function (data) {
                     alert('You have successfully registered');
                     window.location = "/academic-procedures/stu";
