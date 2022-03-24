@@ -62,31 +62,57 @@
     </B></CENTER>
     <center><a id="viewbtn" class="btn" onclick="view()">View Courses</a></center>
     <center><a id="hidebtn" class="btn2" onclick="hide()">Hide courses</a></center>
-    <table class="ui very basic collapsing celled sortable table " id="view" style="display:none" style="padding-left: 2.5%;
+    <CENTER>
+        <table class="ui very basic collapsing celled sortable table " id="view" style="display:none" style="padding-left: 2.5%;
                                     padding-right: 2.5%;
                                     padding-top: 1%;
                                     padding-bottom: 1.5%;
                                     margin: auto;">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Course ID</th>
-                <th>Course Name</th>
-                <th>Credits</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for items in pre_registered_course_show %}
-            <tr>
-                <td>{{forloop.counter}}.</td>
-                <td>{{ items.course_id.code }}
-                </td>
-                <td>{{ items.course_id.name}}</td>
-                <td>{{items.course_id.credit}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Course Slot</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course_slot,courses in pre_registered_course_show.items %}
+                <tr>
+                    <td>{{forloop.counter}}.</td>
+                    <td>{{course_slot}}</td>
+
+                    <td>
+                        {% for course in courses %}
+                        {{ course.course_code }}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.course_name}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.course_credit}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for course in courses %}
+                        {{course.priority}}
+                        <br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </CENTER>
     {% else %}
     <form id='student_register' action='/academic-procedures/pre_registration/'>
         {% csrf_token %}
@@ -108,32 +134,37 @@
 
             <tbody>
                 <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
-                {% for item in next_sem_registration_courses %}
-                <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.id }}' hidden="True">
+                {% for course_slot in next_sem_registration_courses %}
+                <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
+                    data-value2='{{course_slot.type}}'>
                 <tr>
                     <td>{{forloop.counter}}.</td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.type}}</td>
+                    <td>{{course_slot.name}}</td>
+                    <td>{{course_slot.type}}</td>
                     <td>{{next_sem.semester_no}}
                         <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
                     </td>
-                    <td>{{item.courses.all.0.credit}} </td>
+                    <td class="credit_values">{{course_slot.courses.all.0.credit}} </td>
                     <td>
-                        {% if item.type == "Professional Core" %}
-                        <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                            {% for items in item.courses.all %}
-                            <option value='{{items.id}}' class="Prechoices" data-value2="{{items.credit}}" selected>
-                                {{items.code}}-{{ items.name }}</option>
+                        {% if course_slot.type == "Professional Core" %}
+                        <select class="ui dropdown" required="True" name="course_priority-{{course_slot.id}}">
+                            {% for course in course_slot.courses.all %}
+                            <option value='{{1}}-{{course.id}}' class="Prechoices" data-value2="{{course.credit}}"
+                                selected>
+                                {{course.code}}-{{ course.name }}</option>
                             {% endfor %}
                         </select>
                         {% else %}
-                        <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                            <option value="0">Select course</option>
-                            {% for items in item.courses.all %}
-                            <option value='{{items.id}}' class="Prechoices" data-value2="{{items.credit}}">
-                                {{items.code}}-{{ items.name }}</option>
+                        {% for course_choice in course_slot.courses.all %}
+                        <select class="ui dropdown" required="True" name="course_priority-{{course_slot.id}}">
+                            <option value="NULL">Choice {{forloop.counter}}</option>
+                            {% for course in course_slot.courses.all %}
+                            <option value='{{forloop.parentloop.counter}}-{{course.id}}' class="Prechoices"
+                                data-value2="{{course.credit}}">
+                                {{course.code}}-{{ course.name }}</option>
                             {% endfor %}
                         </select>
+                        {% endfor %}
                         {% endif %}
                     </td>
                 </tr>
@@ -149,6 +180,13 @@
             </div>
         </div>
     </form>
+
+    <br>
+    <br>
+    <CENTER>
+        <p>You need minimum {{curr_sem.curriculum.min_credit}} credits for semester {{next_sem.semester_no}}</p>
+    </CENTER>
+
     {% endif %}
     {% else %}
     <B>
@@ -171,41 +209,56 @@
 <script type="text/javascript">
     $(function () {
         $("#student_register").submit(function (event) {
-
+            event.preventDefault();
             var inp = document.getElementsByClassName("Prechoices");
             var count = 0;
-            for (var i = 0; i < inp.length; i++) {
-                if (inp[i].selected) {
-                    count = count + parseInt(inp[i].getAttribute("data-value2"));
+
+            let course_slots = document.getElementsByName("course_slot");
+            let credits = document.getElementsByClassName("credit_values");
+
+            for (let i = 0; i < course_slots.length; i++) {
+                let course_slot_id = course_slots[i].value;
+                let course_slot_type = course_slots[i].getAttribute("data-value2");
+                let course_priority = document.getElementsByName("course_priority-" + course_slot_id);
+                let unique_choices = new Set();
+
+                for (let j = 0; j < course_priority.length; j++) {
+                    if (!course_slot_type.startsWith("Optional") && course_priority[j].value == "NULL") {
+                        alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
+                        return false;
+                    }
+                    let selected_course = course_priority[j].value.split("-");
+                    unique_choices.add(selected_course[1]);
+                }
+
+                if (unique_choices.size > 0) {
+                    count = count + parseInt(credits[i].innerHTML);
+                }
+
+                if (unique_choices.size != course_priority.length) {
+                    alert("Please select unique courses for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
+                    return false;
                 }
             }
 
-            // if(inp[i].type=="radio" && inp[i].checked==true){
-            //     count = count + parseInt(inp[i].getAttribute("data-value2"));
-
-            // }
-
-
-
-
             alert("Total Credits for Registered Courses :" + count);
-            var min = parseInt(document.getElementById("mincr").value);
-            if (count <= min) {
-                alert("You Can't Register as Minimum Credits: " + min);
-                window.location = "/academic-procedures/main/"
+
+            var minimum_credits = parseInt(document.getElementById("mincr").value);
+            if (count < minimum_credits) {
+                alert("You Can't Register as Minimum Credits: " + minimum_credits);
+                return false;
             } else {
                 event.preventDefault();
                 var friendForm = $(this);
                 var posting = $.post(friendForm.attr('action'), friendForm.serialize());
-                // if success:
+                // if success
                 posting.done(function (data) {
                     alert('You have successfully registered');
-                    window.location = "/academic-procedures/main/";
+                    window.location = "/academic-procedures/stu";
                 });
-                // if failure
+                //if failure
                 posting.fail(function (data) {
                     alert('Registration Failed');
-                    window.location = "/academic-procedures/main/";
                 });
             }
         });
