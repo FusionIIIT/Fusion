@@ -95,10 +95,10 @@ def main_page(request):
 			exp_fin_years.append(fin_year)
 
 
-	income_history = Income.objects.all()
+	income_history = Income.objects.all().order_by("date_added")
 	income_history = income_history[::-1]
 
-	expenditure_history = Expenditure.objects.all()
+	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
 
 	fixed_attributes = FixedAttributes.objects.all()
@@ -422,15 +422,25 @@ def view_income_stats(request):
 		result = (temp
 			.values('source')
 			.annotate(amount=Sum('amount'))
-			.order_by('-amount')
+			.order_by('-date_added')
 			)
 		income_labels = []
 		income_data = []
+		
 		for each in result:
 			each['source'] = IncomeSource.objects.get(id=each['source']).income_source
 		for each in result:
 			income_labels.append(each['source'])
 			income_data.append(each['amount'])
+			income_map = dict()
+			i=0
+			for item in income_labels:
+				if(item in income_map):
+					income_map[item]=income_map[item]+income_data[i]
+				else:
+					income_map[item]=income_data[i]
+				i=i+1
+
 		return render(
 						request,
 						'../templates/incomeExpenditure/viewIncomeStats.html',
@@ -438,6 +448,7 @@ def view_income_stats(request):
 							'income_data':income_data,
 							'income_labels':income_labels,
 							'fin_year':fin_year,
+							'income_map':income_map,
 						})
 
 '''
@@ -472,6 +483,14 @@ def view_expenditure_stats(request):
 		for each in result:
 			expenditure_labels.append(each['spent_on'])
 			expenditure_data.append(each['amount'])
+			expenditure_map=dict()
+			i=0
+			for item in expenditure_labels:
+				if(item in expenditure_map):
+					expenditure_map[item]=expenditure_map[item]+expenditure_data[i]
+				else:
+					expenditure_map[item]=expenditure_data[i]
+				i=i+1
 		return render(
 						request,
 						'../templates/incomeExpenditure/viewExpenditureStats.html',
@@ -479,4 +498,68 @@ def view_expenditure_stats(request):
 							'expenditure_data':expenditure_data,
 							'expenditure_labels':expenditure_labels,
 							'fin_year':fin_year,
+							'expenditure_map':expenditure_map,
 						})
+def compare(request):
+	if(request.method == 'POST'):
+		year = request.POST.get('year')
+
+		start_date = year + "-04-01";
+		end_date = str(int(year)+1) + "-03-31";
+
+		fin_year = year + " - " + str(int(year)+1)
+		temp = Expenditure.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result = (temp
+			.values('spent_on')
+			.annotate(amount=Sum('amount'))
+			.order_by('-amount')
+			)
+		expenditure_labels = []
+		expenditure_data = []
+		for each in result:
+			each['spent_on'] = ExpenditureType.objects.get(id=each['spent_on']).expenditure_type
+		for each in result:
+			expenditure_labels.append(each['spent_on'])
+			expenditure_data.append(each['amount'])
+			expenditure_map=dict()
+			i=0
+			for item in expenditure_labels:
+				if(item in expenditure_map):
+					expenditure_map[item]=expenditure_map[item]+expenditure_data[i]
+				else:
+					expenditure_map[item]=expenditure_data[i]
+				i=i+1
+		temp = Income.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result1 = (temp
+			.values('source')
+			.annotate(amount=Sum('amount'))
+			.order_by('-date_added')
+			)
+		income_labels = []
+		income_data = []
+		
+		for each in result1:
+			each['source'] = IncomeSource.objects.get(id=each['source']).income_source
+		for each in result1:
+			income_labels.append(each['source'])
+			income_data.append(each['amount'])
+		income_map = dict()
+		i=0
+		for item in income_labels:
+			if(item in income_map):
+				income_map[item]=income_map[item]+income_data[i]
+			else:
+				income_map[item]=income_data[i]
+			i=i+1
+
+		return render(
+						request,
+						'../templates/incomeExpenditure/compare.html',
+						{
+							'fin_year':fin_year,
+							'expenditure_map':expenditure_map,
+							'income_map':income_map,
+						})
+		
