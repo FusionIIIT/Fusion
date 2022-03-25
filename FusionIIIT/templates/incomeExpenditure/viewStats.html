@@ -39,7 +39,7 @@
 <form id='compare' method='POST' action='/income-expenditure/compare/' target="_blank">{% csrf_token %}
   <div id="view_stats" class="field" style="border : 0">
     <h2>Compare Income And Expenditure</h2><br>
-  <select id='expenditure_year' class="ui dropdown" name="year">
+  <select id='compare_year' class="ui dropdown" name="year">
       <option value="">Select Financial Year</option>
 
      {% for year in exp_fin_years %}
@@ -68,6 +68,12 @@
 
   expenditure.addEventListener('submit', (event) => {
     if (expenditure_year.value === "") {
+      event.preventDefault();
+      alert("Please Select a Financial Year");
+    }
+  })
+  compare.addEventListener('submit', (event) => {
+    if (compare_year.value === "") {
       event.preventDefault();
       alert("Please Select a Financial Year");
     }
