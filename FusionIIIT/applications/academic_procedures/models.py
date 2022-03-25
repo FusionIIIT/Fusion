@@ -1,5 +1,4 @@
 import datetime
-from tkinter.tix import Tree
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
