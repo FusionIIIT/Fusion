@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^updateFixedValues/',views.updateFixedValues,name='fixed-values'),
     url(r'^viewIncomeStats/',views.view_income_stats,name='view-income-stats'),
     url(r'^viewExpenditureStats/',views.view_expenditure_stats,name='view-expenditure-stats'),
+    url(r'^compare/',views.compare,name='compare'),
 ]
