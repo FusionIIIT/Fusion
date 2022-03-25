@@ -33,11 +33,13 @@
         <td>
           {% for course in course_slot.courses.all %}
           {{course.code}}
+          <br>
           {% endfor %}
         </td>
         <td>
           {% for course in course_slot.courses.all %}
           {{course.name}}
+          <br>
           {% endfor %}
         </td>
       </tr>

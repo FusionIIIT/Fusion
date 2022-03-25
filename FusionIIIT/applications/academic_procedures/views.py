@@ -431,7 +431,7 @@ def academic_procedures_student(request):
                           {'details': details,
                            # 'calendar': calendar,
                             'currently_registered': currently_registered_course,
-                            'pre_registered_course' : pre_registered_course,
+                            'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
                             'final_registered_course' : final_registered_course,
                             'current_credits' : current_credits,
