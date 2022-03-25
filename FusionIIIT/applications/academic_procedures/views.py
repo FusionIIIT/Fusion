@@ -1,5 +1,4 @@
 from asyncio.log import logger
-import datetime
 import json
 from itertools import chain
 from io import BytesIO
@@ -30,7 +29,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
-                     MinimumCredits, Register, Thesis, FinalRegistration, ThesisTopicProcess,
+                     Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
