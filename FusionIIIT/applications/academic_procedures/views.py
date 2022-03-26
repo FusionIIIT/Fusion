@@ -72,11 +72,12 @@ def main(request):
 def academic_procedures(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-
+    print(current_user)
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
+    print(user_details)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-
+    print(des.designation)
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
@@ -127,7 +128,9 @@ def academic_procedures_faculty(request):
         return HttpResponseRedirect('/academic-procedures/main/')
 
     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
-        object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details)
+        print("lllll", user_details.pk)
+        object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details.pk)
+        print('object_faculty '+ str(object_faculty))
         month = int(demo_date.month)
         sem = []
         if month>=7 and month<=12:
