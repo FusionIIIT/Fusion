@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render,HttpResponse
 from django.contrib import messages
-from applications.research_procedures.models import Patent
+from applications.research_procedures.models import Patent, ResearchGroup
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.core.files.storage import FileSystemStorage
@@ -72,8 +72,11 @@ def patent_registration(request):
             research_procedures_notif(request.user,dean_rspc_user,"created")
             patent.status='Pending'
             patent.save()
+        else:
+            messages.error(request, 'Only Faculty can file patent')
     patents = Patent.objects.all() 
     context['patents'] = patents
+    context['research_groups'] = ResearchGroup.objects.all()
     return render(request ,"rs/research.html",context)
 
 #dean_rspc can update status of patent.   
@@ -105,5 +108,6 @@ def patent_status_update(request):
                 # Create a notification for the user about the patent status update
                 dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
                 research_procedures_notif(dean_rspc_user,patent.faculty_id.user,request.POST.get('status'))
-    patents = Patent.objects.all() 
+            else:
+                messages.error(request, 'Only Dean RSPC can update status of patent')
     return redirect(reverse("research_procedures:patent_registration"))
