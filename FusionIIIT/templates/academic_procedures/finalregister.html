@@ -59,10 +59,6 @@
 
 
     {% else %}
-    <center>
-        <a id="viewbtn1" class="btn" style="display: inline;">View Courses</a>
-        <a class="btn" id="change_reg" style="display: inline;">Change Courses</a>
-    </center>
     <div id="view_1">
         <form id='final_student_register' action='/academic-procedures/final_registration/' method="post" enctype="multipart/form-data">
             {% csrf_token %}
@@ -245,7 +241,7 @@
 
 
 
-    <form id='payment' action='/academic-procedures/final_registration/'>
+    {% comment %} <form id='payment' action='/academic-procedures/final_registration/'>
         {% csrf_token %}
 
 
@@ -261,7 +257,7 @@
             data-theme.color="#F37254"></script>
         <input type="hidden" custom="Hidden Element" name="hidden">
 
-    </form>
+    </form> {% endcomment %}
     {% endif %}
     {% else %}
     <CENTER>
