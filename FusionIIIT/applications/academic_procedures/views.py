@@ -1304,8 +1304,8 @@ def get_student_registrtion_check(obj, sem):
 def final_registration(request):
     if request.method == 'POST':
         if request.POST.get('type_reg') == "register" :
-            print("------------> request post is ",request.POST)
-            print("----------- > request file ",request.FILES)
+            #print("------------> request post is ",request.POST)
+            #print("----------- > request file ",request.FILES)
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
@@ -1320,7 +1320,7 @@ def final_registration(request):
                 mode = str(request.POST.get('mode'))
                 transaction_id = str(request.POST.get('transaction_id'))
                 fee_receipt = request.FILES['fee_receipt']
-                print("--------- > ",fee_receipt)
+                #print("--------- > ",fee_receipt)
 
                 f_reg = []
                 for x in range(values_length):
@@ -1416,6 +1416,96 @@ def final_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
+def allot_courses(request):
+    if user_check(request):
+        return HttpResponseRedirect('/academic-procedures/main')
+
+
+    try:
+        if request.method == 'POST' and request.FILES:
+            profiles=request.FILES['allotedCourses']
+            batch_id=request.POST['batch']
+            sem_no=int(request.POST['semester'])
+
+            batch=Batch.objects.get(id=batch_id)
+            sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
+
+            excel = xlrd.open_workbook(file_contents=profiles.read())
+            sheet=excel.sheet_by_index(0)
+            final_registrations=[]
+            for i in range(1,sheet.nrows):
+                roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                course_slot_name = sheet.cell_value(i,1)
+                course_code = sheet.cell_value(i,2)
+                course_name = sheet.cell_value(i,3)
+                print(">>>>>",roll_no,course_slot_name,course_code,course_name,type(roll_no))
+                user=User.objects.get(username=roll_no)
+                user_info = ExtraInfo.objects.get(user=user)
+                student = Student.objects.get(id=user_info)
+                course_slot=CourseSlot.objects.get(name=course_slot_name,semester=sem_id)
+                course = Courses.objects.get(code=course_code,name=course_name)
+
+                final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id)
+                print(i,final_registration)
+                final_registrations.append(final_registration)
+
+            try:
+                FinalRegistration.objects.bulk_create(final_registrations)
+                print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
+                messages.success(request, 'Successfully uploaded!')
+                return HttpResponseRedirect('/academic-procedures/main')
+                # return HttpResponse("Success")
+            except Exception as e:
+                print(">>>>>>>>>>>>>",e)
+                messages.error(request, 'Error: '+str(e))
+                return HttpResponseRedirect('/academic-procedures/main')
+                # return HttpResponse("Success")
+    except Exception as e:
+        print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
+        messages.error(request, 'Error: Query does not match. Please check if all the data input is in the correct format.')
+        return HttpResponseRedirect('/academic-procedures/main')
+        # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # return HttpResponse("Fail")
+
+
+
+
+
+@login_required
+def user_check(request):
+    """
+    This function is used to check the type of user.
+    It checkes the authentication of the user.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - get user from request 
+        user_details - extract details of user from database
+        desig_id - check for designation
+        acadadmin - designation for Acadadmin
+        final_user - final designation of request user
+
+    """
+    try:
+        current_user = get_object_or_404(User, username=request.user.username)
+        user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+        desig_id = Designation.objects.all().filter(name='acadadmin')
+        temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
+        acadadmin = temp.working
+        k = str(user_details).split()
+        final_user = k[2]
+    except Exception as e:
+        acadadmin=""
+        final_user=""
+        pass
+
+    if (str(acadadmin) != str(final_user)):
+        return True
+    else:
+        return False
 
 def get_cpi(id):
     obj =  Student.objects.select_related('id','id__user','id__department').get(id = id)
@@ -1926,7 +2016,7 @@ def acad_proced_global_context():
             'date': date,
             'query_option1': query_option1,
             'query_option2': query_option2,
-            'course_verification_date' : True,
+            'course_verification_date' : course_verification_date,
             'submitted_course_list' : submitted_course_list,
             'result_year' : result_year,
             'batch_grade_data' : batch_grade_data,
