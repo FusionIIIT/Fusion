@@ -68,10 +68,11 @@
                     <i class="ui ellipsis horizontal icon" style="color: grey;"></i>
                     <div class="ui menu">
                         {% if question.ques.user == request.user %}
+                            
                             <div class="ui item">
-                                <button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="{{question.ques.id}}" id="delete_post">
-                                <i class="trash alternate icon"></i> Delete Post
-                                </button>
+                                  <button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="{{question.ques.id}}" id="delete_post">
+                                  <i class="trash icon"> </i> Delete Post
+                                  </button>
                             </div>
 
                             <div class="ui item">
@@ -97,12 +98,12 @@
                                     {% csrf_token %}
                                         <a class="ui item">
                                             <button class="ui button" type="submit" name="delete" value="delete">
-                                            <i class="trash icon" id="delete"></i>Delete Post 
+                                            <i class="trash icon" id="delete"></i>Delete Post
                                             </button>
                                         </a>
                                     </form>
                                 </div>
-                            </div> 
+                            </div>
 
                                 <!-- Update Modal Starts here...... -->
                             <div class="ui modal" id="update_modal{{question.ques.id}}">
@@ -150,10 +151,10 @@
                                             <div class="field">
                                                 <div class="ui black checkbox">
                                                     {% if question.ques.anonymous_ask %}
-                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked"> 
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked">
                                                     <label>Ask Anonymously</label>
                                                     {% else %}
-                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" > 
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" >
                                                     <label>Ask Anonymously</label>
                                                     {% endif %}
                                                 </div>
@@ -204,7 +205,7 @@
                                     </form>
                                 </div>
                             </div>
-                            
+
                         {% endif %}
 
                         <div class="ui item">
@@ -230,12 +231,12 @@
                                 {% csrf_token %}
                                     <a class="ui item">
                                         <button class="ui button" type="submit" name="hide" value="hide">
-                                        <i class="trash icon" id="delete"></i>Hide Post for you 
+                                        <i class="trash icon" id="delete"></i>Hide Post for you
                                         </button>
                                     </a>
                                 </form>
                             </div>
-                        </div> 
+                        </div>
 
                     </div>
                 </div>
@@ -244,17 +245,17 @@
         </div>
 
         <div class="ui divider" style="line-height: 0.5;"></div>
-        
+
         <div class="ui grid">
             <div class="row grid">
                 <div class="grid one wide column">
                     <div class="row">
                     {% if question.isSpecial == 1 and not question.access.0.canVote%}
-                    <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}" 
+                    <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}"
                             style="cursor:not-allowed"></i>
                     {% else %}
-                        <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}" 
-                            onclick='upvote_post({{question.ques.id}})' 
+                        <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}"
+                            onclick='upvote_post({{question.ques.id}})'
                             style="cursor:pointer"></i>
                     {% endif %}
                     </div>
@@ -267,7 +268,7 @@
                             style="cursor:not-allowed"></i>
                     {% else %}
                         <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
-                            onclick='downvote_post({{question.ques.id}})' 
+                            onclick='downvote_post({{question.ques.id}})'
                             style="cursor:pointer"></i>
                     {% endif %}
                     </div>
@@ -285,7 +286,7 @@
                                 <a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
                             {% else %}
                                 <a href="{% url 'feeds:profile' question.ques.user.username%}">{{ question.ques.user.username }}</a>
-                            {% endif %} 
+                            {% endif %}
                             {{extra.department}}- <span style="color: grey;font-size:12px;">{{ question.ques.uploaded_at }}</span>
                         </a><br>
                     </div>
@@ -312,7 +313,7 @@
         {% csrf_token %}
             <a class="ui item">
                 <button class="ui button" type="submit" name="unhide" value="unhide">
-                <i class="eye icon" id="delete"></i>Click here Unhide 
+                <i class="eye icon" id="delete"></i>Click here Unhide
                 </button>
             </a>
         </form>
@@ -320,6 +321,6 @@
     {% endif %}
 
     {% endfor %}
-    
+
     {% include 'feeds/pagination.html' %}
 </div>
