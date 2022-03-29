@@ -60,8 +60,8 @@
                                                 {% for x in nonveg %}
                                                     {% if x.order_interval == 'Breakfast' %}
                                                 <div class="field">
-                                                    <input type="text" name="interval" value="Breakfast" hidden>
                                                     <div class="ui input">
+                                                    <input type="text" name="interval" value="Breakfast" hidden>
                                                         <input type="radio" name='dish' value='{{x.dish}}' id="dish">{{x.dish}} - {{x.price}}
                                                     </div>
                                                 </div>
@@ -76,6 +76,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
+                                            <!-- <div class="extra info">
+                                                The order will be placed for tomorrow !
+                                            </div> -->
                                         </div>
                                     </form>
                                 </div>
@@ -105,6 +108,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
+                                            <!-- <div class="extra info">
+                                                The order will be placed for tomorrow !
+                                            </div> -->
                                         </div>
                                     </form>
                                 </div>
@@ -135,9 +141,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
-                                            <div class="extra info">
+                                            <!-- <div class="extra info">
                                                 The order will be placed for tomorrow !
-                                            </div>
+                                            </div> -->
                                         </div>
                                     </form>
                                 </div>

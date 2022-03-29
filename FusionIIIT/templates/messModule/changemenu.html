@@ -28,6 +28,9 @@
 
 {#                                            <select class="ui fluid search selection dropdown" name="dish" id="dish">#}
                                             <select class="ui dropdown" name="dish" id="dish">
+                                                <option>
+                                                    Select Food Item
+                                                </option>
                                                 {% for item in menu %}
                                                 <option value="{{item.dish}}" id="{{item.pk}}">
                                                     {{item.dish}}-{{item.meal_time}}
