@@ -57,12 +57,12 @@
                             </td>
                             <td>
                                 {% for facul in research_group.faculty_under_group.all %}
-                                    <div>{{ facul.user.username }}</div>
+                                    <div>{{ facul.username }}</div>
                                 {% endfor %}
                             </td>
                             <td>
                                 {% for student in research_group.students_under_group.all %}
-                                    <div>{{ student.user.username }}</div>
+                                    <div>{{ student.username }}</div>
                                 {% endfor %}
                             <td>
                                 {{research_group.description}}

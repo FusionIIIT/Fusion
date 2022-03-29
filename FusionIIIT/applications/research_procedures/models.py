@@ -2,6 +2,7 @@
 from django.db import models
 from django.db import models
 from applications.globals.models import ExtraInfo
+from django.contrib.auth.models import User
 
 class Constants:
     RESPONSE_TYPE = (
@@ -39,8 +40,8 @@ class Patent(models.Model):
 
 class ResearchGroup(models.Model):
     name = models.CharField(max_length=50)
-    faculty_under_group = models.ManyToManyField(ExtraInfo,related_name="allfaculty")
-    students_under_group = models.ManyToManyField(ExtraInfo,related_name="allstudents")
+    faculty_under_group = models.ManyToManyField(User,related_name="allfaculty")
+    students_under_group = models.ManyToManyField(User,related_name="allstudents")
     description = models.TextField()
 
     def _str_(self):
