@@ -1,11 +1,12 @@
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import redirect, render,HttpResponse
 from django.contrib import messages
-from applications.research_procedures.models import Patent
+from applications.research_procedures.models import Patent, ResearchGroup
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.core.files.storage import FileSystemStorage
 from notification.views import research_procedures_notif
-
+from django.urls import reverse
+from .forms import ResearchGroupForm
 
 # Faculty can file patent and view status of it.
 def patent_registration(request):
@@ -71,8 +72,12 @@ def patent_registration(request):
             research_procedures_notif(request.user,dean_rspc_user,"created")
             patent.status='Pending'
             patent.save()
+        else:
+            messages.error(request, 'Only Faculty can file patent')
     patents = Patent.objects.all() 
     context['patents'] = patents
+    context['research_groups'] = ResearchGroup.objects.all()
+    context['research_group_form'] = ResearchGroupForm()
     return render(request ,"rs/research.html",context)
 
 #dean_rspc can update status of patent.   
@@ -100,11 +105,33 @@ def patent_status_update(request):
                 patent = Patent.objects.get(application_id=patent_application_id)
                 patent.status = request.POST.get('status')
                 patent.save()
-
+                messages.success(request, 'Patent status updated successfully')
                 # Create a notification for the user about the patent status update
                 dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
                 research_procedures_notif(dean_rspc_user,patent.faculty_id.user,request.POST.get('status'))
-    patents = Patent.objects.all() 
-    return render(request ,"rs/research.html",{'patents':patents,'user_extra_info':user_extra_info,'user_designations':user_designations})
+            else:
+                messages.error(request, 'Only Dean RSPC can update status of patent')
+    return redirect(reverse("research_procedures:patent_registration"))
 
-   
+def research_group_create(request):
+    """
+        This function is used to create a research group.
+        @param:
+            request - contains metadata about the requested page.
+        @variables:
+            user - the user who is currently logged in.
+            extrainfo - extra information of the user.
+            user_designations - The designations of the user currently logged in.
+            research_group - The research group to be created.
+            research_groups - All the research groups.
+            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
+    
+    """
+    user = request.user
+    if request.method=='POST':
+        form = ResearchGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # research_group.save()
+            messages.success(request, 'Research group created successfully')
+    return redirect(reverse("research_procedures:patent_registration"))

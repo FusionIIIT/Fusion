@@ -153,7 +153,7 @@ def submit_counselling_faq(request):
     :return:
         data: to record success or any errors
     """
-    
+    student = request.user
     data = add_counselling_faq(request, student)
     return JsonResponse(data)
 
