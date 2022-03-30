@@ -1,0 +1,41 @@
+{% load static %}
+{% block student_dashboard %}
+<div class="item" data-tab="ninth">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height:100vh; ">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Credits</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Credits</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Credits</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Credits</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                        <tr>
+                            <td><a href="{% url 'programme_curriculum:view_a_course' course.id %}">{{ course.code }}</a></td>
+                            <td>{{ course.name }}</td>
+                            <td>{{ course.credit }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Courses Avaliable</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
