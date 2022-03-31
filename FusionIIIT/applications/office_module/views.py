@@ -2541,10 +2541,11 @@ def officeOfDeanAcademics(request):
     deslist1=['Director']
 
 
-    if user.user_type == 'faculty': 
-        return render(request, "officeModule/officeOfDeanAcademics/officeOfDeanAcademics.html", context)
-    else:
-        return render(request, "officeModule/directorOffice/unauthorised.html", context)
+    # if user.user_type == 'faculty': 
+    return render(request, "officeModule/officeOfDeanAcademics/officeOfDeanAcademics.html", context)
+    # else:
+    # return render(request, "officeModule/directorOffice/unauthorised.html", context)
+    
 def assistantship(request):
     # print(request.POST.getlist('check'))
     ob=Assistantship.objects.all()
@@ -2559,7 +2560,7 @@ def init_assistantship(request):
     Time = request.POST.get('time')
     Venue = request.POST.get('venue')
     Agenda = request.POST.get('Agenda')
-    p=Meeting(title=title,venue=Venue,date=date,time=Time,agenda=Agenda);
+    p=Meeting(title=title,venue=Venue,date=date,time=Time,agenda=Agenda)
     p.save()
     return HttpResponseRedirect('/office/officeOfDeanAcademics')
 
