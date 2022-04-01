@@ -53,6 +53,8 @@ def filetracking(request):
                     upload_file=upload_file
                 )
 
+                messages.success(request,'File Draft Saved Successfully')
+
             if 'send' in request.POST:
                 uploader = request.user.extrainfo
                 subject = request.POST.get('title')
@@ -162,14 +164,31 @@ def fileview(request,id):
 
     
     """
-    draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(uploader=request.user.extrainfo).order_by('-upload_date')
+    # draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(uploader=request.user.extrainfo).order_by('-upload_date')
+    # extrainfo = ExtraInfo.objects.select_related('user','department').all()
+
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
+  
+    ids = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date').values_list('id', flat=True)
+    draft_files_pk=[]
+    
+    for i in ids: 
+       file_tracking_ids = Tracking.objects.filter(file_id=i).values_list('id', flat=True)
+       if(len(file_tracking_ids)==0):
+        draft_files_pk.append(i)
+    
+    draft_file_list=[]
+    for i in draft_files_pk:
+        draft_file_list.append(File.objects.get(pk=i))
+
+
+
     user_designation = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
     s = str(user_designation).split(" - ")
     designations = s[1]
     context = {
 
-        'draft': draft,
+        'draft': draft_file_list,
         'extrainfo': extrainfo,
         'designations': designations,
     }
@@ -442,7 +461,18 @@ def archive(request , id):
     return render(request, 'filetracking/archive.html' , context)
 
 
-## team 24
+@login_required(login_url = "/accounts/login")
+def archive_finish(request, id):
+    file1 = get_object_or_404(File, id=id) ##file = get_object_or_404(File, ref_id=id)
+    track = Tracking.objects.filter(file_id=file1)
+    
+
+
+    return render(request, 'filetracking/archive_finish.html', {'file': file1, 'track': track})
+
+
+
+
 @login_required(login_url = "/accounts/login")
 def finish_design(request):
 
@@ -486,6 +516,7 @@ def finish(request, id):
             if 'Finished' in request.POST:
                 File.objects.filter(pk=id).update(is_read=True)
                 track.update(is_read=True)
+                messages.success(request,'File Archived')
                 
                 
 

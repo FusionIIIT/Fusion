@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^finish_design/$', views.finish_design, name='finish_design'),
     url(r'^finish_fileview/(?P<id>\d+)$', views.finish_fileview, name='finish_fileview'),
     url(r'^archive_design/$', views.archive_design, name='archive_design'),
+    url(r'^archive_finish/(?P<id>\d+)/$', views.archive_finish, name='archive_finish'),
 ]
