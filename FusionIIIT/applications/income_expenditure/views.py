@@ -577,7 +577,7 @@ def otherExpense_view(request):
 		date= request.POST.get('date_spent')
 		remarks = request.POST.get('remarks')
 		status ="Not approved"
-		print("--------------------",spent_on,name,amount)
+		
 		new_e = otherExpense(
 						spent_on = spent_on,
 						status=status,
@@ -587,7 +587,7 @@ def otherExpense_view(request):
 						date_added = date,
 						remarks = remarks,
 						)
-		print("----------------------",new_e)
+		
 		new_e.save()
 		balanceSheet_table()
 	return redirect('main-page')
