@@ -331,7 +331,7 @@ def academic_procedures_student(request):
                 else:
                     pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
         except Exception as e:
-            pre_registered_course =  None
+            pre_registered_courses =  None
             pre_registered_course_show = None
 
         try:
@@ -434,7 +434,7 @@ def academic_procedures_student(request):
                           {'details': details,
                            # 'calendar': calendar,
                             'currently_registered': currently_registered_course,
-                            'pre_registered_course' : pre_registered_course,
+                            'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
                             'final_registered_course' : final_registered_course,
                             'current_credits' : current_credits,
@@ -2181,6 +2181,8 @@ def process_verification_request(request):
 
 @transaction.atomic
 def verify_registration(request):
+
+    print("printing post data from accepted registration ------------- >",request.POST)
     if request.POST.get('status_req') == "accept" :
         student_id = request.POST.get('student_id')
         student = Student.objects.get(id = student_id)
