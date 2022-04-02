@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -100,7 +100,9 @@ def main_page(request):
 
 	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
-
+	expense_history2 = otherExpense.objects.all().order_by("date_added")
+	expense_history2 = expense_history2[::-1]
+	expense_history= otherExpense.objects.filter(userid = request.user)
 	fixed_attributes = FixedAttributes.objects.all()
 
 	add_income_source()
@@ -138,6 +140,7 @@ def main_page(request):
 				{
 					'income_sources':income_sources,
 					'income_history':income_history,
+					'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
@@ -154,6 +157,7 @@ def main_page(request):
 				{
 					'fin_years':fin_years,
 					'min_date':min_date,
+					'expense_history':expense_history,
 					'max1_date':max_date,
 					'inc_fin_years':inc_fin_years,
 					'exp_fin_years':exp_fin_years,
@@ -504,10 +508,10 @@ def compare(request):
 	if(request.method == 'POST'):
 		year = request.POST.get('year')
 
-		start_date = year + "-04-01";
-		end_date = str(int(year)+1) + "-03-31";
+		start_date = year + "-04-01"
+		end_date = str(int(year)+1) + "-03-31"
 
-		fin_year = year + " - " + str(int(year)+1)
+		fin_year = str(int(year)) + " - " + str(int(year)+1)
 		temp = Expenditure.objects.filter(date_added__range=[start_date, end_date])
 		# temp = Income.objects.filter(date_added__year = 2021)
 		result = (temp
@@ -562,4 +566,59 @@ def compare(request):
 							'expenditure_map':expenditure_map,
 							'income_map':income_map,
 						})
-		
+
+
+
+def otherExpense_view(request):
+	if(request.method == 'POST'):
+		spent_on = request.POST.get('spent_on')
+		name = request.POST.get('name')
+		amount = request.POST.get('amount')
+		date= request.POST.get('date_spent')
+		remarks = request.POST.get('remarks')
+		status ="Not approved"
+		print("--------------------",spent_on,name,amount)
+		new_e = otherExpense(
+						spent_on = spent_on,
+						status=status,
+						name=name,
+						userid=request.user,
+						amount = amount,
+						date_added = date,
+						remarks = remarks,
+						)
+		print("----------------------",new_e)
+		new_e.save()
+		balanceSheet_table()
+	return redirect('main-page')
+
+def del_expense(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		otherExpense.objects.get(id=ex_id).delete()
+
+	return redirect('/income-expenditure/requests')
+def decline(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Declined"
+		obj.save()
+
+	return redirect('main-page')
+def approve(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Approved"
+		obj.save()
+
+	return redirect('main-page')
+def stb(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Transferred to Bank"
+		obj.save()
+
+	return redirect('main-page')
