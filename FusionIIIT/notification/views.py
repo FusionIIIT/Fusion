@@ -129,12 +129,13 @@ def healthcare_center_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def file_tracking_notif(sender, recipient, type):
-    url=''
+
+def file_tracking_notif(sender, recipient,title):
+    url='filetracking:inward'
     module='File Tracking'
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = title
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
