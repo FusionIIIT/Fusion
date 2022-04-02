@@ -279,61 +279,66 @@ def student_view(request):
 @login_required(login_url='/accounts/login')
 def staff_view(request):
     try:
-        assistant = Designation.objects.get(name='spacsassistant')
-        hd = HoldsDesignation.objects.get(
-            user=request.user, designation=assistant)
+        assistant = Designation.objects.get(
+            name='spacsassistant'
+        )
     except:
         return HttpResponseRedirect('/logout')
+
     if request.method == 'POST':
+
         if 'Verify_MCM' in request.POST:
-            pk = request.POST.get('id')
-            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='COMPLETE')
+            scholarship_key = request.POST.get('id')
+            Mcm.objects.select_related('award_id','student').filter(id=scholarship_key).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_MCM'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_MCM' in request.POST:
-            pk = request.POST.get('id')
-            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Reject')
+            scholarship_key = request.POST.get('id')
+            Mcm.objects.select_related('award_id','student').filter(id=scholarship_key).update(status='Reject')
             request.session['last_clicked'] = 'Reject_MCM'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_Gold' in request.POST:
-            pk = request.POST.get('id')
-            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
+            scholarship_key = request.POST.get('id')
+            Director_gold.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_Gold'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
+
         elif 'Reject_Gold' in request.POST:
-            pk = request.POST.get('id')
-            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
+            scholarship_key = request.POST.get('id')
+            Director_gold.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='Reject')
             request.session['last_clicked'] = 'Reject_Gold'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_Silver' in request.POST:
-            pk = request.POST.get('id')
-            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
+            scholarship_key = request.POST.get('id')
+            Director_silver.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_Silver'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
+
         elif 'Reject_Silver' in request.POST:
-            pk = request.POST.get('id')
-            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
+            scholarship_key = request.POST.get('id')
+            Director_silver.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='Reject')
             request.session['last_clicked'] = 'Reject_Silver'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_DM' in request.POST:
-            pk = request.POST.get('id')
-            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
+            scholarship_key = request.POST.get('id')
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_DM'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
+
         elif 'Reject_DM' in request.POST:
-            pk = request.POST.get('id')
-            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
+            scholarship_key = request.POST.get('id')
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=scholarship_key).update(status='Reject')
             request.session['last_clicked'] = 'Reject_DM'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
@@ -341,6 +346,7 @@ def staff_view(request):
         elif "SubmitPreviousWinner" in request.POST:
             winners_list = submitPreviousWinner(request)
             return sendStaffRenderRequest(request, {'winners_list':winners_list})
+
     else:
         return sendStaffRenderRequest(request)
 
@@ -393,13 +399,13 @@ def getWinners(request):
         for winner in winners:
 
             extra_info = ExtraInfo.objects.get(id=winner.student_id)
-            s_id = Student.objects.get(id=extra_info)
-            s_name = extra_info.user.first_name
-            s_roll = winner.student_id
-            s_program = s_id.programme
-            context['student_name'].append(s_name)
-            context['roll'].append(s_roll)
-            context['student_program'].append(s_program)
+            student_id = Student.objects.get(id=extra_info)
+            student_name = extra_info.user.first_name
+            student_roll = winner.student_id
+            student_program = student_id.programme
+            context['student_name'].append(student_name)
+            context['roll'].append(student_roll)
+            context['student_program'].append(student_program)
 
         context['result'] = 'Success'
 
@@ -446,6 +452,9 @@ def getContent(request):
         award = Award_and_scholarship.objects.get(award_name=award_name)
         context['result'] = 'Success'
         context['content'] = award.catalog
+        print(type(award.catalog))
+        # context['content'] = 'Hi'
+
     except:
         context['result'] = 'Failure'
     return HttpResponse(json.dumps(context), content_type='getContent/json')
@@ -462,11 +471,11 @@ def checkDate(start_date, end_date):
 
 def updateEndDate(request):
     id = request.GET.get('up_id')
-    end_dat = request.GET.get('up_d')
-    re = Release.objects.filter(pk=id).update(enddate=end_dat)
+    end_date = request.GET.get('up_d')
+    is_released = Release.objects.filter(pk=id).update(enddate=end_date)
     request.session['last_clicked'] = "Enddate_updated"
     context = {}
-    if re:
+    if is_released:
         context['result'] = 'Success'
     else:
         context['result'] = 'Failure'

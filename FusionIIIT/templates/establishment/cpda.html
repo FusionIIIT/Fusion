@@ -1,3 +1,6 @@
+{% extends 'establishment/common.html' %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block cpda %}
@@ -43,7 +46,7 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                     <br><br>
                     <b>Advance Limit</b> : Rs 3 Lakh per 3 year block
                     <br><br>
-                    <b>Max Eligible Amount : </b> : {{remaining_advance}}
+                    <b>Max Eligible Amount</b> : {{remaining_advance}}
                     <br>
 
                 </div>
@@ -152,6 +155,9 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                     </div>   
                     
                     <br>
+                    {% empty %}
+                        <tr><td colspan="3">No Active CPDA</td><tr>
+                        <hr>
                 {% endfor %}
 
                 {% for app_id, billform in cpda_billforms.items %}
@@ -276,6 +282,9 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                         
                     </div>
                     <br>
+                    {% empty %}
+                        <tr><td colspan="3">No Archive Available</td><tr>
+                        <hr>
                 {% endfor %}
             </div>
         </div>
@@ -284,6 +293,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
 
 
 
+{% endblock %}
 {% endblock %}
 
 {% block javascript %}

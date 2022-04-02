@@ -39,9 +39,9 @@
                 {% if stu %}
                         <div class="student_list" data="{{forloop.counter}}">
                         <table style="border-width: 0px;width: 100%">
-                            <td style="width: 20%">{{ stu.id.user }}</td>
-                            <td style="width: 40%">{{ stu.id.user.first_name   }} {{stu.id.user.last_name}}</td>
-                            <td style="width: 20%"> {{ stu.id.department.name  }}</td></td>
+                            <td style="width: 20%">{{ stu.rollno }}</td>
+                            <td style="width: 40%">{{ stu.name}}</td>
+                            <td style="width: 20%"> {{ stu.department}}</td></td>
                         </table>
                         </div>
                 {% endif %}

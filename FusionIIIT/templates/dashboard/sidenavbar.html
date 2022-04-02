@@ -59,6 +59,12 @@
                 <a class = "item" href="/establishment/">
                     <h4> Establishment Module </h4>
                 </a>
+                {% if request.user.extrainfo.user_type == 'faculty' %}
+                <a class = "item" href="/hr2/hradmin/">
+                    <h4> HR2 Module </h4>
+                </a>
+                {% endif %}
+                
                 <a class = "item" href="/library/library">
                     <h4> Library Module </h4>
                 </a>

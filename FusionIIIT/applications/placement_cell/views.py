@@ -920,64 +920,180 @@ def student_records(request):
     '''
         function for searching the records of student
     '''
-    user = request.user
-    strecord_tab = 1
-    no_pagination = 0
-    is_disabled = 0
-    paginator = ''
-    page_range = ''
-    mnplacement_tab = 1
+    if request.user.is_staff==True:
+        user = request.user
+        strecord_tab = 1
+        no_pagination = 0
+        is_disabled = 0
+        paginator = ''
+        page_range = ''
+        mnplacement_tab = 1
 
-    form1 = SearchStudentRecord(initial={})
-    form9 = ManagePbiRecord(initial={})
-    form11 = ManagePlacementRecord(initial={})
-    form13 = SendInvite(initial={})
-    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
-    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+        form1 = SearchStudentRecord(initial={})
+        form9 = ManagePbiRecord(initial={})
+        form11 = ManagePlacementRecord(initial={})
+        form13 = SendInvite(initial={})
+        current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+        current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
 
-    # querying the students details a/c to the input data
-    if 'recordsubmit' in request.POST:
-        student_record_check = 1
-        form1 = SearchStudentRecord(request.POST)
-        if form1.is_valid():
-            if form1.cleaned_data['name']:
-                name = form1.cleaned_data['name']
+        # querying the students details a/c to the input data
+        if 'recordsubmit' in request.POST:
+            student_record_check = 1
+            form1 = SearchStudentRecord(request.POST)
+            if form1.is_valid():
+                if form1.cleaned_data['name']:
+                    name = form1.cleaned_data['name']
+                else:
+                    name = ''
+                if form1.cleaned_data['rollno']:
+                    rollno = form1.cleaned_data['rollno']
+                else:
+                    rollno = ''
+
+                programme = form1.cleaned_data['programme']
+
+                department = []
+                if form1.cleaned_data['dep_btech']:
+                    department.extend(form1.cleaned_data['dep_btech'])
+                if form1.cleaned_data['dep_mtech']:
+                    department.extend(form1.cleaned_data['dep_mtech'])
+                if form1.cleaned_data['dep_bdes']:
+                    department.extend(form1.cleaned_data['dep_bdes'])
+                if form1.cleaned_data['dep_mdes']:
+                    department.extend(form1.cleaned_data['dep_mdes'])
+                if form1.cleaned_data['dep_phd']:
+                    department.extend(form1.cleaned_data['dep_phd'])
+
+                if form1.cleaned_data['cpi']:
+                    cpi = form1.cleaned_data['cpi']
+                else:
+                    cpi = 0
+                debar = form1.cleaned_data['debar']
+                placed_type = form1.cleaned_data['placed_type']
+
+                request.session['name'] = name
+                request.session['rollno'] = rollno
+                request.session['programme'] = programme
+                request.session['department'] = department
+                request.session['cpi'] = str(cpi)
+                request.session['debar'] = debar
+                request.session['placed_type'] = placed_type
+
+
+                students = Student.objects.filter(
+                    Q(id__in=ExtraInfo.objects.filter(Q(
+                    user__in=User.objects.filter(Q(first_name__icontains=name)),
+                    department__in=DepartmentInfo.objects.filter(Q(name__in=department)),
+                    id__icontains=rollno)),
+                    programme=programme,
+                    cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
+                        Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
+
+                # pagination stuff starts from here
+                st = students
+                student_record_check= 1
+                total_query = students.count()
+
+                if total_query > 30:
+                    no_pagination = 1
+                    paginator = Paginator(students, 30)
+                    page = request.GET.get('page', 1)
+                    students = paginator.page(page)
+                    page = int(page)
+                    total_page = int(page + 3)
+
+                    if page<(paginator.num_pages-3):
+                        if total_query > 30 and total_query <=60:
+                            page_range = range(1, 3)
+                        else:
+                            page_range = range(1, total_page+1)
+
+                        if page >= 5:
+                            is_disabled = 1
+                            page_range = range(page-2, total_page)
+                    else:
+                        if page >= 5:
+                            is_disabled = 1
+                            page_range = range(page-2, paginator.num_pages+1)
+                        else:
+                            page_range = range(1, paginator.num_pages+1)
+                else:
+                    no_pagination = 0
+        else:
+            # when the request came from pagintion with some page no.
+            if request.GET.get('page') != None:
+                try:
+                    students = Student.objects.filter(
+                        Q(id__in=ExtraInfo.objects.filter(
+                            Q(user__in=User.objects.filter(
+                                Q(first_name__icontains=request.session['name'])
+                            ),
+                            department__in=DepartmentInfo.objects.filter(
+                                Q(name__in=request.session['department'])
+                            ),
+                            id__icontains=request.session['rollno']
+                            )
+                        ),
+                        programme=request.session['programme'],
+                        cpi__gte=decimal.Decimal(request.session['cpi']))).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=request.session['debar'],
+                        placed_type=request.session['placed_type'])).values('unique_id_id'))).order_by('id')
+                except:
+                    students = ''
+
+                if students != '':
+                    total_query = students.count()
+                else:
+                    total_query = 0
+
+                if total_query > 30:
+                    no_pagination = 1
+                    paginator = Paginator(students, 30)
+                    page = request.GET.get('page', 1)
+                    students = paginator.page(page)
+                    page = int(page)
+                    total_page = int(page + 3)
+
+                    if page<(paginator.num_pages-3):
+                        if total_query > 30 and total_query <=60:
+                            page_range = range(1, 3)
+                        else:
+                            page_range = range(1, total_page+1)
+
+                        if page >= 5:
+                            is_disabled = 1
+                            page_range = range(page-2, total_page)
+                    else:
+                        if page >= 5:
+                            is_disabled = 1
+                            page_range = range(page-2, paginator.num_pages+1)
+                        else:
+                            page_range = range(1, paginator.num_pages+1)
+                else:
+                    no_pagination = 0
             else:
-                name = ''
-            if form1.cleaned_data['rollno']:
-                rollno = form1.cleaned_data['rollno']
-            else:
-                rollno = ''
+                students = ''
 
-            programme = form1.cleaned_data['programme']
+                if 'debar' in request.POST:
+                    spid = request.POST['debar']
+                    sr = StudentPlacement.objects.get(Q(pk=spid))
+                    sr.debar = "DEBAR"
+                    sr.save()
+                if 'undebar' in request.POST:
+                    spid = request.POST['undebar']
+                    sr = StudentPlacement.objects.get(Q(pk=spid))
+                    sr.debar = "NOT DEBAR"
+                    sr.save()
 
-            department = []
-            if form1.cleaned_data['dep_btech']:
-                department.extend(form1.cleaned_data['dep_btech'])
-            if form1.cleaned_data['dep_mtech']:
-                department.extend(form1.cleaned_data['dep_mtech'])
-            if form1.cleaned_data['dep_bdes']:
-                department.extend(form1.cleaned_data['dep_bdes'])
-            if form1.cleaned_data['dep_mdes']:
-                department.extend(form1.cleaned_data['dep_mdes'])
-            if form1.cleaned_data['dep_phd']:
-                department.extend(form1.cleaned_data['dep_phd'])
+        # pdf generation logic
+        if 'pdf_gen_std_record' in request.POST:
 
-            if form1.cleaned_data['cpi']:
-                cpi = form1.cleaned_data['cpi']
-            else:
-                cpi = 0
-            debar = form1.cleaned_data['debar']
-            placed_type = form1.cleaned_data['placed_type']
-
-            request.session['name'] = name
-            request.session['rollno'] = rollno
-            request.session['programme'] = programme
-            request.session['department'] = department
-            request.session['cpi'] = str(cpi)
-            request.session['debar'] = debar
-            request.session['placed_type'] = placed_type
-
+            name = request.session['name']
+            rollno = request.session['rollno']
+            programme = request.session['programme']
+            department = request.session['department']
+            cpi =  int(request.session['cpi'])
+            debar = request.session['debar']
+            placed_type = request.session['placed_type']
 
             students = Student.objects.filter(
                 Q(id__in=ExtraInfo.objects.filter(Q(
@@ -988,243 +1104,129 @@ def student_records(request):
                 cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
                     Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
 
-            # pagination stuff starts from here
-            st = students
-            student_record_check= 1
-            total_query = students.count()
+            context = {
+                'students' : students
+            }
 
-            if total_query > 30:
-                no_pagination = 1
-                paginator = Paginator(students, 30)
-                page = request.GET.get('page', 1)
-                students = paginator.page(page)
-                page = int(page)
-                total_page = int(page + 3)
 
-                if page<(paginator.num_pages-3):
-                    if total_query > 30 and total_query <=60:
-                        page_range = range(1, 3)
+            return render_to_pdf('placementModule/pdf_student_record.html', context)
+
+        # excel generation logic
+        if 'excel_gen_std_record' in request.POST:
+
+            name = request.session['name']
+            rollno = request.session['rollno']
+            programme = request.session['programme']
+            department = request.session['department']
+            cpi =  int(request.session['cpi'])
+            debar = request.session['debar']
+            placed_type = request.session['placed_type']
+
+            students = Student.objects.filter(
+                Q(id__in=ExtraInfo.objects.filter(Q(
+                user__in=User.objects.filter(Q(first_name__icontains=name)),
+                department__in=DepartmentInfo.objects.filter(Q(name__in=department)),
+                id__icontains=rollno)),
+                programme=programme,
+                cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
+                    Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
+
+            context = {
+                'students' : students
+            }
+
+
+            return export_to_xls_std_records(students)
+
+
+        # for sending the invite to students for particular schedule
+        if 'sendinvite' in request.POST:
+            # invitecheck=1;
+
+            form13 = SendInvite(request.POST)
+
+            if form13.is_valid():
+                if form13.cleaned_data['company']:
+                    if form13.cleaned_data['rollno']:
+                        rollno = form13.cleaned_data['rollno']
                     else:
-                        page_range = range(1, total_page+1)
+                        rollno = ''
 
-                    if page >= 5:
-                        is_disabled = 1
-                        page_range = range(page-2, total_page)
-                else:
-                    if page >= 5:
-                        is_disabled = 1
-                        page_range = range(page-2, paginator.num_pages+1)
+                    programme = form13.cleaned_data['programme']
+
+                    department = []
+                    if form13.cleaned_data['dep_btech']:
+                        department.extend(form13.cleaned_data['dep_btech'])
+                    if form13.cleaned_data['dep_mtech']:
+                        department.extend(form13.cleaned_data['dep_mtech'])
+                    if form13.cleaned_data['dep_bdes']:
+                        department.extend(form13.cleaned_data['dep_bdes'])
+                    if form13.cleaned_data['dep_mdes']:
+                        department.extend(form13.cleaned_data['dep_mdes'])
+                    if form13.cleaned_data['dep_phd']:
+                        department.extend(form13.cleaned_data['dep_phd'])
+
+
+                    if form13.cleaned_data['cpi']:
+                        cpi = form13.cleaned_data['cpi']
                     else:
-                        page_range = range(1, paginator.num_pages+1)
-            else:
-                no_pagination = 0
-    else:
-        # when the request came from pagintion with some page no.
-        if request.GET.get('page') != None:
-            try:
-                students = Student.objects.filter(
-                    Q(id__in=ExtraInfo.objects.filter(
-                        Q(user__in=User.objects.filter(
-                            Q(first_name__icontains=request.session['name'])
-                        ),
-                        department__in=DepartmentInfo.objects.filter(
-                            Q(name__in=request.session['department'])
-                        ),
-                        id__icontains=request.session['rollno']
+                        cpi = 0
+
+                    if form13.cleaned_data['no_of_days']:
+                        no_of_days = form13.cleaned_data['no_of_days']
+                    else:
+                        no_of_days = 10
+
+
+                    comp = form13.cleaned_data['company']
+
+                    notify = NotifyStudent.objects.get(company_name=comp.company_name,
+                                                    placement_type=comp.placement_type)
+
+                    students = Student.objects.filter(
+                        Q(
+                            id__in = ExtraInfo.objects.filter(
+                                Q(
+                                department__in = DepartmentInfo.objects.filter(Q(name__in=department)),
+                                id__icontains = rollno
+                                )
+                            ),
+                            programme = programme,
+                            cpi__gte = cpi
                         )
-                    ),
-                    programme=request.session['programme'],
-                    cpi__gte=decimal.Decimal(request.session['cpi']))).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=request.session['debar'],
-                    placed_type=request.session['placed_type'])).values('unique_id_id'))).order_by('id')
-            except:
-                students = ''
+                    ).exclude(id__in = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
+                        notify_id=notify).values_list('unique_id', flat=True))
 
-            if students != '':
-                total_query = students.count()
-            else:
-                total_query = 0
+                    PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
+                                unique_id=student, no_of_days=no_of_days) for student in students] )
 
-            if total_query > 30:
-                no_pagination = 1
-                paginator = Paginator(students, 30)
-                page = request.GET.get('page', 1)
-                students = paginator.page(page)
-                page = int(page)
-                total_page = int(page + 3)
+                    for st in students:
+                        #print(request.user, '-----------------------', st.id.user,'-----------------')
+                        placement_cell_notif(request.user, st.id.user, "")
 
-                if page<(paginator.num_pages-3):
-                    if total_query > 30 and total_query <=60:
-                        page_range = range(1, 3)
-                    else:
-                        page_range = range(1, total_page+1)
-
-                    if page >= 5:
-                        is_disabled = 1
-                        page_range = range(page-2, total_page)
+                    students = ''
+                    messages.success(request, 'Notification Sent')
                 else:
-                    if page >= 5:
-                        is_disabled = 1
-                        page_range = range(page-2, paginator.num_pages+1)
-                    else:
-                        page_range = range(1, paginator.num_pages+1)
-            else:
-                no_pagination = 0
-        else:
-            students = ''
-
-            if 'debar' in request.POST:
-                spid = request.POST['debar']
-                sr = StudentPlacement.objects.get(Q(pk=spid))
-                sr.debar = "DEBAR"
-                sr.save()
-            if 'undebar' in request.POST:
-                spid = request.POST['undebar']
-                sr = StudentPlacement.objects.get(Q(pk=spid))
-                sr.debar = "NOT DEBAR"
-                sr.save()
-
-    # pdf generation logic
-    if 'pdf_gen_std_record' in request.POST:
-
-        name = request.session['name']
-        rollno = request.session['rollno']
-        programme = request.session['programme']
-        department = request.session['department']
-        cpi =  int(request.session['cpi'])
-        debar = request.session['debar']
-        placed_type = request.session['placed_type']
-
-        students = Student.objects.filter(
-            Q(id__in=ExtraInfo.objects.filter(Q(
-            user__in=User.objects.filter(Q(first_name__icontains=name)),
-            department__in=DepartmentInfo.objects.filter(Q(name__in=department)),
-            id__icontains=rollno)),
-            programme=programme,
-            cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
-                Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
+                    messages.error(request, 'Problem Occurred!! Please Try Again!!')
 
         context = {
-            'students' : students
+            'form1': form1,
+            'form9': form9,
+            'form11': form11,
+            'form13': form13,
+            'current1': current1,
+            'current2': current2,
+            'mnplacement_tab': mnplacement_tab,
+            'strecord_tab': strecord_tab,
+            'students': students,
+            'page_range': page_range,
+            'paginator': paginator,
+            'no_pagination': no_pagination,
+            'is_disabled': is_disabled,
         }
 
-
-        return render_to_pdf('placementModule/pdf_student_record.html', context)
-
-    # excel generation logic
-    if 'excel_gen_std_record' in request.POST:
-
-        name = request.session['name']
-        rollno = request.session['rollno']
-        programme = request.session['programme']
-        department = request.session['department']
-        cpi =  int(request.session['cpi'])
-        debar = request.session['debar']
-        placed_type = request.session['placed_type']
-
-        students = Student.objects.filter(
-            Q(id__in=ExtraInfo.objects.filter(Q(
-            user__in=User.objects.filter(Q(first_name__icontains=name)),
-            department__in=DepartmentInfo.objects.filter(Q(name__in=department)),
-            id__icontains=rollno)),
-            programme=programme,
-            cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
-                Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
-
-        context = {
-            'students' : students
-        }
-
-
-        return export_to_xls_std_records(students)
-
-
-    # for sending the invite to students for particular schedule
-    if 'sendinvite' in request.POST:
-        # invitecheck=1;
-
-        form13 = SendInvite(request.POST)
-
-        if form13.is_valid():
-            if form13.cleaned_data['company']:
-                if form13.cleaned_data['rollno']:
-                    rollno = form13.cleaned_data['rollno']
-                else:
-                    rollno = ''
-
-                programme = form13.cleaned_data['programme']
-
-                department = []
-                if form13.cleaned_data['dep_btech']:
-                    department.extend(form13.cleaned_data['dep_btech'])
-                if form13.cleaned_data['dep_mtech']:
-                    department.extend(form13.cleaned_data['dep_mtech'])
-                if form13.cleaned_data['dep_bdes']:
-                    department.extend(form13.cleaned_data['dep_bdes'])
-                if form13.cleaned_data['dep_mdes']:
-                    department.extend(form13.cleaned_data['dep_mdes'])
-                if form13.cleaned_data['dep_phd']:
-                    department.extend(form13.cleaned_data['dep_phd'])
-
-
-                if form13.cleaned_data['cpi']:
-                    cpi = form13.cleaned_data['cpi']
-                else:
-                    cpi = 0
-
-                if form13.cleaned_data['no_of_days']:
-                    no_of_days = form13.cleaned_data['no_of_days']
-                else:
-                    no_of_days = 10
-
-
-                comp = form13.cleaned_data['company']
-
-                notify = NotifyStudent.objects.get(company_name=comp.company_name,
-                                                   placement_type=comp.placement_type)
-
-                students = Student.objects.filter(
-                    Q(
-                        id__in = ExtraInfo.objects.filter(
-                            Q(
-                            department__in = DepartmentInfo.objects.filter(Q(name__in=department)),
-                            id__icontains = rollno
-                            )
-                        ),
-                        programme = programme,
-                        cpi__gte = cpi
-                    )
-                ).exclude(id__in = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
-                    notify_id=notify).values_list('unique_id', flat=True))
-
-                PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
-                            unique_id=student, no_of_days=no_of_days) for student in students] )
-
-                for st in students:
-                    #print(request.user, '-----------------------', st.id.user,'-----------------')
-                    placement_cell_notif(request.user, st.id.user, "")
-
-                students = ''
-                messages.success(request, 'Notification Sent')
-            else:
-                messages.error(request, 'Problem Occurred!! Please Try Again!!')
-
-    context = {
-        'form1': form1,
-        'form9': form9,
-        'form11': form11,
-        'form13': form13,
-        'current1': current1,
-        'current2': current2,
-        'mnplacement_tab': mnplacement_tab,
-        'strecord_tab': strecord_tab,
-        'students': students,
-        'page_range': page_range,
-        'paginator': paginator,
-        'no_pagination': no_pagination,
-        'is_disabled': is_disabled,
-    }
-
-    return render(request, 'placementModule/studentrecords.html', context)
+        return render(request, 'placementModule/studentrecords.html', context)
+    return redirect('/placement')
 
 
 @login_required

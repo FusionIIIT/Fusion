@@ -1,71 +1,137 @@
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import redirect, render,HttpResponse
 from django.contrib import messages
-from applications.research_procedures.models import Patent
+from applications.research_procedures.models import Patent, ResearchGroup
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-
+from notification.views import research_procedures_notif
+from django.urls import reverse
+from .forms import ResearchGroupForm
 
 # Faculty can file patent and view status of it.
-def IPR(request):
-    user=request.user
-    extrainfo=ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
-    pat=Patent()
-    context={}
+def patent_registration(request):
+
+    """
+        This function is used to register a patent and to retrieve all patents filed by the faculty.
+
+        @param:
+            request - contains metadata about the requested page.
+        
+        @variables:
+            user - the user who is currently logged in.
+            extrainfo - extra information of the user.
+            user_designations - The designations of the user currently logged in.
+            patent - The new patent to be registered.
+            patents - All the patents filed by the faculty.
+            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
+            ipd_form_pdf - The pdf file of the IPD form of the patent sent by the user.
+            project_details_pdf - The pdf file of the project details of the patent sent by the user.
+            file_system - The file system to store the files.
+
+
+    """
+
+    user = request.user
+    user_extra_info = ExtraInfo.objects.get(user=user)
+    user_designations = HoldsDesignation.objects.filter(user=user)
+    patent = Patent()
+    context = {}
     
-    context['pat']=Patent.objects.all()
-    context['use']=extrainfo
-    context['desig']=desig
+    context['patents'] = Patent.objects.all()
+    context['user_extra_info'] = user_extra_info
+    context['user_designations'] = user_designations
     
     if request.method=='POST':
-        if(extrainfo.user_type == "faculty"):
-            pat.faculty_id=extrainfo
-            pat.title=request.POST.get('title')
-            file1=request.FILES['file1']
-            if(file1.name.endswith('.pdf')):
-                pat.ipd_form=request.FILES['file1']
-                fs=FileSystemStorage()
-                name1=fs.save(file1.name,file1)
-                pat.file1=fs.url(name1)
+        if(user_extra_info.user_type == "faculty"):
+            patent.faculty_id = user_extra_info
+            patent.title = request.POST.get('title')
+            ipd_form_pdf = request.FILES['ipd_form_file']
+            if(ipd_form_pdf.name.endswith('.pdf')):
+                patent.ipd_form = request.FILES['ipd_form_file']
+                file_system = FileSystemStorage()
+                ipd_form_pdf_name = file_system.save(ipd_form_pdf.name,ipd_form_pdf)
+                patent.ipd_form_file = file_system.url(ipd_form_pdf_name)
             else:
                 messages.error(request, 'Please upload pdf file')
                 return render(request ,"rs/research.html",context)
             
-            file2=request.FILES['file2']
-            if(file2.name.endswith('.pdf')):
-                pat.project_details=request.FILES['file2']
-                fs=FileSystemStorage()
-                name2=fs.save(file2.name,file2)
-                pat.file2=fs.url(name2)
+            project_details_pdf = request.FILES['project_details_file']
+            if(project_details_pdf.name.endswith('.pdf')):
+                patent.project_details=request.FILES['project_details_file']
+                file_system = FileSystemStorage()
+                project_details_pdf_name = file_system.save(project_details_pdf.name,project_details_pdf)
+                patent.project_details_file = file_system.url(project_details_pdf_name)
                 messages.success(request, 'Patent filed successfully')
             else:
                 messages.error(request, 'Please upload pdf file')
                 return render(request ,"rs/research.html",context)
 
-            pat.status='Pending'
-            pat.save()
-    pat=Patent.objects.all() 
-    context['pat']=pat
+            # creating notifications for user and dean_rspc about the patent
+            dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
+            research_procedures_notif(request.user,request.user,"submitted")
+            research_procedures_notif(request.user,dean_rspc_user,"created")
+            patent.status='Pending'
+            patent.save()
+        else:
+            messages.error(request, 'Only Faculty can file patent')
+    patents = Patent.objects.all() 
+    context['patents'] = patents
+    context['research_groups'] = ResearchGroup.objects.all()
+    context['research_group_form'] = ResearchGroupForm()
     return render(request ,"rs/research.html",context)
 
- #dean_rspc can update status of patent.   
-def update(request):
-    user=request.user
-    extrainfo=ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
-    pat=Patent()
+#dean_rspc can update status of patent.   
+def patent_status_update(request):
+    """
+        This function is used to update the status of the patent.
+        @param:
+            request - contains metadata about the requested page.
+        @variables:
+            user - the user who is currently logged in.
+            extrainfo - extra information of the user.
+            user_designations - The designations of the user currently logged in.
+            patent - The patent whose status is to be updated.
+            patents - All the patents filed by the faculty.
+            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
+    
+    """
+    user = request.user
+    user_extra_info = ExtraInfo.objects.get(user=user)
+    user_designations = HoldsDesignation.objects.filter(user=user)
     if request.method=='POST':
-        if(desig.exists()):
-            if(desig.first().designation.name == "dean_rspc" and extrainfo.user_type == "faculty"):
-                iid=request.POST.get('id')
-                pat=Patent.objects.get(application_id=iid)
-                pat.status=request.POST.get('status')
-                pat.save()
-    pat=Patent.objects.all() 
-    return render(request ,"rs/research.html",{'pat':pat,'use':extrainfo,'desig':desig})
+        if(user_designations.exists()):
+            if(user_designations.first().designation.name == "dean_rspc" and user_extra_info.user_type == "faculty"):
+                patent_application_id = request.POST.get('id')
+                patent = Patent.objects.get(application_id=patent_application_id)
+                patent.status = request.POST.get('status')
+                patent.save()
+                messages.success(request, 'Patent status updated successfully')
+                # Create a notification for the user about the patent status update
+                dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
+                research_procedures_notif(dean_rspc_user,patent.faculty_id.user,request.POST.get('status'))
+            else:
+                messages.error(request, 'Only Dean RSPC can update status of patent')
+    return redirect(reverse("research_procedures:patent_registration"))
 
-   
+def research_group_create(request):
+    """
+        This function is used to create a research group.
+        @param:
+            request - contains metadata about the requested page.
+        @variables:
+            user - the user who is currently logged in.
+            extrainfo - extra information of the user.
+            user_designations - The designations of the user currently logged in.
+            research_group - The research group to be created.
+            research_groups - All the research groups.
+            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
+    
+    """
+    user = request.user
+    if request.method=='POST':
+        form = ResearchGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # research_group.save()
+            messages.success(request, 'Research group created successfully')
+    return redirect(reverse("research_procedures:patent_registration"))
