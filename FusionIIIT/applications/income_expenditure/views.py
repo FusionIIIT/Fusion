@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
+
+
 from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
@@ -12,6 +14,9 @@ from xhtml2pdf import pisa
 from django.core.files import File
 
 from django.db.models import Min,Max
+from applications.academic_information.models import Student
+
+
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
@@ -78,7 +83,8 @@ def main_page(request):
 
 		for fin_year in range(maxi_year, mini_year-1, -1):
 			inc_fin_years.append(fin_year)
-
+	s=Student.objects.get(id__id = request.user)
+	print(s)
 	if len(Expenditure.objects.all()):
 		
 		min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
@@ -125,14 +131,15 @@ def main_page(request):
 	else:
 		max_date = str(current_financial_year_ob.year)+'-'+month+'-'+day
 		min_date = str(current_financial_year_ob.year)+'-04-01'
-
+	
 
 	if len(fixed_attributes) == 0:
 		for i in fixed_attributes_list:
 			entry = FixedAttributes(attribute=i)
 			entry.save()
 		fixed_attributes = FixedAttributes.objects.all()
-    
+	
+
 	if(request.user.is_staff==True):
 		return render(
 				request,
@@ -150,7 +157,7 @@ def main_page(request):
 					'inc_fin_years':inc_fin_years,
 					'exp_fin_years':exp_fin_years,
 				})
-	else:
+	elif (s.programme=="M.Tech" or s.programme=="M.Des" or s.programme=="PhD") :
 		return render(
 				request,
 				'../templates/incomeExpenditure/iesu.html',
@@ -162,7 +169,18 @@ def main_page(request):
 					'inc_fin_years':inc_fin_years,
 					'exp_fin_years':exp_fin_years,
 				})
-	
+	else:
+		return render(
+				request,
+				'../templates/incomeExpenditure/iebt.html',
+				{
+					'fin_years':fin_years,
+					'min_date':min_date,
+					'expense_history':expense_history,
+					'max1_date':max_date,
+					'inc_fin_years':inc_fin_years,
+					'exp_fin_years':exp_fin_years,
+				})
 
 
 
@@ -577,7 +595,7 @@ def otherExpense_view(request):
 		date= request.POST.get('date_spent')
 		remarks = request.POST.get('remarks')
 		status ="Not approved"
-		
+		print("--------------------",spent_on,name,amount)
 		new_e = otherExpense(
 						spent_on = spent_on,
 						status=status,
@@ -587,7 +605,7 @@ def otherExpense_view(request):
 						date_added = date,
 						remarks = remarks,
 						)
-		
+		print("----------------------",new_e)
 		new_e.save()
 		balanceSheet_table()
 	return redirect('main-page')
