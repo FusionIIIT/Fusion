@@ -516,16 +516,16 @@ def view_expenditure_stats(request):
 			expenditure_data2.append(each['amount'])
 			expenditure_map=dict()
 			i=0
-			for item in expenditure_labels2:
-				if(item in expenditure_map):
-					expenditure_map[item]=expenditure_map[item]+expenditure_data2[i]
-				else:
-					expenditure_map[item]=expenditure_data2[i]
-				i=i+1
-			for key in  expenditure_map.keys():
-				expenditure_labels.append(key)
-			for value in expenditure_map.values():
-				expenditure_data.append(value)
+		for item in expenditure_labels2:
+			if(item in expenditure_map):
+				expenditure_map[item]=expenditure_map[item]+expenditure_data2[i]
+			else:
+				expenditure_map[item]=expenditure_data2[i]
+			i=i+1
+		for key in  expenditure_map.keys():
+			expenditure_labels.append(key)
+		for value in expenditure_map.values():
+			expenditure_data.append(value)
 		return render(
 						request,
 						'../templates/incomeExpenditure/viewExpenditureStats.html',
