@@ -18,6 +18,9 @@ urlpatterns = [
     #Student Room
     path('edit_student/',views.edit_student_room,name="edit_student_room"),
 
+    #Attendance
+    path('edit_attendance/', views.edit_attendance, name='edit_attendance'),
+
     #Worker Report
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
