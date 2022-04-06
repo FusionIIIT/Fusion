@@ -106,6 +106,22 @@ IPR
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="second">
+            {% block view_groups %}
+                {% include 'rs/research_groups.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="third">
+            {% block create_reseach_groups %}
+                {% include 'rs/research_group_form.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixteenth">
