@@ -118,7 +118,6 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
-        
         courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
@@ -2019,3 +2018,68 @@ def confirm_grades(request):
     return HttpResponseRedirect('/aims/')
 
 
+@login_required()       
+def view_all_student_data(request):
+    """ views all the students """
+
+
+    data = []
+    #students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id') .filter(batch=2019).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')[0:20]
+    
+    context = get_context(request)
+    context['tab_id'][0]='9'
+
+    filter_names = {}
+    if request.method == 'POST':
+        try:
+            filter_names['batch'] = request.POST['batch']
+            filter_names['programme'] = request.POST['programme']
+            if(request.POST['branch']!='Common'):
+                filter_names['batch_id__discipline__acronym'] = request.POST['branch']
+            if(request.POST['category']!='ALL'):
+                filter_names['category'] = request.POST['category']
+            request_batch = request.POST['batch']
+            request_branch = request.POST['branch']
+            request_programme = request.POST['programme']
+            request_rollno = request.POST['Roll_number']
+            request_category = request.POST['category']
+        except Exception as e:
+            request_batch = ""
+            request_branch = ""
+            request_programme = ""
+            request_rollno = ""
+            request_category = ""
+        if request_batch == "" and request_branch == "" and request_programme=="" and request_rollno=="" and request_category=="":
+            data = None
+        else:
+            if(request_rollno != ""):
+                students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            else:
+                students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            for student in students:
+                obj = {
+                    "admissionYear" : student.batch,
+                    "RollNo" : student.id.id,
+                    "name" : student.id.user.get_full_name(),
+                    "program": student.programme,
+                    "discipline": student.batch_id.discipline.acronym,
+                    "specailization": student.specialization,
+                    "gender" : student.id.sex,
+                    "category": student.category,
+                    #"pwd_status": student.pwd_status,
+                    "Mobile": student.id.phone_no,
+                    "dob" : student.id.date_of_birth,
+                    "emailid" : student.id.user.email,
+                    "father_name": student.father_name,
+                    #"father_mobile_no": student.father_mobile_no,
+                    "mother_name": student.mother_name,
+                    #"mother_mobile_no": student.mother_mobile_no,
+                    "address": student.id.address
+                }
+                data.append(obj)
+        html = render_to_string('ais/stud_list.html',{'students': data},request)
+        obj = json.dumps({'html':html})
+        #context['students'] = data
+        return HttpResponse(obj,content_type='application/json')
+    else:
+        return render(request, "ais/ais.html", context)

@@ -99,6 +99,9 @@ class Student(models.Model):
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
     curr_semester_no = models.IntegerField(default=1)
+    # pwd_status = models.CharField(max_length=10, default='')
+    # father_mobile_no = models.BigIntegerField(null=True, default=9999999999)
+    # mother_mobile_no = models.BigIntegerField(null=True, default=9999999999)
 
     def __str__(self):
         username = str(self.id.user.username)
