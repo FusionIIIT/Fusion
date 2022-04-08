@@ -318,6 +318,7 @@ class CourseInstructor(models.Model):
       course_id = models.ForeignKey(Course, on_delete = models.CASCADE)
       instructor_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
       batch_id = models.ForeignKey(Batch, on_delete=models.CASCADE, default=1)
+      #change extra info to faculty(globals)
 
       class Meta:
           unique_together = ('course_id', 'instructor_id', 'batch_id')

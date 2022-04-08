@@ -1259,10 +1259,16 @@ def pre_registration(request):
                 pass
 
             reg_curr = []
+            #print("---> printing request ",request.POST)
 
             for course_slot in course_slots :
                 course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                if(course_priorities[0] == 'NULL'):
+                    #print("NULL FOUND")
+                    continue
                 course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
+                # print("=----> course_priorities ----- ",course_priorities)
+                # print("------------>course slot id ",course_slot_id_for_model)
                 for course_priority in course_priorities:
                     priority_of_current_course,course_id = map(int,course_priority.split("-"))
 
