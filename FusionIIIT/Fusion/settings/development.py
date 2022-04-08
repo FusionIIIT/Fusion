@@ -6,16 +6,35 @@ SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 
 ALLOWED_HOSTS = []
 
+# DATABASES = {
+#      'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'fusionlab',
+#         'HOST': '172.27.16.216',
+#         'USER': 'fusion_admin',
+#         'PASSWORD': 'hello123',
+#     }
+# }
+
+# DATABASES = {
+#      'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'fusionlab',
+#         'HOST': 'localhost',
+#         'USER': 'fusion_admin',
+#         'PASSWORD': '1301',
+#     }
+# }
+
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
-        'HOST': '172.27.16.216',
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'NAME': 'fusionlab215',
+        'HOST': 'localhost',
+        'USER': 'postgres',
+        'PASSWORD': '1301',
     }
 }
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
