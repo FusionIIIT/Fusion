@@ -46,8 +46,8 @@
                 <option value="NULL" class="sem">Select Semester</option>
                 <option value="1" class="sem">1</option>
                 <option value="2" class="sem">2</option>
-                <option value="3" class="sem">2</option>
-                <option value="4" class="sem">3</option>
+                <option value="3" class="sem">3</option>
+                <option value="4" class="sem">4</option>
                 <option value="5" class="sem">5</option>
                 <option value="6" class="sem">6</option>
                 <option value="7" class="sem">7</option>
@@ -76,19 +76,15 @@ $(function() {
 
         event.preventDefault();
         var friendForm = $(this);
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        console.log(friendForm)
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         // if success:
         posting.done(function(data) {
-            console.log(data)
             alert('Posted');
             window.location = "/academic-procedures/main/";
         });
         // if failure
         posting.fail(function(data) {
-            console.log(data)
             alert('Queries does not match');
             // window.location = "/academic-procedures/main/";
         });
