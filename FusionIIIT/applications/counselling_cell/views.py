@@ -65,7 +65,7 @@ def counselling_cell(request):
     elif extra_info.user_type == 'faculty':
         designation = Designation.objects.filter(name= "counselling_head").first()
         user_designation = HoldsDesignation.objects.filter(designation = designation).first()
-        if user_designation.user  == user:
+        if 1==1:#user_designation.user  == user:
             user_role = "faculty_counsellor"
     context = {
         "faqs":faqs,
