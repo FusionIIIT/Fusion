@@ -1,5 +1,4 @@
 from asyncio.log import logger
-import datetime
 import json
 from itertools import chain
 from io import BytesIO
@@ -30,7 +29,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
-                     MinimumCredits, Register, Thesis, FinalRegistration, ThesisTopicProcess,
+                     Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
@@ -73,11 +72,12 @@ def main(request):
 def academic_procedures(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-
+  
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
+    
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-
+   
 
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
@@ -128,7 +128,9 @@ def academic_procedures_faculty(request):
         return HttpResponseRedirect('/academic-procedures/main/')
 
     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
-        object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details)
+       
+        object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details.pk)
+       
         month = int(demo_date.month)
         sem = []
         if month>=7 and month<=12:
@@ -329,7 +331,7 @@ def academic_procedures_student(request):
                 else:
                     pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
         except Exception as e:
-            pre_registered_course =  None
+            pre_registered_courses =  None
             pre_registered_course_show = None
 
         try:
@@ -432,7 +434,7 @@ def academic_procedures_student(request):
                           {'details': details,
                            # 'calendar': calendar,
                             'currently_registered': currently_registered_course,
-                            'pre_registered_course' : pre_registered_course,
+                            'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
                             'final_registered_course' : final_registered_course,
                             'current_credits' : current_credits,
@@ -2179,6 +2181,8 @@ def process_verification_request(request):
 
 @transaction.atomic
 def verify_registration(request):
+
+    print("printing post data from accepted registration ------------- >",request.POST)
     if request.POST.get('status_req') == "accept" :
         student_id = request.POST.get('student_id')
         student = Student.objects.get(id = student_id)

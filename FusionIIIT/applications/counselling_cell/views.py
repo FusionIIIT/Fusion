@@ -32,19 +32,19 @@ def counselling_cell(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     user_role = extra_info.user_type
-    meetings = CounsellingMeeting.objects.all()
+    meetings = CounsellingMeeting.objects.all().select_related()
     year = timezone.now().year
-    third_year_students = Student.objects.filter(batch=year-3)
-    second_year_students = Student.objects.filter(batch=year-2)
-    faqs = CounsellingFAQ.objects.all()
-    categories = CounsellingIssueCategory.objects.all()
-    student_coordinators = StudentCounsellingTeam.objects.filter(student_position="student_coordinator")
-    student_guide = StudentCounsellingTeam.objects.filter(student_position="student_guide")
+    third_year_students = Student.objects.filter(batch=year-3).select_related()
+    second_year_students = Student.objects.filter(batch=year-2).select_related()
+    faqs = CounsellingFAQ.objects.all().select_related()
+    categories = CounsellingIssueCategory.objects.all().select_related
+    student_coordinators = StudentCounsellingTeam.objects.filter(student_position="student_coordinator").select_related()
+    student_guide = StudentCounsellingTeam.objects.filter(student_position="student_guide").select_related()
     statuses =[]
 
-    issues = CounsellingIssue.objects.filter(issue_status="status_unresolved")
+    issues = CounsellingIssue.objects.filter(issue_status="status_unresolved").select_related()
     
-    mapped_data = StudentCounsellingInfo.objects.all()
+    mapped_data = StudentCounsellingInfo.objects.all().select_related()
     student_and_student_guide = {}
     for x in mapped_data :
         if x.student_guide not in student_and_student_guide :
@@ -52,7 +52,7 @@ def counselling_cell(request):
         else:
             student_and_student_guide[x.student_guide].append(x.student)
     if extra_info.user_type == 'student':
-        statuses = CounsellingIssue.objects.filter(student=Student.objects.get(id=extra_info))
+        statuses = CounsellingIssue.objects.filter(student=Student.objects.get(id=extra_info)).select_related()
         student = Student.objects.get(id=extra_info)
         user_role = "student"
         student = StudentCounsellingTeam.objects.filter(student = student).first()
@@ -61,7 +61,7 @@ def counselling_cell(request):
             user_role = student_des
             # print(student_des)
             if student.student_position == "student_guide" :
-                issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student])
+                issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student]).select_related()
     elif extra_info.user_type == 'faculty':
         designation = Designation.objects.filter(name= "counselling_head").first()
         user_designation = HoldsDesignation.objects.filter(designation = designation).first()
@@ -153,7 +153,7 @@ def submit_counselling_faq(request):
     :return:
         data: to record success or any errors
     """
-    
+    student = request.user
     data = add_counselling_faq(request, student)
     return JsonResponse(data)
 
