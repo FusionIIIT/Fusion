@@ -274,7 +274,6 @@ def academic_procedures_student(request):
         except Exception as e:
             next_sem_id = curr_sem_id
 
-        print("current sem id is ",curr_sem_id," next sem id is ",next_sem_id)
         student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
         student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
 
@@ -324,12 +323,14 @@ def academic_procedures_student(request):
         try:
             pre_registered_courses = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             pre_registered_course_show = {}
-            print(pre_registered_course_show)
+            pre_registration_timestamp=None
             for pre_registered_course in pre_registered_courses:
+                pre_registration_timestamp=pre_registered_course.timestamp
                 if(pre_registered_course.course_slot_id.name not in pre_registered_course_show):
                     pre_registered_course_show[pre_registered_course.course_slot_id.name] = [{"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority}]
                 else:
                     pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
+            pre_registration_timestamp=str(pre_registration_timestamp)
         except Exception as e:
             pre_registered_courses =  None
             pre_registered_course_show = None
@@ -465,6 +466,7 @@ def academic_procedures_student(request):
                             'add_courses_options': add_courses_options,
                             'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
+                            'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
                             'frd': final_registration_date_flag,
                             'adc_date_flag': add_or_drop_course_date_flag,
@@ -816,7 +818,8 @@ def dropcourseadmin(request):
     try:
         Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
     except:
-        print("hello ")
+        pass
+        # print("hello ")
     response_data = {}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -1250,7 +1253,6 @@ def pre_registration(request):
 
             try:
                 student_registeration_check=get_student_registrtion_check(current_user,sem_id)
-                print(student_registeration_check)
                 if(student_registeration_check.pre_registration_flag==True):
                     messages.error(request,"You have already registered for next semester")
                     return HttpResponseRedirect('/academic-procedures/main')
@@ -1259,10 +1261,16 @@ def pre_registration(request):
                 pass
 
             reg_curr = []
+            #print("---> printing request ",request.POST)
 
             for course_slot in course_slots :
                 course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                if(course_priorities[0] == 'NULL'):
+                    #print("NULL FOUND")
+                    continue
                 course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
+                # print("=----> course_priorities ----- ",course_priorities)
+                # print("------------>course slot id ",course_slot_id_for_model)
                 for course_priority in course_priorities:
                     priority_of_current_course,course_id = map(int,course_priority.split("-"))
 
@@ -2182,7 +2190,6 @@ def process_verification_request(request):
 @transaction.atomic
 def verify_registration(request):
 
-    print("printing post data from accepted registration ------------- >",request.POST)
     if request.POST.get('status_req') == "accept" :
         student_id = request.POST.get('student_id')
         student = Student.objects.get(id = student_id)
