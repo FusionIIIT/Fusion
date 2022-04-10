@@ -17,8 +17,7 @@
         <th>Slot type</th>
         <th>Semester</th>
         <th>Credits</th>
-        <th>Course Code</th>
-        <th>Course Name</th>
+        <th>Course</th>
       </tr>
     </thead>
 
@@ -32,6 +31,8 @@
         <td>{{course_slot.courses.all.0.credit}} </td>
         <td>
           {% for course in course_slot.courses.all %}
+          {{course.code}}-{{course.name}}
+        </br>
           {{course.code}}
           <br>
           {% endfor %}
