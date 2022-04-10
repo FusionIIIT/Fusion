@@ -45,7 +45,6 @@
         min-height: 100%;
         max-height: 149%;
 
-        transform: scale(0.75);
         transform-origin: 0 0;
     }
 }
@@ -58,7 +57,6 @@
         min-height: 100%;
         max-height: 149%;
 
-        transform: scale(0.80);
         transform-origin: 0 0;
     }
 }
