@@ -58,9 +58,24 @@
                     <h3 class="ui header"> You are not assigned to any role.</h3>
                 </div>
             {% endif %}
-            {% if isAdmin %}
+
+            {% with isBreak=False %}
+            {% for r in role %}
+            {% if isBreak %}
+            <!-- do nothing  -->
+            {% elif r.role == 'FeedsAdmin' and r.user == request.user %}
                 {% include 'feeds/admin_middle.html'%}
+
+            {% with isBreak=True %}
+            {% endwith %}
+
             {% endif %}
+
+            {% endfor %}
+            {% endwith %}
+
+
+
         </div>
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
