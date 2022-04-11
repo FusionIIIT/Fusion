@@ -1,14 +1,17 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from applications.gymkhana.api.views import clubname,Club_Details
+from applications.gymkhana.api.views import Voting_Polls
+from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
+from applications.gymkhana.api.views import session_details
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
-
-
 
 app_name = 'gymkhana'
 
 urlpatterns = [
+    url(r'^session_details/$',session_details.as_view()),
+    url(r'^event_info/$',club_events.as_view()),
+    url(r'^club_budgetinfo/$',club_budgetinfo.as_view()),
     #academic administration
     url(r'^club_approve/$', views.club_approve, name='club_approve'),
     url(r'^club_reject/$', views.club_reject, name='club_reject'),
@@ -17,6 +20,17 @@ urlpatterns = [
     # api for "clubdetails" method="get" with TokenAuthentication
     url(r'^clubdetails/$', Club_Details.as_view()),
     # api for "clubname" method="get" with TokenAuthentication
+    url(r'^Fest_budget/$',Fest_Budget.as_view(),name='Fest_budget'),
+    # api for "festbudget" method="get" with TokenAuthentication
+    url(r'^club_report/$',club_report.as_view()),
+    # api for "club_report" method="get" with TokenAuthentication
+    url(r'^registration_form/$',Registraion_form.as_view()),
+    # api for "registration_form" method="get" with TokenAuthentication
+    url(r'^voting_polls/$',Voting_Polls.as_view()),
+    # api for "voting_polls" method="get" with TokenAuthentication
+
+
+
     url(r'^clubname/$', clubname.as_view()),
     url(r'^$', views.gymkhana, name='gymkhana'),
     url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
@@ -63,4 +77,3 @@ urlpatterns = [
     url(r'^festbudget/$', views.fest_budget, name='fest_budget'),
    
 ]
-
