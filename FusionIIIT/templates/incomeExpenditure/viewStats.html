@@ -36,6 +36,20 @@
       <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
   </div>
 </form>
+<form id='compare' method='POST' action='/income-expenditure/compare/' target="_blank">{% csrf_token %}
+  <div id="view_stats" class="field" style="border : 0">
+    <h2>Compare Income And Expenditure</h2><br>
+  <select id='compare_year' class="ui dropdown" name="year">
+      <option value="">Select Financial Year</option>
+
+     {% for year in exp_fin_years %}
+      <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+     {% endfor %}
+     
+  </select>
+  <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
+</div>
+</form>
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script>
@@ -58,5 +72,13 @@
       alert("Please Select a Financial Year");
     }
   })
+
+  compare.addEventListener('submit', (event) => {
+    if (compare_year.value === "") {
+      event.preventDefault();
+      alert("Please Select a Financial Year");
+    }
+  })
+
 
 </script>
