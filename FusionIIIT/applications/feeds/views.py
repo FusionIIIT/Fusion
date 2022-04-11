@@ -945,8 +945,8 @@ def admin(request):
             try:
                 role_unassign = Roles.objects.select_related().get(role = request.POST.get("unassignrole_value"))
                 role_unassign.active = False
-                role_unassign.save()
                 success["update"] = "Role Unassigned."
+                role_unassign.delete()
             except :
                 error["update"] = "Incorrect Username provided."
 
@@ -1013,7 +1013,7 @@ def administrativeView(request, string):
         role_user = role_user[0]
     except:
         redirect("/feeds")
-    result = QuestionAccessControl.objects.select_related('posted_by__user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').filter(posted_by=role_user).order_by('-created_at')
+    result = QuestionAccessControl.objects.select_related('posted_by__user').prefetch_related('Question__select_tag','Question__likes','Question__dislikes','Question__requests').filter(posted_by=role_user).order_by('-created_at')
     paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
@@ -1040,12 +1040,12 @@ def administrativeView(request, string):
         isdisliked = 0
         hidd = 0
         isSpecial = 0
-        profi = Profile.objects.select_related().all().filter(user=q.question.user)
-        if(q.question.likes.all().filter(username=request.user.username).count()==1):
+        profi = Profile.objects.select_related().all().filter(user=q.Question.user)
+        if(q.Question.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
-        if(hid.all().filter(user=request.user, question = q.question).count()==1):
+        if(hid.all().filter(user=request.user, question = q.Question).count()==1):
             hidd = 1
-        if(q.question.dislikes.all().filter(username=request.user.username).count()==1):
+        if(q.Question.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         access_check = q
         isSpecial = 1
@@ -1053,11 +1053,11 @@ def administrativeView(request, string):
             'access' : access_check,
             'isSpecial' : isSpecial,
             'profile':profi,
-            'ques' : q.question,
+            'ques' : q.Question,
             'isliked':isliked,
             'hidd' : hidd,
             'disliked': isdisliked,
-            'votes':q.question.total_likes() - q.question.total_dislikes(),
+            'votes':q.Question.total_likes() - q.Question.total_dislikes(),
         }
         ques.append(temp)
     role_data = Roles.objects.select_related().all()
