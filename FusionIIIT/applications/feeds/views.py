@@ -139,7 +139,7 @@ def feeds(request):
             hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
-        access_check = QuestionAccessControl.objects.filter(Question=q)
+        access_check = QuestionAccessControl.objects.filter(question=q)
         if len(access_check)>0:
             isSpecial = 1
         temp = {
