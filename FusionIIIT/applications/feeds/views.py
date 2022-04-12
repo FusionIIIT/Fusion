@@ -81,14 +81,14 @@ def feeds(request):
             messages.success(request,"Question Posted Successfully !")
 
             role_check = Roles.objects.select_related().filter(user=request.user)
-            if len(role_check) > 0 and request.POST.get("from_admin"):
-                access = QuestionAccessControl.objects.create(question=question, can_vote=True, can_answer=True, can_comment = True, posted_by = role_check[0])
+            if len(role_check) >0 :
+                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
-                    access.can_vote = False
+                    access.canVote = False
                 if request.POST.get("RestrictAnswer"):
-                    access.can_answer = False
+                    access.canAnswer = False
                 if request.POST.get("RestrictComment"):
-                    access.can_comment = False
+                    access.canComment = False
                 access.save()
                 return redirect("/feeds/admin")
             query = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
@@ -415,19 +415,19 @@ def update_post(request, id):
             question.anonymous_ask=True
 
         if request.POST.get("isSpecial"):
-            access = QuestionAccessControl.objects.filter(question = question)[0]
+            access = QuestionAccessControl.objects.filter(Question = question)[0]
             if request.POST.get("RestrictVote"):
-                access.can_vote = False
+                access.canVote = False
             else:
-                access.can_vote = True
+                access.canVote = True
             if request.POST.get("RestrictAnswer"):
-                access.can_answer = False
+                access.canAnswer = False
             else:
-                access.can_answer = True
+                access.canAnswer = True
             if request.POST.get("RestrictComment"):
-                access.can_comment = False
+                access.canComment = False
             else:
-                access.can_comment = True
+                access.canComment = True
             access.save()
         if request.POST.get("from_url"):
             redirect_to = request.POST.get("from_url")
@@ -1013,7 +1013,7 @@ def administrativeView(request, string):
         role_user = role_user[0]
     except:
         redirect("/feeds")
-    result = QuestionAccessControl.objects.select_related('posted_by__user').prefetch_related('Question__select_tag','Question__likes','Question__dislikes','Question__requests').filter(posted_by=role_user).order_by('-created_at')
+    result = QuestionAccessControl.objects.select_related('posted_by__user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').filter(posted_by=role_user).order_by('-created_at')
     paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
