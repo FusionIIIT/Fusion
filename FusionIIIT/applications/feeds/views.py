@@ -82,7 +82,7 @@ def feeds(request):
 
             role_check = Roles.objects.select_related().filter(user=request.user)
             if len(role_check) > 0 and request.POST.get("from_admin"):
-                access = QuestionAccessControl.objects.create(Question=question, can_vote=True, can_answer=True, can_comment = True, posted_by = role_check[0])
+                access = QuestionAccessControl.objects.create(question=question, can_vote=True, can_answer=True, can_comment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
                     access.can_vote = False
                 if request.POST.get("RestrictAnswer"):
@@ -415,7 +415,7 @@ def update_post(request, id):
             question.anonymous_ask=True
 
         if request.POST.get("isSpecial"):
-            access = QuestionAccessControl.objects.filter(Question = question)[0]
+            access = QuestionAccessControl.objects.filter(question = question)[0]
             if request.POST.get("RestrictVote"):
                 access.can_vote = False
             else:
@@ -483,7 +483,7 @@ def TagsBasedView(request, string):
             hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
-        access_check = QuestionAccessControl.objects.filter(Question=q)
+        access_check = QuestionAccessControl.objects.filter(question=q)
         if len(access_check)>0:
             isSpecial = 1
         temp = {
@@ -588,7 +588,7 @@ def ParticularQuestion(request, id):
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
     isSpecial = 0
-    access_check = QuestionAccessControl.objects.filter(Question=result)
+    access_check = QuestionAccessControl.objects.filter(question=result)
     if len(access_check)>0:
         isSpecial = 1
 
@@ -1040,12 +1040,12 @@ def administrativeView(request, string):
         isdisliked = 0
         hidd = 0
         isSpecial = 0
-        profi = Profile.objects.select_related().all().filter(user=q.Question.user)
-        if(q.Question.likes.all().filter(username=request.user.username).count()==1):
+        profi = Profile.objects.select_related().all().filter(user=q.question.user)
+        if(q.question.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
-        if(hid.all().filter(user=request.user, question = q.Question).count()==1):
+        if(hid.all().filter(user=request.user, question = q.question).count()==1):
             hidd = 1
-        if(q.Question.dislikes.all().filter(username=request.user.username).count()==1):
+        if(q.question.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         access_check = q
         isSpecial = 1
@@ -1053,11 +1053,11 @@ def administrativeView(request, string):
             'access' : access_check,
             'isSpecial' : isSpecial,
             'profile':profi,
-            'ques' : q.Question,
+            'ques' : q.question,
             'isliked':isliked,
             'hidd' : hidd,
             'disliked': isdisliked,
-            'votes':q.Question.total_likes() - q.Question.total_dislikes(),
+            'votes':q.question.total_likes() - q.question.total_dislikes(),
         }
         ques.append(temp)
     role_data = Roles.objects.select_related().all()
