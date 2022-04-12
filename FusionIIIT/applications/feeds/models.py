@@ -350,11 +350,11 @@ class QuestionAccessControl(models.Model):
 	"""
 	records the different access permissions like the user can comment on a question or not, can vot or not for a user
 	"""
-	Question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
-	can_vote = models.BooleanField()
-	can_answer = models.BooleanField()
-	can_comment = models.BooleanField()
+	question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
+	canVote = models.BooleanField()
+	canAnswer = models.BooleanField()
+	canComment = models.BooleanField()
 	posted_by = models.ForeignKey(Roles, default=1, on_delete=models.CASCADE)
 	created_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	def __str__(self):
-		return "question number " + str(self.Question.id)
+		return "question number " + str(self.question.id)
