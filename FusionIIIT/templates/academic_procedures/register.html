@@ -55,7 +55,6 @@
 <center><b>Pre-Registration for Next Semester Courses</b></center>
 <div class="ui vertical segment">
     {% if curr_sem.semester_no != 8 %}
-    {% if prd %}
     {% if pre_registration_flag %}
     <B style="color:red">
         <CENTER> You have already registered at
@@ -68,10 +67,10 @@
     <center><a id="hidebtn" class="btn2" onclick="hide()">Hide courses</a></center>
     <CENTER>
         <table class="ui very basic collapsing celled sortable table " id="view" style="display:none" style="padding-left: 2.5%;
-                                    padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
-                                    margin: auto;">
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
             <thead>
                 <tr>
                     <th>#</th>
@@ -118,13 +117,14 @@
         </table>
     </CENTER>
     {% else %}
+    {% if prd %}
     <form id='student_register' action='/academic-procedures/pre_registration/'>
         {% csrf_token %}
         <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
-                                    padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
-                                    margin: auto;">
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
             <thead>
                 <tr>
                     <th>#</th>
@@ -191,11 +191,11 @@
         <p>You need minimum {{curr_sem.curriculum.min_credit}} credits for semester {{next_sem.semester_no}}</p>
     </CENTER>
 
-    {% endif %}
     {% else %}
     <B>
         <CENTER> Pre Registration date hasn't come yet
     </B></CENTER>
+    {% endif %}
     {% endif %}
     {% else %}
     <CENTER>
