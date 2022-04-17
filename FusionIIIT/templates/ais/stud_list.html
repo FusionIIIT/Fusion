@@ -1,3 +1,19 @@
+<div class="ui divider"></div>
+<form class="ui form" action="/aims/generateStudentSheet" method="post" id="form8_8">
+    {% csrf_token %}
+    <input type="number" hidden="true" name = "batch" value= "{{ batch }}">
+    <input type="text" hidden="true" name = "programme" value="{{ programme }}">
+    <input type="number" hidden="true" name = "Roll_number" value= "{{ Roll_number }}">
+    <input type="text" hidden="true" name = "branch" value="{{ branch }}">
+    <input type="text" hidden="true" name = "category" value="{{ category }}">
+    
+    <div class="field">
+        <button class="ui fluid primary button" type="submit">
+            Generate Excel Sheet
+        </button>
+    </div>
+</form>
+
 {% if students %}
 <div  style="overflow: auto; max-height:100vh; margin-top: 15px; ">
         <table class="ui celled medium table">
