@@ -7,7 +7,7 @@
         <a class="active item" data-tab="viewfaq">
             Read FAQs
         </a>
-        {% if user_role == 'faculty' or user_role == 'student_coordinator'  %}
+        {% if user_role == 'faculty' or user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'head_counsellor' %}
         <a class="item" data-tab="faq">
             Add New FAQ
         </a>
