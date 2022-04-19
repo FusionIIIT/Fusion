@@ -31,13 +31,13 @@
             <a class="active item" data-tab="seventh">
                 Counselling Team Details
             </a>
-            {% if user_role == 'faculty_counsellor' %}
+            {% if user_role == 'faculty_counsellor' or user_role == 'head_counsellor' %}
             <a class="item" data-tab="second">
                 Appoint Student Coordinators
             </a>
             {% endif %}
 
-            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'student_guide' %}
+            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'student_guide' or user_role == 'head_counsellor' %}
                 
                 <a class="item" data-tab="twelfth">
                 Raised Issue
@@ -53,11 +53,11 @@
                 Frequently Asked Questions
             </a>
             {% if user_role == 'student' or user_role == 'student_guide' or user_role == 'faculty' %}
-                <a class="active item"  data-tab="sixth">
+                <a class="item"  data-tab="sixth">
                     View Scheduled Meetings
                 </a>
             {% endif %}
-            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor'  %}
+            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'head_counsellor'  %}
                 <a class="item" data-tab="sixth">
                 Schedule Meetings
                 </a>

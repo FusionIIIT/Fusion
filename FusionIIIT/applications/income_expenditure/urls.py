@@ -14,4 +14,11 @@ urlpatterns = [
     url(r'^updateFixedValues/',views.updateFixedValues,name='fixed-values'),
     url(r'^viewIncomeStats/',views.view_income_stats,name='view-income-stats'),
     url(r'^viewExpenditureStats/',views.view_expenditure_stats,name='view-expenditure-stats'),
+    url(r'^compare/',views.compare,name='compare'),
+    url(r'^otherExpense/',views.otherExpense_view,name='otherExpense'),
+    url(r'^del_expense/',views.del_expense,name='del_expense'),
+    url(r'^approve/',views.approve,name='approve'),
+    url(r'^decline/',views.decline,name='decline'),
+    url(r'^stb/',views.stb,name='stb'),
+     
 ]

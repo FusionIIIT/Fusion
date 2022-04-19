@@ -74,6 +74,16 @@ class Constants:
 
 
 class Designation(models.Model):
+    '''
+        Current Purpose : To store and segregate information regarding a designation in a the department  
+        Eg : rewacaretaker -- Administrative designation
+
+        ATTRIBUTES :
+
+        name(char) - to store the designation name as information eg: dean_rspc
+        full_name(char) - to store the full name of the designation eg: Dean(Research, Sponsered Projects and Consultancy)
+        type(char) - to store the designation type eg: Academic designation
+    '''
     name = models.CharField(max_length=50, unique=True,
                             blank=False, default='student')
     full_name = models.CharField(
@@ -87,6 +97,17 @@ class Designation(models.Model):
 
 
 class DepartmentInfo(models.Model):
+    '''
+        Current Purpose : To store the list of departments in the institute 
+        Eg : CSE, ME, Finance etct
+        ! - Disciplines(CSE,ECE,etc) and Departments(Finance,etc) are under the same table.
+        ! - Can incorporate more attributes
+
+        ATTRIBUTES :
+
+        name(char) - to store the department name as information
+    '''
+
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -94,9 +115,27 @@ class DepartmentInfo(models.Model):
 
 
 class ExtraInfo(models.Model):
-    """
-    Extra Info to augment the default User model from django
-    """
+    '''
+        Current Purpose : to store one to one mapping of information for each user under django.contrib.auth.User
+
+        
+
+        ATTRIBUTES :
+
+        id(char) - primary key defined for augmenting extra information (is redundant)
+        user(User) - one to one field for linking the extra information to the User
+        title(char) - to store title of the personeg : Mr, Ms, Dr)
+        sex(char) - to store the gender from SEX_CHOICES
+        date_of_birth(DateTime) - Date of birth of user
+        user_status(char) - Defines whether the user is new or is already part of the Institute
+        address(char) - address of the user
+        phone_no(BigInt) - the phone number of the user
+        user_type(char) - type of user (eg : student, staff)
+        department(DepartmentInfo) - to link a user to a department from DepartmentInfo table
+        profile_picture(ImageField) - profile photo of the user
+        about_me(text) - to store extra information of the user
+
+    '''
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(
@@ -126,11 +165,15 @@ class ExtraInfo(models.Model):
 
 class HoldsDesignation(models.Model):
     """
-    Records designations held by users.
+    Purpose : Records designations held by users.
 
+    ATTRIBUTES :
     'user' refers to the permanent/tenured holder of the designation.
     'working' always refers to the user who's holding the title, either permanently or temporarily
     Use 'working' to handle permissions in code
+
+    'designation(Designation)' - maps the designation to the user 
+    held_at(DateTime) - stores the time at which the position was held
     """
     user = models.ForeignKey(
         User, related_name='holds_designations', on_delete=models.CASCADE)
@@ -149,6 +192,15 @@ class HoldsDesignation(models.Model):
 
 # TODO : ADD additional staff related fields when needed
 class Staff(models.Model):
+    '''
+        Current Purpose : To store attributes relevant to a staff member 
+        
+        ! - Not complete yet
+
+        ATTRIBUTES :
+
+        id(ExtraInfo) - to establish attributes to a user
+    '''
     id = models.OneToOneField(
         ExtraInfo, on_delete=models.CASCADE, primary_key=True)
 
@@ -158,8 +210,19 @@ class Staff(models.Model):
 
 # TODO : ADD additional employee related fields when needed
 class Faculty(models.Model):
+    '''
+        Current Purpose : To store attributes relevant to a faculty 
+        
+        ! - Not complete yet
+
+        ATTRIBUTES :
+
+        id(ExtraInfo) - to establish attributes to a user
+    '''
     id = models.OneToOneField(
         ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+
+        
 
     def __str__(self):
         return str(self.id)
@@ -169,6 +232,20 @@ class Faculty(models.Model):
 
 
 class Feedback(models.Model):
+    '''
+        Current Purpose : To store the feedback of a user 
+        
+        
+
+        ATTRIBUTES :
+
+        user(User) - the 1-1 attribute for the user who has given a feedback
+        rating - the rating given by the user
+        feedback(Text) - the descriptive feedback given by the user
+        timestamp(DateTime) - to store when the feedback was registered
+    '''
+
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="fusion_feedback")
     rating = models.IntegerField(choices=Constants.RATING_CHOICES)
@@ -184,11 +261,41 @@ def Issue_image_directory(instance, filename):
 
 
 class IssueImage(models.Model):
+    '''
+        Current Purpose : To store images of an issue by a user 
+        
+        
+
+        ATTRIBUTES :
+
+        user(User) - to link the user who will upload the image
+        image(Image) - the image of the issue
+    '''
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to=Issue_image_directory)
 
 
 class Issue(models.Model):
+
+    '''
+        Current Purpose : To link an issue with issue images by a user and relevant details of the issue
+        
+        
+
+        ATTRIBUTES :
+
+        user(User) - to link the user who is reporting the issue
+       report_type(char) - to store the issue type (eg: feature request, bug report etc ) 
+       module(char) -  to store in which module the issue was found(eg : Academic, Mess etc)
+       closed(boolean) -  to denote whether the issue has been resolved or not
+       text(Text) -  textual description of the issue
+       title(char) -  to store the title of the issue
+       images(IssueImage) - reference to the images for the issue
+       support(User) - manyTomany field to store the users who also support the issue
+       timestamp(DateTime) - to keep track when the issue was first created
+       added_on(DateTime) - to keep track of when the issue was last modified
+
+    '''
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="reported_issues")
     report_type = models.CharField(

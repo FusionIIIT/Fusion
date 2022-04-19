@@ -85,3 +85,33 @@
     </div>
 
 {% endblock %}
+{% block javascript %}
+<script>
+function checkInputs(form_id) {
+    var inputs = document.getElementById(form_id).elements;
+
+    // Iterate over the form controls
+    for (i = 0; i < inputs.length; i++) {
+      if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
+        alert("Please fill the required details");
+        return;
+      }
+    }
+};
+
+function checkTimes(){
+    const start_time = document.getElementsByName("start_time")[0].value;
+    const end_time = document.getElementsByName("end_time")[0].value;
+    
+    const [start_hour, start_mins] = start_time.split(':').map(x => parseInt(x, 10));
+    const [end_hour, end_mins] = end_time.split(':').map(x => parseInt(x, 10));
+    
+    if(start_hour*60 + start_mins >= end_hour*60 + end_mins) {
+        alert("Start time cannot be later than end time of the worker shift!");
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}
+

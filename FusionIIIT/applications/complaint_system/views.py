@@ -400,6 +400,8 @@ def user(request):
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
         # next = request.POST.get('next', '/')
+
+        messages.success(request,message)
         return HttpResponseRedirect('/complaint/user')
 
     else:
@@ -966,6 +968,7 @@ def detail2(request, detailcomp_id1):
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
     num=0
+    
     if detail2.upload_complaint != "":
         num = 1
     temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).first()                                                               

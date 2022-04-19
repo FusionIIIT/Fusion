@@ -1,0 +1,79 @@
+{% load static %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="current">
+            Research Groups
+        </a>
+    </div>
+    <style >
+        td{
+           word-break: break-all;
+        }
+    </style>
+    <div class="ui active tab" data-tab="current">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Research Groups
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;"
+                                                              >
+                        <thead>
+                        <tr>
+                            <th>
+                                Group Name
+                            </th>
+                            <th>
+                                Faculty
+                            </th>
+                            <th>
+                                Students
+                            </th>
+
+                            <th>
+                                Description
+                            </th>
+                            
+                        </tr>
+                        </thead>
+
+                        
+                        
+                            {% comment %} <!--{% if pat.faculty.id == request.user.extrainfo.faculty.id %} -->{% endcomment %}
+                            
+                            {% for research_group in research_groups  %}          
+                        <tr>
+                            <td>
+                                {{research_group.name}}
+                            </td>
+                            <td>
+                                {% for facul in research_group.faculty_under_group.all %}
+                                    <div>{{ facul.username }}</div>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for student in research_group.students_under_group.all %}
+                                    <div>{{ student.username }}</div>
+                                {% endfor %}
+                            <td>
+                                {{research_group.description}}
+                            </td>
+                        </tr>{% endfor %}
+                                 
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    

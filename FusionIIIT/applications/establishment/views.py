@@ -1508,8 +1508,6 @@ def establishment(request):
     """
         Renders ltc.
     """
-    # print('faculty',is_faculty(request))
-    # print('staff',is_staff(request))
     if(is_faculty(request)==False and is_staff==False):
         return HttpResponseRedirect('/dashboard/')
 
@@ -1620,5 +1618,4 @@ def appraisal(request):
     if is_admin(request):
         response.update(generate_appraisal_lists_admin(request))
     response.update({'cpda':False,'ltc':False,'appraisal':True,'leave':False})
-    # print(response)
     return render(request, 'establishment/hr1_form.html', response)

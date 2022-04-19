@@ -59,12 +59,8 @@
 
 
     {% else %}
-    <center>
-        <a id="viewbtn1" class="btn" style="display: inline;">View Courses</a>
-        <a class="btn" id="change_reg" style="display: inline;">Change Courses</a>
-    </center>
     <div id="view_1">
-        <form id='final_student_register' action='/academic-procedures/final_registration/'>
+        <form id='final_student_register' action='/academic-procedures/final_registration/' method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="ui form" style="border: black">
                 <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
@@ -106,7 +102,7 @@
 
                 <div class="ui divider"></div>
 
-                <div class="two fields" style="width: 100%">
+                <div class="three fields" style="width: 100%">
                     <div class="field" style="width: 30%; margin-right: 5px">
                         <select class="ui dropdown" name="mode" required="True">
                             <option value="">Fee Payment Mode</option>
@@ -115,10 +111,14 @@
                             {% endfor%}
                         </select>
                     </div>
-                    <div class="field" style="width: 50%;margin-left: 5px">
+                    <div class="field" style="width: 35%;margin-left: 5px">
                         <input placeholder="challan NO. / transaction ID" name='transaction_id' type="text"
                             required="True"> <br>
                     </div>
+                    <div class="field" style="width: 25%;margin-left: 5px">
+                        <input type="file" name="fee_receipt" id="fee_receipt" required >
+                    </div>
+
                 </div>
 
                 <div class="extra content">
@@ -241,7 +241,7 @@
 
 
 
-    <form id='payment' action='/academic-procedures/final_registration/'>
+    {% comment %} <form id='payment' action='/academic-procedures/final_registration/'>
         {% csrf_token %}
 
 
@@ -257,7 +257,7 @@
             data-theme.color="#F37254"></script>
         <input type="hidden" custom="Hidden Element" name="hidden">
 
-    </form>
+    </form> {% endcomment %}
     {% endif %}
     {% else %}
     <CENTER>
@@ -292,7 +292,7 @@
             $('#course_change_table').hide();
             $('#view_1').show();
         });
-        $("#final_student_register").submit(function (event) {
+        /*$("#final_student_register").submit(function (event) {
 
             event.preventDefault();
             var friendForm = $(this);
@@ -308,7 +308,7 @@
                 alert('Registration Failed');
                 window.location = "/academic-procedures/main/";
             });
-        });
+        });*/
         $("#change_course").submit(function (event) {
 
             var inp = document.getElementsByClassName("choices");

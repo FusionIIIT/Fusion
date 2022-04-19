@@ -37,6 +37,7 @@
                         Approve
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    {% comment %} it should not be hard coded {% endcomment %}
                     {% if request.user.username == "atul" or request.user.username == "ptandon" or request.user.username == "subirs" or request.user.username == "prabin16" or request.user.username == "prabir" %}
                     <a class="item" data-tab="hod">
                         Combined Assistantship
@@ -67,15 +68,28 @@
                     <table class="ui orange table">
                         <thead>
                             <tr>
+                                <th>Course Code</th>
                                <th>Name Of the Courses</th>
-                               <th>Course Code</th>
+                               <th>Batch</th>
                                </tr>
                         </thead>
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="../../ocms/{{obj.curriculum_id.course_code}}/">{{obj.curriculum_id.course_code}}</a></td>
-                                <td>{{obj.curriculum_id.course_id.course_name}}</td>
+                                <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id.id %}">{{obj.course_id.code}}</a></td>
+                                <td>{{obj.course_id.name}}</td>
+                                <td>{{ obj.batch_id }}</td>
+                                 
+                                <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                    href="{% url 'programme_curriculum:update_course_form' obj.course_id.id %}"
+                                    type="Submit" name="Submit">
+                                        <div class="visible content">EDIT</div>
+                                        <div class="hidden content">
+                                        <i class="edit icon"></i>
+                                        </div>
+                                    </a>
+                                </td>
+
                             </tr>
                             {% endfor %}
                         </tbody>

@@ -88,8 +88,20 @@
                 success: function (response) {
                     if(response.result==='Success'){
                         $('#content_heading').text(award_name);
-                        $('#fill_content').text(response.content);
-
+                        data = response.content
+                        response.content = ""
+                        data = data.split('4.')
+                        for (let i = 1; i < data.length; i++) {
+                            response.content += '4.' + data[i] + '<br>';
+                        }
+                        data.forEach(element => {
+                            if (element !== "") {
+                                console.log(element);
+                            }
+                        });
+                        $('#fill_content').empty();
+                        $('#fill_content').append(response.content);
+                        // $('#fill_content').text(response.content);
                         console.log(response.result)
                     }
                     else{

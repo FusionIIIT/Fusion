@@ -1,13 +1,13 @@
 {% load static %}
 <div class="ui active accordion field">
-    <form class="ui form" method="POST" action="{% url 'library:libraryModule' %}">
+    <form name ="authorform"class="ui form" method="POST" action="{% url 'library:libraryModule' %}">
       {% csrf_token %}
       <div class="field">
         <label>Author Name</label>
         <input type="text" name="authorname" placeholder="Author Name">
       </div>
       <input type="hidden" value="authorname" name="nametype" />
-      <button class="ui primary button" type="submit">Search</button>
+      <button class="ui primary button"onclick="return validateAuthor()" type="submit">Search</button>
     </form>
     {% if bookresults %}
       {% if bookresults != 'N' %}
@@ -23,3 +23,14 @@
     {% endif %}
     {% endif %}
 </div>
+
+<script type="text/javascript">
+  function validateAuthor() {
+    var text = document.forms["authorform"]["authorname"].value;
+    if (text == "") {
+      alert("Please Enter Author Name");
+      return false;
+    }
+    return true;
+  }
+</script>
