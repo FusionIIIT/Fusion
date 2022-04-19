@@ -4,9 +4,10 @@
 
     <script type="text/javascript">
         function ValidateExtension2() {
+            // return true;
             var allowedFiles = [".doc", ".docx", ".pdf"];
-            var fileUpload = document.getElementById("fileUpload2");
-            var lblError = document.getElementById("lblError2");
+            var fileUpload = document.getElementById("fileUpload22");
+            var lblError = document.getElementById("lblError22");
             var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
             if (!regex.test(fileUpload.value.toLowerCase())) {
                 lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
@@ -46,8 +47,8 @@
                         </div>
                         <div class="eight wide field">
                             <label>Activity Calender</label>
-                            <input type="File" id="fileUpload2" class="ui large input" name="act_file" onchange="return ValidateExtension2()" accept=".pdf" required  />
-                            <span id="lblError2" style="color: red;"></span>
+                            <input type="File" id="fileUpload22" class="ui large input" name="act_file" onchange="ValidateExtension2()" accept=".pdf" required  />
+                            <span id="lblError22" style="color: red;"></span>
                         </div>
                     </div>
 
