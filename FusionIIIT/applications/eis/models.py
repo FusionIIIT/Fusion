@@ -253,7 +253,7 @@ class emp_expert_lectures(models.Model):
         ('Expert Lecture', 'Expert Lecture'),
         ('Invited Talk', 'Invited Talk'),
     )
-    l_type = models.CharField(max_length=14, choices=LECTURE_TYPE_CHOICES, default='Expert Lecture', null=True)
+    l_type = models.CharField(max_length=14, choices=LECTURE_TYPE_CHOICES, default='Expert Lecture', null=False)
     title = models.CharField(max_length=1000)
     place = models.CharField(max_length=1000)
     l_date = models.DateField(null=True, blank=True)
