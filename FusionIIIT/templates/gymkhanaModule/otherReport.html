@@ -52,14 +52,14 @@
                         <label>Student Incharge</label>
                         <select class="ui search fluid dropdown" id="s_inc" name="s_inc" required>
                             <option value="">Select</option>
-
+                            <option value="{{ club_event_report.incharge }}">{{ club_event_report.incharge }}</option>
                         </select>
                     </div>
 
                     <div class="three fields">
                         <div class="six wide field">
                             <label>Report</label>
-                            <input type="File" id="fileUpload5" onchange="return ValidateExtension5()" placeholder="Venue" name="report" accept=".pdf" required>
+                            <input type="File" id="fileUpload5" onchange="ValidateExtension5()" placeholder="Venue" name="report" accept=".pdf" required>
                             <span id="lblError5" style="color: red;"></span>
                         </div>
 
