@@ -8,14 +8,14 @@
     </div>
 
     <script type="text/javascript">
-        function ValidateExtension1() {
+         function ValidateExtension2() {
             var allowedFiles = [".doc", ".docx", ".pdf"];
-            var fileUpload = document.getElementById("fileUpload1");
-            var lblError = document.getElementById("lblError1");
+            var fileUpload = document.getElementById("fileUpload12");
+            var lblError = document.getElementById("lblError12");
             var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
             if (!regex.test(fileUpload.value.toLowerCase())) {
                 lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
-                fileUpload1.value = "";
+                fileUpload2.value = "";
                 return false;
             }
             lblError.innerHTML = "";
@@ -55,8 +55,8 @@
                         </div>
                         <div class="field">
                             <label>Attachments (if any)</label>
-                            <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="budget_file" required></input>
-                            <span id="lblError1" style="color: red;"></span>
+                            <input class="ui input" id="fileUpload12" onchange="ValidateExtension2();" type="file" name="budget_file" required></input>
+                            <span id="lblError12" style="color: red;"></span>
                         </div>
                     </div>
 
