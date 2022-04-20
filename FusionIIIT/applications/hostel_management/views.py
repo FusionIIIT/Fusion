@@ -276,6 +276,10 @@ def edit_attendance(request):
         hall = Hall.objects.get(hall_id='hall'+str(student.hall_no))
         date = datetime.datetime.today().strftime('%Y-%m-%d')
 
+        if HostelStudentAttendence.objects.filter(student_id=student,date=date).exists() == True:
+            messages.error(request, f'{student.id.id} is already marked present on {date}')
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
         record = HostelStudentAttendence.objects.create(student_id=student, \
             hall=hall, date=date, present=True)
         record.save()
