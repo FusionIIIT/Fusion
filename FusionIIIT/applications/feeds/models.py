@@ -8,6 +8,11 @@ from applications.globals.models import ExtraInfo
 
 
 class Constants:
+	"""
+	contains record of all tags and subtags
+	'TAG_LIST' - record of all tags
+	'SUBTAG_LIST' -  record of all subtags
+	"""
 
 	TAG_LIST = (
 		('CSE', 'CSE'),
@@ -24,7 +29,7 @@ class Constants:
 		('Academics', 'Academics'),
 		('IIITDMJ', 'IIITDMJ'),
 		('Life-Relationship-and-Self', 'Life Relationship and Self'),
-		('Technology-and-Education', 'Technology and Education'),       
+		('Technology-and-Education', 'Technology and Education'),
 		('Programmes', 'Programmes'),
 		('Others', 'Others'),
 		('Design', 'Design'),
@@ -153,6 +158,9 @@ class Constants:
 
 
 class AllTags(models.Model):
+	"""
+	records tags and subtags in database
+	"""
     # new = models.CharField(max_length=100, blank=True, null=True)
 	tag = models.CharField(max_length=100, default='CSE', choices=Constants.TAG_LIST)
 	subtag = models.CharField(max_length=100, unique=True, default='Web-Development', choices=Constants.SUBTAG_LIST)
@@ -161,6 +169,9 @@ class AllTags(models.Model):
 		return '{} - {}'.format(self.tag, self.subtag)
 
 class AskaQuestion(models.Model):
+	"""
+	Records questions asked by users
+	"""
 	can_delete=models.BooleanField(default=False)
 	can_update=models.BooleanField(default=False)
 	user = models.ForeignKey(User, default=1,on_delete=models.CASCADE)
@@ -184,7 +195,7 @@ class AskaQuestion(models.Model):
 
 	def total_likes(self):
 		return self.likes.count()
-	
+
 	def total_dislikes(self):
 		return self.dislikes.count()
 
@@ -196,11 +207,14 @@ class AskaQuestion(models.Model):
 		markdown_text = markdown(content)
 		markdown_text = mark_safe(markdown_text)
 		return markdown_text
-			
+
 	def __str__(self):
 		return '{} added ----> {} in {}'.format(self.user, self.subject, self.select_tag)
 
 class AnsweraQuestion(models.Model):
+	"""
+	Records answers on a question
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	content = models.TextField(max_length=1000, blank=False)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
@@ -213,7 +227,7 @@ class AnsweraQuestion(models.Model):
 
 	def total_likes(self):
 		return self.likes.count()
-	
+
 	def total_votes(self):
 		return self.likes.count() - self.dislikes.count()
 
@@ -222,7 +236,7 @@ class AnsweraQuestion(models.Model):
 
 	def total_requests(self):
 		return self.requests.count()
-		
+
 	def __str__(self):
 		return '{} - answered the question - {}'.format(self.content, self.question)
 
@@ -236,6 +250,9 @@ class AnsweraQuestion(models.Model):
 		return self.answers.count()
 
 class Comments(models.Model):
+	"""
+	Records comments on posts
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1 , on_delete = models.CASCADE)
 	comment_text = models.CharField(max_length=5000)
@@ -251,6 +268,9 @@ class Comments(models.Model):
 		return self.likes_comment.count()
 
 class Reply(models.Model):
+	"""
+	Records replies on a post
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	comment = models.ForeignKey(Comments,default=1, on_delete=models.CASCADE)
 	msg = models.CharField(max_length=1000)
@@ -266,6 +286,9 @@ class Reply(models.Model):
 		return self.replies.count()
 
 class report(models.Model):
+	"""
+	records report on a quesiton
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete = models.CASCADE)
 	report_msg = models.CharField(max_length=1000,default="")
@@ -274,6 +297,9 @@ class report(models.Model):
 	# 	unique_together = ('user', 'question')
 
 class hidden(models.Model):
+	"""
+	records a hidden question
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
 	# hide = models.BooleanField(default=False)
@@ -285,6 +311,10 @@ class hidden(models.Model):
 		return '{} - hide - {}'.format(self.user, self.question)
 
 class tags(models.Model):
+	"""
+	records tags for a user
+
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
 	my_subtag = models.ForeignKey(AllTags, default=1, on_delete = models.CASCADE)
@@ -296,6 +326,9 @@ class tags(models.Model):
 		return '%s is interested in ----> %s - %s' % (self.user, self.my_tag, self.my_subtag.subtag)
 
 class Profile(models.Model):
+	"""
+	records profile details of a user
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	bio = models.CharField(max_length=250,blank=True)
 	profile_picture = models.ImageField(null=True, blank=True, upload_to='feeds/profile_pictures')
@@ -304,6 +337,9 @@ class Profile(models.Model):
 		return '%s\'s Bio is  ----> %s' % (self.user, self.bio)
 
 class Roles(models.Model):
+	"""
+	Records role a for a user
+	"""
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	role = models.CharField(max_length=100, blank=False)
 	active = models.BooleanField(default=True)
@@ -311,6 +347,9 @@ class Roles(models.Model):
 	 return '%s is assigned %s role' % (self.user, self.role)
 
 class QuestionAccessControl(models.Model):
+	"""
+	records the different access permissions like the user can comment on a question or not, can vot or not for a user
+	"""
 	question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
 	canVote = models.BooleanField()
 	canAnswer = models.BooleanField()
@@ -319,4 +358,3 @@ class QuestionAccessControl(models.Model):
 	created_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	def __str__(self):
 		return "question number " + str(self.question.id)
-	
