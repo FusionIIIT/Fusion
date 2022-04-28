@@ -22,6 +22,14 @@
   {% endif %}
 </div>
 
+<div class="center menu">
+    {% if user in hall_caretaker%}
+      <a class="item" data-tab="edit_by_sheet">
+          <i class="edit icon"></i>Upload Sheet
+      </a>
+    {% endif %}
+</div>
+
 </div>
 
 
@@ -43,6 +51,14 @@
         {% endblock %}
     </div>
 </div> 
+
+<div class="ui tab" data-tab="edit_by_sheet">
+    <div class="ui vertical segment">
+        {% block room_upload %}
+            {% include 'hostelmanagement/upload_student_rooms.html' %}
+        {% endblock %}
+    </div>
+</div>
 
 <br>
 <br>
