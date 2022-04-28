@@ -16,7 +16,7 @@ click-plugins==1.1.1
 click-repl==0.1.6
 cryptography==36.0.2
 defusedxml==0.6.0
-Django==3.1.5
+Django==3.1.14
 django-allauth==0.44.0
 django-cleanup==5.1.0
 django-cors-headers==3.7.0
