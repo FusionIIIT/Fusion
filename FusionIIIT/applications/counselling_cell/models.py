@@ -87,7 +87,7 @@ class CounsellingIssue(models.Model):
     resolved_by = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,null=True)
     
     def __str__(self):
-        return f"{self.issue} - {student}"
+        return f"{self.issue} - {self.student}"
 
 class CounsellingFAQ(models.Model):
     
