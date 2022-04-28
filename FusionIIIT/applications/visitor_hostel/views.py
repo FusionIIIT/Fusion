@@ -21,6 +21,7 @@ from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
 import numpy as np
+from django.contrib.auth.models import User
 
 from .forms import InventoryForm
 
@@ -318,7 +319,7 @@ def request_booking(request):
         print("jiihuhhih")
         print(user)
         booking_id =  request.POST.get('booking-id')
-        category = request.POST.get('visitor-category')
+        category = request.POST.get('category')
         person_count = request.POST.get('number-of-people')
         bookingObject = []
         #if person_count and (int(person_count)<20):
@@ -342,13 +343,15 @@ def request_booking(request):
       #      flag=1
 
       #  if flag ==0:
-        print(sys.getsizeof(arrival_tim0e))
+        print(sys.getsizeof(booking_from_time))
         print(sys.getsizeof(booking_from))
         print(sys.getsizeof(purpose_of_visit))
         print(sys.getsizeof(bill_to_be_settled_by))
 
+        care_taker = User.objects.filter(username=1812601).first()
+        
         bookingObject = BookingDetail.objects.create(
-                                                     caretaker_id = 1812601,
+                                                     caretaker = care_taker,
                                                      purpose=purpose_of_visit,
                                                      intender=user,
                                                      booking_from=booking_from,

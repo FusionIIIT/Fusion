@@ -27,7 +27,7 @@
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="ui header">
-                        Select Student Guide from Second Year Batch:
+                        Select Student Guide from Second Year /Third Year Batch:
                     </div>
 
                     <br>
@@ -39,6 +39,9 @@
                                 <select class="ui dropdown" name="student" id="student_guide">
                                     {% for student in second_year_students %}
                                     <option value={{student.id.user.username}}>{{student.id.user.username}}          {{student.id.user.first_name}} </option>
+                                    {% endfor %}
+                                    {% for student in third_year_students %}
+                                    <option value={{student.id.user.username}}>{{student.id.user.username}}     {{student.id.user.first_name}}     {{student.id.user.last_name}} </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -76,7 +79,7 @@
             <div class="item">
               
                 <div class="description">
-                    <div class="header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}}</div>
+                    <div class="header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}} {{counsellor.student.id.user.last_name}}</div>
                     <h2 class="ui header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
                     <!-- <div class="header">Answer {{forloop.counter}} :</div>
                     <h3 class="ui header">{{faq.counselling_answer}}</h3> -->

@@ -255,13 +255,14 @@ function request_booking (event) {
         url: '/visitorhostel/request-booking/',
         data: {
                'intender' : intender,
+               'category' : category,
                'csrfmiddlewaretoken': csrfmiddlewaretoken,
                'booking_from' : booking_from,
                'booking_to' : booking_to,
                'number-of-people' : number_of_people,
                'purpose-of-visit' : purpose_of_visit,
                'number-of-rooms' : number_of_rooms,
-               'visitor-category' : category,
+               'category' : category,
                'booking_from_time' : booking_from_time,
                'booking_to_time' : booking_to_time,
                'remarks_during_booking_request': remarks_during_booking_request,
@@ -450,7 +451,7 @@ function submit_room_status(id){
 function confirm_booking (id) {
 
     csrfmiddlewaretoken = $('input[name=csrf]').val();
-    category = $('input[name=visitor-category-'+id+']').val();
+    category = $('input[name=category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
     if (rooms == 0) {
@@ -464,7 +465,7 @@ function confirm_booking (id) {
         data: {
             'booking-id' : id,
             'csrfmiddlewaretoken': csrfmiddlewaretoken,
-            'visitor-category' : category,
+            'category' : category,
             'rooms' : rooms,
         },
         success: function(data) {
@@ -534,7 +535,7 @@ function update_booking (id) {
         data: {
             'booking-id' : $('input[name=booking-id-'+id+']').val(),
             'intender' : intender,
-            'visitor-category' : category,
+            'category' : category,
                'csrfmiddlewaretoken': csrfmiddlewaretoken,
                'booking_from' : booking_from,
                'booking_to' : booking_to,
@@ -610,7 +611,7 @@ function forward_booking (id) {
 
     id=id;
     csrfmiddlewaretoken = $('input[name=csrf]').val();
-    previous_category = $('input[name=visitor-category-'+id+']').val();
+    previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 

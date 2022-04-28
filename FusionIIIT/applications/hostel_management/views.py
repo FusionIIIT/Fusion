@@ -61,7 +61,8 @@ def hostel_view(request, context={}):
     hall1_staff = StaffSchedule.objects.filter(hall=hall1)
     hall3_staff = StaffSchedule.objects.filter(hall=hall3)
     hall4_staff = StaffSchedule.objects.filter(hall=hall4)
-    hall_caretakers = HallCaretaker.objects.all()
+    hall_caretakers = HallCaretaker.objects.all().select_related()
+    hall_wardens = HallWarden.objects.all().select_related()
 
     hall_student=""
     current_hall=""
@@ -80,8 +81,12 @@ def hostel_view(request, context={}):
 
     hall_caretaker_user=[]
     for caretaker in hall_caretakers:
-        hall_caretaker_user.append(caretaker.staff.id.user)      
+        hall_caretaker_user.append(caretaker.staff.id.user)
 
+    hall_warden_user = []
+    for warden in hall_wardens:
+        hall_caretaker_user.append(warden.staff.id.user)
+    
     todays_date = date.today()
     current_year = todays_date.year
     current_month = todays_date.month
@@ -106,6 +111,7 @@ def hostel_view(request, context={}):
         'hall3_staff' : hall3_staff,
         'hall4_staff' : hall4_staff,
         'hall_caretaker' : hall_caretaker_user,
+        'hall_warden' : hall_warden_user,
         'room_avail' : get_avail_room,
         'hall_student':hall_student,
         'worker_report': worker_report,
