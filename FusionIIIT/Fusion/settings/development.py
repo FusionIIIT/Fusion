@@ -10,7 +10,7 @@ DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-        'HOST': '172.27.16.216',
+        'HOST': '127.0.0.1',
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
@@ -24,6 +24,13 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+#DATABASES = {
+ #   'default': {
+ #        'ENGINE': 'django.db.backends.sqlite3',
+ #       'NAME': os.path.join(BASE_DIR, 'fusion.db'),
+ #   }
+#}
 
 if DEBUG:
     MIDDLEWARE += (

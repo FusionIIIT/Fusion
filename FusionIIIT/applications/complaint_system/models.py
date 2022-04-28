@@ -18,6 +18,7 @@ class Constants:
         ('LHTC', 'LHTC'),
         ('NR2', 'NR2'),
         ('Rewa_Residency', 'Rewa_Residency'),
+        ('Visitor_Hostel', 'Visitor_Hostel'),
     )
     COMPLAINT_TYPE = (
         ('Electricity', 'Electricity'),
