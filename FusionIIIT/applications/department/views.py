@@ -99,11 +99,20 @@ def dep_main(request):
 
     requests_made = get_make_request(user_info)
     
+    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
+    student = request.user.holds_designations.filter(designation__name='student').exists()
+    staff = request.user.holds_designations.filter(designation__name='staff').exists()
+    
     context = browse_announcements()
     context_f = faculty()
     user_designation = ""
     
-    user_designation = str(user.extrainfo.user_type)
+    if fac_view:
+        user_designation = "faculty"
+    elif student:
+        user_designation = "student"
+    else:
+        user_designation = "staff"
 
     if request.method == 'POST':
         request_type = request.POST.get('request_type', '')
@@ -125,6 +134,7 @@ def dep_main(request):
                                                         "fac_list" : context_f,
                                                         "requests_made" : requests_made
                                                     })
+    # elif(str(user.extrainfo.user_type)=="faculty"):
     elif user_designation=="faculty":
         return HttpResponseRedirect("facView")
     elif user_designation=="staff":
@@ -529,11 +539,19 @@ def faculty():
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
+    staff=ExtraInfo.objects.filter(user_type='staff')
+
     context_f = {
         "cse_f" : cse_f,
         "ece_f" : ece_f,
         "me_f" : me_f,
-        "sm_f" : sm_f
+        "sm_f" : sm_f,
+        "staffNcse" : list(staff)+list(cse_f),
+        "staffNece" : list(staff)+list(ece_f),
+        "staffNme" : list(staff)+list(me_f),
+        "staffNsm" : list(staff)+list(sm_f)
+
+
     }
     return context_f
 
