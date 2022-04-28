@@ -1,7 +1,9 @@
+from pickle import TRUE
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 
 class Constants:
@@ -137,7 +139,7 @@ class Ltc_application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     pf_number = models.CharField(max_length=50, default='')
     basic_pay = models.IntegerField(blank=True)
-    leave_start = models.DateField()
+    leave_start = models.DateField(null=True)
     leave_end = models.DateField()
     family_departure_date = models.DateField()
     leave_nature = models.CharField(max_length=50, default='')
@@ -259,8 +261,8 @@ class Appraisal(models.Model):
     publications = models.CharField(max_length=200, blank=True, null=True, default='')
     conferences_meeting_attended = models.CharField(max_length=200, blank=True, null=True, default='')
     conferences_meeting_organized = models.CharField(max_length=200, blank=True, null=True, default='')
-    admin_assign=models.CharField(max_length=20, blank=True, null=True, default='')
-    sevice_to_ins=models.CharField(max_length=20, blank=True, null=True, default='')
+    admin_assign=models.CharField(max_length=200, blank=True, null=True, default='')
+    sevice_to_ins=models.CharField(max_length=200, blank=True, null=True, default='')
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
     start_date = models.DateField(null=True,blank=True)

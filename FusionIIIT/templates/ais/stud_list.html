@@ -1,0 +1,72 @@
+<div class="ui divider"></div>
+<form class="ui form" action="/aims/generateStudentSheet" method="post" id="form8_8">
+    {% csrf_token %}
+    <input type="number" hidden="true" name = "batch" value= "{{ batch }}">
+    <input type="text" hidden="true" name = "programme" value="{{ programme }}">
+    <input type="number" hidden="true" name = "Roll_number" value= "{{ Roll_number }}">
+    <input type="text" hidden="true" name = "branch" value="{{ branch }}">
+    <input type="text" hidden="true" name = "category" value="{{ category }}">
+    
+    <div class="field">
+        <button class="ui fluid primary button" type="submit">
+            Generate Excel Sheet
+        </button>
+    </div>
+</form>
+
+{% if students %}
+<div  style="overflow: auto; max-height:100vh; margin-top: 15px; ">
+        <table class="ui celled medium table">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;
+                        td{
+                            padding: 10px;
+                        }">
+                        <td><h4>Admission Year</h4></td>
+                        <td><h4>Roll Number</h4></td>
+                        <td><h4>Full Name</h4></td>
+                        <td><h4>Program</h4></td>
+                        <td><h4>Discipline</h4></td>
+                        <td><h4>Specialization</h4></td>
+                        <td><h4>Gender</h4></td>
+                        <td><h4>Category</h4></td>
+                        <td><h4>PWD Status</h4></td>
+                        <td><h4>Mobile Number</h4></td>
+                        <td><h4>DOB</h4></td>
+                        <td><h4>Email ID</h4></td>
+                        <td><h4>Father's Name</h4></td>
+                        <td><h4>Father's Mobile Number</h4></td>
+                        <td><h4>Mother's Name</h4></td>
+                        <td><h4>Mother's  Mobile Number</h4></td>
+                        <td><h4>Address</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td>{{ student.admissionYear }}</td>
+                            <td>{{ student.RollNo }}</td>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.program }}</td>
+                            <td>{{ student.discipline }}</td>
+                            <td>{{ student.specailization }}</td>
+                            <td>{{ student.gender }}</td>
+                            <td>{{ student.category }}</td>
+                            <td>{{ student.pwd_status }}</td>
+                            <td>{{ student.Mobile }}</td>
+                            <td>{{ student.dob }}</td>
+                            <td>{{ student.emailid }}</td>
+                            <td>{{ student.father_name }}</td>
+                            <td>{{ student.father_mobile_no }}</td>
+                            <td>{{ student.mother_name }}</td>
+                            <td>{{ student.mother_mobile_no }}</td>
+                            <td>{{ student.address }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No students Avaliable</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}

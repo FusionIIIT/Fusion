@@ -62,7 +62,20 @@ def counselling_cell(request):
             user_role = student_des
             # print(student_des)
             if student.student_position == "student_guide" :
-                issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student]).select_related()
+             
+           
+                newlist = list()
+                for i in student_and_student_guide.keys():
+                    newlist.append(i)
+                
+
+                if student in newlist:
+
+
+                    issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student]).select_related()
+                else :
+                     
+                    issues=[]    
     elif extra_info.user_type == 'faculty':
         designation = Designation.objects.filter(name= "counselling_head").first()
         faculty=Faculty.objects.get(id=extra_info)

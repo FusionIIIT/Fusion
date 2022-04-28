@@ -99,20 +99,11 @@ def dep_main(request):
 
     requests_made = get_make_request(user_info)
     
-    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
-    student = request.user.holds_designations.filter(designation__name='student').exists()
-    staff = request.user.holds_designations.filter(designation__name='staff').exists()
-    
     context = browse_announcements()
     context_f = faculty()
     user_designation = ""
     
-    if fac_view:
-        user_designation = "faculty"
-    elif student:
-        user_designation = "student"
-    else:
-        user_designation = "staff"
+    user_designation = str(user.extrainfo.user_type)
 
     if request.method == 'POST':
         request_type = request.POST.get('request_type', '')
@@ -134,7 +125,6 @@ def dep_main(request):
                                                         "fac_list" : context_f,
                                                         "requests_made" : requests_made
                                                     })
-    # elif(str(user.extrainfo.user_type)=="faculty"):
     elif user_designation=="faculty":
         return HttpResponseRedirect("facView")
     elif user_designation=="staff":

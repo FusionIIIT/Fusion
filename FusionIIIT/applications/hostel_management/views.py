@@ -61,7 +61,8 @@ def hostel_view(request, context={}):
     hall1_staff = StaffSchedule.objects.filter(hall=hall1)
     hall3_staff = StaffSchedule.objects.filter(hall=hall3)
     hall4_staff = StaffSchedule.objects.filter(hall=hall4)
-    hall_caretakers = HallCaretaker.objects.all()
+    hall_caretakers = HallCaretaker.objects.all().select_related()
+    hall_wardens = HallWarden.objects.all().select_related()
 
     hall_student=""
     current_hall=""
@@ -80,8 +81,12 @@ def hostel_view(request, context={}):
 
     hall_caretaker_user=[]
     for caretaker in hall_caretakers:
-        hall_caretaker_user.append(caretaker.staff.id.user)      
+        hall_caretaker_user.append(caretaker.staff.id.user)
 
+    hall_warden_user = []
+    for warden in hall_wardens:
+        hall_caretaker_user.append(warden.staff.id.user)
+    
     todays_date = date.today()
     current_year = todays_date.year
     current_month = todays_date.month
@@ -90,6 +95,12 @@ def hostel_view(request, context={}):
         worker_report = WorkerReport.objects.filter(Q(hall__hall_id=current_hall, year=current_year, month=current_month) | Q(hall__hall_id=current_hall, year=current_year, month=current_month-1))
     else:
         worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
+
+    attendance = HostelStudentAttendence.objects.all().select_related()
+    halls_attendance = {}
+    for hall in all_hall:
+        halls_attendance[hall.hall_id] = HostelStudentAttendence.objects.filter(hall=hall).select_related()
+
 
     context = {
         
@@ -100,6 +111,7 @@ def hostel_view(request, context={}):
         'hall3_staff' : hall3_staff,
         'hall4_staff' : hall4_staff,
         'hall_caretaker' : hall_caretaker_user,
+        'hall_warden' : hall_warden_user,
         'room_avail' : get_avail_room,
         'hall_student':hall_student,
         'worker_report': worker_report,
@@ -107,6 +119,7 @@ def hostel_view(request, context={}):
         'current_hall' : current_hall,
         'hall_staffs': hall_staffs,
         'hall_notices': hall_notices,
+        'attendance': halls_attendance,
         **context
     }
 
@@ -244,6 +257,38 @@ def edit_student_room(request):
         add_to_room(student, new_room=room_no)
         messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+def edit_attendance(request):
+    """
+    This function is used to edit the attendance of a student.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    
+    @variables:
+      student_id = The student whose attendance has to be updated.
+      hall = The hall of the concerned student.
+      date = The date on which attendance has to be marked.
+    """
+    if request.method == "POST":
+        roll_no = request.POST["roll_no"]
+        
+        student = Student.objects.get(id=roll_no)
+        hall = Hall.objects.get(hall_id='hall'+str(student.hall_no))
+        date = datetime.datetime.today().strftime('%Y-%m-%d')
+
+        if HostelStudentAttendence.objects.filter(student_id=student,date=date).exists() == True:
+            messages.error(request, f'{student.id.id} is already marked present on {date}')
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+        record = HostelStudentAttendence.objects.create(student_id=student, \
+            hall=hall, date=date, present=True)
+        record.save()
+
+        messages.success(request, f'Attendance of {student.id.id} recorded.')
+
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
 
 
 @login_required

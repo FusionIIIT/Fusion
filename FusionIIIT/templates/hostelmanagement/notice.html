@@ -14,24 +14,23 @@
         {% endfor %}
         </div>
     </div>
-
+{% if user in hall_caretaker or hall_warden %}
 <div class="right menu">
     <a class="item" data-tab="notice">
         <i class="sticky note icon"></i>Notice
     </a>
 </div>
-
+{% endif %}
 </div>
-
+{% if user in hall_caretaker or hall_warden %}
 <div class="ui tab" data-tab="notice">
     <div class="ui vertical segment">
-        {% if request.user == user %}
-            {% block notice_form %}
-                {% include 'hostelmanagement/notice_form.html' %}
-            {% endblock %}
-        {% endif %}
+        {% block notice_form %}
+            {% include 'hostelmanagement/notice_form.html' %}
+        {% endblock %}
     </div>
 </div>
+{% endif %}
 
 {% for hall in all_hall %}
     <div class="{% if hall.hall_id == 'hall1' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_notice>
