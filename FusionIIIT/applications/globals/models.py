@@ -153,6 +153,7 @@ class ExtraInfo(models.Model):
     profile_picture = models.ImageField(
         null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
+    date_modified = models.DateField(default=datetime.date(2020, 1, 1))
 
     @property
     def age(self):
