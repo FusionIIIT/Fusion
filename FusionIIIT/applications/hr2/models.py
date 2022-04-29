@@ -116,6 +116,9 @@ class ForeignService(models.Model):
     description = models.CharField(max_length=300, default='')
     salary_source = models.CharField(max_length=100, default='')
     designation = models.CharField(max_length=100, default='')
+    award_name = models.CharField(max_length=100, default='')
+    award_type = models.CharField(max_length=100, default='')
+    achievement_date = models.CharField(max_length=100, default='')
     service_type = models.CharField(
         max_length=100, choices=Constants.FOREIGN_SERVICE)
 

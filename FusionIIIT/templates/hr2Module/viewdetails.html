@@ -405,6 +405,61 @@ Module
                         </div>
 
 
+                        <!-- work Assignment -->
+
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            {% if workAssignment %}
+                                            <th>Awards :-</th>
+                                            {% elif not workAssignment %}
+                                            <th>No Entries :-</th>
+                                            <!-- <h1>Awards</h1> -->
+                                            {% endif%}
+                                            
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Name</th>
+                                                <th>Type</th>
+                                                <th>Achievement Date</th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+                                            {% if not workAssignment %}
+                                            <h1>Awards</h1>
+                                            {% endif%}
+
+                                            {% for serviceBook in workAssignment %}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.award_name}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.type}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.achievement_date}}</td>
+                                                <!-- <td id="ach{{ forloop.counter }}C">
+
+                                                    <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                            class="large attach black icon"></i>
+                                                    </a>
+
+                                                </td> -->
+
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
 
                         <!-- others -->
@@ -463,15 +518,7 @@ Module
                             </div>
 
 
-
-
-
-
-
-
                         </div>
-
-
 
 
 
