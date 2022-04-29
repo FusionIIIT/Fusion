@@ -65,10 +65,10 @@
                                  <i class="right floated chevron right icon"></i>
                              </a>
                          {% endif %}
-                    <a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>(9-4-22)-->
                     {% endif %}
                 {% endfor %}
 
@@ -76,40 +76,70 @@
                 {% for c in current1 %}
                     {% if c.designation.name == 'placement chairman' %}
                         {% if students %}
-                            <a class="item" data-tab="twelth">
+                           <a class="item" data-tab="twelth">
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
-                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
                             </a>
                         {% else %}
-                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
-                             <a class="item" data-tab="ninth">
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                                  Send Notification
                                  <i class="right floated chevron right icon"></i>
-                             </a>
-                         {% endif %}
+                             </a>-->
+                    {% endif %}
 
-                    <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+
+                   <!-- <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>(9-4-22)
                     <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                         Placement Visits
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>-->
+
+
                     {% endif %}
                 {% endfor %}
+
+
 
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
+                 <!--Added student record tab here for staff only-->
+                {% if current2 %}
+                <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                    Student Record
+                    <i class="right floated chevron right icon"></i>
+                </a>(9-4-22)-->
+
+
+
+                <!--Placement officers could schedule placement -->
+               <!-- <a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
+                    Add Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>-->
+                <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
+                    Add Placement Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if current1 %}
+                <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
+                    Add Chairman Visit
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -201,35 +231,35 @@
             <div class="ui vertical segment">
                 {% for c in current %}
                   {% if c.designation.name == 'student' %}
-                  {% if schedules %}
+                    {% if schedules %}
                     {% for sch in schedules|dictsortreversed:"schedule_at" %}
-                                <div class="content_item" id="{{sch.notify_id.company_name}}">
-                                  <span>
-                                    <div class="ui segments">
-                                      <div class="ui horizontal segments">
-                                        <div class="ui segment">
-                                          <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }} | {{ sch.placement_date }}</h3></strong><br>
-                                          Time of Message: {{ sch.notify_id.timestamp }}
+                              <div class="content_item" id="{{sch.notify_id.company_name}}">
+                                <span>
+                                  <div class="ui segments">
+                                    <div class="ui horizontal segments">
+                                      <div class="ui segment">
+                                        <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }} | {{ sch.placement_date }}</h3></strong><br>
+                                        Time of Message: {{ sch.notify_id.timestamp }}
 
-                                      </div>
-                                        </div>
-                                        <div class="ui secondary segment">
-                                          <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                          <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
-                                          <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
-                                          <p>Job Description: {{ sch.description }}</p>
-                                        </div>
                                     </div>
-                                  </span><br>
-                                </div>
+                                      </div>
+                                      <div class="ui secondary segment">
+                                        <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                                        <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
+                                        <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                                        <p>Job Description: {{ sch.description }}</p>
+                                      </div>
+                                  </div>
+                                </span><br>
+                              </div>
                     {% endfor %}
                     {% else %}
-                      <center><h5>No Activites Scheduled.</h5></center>
+                        <center><h5>No Active Schedule.</h5></center>
                     {% endif %}
-                  {% endif %}
+                <!--The noticeboard card starts here!-->
+                   <!-- {% if placementstatus %}
 
-                    {% comment %} {% if placementstatus %}
-                      <!--The noticeboard card starts here!-->
+
                         <div class="content">
                             <div class="ui divider"></div>
                             {% for ps in placementstatus %}
@@ -275,8 +305,8 @@
                     {% else %}
                       <center><h5>There are no Activities Scheduled.</h5></center>
                     {% endif %}
-
-                  {% endif %} {% endcomment %}
+-->
+                  {% endif %}
                 {% endfor %}
 
                     {% for c1 in current1 %}
