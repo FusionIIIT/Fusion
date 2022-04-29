@@ -39,18 +39,27 @@
                 <tr>
                     
                     <td>Monday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'MB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                                {% if item.meal_time == 'MB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'ML' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'MD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'ML' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'MD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -60,19 +69,27 @@
                 <tr>
                     
                     <td>Tuesday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                            {% if item.meal_time == 'TB' or item.meal_time == 'TL' or item.meal_time == 'TD' %}
-                                
-                                {% if item.meal_time == 'TB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'TL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'TD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}    
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -83,18 +100,27 @@
                 <tr>
                     
                     <td>Wednesday</td>
-                    {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'WB' or item.meal_time == 'WL' or item.meal_time == 'WD' %}
-                        
-                                {% if item.meal_time == 'WB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'WL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'WD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -103,19 +129,27 @@
                 <tr>
                     
                     <td>Thursday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'THB' or item.meal_time == 'THL' or item.meal_time == 'THD' %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                        
-                                {% if item.meal_time == 'THB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'THL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'THD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -125,18 +159,27 @@
                     
 
                     <td>Friday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'FB' or item.meal_time == 'FL' or item.meal_time == 'FD' %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                                {% if item.meal_time == 'FB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'FL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'FD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -144,20 +187,28 @@
                 </tr>
 
                 <tr>
-                   
                     <td>Saturday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'SB' or item.meal_time == 'SL' or item.meal_time == 'SD' %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                                {% if item.meal_time == 'SB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -167,18 +218,27 @@
                 <tr>
                     
                     <td>Sunday</td>
+
                     {% for item in menu %}
-                        {% if item.mess_option == messinfo.mess_option %}
-                            {% if item.meal_time == 'SUB' or item.meal_time == 'SUL' or item.meal_time == 'SUD' %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUB' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                                {% if item.meal_time == 'SUB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SUL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SUD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUL' %}
+                                <td>{{item.dish}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUD' %}
+                                <td>{{item.dish}}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
