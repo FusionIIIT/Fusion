@@ -582,6 +582,7 @@ def pg_insert(request):
         eis = emp_mtechphd_thesis()
     else:
         eis = get_object_or_404(emp_mtechphd_thesis, id=request.POST.get('pg_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.title = request.POST.get('title')
     eis.s_year = request.POST.get('s_year')
@@ -601,6 +602,7 @@ def phd_insert(request):
         eis = emp_mtechphd_thesis()
     else:
         eis = get_object_or_404(emp_mtechphd_thesis, id=request.POST.get('phd_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.degree_type = 2
     eis.title = request.POST.get('title')
@@ -621,6 +623,7 @@ def fvisit_insert(request):
         eis = emp_visits()
     else:
         eis = get_object_or_404(emp_visits, id=request.POST.get('fvisit_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.v_type = 2
     eis.country = request.POST.get('country').upper()
@@ -646,6 +649,7 @@ def ivisit_insert(request):
         eis = emp_visits()
     else:
         eis = get_object_or_404(emp_visits, id=request.POST.get('ivisit_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.v_type = 1
     eis.country = request.POST.get('country2')
@@ -870,6 +874,7 @@ def conference_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
     eis = emp_research_papers()
+    eis.user = request.user
     eis.pf_no = pf
     eis.rtype = 'Conference'
     eis.authors = request.POST.get('authors3')
@@ -1025,6 +1030,7 @@ def book_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
     eis = emp_published_books()
+    eis.user = request.user
     eis.pf_no = pf
     eis.p_type = request.POST.get('book_p_type')
     eis.title = request.POST.get('book_title')
@@ -1051,6 +1057,7 @@ def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
     eis = emp_confrence_organised()
+    eis.user = request.user
     eis.pf_no = pf
     eis.name = request.POST.get('conference_name')
     eis.venue = request.POST.get('conference_venue')
@@ -1127,6 +1134,7 @@ def event_insert(request):
     else:
         eis = get_object_or_404(emp_event_organized, id=request.POST.get('event_id'))
     eis.pf_no = pf
+    eis.user = request.user
     eis.type = request.POST.get('event_type')
     if(eis.type == 'Any Other'):
         if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
@@ -1186,6 +1194,7 @@ def award_insert(request):
     else:
         eis = get_object_or_404(emp_achievement, id=request.POST.get('ach_id'))
     eis.pf_no = pf
+    eis.user = request.user
     eis.a_type = request.POST.get('type')
     if(request.POST.get('a_day') != None and request.POST.get('a_day') != ""):
         eis.a_day = request.POST.get('a_day')
@@ -1206,6 +1215,7 @@ def talk_insert(request):
         eis = emp_expert_lectures()
     else:
         eis = get_object_or_404(emp_expert_lectures, id=request.POST.get('lec_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.l_type = request.POST.get('type')
     eis.place = request.POST.get('place')
@@ -1229,6 +1239,7 @@ def chaired_insert(request):
         eis = emp_session_chair()
     else:
         eis = get_object_or_404(emp_session_chair, id=request.POST.get('ses_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.event = request.POST.get('event')
     eis.name = request.POST.get('name')
@@ -1253,6 +1264,7 @@ def keynote_insert(request):
         eis = emp_keynote_address()
     else:
         eis = get_object_or_404(emp_keynote_address, id=request.POST.get('keyid'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.type = request.POST.get('type')
     eis.name = request.POST.get('name')
@@ -1277,6 +1289,7 @@ def project_insert(request):
         eis = emp_research_projects()
     else:
         eis = get_object_or_404(emp_research_projects, id=request.POST.get('project_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.pi = request.POST.get('pi')
     eis.co_pi = request.POST.get('co_pi')
@@ -1312,13 +1325,16 @@ def project_insert(request):
     return redirect('/profile/?page4=1')
 
 def consult_insert(request):
+    print("=======================")
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
-
+    print(">>>>>>>.",user,type(user))
+    print(">>>>>>>",request.user,type(request.user))
     if (request.POST.get('consultancy_id')==None or request.POST.get('consultancy_id')==""):
         eis = emp_consultancy_projects()
     else:
         eis = get_object_or_404(emp_consultancy_projects, id=request.POST.get('consultancy_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.consultants = request.POST.get('consultants')
     eis.client = request.POST.get('client')
@@ -1351,6 +1367,7 @@ def patent_insert(request):
         eis = emp_patents()
     else:
         eis = get_object_or_404(emp_patents, id=request.POST.get('patent_id'))
+    eis.user = request.user
     eis.pf_no = pf
     eis.p_no = request.POST.get('p_no')
     eis.earnings = request.POST.get('earnings')

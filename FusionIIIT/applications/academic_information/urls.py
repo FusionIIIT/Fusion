@@ -40,5 +40,7 @@ urlpatterns = [
     url(r'^delete_curriculum', views.delete_curriculum, name="delete_curriculum"),
     url(r'^float_course_submit', views.float_course_submit, name="float_course_submit"),
     url(r'^float_course', views.float_course, name="float_course"),
-    url(r'^api/',include('applications.academic_information.api.urls'))
+    url(r'^api/',include('applications.academic_information.api.urls')),
+    url(r'^view_all_student_data', views.view_all_student_data, name='view_all_student_data'),
+    url(r'^generateStudentSheet$',views.generatestudentxlsheet, name = 'generatestudentxlsheet'),
 ]

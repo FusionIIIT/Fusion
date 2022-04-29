@@ -1832,9 +1832,10 @@ def placement_statistics(request):
     logic of the view shown under Placement Statistics tab
     '''
     user = request.user
-    statistics_tab = 1
-    delete_operation = 0
 
+    statistics_tab = 1
+    strecord_tab=1
+    delete_operation = 0
     pagination_placement = 0
     pagination_pbi = 0
     pagination_higher = 0
@@ -1850,7 +1851,19 @@ def placement_statistics(request):
     years = PlacementRecord.objects.filter(~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
     records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
 
-    invitecheck=0;
+
+
+
+    #working here to fetch all placement record
+    all_records=PlacementRecord.objects.all()
+    print(all_records)
+
+
+
+
+
+
+    invitecheck=0
     for r in records:
         r['name__count'] = 0
         r['year__count'] = 0
@@ -1882,28 +1895,49 @@ def placement_statistics(request):
     form2 = SearchPlacementRecord(initial={})
     form3 = SearchPbiRecord(initial={})
     form4 = SearchHigherRecord(initial={})
+
+
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
     if len(current1)!=0 or len(current2)!=0:
         delete_operation = 1
-
-
     if len(current) == 0:
         current = None
-
+    pbirecord= ''
+    placementrecord= ''
+    higherrecord= ''
+    total_query=0
+    total_query1 = 0
+    total_query2= 0
+    p=""
+    p1=""
+    p2=""
+    placement_search_record=" "
+    pbi_search_record=" "
+    higher_search_record=" "
     # results of the searched query under placement tab
     if 'studentplacementrecordsubmit' in request.POST:
         officer_statistics_past = 1
         form = SearchPlacementRecord(request.POST)
         if form.is_valid():
+
+
+
+
+            print("IS VALID")
+
+
+
+            #for student name
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
                 try:
                     first_name = stuname.split(" ")[0]
                     last_name = stuname.split(" ")[1]
                 except Exception as e:
+                    print("Error")
                     print(e)
                     first_name = stuname
                     last_name = ''
@@ -1911,18 +1945,27 @@ def placement_statistics(request):
                 stuname = ''
                 first_name = ''
                 last_name = ''
+
+
+            # for student CTC
             if form.cleaned_data['ctc']:
                 ctc = form.cleaned_data['ctc']
             else:
                 ctc = 0
+
+            #for company name
             if form.cleaned_data['cname']:
                 cname = form.cleaned_data['cname']
             else:
                 cname = ''
+
+            #for student roll
             if form.cleaned_data['roll']:
                 rollno = form.cleaned_data['roll']
             else:
                 rollno = ''
+
+            #for admission year
             if form.cleaned_data['year']:
                 year = form.cleaned_data['year']
                 s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(
@@ -1932,9 +1975,12 @@ def placement_statistics(request):
                        id__icontains=rollno))
                     )))
 
-                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year))
+                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
 
-                placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
+
+
+
+            """placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                         Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)),
                     unique_id__in=Student.objects.filter(
@@ -1943,6 +1989,7 @@ def placement_statistics(request):
                                 first_name__icontains=first_name,
                                 last_name__icontains=last_name,
                             id__icontains=rollno))))))))
+                #print("In if:", placementrecord)
             else:
                 s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(
                     Q(user__in=User.objects.filter(
@@ -1952,6 +1999,7 @@ def placement_statistics(request):
                     )))
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
+                print("Agein p:",p)
                 placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                     Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
@@ -1967,9 +2015,12 @@ def placement_statistics(request):
             request.session['ctc'] = ctc
             request.session['cname'] = cname
             request.session['rollno'] = rollno
-            request.session['year'] = form.cleaned_data['year']
+            request.session['year'] = form.cleaned_data['year']"""
 
-            total_query = placementrecord.count()
+            print(p)
+
+
+            total_query = p.count()
 
             if total_query > 30:
                 pagination_placement = 1
@@ -2013,6 +2064,7 @@ def placement_statistics(request):
                         name__icontains=request.session['cname'],
                         ctc__gte=request.session['ctc'],
                         year=request.session['year']))
+
 
                     placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
@@ -2058,7 +2110,8 @@ def placement_statistics(request):
                 total_query = placementrecord.count()
             else:
                 total_query = 0
-
+                no_records=1
+            print(placementrecord)
             if total_query > 30:
                 pagination_placement = 1
                 paginator = Paginator(placementrecord, 30)
@@ -2087,6 +2140,8 @@ def placement_statistics(request):
         else:
             placementrecord = ''
 
+    if total_query!=0:
+        placement_search_record=p
     # results of the searched query under pbi tab
     if 'studentpbirecordsubmit' in request.POST:
         officer_statistics_past_pbi_search = 1
@@ -2129,7 +2184,9 @@ def placement_statistics(request):
                                                             last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
-            else:
+                p1 = PlacementRecord.objects.filter(
+                    Q(placement_type="PBI", name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
+            """else:
                 pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
                                                           name__icontains=cname,
@@ -2147,10 +2204,10 @@ def placement_statistics(request):
             request.session['cname'] = cname
             request.session['rollno'] = rollno
             request.session['year'] = form.cleaned_data['year']
+"""
+            total_query1 = p1.count()
 
-            total_query = pbirecord.count()
-
-            if total_query > 30:
+            if total_query1 > 30:
                 pagination_pbi = 1
                 paginator = Paginator(pbirecord, 30)
                 page = request.GET.get('page', 1)
@@ -2159,7 +2216,7 @@ def placement_statistics(request):
                 total_page = int(page + 3)
 
                 if page<(paginator.num_pages-3):
-                    if total_query > 30 and total_query <=60:
+                    if total_query1 > 30 and total_query1 <=60:
                         page_range = range(1, 3)
                     else:
                         page_range = range(1, total_page+1)
@@ -2237,6 +2294,8 @@ def placement_statistics(request):
                 pagination_pbi = 0
         else:
             pbirecord = ''
+    if total_query1!=0:
+        pbi_search_record=p1
 
     # results of the searched query under higher studies tab
     if 'studenthigherrecordsubmit' in request.POST:
@@ -2287,7 +2346,11 @@ def placement_statistics(request):
                                                             last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
-            else:
+
+                p2 = PlacementRecord.objects.filter(
+                    Q(placement_type="HIGHER STUDIES", name__icontains=stuname, year__icontains=year))
+
+            """else:
                 # result of the query when year is not given
                 higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter
@@ -2308,20 +2371,20 @@ def placement_statistics(request):
             request.session['uname'] = uname
             request.session['test_type'] = test_type
             request.session['rollno'] = rollno
-            request.session['year'] = form.cleaned_data['year']
+            request.session['year'] = form.cleaned_data['year']"""
 
-            total_query = higherrecord.count()
+            total_query2 = p2.count()
 
-            if total_query > 30:
+            if total_query2 > 30:
                 pagination_higher = 1
-                paginator = Paginator(higherrecord, 30)
+                paginator = Paginator(p2, 30)
                 page = request.GET.get('page', 1)
-                higherrecord = paginator.page(page)
+                p2 = paginator.page(page)
                 page = int(page)
                 total_page = int(page+3)
 
                 if page < (paginator.num_pages-3):
-                    if total_query > 30 and total_query <= 60:
+                    if total_query2 > 30 and total_query2 <= 60:
                         page_range = range(1, 3)
                     else:
                         page_range = range(1, total_page+1)
@@ -2404,7 +2467,8 @@ def placement_statistics(request):
                 no_pagination = 0
         else:
             higherrecord = ''
-
+    if total_query2!=0:
+        higher_search_record=p2
 
     context = {
         'form2'             :            form2,
@@ -2413,6 +2477,16 @@ def placement_statistics(request):
         'current'           :          current,
         'current1'          :         current1,
         'current2'          :         current2,
+
+
+        'all_records':          all_records,   #for flashing all placement Schedule
+
+        'placement_search_record': placement_search_record,
+        'pbi_search_record': pbi_search_record,
+        'higher_search_record': higher_search_record,
+
+
+
         'statistics_tab'    :   statistics_tab,
         'pbirecord'         :        pbirecord,
         'placementrecord'   :  placementrecord,
@@ -2720,3 +2794,163 @@ def check_invitation_date(placementstatus):
         print(e)
 
     return
+
+def add_placement_schedule(request):
+    add_schedule_tab=1
+    user = request.user
+    isStaff=user.is_staff
+    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+
+    all_schedule_data=PlacementSchedule.objects.all()
+    students=NotifyStudent.objects.all()
+    #avail_role=Role.objects.all()
+    print(students)
+    apply_for=Role.objects.all()
+    print(all_schedule_data)
+    context={
+        'isStaff': isStaff,
+        'current': current,
+        'current1':current1,
+        'current2':current2,
+        'add_schedule_tab': add_schedule_tab,
+        'students': students,
+        'apply_for':apply_for,
+    }
+    return render(request, 'placementModule/add_placement_schedule.html', context)
+
+#saves added details in PlacementSchedule table
+def placement_schedule_save(request):
+    if request.method!="POST":
+        return HttpResponse("Method Not Allowed")
+    else:
+        placement_type=request.POST.get("placement_type")
+        company_name=request.POST.get("company_name")
+        ctc=request.POST.get("ctc")
+        description=request.POST.get("description")
+        timestamp=request.POST.get("time_stamp")
+        title=request.POST.get("title")
+        location = request.POST.get("location")
+        role = request.POST.get("role")
+        resume = request.POST.get("resume")                 #file
+        schedule_at = request.POST.get("schedule_at")
+        date = request.POST.get("placement_date")
+        try:
+            #print("In try!!!")
+            role_create=Role.objects.create(role=role)
+            notify = NotifyStudent.objects.create(placement_type=placement_type,
+                                                      company_name=company_name,
+                                                      description=description,
+                                                      ctc=ctc,
+                                                      timestamp=timestamp)
+
+            schedule = PlacementSchedule.objects.create(notify_id=notify,
+                                                                                        title=company_name,
+                                                                                        description=description,
+                                                                                        placement_date=date,
+                                                                                        attached_file=resume,
+                                                                                        role=role_create,
+                                                                                        location=location, time=schedule_at)
+            print(schedule)
+            notify.save()
+            schedule.save()
+            messages.success(request,"Successfully Added Schedule")
+            return redirect("/placement/add_placement_schedule/")
+        except:
+            messages.error(request,"Failed to Add Schedule")
+            return redirect("/placement/add_placement_schedule/")
+
+
+def delete_placement_record(request):
+    if 'delete_stats' in request.POST and request.POST['delete_stats']:
+        try:
+            if 'delete_stats' in request.POST:
+                record_id = int(request.POST['delete_stats'])
+
+            #placement_record = PlacementRecord.objects.get(id=record_id)
+            PlacementRecord.objects.filter(id=record_id).delete()
+
+            messages.success(request, 'Placement Statistics deleted Successfully!!')
+
+        except Exception as e:
+            messages.error(request, 'Problem Occurred!! Please Try Again!!')
+            print(e)
+
+
+    return redirect('/placement/statistics/')
+
+def add_placement_record(request):
+    add_record_tab = 1
+    user=request.user
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+
+    #print(all_record_data)
+    context = {
+        'add_record_tab': add_record_tab,
+        'current':current,
+        'current2':current2,
+    }
+    return render(request, 'placementModule/add_placement_record.html', context)
+
+
+def placement_record_save(request):
+    if request.method!="POST":
+        return HttpResponse("Method Not Allowed")
+    else:
+        placement_type=request.POST.get("placement_type")
+        print(placement_type)
+        student_name=request.POST.get("student_name")
+        ctc=request.POST.get("ctc")
+        year=request.POST.get("year")
+        test_type=request.POST.get("test_type")
+        test_score=request.POST.get("test_score")
+        try:
+            print("In try!!!")
+            record = PlacementRecord.objects.create(placement_type=placement_type,name=student_name,ctc=ctc,year=year,test_type=test_type,test_score=test_score)
+            print(record)
+            record.save()
+            messages.success(request,"Successfully Added Record")
+            return redirect("/placement/add_placement_record/")
+        except:
+            messages.error(request,"Failed to Add Schedule")
+            return redirect("/placement/add_placement_record/")
+
+def add_placement_visit(request):
+    add_visit_tab = 1
+    user=request.user
+    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+
+
+    all_placement_visits=ChairmanVisit.objects.all()
+    context = {
+        'add_visit_tab': add_visit_tab,
+        'all_placement_visits':all_placement_visits,
+        'current1':current1,
+
+    }
+    return render(request, 'placementModule/add_placement_visits.html', context)
+
+
+def placement_visit_save(request):
+    if request.method!="POST":
+        return HttpResponse("Method Not Allowed")
+    else:
+        company_name=request.POST.get("cname")
+        location=request.POST.get("location")
+        desc=request.POST.get("desc")
+        date=request.POST.get("date")
+        timestamp=request.POST.get("timed")
+
+        try:
+            print("In try!!!")
+            record = ChairmanVisit.objects.create(company_name=company_name,location=location,visiting_date=date,description=desc,timestamp=timestamp)
+
+            record.save()
+            messages.success(request,"Successfully Added Chairman Visit")
+            return redirect("/placement/add_placement_visit/")
+        except:
+            messages.error(request,"Failed to Add Chairman Visit")
+            return redirect("/placement/add_placement_visit/")
+
