@@ -40,6 +40,7 @@
                          Placement Schedule
                          <i class="right floated chevron right icon"></i>
                      </a>
+
                     {% endif %}
                  {% endfor %}
 
@@ -65,45 +66,53 @@
                                  <i class="right floated chevron right icon"></i>
                              </a>
                          {% endif %}
-                    <a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>(9-4-22)-->
                     {% endif %}
                 {% endfor %}
 
 
                 {% for c in current1 %}
+
                     {% if c.designation.name == 'placement chairman' %}
                         {% if students %}
-                            <a class="item" data-tab="twelth">
+                           <a class="item" data-tab="twelth">
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
-                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
                             </a>
                         {% else %}
-                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
-                             <a class="item" data-tab="ninth">
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                                  Send Notification
                                  <i class="right floated chevron right icon"></i>
-                             </a>
-                         {% endif %}
+                             </a>-->
+                    {% endif %}
 
-                    <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                    <!--<a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>(9-4-22)
                     <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                         Placement Visits
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                        <i class="right floated chevron right icon">
+
+                        </i>
+                    </a>-->
+
+
+
+
                     {% endif %}
+
                 {% endfor %}
 
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
@@ -111,6 +120,31 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+                <!--Added for staff only-->
+                {% if current2 %}
+               <!-- <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                    Student Record
+                    <i class="right floated chevron right icon"></i>
+                </a>(9-4-22)-->
+
+
+
+                <!--Placement officers could schedule placement -->
+                <!--<a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
+                    Add Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>-->
+                <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
+                    Add Placement Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if current1 %}
+                <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
+                    Add Chairman Visit
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -167,7 +201,7 @@
                                           <div class="two fields">
                                           <div class="field">
                                             {{ form3.stuname.errors }}
-                                                  <label for="{{ form3.cname.id_for_label }}">
+                                                  <label for="{{ form3.cname.id_for_label }}" class="required">
                                                       Student Name
                                                   </label>
 
@@ -175,38 +209,15 @@
                                                       {{ form3.stuname }}
                                                   </div>
                                               </div>
-                                              <div class="field">
-                                                {{ form3.cname.errors }}
-                                                      <label for="{{ form3.cname.id_for_label }}">
-                                                          Company
-                                                      </label>
 
-                                                      <div class="ui large input">
-                                                          {{ form3.cname }}
-                                                      </div>
-                                                  </div>
-                                                  </div>
-                                          <div class="three fields">
-                                              <div class="field">
-                                                {{ form3.roll.errors }}
-                                                  <label for="{{ form3.stuname.id_for_label }}">
-                                                      Roll No
-                                                  </label>
-
-                                                  <div class="ui large input">
-                                                      {{ form3.roll}}
-                                                  </div>
-                                              </div>
 
                                               <div class="field">
                                                 {{ form3.year.errors }}
                                                   <label for="{{ form3.year.id_for_label }}">
-                                                      Year
+                                                      <span style="color:#ff0000">*</span>Year
                                                   </label>
 
-                                                  <div class="ui large input">
-                                                      {{ form3.year }}
-                                                  </div>
+                                                  <input type="number" min="1900" max="2099" step="1" value="2016" required name="year"/>
                                               </div>
 
                                               <div class="field">
@@ -302,10 +313,8 @@
                                   <td>
                                       <h4 class="ui image header">
                                           <div class="content">
-                                              {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
-                                              <div class="sub header">
-                                                  {{ student.unique_id.id.id }}
-                                              </div>
+                                              {{ student.record_id.name }}
+
                                           </div>
                                       </h4>
                                   </td>
@@ -315,7 +324,7 @@
                                   </td>
 
                                   <td>
-                                      {{ student.record_id.name }}
+                                        {{ student.unique_id.id.user.cname }}
                                   </td>
 
                                   <td>
@@ -329,7 +338,7 @@
                                       <button name="deleterecord" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                           <i class="delete red icon"></i>
                                       </button>
-                                      </form>
+                                    </form>
                                   </td>
                                   {% endif %}
                               </tr>
@@ -338,9 +347,59 @@
                               </tbody>
                           </table>
 
-                              {% else %}<center><hr><h5>Data Not Found</h5></center>
+                    {% endif %}
 
-                              {% endif %}
+
+                    <!--All Placement related data-->
+<br>
+                              <hr style="width:100%;text-align:left;margin-left:0; margin-top:2rem;">
+                                <center>
+                                    {% if placement_search_record != " " %}
+                                    <table id="tab" style="border:1px solid black; width:100%;">
+                                        <tr style="border:1px solid black;">
+                                            <th style="border:1px solid black; ">id Type</th>
+                                            <th style="border:1px solid black; ">Placement Type</th>
+                                            <th style="border:1px solid black;">Name</th>
+                                            <th style="border:1px solid black; ">CTC</th>
+                                            <th style="border:1px solid black; ">Year</th>
+                                            <th style="border:1px solid black;">Test Score</th>
+                                            <th style="border:1px solid black;">Test Type</th>
+                                        </tr>
+                                        {% for rec in placement_search_record %}
+
+                                        <tr style="border:1px solid black; width:10rem;">
+                                            <td style="border:1px solid black;">{{ rec.id }}</td>
+                                            <td style="border:1px solid black;">{{ rec.placement_type }}</td>
+                                            <td style="border:1px solid black;">{{ rec.name }}</td>
+                                            <td style="border:1px solid black; ">{{ rec.ctc }}</td>
+                                            <td style="border:1px solid black;">{{ rec.year }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
+                                            <td>
+                                            <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
+                                              {% csrf_token %}
+                                              <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                  <i class="delete red icon"></i>
+                                              </button>
+                                            </form>
+                                          </td>
+
+                                        </tr>
+
+                                        {% endfor %}
+                                    </table>
+                                   {% else %}
+                                <h2>No Data Found.</h2>
+                                    {% if current2 %}
+                                    <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
+                                    {% endif %}
+                                    {% endif %}
+                                </center>
+
+
+
+
+
 
                           </div>
 
@@ -369,39 +428,15 @@
                                                                 {{ form3.stuname }}
                                                             </div>
                                                         </div>
-                                                        <div class="field">
-                                                          {{ form3.cname.errors }}
-                                                                <label for="{{ form3.cname.id_for_label }}">
-                                                                    Company
-                                                                </label>
-
-                                                                <div class="ui large input">
-                                                                    {{ form3.cname }}
-                                                                </div>
-                                                            </div>
-                                                            </div>
-                                                    <div class="three fields">
-                                                        <div class="field">
-                                                          {{ form3.roll.errors }}
-                                                            <label for="{{ form3.stuname.id_for_label }}">
-                                                                Roll No
-                                                            </label>
-
-                                                            <div class="ui large input">
-                                                                {{ form3.roll}}
-                                                            </div>
-                                                        </div>
 
                                                         <div class="field">
-                                                          {{ form3.year.errors }}
-                                                            <label for="{{ form3.year.id_for_label }}">
-                                                                Year
-                                                            </label>
+                                                            {{ form3.year.errors }}
+                                                              <label for="{{ form3.year.id_for_label }}">
+                                                                  <span style="color:#ff0000">*</span>Year
+                                                              </label>
 
-                                                            <div class="ui large input">
-                                                                {{ form3.year }}
-                                                            </div>
-                                                        </div>
+                                                              <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
+                                                          </div>
 
                                                         <div class="field">
                                                           {{ form3.ctc.errors }}
@@ -532,10 +567,51 @@
 
                                  </tbody>
                                     </table>
-
-                                    {% else %}<center><h5>Data Not Found</h5></center>
-
                                     {% endif %}
+
+
+
+
+                              <!--All PBI related data-->
+                                <center>
+                                    {% if pbi_search_record != " " %}
+                                    <table style="border:1px solid black; width:100%;">
+                                        <tr style="border:1px solid black;">
+                                            <th style="border:1px solid black; ">Placement Type</th>
+                                            <th style="border:1px solid black;">Name</th>
+                                            <th style="border:1px solid black;">CTC</th>
+                                            <th style="border:1px solid black;">Year</th>
+                                            <th style="border:1px solid black;">Test Score</th>
+                                            <th style="border:1px solid black;">Test Type</th>
+                                        </tr>
+                                        {% for rec in pbi_search_record %}
+                                        <tr style="border:1px solid black; width:10rem;">
+                                            <td style="border:1px solid black; ">{{ rec.placement_type }}</td>
+                                            <td style="border:1px solid black;">{{ rec.name }}</td>
+                                            <td style="border:1px solid black;">{{ rec.ctc }}</td>
+                                            <td style="border:1px solid black;">{{ rec.year }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
+                                            <td>
+                                            <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
+                                              {% csrf_token %}
+                                              <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                  <i class="delete red icon"></i>
+                                              </button>
+                                            </form>
+                                          </td>
+                                        </tr>
+
+                                        {% endfor %}
+                                    </table>
+                                    {% else %}
+                                    <h2>No Data Found.</h2>
+                                    {% if current1 %}
+                                    <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
+                                    {% endif %}
+                                    {% endif %}
+                                </center>
+
 
 
 
@@ -565,63 +641,22 @@
 
                                         </div>
                                     </div>
-                                    <div class="field">
-                                      {{ form4.roll.errors }}
-                                        <label for="{{ form4.stuname.id_for_label }}">
-                                            Roll No
-                                        </label>
-
-                                        <div class="ui large input">
-                                            {{ form4.roll }}
-                                        </div>
-                                    </div>
-                                    </div>
-                                      <div class="three fields">
-
-                                          <div class="field">
+                                        <div class="field">
                                             {{ form4.year.errors }}
-                                                  <label for="{{ form4.cname.id_for_label }}">
-                                                      Year
-                                                  </label>
+                                            <label for="{{ form4.year.id_for_label }}">
+                                                <span style="color:#ff0000">*</span>Year
+                                            </label>
 
-                                                  <div class="ui large input">
-                                                      {{ form4.year }}
-                                                  </div>
-                                              </div>
-                                          <div class="field">
-                                            {{ form4.test_type.errors }}
-                                              <label for="{{ form4.test_type.id_for_label }}">
-                                                  Exam
-                                              </label>
+                                            <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
+                                        </div>
 
-                                              <div class="ui large input">
-                                                  {{ form4.test_type }}
-                                              </div>
-                                          </div>
 
-                                          <div class="field">
-                                            {{ form4.test_score.errors }}
-                                              <label for="{{ form4.test_score.id_for_label }}">
-                                                  Minimum Test Score
-                                              </label>
 
-                                              <div class="ui large input">
-                                                  {{ form4.test_score }}
-                                              </div>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                        {{ form4.uname.errors }}
-                                              <label for="{{ form4.cname.id_for_label }}">
-                                                  University
-                                              </label>
 
-                                              <div class="ui large input">
-                                                  {{ form4.uname }}
-                                              </div>
-                                          </div>
+                                    </div>
 
-                                        <div class="two fields">
+
+                                      <div class="two fields">
                                       <div class="field">
                                         <button name="studenthigherrecordsubmit" name="studenthigherrecordsubmit" class="ui fluid large primary button" type="submit">
                                             Search
@@ -742,14 +777,58 @@
                               {% endfor %}
                        </tbody>
                           </table>
-
-                          {% else %}<center><h5>Data Not Found</h5></center>
-
                           {% endif %}
 
+
+
+
+                              <!--All higher studies related data-->
+                                <center>
+                                    {% if higher_search_record != " " %}
+                                    <table style="border:1px solid black; width:100%;">
+                                        <tr style="border:1px solid black;">
+                                            <th style="border:1px solid black; ">Placement Type</th>
+                                            <th style="border:1px solid black;">Name</th>
+                                            <th style="border:1px solid black;">CTC</th>
+                                            <th style="border:1px solid black;">Year</th>
+                                            <th style="border:1px solid black;">Test Score</th>
+                                            <th style="border:1px solid black;">Test Type</th>
+                                        </tr>
+                                        {% for rec in higher_search_record %}
+
+                                        <tr style="border:1px solid black; width:10rem;">
+                                            <td style="border:1px solid black; ">{{ rec.placement_type }}</td>
+                                            <td style="border:1px solid black;">{{ rec.name }}</td>
+                                            <td style="border:1px solid black;">{{ rec.ctc }}</td>
+                                            <td style="border:1px solid black;">{{ rec.year }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
+                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
+                                            <td>
+                                            <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
+                                              {% csrf_token %}
+                                              <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                  <i class="delete red icon"></i>
+                                              </button>
+                                            </form>
+                                          </td>
+                                        </tr>
+
+                                        {% endfor %}
+                                    </table>
+                                    {% else %}
+                                    <h2>No Data Found.</h2>
+                                    {% if isStaff %}
+                                    <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
+                                    {% endif %}
+                                    {% endif %}
+                                </center>
+
+
+
+
+
+
                           </div>
-
-
 
 
                       </div>
@@ -837,6 +916,7 @@
                               <br>
                               <div class="ui divider"></div>
                           </div>
+
                           {% endfor %}
 
                       </div>

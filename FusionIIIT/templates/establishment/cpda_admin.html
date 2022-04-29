@@ -1,5 +1,26 @@
 {% extends 'establishment/common.html' %}
 
+{% block sidetabmenu %}
+{% comment %}The Tab-Menu starts here!{% endcomment %}
+<div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'establishment:ltc' %}">
+    LTC
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% if request.user.extrainfo.user_type == 'faculty' or director %}
+  <a class="item active" href="{% url 'establishment:cpda' %}">
+    CPDA
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% endif %}
+  <a class="item" href="{% url 'establishment:appraisal' %}">
+    Appraisal
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% comment %}The Tab-Menu ends here!{% endcomment %}
+{% endblock %}
+
 {% block content %}
 {% load semanticui %}
 {% load static %}
@@ -94,6 +115,7 @@ pending cpda applications
                     </div>
                     {% empty %}
                         <tr><td colspan="3">No Pending Application</td><tr>
+                            <hr>
                 {% endfor %}
             </div>
         </div>
