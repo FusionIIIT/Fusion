@@ -1,4 +1,3 @@
-# group 8 and group 9
 from django.db import models
 from django.db import models
 from applications.globals.models import ExtraInfo
@@ -27,11 +26,11 @@ class Patent(models.Model):
 
     application_id = models.AutoField(primary_key=True)
     faculty_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    title = models.CharField(max_length=50)
-    ipd_form = models.FileField(null=True, blank=True)
-    project_details = models.FileField(null=True, blank=True)
-    ipd_form_file = models.TextField(null=True, blank=True)
-    project_details_file = models.TextField(null=True, blank=True)
+    title = models.CharField(max_length=120)
+    ipd_form = models.FileField()
+    project_details = models.FileField()
+    ipd_form_file = models.TextField()
+    project_details_file = models.TextField()
     status = models.CharField(choices=Constants.RESPONSE_TYPE, max_length=20, default='Pending')
 
     def _str_(self):
@@ -39,7 +38,7 @@ class Patent(models.Model):
 
 
 class ResearchGroup(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=120)
     faculty_under_group = models.ManyToManyField(User,related_name="allfaculty")
     students_under_group = models.ManyToManyField(User,related_name="allstudents")
     description = models.TextField()

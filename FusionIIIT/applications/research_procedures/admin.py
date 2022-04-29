@@ -1,12 +1,12 @@
 from django.contrib import admin
-from applications.research_procedures.models import Patent,ResearchGroup
+from applications.research_procedures.models import Patent, ResearchGroup
 from django.utils.html import format_html
 
 # Adding a custom admin view for patent
 class PatentAdmin(admin.ModelAdmin):
 
     list_filter = ('status',) 
-    search_fields = ['title', 'faculty_id', 'application_id']
+    search_fields = ['title', 'application_id']
 
     def _status(self, obj):
         color = "orange"
