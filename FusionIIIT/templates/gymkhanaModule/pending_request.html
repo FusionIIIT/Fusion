@@ -8,9 +8,9 @@
 
     <div class="ui pointing secondary menu">
 
-         <a class=" ui active item" data-tab="otherrequests">
+         <!-- <a class=" ui active item" data-tab="otherrequests">
                     Club Requests
-        </a>
+        </a> -->
         {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
             <a class="ui item" data-tab="sentrequests">
                 Club Session Requests
@@ -222,7 +222,7 @@
 
 
 
-    <div class="ui active tab" data-tab="otherrequests">
+    <!-- <div class="ui active tab" data-tab="otherrequests">
         <div class="ui vertical segment">
         <form method="post" action="" id="otherrequest">
         {% csrf_token %}
@@ -275,11 +275,11 @@
             </table>
 
 
-            <br>
+            <br> -->
 
-            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
-            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
-            <div class="field">
+            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div>
+            <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
+            <!-- <div class="field">
                 <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteSessions()">
                     Cancel Request
                 </button>
@@ -290,7 +290,7 @@
             <div class="ui divider"></div>
 
         </div>
-    </div>
+    </div> -->
     
 {% endblock %}
 
