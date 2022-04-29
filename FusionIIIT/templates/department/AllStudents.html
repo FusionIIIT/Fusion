@@ -47,7 +47,7 @@
 
             {% for stu in student_list %}
               <tr>
-                <td>{{ stu.id.user }}</td>
+                <td> <a class="active item" href="{% url 'globals:profile' stu.id.user %}">{{ stu.id.user }}</a></td>
                 <td>{{ stu.id.department.name }}</td>
                 <td>{{ stu.programme }}</td>
 				<td>{{ stu.batch }}</td>

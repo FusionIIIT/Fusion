@@ -295,39 +295,34 @@
                 {{current_date}}
                 <br>
 
-                {% if current_date <= mess_reg.end_reg %}
                 <div class="two fields">
                     <div class="field">
-                        <strong> Currently registered in {{ messinfo.mess_option }}</strong>
+                        <strong> Currently registered in {{ messinfo.mess_option | capfirst }}</strong>
                         <br>
                         <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
                         <br>
-                        <label>Choose Mess*</label>
-                        <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
-                            <option value="mess2">Veg Mess</option>
-                            <option value="mess1">Nonveg Mess</option>
-                        </select>
+                        {% if current_date <= mess_reg.end_reg %}
+                            <label>Choose Mess*</label>
+                            <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
+                                <option value="mess1">Mess 1</option>
+                                <option value="mess2">Mess 2</option>
+                            </select>
+                            <div class="field">
+                                <button class="ui primary button right floated" type="submit" name="submit">
+                                Submit
+                                </button>
+                            </div>
+                        {% else %}
+                            Registration time period has ended.
+                        {% endif %}
                     </div>
                 </div>
+    </form>    
 
 
-                {% comment %}
-                TODO: Make this Optional!
-                {% endcomment %}
-
-                <div class="field">
-                    <button class="ui primary button right floated" type="submit" name="submit">
-                        Submit
-                    </button>
-                </div>
-                {% else %}
-                Registration Timed Out
-
-                {% endif %}
-            </div>
-        </form>
-        {% comment %}Form Tag ends here!{% endcomment %}
-
+        </div>
+    </form>
+    {% comment %}Form Tag ends here!{% endcomment %}
         <br>
         <br>
         <div class="ui divider"></div>

@@ -118,18 +118,20 @@
                         Select
                     </th>
 
-                    <th class="three wide column">
+                    <th class="four wide column">
                         Club
                     </th>
 
-                    <th class="three wide column">
+                    <th class="four wide column">
                         Coordinator
                     </th>
 
-                    <th class="three wide column">
+                    <th class="four wide column">
                         Co-Coordinator
                     </th>
-
+                    <th class="four wide column">
+                        Faculty Incharge
+                    </th>
 {#                    <th class="one wide column">#}
 {#                        PFA#}
 {#                    </th>#}
@@ -176,6 +178,18 @@
                                         {{ i.co_coordinator.id.id }}
                                         <div class="sub header">
                                             {{ i.co_coordinator.id.user.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
+                                    <div class="content">
+                                        {{ i.faculty_incharge.id.id }}
+                                        <div class="sub header">
+                                            {{ i.faculty_incharge.id.user.email }}
                                         </div>
                                     </div>
                                 </h4>

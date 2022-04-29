@@ -65,10 +65,10 @@
                                  <i class="right floated chevron right icon"></i>
                              </a>
                          {% endif %}
-                    <a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>(9-4-22)-->
                     {% endif %}
                 {% endfor %}
 
@@ -76,40 +76,76 @@
                 {% for c in current1 %}
                     {% if c.designation.name == 'placement chairman' %}
                         {% if students %}
-                            <a class="item" data-tab="twelth">
+                           <a class="item" data-tab="twelth">
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
-                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
                             </a>
                         {% else %}
-                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
-                             <a class="item" data-tab="ninth">
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                                  Send Notification
                                  <i class="right floated chevron right icon"></i>
-                             </a>
-                         {% endif %}
+                             </a>-->
+                    {% endif %}
 
-                    <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+
+                  <!--  <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>     9-4-22
                     <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                         Placement Visits
                         <i class="right floated chevron right icon"></i>
-                    </a>
-                    {% endif %}
+                    </a>-->
+                {% endif %}
                 {% endfor %}
+
+                <!--Added placement schedule tab here-->
+                {% if current3 %}           <!--Added condition before schedule tab so that it appears for students only-->
+                <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
 
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+
+                <!--Added student record tab here-->
+                {% if current1 %}
+              <!--  <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                    Student Record
+                    <i class="right floated chevron right icon"></i>
+                </a>(9-4-22)-->
+
+
+
+                <!--Placement officers could schedule placement -->
+                <!--<a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
+                    Add Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>-->
+                <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
+                    Add Placement Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if current1 %}
+                <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
+                    Add Chairman Visit
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -125,15 +161,15 @@
 
             {% comment %}The tab menu starts here!{% endcomment %}
             <div class="ui pointing secondary menu">
-                <a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="search">
+                <!--<a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="search">
                     Search
-                </a>
+                </a>-->
 
-                <a class="item" data-tab="sendinvite">
+                <a class="{% if invitation_status_tab %}active item{% else %}item{% endif %}" data-tab="sendinvite">
                     Send Invitation
                 </a>
 
-                <a class="{% if invitation_status_tab %}active item{% else %}item{% endif %}" data-tab="invitation_status">
+                <a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="invitation_status">
                     Invitation Status
                 </a>
             </div>
@@ -150,18 +186,19 @@
                 </ul>
               </div>
             {% endif %}
-            <div id="searchTab" class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="search">
+
+        <!--    <div id="searchTab" class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="search">
                 <form method="post" class="ui form" role="form" action="{% url 'placement:student_records' %}">
                     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                    <div class="ui active accordion field">
-                        <div class="title">
+                    <div class="ui accordion field">
+                       <div class="title">
                             <i class="icon dropdown"></i>
                             Search a Student!
                         </div>
 
 
                         {{ form1.non_field_errors }}
-                        <div class="active content">
+                        <div class=" content">
                             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                               {% csrf_token %}
                                 <div class="two fields">
@@ -264,11 +301,11 @@
                                 </div>
 
                                 <div class="two fields">
-                                    <!--<div class="field">
+                                    <div class="field">
                                       {{ form1.skill.errors }}
                                         <label>Skills</label>
                                         {{ form1.skill }}
-                                    </div>-->
+                                    </div>
                                     <div class="field"></div>
                                     <div class="field" style="padding-top:40px">
                                         <button name="recordsubmit" value="recordsubmit" class="ui large primary button right floated" type="submit">
@@ -362,21 +399,21 @@
 
                 {% if students %}
 
-                  <!-- generate pdf button  --->
+
                   <form method="post" target="_blank" action="{% url 'placement:student_records' %}" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="pdf_gen_std_record" value="pdf_gen_std_record" class="ui medium positive button right floated" type="submit">
                     PDF
                   </button></form>
 
-                  <!-- generate ms-excel button  --->
+
                   <form method="post" target="_blank" action="{% url 'placement:student_records' %}" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="excel_gen_std_record" value="excel_gen_std_record" class="ui medium positive button right floated" type="submit">
                     Excel Sheet
                   </button></form>
 
-                  <!-- Pagination Section starts here  --->
+
                   {% if no_pagination %}
 
                     <center>
@@ -415,7 +452,7 @@
                       </div>
                     </center>
                   {% endif %}
-                  <!-- Pagination Section ends here --->
+
 
                   <br>
                   <br><br>
@@ -494,10 +531,10 @@
                 {% endif %}
 
 
-            </div>
+            </div>-->
 
 
-            <div id="sendTab" class="ui tab" data-tab="sendinvite">
+            <div id="sendTab" class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="sendinvite">
               <form method="post" action="{% url 'placement:student_records' %}" class="ui form" role="form">
                 {{ form13.non_field_errors }}
                       {% csrf_token %}
@@ -529,7 +566,7 @@
                         {{ form13.dep_btech }}
                     </div>
 
-                    <div id = "B.DesSend" class="dept field">
+                   <div id = "B.DesSend" class="dept field">
                       {{ form13.dep_bdes.errors }}
                         <label>
                             Department
@@ -594,7 +631,7 @@
               </form>
             </div>
 
-            <div class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="invitation_status">
+            <div class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="invitation_status">
               <div class="ui vertical segment">
                 <div class="ui two item menu">
                     <a class="{% if mnpbi_post %}item{% else %}active item{% endif %}" data-tab="Placement">
