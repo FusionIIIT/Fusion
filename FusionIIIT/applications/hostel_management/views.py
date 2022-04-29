@@ -251,15 +251,56 @@ def edit_student_rooms_sheet(request):
             if row[0].value == "Roll No":
                 continue
             roll_no = row[0].value
+            hall_no = row[1].value
+            if row[0].ctype == 2:
+                roll_no = str(int(roll_no))
+            if row[1].ctype == 2:
+                hall_no = str(int(hall_no))
+
+            room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
+            print(roll_no, type(roll_no))
+            student = Student.objects.filter(id=roll_no.strip())
+            hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
+            print(student," ",hall)
+            if student and hall.exists():
+                Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
+                print(Room[0].room_occupied, Room[0].room_cap)
+                if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
+                    continue
+                else:
+                    is_valid = False
+                    print(f'Room {row[1].value} - {row[2].value} unavailable!')
+                    messages.error(request, f'Room {row[1].value} - {row[2].value} unavailable')
+                    break
+            else:
+                is_valid = False
+                print("Wrong Credentials entered!")
+                messages.error(request, f'Wrong credentials entered!')
+                break
+
+        if not is_valid:
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        
+        for row in all_rows:
+            if row[0].value == "Roll No":
+                continue
+            roll_no = row[0].value
             if row[0].ctype == 2:
                 roll_no = str(int(roll_no))
             
+
             hall_no = str(int(row[1].value))
             room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
             print(roll_no, type(roll_no))
-            student = Student.objects.filter(id=roll_no)[0]
-            remove_from_room(student)
-            add_to_room(student, room_no, hall_no)
+            student = Student.objects.filter(id=roll_no.strip())
+            remove_from_room(student[0])
+            add_to_room(student[0], room_no, hall_no)
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
@@ -278,9 +319,10 @@ def edit_student_room(request):
     """
     if request.method == "POST":
         roll_no = request.POST["roll_no"]
-        room_no = request.POST["room_no"]
-        hall_no = request.POST["hall_no"]
-        
+        hall_room_no=request.POST["hall_room_no"]
+        index=hall_room_no.find('-')
+        room_no = hall_room_no[index+1:]
+        hall_no = hall_room_no[:index]
         student = Student.objects.get(id=roll_no)
         remove_from_room(student)
         add_to_room(student, new_room=room_no, new_hall=hall_no)

@@ -21,25 +21,14 @@
            </div>
 
 
-        <div class="six wide field">
-            <label>Hall No.</label>
-            <select class="ui search fluid dropdown" name="hall_no" required>
-               <option value="">Select</option>
-               
-               {% for hall in all_hall%}
-                    <option value="{{hall}}">{{hall.hall_id}}</option>
-               {% endfor %}
-           </select>
-       </div>
-
            <div class="six wide field">
                 <label>Room no.</label>
                 {% comment %} <input value="" class="ui large input" name="room_no" required> {% endcomment %}
-                <select class="ui search fluid dropdown" name="room_no" required>
+                <select class="ui search fluid dropdown" name="hall_room_no" required>
                    <option value="">Select</option>
                    
                    {% for room in room_avail%}
-                        <option value="{{room.block_no}}-{{room.room_no}}">{{room.hall.hall_id}}-{{room.block_no}}-{{room.room_no}}</option>
+                        <option value="{{room.hall}}-{{room.block_no}}-{{room.room_no}}">{{room.hall.hall_id}}-{{room.block_no}}-{{room.room_no}}</option>
                    {% endfor %}
                </select>
            </div>
