@@ -157,9 +157,9 @@ def add_menu_change_request(request, student):
     try:
         print("inside add_menu")
         dish = Menu.objects.get(dish=request.POST.get("dish"))
-        print("dish")
+        print(dish, "-------------------------------------------------------------------")
         new_dish = request.POST.get("newdish")
-        print("newdish")
+        print(new_dish)
         reason = request.POST.get("reason")
         # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
         menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
@@ -168,10 +168,11 @@ def add_menu_change_request(request, student):
             'status': 1
         }
         return data
-    except ObjectDoesNotExist:
+    except ObjectDoesNotExist as e: 
         data = {
             'status': 0
         }
+        print(e)
         return data
 
 
