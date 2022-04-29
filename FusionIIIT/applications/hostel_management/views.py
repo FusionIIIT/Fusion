@@ -272,8 +272,8 @@ def edit_student_rooms_sheet(request):
                     continue
                 else:
                     is_valid = False
-                    print(f'Room {row[1].value} - {row[2].value} unavailable!')
-                    messages.error(request, f'Room {row[1].value} - {row[2].value} unavailable')
+                    print(f'Room  unavailable!')
+                    messages.error(request, f'Room  unavailable!')
                     break
             else:
                 is_valid = False
