@@ -1,7 +1,7 @@
 {% load static %}
 
 
-<b><center><h3>{{course.course_code}} : {{course.course_id.course_name}}</h3></center></b>
+<b><center><h3>{{course}}</h3></center></b>
 <br>
 {% if grade_submission_date_eligibility %}
 <p id="warning" style="color: red"></p>
@@ -154,8 +154,8 @@
                 width: 100%">
         {% for items in enrolled_student_list %}
           <tr>
-            <td style="width: 20%"><center><input type="text" name="user" value="{{ items.student_id.id.user.username }}" hidden="True">{{ items.student_id.id.user.username }}</center></td>
-            <td style="width: 10%"><center><input type="number" name="q1_marks" step=0.1 min="0" max="100" value="{{items.q1}}" onchange="change_grade()"></center></td>
+            <td style="width: 20%"><center><input type="text" name="user" value="{{ items.rollno}}" hidden="True">{{ items.rollno}}</center></td>
+            <td style="width: 10%"><center><input type="number" name="q1_marks" step=0.1 min="0" max="100" value="{{items.q1}}"  onchange="change_grade()"></center></td>
             <td style="width: 10%"><center><input type="number" name="mid_marks" step=0.1 min="0" max="100" value="{{items.mid_term}}" onchange="change_grade()"></center></td>
             <td style="width: 10%"><center><input type="number" name="q2_marks" step=0.1 min="0" max="100" value="{{items.q2}}" onchange="change_grade()"></center></td>
             <td style="width: 10%"><center><input type="number" name="end_marks" step=0.1 min="0" max="100" value="{{items.end_term}}" onchange="change_grade()"></center></td>
@@ -175,7 +175,8 @@
 	<button class="ui primary button" style="background-color: green" >Submit Marks</button>
 		</div>
 </div>
-<input type="text" name="curriculum_id" value="{{course.curriculum_id}}" hidden="True">
+<input type="text" name="course_id" value="{{course.id}}" hidden="True">
+
 <input type="text" name="final_submit" value="{{grade_submission_date_eligibility}}" hidden="True">
 </form>
 
