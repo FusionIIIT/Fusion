@@ -1,14 +1,16 @@
-from django.shortcuts import redirect, render,HttpResponse
+import re
+from django.shortcuts import redirect, render
 from django.contrib import messages
 from applications.research_procedures.models import Patent, ResearchGroup
-from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.core.files.storage import FileSystemStorage
 from notification.views import research_procedures_notif
 from django.urls import reverse
 from .forms import ResearchGroupForm
+from django.contrib.auth.decorators import login_required
 
 # Faculty can file patent and view status of it.
+@login_required
 def patent_registration(request):
 
     """
@@ -40,46 +42,51 @@ def patent_registration(request):
     context['patents'] = Patent.objects.all()
     context['user_extra_info'] = user_extra_info
     context['user_designations'] = user_designations
-    
-    if request.method=='POST':
-        if(user_extra_info.user_type == "faculty"):
-            patent.faculty_id = user_extra_info
-            patent.title = request.POST.get('title')
-            ipd_form_pdf = request.FILES['ipd_form_file']
-            if(ipd_form_pdf.name.endswith('.pdf')):
-                patent.ipd_form = request.FILES['ipd_form_file']
-                file_system = FileSystemStorage()
-                ipd_form_pdf_name = file_system.save(ipd_form_pdf.name,ipd_form_pdf)
-                patent.ipd_form_file = file_system.url(ipd_form_pdf_name)
-            else:
-                messages.error(request, 'Please upload pdf file')
-                return render(request ,"rs/research.html",context)
-            
-            project_details_pdf = request.FILES['project_details_file']
-            if(project_details_pdf.name.endswith('.pdf')):
-                patent.project_details=request.FILES['project_details_file']
-                file_system = FileSystemStorage()
-                project_details_pdf_name = file_system.save(project_details_pdf.name,project_details_pdf)
-                patent.project_details_file = file_system.url(project_details_pdf_name)
-                messages.success(request, 'Patent filed successfully')
-            else:
-                messages.error(request, 'Please upload pdf file')
-                return render(request ,"rs/research.html",context)
 
-            # creating notifications for user and dean_rspc about the patent
-            dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
-            research_procedures_notif(request.user,request.user,"submitted")
-            research_procedures_notif(request.user,dean_rspc_user,"created")
-            patent.status='Pending'
-            patent.save()
+  
+    if request.method=='POST':
+        if ("ipd_form_file" in request.FILES) and ("project_details_file" in request.FILES) and ("title" in request.POST):  
+            if(user_extra_info.user_type == "faculty"):
+                patent.faculty_id = user_extra_info
+                patent.title = request.POST.get('title')
+                ipd_form_pdf = request.FILES['ipd_form_file']
+                if(ipd_form_pdf.name.endswith('.pdf')):
+                    patent.ipd_form = request.FILES['ipd_form_file']
+                    file_system = FileSystemStorage()
+                    ipd_form_pdf_name = file_system.save(ipd_form_pdf.name,ipd_form_pdf)
+                    patent.ipd_form_file = file_system.url(ipd_form_pdf_name)
+                else:
+                    messages.error(request, 'Please upload pdf file')
+                    return render(request ,"rs/research.html",context)
+                
+                project_details_pdf = request.FILES['project_details_file']
+                if(project_details_pdf.name.endswith('.pdf')):
+                    patent.project_details=request.FILES['project_details_file']
+                    file_system = FileSystemStorage()
+                    project_details_pdf_name = file_system.save(project_details_pdf.name,project_details_pdf)
+                    patent.project_details_file = file_system.url(project_details_pdf_name)
+                    messages.success(request, 'Patent filed successfully')
+                else:
+                    messages.error(request, 'Please upload pdf file')
+                    return render(request ,"rs/research.html",context)
+
+                # creating notifications for user and dean_rspc about the patent
+                dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
+                research_procedures_notif(request.user,request.user,"submitted")
+                research_procedures_notif(request.user,dean_rspc_user,"created")
+                patent.status='Pending'
+                patent.save()
+            else:
+                messages.error(request, 'Only Faculty can file patent')
         else:
-            messages.error(request, 'Only Faculty can file patent')
+            messages.error(request,"All fields are required")
     patents = Patent.objects.all() 
     context['patents'] = patents
     context['research_groups'] = ResearchGroup.objects.all()
     context['research_group_form'] = ResearchGroupForm()
     return render(request ,"rs/research.html",context)
 
+@login_required
 #dean_rspc can update status of patent.   
 def patent_status_update(request):
     """
@@ -113,6 +120,7 @@ def patent_status_update(request):
                 messages.error(request, 'Only Dean RSPC can update status of patent')
     return redirect(reverse("research_procedures:patent_registration"))
 
+@login_required
 def research_group_create(request):
     """
         This function is used to create a research group.
@@ -128,10 +136,14 @@ def research_group_create(request):
     
     """
     user = request.user
+    user_extra_info = ExtraInfo.objects.get(user=user)
     if request.method=='POST':
-        form = ResearchGroupForm(request.POST)
-        if form.is_valid():
-            form.save()
-            # research_group.save()
-            messages.success(request, 'Research group created successfully')
+        if user_extra_info.user_type == "faculty":
+            form = ResearchGroupForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Research group created successfully')
+        else:
+            messages.error(request, 'Only Faculty can create research group')
     return redirect(reverse("research_procedures:patent_registration"))
+
