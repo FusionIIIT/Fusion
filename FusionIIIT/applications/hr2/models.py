@@ -44,6 +44,7 @@ class Constants:
     FOREIGN_SERVICE = (
         ('LIEN', 'LIEN'),
         ('DEPUTATION', 'DEPUTATION'),
+        ('AWARDS', 'AWARDS'),
         ('OTHER', 'OTHER'),
     )
 
@@ -57,8 +58,7 @@ class Employee(models.Model):
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     religion = models.CharField(max_length=40, default='')
-    category = models.CharField(
-        max_length=50, null=False, choices=Constants.CATEGORY)
+    category = models.CharField(max_length=50, null=False, choices=Constants.CATEGORY)
     cast = models.CharField(max_length=40, default='')
     home_state = models.CharField(max_length=40, default='')
     home_district = models.CharField(max_length=40, default='')
