@@ -1,0 +1,77 @@
+{% load static %}
+{% block student_dashboard %}
+
+<form class="ui form" method="POST" id="student_dashboard_id" action="{% url 'academic_information:view_all_student_data'  %}">
+    {% csrf_token %}
+    <div class="field">
+        <label>Programme</label>
+        <select name="programme" id="programme_curr">
+            <option value="B.Tech">B.Tech</option>
+            <option value="B.Des">B.Des</option>
+            <option value="M.Des">M.Des</option>
+            <option value="M.Tech">M.Tech</option>
+            <option value="Phd">PhD</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>Batch</label>    
+        <input placeholder="Batch" type="number" name="batch" id="batch_curr">
+    </div>
+
+    <div class="field">
+        <label>Roll Number</label>    
+        <input placeholder="Roll Number" type="number" name="Roll_number" id="roll_curr">
+    </div>
+
+    <div class="field">
+        <label>Branch</label>
+        <select name="branch" id="branch_curr">
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">ME</option>
+            <option value="Des.">Design</option>
+            <option value="Common">Common</option>
+            <option value="Smart Manufacturing">Smart Manufacturing</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>Category<label>
+        <select name="category" id="category_curr">
+            <option value="ALL">ALL</option>
+            <option value="GENERAL">GEN</option>
+            <option value="OBC-NCL">OBC-NCL</option>
+            <option value="SC">SC</option>
+            <option value="ST">ST</option> 
+        </select>
+    </div>
+    <div class="field">
+        <div class="one wide field">
+            <input type="submit" value="View" class="ui primary button" />
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $("#student_dashboard_id").submit(function(event) {
+        event.preventDefault();
+        var friendForm = $(this);
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        // if success:
+        posting.done(function(data) {
+            alert('Success');
+            $('#student_list').html(data.html);
+        });
+        // if failure
+        posting.fail(function(data) {
+            alert('Error');
+            
+        });
+    });
+</script>
+
+<div id="student_list">
+
+</div>
+
+{% endblock %}

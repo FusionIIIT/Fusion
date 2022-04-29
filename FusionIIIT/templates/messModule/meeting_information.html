@@ -3,17 +3,24 @@
 {% block body %}
 {% block invitation %}
 <div class="ui pointing secondary menu">
-    <a class="ui active item" data-tab="" id="mi">
-        Meeting Invitation
-    </a>
-    <a class="ui item" data-tab="" id="pm">
+    <a class="ui active item" data-tab="" id="pm">
         Previous Meetings
     </a>
     <a class="ui item" data-tab="" id="um">
+        {% if d.designation.name != 'student' %}
+        Meeting Minutes
+        {% else %}
         Upload Minutes
+        {% endif %}
     </a>
+    {% if d.designation.name == 'student' %}
+    <a class="ui item" data-tab="" id="mi">
+        Meeting Invitation
+    </a>
+    
+    {% endif %}
 </div>
-<div class="ui active tab" data-tab="" id="mitab">
+<div class="ui tab" data-tab="" id="mitab">
     <div class="ui vertical stripe team segment"
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -79,7 +86,7 @@
     </div>
     </div>
 
-    <div class="ui tab" data-tab="" id="pmtab">
+    <div class="ui active tab" data-tab="" id="pmtab">
         <div class="ui vertical segment">
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
@@ -109,7 +116,7 @@
     <div class="ui vertical stripe team segment"
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
-
+{% if d.designation.name == 'student' %}
         <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes" action="{% url 'mess:minutes' %}">
             {% csrf_token %}
                 <div class="field">
@@ -123,7 +130,7 @@
                 </div>
         </form>
         <div class="ui divider"></div>
-
+{% endif %}
         <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>

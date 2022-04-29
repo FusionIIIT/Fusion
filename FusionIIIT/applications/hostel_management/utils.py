@@ -14,11 +14,10 @@ def get_caretaker_hall(hall_caretakers,user):
             return caretaker.hall
             
 
-def update_hostel_room(student,room_no):
-    """
-    This function updates hostel room details related to a student.
-  
-    """
+def remove_from_room(student):
+    """Removes the student from his current room"""
+    if student.room_no is None:
+        return
     room = re.findall('[0-9]+',str(student.room_no))
     room_num=str(room[0])
     block = str(student.room_no[0])
@@ -26,14 +25,19 @@ def update_hostel_room(student,room_no):
     Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=room_num)
     Room.room_occupied=Room.room_occupied-1
     Room.save()
-               
-    block=str(room_no[0])
-    room = re.findall('[0-9]+',str(room_no))
-    Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=str(room[0]))
+    student.room_no = None
+    student.save()
+
+def add_to_room(student, new_room):
+    """Adds the student to his new room"""
+    block=str(new_room[0])
+    room = re.findall('[0-9]+', new_room)
     student.room_no=str(block)+"-"+str(room[0])
     student.save()
+    hall=Hall.objects.get(hall_id="hall"+str(student.hall_no))
+    Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=str(room[0]))
     Room.room_occupied=Room.room_occupied+1
-    Room.save()        
+    Room.save()
 
 def render_to_pdf(template_src, context_dict={}):
     """

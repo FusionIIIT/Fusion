@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet)
+
+
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -12,6 +14,9 @@ from xhtml2pdf import pisa
 from django.core.files import File
 
 from django.db.models import Min,Max
+from applications.academic_information.models import Student
+
+
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
 
@@ -78,7 +83,7 @@ def main_page(request):
 
 		for fin_year in range(maxi_year, mini_year-1, -1):
 			inc_fin_years.append(fin_year)
-
+	
 	if len(Expenditure.objects.all()):
 		
 		min_date_exp = Expenditure.objects.all().aggregate(Min('date_added'))
@@ -100,7 +105,9 @@ def main_page(request):
 
 	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
-
+	expense_history2 = otherExpense.objects.all().order_by("date_added")
+	expense_history2 = expense_history2[::-1]
+	expense_history= otherExpense.objects.filter(userid = request.user)
 	fixed_attributes = FixedAttributes.objects.all()
 
 	add_income_source()
@@ -123,14 +130,15 @@ def main_page(request):
 	else:
 		max_date = str(current_financial_year_ob.year)+'-'+month+'-'+day
 		min_date = str(current_financial_year_ob.year)+'-04-01'
-
+	
 
 	if len(fixed_attributes) == 0:
 		for i in fixed_attributes_list:
 			entry = FixedAttributes(attribute=i)
 			entry.save()
 		fixed_attributes = FixedAttributes.objects.all()
-    
+	
+
 	if(request.user.is_staff==True):
 		return render(
 				request,
@@ -138,6 +146,7 @@ def main_page(request):
 				{
 					'income_sources':income_sources,
 					'income_history':income_history,
+					'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
@@ -148,17 +157,31 @@ def main_page(request):
 					'exp_fin_years':exp_fin_years,
 				})
 	else:
-		return render(
-				request,
-				'../templates/incomeExpenditure/iesu.html',
-				{
-					'fin_years':fin_years,
-					'min_date':min_date,
-					'max1_date':max_date,
-					'inc_fin_years':inc_fin_years,
-					'exp_fin_years':exp_fin_years,
-				})
-	
+		s=Student.objects.get(id__id = request.user)
+		if (s.programme=="M.Tech" or s.programme=="M.Des" or s.programme=="PhD") :
+			return render(
+					request,
+					'../templates/incomeExpenditure/iesu.html',
+					{
+						'fin_years':fin_years,
+						'min_date':min_date,
+						'expense_history':expense_history,
+						'max1_date':max_date,
+						'inc_fin_years':inc_fin_years,
+						'exp_fin_years':exp_fin_years,
+					})
+		else:
+			return render(
+					request,
+					'../templates/incomeExpenditure/iebt.html',
+					{
+						'fin_years':fin_years,
+						'min_date':min_date,
+						'expense_history':expense_history,
+						'max1_date':max_date,
+						'inc_fin_years':inc_fin_years,
+						'exp_fin_years':exp_fin_years,
+					})
 
 
 
@@ -422,15 +445,31 @@ def view_income_stats(request):
 		result = (temp
 			.values('source')
 			.annotate(amount=Sum('amount'))
-			.order_by('-amount')
+			.order_by('-date_added')
 			)
 		income_labels = []
 		income_data = []
+		income_labels2=[]
+		income_data2=[]
+		print(income_labels)
 		for each in result:
 			each['source'] = IncomeSource.objects.get(id=each['source']).income_source
 		for each in result:
-			income_labels.append(each['source'])
-			income_data.append(each['amount'])
+			income_labels2.append(each['source'])
+			income_data2.append(each['amount'])
+			income_map = dict()
+			i=0
+		for item in income_labels2:
+			if(item in income_map.keys()):
+				income_map[item]=income_map[item]+income_data2[i]
+			else:
+				income_map[item]=income_data2[i]
+			i=i+1
+		for key in  income_map.keys():
+			income_labels.append(key)
+		for value in income_map.values():
+			income_data.append(value)
+		print(income_map)
 		return render(
 						request,
 						'../templates/incomeExpenditure/viewIncomeStats.html',
@@ -438,6 +477,7 @@ def view_income_stats(request):
 							'income_data':income_data,
 							'income_labels':income_labels,
 							'fin_year':fin_year,
+							'income_map':income_map,
 						})
 
 '''
@@ -465,13 +505,27 @@ def view_expenditure_stats(request):
 			.annotate(amount=Sum('amount'))
 			.order_by('-amount')
 			)
-		expenditure_labels = []
-		expenditure_data = []
+		expenditure_labels2 = []
+		expenditure_data2 = []
+		expenditure_data=[]
+		expenditure_labels=[]
 		for each in result:
 			each['spent_on'] = ExpenditureType.objects.get(id=each['spent_on']).expenditure_type
 		for each in result:
-			expenditure_labels.append(each['spent_on'])
-			expenditure_data.append(each['amount'])
+			expenditure_labels2.append(each['spent_on'])
+			expenditure_data2.append(each['amount'])
+			expenditure_map=dict()
+			i=0
+		for item in expenditure_labels2:
+			if(item in expenditure_map):
+				expenditure_map[item]=expenditure_map[item]+expenditure_data2[i]
+			else:
+				expenditure_map[item]=expenditure_data2[i]
+			i=i+1
+		for key in  expenditure_map.keys():
+			expenditure_labels.append(key)
+		for value in expenditure_map.values():
+			expenditure_data.append(value)
 		return render(
 						request,
 						'../templates/incomeExpenditure/viewExpenditureStats.html',
@@ -479,4 +533,123 @@ def view_expenditure_stats(request):
 							'expenditure_data':expenditure_data,
 							'expenditure_labels':expenditure_labels,
 							'fin_year':fin_year,
+							'expenditure_map':expenditure_map,
 						})
+def compare(request):
+	if(request.method == 'POST'):
+		year = request.POST.get('year')
+
+		start_date = year + "-04-01"
+		end_date = str(int(year)+1) + "-03-31"
+
+		fin_year = str(int(year)) + " - " + str(int(year)+1)
+		temp = Expenditure.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result = (temp
+			.values('spent_on')
+			.annotate(amount=Sum('amount'))
+			.order_by('-amount')
+			)
+		expenditure_labels = []
+		expenditure_data = []
+		for each in result:
+			each['spent_on'] = ExpenditureType.objects.get(id=each['spent_on']).expenditure_type
+		for each in result:
+			expenditure_labels.append(each['spent_on'])
+			expenditure_data.append(each['amount'])
+			expenditure_map=dict()
+			i=0
+			for item in expenditure_labels:
+				if(item in expenditure_map):
+					expenditure_map[item]=expenditure_map[item]+expenditure_data[i]
+				else:
+					expenditure_map[item]=expenditure_data[i]
+				i=i+1
+		temp = Income.objects.filter(date_added__range=[start_date, end_date])
+		# temp = Income.objects.filter(date_added__year = 2021)
+		result1 = (temp
+			.values('source')
+			.annotate(amount=Sum('amount'))
+			.order_by('-date_added')
+			)
+		income_labels = []
+		income_data = []
+		
+		for each in result1:
+			each['source'] = IncomeSource.objects.get(id=each['source']).income_source
+		for each in result1:
+			income_labels.append(each['source'])
+			income_data.append(each['amount'])
+		income_map = dict()
+		i=0
+		for item in income_labels:
+			if(item in income_map):
+				income_map[item]=income_map[item]+income_data[i]
+			else:
+				income_map[item]=income_data[i]
+			i=i+1
+
+		return render(
+						request,
+						'../templates/incomeExpenditure/compare.html',
+						{
+							'fin_year':fin_year,
+							'expenditure_map':expenditure_map,
+							'income_map':income_map,
+						})
+
+
+
+def otherExpense_view(request):
+	if(request.method == 'POST'):
+		spent_on = request.POST.get('spent_on')
+		name = request.POST.get('name')
+		amount = request.POST.get('amount')
+		date= request.POST.get('date_spent')
+		remarks = request.POST.get('remarks')
+		status ="Not approved"
+		print("--------------------",spent_on,name,amount)
+		new_e = otherExpense(
+						spent_on = spent_on,
+						status=status,
+						name=name,
+						userid=request.user,
+						amount = amount,
+						date_added = date,
+						remarks = remarks,
+						)
+		print("----------------------",new_e)
+		new_e.save()
+		balanceSheet_table()
+	return redirect('main-page')
+
+def del_expense(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		otherExpense.objects.get(id=ex_id).delete()
+
+	return redirect('/income-expenditure/requests')
+def decline(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Declined"
+		obj.save()
+
+	return redirect('main-page')
+def approve(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Approved"
+		obj.save()
+
+	return redirect('main-page')
+def stb(request):
+	if(request.method == 'POST'):
+		ex_id = request.POST.get('id')
+		obj = otherExpense.objects.get(id=ex_id)
+		obj.status  = "Transferred to Bank"
+		obj.save()
+
+	return redirect('main-page')

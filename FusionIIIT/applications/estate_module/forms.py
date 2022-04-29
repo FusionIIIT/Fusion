@@ -1,6 +1,6 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
 from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
-
+import datetime
 
 class BuildingForm(ModelForm):
     class Meta:
@@ -64,6 +64,25 @@ class BuildingForm(ModelForm):
             'numWashrooms': 'Number of Washrooms',
             'remarks': 'Remarks',
         }
+        
+    def clean(self):
+        super(BuildingForm,self).clean()
+
+        dateIssued=(self.cleaned_data.get('dateIssued'))
+        dateConstructionStarted=(self.cleaned_data.get('dateConstructionStarted'))
+        dateConstructionCompleted=(self.cleaned_data.get('dateConstructionCompleted'))
+        dateOperational=(self.cleaned_data.get('dateOperational'))
+        
+        if(dateIssued!=None and dateConstructionStarted!=None and dateIssued>dateConstructionStarted):
+            self._errors['dateConstructionStarted']=self.error_class(['Construction date must be after issue date'])
+        if(dateConstructionCompleted!=None and dateConstructionStarted!=None and dateConstructionStarted>=dateConstructionCompleted):
+            self._errors['dateConstructionCompleted']=self.error_class(['Construction completion date must be after start date'])
+        if(dateConstructionCompleted!=None and dateOperational!=None and dateConstructionStarted>=dateOperational):
+            self._errors['dateOperational']=self.error_class(['Operational date must be after completion date'])
+
+        return self.cleaned_data
+
+
 
 
 class WorkForm(ModelForm):

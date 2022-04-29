@@ -370,9 +370,11 @@ def new_club(request):
 		try:
 			club_name = request.POST.get("club_name")
 			category = request.POST.get("category")
+			print(category)
 			co_ordinator = request.POST.get("co")
 			co_coordinator = request.POST.get("coco")
 			faculty = request.POST.get("faculty")
+			print("faculty",faculty)
 			# club_file = request.FILES.get("file")
 			d_d = request.POST.get("d_d")
 
@@ -390,6 +392,7 @@ def new_club(request):
 					result = "success"
 					CO = student_info
 					break
+			print("result",result)
 			if (result == "error"):
 				message = message + "The entered roll number of the co_ordinator does not exist"
 				content = {
@@ -407,6 +410,7 @@ def new_club(request):
 					result = "success"
 					COCO = student_info
 					break
+			print("cocoordinator",result)
 			if(result == "error"):
 				message = message + "The entered roll number of the co_coordinator does not exist"
 				content = {
@@ -422,10 +426,13 @@ def new_club(request):
 			result = "error"
 			for lecturer in faculties:
 				checkName = lecturer.user.first_name + " " + lecturer.user.last_name
+				# print()
 				if faculty == checkName:
-					res = "success"
+					result = "success"
 					FACUL = lecturer
 					break
+			print("faculty",result)
+			print(CO,COCO)
 			if (result == "error"):
 				message = message + "The entered faculty incharge does not exist"
 				content = {
@@ -436,21 +443,22 @@ def new_club(request):
 				return HttpResponse(content)
 			#getting queryset class objects
 			co_student = get_object_or_404(Student, id = CO)
-
+			print(co_student)
 			#getting queryset class objects
 			coco_student = get_object_or_404(Student, id = COCO)
-
+			print(coco_student)
 			#getting queryset class objects
 			# faculty = faculty.split(" - ")
 			# user_name = get_object_or_404(User, username = faculty[1])
 			# faculty = get_object_or_404(ExtraInfo, id = faculty[0], user = user_name)
 			faculty_inc = get_object_or_404(Faculty, id = FACUL)
-
+			print(faculty_inc)
 			# club_file.name = club_name+"_club_file"
-
+			
 			club_info = Club_info(club_name = club_name, category = category, co_ordinator = co_student, co_coordinator = coco_student, faculty_incharge = faculty_inc, description = d_d)
+			print(club_info)
 			club_info.save()
-
+			print("saved successfully")
 			message = message + "The form has been successfully dispatched for further process"
 		except Exception as e:
 			result = "error"
@@ -1071,8 +1079,8 @@ def change_head(request):
 
 		old_co_ordinator = club_info.co_ordinator
 		old_co_coordinator = club_info.co_coordinator
-		club_info.co_ordinator = co_student
-		club_info.co_coordinator = coco_student
+		club_info.co_ordinator = co_ordinator_student
+		club_info.co_coordinator = co_coordinator_student
 		club_info.save()
 
 		message += "Successfully changed !!!"

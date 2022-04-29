@@ -595,7 +595,7 @@ class InitialRegistration(models.Model):
     '''
     course_id = models.ForeignKey(Courses, null=True, blank=True, on_delete=models.CASCADE)
     semester_id = models.ForeignKey(Semester,null=True, blank=True, on_delete=models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE,null=True, blank=True)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
     priority = models.IntegerField(blank=True,null=True)
