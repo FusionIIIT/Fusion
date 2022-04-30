@@ -9,8 +9,8 @@ ALLOWED_HOSTS = []
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab3',
-        'HOST': '172.27.16.215',
+        'NAME': 'fusionlab',
+        'HOST': 'localhost',
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
