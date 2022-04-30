@@ -1,0 +1,401 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Add Placement Schedule
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                {% for c in current %}
+                    {% if c.designation.name == 'student' %}
+                     <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                    {% endif %}
+                {% endfor %}
+
+
+                {% for c in current2 %}
+                    {% if c.designation.name == 'placement officer' %}
+                        {% if students or invitecheck == 1 or student_record_check == 1 %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>(9-4-22)-->
+                    {% endif %}
+                {% endfor %}
+
+
+                {% for c in current1 %}
+                    {% if c.designation.name == 'placement chairman' %}
+                        {% if students %}
+                           <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>-->
+                    {% endif %}
+
+
+                    <!--<a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>(9-4-22)
+                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                        Placement Visits
+                        <i class="right floated chevron right icon"></i>
+                    </a>-->
+
+
+                    {% endif %}
+                {% endfor %}
+
+
+
+                <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
+                    Placement Statistics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                 <!--Added student record tab here for staff only-->
+                {% if current2 %}
+                <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                    Student Record
+                    <i class="right floated chevron right icon"></i>
+                </a>(9-4-22)-->
+
+
+
+                <!--Placement officers could schedule placement -->
+               <!-- <a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
+                    Add Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>-->
+                <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
+                    Add Placement Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if current1 %}
+                <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
+                    Add Chairman Visit
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %} The central-rail segment starts here!{% endcomment %}
+
+
+             <!--Form for adding placement schedule-->
+        <div class="eight wide column content">
+                <form role="form" action="{% url 'placement:placement_record_save' %}" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                    <div class="container" style="padding: 16px;">
+                        <h1>New Placement Record</h1>
+                        <hr>
+
+
+                        <label for="placement_type"><b>Placement Type:</b></label>
+                        <select name="placement_type" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;">
+                          <option value="PLACEMENT" >Placement</option>
+                          <option value="PBI" >PBI</option>
+                          <option value="HIGHER STUDIES" >Higher Studies</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+
+                        <label for="student_name"><b>Student Name:</b></label>
+                        <input type="text" placeholder="" name="student_name" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;">
+
+
+                        <label for="ctc"><b>CTC:</b></label>
+                        <input type="number" placeholder="" name="ctc" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;">
+
+
+                         <label for="year"><b>Year:</b></label>
+                        <input type="number" name="year" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;"></input>
+
+                        <label for="test_score"><b>Test Score:</b></label>
+                         <input type="number" name="test_score" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;"></input>
+                        <label for="test_type"><b>Test Type:</b></label>
+                         <input type="text" name="test_type" required style="width: 100%;
+                                                                                                              padding: 15px;
+                                                                                                              margin: 5px 0 22px 0;
+                                                                                                              display: inline-block;
+                                                                                                              border: none;
+                                                                                                              background: #f1f1f1;"></input>
+                        <hr style="border: 1px solid #f1f1f1;margin-bottom: 25px;">
+
+
+                      </div>
+
+
+
+
+                <!-- /.card-body -->
+
+
+                  <button type="submit" class="btn btn-primary" style="width:100%; border:none; padding: 1rem 1.5rem; margin:1.5rem; background-color: grey;">Add Record</button>
+
+              </form>
+                </div>
+
+
+
+        {% block interviewrequest %}
+            {% include 'placementModule/interviewrequest.html' %}
+        {% endblock %}
+
+
+
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+    <link rel="stylesheet" src="{% static 'globals/css/jquery.clockinput.css' %}">
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'globals/js/jquery.clockinput.js' %}"></script>
+
+
+    <script type="text/javascript">
+      // arr = [1, 2, 3, 4];
+      function showReference(obj){
+        if ($(obj).hasClass('checked')){
+          $.ajax({
+            type: 'POST',
+            url: '{% url "placement:get_reference_list" %}',
+            data: {
+              // 'arr':arr
+            },
+            dataType: 'json',
+            success: function(response){
+              reference_objs = JSON.parse(response.reference_objs);
+              console.log(reference_objs[0].pk);
+              $('#reference_list').html('');
+              for (var i=0; i<reference_objs.length; i++){
+                $('#reference_list').append('<br><div class="ui checkbox"><input name="reference_checkbox_list" value="'+ reference_objs[i].pk +'" type="checkbox"><label>'+ reference_objs[i].fields.reference_name +'</label></div><br>');
+              }
+            },
+            error: function(rs, e){
+              alert('error');
+            }
+          });
+        }
+        else{
+          $('#reference_list').html('');
+        }
+      }
+
+
+      //---------------------role add dropdown----------------------------------------------------
+
+      // Ajax for company dropdown when adding schedule input values
+      $('#company_input').keyup( function(){
+        current_value = $('#company_input').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/companyname_dropdown/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.company_dropdown').html('');
+            for(var i=0;i<response.company_names.length;i++){
+
+              console.log(response.company_names[i]);
+              $('.company_dropdown').append('<option value="'+response.company_names[i]+'">'+response.company_names[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+      // Ajax for role dropdown
+      $('#txt_Search').keyup( function(){
+        current_value = $('#txt_Search').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/checking_roles/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.dropdown-menu').html('');
+            for(var i=0;i<response.all_roles.length;i++){
+
+              console.log(response.all_roles[i]);
+              $('.dropdown-menu').append('<option value="'+response.all_roles[i]+'">'+response.all_roles[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+
+      //----------------------calender--------------------------------
+
+      function getToday(){
+        return new Date();
+      }
+
+      $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+          date: function (date, settings) {
+            if (!date) return '';
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+            return year + '-' + month + '-' + day;
+          }
+        }
+      });
+
+      //-------------------------search bar for placement schedule --------------------
+        $('#sch_searchbar_btn').click(function(){
+            console.log('search button is clicked');
+
+            var search_string = $('#sch_searchbar_text').val();
+
+            console.log('search button is clicked  ' + search_string);
+
+            $('.content_item').each(function(){
+                console.log(this.id);
+                if(this.id.toUpperCase().includes(search_string.toUpperCase())){
+                    $(this).css('display', 'block');
+                }else{
+                    $(this).css('display', 'none');
+                }
+            });
+
+        });
+
+        function showModal(obj){
+            event.preventDefault();
+            $('.confirm_delete.modal').modal('show');
+            $('#modal_id button.positive').on('click',function(){
+              $(obj).click();
+            });
+        }
+    </script>
+
+    <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>
+
+{% endblock %}

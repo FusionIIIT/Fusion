@@ -15,7 +15,7 @@
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form method="POST" action="update" enctype="multipart/form-data">
+            <form method="POST" action="{% url 'research_procedures:patent_status_update' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -30,8 +30,8 @@
                             <div class="twelve wide field">
                                 <label>Patent ID*</label>
                                 <select class="ui dropdown" name="id" id="id">
-                                    {% for p in val %}
-                                    <option value="{{p.application_id}}">{{p.application_id}}</option>
+                                    {% for patent in patents %}
+                                    <option value="{{patent.application_id}}">{{patent.application_id}}</option>
                                     {% endfor %}
                                 </select>
                             </div>

@@ -2,14 +2,9 @@
 
 {% block menucard %}
 
-{% for d in desig %} 
+{% for designations in user_designations %} 
 
-    {% if info.user_type == 'faculty' and d.designation.name == 'dean_rspc' %}
-
-        
-        <a class="item" data-tab="forteenth">
-            View Applications
-        </a>
+    {% if user_extra_info.user_type == 'faculty' and designations.designation.name == 'dean_rspc' %}
 
         <a class="item" data-tab="sixteenth">
            Change Status
@@ -18,13 +13,20 @@
     {% endif %}
     {% endfor %}
     
-
-    {% if info.user_type == 'faculty' or info.user_type == 'student' %} 
-        {% if info.user_type == 'faculty' %}
+    {% if user_extra_info.user_type == 'faculty' or user_extra_info.user_type == 'student' %} 
+        {% if user_extra_info.user_type == 'faculty' %}
             <a class="item"  data-tab="fourth">File Patent</a>
+            <a class="item"  data-tab="third">Add Research Group</a>
+        {% endif %}
+
+        {% if designations.designation.name != 'dean_rspc' %}
+            <a class="item" data-tab="first">View Status</a>
+            
         {% endif %}
         
-        <a class="item" data-tab="first">View Status</a>
+        <a class="item" data-tab="second">
+            View Research Groups
+        </a>
     {% endif %}
             
 

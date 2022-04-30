@@ -12,9 +12,9 @@
 {% block body %}
 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/> -->
 
 	{% block navBar %}
 		{% include 'dashboard/navbar.html' %}
@@ -69,7 +69,6 @@
 {% block javascript %}
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 
     <script type="text/javascript">
@@ -143,7 +142,7 @@
     				// $('#comment-text' + pk).append(result['form']);
     				// console.log(result['form']);
     			}
-    			
+
     		});
     	});
     </script>
@@ -239,7 +238,7 @@
 					$(`#${id}`).parent().hide();
 					if(response.done==1){
 						alert("tag removed successfully")
-						 location.reload(); 
+						 location.reload();
 					}else{
 						alert("Sorry tag not removed")
 					}

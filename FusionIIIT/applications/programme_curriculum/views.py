@@ -656,9 +656,9 @@ def add_course_form(request):
 @login_required(login_url='/accounts/login')
 def update_course_form(request, course_id):
 
-    user_details = ExtraInfo.objects.get(user = request.user)
+    #user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if str(des.designation) == "student":  # or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" 
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass

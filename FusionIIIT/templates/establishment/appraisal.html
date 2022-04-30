@@ -1,3 +1,26 @@
+{% extends 'establishment/common.html' %}
+
+{% block sidetabmenu %}
+{% comment %}The Tab-Menu starts here!{% endcomment %}
+<div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'establishment:ltc' %}">
+    LTC
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% if request.user.extrainfo.user_type == 'faculty' or director %}
+  <a class="item" href="{% url 'establishment:cpda' %}">
+    CPDA
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% endif %}
+  <a class="item active" href="{% url 'establishment:appraisal' %}">
+    Appraisal
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% comment %}The Tab-Menu ends here!{% endcomment %}
+{% endblock %}
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block appraisal %}
@@ -29,16 +52,16 @@
                       <label>Start Date</label>
                         {% if start_date %}
                           <div class="ui calendar" id="rangestart">
-                                    <div class="ui input left icon">
-                                      <i class="calendar icon"></i>
-                                      <input type="text" placeholder="YYYY-MM-DD" name="start_date" id="start_date" value="{{start_date}}" required>
+                                    <div class="ui input">
+      
+                                      <input type="date" name="start_date" id="start_date" value="{{start_date}}" required>
                                     </div>
                           </div>
                         {% else %}
                           <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                              <i class="calendar icon"></i>
-                              <input type="text" placeholder="YYYY-MM-DD" name="start_date" id="start_date" required>
+                            <div class="ui input">
+                              <!-- <i class="calendar icon"></i> -->
+                              <input type="date" name="start_date" id="start_date" required>
                             </div>
                           </div>
                         {% endif %}
@@ -47,16 +70,16 @@
                       <label>End Date</label>
                           {% if end_date %}
                               <div class="ui calendar" id="rangeend">
-                                        <div class="ui input left icon">
-                                          <i class="calendar icon"></i>
-                                          <input type="text" placeholder="YYYY-MM-DD" name="end_date" id="end_date" value="{{end_date}}">
+                                        <div class="ui input">
+                                          <!-- <i class="calendar icon"></i> -->
+                                          <input type="date" name="end_date" id="end_date" value="{{end_date}}">
                                         </div>
                               </div>
                           {% else %}
                               <div class="ui calendar" id="rangeend">
-                                <div class="ui input left icon">
-                                  <i class="calendar icon"></i>
-                                  <input type="text" placeholder="YYYY-MM-DD" name="end_date" id="end_date">
+                                <div class="ui input">
+                                  <!-- <i class="calendar icon"></i> -->
+                                  <input type="date" name="end_date" id="end_date">
                                 </div>
                               </div>
                           {% endif %}
@@ -68,11 +91,11 @@
                 </button><br><br><br>
               </form>
               
-                <hr  style="height:5px;background-color:#333;">
+                <hr style="height:5px;background-color:#333;">
                 {% if start_date %}
-                    <h2>Showing details from {{start_date}} to {{end_date}}</h2>
+                    <h2>&emsp;&emsp;&emsp;Showing details from {{start_date}} to {{end_date}}</h2>
                 {% else %}
-                    <h2>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Showing All the details</h2>
+                    <h2>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Showing All the details</h2>
                 {% endif %}
                 <hr  style="height:5px;background-color:#333;"><br><br>
 
@@ -98,7 +121,7 @@
 
 
 
-                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
 
                 <body>
 
@@ -159,7 +182,7 @@
 
 
                 <hr style="height:5px;background-color:#333;">
-                <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                <h2>2.&emsp; RESEARCH ELEMENT</h2>
 
                 <!--Table for Thesis/Research Supervision-->
                   <h3>2.1 &emsp; Thesis/Research Supervision</h3>
@@ -352,7 +375,7 @@
 
                 <hr  style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                 <br>
                 <label for="admin_assign"><h3>3.1 &emsp; Administrative Assignments:</h3></label>
                 <textarea name="admin_assign" rows="1" cols="30" placeholder="please mention institute/discipline level"></textarea>
@@ -365,7 +388,7 @@
                 <br><br>
                 <hr  style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2>
+                <h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2>
                 <textarea name="faculty_comments" rows="3" cols="30" placeholder="Your comments on your performance so far and this academic year particularly"></textarea>
                 <br><br>
                 <hr  style="height:5px;background-color:#333;">
@@ -395,18 +418,21 @@
                       {% for app2 in appraisal_requests_active %}
                         {% if app2.appraisal == app %}
                           <span><b>Application Id: </b>{{app.id}}</span><br>
-                          
-                          {% if app2.remarks_hod %}
+                          <span><b>Hod Review: </b>{{app2.remark_hod}} </span>
+                          <!-- {% if app2.remark_hod %} <p>kya be lode</p> {% endif %}
+                          {% if app2.remark_hod != 'Pending' %}
                             <span><b>Hod Review: </b>Processed</span>
                           {% else %}
                             <span><b>Hod Review: </b>Under Review</span>
-                          {% endif %}
+                          {% endif %} -->
+
                           <br>
-                          {% if app2.remarks_director %}
-                            <span><b>Director Review: </b>Processed</span>
+                          <span><b>Director Review: </b>{{app2.remark_director}}</span>
+                          <!-- {% if app2.remarks_director %}
+                            <span><b>Director Review: </b>{{app2.remarks_director}}</span>
                           {% else %}
                             <span><b>Director Review: </b>Under Review</span>
-                          {% endif %}
+                          {% endif %} -->
                           <br>
                         {% endif %}
                       {% endfor %}
@@ -436,7 +462,7 @@
                           <label><strong>Current Research Element: </strong>{{app.research_interest}}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
-                          <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
 
                           <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
                           <table>  <!-- the container to add the TABLE -->
@@ -504,7 +530,7 @@
                           <hr style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
 
                           <h3>2.1 &emsp; Thesis/Research Supervision</h3>
                           <table>
@@ -707,7 +733,7 @@
                           <hr  style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                           <br>
                           <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                           <label>{{app.admin_assign}}</label>
@@ -722,7 +748,7 @@
                           <br><br>
                           <hr  style="height:5px;background-color:#333;">
 
-                          <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                           <label>{{app.faculty_comments}}</label>
                           <br><br>
 
@@ -739,6 +765,9 @@
                       </div>
                   </div>
               </div>
+              {% empty %}
+                        <tr><td colspan="3">No Active Request</td><tr>
+                        <hr>
             {% endfor %}
           </div>
         </div>
@@ -760,9 +789,9 @@
                         {% for app2 in appraisal_requests_archived %}
                           {% if app2.appraisal == app %}
                             <span><b>Application Id: </b>{{app.id}}</span><br>
-                            <span><b>Hod Review: </b>Processed</span>
+                            <span><b>Hod Review: </b>{{app2.remark_hod}} </span>
                             <br>
-                            <span><b>Director Review: </b>Processed</span>
+                            <span><b>Director Review: </b>{{app2.remark_director}}</span>
                             <br>
                       <div>
                           <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
@@ -1060,7 +1089,7 @@
                           <hr  style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                           <br>
                           <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                           <label>{{app.admin_assign}}</label>
@@ -1075,7 +1104,7 @@
                           <br><br>
                           <hr  style="height:5px;background-color:#333;">
 
-                          <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                           <label>{{app.faculty_comments}}</label>
                           <br><br>
 
@@ -1094,6 +1123,9 @@
               </div>
                 {% endif %}
               {% endfor %}
+              {% empty %}
+                  <tr><td colspan="3">No Archive Avaliable</td><tr>
+                  <hr>
             {% endfor %}
           </div>
         </div>
@@ -1103,6 +1135,7 @@
 
 
 
+{% endblock %}
 {% endblock %}
 
 
@@ -1187,7 +1220,6 @@ function removeRow(oButton) {
     var courseTab = document.getElementById('CoursesInstructed');
     courseTab.deleteRow(oButton.parentNode.parentNode.rowIndex); // button -> td -> tr.
 }
-
-
 </script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
 {% endblock %}

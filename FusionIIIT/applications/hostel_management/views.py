@@ -15,76 +15,78 @@ from .models import *
 import xlrd
 from .forms import HostelNoticeBoardForm
 import re
-from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
 from django.views.generic import View
 from django.db.models import Q
-
+from django.contrib import messages
+from .utils import render_to_pdf, save_worker_report_sheet,get_caretaker_hall
+from .utils import add_to_room, remove_from_room
 
 @login_required
 def hostel_view(request, context={}):
     """
     This is a general function which is used for all the views functions.
     This function renders all the contexts required in templates.
+    @param:
+        request - HttpRequest object containing metadata about the user request.
+        context - stores any data passed during request,by default is empty.
+
     @variables:
-            hall_1_student - stores all hall 1 students
-            hall_3_student - stores all hall 3 students
-            hall_4_student - stores all hall 4 students
-            all_hall - stores all the hall of residence
-            all_notice - stores all notices of hostels (latest first)
+        hall_1_student - stores all hall 1 students
+        hall_3_student - stores all hall 3 students
+        hall_4_student - stores all hall 4 students
+        all_hall - stores all the hall of residence
+        all_notice - stores all notices of hostels (latest first)
     """
-    hall_1_student = Student.objects.filter(hall_no=1)[:10]
-    hall_3_student = Student.objects.filter(hall_no=3)[:10]
-    hall_4_student = Student.objects.filter(hall_no=4)[:10]
+    
     all_hall = Hall.objects.all()
     halls_student = {}
     for hall in all_hall:
-        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4]))[:10]
+        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4])).select_related('id__user')
 
     hall_staffs = {}
     for hall in all_hall:
-        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall)
+        hall_staffs[hall.hall_id] = StaffSchedule.objects.filter(hall=hall).select_related('staff_id__id__user')
 
     all_notice = HostelNoticeBoard.objects.all().order_by("-id")
     hall_notices = {}
     for hall in all_hall:
-        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall)
+        hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall).select_related('hall','posted_by__user')
 
-    Staff_obj = Staff.objects.all()
+    Staff_obj = Staff.objects.all().select_related('id__user')
     hall1 = Hall.objects.get(hall_id='hall1')
     hall3=Hall.objects.get(hall_id='hall3')
     hall4=Hall.objects.get(hall_id='hall4')
     hall1_staff = StaffSchedule.objects.filter(hall=hall1)
     hall3_staff = StaffSchedule.objects.filter(hall=hall3)
     hall4_staff = StaffSchedule.objects.filter(hall=hall4)
-    hall_caretaker = HallCaretaker.objects.all()
+    hall_caretakers = HallCaretaker.objects.all().select_related()
+    hall_wardens = HallWarden.objects.all().select_related()
 
     hall_student=""
-    get_hall=""
     current_hall=""
     get_avail_room=[]
-    for i in hall_caretaker:
-        if i.staff.id.user==request.user:
-            get_hall=i.hall
-            break
-        
+    get_hall=get_caretaker_hall(hall_caretakers,request.user) 
     if get_hall:
-        total_rooms=HallRoom.objects.filter(hall=get_hall)
-        for i in total_rooms:
-            if(i.room_cap>i.room_occupied):
-                get_avail_room.append(i)
-
         get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
-        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0])))
+        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
         current_hall='hall'+str(get_hall_num[0])
-
+    
+    for hall in all_hall:
+        total_rooms=HallRoom.objects.filter(hall=hall)
+        for room in total_rooms:
+            if(room.room_cap>room.room_occupied):
+                get_avail_room.append(room)
 
     hall_caretaker_user=[]
-    for h_c in hall_caretaker:
-        hall_caretaker_user.append(h_c.staff.id.user)      
+    for caretaker in hall_caretakers:
+        hall_caretaker_user.append(caretaker.staff.id.user)
 
+    hall_warden_user = []
+    for warden in hall_wardens:
+        hall_caretaker_user.append(warden.staff.id.user)
+    
     todays_date = date.today()
     current_year = todays_date.year
     current_month = todays_date.month
@@ -94,10 +96,14 @@ def hostel_view(request, context={}):
     else:
         worker_report = WorkerReport.objects.filter(hall__hall_id=current_hall, year=current_year-1, month=12)
 
+    attendance = HostelStudentAttendence.objects.all().select_related()
+    halls_attendance = {}
+    for hall in all_hall:
+        halls_attendance[hall.hall_id] = HostelStudentAttendence.objects.filter(hall=hall).select_related()
+
+
     context = {
-        'hall_1_student': hall_1_student,
-        'hall_3_student': hall_3_student,
-        'hall_4_student': hall_4_student,
+        
         'all_hall': all_hall,
         'all_notice': all_notice,
         'staff':Staff_obj,
@@ -105,6 +111,7 @@ def hostel_view(request, context={}):
         'hall3_staff' : hall3_staff,
         'hall4_staff' : hall4_staff,
         'hall_caretaker' : hall_caretaker_user,
+        'hall_warden' : hall_warden_user,
         'room_avail' : get_avail_room,
         'hall_student':hall_student,
         'worker_report': worker_report,
@@ -112,6 +119,7 @@ def hostel_view(request, context={}):
         'current_hall' : current_hall,
         'hall_staffs': hall_staffs,
         'hall_notices': hall_notices,
+        'attendance': halls_attendance,
         **context
     }
 
@@ -120,41 +128,61 @@ def hostel_view(request, context={}):
 
 
 def staff_edit_schedule(request):
+    """
+    This function is responsible for creating a new or updating an existing staff schedule.
+    @param:
+       request - HttpRequest object containing metadata about the user request.
+
+    @variables:
+       start_time - stores start time of the schedule.
+       end_time - stores endtime of the schedule.
+       staff_name - stores name of staff.
+       staff_type - stores type of staff.
+       day - stores assigned day of the schedule.
+       staff - stores Staff instance related to staff_name.
+       staff_schedule - stores StaffSchedule instance related to 'staff'.
+       hall_caretakers - stores all hall caretakers.
+    """
     if request.method == 'POST':
         start_time= datetime.datetime.strptime(request.POST["start_time"],'%H:%M').time()
         end_time= datetime.datetime.strptime(request.POST["end_time"],'%H:%M').time()
-        # hall_no = request.POST["hall_no"]
         staff_name=request.POST["Staff_name"]
         staff_type=request.POST["staff_type"]
         day=request.POST["day"]
 
         staff=Staff.objects.get(pk=staff_name)
         try:
-            hall_staff=StaffSchedule.objects.get(staff_id=staff)
-            hall_staff.day=day
-            hall_staff.start_time=start_time
-            hall_staff.end_time=end_time
-            hall_staff.staff_type=staff_type
-            hall_staff.save()
+            staff_schedule=StaffSchedule.objects.get(staff_id=staff)
+            staff_schedule.day=day
+            staff_schedule.start_time=start_time
+            staff_schedule.end_time=end_time
+            staff_schedule.staff_type=staff_type
+            staff_schedule.save()
+            messages.success(request, 'Staff schedule updated successfully.')
         except:
-            # hall=Hall.objects.get(hall_id=hall_no)
-            hall_caretaker = HallCaretaker.objects.all()
+            hall_caretakers = HallCaretaker.objects.all()
             get_hall=""
-            for i in hall_caretaker:
-                if i.staff.id.user==request.user:
-                    get_hall=i.hall
-                    break
-
+            get_hall=get_caretaker_hall(hall_caretakers,request.user)
             StaffSchedule(hall=get_hall,staff_id=staff,day=day,staff_type=staff_type,start_time=start_time,end_time=end_time).save()
-
+            messages.success(request, 'Staff schedule created successfully.')
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 
 def staff_delete_schedule(request):
+    """
+    This function is responsible for deleting an existing staff schedule.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+
+    @variables:
+      staff_dlt_id - stores id of the staff whose schedule is to be deleted.
+      staff - stores Staff object related to 'staff_name'
+      staff_schedule - stores staff schedule related to 'staff'
+    """
     if request.method == 'POST':
-        staff_name=request.POST["dlt_schedule"]
-        staff=Staff.objects.get(pk=staff_name)
+        staff_dlt_id=request.POST["dlt_schedule"]
+        staff=Staff.objects.get(pk=staff_dlt_id)
         staff_schedule=StaffSchedule.objects.get(staff_id=staff)
         staff_schedule.delete()
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
@@ -164,6 +192,14 @@ def staff_delete_schedule(request):
 def notice_board(request):
     """
     This function is used to create a form to show the notice on the Notice Board.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+
+    @variables:
+      hall - stores hall of residence related to the notice.
+      head_line - stores headline of the notice. 
+      content - stores content of the notice uploaded as file.
+      description - stores description of the notice.
     """
     if request.method == "POST":
         form = HostelNoticeBoardForm(request.POST, request.FILES)
@@ -178,105 +214,207 @@ def notice_board(request):
                                             description=description)
 
             new_notice.save()
-                
+            messages.success(request, 'Notice created successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 @login_required
 def delete_notice(request):
+    """
+    This function is responsible for deleting ana existing notice from the notice board.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+
+    @variables:
+      notice_id - stores id of the notice.
+      notice - stores HostelNoticeBoard object related to 'notice_id'
+    """
     if request.method == 'POST':
         notice_id=request.POST["dlt_notice"]
         notice=HostelNoticeBoard.objects.get(pk=notice_id)
         notice.delete()
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
-
-def edit_student_room(request):
+def edit_student_rooms_sheet(request):
+    """
+    This function is used to edit the room and hall of a multiple students.
+    The user uploads a .xls file with Roll No, Hall No, and Room No to be updated.
+    @param:
+        request - HttpRequest object containing metadata about the user request.
+    """
     if request.method == "POST":
-        roll_no = request.POST["roll_no"]
-        room_no = request.POST["room_no"]
-        batch=str(roll_no[0])+str(roll_no[1])+str(roll_no[2])+str(roll_no[3])
-        students = Student.objects.filter(batch=int(batch))
-        for i in students:
-            if str(i.id.user)==str(roll_no):
-                room = re.findall('[0-9]+',str(i.room_no))
-                room_num=str(room[0])
-                block = str(i.room_no[0])
-                hall=Hall.objects.get(hall_id="hall"+str(i.hall_no))
-                Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=room_num)
-                Room.room_occupied=Room.room_occupied-1
-                Room.save()
-               
-                block=str(room_no[0])
-                room = re.findall('[0-9]+',str(room_no))
-                Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=str(room[0]))
-                i.room_no=str(block)+"-"+str(room[0])
-                i.save()
-                Room.room_occupied=Room.room_occupied+1
-                Room.save()
+        sheet = request.FILES["upload_rooms"]
+        excel = xlrd.open_workbook(file_contents=sheet.read())
+        all_rows = excel.sheets()[0]
+        for row in all_rows:
+            if row[0].value == "Roll No":
+                continue
+            roll_no = row[0].value
+            hall_no = row[1].value
+            if row[0].ctype == 2:
+                roll_no = str(int(roll_no))
+            if row[1].ctype == 2:
+                hall_no = str(int(hall_no))
+
+            room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
+            student = Student.objects.filter(id=roll_no.strip())
+            hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
+            if student and hall.exists():
+                Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
+                if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
+                    continue
+                else:
+                    is_valid = False
+                    print('Room  unavailable!')
+                    messages.error(request, 'Room  unavailable!')
+                    break
+            else:
+                is_valid = False
+                print("Wrong Credentials entered!")
+                messages.error(request, 'Wrong credentials entered!')
+                break
+
+        if not is_valid:
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        
+        for row in all_rows:
+            if row[0].value == "Roll No":
+                continue
+            roll_no = row[0].value
+            if row[0].ctype == 2:
+                roll_no = str(int(roll_no))
+            
+
+            hall_no = str(int(row[1].value))
+            room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
+            student = Student.objects.filter(id=roll_no.strip())
+            remove_from_room(student[0])
+            add_to_room(student[0], room_no, hall_no)
+        messages.success(request, 'Hall Room change successfull !')
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+def edit_student_room(request):
+    """
+    This function is used to edit the room number of a student.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+
+    @varibles:
+      roll_no - stores roll number of the student.
+      room_no - stores new room number. 
+      batch - stores batch number of the student generated from 'roll_no'
+      students - stores students related to 'batch'.
+    """
+    if request.method == "POST":
+        roll_no = request.POST["roll_no"]
+        hall_room_no=request.POST["hall_room_no"]
+        index=hall_room_no.find('-')
+        room_no = hall_room_no[index+1:]
+        hall_no = hall_room_no[:index]
+        student = Student.objects.get(id=roll_no)
+        remove_from_room(student)
+        add_to_room(student, new_room=room_no, new_hall=hall_no)
+        messages.success(request, 'Student room changed successfully.')
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+def edit_attendance(request):
+    """
+    This function is used to edit the attendance of a student.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    
+    @variables:
+      student_id = The student whose attendance has to be updated.
+      hall = The hall of the concerned student.
+      date = The date on which attendance has to be marked.
+    """
+    if request.method == "POST":
+        roll_no = request.POST["roll_no"]
+        
+        student = Student.objects.get(id=roll_no)
+        hall = Hall.objects.get(hall_id='hall'+str(student.hall_no))
+        date = datetime.datetime.today().strftime('%Y-%m-%d')
+
+        if HostelStudentAttendence.objects.filter(student_id=student,date=date).exists() == True:
+            messages.error(request, f'{student.id.id} is already marked present on {date}')
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+        record = HostelStudentAttendence.objects.create(student_id=student, \
+            hall=hall, date=date, present=True)
+        record.save()
+
+        messages.success(request, f'Attendance of {student.id.id} recorded.')
+
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
 
 
 @login_required
 def generate_worker_report(request):
+    """
+    This function is used to read uploaded worker report spreadsheet(.xls) and generate WorkerReport instance and save it in the database.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+
+    @variables:
+      files - stores uploaded worker report file 
+      excel - stores the opened spreadsheet file raedy for data extraction.
+      user_id - stores user id of the current user.
+      sheet - stores a sheet from the uploaded spreadsheet.
+    """
     if request.method == "POST":
+      try:
         files = request.FILES['upload_report']
         excel = xlrd.open_workbook(file_contents=files.read())
         user_id = request.user.extrainfo.id
         if str(excel.sheets()[0].cell(0,0).value)[:5].lower() == str(HallCaretaker.objects.get(staff__id=user_id).hall):
-            hall_3_workers = []
             for sheet in excel.sheets():
-                month = excel.sheet_names()[0][:2]
-                year = excel.sheet_names()[0][3:]
-                for row in range(1, sheet.nrows):
-                    worker_id = str(sheet.cell(row,0).value)
-                    worker_name = str(sheet.cell(row,1).value)
-                    present = 0
-                    for col in range(2, sheet.ncols):
-                        if int(sheet.cell(row,col).value) == 1:
-                            present += 1
-                    working_days = sheet.ncols - 2
-                    absent = sheet.ncols - present - 2
-                    hall_no = HallCaretaker.objects.get(staff__id=user_id).hall
-                    new_report = WorkerReport.objects.create(worker_id=worker_id, hall=hall_no, worker_name=worker_name, month=month, year=year, absent=absent, total_day=working_days, remark="none")
-                    new_report.save()
-                    hall_3_workers.append([worker_id, worker_name, present, absent])
-
+                save_worker_report_sheet(excel,sheet,user_id)
                 return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-
-
-def render_to_pdf(template_src, context_dict={}):
-    template = get_template(template_src)
-    html  = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    return None
+      except: 
+          messages.error(request,"Please upload a file in valid format before submitting")
+          return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 class GeneratePDF(View):
     def get(self, request, *args, **kwargs):
-        if request.method == "GET":
-            months = request.GET.get('months')
+        """
+        This function is used to generate worker report in pdf format available for download.
+        @param:
+          request - HttpRequest object containing metadata about the user request.
 
-        months = int(months)
+        @variables:
+          months - stores number of months for which the authorized user wants to generate worker report.
+          toadys_date - stores current date.
+          current_year - stores current year retrieved from 'todays_date'.
+          current_month - stores current month retrieved from 'todays_date'.
+          template - stores template returned by 'get_template' method.
+          hall_caretakers - stores all hall caretakers.
+          worker_report - stores 'WorkerReport' instances according to 'months'.
+
+        """
+        months = int(request.GET.get('months'))
         todays_date = date.today()
         current_year = todays_date.year
         current_month = todays_date.month
 
         template = get_template('hostelmanagement/view_report.html')
 
-        hall_caretaker = HallCaretaker.objects.all()
+        hall_caretakers = HallCaretaker.objects.all()
         get_hall=""
-        for i in hall_caretaker:
-            if i.staff.id.user==request.user:
-                get_hall=i.hall
-                break
-
+        get_hall=get_caretaker_hall(hall_caretakers,request.user)
+        print(get_hall)
         if months < current_month:
             worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)
         else:

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Employee,EmpConfidentialDetails,EmpDependents,ForeignService,EmpAppraisalForm,WorkAssignemnt
+from .models import Employee,EmpConfidentialDetails,ForeignService,EmpDependents,EmpAppraisalForm,WorkAssignemnt
 
 # Register your models here.
 

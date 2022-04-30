@@ -47,16 +47,16 @@
                 <tbody>
                 <form method='POST' id='branch_change_form' action='/academic-procedures/branch-validate/'>
                 {% csrf_token %}
-                {% for a,b,c,d,e in lists %}
+                {% for applied_by, change_branch, initial_branch, available_seats, cpi in lists %}
                     <tr>
-                        <td>{{ a }}</td>
-                        <td>{{ b }}</td>
-                        <td>{{ c }}</td>
-                        <td>{{ d }}</td>
-                        <td>{{ e }}</td>
+                        <td>{{ applied_by }}</td>
+                        <td>{{ change_branch }}</td>
+                        <td>{{ initial_branch }}</td>
+                        <td>{{ available_seats }}</td>
+                        <td>{{ cpi }}</td>
                         <td>
-                            <input name="choice" type="checkbox" value="{{ a }}" required="required">
-                            <input type="text" name="branch" value="{{ b }}" hidden="True">
+                            <input name="choice" type="checkbox" value="{{ applied_by }}" />
+                            <input type="text" name="branch" value="{{ change_branch }}" hidden="True" />
                         </td>
                     </tr>
                 {% endfor %}
@@ -86,15 +86,31 @@ $(function() {
         event.preventDefault();
         var friendForm = $(this);
 
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        posting.done(function(data) {
-            alert('Change Successful');
-            window.location = "/academic-procedures/acad_person/";
+        const branchChangeBoxes = [...document.querySelectorAll('input[name=choice')];
+        // console.log("88",branchChangeBoxes);
+        const frm1box = document.querySelectorAll('input[name=choice]');
+        let totalchecked = 0;
+        console.log("127>>",frm1box);
+        frm1box.forEach(bx =>{
+            if(bx.checked===true){
+                totalchecked++;
+            }
         });
-        posting.fail(function(data) {
-            alert('Failed to Change');
-            window.location = "/academic-procedures/acad_person/";
-        });
+
+        if(totalchecked===0)
+            alert("Please select atleast one request to approve");
+        else{
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Change Successful');
+                window.location = "/academic-procedures/acad_person/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to Change');
+                window.location = "/academic-procedures/acad_person/";
+            });
+        }
+        
     });
 });
 </script>

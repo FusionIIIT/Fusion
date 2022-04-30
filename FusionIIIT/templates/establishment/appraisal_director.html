@@ -1,3 +1,27 @@
+{% extends 'establishment/common.html' %}
+
+{% block sidetabmenu %}
+{% comment %}The Tab-Menu starts here!{% endcomment %}
+<div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'establishment:ltc' %}">
+    LTC
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% if request.user.extrainfo.user_type == 'faculty' or director %}
+  <a class="item" href="{% url 'establishment:cpda' %}">
+    CPDA
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% endif %}
+  <a class="item active" href="{% url 'establishment:appraisal' %}">
+    Appraisal
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% comment %}The Tab-Menu ends here!{% endcomment %}
+{% endblock %}
+
+{% block content %}
 {% load semanticui %}
 {% load static %}
 {% block appraisal %}
@@ -35,9 +59,9 @@
                 <label for="current_research_interest"><b>Current Research Interest:</b></label><br><br>
                 <textarea id="current_research_interest" name="current_research_interest" rows="3" cols="30"></textarea><br><br><br>
 
-                <hr  style="height:5px;background-color:#333;">
+                <hr style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
                 <!-- <p>1.1 &emsp;&emsp;<u>Teaching</u></p> -->
 
                 <style>
@@ -116,7 +140,7 @@
 
 
                 <hr style="height:5px;background-color:#333;">
-                <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                <h2>2.&emsp; RESEARCH ELEMENT</h2>
                 <!--
                   Table for NewCourseMaterial
                 -->
@@ -313,7 +337,7 @@
 
                 <hr  style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                 <br>
                 <label for="admin_assign"><h3>3.1 &emsp; Administrative Assignments:</h3></label>
                 <textarea name="admin_assign" rows="1" cols="30" placeholder="please mention institute/discipline level"></textarea>
@@ -326,7 +350,7 @@
                 <br><br>
                 <hr  style="height:5px;background-color:#333;">
 
-                <h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2>
+                <h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2>
                 <textarea name="faculty_comments" rows="3" cols="30" placeholder="Your comments on your performance so far and this academic year particularly"></textarea>
                 <br><br>
                 <hr  style="height:5px;background-color:#333;">
@@ -383,7 +407,7 @@
                           <label><strong>Current Research Element: </strong>{{app.research_interest}}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
-                          <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                          <h2>1. &emsp; INSTRUCTION ELEMENT</h2>
 
                           <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
                           <table>  <!-- the container to add the TABLE -->
@@ -450,7 +474,7 @@
                           <hr style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
 
                           <h3>2.1 &emsp; Thesis/Research Supervision</h3>
                           <table>
@@ -633,7 +657,7 @@
                           <hr  style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                           <br>
                           <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                           <label>{{app.admin_assign}}</label>
@@ -648,7 +672,7 @@
                           <br><br>
                           <hr  style="height:5px;background-color:#333;">
 
-                          <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                           <label>{{app.faculty_comments}}</label>
                           <br><br>
 
@@ -665,6 +689,9 @@
                       </div>
                   </div>
               </div>
+              {% empty %}
+                        <tr><td colspan="3">No Active Request</td><tr>
+                          <hr>
             {% endfor %}
           </div>
         </div>
@@ -715,7 +742,7 @@
                           <label><strong>Current Research Element: </strong>{{app.research_interest}}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
-                          <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
 
                           <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
                           <table>  <!-- the container to add the TABLE -->
@@ -782,7 +809,7 @@
                           <hr style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                          <h2>2. &emsp; RESEARCH ELEMENT</h2>
 
                           <h3>2.1 &emsp; Thesis/Research Supervision</h3>
                           <table>
@@ -965,7 +992,7 @@
                           <hr  style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                           <br>
                           <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                           <label>{{app.admin_assign}}</label>
@@ -980,7 +1007,7 @@
                           <br><br>
                           <hr  style="height:5px;background-color:#333;">
 
-                          <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                           <label>{{app.faculty_comments}}</label>
                           <br><br>
 
@@ -997,6 +1024,9 @@
                       </div>
                   </div>
               </div>
+              {% empty %}
+                        <tr><td colspan="3">No Archive Avaliable</td><tr>
+                          <hr>
             {% endfor %}
           </div>
         </div>
@@ -1039,7 +1069,7 @@
                           <label><strong>Current Research Element: </strong>{{app.appraisal.research_interest}}</label><br>
                           <hr style="height:5px;background-color:#333;">
 
-                          <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
 
                           <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
                           <table>  <!-- the container to add the TABLE -->
@@ -1108,7 +1138,7 @@
                           <hr style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
 
                           <h3>2.1 &emsp; Thesis/Research Supervision</h3>
                           <table>
@@ -1328,7 +1358,7 @@
                           <hr  style="height:5px;background-color:#333;">
 
 
-                          <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                           <br>
                           <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                           <label>{{app.appraisal.admin_assign}}</label>
@@ -1343,7 +1373,7 @@
                           <br><br>
                           <hr  style="height:5px;background-color:#333;">
 
-                          <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                           <label>{{app.appraisal.faculty_comments}}</label>
                           <br><br>
 
@@ -1380,6 +1410,9 @@
                       </div>
                   </div>
               </div>
+              {% empty %}
+                        <tr><td colspan="3">No Application To Review</td><tr>
+                          <hr>
             {% endfor %}
       </div>
     </div>
@@ -1392,7 +1425,7 @@
     <div class="content">
         <div class="description">
           <div class="ui items">
-            {% for app in reviewed_apps_director %}
+          {% for app in reviewed_apps_director %}
             {% for app2 in appraisal_all %}
             {% if app.appraisal == app2 %}
             <div class="item">
@@ -1427,7 +1460,7 @@
                         <label><strong>Current Research Element: </strong>{{app.appraisal.research_interest}}</label><br>
                         <hr style="height:5px;background-color:#333;">
 
-                        <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+                        <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
 
                         <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
                         <table>  <!-- the container to add the TABLE -->
@@ -1496,7 +1529,7 @@
                         <hr style="height:5px;background-color:#333;">
 
 
-                        <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+                        <h2>2.&emsp; RESEARCH ELEMENT</h2>
 
                         <h3>2.1 &emsp; Thesis/Research Supervision</h3>
                         <table>
@@ -1716,7 +1749,7 @@
                         <hr  style="height:5px;background-color:#333;">
 
 
-                        <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                        <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
                         <br>
                         <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
                         <label>{{app.appraisal.admin_assign}}</label>
@@ -1731,7 +1764,7 @@
                         <br><br>
                         <hr  style="height:5px;background-color:#333;">
 
-                        <label><h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                        <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
                         <label>{{app.appraisal.faculty_comments}}</label>
                         <br><br>
 
@@ -1748,12 +1781,16 @@
             </div>
             {% endif %}
             {% endfor %}
+            {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                        <hr>
             {% endfor %}
           </div>
         </div>
     </div>
 </div>
 
+{% endblock %}
 {% endblock %}
 
 

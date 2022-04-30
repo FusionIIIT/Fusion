@@ -272,6 +272,17 @@ def check(request):
     if request.user.is_authenticated:
         a = get_object_or_404(User, username=request.user.username)
         b = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
+        temp = ExtraInfo.objects.all().select_related('user','department').filter(user_type='faculty')
+        print('----------------------------')
+        print(len(temp))
+        temp = ExtraInfo.objects.all().select_related('user','department').filter(user_type='fx')
+        print('----------------------------')
+        print(len(temp))
+        print('----------------------------')
+        print(b.user_type)
+        print('----------------------------')
+        print('----------------------------')
+        print('----------------------------')
         if b.user_type == 'student':
             return HttpResponseRedirect('/complaint/user/')
         elif b.user_type == 'staff':
@@ -387,6 +398,12 @@ def user(request):
           dsgn ="lhtccaretaker"
         elif location =="NR2":
           dsgn ="nr2caretaker"
+        elif location =="Maa Saraswati Hostel":
+          dsgn ="mshcaretaker"
+        elif location =="Nagarjun Hostel":
+          dsgn ="nhcaretaker"
+        elif location =="Panini Hostel":
+          dsgn ="phcaretaker"
         else:
           dsgn = "rewacaretaker"
         caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = dsgn)
@@ -400,6 +417,8 @@ def user(request):
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
         # next = request.POST.get('next', '/')
+
+        messages.success(request,message)
         return HttpResponseRedirect('/complaint/user')
 
     else:
@@ -768,8 +787,24 @@ def deletecomplaint(request, comp_id1):
     StudentComplain.objects.get(id=comp_id1).delete()
     return HttpResponseRedirect('/complaint/caretaker/')
 
+def testEntry():
+    # list1 = [('SKM','hall-1'),('HS','hall-3'),('PS','hall-4'),('MSR','Maa Saraswati Hostel'),('KKB','Maa Saraswati Hostel'), ('RP','Nagarjun Hostel'),('DS','Nagarjun Hostel'),('AV','Panini Hostel')]
+    list1 = [('eecivil','NR2'),('eecivil','Rewa_Residency'),('eecivil','LHTC'),('eecivil','core_lab')]
 
-@login_required
+    # to delete supervisors
+    # all_ent = Supervisor.objects.all()
+    # for ent in all_ent:
+    #     ent.delete()
+    
+    # adding all supervisors
+    for n in list1:
+        user = User.objects.all().get(username=n[0])
+        ei_obj = ExtraInfo.objects.all().get(user =user)
+        print(ei_obj.user.username)
+        test =  Supervisor(sup_id=ei_obj, area = n[1])
+        test.save()
+
+@login_required 
 def supervisor(request):
     """
     The function is used to display all registered complaints to the supervisor
@@ -783,7 +818,10 @@ def supervisor(request):
             support_count - Total supporters of the above issue.
             context - Holds data needed to make necessary changes in the template.
     """
+    # print("--------------------------")
+    # testEntry()
     current_user = get_object_or_404(User, username=request.user.username)
+    
     y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
     if request.method == 'POST' :
         try:
@@ -816,7 +854,16 @@ def supervisor(request):
                     {'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
                    'overduecomplaint': overduecomplaint, 'area': area,'num':num})
     else:
+        print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
+        try:
+            a = get_object_or_404(Supervisor, sup_id=y)
+        except :
+            return HttpResponseRedirect('/')
+
+        #print(a)
+        # if(len(a)==0) :
+        #     return render('../dashboard/')
         a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=y)
         all_caretaker = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
@@ -966,6 +1013,7 @@ def detail2(request, detailcomp_id1):
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
     num=0
+    
     if detail2.upload_complaint != "":
         num = 1
     temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).first()                                                               

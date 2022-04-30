@@ -117,7 +117,6 @@ def get_context(request):
         this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
         next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
-        
         courses_list = Courses.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
@@ -127,10 +126,9 @@ def get_context(request):
         assistant_approve_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(hod_approval =True).filter(hod_approval = True)
         assistant_list_length = len(assistant_list.filter(acad_approval = False))
         assis_stat = Assistantship_status.objects.all()
-
-        assistant_flag=""
-        hod_flag=""
-        account_flag=""
+        assistant_flag =""
+        hod_flag = ""
+        account_flag = ""
 
         for obj in assis_stat:
             assistant_flag = obj.student_status
@@ -963,35 +961,82 @@ def generate_preregistration_report(request):
         batch_id=request.POST.get('batch_branch')
         batch = Batch.objects.filter(id = batch_id).first()
         obj = InitialRegistration.objects.filter(student_id__batch_id=batch_id, semester_id__semester_no=sem)
+
+
+
         registered_students = set()
         unregistered_students = set()
+
+        # registered students contains objects of type InitialRegistration
         for stu in obj:
             registered_students.add(stu.student_id)
+
         students = Student.objects.filter(batch_id = batch_id)
+
         for stu in students:
             if stu not in registered_students:
                 unregistered_students.add(stu)
+        
+
+        # for stu in obj:
+        #     registered_students.add(stu.student_id)
+        # students = Student.objects.filter(batch_id = batch_id)
+        # for stu in students:
+        #     if stu not in registered_students:
+        #         unregistered_students.add(stu)
+
+
 
         data = []
         m = 1
         for i in unregistered_students:
+            # z is a row in excel
             z = []
             z.append(m)
             m += 1
             z.append(i.id.user.username)
             z.append(str(i.id.user.first_name)+" "+str(i.id.user.last_name))
             z.append(i.id.department.name)
-            z.append('not registered')
+            z.append('Not Registered')
             data.append(z)
-        for i in registered_students:
-            z = []
-            z.append(m)
-            m += 1
-            z.append(i.id.user.username)
-            z.append(str(i.id.user.first_name)+" "+str(i.id.user.last_name))
-            z.append(i.id.department.name)
-            z.append('registered')
-            data.append(z)
+
+        sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
+        course_slots = CourseSlot.objects.all().filter(semester = sem_id)
+        max_width = 1
+        for student in registered_students:
+            #z = []
+            # z.append(m)
+            # m += 1
+            # z.append(i.id.user.username)
+            # z.append(str(i.id.user.first_name)+" "+str(i.id.user.last_name))
+            # z.append(i.id.department.name)
+            # z.append('Registered')
+            # data.append(z)
+            current_student_registered_courses = InitialRegistration.objects.filter(student_id=student, semester_id__semester_no=sem).all()
+            timestamp = current_student_registered_courses.first().timestamp
+            print("current student is ",student.id.user.username)
+            print("timstamp value ",timestamp)
+            for slot in course_slots:
+                print("current slot belongs to ",slot)
+                z = []
+                z.append(m)
+                z.append(student.id.user.username)
+                z.append(str(student.id.user.first_name)+" "+str(student.id.user.last_name))
+                z.append(student.id.department.name)
+                z.append('Registered')
+                z.append(str(timestamp))
+                z.append(str(slot.name))
+                
+                choices_of_current_student = InitialRegistration.objects.filter(student_id=student, semester_id__semester_no=sem,course_slot_id = slot).all()
+                max_width = max(max_width,len(choices_of_current_student))
+
+                for choice in range(1,len(choices_of_current_student)+1):
+                    current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
+                    print("current choice is ",current_choice)
+                    z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
+                
+                data.append(z)
+                m+=1
         output = BytesIO()
 
         book = Workbook(output,{'in_memory':True})
@@ -1009,34 +1054,70 @@ def generate_preregistration_report(request):
                                     'valign': 'vcenter'})
         sheet = book.add_worksheet()
 
-        title_text = ("Pre-registeration : "+ batch.name + str(" ") + batch.discipline.acronym + str(" ") + str(batch.year))
+        # add semester too in title text
+        title_text = ("Pre-registeration : "+ batch.name + str(" ") + batch.discipline.acronym + str(" ") + str(batch.year) + " Semester : "+str(sem))
+        # ??
         sheet.set_default_row(25)
-
+        characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        # text, formatting
         sheet.merge_range('A2:E2', title_text, title)
         sheet.write_string('A3',"Sl. No",subtitle)
         sheet.write_string('B3',"Roll No",subtitle)
         sheet.write_string('C3',"Name",subtitle)
         sheet.write_string('D3',"Discipline",subtitle)
         sheet.write_string('E3','Status',subtitle)
+        sheet.write_string('F3','TimeStamp',subtitle)
+        sheet.write_string('G3','Course Slot ID',subtitle)
+        for choice_num  in range(7,7+max_width):
+            sheet.write_string(characters[choice_num]+'3','Choice '+str(choice_num-6),subtitle)
+
+        
+        # Width of column
         sheet.set_column('A:A',20)
         sheet.set_column('B:B',20)
         sheet.set_column('C:C',50)
         sheet.set_column('D:D',15)
-        sheet.set_column('E:E',15)
+        sheet.set_column('E:E',20)
+        sheet.set_column('F:F',40)
+        sheet.set_column('G:G',30)
+        sheet.set_column('H:H',70)
+        sheet.set_column('I:I',70)
+        sheet.set_column('J:J',70)
+        sheet.set_column('K:K',70)
+        sheet.set_column('L:L',70)
+        sheet.set_column('M:M',70)
+        #rows numbers
         k = 4
+        # SERIAL numbers S.no 1,2,3...
         num = 1
         for i in data:
             sheet.write_number('A'+str(k),num,normaltext)
             num+=1
             z,b,c = str(i[0]),i[1],i[2]
-            a,b,c,d,e = str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4])
-            temp = str(i[3]).split()
-            sheet.write_string('B'+str(k),b,normaltext)
-            sheet.write_string('C'+str(k),c,normaltext)
-            sheet.write_string('D'+str(k),d,normaltext)
-            sheet.write_string('E'+str(k),e,normaltext)
+            if(len(i) > 5):
+                a,b,c,d,e,f,g = str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4]),str(i[5]),str(i[6])
+                temp = str(i[3]).split()
+                sheet.write_string('B'+str(k),b,normaltext)
+                sheet.write_string('C'+str(k),c,normaltext)
+                sheet.write_string('D'+str(k),d,normaltext)
+                sheet.write_string('E'+str(k),e,normaltext)
+                sheet.write_string('F'+str(k),f,normaltext)
+                sheet.write_string('G'+str(k),g,normaltext)
+                characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                # for character in characters
+                for temp_num in range(7,len(i)):
+                    sheet.write_string(characters[temp_num]+str(k),str(i[temp_num]),normaltext)
+            else:
+                a,b,c,d,e= str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4])
+                temp = str(i[3]).split()
+                sheet.write_string('B'+str(k),b,normaltext)
+                sheet.write_string('C'+str(k),c,normaltext)
+                sheet.write_string('D'+str(k),d,normaltext)
+                sheet.write_string('E'+str(k),e,normaltext)
+
             k+=1
         book.close()
+        # ?? 
         output.seek(0)
         response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
         st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
@@ -1093,26 +1174,28 @@ def add_new_profile (request):
         excel = xlrd.open_workbook(file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
         for i in range(sheet.nrows):
-            roll_no=int(sheet.cell(i,0).value)
+            roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
-            email=str(sheet.cell(i,3).value)
+            email=roll_no+'@iiitdmj.ac.in'
             sex=str(sheet.cell(i,4).value)
-            if sex == 'F':
+            if sex == 'Female':
                 title='Ms.'
+                sex='F'
             else:
                 title='Mr.'
-            dob_tmp=sheet.cell(i,5).value
-            dob_tmp=sheet.cell_value(rowx=i,colx=5)
-            dob=datetime.datetime(*xlrd.xldate_as_tuple(dob_tmp,excel.datemode))
-            fathers_name=str(sheet.cell(i,6).value)
-            mothers_name=str(sheet.cell(i,7).value)
-            category=str(sheet.cell(i,8).value)
-            phone_no=int(sheet.cell(i,9).value)
-            address=str(sheet.cell(i,10).value)
-            dept=str(sheet.cell(i,11).value)
+                sex='M'
+            #dob_tmp=sheet.cell(i,5).value
+            #dob_tmp=sheet.cell_value(rowx=i,colx=5)
+            dob=datetime.datetime.now()
+            fathers_name=""
+            mothers_name=""
+            category=""
+            phone_no=0
+            address=""
+            dept=str(sheet.cell(i,12).value)
             specialization=str(sheet.cell(i,12).value)
-            hall_no=sheet.cell(i,13 ).value
+            hall_no=None
 
             department=DepartmentInfo.objects.all().filter(name=dept).first()
 
@@ -1179,14 +1262,14 @@ def add_new_profile (request):
             for course_slot in course_slots:
                 courses += course_slot.courses.all()
             new_reg=[]
-            for c in courses:
+            '''for c in courses:
                 reg=course_registration(
                     course_id = c,
                     semester_id=sem_id,
                     student_id=stud_data
                 )
                 new_reg.append(reg)
-            course_registration.objects.bulk_create(new_reg)
+            course_registration.objects.bulk_create(new_reg)'''
 
     else:
         return render(request, "ais/ais.html", context)
@@ -1934,3 +2017,240 @@ def confirm_grades(request):
     return HttpResponseRedirect('/aims/')
 
 
+@login_required()       
+def view_all_student_data(request):
+    """ views all the students """
+
+
+    data = []
+    #students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id') .filter(batch=2019).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')[0:20]
+    
+    context = get_context(request)
+    context['tab_id'][0]='9'
+
+    filter_names = {}
+    if request.method == 'POST':
+        try:
+            filter_names['batch'] = request.POST['batch']
+            filter_names['programme'] = request.POST['programme']
+            if(request.POST['branch']!='Common'):
+                filter_names['batch_id__discipline__acronym'] = request.POST['branch']
+            if(request.POST['category']!='ALL'):
+                filter_names['category'] = request.POST['category']
+            request_batch = request.POST['batch']
+            request_branch = request.POST['branch']
+            request_programme = request.POST['programme']
+            request_rollno = request.POST['Roll_number']
+            request_category = request.POST['category']
+        except Exception as e:
+            request_batch = ""
+            request_branch = ""
+            request_programme = ""
+            request_rollno = ""
+            request_category = ""
+        if request_batch == "" and request_branch == "" and request_programme=="" and request_rollno=="" and request_category=="":
+            data = None
+        else:
+            if(request_rollno != ""):
+                students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            else:
+                students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            for student in students:
+                obj = {
+                    "admissionYear" : student.batch,
+                    "RollNo" : student.id.id,
+                    "name" : student.id.user.get_full_name(),
+                    "program": student.programme,
+                    "discipline": student.batch_id.discipline.acronym,
+                    "specailization": student.specialization,
+                    "gender" : student.id.sex,
+                    "category": student.category,
+                    "pwd_status": student.pwd_status,
+                    "Mobile": student.id.phone_no,
+                    "dob" : student.id.date_of_birth,
+                    "emailid" : student.id.user.email,
+                    "father_name": student.father_name,
+                    "father_mobile_no": student.father_mobile_no,
+                    "mother_name": student.mother_name,
+                    "mother_mobile_no": student.mother_mobile_no,
+                    "address": student.id.address
+                }
+                data.append(obj)
+        html = render_to_string('ais/stud_list.html',{'students': data,'batch': request_batch,'branch': request_branch,'programme': request_programme,'Roll_number': request_rollno,'category':request_category},request)
+        obj = json.dumps({'html':html})
+        #context['students'] = data
+        return HttpResponse(obj,content_type='application/json')
+    else:
+        return render(request, "ais/ais.html", context)
+
+@login_required
+def generatestudentxlsheet(request):
+    """
+    to generate Course List of Students
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        batch - gets the batch
+        course - gets the course
+        curr_key - gets the curriculum from database
+        obj - get stdents data from database
+        ans - Formatted Array to be converted to xlsx
+        k -temporary array to add data to formatted array/variable
+        output - io Bytes object to write to xlsx file
+        book - workbook of xlsx file
+        title - formatting variable of title the workbook
+        subtitle - formatting variable of subtitle the workbook
+        normaltext - formatting variable for normal text
+        sheet - xlsx sheet to be rendered
+        titletext - formatting variable of title text
+        dep - temporary variables
+        z - temporary variables for final output
+        b - temporary variables for final output
+        c - temporary variables for final output
+        st - temporary variables for final output
+    """
+    if user_check(request):
+        return HttpResponseRedirect('/academic-procedures/')
+    
+    data = []
+    filter_names = {}
+    try:
+        filter_names['batch'] = request.POST['batch']
+        filter_names['programme'] = request.POST['programme']
+        if(request.POST['branch']!='Common'):
+            filter_names['batch_id__discipline__acronym'] = request.POST['branch']
+        if(request.POST['category']!='ALL'):
+            filter_names['category'] = request.POST['category']
+        request_batch = request.POST['batch']
+        request_branch = request.POST['branch']
+        request_programme = request.POST['programme']
+        request_rollno = request.POST['Roll_number']
+        request_category = request.POST['category']
+    except Exception as e:
+        request_batch = ""
+        request_branch = ""
+        request_programme = ""
+        request_rollno = ""
+        request_category = ""
+    print(request_batch)
+    print(request_branch)
+    print(request_category)
+    print(request_programme)
+    if request_batch == "" and request_branch == "" and request_programme=="" and request_rollno=="" and request_category=="":
+        data = None
+    else:
+        if(request_rollno != ""):
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+        else:
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+        for i in students:
+            obj = []
+            obj.append(i.batch)
+            obj.append(i.id.id)
+            obj.append(i.id.user.get_full_name())
+            obj.append(i.programme)
+            obj.append(i.batch_id.discipline.acronym)
+            obj.append(i.specialization)
+            obj.append(i.id.sex)
+            obj.append(i.category)
+            obj.append(i.pwd_status)
+            obj.append(i.id.phone_no)
+            obj.append(i.id.date_of_birth)
+            obj.append(i.id.user.email)
+            obj.append(i.father_name)
+            obj.append(i.father_mobile_no)
+            obj.append(i.mother_name)
+            obj.append(i.mother_mobile_no)
+            obj.append(i.id.address)
+            data.append(obj)
+    data.sort()
+    output = BytesIO()
+
+    book = Workbook(output,{'in_memory':True})
+    title = book.add_format({'bold': True,
+                                'font_size': 22,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    subtitle = book.add_format({'bold': True,
+                                'font_size': 15,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    normaltext = book.add_format({'bold': False,
+                                'font_size': 15,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    sheet = book.add_worksheet()
+
+    title_text = ((str(str(request_batch))))
+    sheet.set_default_row(25)
+
+    sheet.merge_range('A2:S2', title_text, title)
+    sheet.write_string('A3',"Sl. No",subtitle)
+    sheet.write_string('B3',"Admission Year",subtitle)
+    sheet.write_string('C3',"Roll No",subtitle)
+    sheet.write_string('D3',"Full Name",subtitle)
+    sheet.write_string('E3',"Program",subtitle)
+    sheet.write_string('F3',"Discipline",subtitle)
+    sheet.write_string('G3',"Specialization",subtitle)
+    sheet.write_string('H3',"Gender",subtitle)
+    sheet.write_string('I3',"Category",subtitle)
+    sheet.write_string('J3',"PWD Status",subtitle)
+    sheet.write_string('K3',"Mobile Number",subtitle)
+    sheet.write_string('L3',"DOB",subtitle)
+    sheet.write_string('M3',"Email ID",subtitle)
+    sheet.write_string('N3',"Father's Name",subtitle)
+    sheet.write_string('O3',"Father's Mobile Number",subtitle)
+    sheet.write_string('P3',"Mother's Name",subtitle)
+    sheet.write_string('Q3',"Mother's Mobile Number",subtitle)
+    sheet.write_string('R3',"Full Address with Pin code",subtitle)
+    sheet.write_string('S3','Remarks',subtitle)
+    sheet.set_column('A:A',20)
+    sheet.set_column('B:B',20)
+    sheet.set_column('C:C',15)
+    sheet.set_column('D:D',60)
+    sheet.set_column('E:E',30)
+    sheet.set_column('F:F',30)
+    sheet.set_column('G:G',30)
+    sheet.set_column('H:H',30)
+    sheet.set_column('I:I',30)
+    sheet.set_column('J:J',30)
+    sheet.set_column('K:K',30)
+    sheet.set_column('L:L',30)
+    sheet.set_column('M:M',30)
+    sheet.set_column('N:N',30)
+    sheet.set_column('O:O',30)
+    sheet.set_column('P:P',30)
+    sheet.set_column('Q:Q',30)
+    sheet.set_column('R:R',30)
+    sheet.set_column('S:S',30)
+    k = 4
+    num = 1
+    for i in data:
+        sheet.write_number('A'+str(k),num,normaltext)
+        num+=1
+        sheet.write_string('B'+str(k),str(i[0]),normaltext)
+        sheet.write_string('C'+str(k),i[1],normaltext)
+        sheet.write_string('D'+str(k),i[2],normaltext)
+        sheet.write_string('E'+str(k),i[3],normaltext)
+        sheet.write_string('F'+str(k),i[4],normaltext)
+        sheet.write_string('G'+str(k),i[5],normaltext)
+        sheet.write_string('H'+str(k),i[6],normaltext)
+        sheet.write_string('I'+str(k),i[7],normaltext)
+        sheet.write_string('J'+str(k),str(i[8]),normaltext)
+        sheet.write_string('K'+str(k),str(i[9]),normaltext)
+        sheet.write_string('L'+str(k),str(i[10]),normaltext)
+        sheet.write_string('M'+str(k),i[11],normaltext)
+        sheet.write_string('N'+str(k),i[12],normaltext)
+        sheet.write_string('O'+str(k),str(i[13]),normaltext)
+        sheet.write_string('P'+str(k),i[14],normaltext)
+        sheet.write_string('Q'+str(k),str(i[15]),normaltext)
+        sheet.write_string('R'+str(k),i[16],normaltext)
+        k+=1
+    book.close()
+    output.seek(0)
+    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
+    st = 'attachment; filename = ' + request_batch+ request_branch + '.xlsx'
+    response['Content-Disposition'] = st
+    return response

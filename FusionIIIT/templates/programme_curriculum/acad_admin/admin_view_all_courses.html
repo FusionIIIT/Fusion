@@ -35,6 +35,7 @@
                 <thead>
                     <tr style="font-size: medium;
                         background-color: whitesmoke;">
+                        <td><h4>index</h4></td>
                         <td><h4>Course Code</h4></td>
                         <td><h4>Course Name</h4></td>
                         <td><h4>Credits</h4></td>
@@ -44,6 +45,7 @@
                 <tbody>
                     {% for course in courses %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td><a href="{% url 'programme_curriculum:admin_view_a_course' course.id %}">{{ course.code }}</a></td>
                             <td>{{ course.name }}</td>
                             <td>{{ course.credit }}</td>
