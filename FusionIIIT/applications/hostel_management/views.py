@@ -246,7 +246,6 @@ def edit_student_rooms_sheet(request):
         sheet = request.FILES["upload_rooms"]
         excel = xlrd.open_workbook(file_contents=sheet.read())
         all_rows = excel.sheets()[0]
-        print(all_rows)
         for row in all_rows:
             if row[0].value == "Roll No":
                 continue
@@ -261,24 +260,21 @@ def edit_student_rooms_sheet(request):
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)
             is_valid = True
-            print(roll_no, type(roll_no))
             student = Student.objects.filter(id=roll_no.strip())
             hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
-            print(student," ",hall)
             if student and hall.exists():
                 Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
-                print(Room[0].room_occupied, Room[0].room_cap)
                 if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
                     continue
                 else:
                     is_valid = False
-                    print(f'Room  unavailable!')
-                    messages.error(request, f'Room  unavailable!')
+                    print('Room  unavailable!')
+                    messages.error(request, 'Room  unavailable!')
                     break
             else:
                 is_valid = False
                 print("Wrong Credentials entered!")
-                messages.error(request, f'Wrong credentials entered!')
+                messages.error(request, 'Wrong credentials entered!')
                 break
 
         if not is_valid:
@@ -297,10 +293,10 @@ def edit_student_rooms_sheet(request):
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)
             is_valid = True
-            print(roll_no, type(roll_no))
             student = Student.objects.filter(id=roll_no.strip())
             remove_from_room(student[0])
             add_to_room(student[0], room_no, hall_no)
+        messages.success(request, 'Hall Room change successfull !')
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
