@@ -69,15 +69,15 @@ def hostel_view(request, context={}):
     get_avail_room=[]
     get_hall=get_caretaker_hall(hall_caretakers,request.user) 
     if get_hall:
-        total_rooms=HallRoom.objects.filter(hall=get_hall)
-        for room in total_rooms:
-            if(room.room_cap>room.room_occupied):
-                get_avail_room.append(room)
-
         get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
         hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
         current_hall='hall'+str(get_hall_num[0])
     
+    for hall in all_hall:
+        total_rooms=HallRoom.objects.filter(hall=hall)
+        for room in total_rooms:
+            if(room.room_cap>room.room_occupied):
+                get_avail_room.append(room)
 
     hall_caretaker_user=[]
     for caretaker in hall_caretakers:
@@ -235,6 +235,71 @@ def delete_notice(request):
         notice.delete()
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+def edit_student_rooms_sheet(request):
+    """
+    This function is used to edit the room and hall of a multiple students.
+    The user uploads a .xls file with Roll No, Hall No, and Room No to be updated.
+    @param:
+        request - HttpRequest object containing metadata about the user request.
+    """
+    if request.method == "POST":
+        sheet = request.FILES["upload_rooms"]
+        excel = xlrd.open_workbook(file_contents=sheet.read())
+        all_rows = excel.sheets()[0]
+        for row in all_rows:
+            if row[0].value == "Roll No":
+                continue
+            roll_no = row[0].value
+            hall_no = row[1].value
+            if row[0].ctype == 2:
+                roll_no = str(int(roll_no))
+            if row[1].ctype == 2:
+                hall_no = str(int(hall_no))
+
+            room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
+            student = Student.objects.filter(id=roll_no.strip())
+            hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
+            if student and hall.exists():
+                Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
+                if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
+                    continue
+                else:
+                    is_valid = False
+                    print('Room  unavailable!')
+                    messages.error(request, 'Room  unavailable!')
+                    break
+            else:
+                is_valid = False
+                print("Wrong Credentials entered!")
+                messages.error(request, 'Wrong credentials entered!')
+                break
+
+        if not is_valid:
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        
+        for row in all_rows:
+            if row[0].value == "Roll No":
+                continue
+            roll_no = row[0].value
+            if row[0].ctype == 2:
+                roll_no = str(int(roll_no))
+            
+
+            hall_no = str(int(row[1].value))
+            room_no = row[2].value
+            block=str(room_no[0])
+            room = re.findall('[0-9]+', room_no)
+            is_valid = True
+            student = Student.objects.filter(id=roll_no.strip())
+            remove_from_room(student[0])
+            add_to_room(student[0], room_no, hall_no)
+        messages.success(request, 'Hall Room change successfull !')
+
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
 
 def edit_student_room(request):
     """
@@ -250,11 +315,13 @@ def edit_student_room(request):
     """
     if request.method == "POST":
         roll_no = request.POST["roll_no"]
-        room_no = request.POST["room_no"]
-        
+        hall_room_no=request.POST["hall_room_no"]
+        index=hall_room_no.find('-')
+        room_no = hall_room_no[index+1:]
+        hall_no = hall_room_no[:index]
         student = Student.objects.get(id=roll_no)
         remove_from_room(student)
-        add_to_room(student, new_room=room_no)
+        add_to_room(student, new_room=room_no, new_hall=hall_no)
         messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
