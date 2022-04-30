@@ -1,6 +1,7 @@
 from cgitb import html
 from datetime import date
 import json
+from multiprocessing import Process
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -177,7 +178,7 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        department_notif(usrnm, recipients , message)
+        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
@@ -222,7 +223,7 @@ def staff_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        department_notif(usrnm, recipients , message)
+        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
