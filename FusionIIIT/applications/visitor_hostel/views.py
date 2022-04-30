@@ -20,6 +20,8 @@ from django.shortcuts import HttpResponse, get_object_or_404, redirect, render
 from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
+from applications.complaint_system.models import Caretaker
+from notification.views import visitor_hostel_caretaker_notif
 import numpy as np
 from django.contrib.auth.models import User
 
@@ -260,7 +262,6 @@ def visitorhostel(request):
                    'cancel_booking_requested' : cancel_booking_requested,
                    'user_designation': user_designation})
 
-
 # Get methods for bookings
 
 @login_required(login_url='/accounts/login/')
@@ -348,8 +349,9 @@ def request_booking(request):
         print(sys.getsizeof(purpose_of_visit))
         print(sys.getsizeof(bill_to_be_settled_by))
 
-        care_taker = User.objects.filter(username=1812601).first()
-        
+        care_taker = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")
+        care_taker = care_taker[1]
+        care_taker = care_taker.user
         bookingObject = BookingDetail.objects.create(
                                                      caretaker = care_taker,
                                                      purpose=purpose_of_visit,
@@ -363,8 +365,9 @@ def request_booking(request):
                                                      #remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
                                                      bill_to_be_settled_by=bill_to_be_settled_by)
-        print (bookingObject)
-        print("Hello")
+        visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
+        # print (bookingObject)
+        # print("Hello")
 #        {% if messages %}
 #   {% for message in messages %}
 #     <div class="alert alert-dismissible alert-success">
@@ -425,8 +428,8 @@ def request_booking(request):
 
         # for sending notification of booking request to caretaker
 
-        caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhCaretaker")
-        visitors_hostel_notif(request.user, caretaker_name.user, 'booking_request')
+        #caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhCaretaker")
+        #visitors_hostel_notif(request.user, care_taker.user, 'booking_request')
 
         return HttpResponseRedirect('/visitorhostel/')
     else:
@@ -556,7 +559,7 @@ def cancel_booking_request(request):
         remark = request.POST.get('remark')
         BookingDetail.objects.select_related('intender','caretaker').filter(id=booking_id).update(status='CancelRequested', remark=remark)
 
-        incharge_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhIncharge")
+        incharge_name = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhIncharge")[1]
 
         # to notify the VhIncharge about a new cancelltaion request
 
@@ -578,7 +581,7 @@ def reject_booking(request):
 
         # to notify the intender that his request has been rejected
 
-        visitors_hostel_notif(request.user, booking.intender, 'booking_rejected')
+        #visitors_hostel_notif(request.user, booking.intender, 'booking_rejected')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -950,7 +953,7 @@ def forward_booking(request):
 
         # return render(request, "vhModule/visitorhostel.html",
         #           {'dashboard_bookings' : dashboard_bookings})
-        incharge_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhIncharge")
+        incharge_name = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhIncharge")[1]
 
         # notify incharge about forwarded booking
         visitors_hostel_notif(request.user, incharge_name.user, 'booking_forwarded')
