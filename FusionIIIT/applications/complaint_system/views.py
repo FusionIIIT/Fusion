@@ -398,11 +398,11 @@ def user(request):
           dsgn ="lhtccaretaker"
         elif location =="NR2":
           dsgn ="nr2caretaker"
-        elif location =="Maa_Saraswati_Hostel":
+        elif location =="Maa Saraswati Hostel":
           dsgn ="mshcaretaker"
-        elif location =="Nagarjun_Hostel":
+        elif location =="Nagarjun Hostel":
           dsgn ="nhcaretaker"
-        elif location =="Panini_Hostel":
+        elif location =="Panini Hostel":
           dsgn ="phcaretaker"
         else:
           dsgn = "rewacaretaker"
