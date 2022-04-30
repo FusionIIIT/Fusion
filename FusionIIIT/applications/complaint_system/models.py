@@ -18,6 +18,10 @@ class Constants:
         ('LHTC', 'LHTC'),
         ('NR2', 'NR2'),
         ('Rewa_Residency', 'Rewa_Residency'),
+        ('Maa Saraswati Hostel', 'Maa Saraswati Hostel'),
+        ('Nagarjun Hostel', 'Nagarjun Hostel'),
+        ('Panini Hostel', 'Panini Hostel'),
+
     )
     COMPLAINT_TYPE = (
         ('Electricity', 'Electricity'),
@@ -70,7 +74,7 @@ class StudentComplain(models.Model):
     worker_id = models.ForeignKey(Workers, blank=True, null=True,on_delete=models.CASCADE)
     upload_complaint = models.FileField(blank=True)
     comment = models.CharField(max_length=100,  default="None")
-
+    #upload_resolved = models.FileField(blank=True,null=True)
 
     def __str__(self):
         return str(self.complainer.user.username)
