@@ -68,7 +68,7 @@ class Constants:
 
     )
     USER_STATUS = {
-        ("NEW", "NEW"),
+        # ("NEW", "NEW"),
         ("PRESENT", "PRESENT"),
     }
 
