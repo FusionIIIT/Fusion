@@ -14,9 +14,9 @@
 
 {% block body %}
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/> -->
 	{% block navBar %}
 		{% include 'dashboard/navbar.html' %}
 	{% endblock %}
@@ -92,7 +92,7 @@
 			}
 			return false;
 		}
-		
+
 	</script>
 
 	<!-- This section is to avoid the refreshing of anchor tag with the class name 'link1' -->
@@ -213,7 +213,7 @@
 						count = count+" comments | view comments";
 						 document.getElementById("link1").text = count;
 					}
-					
+
 				});
 			}else{
 				alert("Write something before commenting");
@@ -270,7 +270,7 @@
 			$('#edit_answer_modal'+id)
 			.modal('show');
 		}
-		
+
 	 	$(document).on('submit','.edit_answer_form', function(event){
 		event.preventDefault();
 		console.log("updating answer on post")
@@ -293,7 +293,7 @@
 				$('#edit_answer_modal'+pk)
 				.modal('hide');
 			}
-			
+
 		});
 	});
 	 </script>
@@ -305,7 +305,7 @@
 			$('#delete_answer_modal'+id)
 			.modal('show');
 		}
-		
+
 	 	$(document).on('submit','.delete_answer_form', function(event){
 		event.preventDefault();
 		console.log("deleting answer on post")
@@ -330,11 +330,11 @@
 				$('#delete_answer_modal'+pk)
 				.modal('hide');
 			}
-			
+
 		});
 	});
 	</script>
-	 
+
 	<!-- Js for reply on comment  -->
 <script type="text/javascript">
 	function reply_btn(id){
@@ -353,7 +353,7 @@
 	function edit_reply_btn(qid,cid){
 		console.log("good")
 		$("#edit_comment_modal"+qid+"-"+cid).modal('show')
-		
+
 		$(document).on('submit','.edit_comment_form', function(event){
 		event.preventDefault();
 		console.log("updating comment on post")
@@ -376,7 +376,7 @@
 				$('#edit_comment_modal'+pk)
 				.modal('hide');
 			}
-			
+
 		});
 	});
 
@@ -387,7 +387,7 @@
 	function delete_reply_btn(qid,cid){
 		console.log("deleting")
 		$("#delete_comment_modal"+qid+"-"+cid).modal('show')
-		
+
 		$(document).on('submit','.delete_comment', function(event){
 		event.preventDefault();
 		console.log("deleting comment on post")
@@ -412,7 +412,7 @@
 				$('#delete_comment_modal'+pk)
 				.modal('hide');
 			}
-			
+
 		});
 	});
 
@@ -451,7 +451,7 @@
 				}
 				document.getElementById('reply_text'+pk).value = ''
 			}
-			
+
 		});
 	});
 </script>
@@ -549,7 +549,7 @@
 			return false;
 		}
 	</script>
-	
+
 
 		<!-- Question upvote Ajax-->
 	<script type="text/javascript">
