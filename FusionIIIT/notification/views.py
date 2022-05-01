@@ -36,7 +36,7 @@ def leave_module_notif(sender, recipient, type, date=None):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def placement_cell_notif(sender, recipient, type):
-    url = ''
+    url = 'placement:placement'
     module = 'Placement Cell'
     sender = sender
     recipient = recipient

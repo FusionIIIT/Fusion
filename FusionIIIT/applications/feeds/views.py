@@ -3,7 +3,7 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse,HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -16,17 +16,31 @@ from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 import math
+from django.contrib.messages import constants as message_constants
+from django.contrib import messages
+from django.urls import reverse
+
 PAGE_SIZE = 4
 # Create your views here.
 @login_required
 def feeds(request):
+    """
+    This function opens the homepage of feeds module after authenticatng the user,
+    shows questions from page 1 , if not requested a spcefic page
+    @param:
+        request - contains metadata about the requested page
+    @variables:
+        query - fetches questions from database sorted by latest upload time (latest questions are shown first)
+        paginator - no of contacts per page
+        total_page - assigned total number of pages
+    """
     query = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(query.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
-        current_page = 1    
+        current_page = 1
     previous_page = current_page - 1
     next_page = current_page + 1
     keyword = ""
@@ -64,8 +78,10 @@ def feeds(request):
             else:
                 question.anonymous_ask = False;
             question.save()
+            messages.success(request,"Question Posted Successfully !")
+
             role_check = Roles.objects.select_related().filter(user=request.user)
-            if len(role_check) > 0 and request.POST.get("from_admin"):
+            if len(role_check) >0 :
                 access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
                     access.canVote = False
@@ -90,8 +106,8 @@ def feeds(request):
             a = []
             fav_tag = fav_tag[4:]
             a= [int(c) for c in fav_tag.split(",")]                             # listing queery objects
-            
-            for i in range(0, len(a)):                       
+
+            for i in range(0, len(a)):
                 temp = AllTags.objects.get(pk=a[i])
                 new = tags.objects.create(user=request.user,my_subtag=temp)
                 new.my_tag = temp.tag
@@ -155,7 +171,7 @@ def feeds(request):
             'previous_page' : previous_page,
             'next_page' : next_page,
         },
-        "keyword": keyword, 
+        "keyword": keyword,
         'a': u_tags.filter(Q(my_tag__icontains='CSE')),
         'b' : u_tags.filter(Q(my_tag__icontains='ECE')),
         'c' : u_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -175,9 +191,17 @@ def feeds(request):
         'q' : u_tags.filter(Q(my_tag__icontains='Others')),
         'r' : u_tags.filter(Q(my_tag__icontains='Design')),
     }
-    return render(request, 'feeds/feeds_main.html', context)
+    # return render(request, 'feeds/feeds_main.html', context)
+    return render(request,'feeds/feeds_main.html', context)
 
 def Request(request):
+    """
+    This function requests a question based on it's id
+    @param:
+        request - contains metadata about the requested page
+    @variable:
+    question - question object (from database models)
+    """
     question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
     question.is_requested = False
 
@@ -193,7 +217,7 @@ def Request(request):
     context ={
         'question' : question,
         'question.is_requested' : question.is_requested,
-        'question.total_requests' : question.total_requests(), 
+        'question.total_requests' : question.total_requests(),
     }
 
     if request.is_ajax():
@@ -202,6 +226,12 @@ def Request(request):
 
 # Ajax called for comments to saved and display them
 def Comment_Text(request):
+    """
+    This function is to make comment on a particular question
+    @param:
+        request- contains metadata about the requested page
+
+    """
     if request.method == 'POST':
         question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
         comment = Comments.objects.create(user=request.user,question=question)
@@ -224,6 +254,12 @@ def Comment_Text(request):
             return JsonResponse({'form': html})
 
 def Reply_Text(request):
+    """
+    This function is used for answering any selected question
+    @param:
+        contains metadata about the requested page
+
+    """
     if request.method == 'POST':
         question = get_object_or_404(AskaQuestion, id=request.POST.get('ques_id'))
         comment = get_object_or_404(Comments, id=request.POST.get('id'))
@@ -250,6 +286,13 @@ def Reply_Text(request):
 
 @login_required
 def LikeComment(request):
+    """
+    This function is for liking any comment on any question or answer
+    @param:
+        request - contians metadata about the requested page
+    @variables :
+        comment - contains Comments model objects based on a question's id
+    """
     # question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
     comment = Comments.objects.get(id=request.POST.get('id'))
     # comment.question = question
@@ -257,7 +300,7 @@ def LikeComment(request):
     if comment.is_liked:
         comment.is_liked = False
         comment.likes_comment.remove(request.user)
-        comment.save()    
+        comment.save()
     else:
         comment.is_liked = True
         comment.likes_comment.add(request.user)
@@ -267,7 +310,7 @@ def LikeComment(request):
         'comment' : comment,
         'comment.is_liked' : comment.is_liked,
         # 'comment.likes': comment.like,
-        'comment.total_likes_comment' : comment.total_likes_comment(), 
+        'comment.total_likes_comment' : comment.total_likes_comment(),
     }
 
 
@@ -276,6 +319,11 @@ def LikeComment(request):
         return JsonResponse({'form': html})
 
 def delete_comment(request):
+    """
+    The 'delete_comment' function is for deleting commnents on a question
+    @param:
+        request - contains metadata about the requested page
+    """
     if request.method == 'POST':
         comment_id = request.POST.get("comment_id")
         comment = Comments.objects.filter(pk=comment_id)
@@ -283,36 +331,66 @@ def delete_comment(request):
         return JsonResponse({"done":1})
 
 def delete_answer(request):
+    """
+    The 'delete_answer' function is for deleting a answer
+    @param:
+        request - contains metadata about the requested page
+    """
     if request.method == 'POST':
         answer_id = request.POST.get("answer_id")
         answer = AnsweraQuestion.objects.filter(pk=answer_id)
         answer.delete()
         return JsonResponse({"done":1})
-        
+
 def delete_post(request, id):
+    """
+    The 'delete_post' function is for deleting a post
+    @param:
+        request - contains metadata about the requested page
+    """
     if request.method == 'POST' and request.POST.get("delete"):
         ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
         if ques.file:
             pth = os.path.join(settings.BASE_DIR, '..')
             default_storage.delete(pth+ques.file.url)
         ques.delete()
+        messages.success(request,"Post deleted successfully !")
         return redirect ('/feeds/')
 
 def hide_post(request, id):
+    """
+    This function hides a post when we click on the hide button given inside the three dots on left of a post
+    @param:
+        request - contains metadata about the requested page
+    """
     if request.method == 'POST' and request.POST.get("hide"):
         ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
         hid = hidden(user = request.user, question = ques);
         hid.save()
+        messages.success(request,"Post was hidden successfully !")
     return redirect ('/feeds/')
 
 def unhide_post(request, id):
+    """
+    This function unhides a post when we click on the unhide button given inside the three dots on left of a post if the post is hidden
+    @param:
+        request - contains metadata about the requested page
+    """
     if request.method == 'POST' and request.POST.get("unhide"):
         ques = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').filter(pk=id)[0]
         hid = hidden.objects.select_related('user').prefetch_related('question__select_tag','question__likes','question__dislikes','question__requests').filter(user=request.user )
         hid.delete()
+        messages.success(request,"Post was unhidden successfully !")
     return redirect ('/feeds/')
 
 def update_post(request, id):
+    """
+    update_post function makes us able to update a post with new details
+    @param :
+        request - contains metadata of requested page
+    @variables:
+        redirect_to : used to redirect us to feeds homepage when a post is updated
+    """
     redirect_to = "/feeds"
     if request.method == 'POST' and request.POST.get("update"):
         question= AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(pk=id)
@@ -324,7 +402,7 @@ def update_post(request, id):
         ques_tag = []
         result = []
         ques_tag = [int(c) for c in tag.split(",")]
-        question.select_tag.clear()
+
 
         for i in range(0, len(ques_tag)):
             result = AllTags.objects.get(id=ques_tag[i])
@@ -335,9 +413,9 @@ def update_post(request, id):
             question.anonymous_ask=False
         else :
             question.anonymous_ask=True
-        
+
         if request.POST.get("isSpecial"):
-            access = QuestionAccessControl.objects.filter(question = question)[0]
+            access = QuestionAccessControl.objects.filter(Question = question)[0]
             if request.POST.get("RestrictVote"):
                 access.canVote = False
             else:
@@ -354,28 +432,38 @@ def update_post(request, id):
         if request.POST.get("from_url"):
             redirect_to = request.POST.get("from_url")
         question.save()
+        messages.success(request,"Post updated successfully !")
         return redirect (redirect_to)
 
 @login_required
 def TagsBasedView(request, string):
+    """
+    This function makes us able to select posts based on a selected tag or tags like if want the posts posted under CSE tag , we can choose CSE tag to get all those posts
+    @param:
+        request - contains metadata about the requested page
+        string - contians the selected tags
+    @variables:
+        questions - questions object from model AskaQuestion
+    """
+
     questions = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').order_by('-uploaded_at')
-    
+
     result = questions.filter(Q(select_tag__subtag__icontains=string))
-    
+
     paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
-        current_page = 1    
+        current_page = 1
     previous_page = current_page - 1
     next_page = current_page + 1
     # result = paginator.page(current_page)
-    
+
     user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
     u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
     a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
-    
+
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
 
@@ -448,6 +536,11 @@ def TagsBasedView(request, string):
     return render(request, 'feeds/feeds_main.html', context)
 
 def RemoveTag(request):
+    """
+    This function removes a tag from our selected tags given on feeds homepage left side
+    @param:
+        request - contains the metadata about the requested page
+    """
     if request.method == 'POST':
         userTags = tags.objects.select_related().all().filter(Q(user=request.user))
         tagto_delete = AllTags.objects.all().filter(Q(subtag=request.POST.get('id')))
@@ -455,9 +548,26 @@ def RemoveTag(request):
         return JsonResponse({"done":"1"})
     else:
         return JsonResponse({"done":"0"})
-        
+
 
 def ParticularQuestion(request, id):
+    """
+    The function 'particular_question' takes us to a selected a question when we click on 'see more...' given down to every question , where we can answer the question or comment on it
+    @param:
+        request - contains metadata of the requested page
+        id - selected particular quesiton id
+    @variables:
+        result - contains selected particular question object from Model 'AskaQuestion'
+        a_tags-
+        all_tags_list-
+        u_tags-
+        askqus_subtags-
+        profile-
+        is_liked-
+        is_disliked-
+        user_tags-
+
+    """
     result = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=id)
     a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
     all_tags_list = AllTags.objects.all()
@@ -490,6 +600,7 @@ def ParticularQuestion(request, id):
                 instance.question = result
                 instance.user = request.user
                 instance.save()
+
                 role_data = Roles.objects.select_related().all()
                 context = {
                     'access' : access_check,
@@ -499,7 +610,7 @@ def ParticularQuestion(request, id):
                     'disliked': isdisliked,
                     'votes':result.total_likes() - result.total_dislikes(),
                     'form_answer': AnswerForm(),
-                    'instance': instance,        
+                    'instance': instance,
                     'question': result,
                     'Tags': user_tags,
                     'subtags': askqus_subtags,
@@ -527,10 +638,11 @@ def ParticularQuestion(request, id):
 
                 return render(request, 'feeds/single_question.html', context)
 
+
     else:
         form = AnswerForm()
         # instance = AnsweraQuestion.objects.get(question__id=id)
-    
+
     role_data = Roles.objects.select_related().all()
     context = {
         'access' : access_check,
@@ -570,6 +682,13 @@ def ParticularQuestion(request, id):
 
 @login_required
 def profile(request, string):
+    """
+    This function, first authenticates and then shows the profile of a user who has created a post when we click on the profile icon given upper-left side of a post
+    @param-
+        request- contains metadata of the requested page
+        string- user's username
+    @variables
+    """
     if request.method == "POST":
         profile = Profile.objects.select_related().all().filter(user=request.user)
         Pr = None
@@ -586,6 +705,7 @@ def profile(request, string):
                 default_storage.delete(pth+Pr.profile_picture.url)
             Pr.profile_picture = request.FILES["profile_img"]
         Pr.save()
+        messages.success(request,"Profile updated successfully !")
     try:
         usr = User.objects.get(username=string)
     except:
@@ -616,7 +736,7 @@ def profile(request, string):
                 no_img=False
         else :
             no_img :True
-    
+
     if len(extra) == 0:
         ext = ""
     else:
@@ -640,6 +760,15 @@ def profile(request, string):
     return render(request, 'feeds/profile.html',context)
 
 def upvoteQuestion(request,id):
+    """
+    this function makes us to upvote a question, when we click on upvote icon given down to every question
+    @param:
+        request - contains metadata of the requested page
+        id - question id
+    @variables:
+        question - question object from model 'AskaQuestion' which is to be upvoted
+        is_upvoted - count of how many times this question is upvoted
+    """
     question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=request.POST.get('id'))
     question.dislikes.remove(request.user)
     isupvoted = question.likes.all().filter(username=request.user.username).count()
@@ -650,6 +779,15 @@ def upvoteQuestion(request,id):
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
 
 def downvoteQuestion(request,id):
+    """
+    this function makes us to downvote a question, when we click on downvote icon given down to every question
+    @param:
+        request - contains metadata of the requested page
+        id - question id
+    @variables:
+        question - question object from model 'AskaQuestion' which is to be upvoted
+        is_downvoted - count of how many times this question is downvoted
+    """
     question = AskaQuestion.objects.prefetch_related('select_tag','likes','dislikes','requests').get(id=request.POST.get('id'))
     question.likes.remove(request.user)
     isdownvoted = question.dislikes.all().filter(username=request.user.username).count()
@@ -660,6 +798,15 @@ def downvoteQuestion(request,id):
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
 
 def upvoteAnswer(request,id):
+    """
+    this function makes us to upvote a answer, when we click on upvote icon given down to every answer
+    @param:
+        request - contains metadata of the requested page
+        id - answer id
+    @variables:
+        answer - answer object from model 'AnsweraQuestion' which is to be upvoted
+        is_upvoted - count of how many times this answer is upvoted
+    """
     answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
     answer.dislikes.remove(request.user)
     isupvoted = answer.likes.all().filter(username=request.user.username).count()
@@ -670,6 +817,15 @@ def upvoteAnswer(request,id):
         return JsonResponse({"done":"0",'votes':answer.total_likes() - answer.total_dislikes(),})
 
 def downvoteAnswer(request,id):
+    """
+    this function makes us to downvote a answer, when we click on downvote icon given down to every answer
+    @param:
+        request - contains metadata of the requested page
+        id - answer id
+    @variables:
+        answer - answer object from model 'AnsweraQuestion' which is to be downvoted
+        is_downvoted - count of how many times this answer is downvoted
+    """
     answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
     answer.likes.remove(request.user)
     isdownvoted = answer.dislikes.all().filter(username=request.user.username).count()
@@ -681,6 +837,13 @@ def downvoteAnswer(request,id):
 
 
 def update_answer(request):
+    """
+    update_answer function makes us able to update a answer with new details
+    @param :
+        request - contains metadata of requested page
+    @variables:
+
+    """
     try:
         ques_id = request.POST.get("ques_id")
         answer_id = request.POST.get("answer_id")
@@ -696,6 +859,13 @@ def update_answer(request):
             return JsonResponse({'sucess': 0})
 
 def update_comment(request):
+    """
+    update_comment function makes us able to update a comment on a question
+    @param :
+        request - contains metadata of requested page
+    @variables:
+
+    """
     try:
         ques_id = request.POST.get("ques_id")
         comment_id = request.POST.get("comment_id")
@@ -711,12 +881,22 @@ def update_comment(request):
             return JsonResponse({'sucess': 0})
 
 def get_page_info(current_page, query):
+    """
+    this function gives us details of pages like which page is showing currently , next page number and previous page number
+    @param:
+        current_page - current page number
+        query-
+    @variables:
+        paginator-a Page object with the given 1-based index
+        total_page
+
+    """
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(query.count()/2)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
-        current_page = 1    
+        current_page = 1
     previous_page = current_page - 1
     next_page = current_page + 1
     query = paginator.page(current_page)
@@ -728,6 +908,13 @@ def get_page_info(current_page, query):
 
 @login_required
 def admin(request):
+    """
+    For assigning and unassigning roles to user, if user is a admin
+    @param:
+        request- contains metadata of the requested page
+    @variables-
+
+    """
     error = {
         "user":"",
         "role" : ""
@@ -752,17 +939,17 @@ def admin(request):
                 error["user"] = "User already assigned a role."
         except User.DoesNotExist:
             error["user"] = "User Does not exist."
-        
+
     if request.method == 'POST' and request.POST.get("unassignrole"):
         if request.POST.get("unassignrole_value"):
             try:
                 role_unassign = Roles.objects.select_related().get(role = request.POST.get("unassignrole_value"))
                 role_unassign.active = False
-                role_unassign.save()
                 success["update"] = "Role Unassigned."
+                role_unassign.delete()
             except :
                 error["update"] = "Incorrect Username provided."
-    
+
     if request.method == 'POST' and request.POST.get("reassignrole"):
         if request.POST.get("reassignrole_value"):
             try:
@@ -773,7 +960,7 @@ def admin(request):
             except :
                 error["updatere"] = "Error occurred."
 
-    
+
     if request.method == 'POST' and request.POST.get("unassignrole_update"):
         try:
             role_unassign = Roles.objects.select_related().get(role = request.POST.get("unassignrole_value"))
@@ -791,11 +978,11 @@ def admin(request):
     administrativeRole = False
     try:
         admin = User.objects.get(username = "siddharth")
-        if admin == request.user: 
+        if admin == request.user:
             isAdmin = True
     except:
         isAdmin = False
-        
+
     try:
         admin_role = Roles.objects.select_related().filter(user = request.user)
         if len(admin_role) >0 :
@@ -807,7 +994,7 @@ def admin(request):
     except:
         administrativeRole = False
     context = {
-        "role_user" : role_user, 
+        "role_user" : role_user,
         "administrativeRole" : administrativeRole,
         "isAdmin" : isAdmin,
         'form_answer': AnswerForm(),
@@ -832,15 +1019,15 @@ def administrativeView(request, string):
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
-        current_page = 1    
+        current_page = 1
     previous_page = current_page - 1
     next_page = current_page + 1
     # result = paginator.page(current_page)
-    
+
     user_tags = tags.objects.select_related().values("my_tag").distinct().filter(Q(user__username=request.user.username))
     u_tags = tags.objects.select_related().all().filter(Q(user__username=request.user.username))
     a_tags = tags.objects.select_related().values('my_subtag').filter(Q(user__username=request.user.username))
-    
+
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
 

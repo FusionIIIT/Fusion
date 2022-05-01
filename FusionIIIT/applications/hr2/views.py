@@ -31,9 +31,13 @@ def edit_employee_details(request, id):
         raise Http404("Post does not exist")
 
     if request.method == "POST":
-        form = EditDetailsForm(request.POST, request.FILES)
+        for e in request.POST:
+            print(e)
+        print('--------------')
+        form = EditDetailsForm(request.POST)
         conf_form = EditConfidentialDetailsForm(request.POST, request.FILES)
-
+        print("f1", form.is_valid())
+        print("f2", conf_form.is_valid())
         if form.is_valid() and conf_form.is_valid():
             form.save()
             conf_form.save()
@@ -46,14 +50,14 @@ def edit_employee_details(request, id):
                 pass
             messages.success(request, "Employee details edited successfully")
         else:
-
-            messages.warning(request, "Error in submitting form")
+            messages.warning(request, "Error in submitting 222 form")
             pass
+    else:
+        print("Failed")
 
     form = EditDetailsForm(initial={'extra_info': employee.id})
     conf_form = EditConfidentialDetailsForm(initial={'extra_info': employee})
-    context = {'form': form, 'confForm': conf_form, 'employee': employee
-               }
+    context = {'form': form, 'confForm': conf_form, 'employee': employee}
 
     return render(request, template, context)
 
@@ -127,7 +131,8 @@ def service_book(request):
                'awards': awards,
                'thesis': thesis,
                'extrainfo': extra_info,
-               'workAssignment': workAssignemnt
+               'workAssignment': workAssignemnt,
+               'awards': awards
                }
 
     return HttpResponseRedirect("/eis/profile/")

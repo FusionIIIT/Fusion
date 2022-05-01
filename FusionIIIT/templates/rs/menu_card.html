@@ -6,11 +6,6 @@
 
     {% if user_extra_info.user_type == 'faculty' and designations.designation.name == 'dean_rspc' %}
 
-        
-        <a class="item" data-tab="forteenth">
-            View Applications
-        </a>
-
         <a class="item" data-tab="sixteenth">
            Change Status
         </a>
@@ -23,8 +18,11 @@
             <a class="item"  data-tab="fourth">File Patent</a>
             <a class="item"  data-tab="third">Add Research Group</a>
         {% endif %}
-        
-        <a class="item" data-tab="first">View Status</a>
+
+        {% if designations.designation.name != 'dean_rspc' %}
+            <a class="item" data-tab="first">View Status</a>
+            
+        {% endif %}
         
         <a class="item" data-tab="second">
             View Research Groups

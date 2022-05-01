@@ -1,6 +1,7 @@
 from cgitb import html
 from datetime import date
 import json
+from multiprocessing import Process
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -177,7 +178,7 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        department_notif(usrnm, recipients , message)
+        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
@@ -222,7 +223,7 @@ def staff_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        department_notif(usrnm, recipients , message)
+        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
@@ -539,11 +540,19 @@ def faculty():
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
+    staff=ExtraInfo.objects.filter(user_type='staff')
+
     context_f = {
         "cse_f" : cse_f,
         "ece_f" : ece_f,
         "me_f" : me_f,
-        "sm_f" : sm_f
+        "sm_f" : sm_f,
+        "staffNcse" : list(staff)+list(cse_f),
+        "staffNece" : list(staff)+list(ece_f),
+        "staffNme" : list(staff)+list(me_f),
+        "staffNsm" : list(staff)+list(sm_f)
+
+
     }
     return context_f
 

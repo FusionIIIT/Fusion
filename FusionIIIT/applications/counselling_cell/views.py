@@ -14,6 +14,7 @@ from .models import (
     CounsellingFAQ,
     CounsellingIssue,
     CounsellingIssueCategory,
+    FacultyCounsellingTeam,
     StudentCounsellingTeam,
     StudentCounsellingInfo,
     CounsellingMeeting
@@ -24,7 +25,7 @@ from .handlers import (
     add_student_counsellors
 )
 from applications.academic_information.models import Student,ExtraInfo
-from applications.globals.models import HoldsDesignation,Designation
+from applications.globals.models import Faculty, HoldsDesignation,Designation
 # Create your views here.
 
 
@@ -61,12 +62,30 @@ def counselling_cell(request):
             user_role = student_des
             # print(student_des)
             if student.student_position == "student_guide" :
-                issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student]).select_related()
+             
+           
+                newlist = list()
+                for i in student_and_student_guide.keys():
+                    newlist.append(i)
+                
+
+                if student in newlist:
+
+
+                    issues = CounsellingIssue.objects.filter(issue_status="status_unresolved",student__in=student_and_student_guide[student]).select_related()
+                else :
+                     
+                    issues=[]    
     elif extra_info.user_type == 'faculty':
         designation = Designation.objects.filter(name= "counselling_head").first()
-        user_designation = HoldsDesignation.objects.filter(designation = designation).first()
-        if user_designation.user  == user:
-            user_role = "faculty_counsellor"
+        faculty=Faculty.objects.get(id=extra_info)
+        user_role="faculty"
+        faculty=FacultyCounsellingTeam.objects.filter(faculty=faculty).first()
+        user_role=faculty
+        if faculty:
+            print("kgf2")
+            faculty_des=faculty.faculty_position
+            user_role=faculty_des
     context = {
         "faqs":faqs,
         "meetings":meetings,

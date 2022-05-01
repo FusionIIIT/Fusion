@@ -1,0 +1,30 @@
+{% block room_upload %}
+
+<h3 align="center"> Student Rooms Upload Form </h3><br><br>
+
+<form action="{% url 'hostelmanagement:edit_student_rooms_sheet' %}" method ="POST" enctype="multipart/form-data">
+   
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet(xls not xlsx) in following format:</h4>
+            ROLL NO. | HALL NO. | ROOM NO.
+            <h4 class="ui dividing header"><a href="..\media\hostel_management\worker_report.xls">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+        </div>
+            
+       <div class="field">
+        <label for="file">Upload File (.xls)</label>
+           <input type='file' name= "upload_rooms" accept=".xls" required> 
+
+           <button class="ui primary button right floated" type="submit">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+{% endblock %}
