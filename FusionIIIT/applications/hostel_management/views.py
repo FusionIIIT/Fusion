@@ -85,7 +85,7 @@ def hostel_view(request, context={}):
 
     hall_warden_user = []
     for warden in hall_wardens:
-        hall_caretaker_user.append(warden.staff.id.user)
+        hall_warden_user.append(warden.faculty.id.user)
     
     todays_date = date.today()
     current_year = todays_date.year
