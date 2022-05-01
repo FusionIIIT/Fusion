@@ -21,7 +21,7 @@ from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
 from applications.complaint_system.models import Caretaker
-from notification.views import visitor_hostel_caretaker_notif
+# from notification.views import visitor_hostel_caretaker_notif
 import numpy as np
 from django.contrib.auth.models import User
 
@@ -365,7 +365,7 @@ def request_booking(request):
                                                      #remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
                                                      bill_to_be_settled_by=bill_to_be_settled_by)
-        visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
+        # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
         # print (bookingObject)
         # print("Hello")
 #        {% if messages %}
