@@ -44,6 +44,7 @@ def filetracking(request):
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
                 upload_file = request.FILES.get('myfile')
+                
 
                 File.objects.create(
                     uploader=uploader,
@@ -63,6 +64,9 @@ def filetracking(request):
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
 
                 upload_file = request.FILES.get('myfile')
+                if(upload_file.size / 1000 > 10240):
+                    messages.error(request,"File should not be greater than 10MB")
+                    return redirect("/filetracking")
 
                 file = File.objects.create(
                     uploader=uploader,
@@ -358,6 +362,7 @@ def forward(request, id):
             if 'send' in request.POST:
                 current_id = request.user.extrainfo
                 remarks = request.POST.get('remarks')
+                track.update(is_read=True)
 
                 sender = request.POST.get('sender')
                 current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
@@ -488,7 +493,7 @@ def finish_design(request):
 def finish_fileview(request, id):
 
     out = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
-    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id=request.user.extrainfo, is_read=False).order_by('-forward_date')
+    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id__uploader=request.user.extrainfo, is_read=False).order_by('-forward_date')
 
 
 
@@ -517,13 +522,14 @@ def finish(request, id):
                 File.objects.filter(pk=id).update(is_read=True)
                 track.update(is_read=True)
                 messages.success(request,'File Archived')
+
                 
                 
 
 
     
-
-    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track})
+    
+    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track,'fileid':id})
 
 
 
