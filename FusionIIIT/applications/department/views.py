@@ -247,7 +247,7 @@ def all_students(request,bid):
     """
     if int(bid)==1:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -257,7 +257,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==11:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -267,7 +267,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==111:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2017,
+                                                            batch=2019,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -277,7 +277,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==1111:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2016,
+                                                            batch=2018,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -287,7 +287,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==11111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -297,7 +297,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==111111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='CSE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -316,7 +316,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==2:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -326,7 +326,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==21:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -336,7 +336,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==211:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2017,
+                                                            batch=2019,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -346,7 +346,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==2111:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2016,
+                                                            batch=2018,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -356,7 +356,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==21111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -366,7 +366,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==211111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='ECE').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -385,7 +385,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==3:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -395,7 +395,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==31:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -405,7 +405,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==311:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2017,
+                                                            batch=2019,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -415,7 +415,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==3111:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2016,
+                                                            batch=2018,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -425,7 +425,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==31111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -435,7 +435,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==311111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='ME').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -454,7 +454,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==4:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -464,7 +464,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==41:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -474,7 +474,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==411:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2017,
+                                                            batch=2019,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id') 
         paginator=Paginator(student_list1,25,orphans=5)
@@ -484,7 +484,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==4111:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2016,
+                                                            batch=2018,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -494,7 +494,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==41111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2019,
+                                                            batch=2021,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
@@ -504,7 +504,7 @@ def all_students(request,bid):
         return render(request, 'department/AllStudents.html',context=id_dict)
     elif int(bid)==411111:
         student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2018,
+                                                            batch=2020,
                                                             id__user_type='student',
                                                             id__department__name='SM').select_related('id')
         paginator=Paginator(student_list1,25,orphans=5)
