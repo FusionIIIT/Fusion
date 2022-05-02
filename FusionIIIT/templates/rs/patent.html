@@ -3,15 +3,17 @@
 {% block Issues %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="feedback">
+        <a class="ui active item" data-tab="view-status">
+            View Status
+        </a>
+        {% if user_extra_info.user_type == 'faculty' %}
+        <a class="ui item" data-tab="file-patent">
             FILE PATENT
         </a>
-
-    
-       
+        {% endif %}
     </div>
 
-    <div class="ui active tab" data-tab="feedback" id="feedback">
+    <div class="ui tab" data-tab="file-patent" id="file-patent">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -57,10 +59,66 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="viewfeedback">
-    {% block viewstatus %}
-            {% include 'rs/Status.html' %}
-            {% endblock %}
+    <div class="ui active tab" data-tab="view-status">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Status of Patent
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;"
+                                                              >
+                        <thead>
+                        <tr>
+                            <th>
+                                Patend ID
+                            </th>
+                            <th>
+                                IPD form
+                            </th>
+                            <th>
+                                patent PDF
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+                            
+                        </tr>
+                        </thead>
+
+                        
+                        
+                            {% comment %} <!--{% if pat.faculty.id == request.user.extrainfo.faculty.id %} -->{% endcomment %}
+                            
+                            {% for patent in patents  %}          
+                        <tr>
+                            <td>
+                                {{patent.application_id}}
+                            </td>
+                            <td>
+                            <a href="{{patent.ipd_form_file}}">{{patent.ipd_form}}</a>
+                            </td>
+                            <td>
+                                <a href="{{patent.project_details_file}}">{{patent.project_details}}</a>
+                                </td>
+                            <td>
+                                {{patent.status}}
+                            </td>
+                        </tr>{% endfor %}
+                                 
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
