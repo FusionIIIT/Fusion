@@ -44,7 +44,9 @@ def filetracking(request):
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
                 upload_file = request.FILES.get('myfile')
-                
+                if(upload_file.size / 1000 > 10240):
+                    messages.error(request,"File should not be greater than 10MB")
+                    return redirect("/filetracking")               
 
                 File.objects.create(
                     uploader=uploader,
