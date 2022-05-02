@@ -217,7 +217,11 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
-                                            <th>workAssignemnt :-</th>
+                                            {% if workAssignment %}
+                                            <th>WorkAssignment :-</th>
+                                            {% elif not workAssignment %}
+                                            <th>No Entries :-</th>
+                                            {% endif%}
                                             <tr>
                                                 <th>Sr.</th>
                                                 <th>Start Date</th>
@@ -229,12 +233,7 @@ Module
                                         </thead>
                                         <tbody>
 
-
-
-
-                                            {% if not workAssignment %}
-                                            <h1>No entry found</h1>
-                                            {% endif%}
+                                            <h1>WorkAssignment</h1>
 
                                             {% for serviceBook in workAssignment %}
 
@@ -286,7 +285,12 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
+                                            {% if lienServiceBooks %}
                                             <th>Lien :-</th>
+                                            {% elif not lienServiceBooks %}
+                                            <th>No Entries :-</th>
+                                            <!-- <h1>Awards</h1> -->
+                                            {% endif%}
                                             <tr>
                                                 <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
@@ -302,13 +306,7 @@ Module
                                         </thead>
                                         <tbody>
 
-
-
-
-                                            {% if not lienServiceBooks %}
-                                            <h1>No entry found</h1>
-                                            {% endif%}
-
+                                            <h1>Lien :</h1>
 
                                             {% for serviceBook in lienServiceBooks%}
 
@@ -351,7 +349,11 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
+                                            {% if deputationServiceBooks %}
                                             <th>Deputation :-</th>
+                                            {% elif not deputationServiceBooks %}
+                                            <th>No Entries :-</th>
+                                            {% endif%}
                                             <tr>
                                                 <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
@@ -366,11 +368,11 @@ Module
                                         </thead>
                                         <tbody>
 
+                                            <h1>Deputations :</h1>
 
-
-                                            {% if not deputationServiceBooks %}
+                                            <!-- {% if not deputationServiceBooks %}
                                             No entry found
-                                            {% endif%}
+                                            {% endif%} -->
 
 
                                             {% for serviceBook in deputationServiceBooks%}
@@ -405,6 +407,57 @@ Module
                         </div>
 
 
+                        <!-- Awards -->
+
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            {% if awards %}
+                                            <th>Awards :-</th>
+                                            {% elif not awards %}
+                                            <th>No Entries :-</th>
+                                            {% endif%}
+                                            
+                                            <tr>
+                                                <th>Sr.</th>
+                                                <th>Name</th>
+                                                <th>Type</th>
+                                                <th>Achievement Date</th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+                                            <h1>Awards</h1>
+
+                                            {% for serviceBook in awards %}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{serviceBook.award_name}}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{serviceBook.award_type}}</td>
+                                                <td id="ach{{ forloop.counter }}C">{{serviceBook.achievement_date}}</td>
+                                                <!-- <td id="ach{{ forloop.counter }}C">
+
+                                                    <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                            class="large attach black icon"></i>
+                                                    </a>
+
+                                                </td> -->
+
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
 
                         <!-- others -->
@@ -416,7 +469,11 @@ Module
 
                                     <table class="ui orange table">
                                         <thead>
+                                            {% if otherServiceBooks %}
                                             <th>Others :-</th>
+                                            {% elif not otherServiceBooks %}
+                                            <th>No Entries :-</th>
+                                            {% endif%}
                                             <tr>
                                                 <!-- <th>Sr.</th> -->
                                                 <th>Start Date</th>
@@ -431,13 +488,7 @@ Module
                                         </thead>
                                         <tbody>
 
-
-
-
-                                            {% if not otherServiceBooks %}
-                                            <h1> No entry found</h1>
-                                            {% endif%}
-
+                                            <h1>Others :</h1>
 
                                             {% for serviceBook in otherServiceBooks%}
 
@@ -463,15 +514,7 @@ Module
                             </div>
 
 
-
-
-
-
-
-
                         </div>
-
-
 
 
 

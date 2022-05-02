@@ -166,12 +166,13 @@ Module
                                 <div class="meta">
                                     <!-- This will need to be added to models and then migrated -->
                                     <!-- date_modified = models.DateTimeField(auto_now=True) -->
-                                    Last updated on {{emp.user.extrainfo.date_of_birth}}
+                                    Last updated on {{emp.user.extrainfo.date_modified}}
                                 </div>
 
                                 <!-- <div class="description">
                                     status
                                 </div> -->
+                                <br>
                                 <div class="two wide column">
                                     <a href="{%url 'hr2:viewEmployeeDetails' emp.id %}">
                                         <div class="ui right floated blue button notif-status" id="notif-status">
@@ -181,7 +182,7 @@ Module
 
                                     <a href="{%url 'hr2:editServiceBook' emp.id %}">
                                         <div class="ui right floated blue button notif-status" id="notif-status">
-                                            <div id="notif-sp">Edit E-ServiceBook</div>
+                                            <div id="notif-sp">Add E-ServiceBook</div>
                                         </div>
                                     </a>
                                     
@@ -264,6 +265,7 @@ Module
                                 <div class="ui action input">
                                     <input type="text" name="search" placeholder="Search...">
                                     <button type="submit" class="ui button"><i class="search icon"></i></button>
+                                    <button onclick="history.back()" class="ui button">✕</button>
                                 </div>
                                 <div class="results"></div>
                             </div>
@@ -283,25 +285,25 @@ Module
                                     </a>
                                 </div>
                                 <div class="meta">
-                                    Details updated 6hrs ago
-
+                                    Last updated on {{emp.user.extrainfo.date_modified}}
                                 </div>
+                                <br>
                                 <div class="two wide column">
                                     <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
                                         <div class="ui right floated blue button notif-status" id="notif-status">
-                                            <div id="notif-sp">Edit personal details</div>
+                                            <div id="notif-sp">Edit User Details</div>
+                                        </div>
+                                    </a>
+
+                                    <a href="{%url 'hr2:editServiceBook' emp.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Add E-ServiceBook</div>
                                         </div>
                                     </a>
 
                                     <a href="{%url 'hr2:viewEmployeeDetails' emp.id %}">
                                         <div class="ui right floated blue button notif-status" id="notif-status">
                                             <div id="notif-sp">View</div>
-                                        </div>
-                                    </a>
-
-                                    <a href="{%url 'hr2:editServiceBook' emp.id %}">
-                                        <div class="ui right floated blue button notif-status" id="notif-status">
-                                            <div id="notif-sp">Edit E-ServiceBook</div>
                                         </div>
                                     </a>
 
