@@ -21,6 +21,7 @@
             <th>Subject</th>
             <th>Date</th>
             <th>View File</th>
+            <th>Forward</th>
           
         </tr>
         </thead>
@@ -35,6 +36,9 @@
                  <td><a href="{% url 'filetracking:archive_finish' j.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
+                    <td><a href="{% url 'filetracking:forward' j.id %}"><button class="ui primary button">
+                        Forward
+              </button></a></td>
 
                 
               </tr>
