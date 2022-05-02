@@ -5,7 +5,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="outward">
-            Files to Marked Finish
+            Files to Track
             </a>
         </h3>
     </div>
@@ -21,6 +21,8 @@
             <th>Subject</th>
             <th>Date</th>
             <th>View File</th>
+            <th>Finish File</th>
+            
         </tr>
         </thead>
         <tbody>
@@ -33,10 +35,14 @@
            <td>{{i.file_id.uploader.department.name}}-{{i.file_id.upload_date.year}}-{{i.file_id.upload_date.month}}-#{{i.file_id.id}}</td>
            <td>{{i.file_id.subject}}</td>
            <td>{{i.receive_date}}</td>
-           <td><a href="{% url 'filetracking:finish' i.file_id.id %}"><button class="ui primary button">
+           <td><a href="{% url 'filetracking:forward' i.file_id.id %}"><button class="ui primary button">
                   View
              </button></a>
            </td>
+           <td><a href="{% url 'filetracking:finish' i.file_id.id %}"><button class="ui primary button">
+            Finish
+       </button></a>
+     </td>
 
        </tr>
      {% endifequal %}
