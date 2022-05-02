@@ -1,15 +1,20 @@
-from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .forms import BuildingForm, WorkForm, SubWorkForm, InventoryTypeForm, InventoryConsumableForm, InventoryNonConsumableForm
 from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
-
+from ..globals.models import ExtraInfo, User, HoldsDesignation
 
 @login_required(login_url='/accounts/login/')
 def estate(request):
-
+    current_user = get_object_or_404(User, username=request.user.username)
+    extraInfo = ExtraInfo.objects.get(user=current_user)
+    if(extraInfo.user_type=="student"):
+        return HttpResponseRedirect('/')
+    
     buildings = Building.objects.all()
     building_tabs = {
         'All': buildings,
@@ -105,15 +110,11 @@ def estate(request):
         'inventory_data': inventory_data,
         'subWork_data': subWork_data,
     }
-
     return render(request, "estate_module/home.html", context)
-
 
 @require_POST
 def newBuilding(request):
-
     new_building_form = BuildingForm(request.POST)
-
     if new_building_form.is_valid():
         new_building = new_building_form.save()
         messages.success(
@@ -132,7 +133,7 @@ def editBuilding(request, building_id):
     building = Building.objects.get(pk=building_id)
 
     edit_building_form = BuildingForm(request.POST, instance=building)
-
+    print(">>>>>",edit_building_form)
     if edit_building_form.is_valid():
         edited_building = edit_building_form.save()
         messages.success(request, f'Building Updated: { edited_building.name }')
@@ -148,7 +149,9 @@ def editBuilding(request, building_id):
 def deleteBuilding(request, building_id):
 
     building = Building.objects.get(pk=building_id)
+    print(">>>>>>",building)
     building_name = building.name
+    # print(">>>>>>",building_name)
     building.delete()
     messages.success(request, f'Building Deleted: { building_name }')
     return redirect('estate_module_home')
@@ -344,7 +347,6 @@ def deleteInventoryConsumable(request, inventory_consumable_id):
         request, f'Consumable Inventory Deleted: { inventory_consumable_name }')
     return redirect('estate_module_home')
 
-
 @require_POST
 def newInventoryNonConsumable(request):
 
@@ -393,3 +395,16 @@ def deleteInventoryNonConsumable(request, inventory_non_consumable_id):
     messages.success(
         request, f'Non-Consumable Inventory Deleted: { inventory_non_consumable_name }')
     return redirect('estate_module_home')
+
+# @login_required
+# def verifyBuilding(request,building_id):
+#     try:   
+#         print(">>>>>>>>>>",building_id)
+#         building = Building.objects.get(pk=building_id)
+#         building.verified=True
+#         building.save()
+#     except Exception as e:
+#         messages.error(request,e)
+#     return redirect('estate_module_home')
+
+

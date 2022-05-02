@@ -37,5 +37,8 @@ urlpatterns = [
          views.deleteInventoryConsumable, name="delete_inventory_consumable"),
     path('delete/inventory_non_consumable/<inventory_non_consumable_id>',
          views.deleteInventoryNonConsumable, name="delete_inventory_non_consumable"),
+
+     #verify
+     # path('verify_building/<building_id>',views.verifyBuilding,name="verify_building")
 ]
 

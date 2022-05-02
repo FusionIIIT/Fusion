@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
+from django.forms import BooleanField, CheckboxInput, ModelForm, Textarea, TextInput, DateInput, NumberInput
 from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
 import datetime
 
@@ -50,6 +50,9 @@ class BuildingForm(ModelForm):
             'remarks': Textarea(attrs={
                 'placeholder': 'Enter remarks'
             }),
+            'verified': CheckboxInput({
+                'placeholder':'Verified'
+            }),
         }
         labels = {
             'name': 'Building name',
@@ -63,6 +66,7 @@ class BuildingForm(ModelForm):
             'numRooms': 'Number of Rooms',
             'numWashrooms': 'Number of Washrooms',
             'remarks': 'Remarks',
+            'verified':'Verified',
         }
         
     def clean(self):
