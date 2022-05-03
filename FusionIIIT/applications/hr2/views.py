@@ -27,7 +27,7 @@ def edit_employee_details(request, id):
     template = 'hr2Module/editDetails.html'
 
     try:
-        employee = ExtraInfo.objects.get(pk=id)
+        employee = ExtraInfo.objects.get(user__id=id)
     except:
         raise Http404("Post does not exist")
 
@@ -51,7 +51,7 @@ def edit_employee_details(request, id):
                 pass
             messages.success(request, "Employee details edited successfully")
         else:
-            messages.warning(request, "Error in submitting 222 form")
+            messages.warning(request, "Error in submitting form")
             pass
     else:
         print("Failed")
@@ -143,7 +143,13 @@ def service_book(request):
 
 def view_employee_details(request, id):
     """ Views for edit details"""
-    extra_info = ExtraInfo.objects.get(pk=id)
+    extra_info = ExtraInfo.objects.get(user__id=id)
+    context = {}
+    try:
+        emp = Employee.objects.get(extra_info=extra_info)
+        context['emp'] = emp
+    except:
+        print("Personal details not found")
     # try:
         
     # except:
@@ -158,7 +164,8 @@ def view_employee_details(request, id):
         extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
     appraisal_form = EmpAppraisalForm.objects.filter(
         extra_info=extra_info).order_by('-year')
-    pf = extra_info.id
+    pf = extra_info.user.id
+    print(pf)
     workAssignemnt = WorkAssignemnt.objects.filter(
         extra_info_id=pf).order_by('-start_date')
 
@@ -190,18 +197,19 @@ def view_employee_details(request, id):
 
     response.update({'cpda': False, 'ltc': False,
                      'appraisal': True, 'leave': False})
-
+    # designat = HoldsDesignation.objects.get(user=request.user).designation
     template = 'hr2Module/viewdetails.html'
-    context = {'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book, 'user': extra_info.user, 'extrainfo': extra_info,
+    context.update({'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book, 'user': extra_info.user, 'extrainfo': extra_info,
                'appraisalForm': appraisal_form,
                'empproject': empprojects,
                'visits': visits,
                'conferences': conferences,
                'awards': awards,
                'thesis': thesis,
-               'workAssignment': workAssignemnt
-
-               }
+               'workAssignment': workAssignemnt,
+            #    'designat':designat,
+                
+               })
     context.update(response)
 
     return render(request, template, context)
@@ -212,7 +220,7 @@ def edit_employee_servicebook(request, id):
     template = 'hr2Module/editServiceBook.html'
 
     try:
-        employee = ExtraInfo.objects.get(pk=id)
+        employee = ExtraInfo.objects.get(user__id=id)
     except:
         raise Http404("Post does not exist")
 
