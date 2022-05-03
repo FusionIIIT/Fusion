@@ -164,7 +164,7 @@ Module
 
                                             </tr>
                                             <tr>
-                                                <td>email</td>
+                                                <td>Email</td>
                                                 <td>{{user.extrainfo.user.email}}</td>
 
                                             </tr>
@@ -175,12 +175,12 @@ Module
 
                                             </tr>
                                             <tr>
-                                                <td>date_of_birth</td>
+                                                <td>Date Of Birth</td>
                                                 <td>{{user.extrainfo.date_of_birth}}</td>
 
                                             </tr>
                                             <tr>
-                                                <td>address</td>
+                                                <td>Address</td>
                                                 <td>{{user.extrainfo.address}}</td>
 
                                             </tr>
@@ -196,13 +196,14 @@ Module
                                                 <td>{{user.faculty_about.doj}}</td>
                                             </tr>
                                             <tr>
-                                                <td>department</td>
+                                                <td>Department</td>
                                                 <td>{{user.extrainfo.department.name}}</td>
                                             </tr>
 
                                         </tbody>
                                     </table>
-                                    <!-- <table class="ui orange table">
+                                    {% if emp %}
+                                    <table class="ui orange table">
                                       <thead>
                                           <th>Personal Details:-</th>
                                       </thead>
@@ -210,60 +211,58 @@ Module
 
                                           <tr>
                                               <td>Father</td>
+                                              <td>{{ emp.father_name }}</td>
                                           </tr>
                                           <tr>
                                               <td>Mother</td>
-                                              <td>{{user.id}}</td>
+                                              <td>{{emp.mother_name}}</td>
                                           </tr>
                                           <tr>
-                                              <td>Type</td>
-                                              <td>{{user.extrainfo.user_type}}</td>
+                                              <td>Religion</td>
+                                              <td>{{emp.religion}}</td>
                                           </tr>
                                           <tr>
-                                              <td>Name</td>
-                                              <td>{{user.extrainfo.user.first_name}}
-                                                  {{user.extrainfo.user.last_name}}</td>
+                                              <td>Category</td>
+                                              <td>{{emp.category}}
+                                                  </td>
 
                                           </tr>
                                           <tr>
-                                              <td>email</td>
-                                              <td>{{user.extrainfo.user.email}}</td>
-
-                                          </tr>
-
-                                          <tr>
-                                              <td>Gender</td>
-                                              <td>{{user.extrainfo.sex}}</td>
-
-                                          </tr>
-                                          <tr>
-                                              <td>date_of_birth</td>
-                                              <td>{{user.extrainfo.date_of_birth}}</td>
-
-                                          </tr>
-                                          <tr>
-                                              <td>address</td>
-                                              <td>{{user.extrainfo.address}}</td>
-
-                                          </tr>
-                                          <tr>
-                                              <td>Phone number</td>
-
-                                              <td>{{user.extrainfo.phone_no}}</td>
+                                              <td>Caste</td>
+                                              <td>{{emp.cast}}</td>
 
                                           </tr>
 
                                           <tr>
-                                              <td>Date Of joining</td>
-                                              <td>{{user.faculty_about.doj}}</td>
+                                              <td>Home State</td>
+                                              <td>{{emp.home_state}}</td>
+
                                           </tr>
                                           <tr>
-                                              <td>department</td>
-                                              <td>{{user.extrainfo.department.name}}</td>
+                                              <td>Home District</td>
+                                              <td>{{emp.home_district}}</td>
+
+                                          </tr>
+                                          <tr>
+                                              <td>Date of Joining</td>
+                                              <td>{{emp.date_of_joining}}</td>
+
+                                          </tr>
+                                          <tr>
+                                              <td>Designation</td>
+
+                                              <td>{{emp.designation}}</td>
+
+                                          </tr>
+
+                                          <tr>
+                                              <td>Blood Group</td>
+                                              <td>{{emp.blood_group}}</td>
                                           </tr>
 
                                       </tbody>
-                                  </table> -->
+                                  </table>
+                                  {% endif %}
                                 </div>
                             </div>
                         </div>
