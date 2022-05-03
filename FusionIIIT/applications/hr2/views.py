@@ -14,6 +14,7 @@ from applications.eis.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from html import escape
 from io import BytesIO
+import re
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
@@ -68,7 +69,7 @@ def hr_admin(request):
     user = request.user
     # extra_info = ExtraInfo.objects.select_related().get(user=user)
     designat = HoldsDesignation.objects.select_related().get(user=user)
-
+    print(designat)
     if designat.designation.name == 'hradmin':
         template = 'hr2Module/hradmin.html'
         # searched employee
@@ -90,6 +91,7 @@ def hr_admin(request):
         empPresent = emp.filter(user_status="PRESENT")
         empNew = emp.filter(user_status="NEW")
         context = {'emps': emp, "empPresent": empPresent, "empNew": empNew}
+        print(context)
         return render(request, template, context)
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -142,6 +144,12 @@ def service_book(request):
 def view_employee_details(request, id):
     """ Views for edit details"""
     extra_info = ExtraInfo.objects.get(pk=id)
+    # try:
+        
+    # except:
+    #     extra_info = ExtraInfo.objects.get(pk=id)
+        # print("caught error")
+        # return
     lien_service_book = ForeignService.objects.filter(
         extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
     deputation_service_book = ForeignService.objects.filter(
@@ -274,6 +282,30 @@ def administrative_profile(request, username=None):
     template = 'hr2Module/dashboard_hr.html'
     return render(request, template, context)
 
+def chkValidity(password):
+    flag = 0
+    while True:  
+        if (len(password)<8):
+            flag = -1
+            break
+        elif not re.search("[a-z]", password):
+            flag = -1
+            break
+        elif not re.search("[0-9]", password):
+            flag = -1
+            break
+        elif not re.search("[_@$]", password):
+            flag = -1
+            break
+        elif re.search("\s", password):
+            flag = -1
+            break
+        else:
+            return True
+            break
+    
+    if flag ==-1:
+        return False
 
 def add_new_user(request):
     """ Views for edit Service Book details"""
@@ -282,12 +314,26 @@ def add_new_user(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
         eform = AddExtraInfo(request.POST)
+        # t_pass = request.POST['password1']
+        # t_user = request.POST['username']
+
         if form.is_valid():
             user = form.save()
             messages.success(request, "New User added Successfully")
         else:
             print(form.errors)
-            messages.error(request,"User cannot be added")
+            # print(request.POST['password1'])
+            t_pass = '0000'
+            if 'password1' in request.POST:
+                t_pass = request.POST['password1']
+            # messages.error(request,str(type(t_pass)))
+            if chkValidity(t_pass):
+                messages.error(request,"User already exists")
+            elif not t_pass == '0000':
+                messages.error(request,"Use Stronger Password")
+            else:
+                messages.error(request,"User already exists")
+                
 
         if eform.is_valid():
             eform.save()
