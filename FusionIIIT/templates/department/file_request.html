@@ -54,7 +54,8 @@
                             <div class="menu">
                                 {% for fcu in faculty %}
                                     <div class="item" data-value={{ fcu.user.username}}>
-                                        {{ fcu.user.first_name}} &nbsp {{ fcu.user.second_name}}
+                                        {{fcu.title}} {{ fcu.user.first_name}} {{ fcu.user.last_name}}
+                                        <!-- {{ fcu.user.first_name}} &nbsp {{ fcu.user.second_name}} -->
                                     </div>
                                 {% endfor %}
 
