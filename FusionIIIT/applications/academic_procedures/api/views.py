@@ -152,6 +152,7 @@ def academic_procedures_student(request):
             pre_registered_courses_show = obj.initialregistrations_set.all().filter(semester = user_sem+1)
         except:
             pre_registered_courses =  None
+            pre_registered_courses_show=None
         try:
             final_registered_courses = obj.finalregistrations_set.all().filter(semester = user_sem)
         except:
