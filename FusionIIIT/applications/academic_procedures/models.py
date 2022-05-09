@@ -64,6 +64,10 @@ class Constants:
         ('X','X'),
     )
 
+Year_Choices = [
+        (datetime.date.today().year, datetime.date.today().year),
+        (datetime.date.today().year-1, datetime.date.today().year-1)
+    ]
 
 class Register(models.Model):
     '''
@@ -275,8 +279,9 @@ class SemesterMarks(models.Model):
     end_term = models.FloatField(default = None)
     other = models.FloatField(default = None)
     grade = models.CharField(max_length=5, choices=Constants.GRADE, null=True)
-    curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
-
+    # curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
+    curr_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    #course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, null=True)
     class Meta:
         db_table = 'SemesterMarks'
 
@@ -297,7 +302,7 @@ class MarkSubmissionCheck(models.Model):
         
     '''
 
-    curr_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
+    curr_id = models.ForeignKey(Courses,on_delete=models.CASCADE)
     verified = models.BooleanField(default = False)
     submitted = models.BooleanField(default = False)
     announced = models.BooleanField(default = False)
@@ -335,10 +340,6 @@ class MessDue(models.Model):
 
     ]
 
-    Year_Choices = [
-        (datetime.date.today().year, datetime.date.today().year),
-        (datetime.date.today().year-1, datetime.date.today().year-1)
-    ]
     paid_choice = [
         ('Stu_paid', 'Paid'),
         ('Stu_due' , 'Due')
@@ -679,6 +680,7 @@ class course_registration(models.Model):
 
 
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
