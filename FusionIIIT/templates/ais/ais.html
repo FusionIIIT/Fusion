@@ -55,6 +55,10 @@ Academic Information System
                 Student Courses
                 <i class="right floated chevron right icon"></i>
             </a>
+            <a class="item" data-tab="nine">
+                Allot Courses
+                <i class="right floated chevron right icon"></i>
+            </a>
             <a class="item" data-tab="third">
                 Academic Calendar
                 <i class="right floated chevron right icon"></i>
@@ -188,6 +192,13 @@ Academic Information System
             {% endblock %}
         </div>
 
+
+        <div class="ui tab segment" data-tab="nine">
+            {% block allot_courses %}
+            {% include 'academic_procedures/allot_courses.html' %}
+            {% endblock %}
+        </div>
+
         <div class="ui tab segment" data-tab="ninth">
             {% block student_dashboard %}
             {% include 'ais/student_dashboard.html' %}
@@ -316,6 +327,7 @@ Academic Information System
                 }
             });
         });
+
         // {       alert($('button #CS204').length);}
         $('#cse_courses').on('click', 'button', function (event) {
             event.preventDefault();
@@ -437,7 +449,9 @@ Academic Information System
                 }
             });
         });
+
         $('#design_courses').on('click', 'button', function (event) {
+
             event.preventDefault();
             var course_code = $(this).data('course');
             $('#design_table tbody').find("tr:gt(0)").remove();
