@@ -547,8 +547,7 @@ def next_curriculum(request):
             try:
                 Curriculum.objects.bulk_create(new_curriculum)
             except Exception as e:
-                print("Exception occured")
-                print("e")
+                print("Exception occured",e)
             
 
         elif request.POST['option'] == '2':
@@ -569,8 +568,7 @@ def next_curriculum(request):
             try:
                 Curriculum.objects.bulk_create(new_curriculum)
             except Exception as e:
-                print("Exception occured!")
-                print(e)
+                print("Exception occured!",e)
             finally:
                 batch=batch+1
                 curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
@@ -1014,10 +1012,10 @@ def generate_preregistration_report(request):
             # data.append(z)
             current_student_registered_courses = InitialRegistration.objects.filter(student_id=student, semester_id__semester_no=sem).all()
             timestamp = current_student_registered_courses.first().timestamp
-            print("current student is ",student.id.user.username)
-            print("timstamp value ",timestamp)
+            #print("current student is ",student.id.user.username)
+            #print("timstamp value ",timestamp)
             for slot in course_slots:
-                print("current slot belongs to ",slot)
+                #print("current slot belongs to ",slot)
                 z = []
                 z.append(m)
                 z.append(student.id.user.username)
@@ -1032,7 +1030,7 @@ def generate_preregistration_report(request):
 
                 for choice in range(1,len(choices_of_current_student)+1):
                     current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
-                    print("current choice is ",current_choice)
+                    # #print("current choice is ",current_choice)
                     z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
                 
                 data.append(z)
@@ -1455,18 +1453,18 @@ def senator(request):
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
     #print (temp)
-#     print (current_user)
+#     #print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
-#     print(k)
+#     #print(k)
 #     final_user = k[2]
 
 #     if (str(acadadmin) != str(final_user)):
 #         return HttpResponseRedirect('/academic-procedures/')
 #     if request.method == 'POST':
-#         print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+#         #print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 #         rollno = request.POST.getlist('Roll Number')[0]
-#         # print(request.POST.get('rollno'))
+#         # #print(request.POST.get('rollno'))
 #         extraInfo = ExtraInfo.objects.get(id=rollno)
 #         s = Designation.objects.get(name='Senator')
 #         hDes = HoldsDesignation()
@@ -1613,11 +1611,11 @@ def addMinute(request):
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
-#     print (temp)
-#     print (current_user)
+#     #print (temp)
+#     #print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
-#     print(k)
+#     #print(k)
 #     final_user = k[2]
 
 #     if (str(acadadmin) != str(final_user)):
@@ -1694,7 +1692,7 @@ def add_basic_profile(request):
 #                 'phoneno': ph,
 #                 'batch': batch
 #             }
-#             print(data)
+#             #print(data)
 #             return JsonResponse(data)
 #         else:
 #             data = {}
@@ -1755,11 +1753,11 @@ def delete_advanced_profile(request):
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
 #     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-#     print (temp)
-#     print (current_user)
+#     #print (temp)
+#     #print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
-#     print(k)
+#     #print(k)
 #     final_user = k[2]
 
 #     if (str(acadadmin) != str(final_user)):
@@ -1807,21 +1805,21 @@ def add_advanced_profile(request):
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
 #     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-#     print (temp)
-#     print (current_user)
+#     #print (temp)
+#     #print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
-#     print(k)
+#     #print(k)
 #     final_user = k[2]
 
 #     if (str(acadadmin) != str(final_user)):
 #         return HttpResponseRedirect('/academic-procedures/')
 #     if request.method == "POST":
-#         print(request.POST)
+#         #print(request.POST)
 #         rollno=request.POST.get('roll')
-#         print(rollno)
+#         #print(rollno)
 #         student = ExtraInfo.objects.get(id=rollno)
-#         print(student.address)
+#         #print(student.address)
 #         if not student:
 #             data = {}
 #             return JsonResponse(data)
@@ -1859,7 +1857,7 @@ def add_optional(request):
 #     """
     if request.method == "POST":
         pass
-        # print(request.POST)
+        # #print(request.POST)
 #         choices = request.POST.getlist('choice')
 #         for i in choices:
 #             course = Course.objects.all().filter(course_id=i).first()
@@ -1906,7 +1904,7 @@ def view_course(request):
 #         sem=request.POST['sem']
 
 #         curriculum_courses = Curriculum.objects.filter(branch = branch).filter(batch = batch).filter(programme= programme).filter(sem = sem)
-#         print(curriculum_courses)
+#         #print(curriculum_courses)
 #         courses = Course.objects.all()
 #         course_type = Constants.COURSE_TYPE
 #         context= {
@@ -1942,16 +1940,16 @@ def delete_grade(request):
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
 #     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-#     print (temp)
-#     print (current_user)
+#     #print (temp)
+#     #print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
-#     print(k)
+#     #print(k)
 #     final_user = k[2]
 
 #     if (str(acadadmin) != str(final_user)):
 #         return HttpResponseRedirect('/academic-procedures/')
-#     print(request.POST['delete'])
+#     #print(request.POST['delete'])
 #     data = request.POST['delete']
 #     d = data.split("-")
 #     id = d[0]
@@ -1962,7 +1960,7 @@ def delete_grade(request):
 #             s = Grades.objects.filter(student_id=id, sem=sem)
 #             for p in s:
 #                 if (str(p.course_id) == course):
-#                     print(p.course_id)
+#                     #print(p.course_id)
 #                     p.delete()
 #         else:
 #             return HttpResponse("Unable to delete data")
@@ -1994,7 +1992,7 @@ def verify_grade(request):
 
     # if request.method == "POST":
     #     curr_id=request.POST['course']
-    #     print(curr_id)
+    #     #print(curr_id)
     #     curr_course = Curriculum.objects.filter(curriculum_id=curr_id)
     #     grades = Grades.objects.filter(curriculum_id=curr_course)
     #     context= {
@@ -2012,8 +2010,8 @@ def confirm_grades(request):
     #     return HttpResponseRedirect('/academic-procedures/')
         
     # if request.method == "POST":
-    #     print("confirm hone wala hai")
-    #     print(request.POST)
+    #     #print("confirm hone wala hai")
+    #     #print(request.POST)
     return HttpResponseRedirect('/aims/')
 
 

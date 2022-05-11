@@ -274,7 +274,6 @@ def academic_procedures_student(request):
         except Exception as e:
             next_sem_id = curr_sem_id
 
-        print("current sem id is ",curr_sem_id," next sem id is ",next_sem_id)
         student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
         student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
 
@@ -324,12 +323,14 @@ def academic_procedures_student(request):
         try:
             pre_registered_courses = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             pre_registered_course_show = {}
-            print(pre_registered_course_show)
+            pre_registration_timestamp=None
             for pre_registered_course in pre_registered_courses:
+                pre_registration_timestamp=pre_registered_course.timestamp
                 if(pre_registered_course.course_slot_id.name not in pre_registered_course_show):
                     pre_registered_course_show[pre_registered_course.course_slot_id.name] = [{"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority}]
                 else:
                     pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
+            pre_registration_timestamp=str(pre_registration_timestamp)
         except Exception as e:
             pre_registered_courses =  None
             pre_registered_course_show = None
@@ -465,6 +466,7 @@ def academic_procedures_student(request):
                             'add_courses_options': add_courses_options,
                             'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
+                            'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
                             'frd': final_registration_date_flag,
                             'adc_date_flag': add_or_drop_course_date_flag,
@@ -816,7 +818,8 @@ def dropcourseadmin(request):
     try:
         Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
     except:
-        print("hello ")
+        pass
+        # print("hello ")
     response_data = {}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -1250,7 +1253,6 @@ def pre_registration(request):
 
             try:
                 student_registeration_check=get_student_registrtion_check(current_user,sem_id)
-                print(student_registeration_check)
                 if(student_registeration_check.pre_registration_flag==True):
                     messages.error(request,"You have already registered for next semester")
                     return HttpResponseRedirect('/academic-procedures/main')
@@ -2188,7 +2190,6 @@ def process_verification_request(request):
 @transaction.atomic
 def verify_registration(request):
 
-    print("printing post data from accepted registration ------------- >",request.POST)
     if request.POST.get('status_req') == "accept" :
         student_id = request.POST.get('student_id')
         student = Student.objects.get(id = student_id)
@@ -2297,13 +2298,20 @@ def teaching_credit_register(request) :
 
 def course_marks_data(request):
     try:
-        curriculum_id = request.POST.get('curriculum_id')
-        course = Curriculum.objects.select_related().get(curriculum_id = curriculum_id)
-        student_list = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(curr_id = course)
+        course_id = request.POST.get('course_id')
+        course = Courses.objects.select_related().get(id = course_id)
+        print(course)
+        print(course_id)
+        student_list = course_registration.objects.filter(course_id__id=course_id).select_related(
+            'student_id__id__user','student_id__id__department').only('student_id__batch', 
+            'student_id__id__user__first_name', 'student_id__id__user__last_name',
+            'student_id__id__department__name','student_id__id__user__username')
         mrks = []
+        student_marks=[]
         for obj in student_list:
-            o = SemesterMarks.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = obj.student_id).filter(curr_id = course).first()
+            o = SemesterMarks.objects.all().select_related('curr_id','student_id','curr_id','student_id__id','student_id__id__user','student_id__id__department').filter(curr_id = course_id)
             if o :
+                student_marks=o
                 continue
             else :
                 p = SemesterMarks(
@@ -2317,16 +2325,34 @@ def course_marks_data(request):
                         curr_id = course
                     )
                 mrks.append(p)
+                student_marks=mrks
         SemesterMarks.objects.bulk_create(mrks)
 
-        enrolled_student_list = SemesterMarks.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(curr_id = course)
-        grade_submission_date_eligibility = False
-        try :
-            d = Calendar.objects.get(description = "grade submission date")
-            if demo_date.date() >= d.from_date and demo_date.date() <= d.to_date :
-                grade_submission_date_eligibility = True
-        except Exception as e:
-            grade_submission_date_eligibility = False
+
+        enrolled_student_list = SemesterMarks.objects.all().select_related('curr_id','student_id','student_id__id','student_id__id__user','student_id__id__department').filter(curr_id = course)
+        grade_submission_date_eligibility = True
+        enrolled_student_list=[]
+        for i in student_list:
+            #print("Rollno is:"+i.student_id.id.user.username)
+            for item in student_marks:
+                if(str(item.student_id)==i.student_id.id.user.username):
+                    enrolled_student_list.append({"rollno":i.student_id.id.user.username, 
+                    "name":i.student_id.id.user.first_name+" "+i.student_id.id.user.last_name, 
+                    "department":i.student_id.id.department.name,
+                    "q1":item.q1,"q2":item.q2,"mid_term":item.mid_term,"end_term":item.end_term,"other_marks":item.other})
+                    break
+        enrolled_student_list=sorted(enrolled_student_list, key = lambda i: i['rollno'])
+        
+        print(enrolled_student_list)
+        print(len(enrolled_student_list))
+        # try :
+        #     d = Calendar.objects.get(description = "grade submission date")
+        #     print(demo_date.date() >= d.from_date and demo_date.date() <= d.to_date)
+        #     if demo_date.date() >= d.from_date and demo_date.date() <= d.to_date :
+        #         grade_submission_date_eligibility = True
+        # except Exception as e:
+        #     grade_submission_date_eligibility = False
+        #     print(e)
         data = render_to_string('academic_procedures/course_marks_data.html',
                                 {'enrolled_student_list' : enrolled_student_list,
                                 'course' : course,
@@ -2334,6 +2360,7 @@ def course_marks_data(request):
         obj = json.dumps({'data' : data})
         return HttpResponse(obj, content_type = 'application/json')
     except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 
@@ -2341,6 +2368,7 @@ def course_marks_data(request):
 
 def submit_marks(request):
     try:
+        print(request.POST)
         user = request.POST.getlist('user')
         q1 = request.POST.getlist('q1_marks')
         mid = request.POST.getlist('mid_marks')
@@ -2356,8 +2384,8 @@ def submit_marks(request):
         values_length = len(request.POST.getlist('user'))
 
 
-        curr_id = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('curriculum_id'))
-
+        curr_id = Courses.objects.select_related().get(id = request.POST.get('course_id'))
+        print(curr_id)
         for x in range(values_length):
 
             student_id = get_object_or_404(User, username = user[x])
@@ -2369,14 +2397,13 @@ def submit_marks(request):
             else :
                 g = None
 
-            st_existing = SemesterMarks.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = student_id).filter(curr_id = curr_id).first()
-
+            st_existing = SemesterMarks.objects.all().select_related('curr_id','student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = student_id).filter(curr_id = curr_id).first()
             if st_existing :
-                st_existing.q1 = q1[x]
-                st_existing.mid_term = mid[x]
-                st_existing.q2 = q2[x]
-                st_existing.end_term = end[x]
-                st_existing.other = other[x]
+                st_existing.q1 = q1[x] or 0
+                st_existing.mid_term = mid[x] or 0
+                st_existing.q2 = q2[x] or 0
+                st_existing.end_term = end[x] or 0
+                st_existing.other = other[x] or 0
                 st_existing.grade = g
                 st_existing.save()
             else :
@@ -2424,6 +2451,7 @@ def submit_marks(request):
 
         return HttpResponseRedirect('/academic-procedures/main')
     except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 
