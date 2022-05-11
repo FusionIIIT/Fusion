@@ -23,6 +23,15 @@
                 {{ user.last_name}}
                 <span class="right floated meta">
                     {{ user.extrainfo.department.name}}
+                    
+                </span>
+                <span class="left floated meta">
+                    {% if user.extrainfo.user_type == 'student' %}
+                    {{user.extrainfo.student.programme}}
+                    {{ user.extrainfo.student.batch}}
+                    <br/>
+                    Sem - {{user.extrainfo.student.curr_semester_no}}
+                    {% endif %}
                 </span>
                 <span class="right floated meta">
                     {{user.extrainfo.student.programme}}
@@ -38,6 +47,14 @@
                 {{ request.user.last_name}}
                 <span class="right floated meta">
                     {{ request.user.extrainfo.department.name}}
+                    <span class="right floated meta">
+                        {% if request.user.extrainfo.user_type == 'student' %}
+                        {{request.user.extrainfo.student.programme}}
+                        {{ request.user.extrainfo.student.batch}}
+                        <br/>
+                        Sem - {{request.user.extrainfo.student.curr_semester_no}}
+                        <br/>
+                        {% endif %}
                 </span>
                 <span class="right floated meta">
                     {{user.extrainfo.student.programme}}
@@ -46,7 +63,7 @@
                 </span>
             </div>
             {% endif %}
-
+            <br/>
             <div class="meta">
                 {% for i in Curr_desig %}
                 <span> {% comment %}Should this be inside if else?{% endcomment %}

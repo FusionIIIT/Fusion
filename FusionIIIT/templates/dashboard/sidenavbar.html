@@ -62,9 +62,13 @@
                 </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == 'faculty' %}
+                {%for desig in designat%}
+                {% if 'hradmin' == desig.designation.name %}
                 <a class = "item" href="/hr2/hradmin/">
                     <h4> HR2 Module </h4>
                 </a>
+                {% endif %}
+                {%endfor %}
                 {% endif %}
                 <a class = "item" href="/library/library">
                     <h4> Library Module </h4>

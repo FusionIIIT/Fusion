@@ -31,7 +31,7 @@
 
 <div id="course_list">
 	{% for obj in courses_list%}
-	<div class="course_marks" data1 ="{{obj.curriculum_id.curriculum_id}}" data2="{{obj.curriculum_id.course_code}}">{{obj.curriculum_id.course_id.course_name}} - {{obj.curriculum_id.course_code}}</div>
+	<div class="course_marks" data1 ="{{obj.course_id.id}}" data2="{{obj.course_id.name}}">{{obj.course_id}}</div>
 	{% endfor %}
 </div>
 
@@ -47,12 +47,12 @@
 	$(document).ready(function(){
 		$('.course_marks').on('click',function(e){
 			var course_code = $(this).attr("data2");
-			var curriculum_id = $(this).attr("data1");
+			var course_id = $(this).attr("data1");
 			$.ajax({
 				type:"POST",
 		        url: "/academic-procedures/course_marks_data/",
 		        data:{
-		        		curriculum_id : curriculum_id,
+		        		course_id : course_id,
 		                csrfmiddlewaretoken: '{{ csrf_token }}'
 		        },
 		        success: function( data ) 

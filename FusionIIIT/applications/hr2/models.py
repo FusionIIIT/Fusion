@@ -57,8 +57,7 @@ class Employee(models.Model):
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     religion = models.CharField(max_length=40, default='')
-    category = models.CharField(
-        max_length=50, null=False, choices=Constants.CATEGORY)
+    category = models.CharField(max_length=50, null=False, choices=Constants.CATEGORY)
     cast = models.CharField(max_length=40, default='')
     home_state = models.CharField(max_length=40, default='')
     home_district = models.CharField(max_length=40, default='')
@@ -116,6 +115,9 @@ class ForeignService(models.Model):
     description = models.CharField(max_length=300, default='')
     salary_source = models.CharField(max_length=100, default='')
     designation = models.CharField(max_length=100, default='')
+    # award_name = models.CharField(max_length=100, default='')
+    # award_type = models.CharField(max_length=100, default='')
+    # achievement_date = models.CharField(max_length=100, default='')
     service_type = models.CharField(
         max_length=100, choices=Constants.FOREIGN_SERVICE)
 
