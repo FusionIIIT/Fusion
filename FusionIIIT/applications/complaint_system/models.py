@@ -21,7 +21,6 @@ class Constants:
         ('Maa Saraswati Hostel', 'Maa Saraswati Hostel'),
         ('Nagarjun Hostel', 'Nagarjun Hostel'),
         ('Panini Hostel', 'Panini Hostel'),
-
     )
     COMPLAINT_TYPE = (
         ('Electricity', 'Electricity'),
