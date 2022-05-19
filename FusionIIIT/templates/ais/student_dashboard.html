@@ -19,11 +19,13 @@
         <input placeholder="Batch" type="number" name="batch" id="batch_curr">
     </div>
 
+    
+
+
     <div class="field">
         <label>Roll Number</label>    
-        <input placeholder="Roll Number" type="number" name="Roll_number" id="roll_curr">
+        <input placeholder="Roll Number" type="text" name="Roll_number" id="roll_curr">
     </div>
-
     <div class="field">
         <label>Branch</label>
         <select name="branch" id="branch_curr">
@@ -48,11 +50,12 @@
     </div>
     <div class="field">
         <div class="one wide field">
-            <input type="submit" value="View" class="ui primary button" />
+            <input type="submit" value="View" class="ui primary button"/>
         </div>
     </div>
 </form>
 <script type="text/javascript">
+
     $("#student_dashboard_id").submit(function(event) {
         event.preventDefault();
         var friendForm = $(this);
