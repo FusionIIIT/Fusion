@@ -154,15 +154,15 @@ class AddExperience(forms.Form):
                                                              'class': 'form-control'}),
                                label="location")
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
-    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
-
+    edate = forms.DateField(required =False,label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    
     def clean(self):
-        sdate = self.cleaned_data.get("sdate")
-        edate = self.cleaned_data.get("edate")
-
-        if (sdate > edate):
-            raise forms.ValidationError("Start Date cant be after End Date")
-        return self.cleaned_data
+         sdate = self.cleaned_data.get("sdate")
+         edate = self.cleaned_data.get("edate")
+         if(edate):
+           if (sdate > edate):
+              raise forms.ValidationError("Start Date cant be after End Date")
+              return self.cleaned_data
 
 
 class AddProject(forms.Form):
@@ -188,15 +188,16 @@ class AddProject(forms.Form):
                                                                  'class': 'form-control'}),
                                    label="project_link", required=False)
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
-    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
-
+    edate = forms.DateField(required = False,label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+     
+    
     def clean(self):
         sdate = self.cleaned_data.get("sdate")
         edate = self.cleaned_data.get("edate")
-
-        if (sdate > edate):
+        if(edate):
+          if (sdate > edate):
             raise forms.ValidationError("Start Date cant be after End Date")
-        return self.cleaned_data
+            return self.cleaned_data
 
 
 class AddAchievement(forms.Form):
