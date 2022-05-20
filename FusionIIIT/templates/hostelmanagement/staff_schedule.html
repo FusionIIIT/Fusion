@@ -14,7 +14,7 @@
     </div>
 
 <div class="right menu">
-  {% if user in hall_caretaker%}
+    {% if user in hall_caretaker %}
     <a class="item" data-tab="hall_staff_edit">
         <i class="edit icon"></i>Add/Edit Staff
     </a>
@@ -22,11 +22,11 @@
     <a class="item" data-tab="worker_report">
         <i class="file icon"></i>Worker Report
     </a>
-
+    {% endif %}
     <a class="item" data-tab="view_report">
         <i class="eye icon"></i>View Report
     </a>
-  {% endif %}
+
 </div>
   
   

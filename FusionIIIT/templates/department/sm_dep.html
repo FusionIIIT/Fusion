@@ -141,7 +141,7 @@
                                 <tr>
                                     {% with "/eis/profile/"|add:fcu.user.username as link %}
                                     <td>{{ fcu.id }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+                                    <td><a href = {{ link }}>{{fcu.title}} {{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
                                     <!-- <td>{{ fcu.title }}</td> -->
                                     <td>{{ fcu.sex }}</td>
                                     <td>{{ fcu.date_of_birth }}</td>
@@ -339,7 +339,7 @@
                                 <div class="content">
                                     <div class="description">
                                         <span>
-                                            {% with fac_list.sm_f as faculty %}
+                                            {% with fac_list.staffNsm as faculty %}
                                                 {% block file-requests %}
                                                     {% include "department/file_request.html" %}
                                                 {% endblock %}

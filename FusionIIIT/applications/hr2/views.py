@@ -14,6 +14,7 @@ from applications.eis.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from html import escape
 from io import BytesIO
+import re
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
@@ -26,14 +27,18 @@ def edit_employee_details(request, id):
     template = 'hr2Module/editDetails.html'
 
     try:
-        employee = ExtraInfo.objects.get(pk=id)
+        employee = ExtraInfo.objects.get(user__id=id)
     except:
         raise Http404("Post does not exist")
 
     if request.method == "POST":
-        form = EditDetailsForm(request.POST, request.FILES)
+        for e in request.POST:
+            print(e)
+        print('--------------')
+        form = EditDetailsForm(request.POST)
         conf_form = EditConfidentialDetailsForm(request.POST, request.FILES)
-
+        print("f1", form.is_valid())
+        print("f2", conf_form.is_valid())
         if form.is_valid() and conf_form.is_valid():
             form.save()
             conf_form.save()
@@ -46,14 +51,14 @@ def edit_employee_details(request, id):
                 pass
             messages.success(request, "Employee details edited successfully")
         else:
-
             messages.warning(request, "Error in submitting form")
             pass
+    else:
+        print("Failed")
 
     form = EditDetailsForm(initial={'extra_info': employee.id})
     conf_form = EditConfidentialDetailsForm(initial={'extra_info': employee})
-    context = {'form': form, 'confForm': conf_form, 'employee': employee
-               }
+    context = {'form': form, 'confForm': conf_form, 'employee': employee}
 
     return render(request, template, context)
 
@@ -64,7 +69,7 @@ def hr_admin(request):
     user = request.user
     # extra_info = ExtraInfo.objects.select_related().get(user=user)
     designat = HoldsDesignation.objects.select_related().get(user=user)
-
+    print(designat)
     if designat.designation.name == 'hradmin':
         template = 'hr2Module/hradmin.html'
         # searched employee
@@ -86,6 +91,7 @@ def hr_admin(request):
         empPresent = emp.filter(user_status="PRESENT")
         empNew = emp.filter(user_status="NEW")
         context = {'emps': emp, "empPresent": empPresent, "empNew": empNew}
+        print(context)
         return render(request, template, context)
     else:
         return HttpResponse('Unauthorized', status=401)
@@ -127,7 +133,8 @@ def service_book(request):
                'awards': awards,
                'thesis': thesis,
                'extrainfo': extra_info,
-               'workAssignment': workAssignemnt
+               'workAssignment': workAssignemnt,
+               'awards': awards
                }
 
     return HttpResponseRedirect("/eis/profile/")
@@ -136,7 +143,19 @@ def service_book(request):
 
 def view_employee_details(request, id):
     """ Views for edit details"""
-    extra_info = ExtraInfo.objects.get(pk=id)
+    extra_info = ExtraInfo.objects.get(user__id=id)
+    context = {}
+    try:
+        emp = Employee.objects.get(extra_info=extra_info)
+        context['emp'] = emp
+    except:
+        print("Personal details not found")
+    # try:
+        
+    # except:
+    #     extra_info = ExtraInfo.objects.get(pk=id)
+        # print("caught error")
+        # return
     lien_service_book = ForeignService.objects.filter(
         extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
     deputation_service_book = ForeignService.objects.filter(
@@ -145,7 +164,8 @@ def view_employee_details(request, id):
         extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
     appraisal_form = EmpAppraisalForm.objects.filter(
         extra_info=extra_info).order_by('-year')
-    pf = extra_info.id
+    pf = extra_info.user.id
+    print(pf)
     workAssignemnt = WorkAssignemnt.objects.filter(
         extra_info_id=pf).order_by('-start_date')
 
@@ -177,18 +197,19 @@ def view_employee_details(request, id):
 
     response.update({'cpda': False, 'ltc': False,
                      'appraisal': True, 'leave': False})
-
+    # designat = HoldsDesignation.objects.get(user=request.user).designation
     template = 'hr2Module/viewdetails.html'
-    context = {'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book, 'user': extra_info.user, 'extrainfo': extra_info,
+    context.update({'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book, 'user': extra_info.user, 'extrainfo': extra_info,
                'appraisalForm': appraisal_form,
                'empproject': empprojects,
                'visits': visits,
                'conferences': conferences,
                'awards': awards,
                'thesis': thesis,
-               'workAssignment': workAssignemnt
-
-               }
+               'workAssignment': workAssignemnt,
+            #    'designat':designat,
+                
+               })
     context.update(response)
 
     return render(request, template, context)
@@ -199,7 +220,7 @@ def edit_employee_servicebook(request, id):
     template = 'hr2Module/editServiceBook.html'
 
     try:
-        employee = ExtraInfo.objects.get(pk=id)
+        employee = ExtraInfo.objects.get(user__id=id)
     except:
         raise Http404("Post does not exist")
 
@@ -269,6 +290,30 @@ def administrative_profile(request, username=None):
     template = 'hr2Module/dashboard_hr.html'
     return render(request, template, context)
 
+def chkValidity(password):
+    flag = 0
+    while True:  
+        if (len(password)<8):
+            flag = -1
+            break
+        elif not re.search("[a-z]", password):
+            flag = -1
+            break
+        elif not re.search("[0-9]", password):
+            flag = -1
+            break
+        elif not re.search("[_@$]", password):
+            flag = -1
+            break
+        elif re.search("\s", password):
+            flag = -1
+            break
+        else:
+            return True
+            break
+    
+    if flag ==-1:
+        return False
 
 def add_new_user(request):
     """ Views for edit Service Book details"""
@@ -277,12 +322,26 @@ def add_new_user(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
         eform = AddExtraInfo(request.POST)
+        # t_pass = request.POST['password1']
+        # t_user = request.POST['username']
+
         if form.is_valid():
             user = form.save()
             messages.success(request, "New User added Successfully")
         else:
             print(form.errors)
-            messages.error(request,"User cannot be added")
+            # print(request.POST['password1'])
+            t_pass = '0000'
+            if 'password1' in request.POST:
+                t_pass = request.POST['password1']
+            # messages.error(request,str(type(t_pass)))
+            if chkValidity(t_pass):
+                messages.error(request,"User already exists")
+            elif not t_pass == '0000':
+                messages.error(request,"Use Stronger Password")
+            else:
+                messages.error(request,"User already exists")
+                
 
         if eform.is_valid():
             eform.save()

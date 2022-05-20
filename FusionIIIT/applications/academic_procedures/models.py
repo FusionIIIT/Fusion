@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
@@ -37,7 +37,8 @@ class Constants:
         ('Online Payment','Online Payment'),
         ('NEFT','NEFT'),
         ('RTGS','RTGS'),
-        ('Bank Challan','Bank Challan')
+        ('Bank Challan','Bank Challan'),
+        ('Edu Loan','Edu Loan')
         )
 
     BRANCH = (
@@ -63,6 +64,10 @@ class Constants:
         ('X','X'),
     )
 
+Year_Choices = [
+        (datetime.date.today().year, datetime.date.today().year),
+        (datetime.date.today().year-1, datetime.date.today().year-1)
+    ]
 
 class Register(models.Model):
     '''
@@ -148,18 +153,6 @@ class MinimumCredits(models.Model):
 # THE THREE TABLES BELOW ARE OLD. PLEASE REFRAIN FROM USING THEM FURTHER.
 # USE THE TABLES AT THE BOTTOM OF THE FILE INSTEAD.
 class StudentRegistrationCheck(models.Model):
-    '''
-        Current Purpose : Deals with the students registration for a semester
-
-        ATTRIBUTES
-        student(academic_information.Student) - reference to the student
-        pre_registration_flag(Boolean) - to denote whether the pre registration is complete
-        final_registration_flag(Boolean) - to denote whether the final registration is complete
-        semester(Integer) - the semester for which the registration is relevant
-
-        
-    '''
-
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     pre_registration_flag = models.BooleanField(default = False)
     final_registration_flag = models.BooleanField(default = False)
@@ -172,16 +165,18 @@ class StudentRegistrationCheck(models.Model):
 class InitialRegistrations(models.Model):
 
 
-    curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    semester = models.IntegerField()
+    course_id = models.ForeignKey(Courses, null=True, blank=True, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester,null=True, blank=True, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    batch = models.IntegerField(default =datetime.datetime.now().year )
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    timestamp = models.DateTimeField(default=timezone.now)
+    priority = models.IntegerField(blank=True,null=True)
 
     class Meta:
         db_table = 'InitialRegistrations'
     
     def __str__(self):
-        return str(self.curr_id) + "-" + str(self.student_id)
+        return str(self.semester_id) + "-" + str(self.student_id)
 
 
 class FinalRegistrations(models.Model):
@@ -284,8 +279,9 @@ class SemesterMarks(models.Model):
     end_term = models.FloatField(default = None)
     other = models.FloatField(default = None)
     grade = models.CharField(max_length=5, choices=Constants.GRADE, null=True)
-    curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
-
+    # curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
+    curr_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    #course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, null=True)
     class Meta:
         db_table = 'SemesterMarks'
 
@@ -306,7 +302,7 @@ class MarkSubmissionCheck(models.Model):
         
     '''
 
-    curr_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
+    curr_id = models.ForeignKey(Courses,on_delete=models.CASCADE)
     verified = models.BooleanField(default = False)
     submitted = models.BooleanField(default = False)
     announced = models.BooleanField(default = False)
@@ -344,10 +340,6 @@ class MessDue(models.Model):
 
     ]
 
-    Year_Choices = [
-        (datetime.date.today().year, datetime.date.today().year),
-        (datetime.date.today().year-1, datetime.date.today().year-1)
-    ]
     paid_choice = [
         ('Stu_paid', 'Paid'),
         ('Stu_due' , 'Due')
@@ -596,18 +588,19 @@ class InitialRegistration(models.Model):
             semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
             student_id(academic_information.Student) - reference to the student
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
+            timestamp - the time this entry was generated
+            priority - priority of the selected course from the list of courses for the corresponding course_slot_it
 
 
         
     '''
-
-
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, null=True, blank=True, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester,null=True, blank=True, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE,null=True, blank=True)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
-
+    timestamp = models.DateTimeField(default=timezone.now)
+    priority = models.IntegerField(blank=True,null=True)
+    
     class Meta:
         db_table = 'InitialRegistration'
 
@@ -663,7 +656,8 @@ class FeePayments(models.Model):
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
     transaction_id = models.CharField(max_length = 40)
-
+    fee_receipt = models.FileField(null=True,upload_to='fee_receipt/')
+    
     class Meta:
         db_table = 'FeePayments'
 
@@ -686,10 +680,12 @@ class course_registration(models.Model):
 
 
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
     # grade = models.CharField(max_length=10)
+    #course_registration_year = models.IntegerField()
 
     class Meta:
         db_table = 'course_registration'

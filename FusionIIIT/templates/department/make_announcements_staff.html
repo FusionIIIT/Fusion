@@ -6,10 +6,6 @@
         <a class="active item" data-tab="dep">
             Announcement for Students
         </a>
-
-        <a class="item" data-tab="depf">
-            Announcement for Faculty
-        </a>
     </div>
 
     <div class="ui active tab" data-tab="dep">
@@ -153,82 +149,6 @@
             <div class="ui divider"></div>
         </div>
     </div>
-
-    <div class="ui tab" data-tab="depf">
-        <div class="ui vertical segment">
-            <!-- fill the form details -->
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
-                  action="">
-                {% csrf_token %}
-                <div class="ui header">
-                    Make a new Announcement for Faculty:
-                </div>
-
-                <br>
-
-                <div class="fields">
-
-                    <div class="eight wide field">
-                        <label>Department<sup><i class="small red asterisk icon"></i></sup></label>
-                        <div class="ui selection dropdown">
-                            <input name="department" type="hidden" placeholder="department" required='true'>
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select Department Type</div>
-
-                            <div class="menu" >
-                                <div class="item" data-value="ALL" >
-                                    ALL
-                                </div>
-
-                                <div class="item" data-value="CSE" >
-                                    CSE
-                                </div>
-
-                                <div class="item" data-value="ECE">
-                                    ECE
-                                </div>
-                            
-                                <div class="item" data-value="ME" >
-                                    ME
-                                </div>
-
-                                <div class="item" data-value="SM" >
-                                    SM
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label>Announcement Details<sup><i class="small red asterisk icon"></i></sup></label>
-                    <input placeholder="What is the Announcement?" name="announcement" required></textarea>
-                </div>
-
-                <div class = "file">
-                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
-                      <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png" >
-                </div>
-
-                    
-                <br>
-
-                <button class="ui large primary button right floated" onclick= "announce()">
-                    Publish
-                </button>
-
-                <br>
-                <br>
-
-            </form>
-
-            <br>
-            <div class="ui divider"></div>
-        </div>
-    </div>
-
    
 {% endblock %}
 

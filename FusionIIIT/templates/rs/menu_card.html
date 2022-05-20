@@ -1,31 +1,6 @@
-
-
 {% block menucard %}
 
-{% for designations in user_designations %} 
-
-    {% if user_extra_info.user_type == 'faculty' and designations.designation.name == 'dean_rspc' %}
-
-        
-        <a class="item" data-tab="forteenth">
-            View Applications
-        </a>
-
-        <a class="item" data-tab="sixteenth">
-           Change Status
-        </a>
-
-    {% endif %}
-    {% endfor %}
-    
-
-    {% if user_extra_info.user_type == 'faculty' or user_extra_info.user_type == 'student' %} 
-        {% if user_extra_info.user_type == 'faculty' %}
-            <a class="item"  data-tab="fourth">File Patent</a>
-        {% endif %}
-        
-        <a class="item" data-tab="first">View Status</a>
-    {% endif %}
-            
+<a class="item"  data-tab="fourth">Patents</a>
+<a class="item"  data-tab="second">Projects</a>
 
 {% endblock %}

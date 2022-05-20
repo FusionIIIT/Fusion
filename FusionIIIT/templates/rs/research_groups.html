@@ -3,7 +3,7 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="current">
-            Current Status
+            Research Groups
         </a>
     </div>
     <style >
@@ -14,7 +14,7 @@
     <div class="ui active tab" data-tab="current">
         <div class="ui vertical segment">
             <div class="ui header">
-                Status of Patent
+                Research Groups
             </div>
 
             <div class="content">
@@ -30,17 +30,17 @@
                         <thead>
                         <tr>
                             <th>
-                                Patend ID
+                                Group Name
                             </th>
                             <th>
-                                IPD form
+                                Faculty
                             </th>
                             <th>
-                                patent PDF
+                                Students
                             </th>
 
                             <th>
-                                Status
+                                Description
                             </th>
                             
                         </tr>
@@ -50,19 +50,22 @@
                         
                             {% comment %} <!--{% if pat.faculty.id == request.user.extrainfo.faculty.id %} -->{% endcomment %}
                             
-                            {% for patent in patents  %}          
+                            {% for research_group in research_groups  %}          
                         <tr>
                             <td>
-                                {{patent.application_id}}
+                                {{research_group.name}}
                             </td>
                             <td>
-                            <a href="{{patent.ipd_form_file}}">{{patent.ipd_form}}</a>
+                                {% for facul in research_group.faculty_under_group.all %}
+                                    <div>{{ facul.username }}</div>
+                                {% endfor %}
                             </td>
                             <td>
-                                <a href="{{patent.project_details_file}}">{{patent.project_details}}</a>
-                                </td>
+                                {% for student in research_group.students_under_group.all %}
+                                    <div>{{ student.username }}</div>
+                                {% endfor %}
                             <td>
-                                {{patent.status}}
+                                {{research_group.description}}
                             </td>
                         </tr>{% endfor %}
                                  

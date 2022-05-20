@@ -48,46 +48,38 @@
 
 </script>
 
-             <table border=1 class="ui definition padded table" style="margin: auto;"  id="phc_docs">
-                <thead>
-                <tr>
-                    <td>
-                        Doctor Name
-                    </td>
+        <table  border=1 class="ui definition padded table" style="margin: auto;">
+        </br>
+          </br>
+              </br>
+        <thead>
 
-                    <td>
-                        Specialization
-                    </td>
+        <tr>
+          <td style="font-weight:bold;color:black;">Doctor</td>
+          
+          {% for d in doct %}
+          {{count.doctor_count}}
+          <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td >Specialization</td>
+          {% for d in doctors %}
+          {{count.doctor_count}}
+          <td style="word-wrap:break-word;">{{d.specialization}}</td>
+          {% endfor %}
+        </tr>
 
-                    <td>
-                          Phone
-                    </td>
-                  </tr>
-                </thead>
+        <tr>
+          <td >Phone Number</td>
+          {% for d in doctors %}
+          {{count.doctor_count}}
+          <td style="word-wrap:break-word;">{{d.doctor_phone}}</td>
+          {% endfor %}
+        </tr>
+        </thead>
+        </table>
 
-                <tbody>
-                {% for doc in doctors %}
-                <tr>
-
-                    <td id="{{doc.pk}}">
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        </h4>
-                              {{doc.doctor_name}}
-                    </td>
-
-                    <td>
-                        {{doc.specialization}}
-                    </td>
-
-                    <td>
-                        {{doc.doctor_phone}}
-                    </td>
-                </tr>
-                {% endfor %}
-
-                </tbody>
-            </table>
 
         </div>
     </div>

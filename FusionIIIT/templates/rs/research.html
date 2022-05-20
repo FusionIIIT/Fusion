@@ -77,43 +77,30 @@ IPR
     The central-rail segment starts here!
     {% endcomment %}
     <div class="eight wide column">
-        {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment" data-tab="first">
-            {% block faq %}
-            {% include 'rs/Status.html' with patents=patents %}
-            {% endblock %}
-        </div>
 
-
-        {% comment %}The ... end here!{% endcomment %}
-
-
-
-        {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'rs/patent.html' %}
             {% endblock %}
         </div>
-        {% comment %}The ... ends here!{% endcomment %}
 
-    
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="forteenth">
-            {% block view_feedback %}
-            {% include 'rs/Status.html' with patents=patents %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
-
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="sixteenth">
-            {% block statistics %}
-            {% include 'rs/change_status.html' with patents=patents %}
+        <div class="ui tab segment" data-tab="second">
+            {% block projects %}
+            {% include 'rs/projects.html' %}
             {% endblock %}
         </div>
 
+
+        {% comment %} <div class="ui tab segment" data-tab="second">
+            {% block view_groups %}
+                {% include 'rs/research_groups.html' %}
+            {% endblock %}
+        </div>
+        <div class="ui tab segment" data-tab="third">
+            {% block create_reseach_groups %}
+                {% include 'rs/research_group_form.html' %}
+            {% endblock %}
+        </div> {% endcomment %}
 
 
     </div>

@@ -56,15 +56,20 @@
 				<a class="item" href="/iwdModuleV2">
                                 <h4>IWD Module</h4>
                             </a>
-                <a class = "item" href="/establishment/">
+                {% if request.user.extrainfo.user_type == 'faculty' or request.user.extrainfo.user_type == 'staff' %}
+                <a class = "item" href="{% url 'establishment:establishment' %}">
                     <h4> Establishment Module </h4>
                 </a>
+                {% endif %}
                 {% if request.user.extrainfo.user_type == 'faculty' %}
+                {%for desig in designat%}
+                {% if 'hradmin' == desig.designation.name %}
                 <a class = "item" href="/hr2/hradmin/">
                     <h4> HR2 Module </h4>
                 </a>
                 {% endif %}
-                
+                {%endfor %}
+                {% endif %}
                 <a class = "item" href="/library/library">
                     <h4> Library Module </h4>
                 </a>

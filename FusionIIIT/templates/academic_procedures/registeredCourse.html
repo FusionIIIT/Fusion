@@ -1,50 +1,46 @@
 {% load static %}
 {% block finalregister %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
+{% comment %}The tab menu starts here!{% endcomment %}
 
-        <center><b>Available Courses for Next Semester</b></center>
-        <div class="ui vertical segment">
-              <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                          padding-right: 2.5%;
-                          padding-top: 1%;
-                          padding-bottom: 1.5%;
-                          margin: auto;">
+<center><b>Available Courses for Next Semester</b></center>
+<div class="ui vertical segment">
+  <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+          padding-right: 2.5%;
+          padding-top: 1%;
+          padding-bottom: 1.5%;
+          margin: auto;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Slot name</th>
+        <th>Slot type</th>
+        <th>Semester</th>
+        <th>Credits</th>
+        <th>Course</th>
+      </tr>
+    </thead>
 
-                <thead>
-                  <tr>
-                    <th>Course ID</th>
-                    <th>Course Name</th>
-                    <th>Credits</th>
-                    <th>Semester</th>
-                  </tr>
-                </thead>
+    <tbody>
+      {% for course_slot in courses_list %}
+      <tr>
+        <td>{{forloop.counter}}.</td>
+        <td>{{course_slot.name}}</td>
+        <td>{{course_slot.type}}</td>
+        <td>{{next_sem.semester_no}}</td>
+        <td>{{course_slot.courses.all.0.credit}} </td>
+        <td>
+          {% for course in course_slot.courses.all %}
+          {{course.code}}-{{course.name}}
+          <br />
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
 
-                <tbody>
-                    {% for item in courses_list %}
-                      {% for items in item.courses.all %}
-                      <tr>
-                            <td>
-                              {{ items.code }}
-                            </td>
-                            <td>
-                                {{ items.name}}
-                            </td>
-                            <td>
-                                {{ items.credit }}
-                            </td>
-                            <td>
-                                {{next_sem.semester_no}}
-                            </td>
-                      </tr>
-                      {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-
-
-        </div>
+    </tbody>
+  </table>
+</div>
 
 
 {% endblock %}
