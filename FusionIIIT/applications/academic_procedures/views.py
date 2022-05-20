@@ -277,8 +277,9 @@ def academic_procedures_student(request):
         cpi = get_cpi(user_details.id)
 
         # branch change flag
-        branchchange_flag=True  # True for testing, to be initialised as False
-        if user_sem==2:
+        # Only First Year B.Tech student should have this option
+        branchchange_flag=False
+        if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
 
         pre_registration_date_flag = get_pre_registration_eligibility(current_date)
