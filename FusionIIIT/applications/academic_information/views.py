@@ -216,6 +216,11 @@ def homepage(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
+    semestor_nos=[]
+    for i in range(1,9):
+        semestor_nos.append(i)
+        
+    context['semester_nos'] = semestor_nos
 
     return render(request, "ais/ais.html", context)
 
