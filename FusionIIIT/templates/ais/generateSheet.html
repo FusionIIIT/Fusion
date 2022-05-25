@@ -103,10 +103,11 @@
           <label>Select Semester</label>
           {% comment %} <input type="number" id="semester_no" name="semester_no" required> {% endcomment %}
           <select id="semester_no" name="semester_no" required>
-            {% for semester_no in semester_nos %}
-              <option value="{{ semester_no }}">{{ semester_no }}</option>
+            {% for i in '12345678'|make_list %}
+              <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
             {% endfor%}
-        </select> 
+          </select>
+          
         </div>
         <div class="field">
             <button class="ui fluid primary button" type="submit">Generate PreRegistration Summary</button>
