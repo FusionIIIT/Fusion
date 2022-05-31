@@ -35,14 +35,14 @@
             </thead>
 
             <tbody>
-                {% for items in final_registered_course %}
+                {% for items in final_registered_course_show %}
                 <tr>
                     <td style="width: 5%">{{forloop.counter}}.</td>
-                    <td style="width: 15%">{{ items.course_id.code }}
+                    <td style="width: 15%">{{items.course_code}}
                     </td>
-                    <td style="width: 30%">{{ items.course_id.name}}</td>
-                    <td style="width: 5%">{{items.course_id.credit}}</td>
-                    <td style="width: 5%">{{ next_sem.semester_no }}</td>
+                    <td style="width: 30%">{{items.course_name}}</td>
+                    <td style="width: 5%">{{items.course_credit}}</td>
+                    <td style="width: 5%">{{next_sem.semester_no}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -82,14 +82,14 @@
 
                         <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
                         <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                        {% for items in pre_registered_course %}
+                        {% for items in final_registered_course_show %}
                         <tr>
                             <td>{{forloop.counter}}.</td>
-                            <td>{{ items.course_id.code }}
+                            <td>{{ items.course_code }}
                             </td>
-                            <td>{{ items.course_id.name }}
+                            <td>{{ items.course_name }}
                             </td>
-                            <td>{{ items.course_id.credit }}</td>
+                            <td>{{ items.course_credit }}</td>
                             <td>{{next_sem.semester_no}}</td>
                             <input name="choice" value="{{ items.course_id.id }}" hidden="True">
                             <input name="slot" value="{{ items.course_slot_id.id }}" hidden="True">
@@ -120,125 +120,16 @@
                     </div>
 
                 </div>
-
+                {% if final_registered_course|length != 0 %}
                 <div class="extra content">
                     <div class="" style="text-align: center;">
                         <button class="ui primary button">Register</button>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </form>
     </div>
-
-
-
-
-
-
-
-
-
-
-
-    <div id="course_change_table" hidden>
-        <form id='change_course' action='/academic-procedures/final_registration/'>
-            {% csrf_token %}
-            <div class="ui form" style="border: black">
-                <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
-                <table id="course_change_table" class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
-                                            padding-right: 2.5%;
-                                            padding-top: 1%;
-                                            padding-bottom: 1.5%;
-                                            margin: auto;">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Slot name</th>
-                            <th>Slot type</th>
-                            <th>Semester</th>
-                            <th>Credits</th>
-                            <th>Select</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
-                        <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
-                        {% for item in final_registration_choice %}
-                        <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.0.id }}' hidden="True">
-                        <tr>
-                            <td>{{forloop.counter}}.</td>
-                            <td>{{item.0.name}}</td>
-                            <td>{{item.0.type}}</td>
-                            <td>{{next_sem.semester_no}}</td>
-                            <td>{{item.0.courses.all.0.credit}} </td>
-                            <td>
-                                {% if item.0.type == "Professional Core" %}
-                                <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                                    {% for items in item.1 %}
-                                    <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}"
-                                        selected>
-                                        {{items.code}}-{{ items.name }}</option>
-                                    {% endfor %}
-                                </select>
-                                {% else %}
-                                <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
-                                    <option value="0">Select Course</option>
-                                    {% for items in item.1 %}
-                                    <option value='{{items.id}}' class="choices" data-value2="{{items.credit}}">
-                                        {{items.code}}-{{ items.name }}</option>
-                                    {% endfor %}
-                                </select>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-                        {% endfor %}
-                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-
-                    </tbody>
-                </table>
-                <input type="text" name="type_reg" value="change_register" hidden="True">
-
-                <div class="ui divider"></div>
-
-                <div>
-                    <h5>Unavailable Courses:</h5>
-                    <ul>
-                        {% for course in unavailable_courses_nextsem %}
-                            <li>{{course.code}}-{{course.name}}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                <div class="ui divider"></div>
-
-                <div class="two fields" style="width: 100%">
-                    <div class="field" style="width: 30%; margin-right: 5px">
-                        <select class="ui dropdown" name="mode" required="True">
-                            <option value="">Fee Payment Mode</option>
-                            {% for i in fee_payment_mode_list %}
-                            <option value="{{ i }}">{{i}}</option>
-                            {% endfor%}
-                        </select>
-                    </div>
-                    <div class="field" style="width: 50%;margin-left: 5px">
-                        <input placeholder="challan NO. / transaction ID" name='transaction_id' type="text"
-                            required="True"> <br>
-                    </div>
-                </div>
-
-                <div class="extra content">
-                    <div class="" style="text-align: center;">
-                        <button class="ui primary button">Register</button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-
-
 
 
     {% comment %} <form id='payment' action='/academic-procedures/final_registration/'>

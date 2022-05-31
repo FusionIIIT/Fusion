@@ -337,13 +337,17 @@ def academic_procedures_student(request):
             pre_registered_course_show = None
 
         try:
-            final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            final_registered_course_show=[]
+            for final_registered_course in final_registered_courses:
+                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
-            drop_courses_options = get_drop_course_options(currently_registered_course)
+            #drop_courses_options = get_drop_course_options(currently_registered_course)
 
         except Exception as e:
-            final_registered_course = None
-            drop_courses_options = None
+            final_registered_courses = None
+            final_registered_course_show = None
+            #drop_courses_options = None
             add_courses_options = None
 
         fee_payment_mode_list = dict(Constants.PaymentMode)
@@ -438,7 +442,8 @@ def academic_procedures_student(request):
                             'currently_registered': currently_registered_course,
                             'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
-                            'final_registered_course' : final_registered_course,
+                            'final_registered_course' : final_registered_courses,
+                            'final_registered_course_show' : final_registered_course_show,
                             'current_credits' : current_credits,
                             'courses_list': next_sem_branch_course,
                             'fee_payment_mode_list' : fee_payment_mode_list,
@@ -465,7 +470,7 @@ def academic_procedures_student(request):
                            # 'change_branch': change_branch,
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
-                            'drop_courses_options' : drop_courses_options,
+                            #'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
@@ -1333,24 +1338,24 @@ def final_registration(request):
                 fee_receipt = request.FILES['fee_receipt']
                 #print("--------- > ",fee_receipt)
 
-                f_reg = []
-                for x in range(values_length):
-                    if choice[x] != '0':
-                        course_id = Courses.objects.get(id = choice[x])
-                        courseslot_id = CourseSlot.objects.get(id = slot[x])
-                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
-                            p = FinalRegistration(
-                                course_id = course_id,
-                                semester_id=sem_id,
-                                student_id= current_user,
-                                course_slot_id = courseslot_id,
-                                verified = False,
-                                )                                
-                            f_reg.append(p)
-                        else:
-                            messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
-                            return HttpResponseRedirect('/academic-procedures/main')
-                FinalRegistration.objects.bulk_create(f_reg)
+                #f_reg = []
+                #for x in range(values_length):
+                    #if choice[x] != '0':
+                        #course_id = Courses.objects.get(id = choice[x])
+                        #courseslot_id = CourseSlot.objects.get(id = slot[x])
+                        #if FinalRegistration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
+                            #p = FinalRegistration(
+                                #course_id = course_id,
+                                #semester_id=sem_id,
+                                #student_id= current_user,
+                                #course_slot_id = courseslot_id,
+                                #verified = False,
+                                #)                                
+                            #f_reg.append(p)
+                        #else:
+                            #messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
+                            #return HttpResponseRedirect('/academic-procedures/main')
+                #FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
                     semester_id = sem_id,
@@ -1364,63 +1369,6 @@ def final_registration(request):
                     messages.info(request, 'Final-Registration Successful')
                 except Exception as e:
                     return HttpResponseRedirect('/academic-procedures/main')
-                return HttpResponseRedirect('/academic-procedures/main')
-            except Exception as e:
-                return HttpResponseRedirect('/academic-procedures/main')
-
-        elif request.POST.get('type_reg') == "change_register" :
-            try:
-                current_user = get_object_or_404(User, username=request.POST.get('user'))
-                current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-                current_user = Student.objects.all().filter(id=current_user.id).first()
-
-                sem_id = Semester.objects.get(id = request.POST.get('semester'))
-
-                FinalRegistration.objects.filter(student_id = current_user, semester_id = sem_id).delete()
-
-                count = request.POST.get('ct')
-                count = int(count)
-
-                mode = str(request.POST.get('mode'))
-                transaction_id = str(request.POST.get('transaction_id'))
-
-                f_reg=[]
-                for i in range(1, count+1):
-                    i = str(i)
-                    choice = "choice["+i+"]"
-                    slot = "slot["+i+"]"
-                    if request.POST.get(choice) != '0':
-                        try:
-                            course_id = Courses.objects.get(id = request.POST.get(choice))
-                            courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
-                                p = FinalRegistration(
-                                    course_id = course_id,
-                                    semester_id=sem_id,
-                                    student_id= current_user,
-                                    course_slot_id = courseslot_id,
-                                    verified = False
-                                    )
-                                f_reg.append(p)
-                            else:
-                                messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
-                                return HttpResponseRedirect('/academic-procedures/main')
-                        except Exception as e:
-                            return HttpResponseRedirect('/academic-procedures/main')
-                FinalRegistration.objects.bulk_create(f_reg)
-                obj = FeePayments(
-                    student_id = current_user,
-                    semester_id = sem_id,
-                    mode = mode,
-                    transaction_id = transaction_id
-                    )
-                obj.save()
-                try:
-                    StudentRegistrationChecks.objects.filter(student_id = current_user, semester_id = sem_id).update(final_registration_flag = True)
-                    messages.info(request, 'registered course change Successful')
-                except Exception as e:
-                    return HttpResponseRedirect('/academic-procedures/main')
-
                 return HttpResponseRedirect('/academic-procedures/main')
             except Exception as e:
                 return HttpResponseRedirect('/academic-procedures/main')
@@ -1449,7 +1397,7 @@ def allot_courses(request):
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
-                print(">>>>>",roll_no,course_slot_name,course_code,course_name,type(roll_no))
+                #print(">>>>>",roll_no,course_slot_name,course_code,course_name,type(roll_no))s
                 user=User.objects.get(username=roll_no)
                 user_info = ExtraInfo.objects.get(user=user)
                 student = Student.objects.get(id=user_info)
@@ -1458,17 +1406,14 @@ def allot_courses(request):
 
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
-                print(i,final_registration)
                 final_registrations.append(final_registration)
 
             try:
                 FinalRegistration.objects.bulk_create(final_registrations)
-                print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
                 messages.success(request, 'Successfully uploaded!')
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
             except Exception as e:
-                print(">>>>>>>>>>>>>",e)
                 messages.error(request, 'Error: '+str(e))
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
