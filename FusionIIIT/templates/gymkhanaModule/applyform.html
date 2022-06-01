@@ -23,7 +23,7 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Name</label>
-                            <input type="text" name="user_name" readonly="" class="ui large input" value="{{ request.user.extrainfo }}" required>
+                            <input type="text" name="user_name" readonly="" class="ui large input" value="{{ request.user.extrainfo.id }} - {{ request.user.first_name }}" required>
                         </div>
 
                         <div class="field">

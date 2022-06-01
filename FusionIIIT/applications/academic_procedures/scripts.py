@@ -1,4 +1,8 @@
+from typing_extensions import Self
 from django.db import transaction
+
+from FusionIIIT.applications.programme_curriculum.models import *
+from academic_information.views import *
 
 def temppp(cod,name,l,t,p,c,discipline_code,ins_code,year):
     discipline=Discipline.objects.get(acronym=discipline_code)
@@ -97,7 +101,7 @@ def temppp(type, slot, sems, courses):
     s1 = []
     crs_list = []
     for crs in course_codes:
-        crs_list.append(Courses.objects.get(code=crs))
+        crs_list.append(Course.objects.get(code=crs))
     for s in sem_ids:
         s_id = Semester.objects.get(pk=s)
         temp = CourseSlot.objects.create(type=type,name=slot,semester=s_id)

@@ -16,7 +16,7 @@ def coordinator_club(request):
         co = (str(i.co_ordinator)).split(" ")
         co_co=(str(i.co_coordinator)).split(" ")
         if co[0]==str(request.user) or co_co[0] == str(request.user):
-            club_info.append(serializers.ClubInfoSerializer(i).data)
+            club_info.append(Club_infoSerializer(i).data)
 	
     return club_info
 
