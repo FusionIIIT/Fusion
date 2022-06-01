@@ -6,6 +6,24 @@
     Academic
 {% endblock %}
 
+{% block css %}
+<style>
+    .item {
+        word-wrap: break-word;
+        flex: inherit !important;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .segment {
+        overflow: scroll;
+    }::-webkit-scrollbar {
+        width: 0;
+    }
+
+</style>
+{% endblock css %}
+
 
 {% block body %}
     {% block navBar %}
@@ -156,30 +174,30 @@
                     </a>
                     
                 </div>
-                <div class="ui active tab segment" data-tab="miscellaneous_2" >
+                <div class="ui active tab segment " data-tab="miscellaneous_2" >
                     <div class="ui pointing secondary menu">
-                        <a class=" active item" data-tab="messdue">
+                        <div class="active item" data-tab="messdue">
                             Mess Due History
-                        </a>
-                        <a class="item" data-tab="librarydue">
+                        </div>
+                        <div class="item" data-tab="librarydue">
                             Library Due History
-                        </a>
-                        <a class="item" data-tab="hosteldue">
+                        </div>
+                        <div class="item" data-tab="hosteldue">
                             Hostel Due History
-                        </a>
-                        <a class = "item" data-tab="Placementdue">
+                        </div>
+                        <div class="item" data-tab="Placementdue">
                             Placement Cell Due History
-                        </a>
-                        <a class=" item" data-tab="overall">
+                        </div>
+                        <div class="item" data-tab="overall">
                             Overall
-                        </a>
+                        </div>
     
                     </div>
                     <div class="ui active tab segment" data-tab="messdue">
                         {%  include 'academic_procedures/messduehistory.html' %}
                     </div>
                     <div class="ui tab segment" data-tab="librarydue">
-                        nothing libraay
+                        nothing library
                     </div>
                     <div class="ui tab segment" data-tab="hosteldue">
                         nothing hostel
