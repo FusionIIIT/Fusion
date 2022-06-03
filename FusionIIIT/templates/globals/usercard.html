@@ -25,14 +25,15 @@
                     {{ user.extrainfo.department.name}}
                     
                 </span>
-                <span class="left floated meta">
+                {% comment %} done by sandeep gahlawat {% endcomment %}
+                {% comment %} <span class="left floated meta">
                     {% if user.extrainfo.user_type == 'student' %}
                     {{user.extrainfo.student.programme}}
                     {{ user.extrainfo.student.batch}}
                     <br/>
                     Sem - {{user.extrainfo.student.curr_semester_no}}
                     {% endif %}
-                </span>
+                </span> {% endcomment %}
                 <span class="right floated meta">
                     {{user.extrainfo.student.programme}}
                     {{ user.extrainfo.student.batch}}
