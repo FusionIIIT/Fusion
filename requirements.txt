@@ -14,6 +14,7 @@ click==7.1.2
 click-didyoumean==0.0.3
 click-plugins==1.1.1
 click-repl==0.1.6
+cors-headers==3.13.0
 cryptography==36.0.2
 defusedxml==0.6.0
 Django==3.1.5
