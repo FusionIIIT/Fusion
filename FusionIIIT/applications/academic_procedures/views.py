@@ -1,3 +1,4 @@
+from ast import Try
 from asyncio.log import logger
 import json
 from itertools import chain
@@ -21,6 +22,9 @@ from django.utils import timezone
 from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
+# from applications.academic_information.models import (Calendar, Student,Curriculum_Instructor,
+#                                                       Student_attendance)
+# from applications.programme_curriculum.models import Curriculum,Programme,Discipline,Semester,Course,Batch,CourseInstructor,CourseSlot
                                                       
 from applications.central_mess.models import(Monthly_bill, Payments)
 
@@ -2008,11 +2012,11 @@ def acad_proced_global_context():
 
     submitted_course_list = []
     obj_list = MarkSubmissionCheck.objects.all().select_related().filter(verified= False,submitted = True)
-    for i in obj_list:
-        if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
-            submitted_course_list.append(i.curr_id)
-        else:
-            submitted_course_list.append(i.curr_id)
+    # for i in obj_list:
+    #     if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
+    #         submitted_course_list.append(i.curr_id)
+    #     else:
+    #         submitted_course_list.append(i.curr_id)
             #continue
     # submitted_course_list = SemesterMarks.objects.all().filter(curr_id__in = submitted_course_list)
 
@@ -2868,17 +2872,11 @@ def get_spi(course_list,grade_list):
     spi = total/credits
     return spi
 
-
-
-
-
 def manual_grade_submission(request):
     if request.method == 'POST' and request.FILES:
-
         manual_grade_xsl=request.FILES['manual_grade_xsl']
         excel = xlrd.open_workbook(file_contents=manual_grade_xsl.read())
         sheet=excel.sheet_by_index(0)
-
         course_code = str(sheet.cell(0,1).value)
         course_name = str(sheet.cell(1,1).value)
         instructor = str(sheet.cell(2,1).value)
@@ -2887,31 +2885,47 @@ def manual_grade_submission(request):
         branch = str(sheet.cell(5,1).value)
         programme = str(sheet.cell(6,1).value)
         credits = int(sheet.cell(7,1).value)
-       
+        # print(course_code)
+        # print(course_name)
+        # print(instructor)
+        # print(batch)
+        # print(sem)
+        # print(branch)
+        # print(programme)
+        # print(credits)
+        # print(credits)
+        curriculum_obj = Courses.objects.all().select_related().filter(code = course_code).first()
+        # print(curriculum_obj)
 
-        curriculum_obj = Curriculum.objects.all().select_related().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
-        
-        if not curriculum_obj:
-            course_obj = Course.objects.all().filter(course_name = course_name).first()
-            if not course_obj :
-                course_obj_create = Course(
-                    course_name = course_name,
-                    course_details = instructor)
-                course_obj_create.save()
 
-            course_obj = Course.objects.all().filter(course_name = course_name).first()
-            curriculum_obj_create = Curriculum(
-                course_code = course_code,
-                course_id = course_obj,
-                credits = credits,
-                course_type = 'Professional Core',
-                programme = programme,
-                branch = branch,
-                batch = batch,
-                sem = sem,
-                floated = True)
-            curriculum_obj_create.save()
-        curriculum_obj = Curriculum.objects.all().select_related().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
+
+
+        # if not curriculum_obj:
+        #     course_obj = Course.objects.all().filter(course_name = course_name).first()
+        #     if not course_obj :
+        #         course_obj_create = Course(
+        #             course_name = course_name,
+        #             course_details = instructor)
+        #         course_obj_create.save()
+
+        #     course_obj = Course.objects.all().filter(course_name = course_name).first()
+        #     curriculum_obj_create = Curriculum(
+        #         course_code = course_code,
+        #         course_id = course_obj,
+        #         credits = credits,
+        #         course_type = 'Professional Core',
+        #         programme = programme,
+        #         branch = branch,
+        #         batch = batch,
+        #         sem = sem,
+        #         floated = True)
+        #     curriculum_obj_create.save()
+        # curriculum_obj = Curriculum.objects.all().select_related().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
+
+
+
+
+
 
         marks_check_obj = MarkSubmissionCheck.objects.select_related().all().filter(curr_id = curriculum_obj).first()
         if marks_check_obj :
@@ -2925,21 +2939,45 @@ def manual_grade_submission(request):
                 verified = False,
                 announced = False)
             marks_check_obj_create.save()
+        # print("I am here")
+        # print(marks_check_obj)
 
-        for i in range(11,sheet.nrows):
-            roll = str(int(sheet.cell(i,0).value))
-            q1 = float(sheet.cell(i,2).value)
-            mid = float(sheet.cell(i,3).value)
-            q2 = float(sheet.cell(i,4).value)
+
+
+
+
+
+        for i in range(12,sheet.nrows):
+
+            roll = str(str(sheet.cell(i,0).value))
+            q1 = float(sheet.cell(i,1).value)
+            mid = float(sheet.cell(i,2).value)
+            q2 = float(sheet.cell(i,3).value)
             end = float(sheet.cell(i,5).value)
-            others = float(sheet.cell(i,6).value)
-            grade = str(sheet.cell(i,8).value).strip()
+            others = float(sheet.cell(i,4).value)
+            grade = str(sheet.cell(i,6).value).strip()
+
+
+
+
+
+            # print(roll, q1, mid, q2, end , others, grade)
             user = get_object_or_404(User, username = roll)
+
             extrainfo = ExtraInfo.objects.select_related('user','department').get(user = user)
+
+
             dep_objects = DepartmentInfo.objects.get(name = str(branch))
+
+
             extrainfo.department = dep_objects
             extrainfo.save()
+
+
             extrainfo = ExtraInfo.objects.select_related('user','department').get(user = user)
+
+
+
             student_obj = Student.objects.select_related('id','id__user','id__department').get(id = extrainfo)
 
 
@@ -2948,21 +2986,36 @@ def manual_grade_submission(request):
             student_obj.category = 'GEN'
             student_obj.save()
 
-            student_obj = Student.objects.select_related('id','id__user','id__department').get(id = extrainfo)
-            register_obj = Register.objects.all().filter(curr_id = curriculum_obj, student_id = student_obj).first()
-            if not register_obj:
-                register_obj_create = Register(
-                    curr_id = curriculum_obj,
-                    year = batch,
-                    student_id = student_obj,
-                    semester = sem)
-                register_obj_create.save()
-            register_obj = Register.objects.all().filter(curr_id = curriculum_obj, student_id = student_obj).first()
 
-            st_existing = SemesterMarks.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = student_obj).filter(curr_id = curriculum_obj).first()
+
+            student_obj = Student.objects.select_related('id','id__user','id__department').get(id = extrainfo)
+
+            register_obj = Register.objects.all().filter(student_id = student_obj).first()
+
+
+            # curriculum_obj = Courses.objects.all().select_related().filter(code = course_code).first()
+            # if not register_obj:
+            #     register_obj_create = Register(
+            #         curr_id = curriculum_obj,
+            #         year = batch,
+            #         student_id = student_obj,
+            #         semester = sem)
+            #     register_obj_create.save()
+            # register_obj = Register.objects.all().filter(curr_id = curriculum_obj, student_id = student_obj).first()
+
+
+
+            st_existing = SemesterMarks.objects.all().select_related('curr_id','student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = student_obj).filter(curr_id = curriculum_obj).first()
             if st_existing :
-                st_existing.grade = str(sheet.cell(i,8).value)
+                st_existing.grade = str(sheet.cell(i,6).value)
+                st_existing.q1=q1
+                st_existing.mid_term=mid
+                st_existing.q2=q2
+                st_existing.end_term=end
+                st_existing.other=others
                 st_existing.save()
+                print(st_existing)
+                print(st_existing.q1)
             else :
                 p = SemesterMarks(
                         student_id = student_obj,
@@ -2975,6 +3028,8 @@ def manual_grade_submission(request):
                         curr_id = curriculum_obj
                      )
                 p.save()
+                print(p.q1)
+                print(p)
 
     return HttpResponseRedirect('/academic-procedures/')
 #
