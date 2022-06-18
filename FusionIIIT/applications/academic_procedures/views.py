@@ -22,10 +22,7 @@ from django.utils import timezone
 from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
-# from applications.academic_information.models import (Calendar, Student,Curriculum_Instructor,
-#                                                       Student_attendance)
-# from applications.programme_curriculum.models import Curriculum,Programme,Discipline,Semester,Course,Batch,CourseInstructor,CourseSlot
-                                                      
+                                                   
 from applications.central_mess.models import(Monthly_bill, Payments)
 
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
@@ -2879,11 +2876,8 @@ def get_spi(course_list,grade_list):
 def manual_grade_submission(request):
     if request.method == 'POST' and request.FILES:
         manual_grade_xsl=request.FILES['manual_grade_xsl']
-        
         excel = xlrd.open_workbook(file_contents=manual_grade_xsl.read())
-        # print("Hello here")
         sheet=excel.sheet_by_index(0)
-
         course_code = str(sheet.cell(0,1).value)
         course_name = str(sheet.cell(1,1).value)
         instructor = str(sheet.cell(2,1).value)
@@ -2982,6 +2976,7 @@ def manual_grade_submission(request):
                         curr_id = curriculum_obj
                      )
                 p.save()
+            print(st_existing,q1,mid,q2,end,others,grade)
     return HttpResponseRedirect('/academic-procedures/')
 
 
