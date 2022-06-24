@@ -376,7 +376,7 @@ class SearchStudentRecord(forms.Form):
     """
     name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100, 'class': 'field'}),
                            label="name", required=False)
-    rollno = forms.IntegerField(label="rollno", widget=forms.NumberInput(attrs={'min': 0}), required=False)
+    rollno = forms.CharField(label="rollno", widget=forms.TextInput(attrs={'min': 0}), required=False)
     programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px",
                                                                                 'onchange': "changeDeptForSearch()",
@@ -410,7 +410,7 @@ class SendInvite(forms.Form):
             company - name of company
     """
     company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
-    rollno = forms.IntegerField(label="rollno", widget=forms.NumberInput(attrs={'min': 0}), required=False)
+    rollno = forms.CharField(label="rollno", widget=forms.TextInput(attrs={'min': 0}), required=False)
     programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px",
                                                                                 'onchange': "changeDeptForSend()",
@@ -507,7 +507,7 @@ class SearchPlacementRecord(forms.Form):
                               label="stuname", required=False)
     year = forms.TypedChoiceField(coerce=int, choices=year_choices, initial=current_year, label="year", required=False, widget=forms.NumberInput(attrs={'id': 'add_placement_year'}))
     ctc = forms.CharField(label="ctc", required=False, widget=forms.NumberInput(attrs={ 'min':0, 'id': 'add_placement_ctc', 'step': 0.25}))
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control',
                                                             'id': 'add_placement_roll'}),
@@ -534,7 +534,7 @@ class SearchPbiRecord(forms.Form):
                               label="stuname", required=False)
     year = forms.TypedChoiceField(coerce=int, choices=year_choices, initial=current_year, label="year", required=False, widget=forms.NumberInput(attrs={'id': 'add_pbi_year'}))
     ctc = forms.DecimalField(label="ctc", required=False, widget=forms.NumberInput(attrs={ 'min':0, 'id': 'add_pbi_ctc', 'step': 0.25}))
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control',
                                                             'id': 'add_pbi_roll'}),
@@ -556,7 +556,7 @@ class SearchHigherRecord(forms.Form):
             year -year of clearing the test
             uname - name of the university
     """
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0, 'max_length': 10,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0, 'max_length': 10,
                                                           'class': 'form-control',
                                                           'id': 'add_higher_roll'}),
                            label="roll", required=False)
@@ -589,7 +589,7 @@ class ManagePlacementRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                               label="stuname", required=False)
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
                             label="roll", required=False)
@@ -611,7 +611,7 @@ class ManagePbiRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="stuname", required=False)
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
                             label="roll", required=False)
@@ -634,7 +634,7 @@ class ManageHigherRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="stuname", required=False)
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                     'max_length': 10,
                                                     'class': 'form-control'}),
                             label="roll", required=False)
