@@ -620,7 +620,7 @@ def caretaker(request):
 
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)  
-        a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
+        a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=888)#Hardcoded
         b = a.area
         history = []
         historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location=b).order_by('-id')
@@ -864,7 +864,7 @@ def supervisor(request):
         #print(a)
         # if(len(a)==0) :
         #     return render('../dashboard/')
-        a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=y)
+        a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=5019)#HARDCODE
         all_caretaker = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
         numtemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location =  area).filter(status = 0).count()
