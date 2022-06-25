@@ -620,7 +620,10 @@ def caretaker(request):
 
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)  
-        a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
+        try:
+            a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id = y)
+        except :
+            return HttpResponseRedirect('/complaint/user/')
         b = a.area
         history = []
         historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location=b).order_by('-id')
@@ -859,7 +862,7 @@ def supervisor(request):
         try:
             a = get_object_or_404(Supervisor, sup_id=y)
         except :
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/complaint/user/')
 
         #print(a)
         # if(len(a)==0) :
