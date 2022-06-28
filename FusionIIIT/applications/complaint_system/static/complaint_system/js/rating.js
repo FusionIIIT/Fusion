@@ -29,6 +29,10 @@ $(document).ready(function(){
         }
         else
         {
+            alert("Complaint successfully lodged");
+            return;
+            //OLD CODE, doesn't work
+            /*
             event.preventDefault();
             $.ajax({
                 type : 'POST',
@@ -42,19 +46,14 @@ $(document).ready(function(){
 
                 },
                 success : function (data){
-
-                    // alert("Complaint successfully lodged");
-                    setTimeout(function() {
-                window.location.replace('http://localhost:8000/complaint/user');
-            }, 1500);
-
-                    
+                    alert("Complaint successfully lodged");
+                    setTimeout(function() {window.location.replace('http://localhost:8000/complaint/user');}, 1500);
                 },
                 error : function (data,err){
                     alert('Complaint successfully lodged ... ');
-
                 }
             });
+            */
        }
     };
 
@@ -244,29 +243,20 @@ function redirectsubmit()
 }
 
 
-function resolvependingsubmit()
+function resolvependingsubmit(event)
 {
-  
    var yesorno = $('input[name="yesorno"]').val();
-  
    if (yesorno == "")
    {
-    alert("Please fill all the details");
-event.preventDefault();
+    alert("Please fill the details");
+    return;
     }
     else
    {
-            alert("Thank You for resolving the complaint");
-            return;
+    alert('Thankyou for resolving this complaint');
+    return;
 }
 }
-
-
-
-
-
-
-
 
 
 ;(function ($, window, document, undefined) {

@@ -64,7 +64,7 @@ Resolve Pending
             </div>
             <div class="ui active tab" data-tab="resolvependingcomplaint">
                 <div class="ui vertical segment">
-                    <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
+                    <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data"
                           action=".">
                         {% csrf_token %}
                         <div class="ui header">
@@ -110,8 +110,7 @@ Resolve Pending
                         <div class="fields">
                             <div class="field">
                                 Did The Assigned Worker Resolved The Issue?</br>
-                                <b>If You Say No, The status of the complaint will automatically be set to
-                                    "Declined"</b>></br></br>
+                                <b>If You Say No, The status of the complaint will automatically be set to "Declined"</b></br></br>
                                 <div class="ten field">
                                     <div class="ui selection dropdown">
                                         <input type="hidden" name="yesorno">
@@ -120,18 +119,23 @@ Resolve Pending
                                         <div class="menu">
                                             <div class="item" data-value="Yes">Yes</div>
                                             <div class="item" data-value="No">No</div>
-
                                         </div>
                                     </div>
                                     <br>
                                 </div>
-                                <b>
-                                    Any Comments (Optional)
-                                    </b>
+                                <br>
+                                <b>Any Comments (Optional)</b>
                                     <div>
                                         <input name="comment" >
                                     </div>
+                                <br>
+                                <div class = "ten field">
+                                    <label for="file">Attach resolve proof ( PDF, JPEG, PNG, JPG )</label>
+                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                                </div> 
                             </div>
+
+
                         </div>
                         <a href="javascript:history.go(-1)">
                             <button class="ui large primary button right floated" type="button" name="back">
