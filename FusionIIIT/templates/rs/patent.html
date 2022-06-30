@@ -73,7 +73,9 @@
                                                               padding-right: 2.5%;
                                                               padding-top: 1%;
                                                               padding-bottom: 1.5%;
-                                                              margin: auto;"
+                                                              margin: auto;
+                                                              table-layout:fixed;
+                                                              width:100%;"
                                                               >
                         <thead>
                         <tr>
@@ -104,10 +106,10 @@
                                 {{patent.application_id}}
                             </td>
                             <td>
-                            <a href="{{patent.ipd_form_file}}">{{patent.ipd_form}}</a>
+                            <a style="display:block; width:100%; height:100%; text-align:center" href="{{patent.ipd_form_file}}">IPD_{{patent.application_id}}.pdf</a>
                             </td>
                             <td>
-                                <a href="{{patent.project_details_file}}">{{patent.project_details}}</a>
+                                <a style="display:block; width:100%; height:100%; text-align:center" href="{{patent.project_details_file}}">Patent_{{patent.application_id}}.pdf</a>
                                 </td>
                             <td>
                                 {{patent.status}}
