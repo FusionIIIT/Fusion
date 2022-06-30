@@ -57,7 +57,7 @@ class Constants:
         ('CSE', 'CSE'),
         ('ME','ME'),
         ('ECE','ECE'),
-        ('sm','sm'),
+        ('SM','SM'),
     )
 
     BDES_DEP = (
