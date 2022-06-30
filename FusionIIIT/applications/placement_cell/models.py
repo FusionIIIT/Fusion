@@ -1,6 +1,6 @@
 # imports
 import datetime
-
+from django import forms
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -56,6 +56,7 @@ class Constants:
         ('CSE', 'CSE'),
         ('ME','ME'),
         ('ECE','ECE'),
+        ('SM','SM'),
     )
 
     BDES_DEP = (
@@ -135,7 +136,7 @@ class Education(models.Model):
         k1 = stime.hour
         k2 = stime.minute
         k3 = stime.second
-        x = time(k1, k2, k3)
+        x = stime(k1, k2, k3)
         date = datetime.datetime.combine(sdate, x)
         edate = self.cleaned_data.get("enddate")
         etime = self.cleaned_data.get("endtime")
