@@ -22,6 +22,7 @@ $(document).ready(function(){
         var complaint_type =  $('input[name="complaint_type"]').val() ;
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
+        console.log(myfile);
         if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
         {
             alert("Please fill all the details!");
@@ -29,10 +30,6 @@ $(document).ready(function(){
         }
         else
         {
-            alert("Complaint successfully lodged");
-            return;
-            //OLD CODE, doesn't work
-            /*
             event.preventDefault();
             $.ajax({
                 type : 'POST',
@@ -53,7 +50,7 @@ $(document).ready(function(){
                     alert('Complaint successfully lodged ... ');
                 }
             });
-            */
+
        }
     };
 
@@ -246,6 +243,8 @@ function redirectsubmit()
 function resolvependingsubmit(event)
 {
    var yesorno = $('input[name="yesorno"]').val();
+   var comment = $('input[name="comment"]').val();
+   var myfile = $('input[name="myfile"]').val();
    if (yesorno == "")
    {
     alert("Please fill the details");
@@ -254,7 +253,24 @@ function resolvependingsubmit(event)
     else
    {
     alert('Thankyou for resolving this complaint');
-    return;
+    event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'yesorno' : yesorno,
+                    'comment' : comment,
+                    'myfile' : myfile,
+                },
+                success : function (data){
+                    alert("Thankyou for resolving this complaint");
+                    setTimeout(function() {window.location.replace('http://localhost:8000/complaint/caretaker/');}, 1500);
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+                }
+            });
+
 }
 }
 

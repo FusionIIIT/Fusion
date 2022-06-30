@@ -921,32 +921,24 @@ def resolvepending(request, cid):
     thiscomplaint = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=cid)
     if request.method == 'POST':
         print('RUN!!!!')
+        complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=cid)
         newstatus = request.POST.get('yesorno','')
         comment = request.POST.get('comment')
         resolveimage = request.FILES.get('myfile')
-        #Should technically pass directly resolve image, but some naming convention changes file names on upload, transformed is to take care of it (needs more cases)
-        transformed = resolveimage.name.replace(" ","_")
-        transformed = transformed.replace("(","")
-        transformed = transformed.replace(")","")
         intstatus = 0
         if newstatus == 'Yes':
             intstatus = 2
         else:
             intstatus = 3
-        if newstatus !="":
-            StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=cid).\
-            update(status=intstatus)
-            StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=cid).\
-            update(comment=comment)
-            StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=cid).\
-            update(upload_resolved=transformed)
-            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=cid)
-            student=0
-            message = "Congrats! Your complaint has been resolved"
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
-            return HttpResponseRedirect("/complaint/caretaker/")
-        else:
-            return render(request,"complaintModule/resolve_pending.html",{"a" : a,"thiscomplaint" : thiscomplaint})
+        complainer_details.status=intstatus
+        complainer_details.comment=comment
+        complainer_details.upload_resolved=resolveimage
+        complainer_details.save()
+        # instead of update i.e. update(status=intstatus,comment=comment,upload_resolved=resolveimage), saving changes to the object so it can save the image as well
+        student=0
+        message = "Congrats! Your complaint has been resolved"
+        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
+        return HttpResponseRedirect("/complaint/caretaker/")
     else:
         # complainer_details = StudentComplain.objects.get(id=cid)
         # complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert')
@@ -1038,6 +1030,9 @@ def detail2(request, detailcomp_id1):
         num = 1
     if detail2.upload_resolved != "":
         num2 = 1
+        print('IN DETAILS')
+        print(detail2.upload_resolved.path)
+    print(detail2.comment)
     temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).first()                                                               
     comp_id=temp.id 
     return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"num2":num2,"worker_name":worker_name,"wid":worker_id})
