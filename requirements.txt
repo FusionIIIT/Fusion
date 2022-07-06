@@ -40,7 +40,7 @@ ipython-genutils==0.2.0
 jsonfield==3.1.0
 jsonschema==3.2.0
 kombu==5.0.2
-lxml==4.8.0
+lxml==4.9.1
 markdown2==2.4.2
 numpy==1.22.3
 oauthlib==3.1.0
