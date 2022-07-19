@@ -27,7 +27,7 @@ $(document).ready(function(){
         var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
         if(size>200)
         {
-            alert("The size of the files is "+size+" KB "+"which is greator than 200 KB");
+            alert("File size should be less than 200 KB requied");
             window.location.reload();
             return;
         }
@@ -257,7 +257,7 @@ function resolvependingsubmit(event)
     var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
     if(size>200)
     {
-        alert("The size of the files is "+size+" KB "+"which is greator than 200 KB");
+        alert("File size should be less than 200 KB requied");
         window.location.reload();
         return;
     }
