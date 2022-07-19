@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
-from notifications.models import Notification
+#from notification.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers
 from notification.views import  complaint_system_notif
 #function for reassign to another worker
@@ -925,6 +925,8 @@ def resolvepending(request, cid):
         newstatus = request.POST.get('yesorno','')
         comment = request.POST.get('comment')
         resolveimage = request.FILES.get('myfile')
+        if(request.FILES.get('myfile', False) and request.FILES['myfile'].size>200000):
+            return HttpResponseRedirect("/complaint/caretaker/pending/"+cid+"/")
         intstatus = 0
         if newstatus == 'Yes':
             intstatus = 2
@@ -934,6 +936,8 @@ def resolvepending(request, cid):
         complainer_details.comment=comment
         complainer_details.upload_resolved=resolveimage
         complainer_details.save()
+        print('OBJECT SAVED')
+        print(newstatus)
         # instead of update i.e. update(status=intstatus,comment=comment,upload_resolved=resolveimage), saving changes to the object so it can save the image as well
         student=0
         message = "Congrats! Your complaint has been resolved"

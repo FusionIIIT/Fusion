@@ -109,18 +109,14 @@ Resolve Pending
                         </div>
                         <div class="fields">
                             <div class="field">
-                                Did The Assigned Worker Resolved The Issue?</br>
+                                Did The Assigned Worker Resolved The Issue?<i class="small red asterisk icon"></i></br>
                                 <b>If You Say No, The status of the complaint will automatically be set to "Declined"</b></br></br>
                                 <div class="ten field">
-                                    <div class="ui selection dropdown">
-                                        <input type="hidden" name="yesorno">
-                                        <i class="dropdown icon"></i>
-                                        <div class="default text">Is The Issue Resolved?</div>
-                                        <div class="menu">
-                                            <div class="item" data-value="Yes">Yes</div>
-                                            <div class="item" data-value="No">No</div>
-                                        </div>
-                                    </div>
+                                        <select required name="yesorno">
+                                                <option selected disabled value="">Is the issue resolved?</option>
+                                                <option data-value="Yes" value="Yes">Yes</option>
+                                                <option data-value="No" value="No">No</option>
+                                        </select>
                                     <br>
                                 </div>
                                 <br>
@@ -130,7 +126,7 @@ Resolve Pending
                                     </div>
                                 <br>
                                 <div class = "ten field">
-                                    <label for="file">Attach resolve proof ( PDF, JPEG, PNG, JPG )</label>
+                                    <label for="file">Attach resolve proof ( PDF, JPEG, PNG, JPG )(Optional)</label>
                                     <input type="file" id="file1" name="myfile" accept=".pdf, .jpg, .jpeg, .png" max-size="200">
                                 </div> 
                             </div>

@@ -17,6 +17,9 @@ $(document).ready(function(){
 
  function sub(event)
         {
+          var date = new Date();
+          console.log(date.toUTCString());
+        console.log('HIT');
         var specific_location= $('input[name="specific_location"]').val();
         var Location = $('input[name="Location"]').val();
         var complaint_type =  $('input[name="complaint_type"]').val() ;
@@ -25,6 +28,8 @@ $(document).ready(function(){
         console.log(myfile);
         var fileUpload = document.getElementById("file");
         var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
+        
+        
         if(size>200)
         {
             alert("File size should be less than 200 KB requied");
@@ -259,9 +264,9 @@ function resolvependingsubmit(event)
     {
         alert("File size should be less than 200 KB requied");
         window.location.reload();
-        return;
+        return 2;
     }
-   if (yesorno == "")
+   if (yesorno === "")
    {
     alert("Please fill the details");
     return;
