@@ -1008,7 +1008,7 @@ def feedback(request):
         for feed in Feedback.objects.all():
             rating = rating + feed.rating
         if Feedback.objects.all().count() > 0:
-            rating = rating/Feedback.objects.all().count()
+            rating = round(rating/Feedback.objects.all().count(),1)
         context = {
             'form': form,
             "feedback": feedback,
@@ -1022,7 +1022,7 @@ def feedback(request):
     for feed in Feedback.objects.all():
         rating = rating + feed.rating
     if Feedback.objects.all().count() > 0:
-        rating = rating/Feedback.objects.all().count()
+        rating = round(rating/Feedback.objects.all().count(),1)
     try:
         feedback = Feedback.objects.select_related('user').get(user=request.user)
         form = WebFeedbackForm(instance=feedback)
