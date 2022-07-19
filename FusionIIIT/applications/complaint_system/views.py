@@ -124,7 +124,10 @@ def assign_worker(request, comp_id1):
         if type == 'assign':
             complaint_finish = request.POST.get('complaint_finish', '')
             worker_id = request.POST.get('assign_worker', '')
-            w = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=worker_id)
+            if(worker_id==""):                
+                return HttpResponseRedirect("/complaint/caretaker/"+comp_id1+"/")
+            else:
+                w = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=worker_id)
             StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').select_for_update().filter(id=comp_id1).\
                 update(worker_id=w, status=1)
             complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=comp_id1)
@@ -161,7 +164,7 @@ def assign_worker(request, comp_id1):
             temp = detail.location
             try:
                 #care = Caretaker.objects.filter(area=temp).first()
-                if Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a).count() == 0:
+                if Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a).count() <= 0:
                     flag = 'no_worker'
                 else:
                     workertemp1 = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
@@ -172,11 +175,12 @@ def assign_worker(request, comp_id1):
                         # if j%2 != 0:
                         #     worker.append(i)
                         # j = j + 1
+                    if len(worker) == 0:
+                        flag = 'no_worker'
 
 
             except Caretaker.DoesNotExist:
                 flag = 'no_worker'
-
         except StudentComplain.DoesNotExist:
             return HttpResponse("<H1>Not a valid complaint </H1>")
         return render(request, "complaintModule/assignworker.html",

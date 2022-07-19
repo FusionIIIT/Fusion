@@ -101,14 +101,18 @@ function addwork(event) {
     if (complaint_type == "" || name == "" || str_phone_no == "" || age == "")
     {
       alert('Please fill all the details');
+      window.location.replace();
       return;
     }
     else if(intpn<1999999999){
       alert('invalid phone number!');
+      window.location.replace();
+      return;
     }
 
     else if (str_phone_no.length != 10){
         alert('Oops! The Phone Number Should Be Of 10 Digits');
+        window.location.replace();
         return;
     }
 /*
@@ -119,6 +123,7 @@ function addwork(event) {
 
    else if (intage < 20 || intage > 50) {
         alert("Oops! Age of the worker should be between 20 and 50.");
+        window.location.replace();
         return;
     }
 
@@ -181,11 +186,11 @@ function assignworkersubmit()
 {
 
    var assign_worker = $('input[name="assign_worker"]').val();
-  
+   console.log(assign_worker);
    if (assign_worker == "")
    {
     alert("Please fill all the details");
-   
+    return;
    }
    else
    {

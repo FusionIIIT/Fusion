@@ -134,7 +134,7 @@ Complaint
                                     {% if flag == 'no_worker' %}
                                     <B>NO WORKER PRESENT AT THE PLACE</B>
                                     {% else %}
-                                    <select name="assign_worker">
+                                    <select name="assign_worker" class="x">
                                         {% for i in worker %}
                                         <option value="{{ i.id }}">{{ i.name }} ({{ i.worker_type }})</option>
                                         {% endfor %}
