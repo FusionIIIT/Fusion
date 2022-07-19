@@ -23,6 +23,14 @@ $(document).ready(function(){
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
         console.log(myfile);
+        var fileUpload = document.getElementById("file");
+        var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
+        if(size>200)
+        {
+            alert("The size of the files is "+size+" KB "+"which is greator than 200 KB");
+            window.location.reload();
+            return;
+        }
         if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
         {
             alert("Please fill all the details!");
@@ -245,6 +253,14 @@ function resolvependingsubmit(event)
    var yesorno = $('input[name="yesorno"]').val();
    var comment = $('input[name="comment"]').val();
    var myfile = $('input[name="myfile"]').val();
+   var fileUpload = document.getElementById("file1");
+    var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
+    if(size>200)
+    {
+        alert("The size of the files is "+size+" KB "+"which is greator than 200 KB");
+        window.location.reload();
+        return;
+    }
    if (yesorno == "")
    {
     alert("Please fill the details");

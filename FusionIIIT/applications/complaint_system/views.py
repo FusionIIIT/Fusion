@@ -1029,9 +1029,13 @@ def detail2(request, detailcomp_id1):
     if detail2.upload_complaint != "":
         num = 1
     if detail2.upload_resolved != "":
-        num2 = 1
         print('IN DETAILS')
-        print(detail2.upload_resolved.path)
+        try:
+            print(detail2.upload_resolved.path)
+            num2 = 1
+        except:
+            print("")
+            num2 = 0
     print(detail2.comment)
     temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).first()                                                               
     comp_id=temp.id 
