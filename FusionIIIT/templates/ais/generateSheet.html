@@ -46,7 +46,16 @@
         {% csrf_token %}
         <div class="field">
             <label>Batch</label>
-            <input type="number" id="batch" name="batch" required>
+            <div class="ui fluid search selection dropdown">
+              <input type="hidden" id="batch" name="batch" required="true">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Batch from list</div>
+              <div class="menu">
+              {% for i in batch_grade_data.batch_grade_data %}
+                <div class="item" data-value="{{i.batch_list_year}}">{{i.batch_list_year}}</div>
+              {% endfor %}
+            </div>
+          </div>
         </div>
 
         <div class="field">
