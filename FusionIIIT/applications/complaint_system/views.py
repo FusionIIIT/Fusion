@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
-#from notification.models import Notification
+from notifications.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers
 from notification.views import  complaint_system_notif
 #function for reassign to another worker
