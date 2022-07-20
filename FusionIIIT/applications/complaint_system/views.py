@@ -285,6 +285,7 @@ def check(request):
         print(len(temp))
         print('----------------------------')
         print(b.user_type)
+        print(b.id)
         print('----------------------------')
         print('----------------------------')
         print('----------------------------')
@@ -295,7 +296,7 @@ def check(request):
         elif b.user_type == 'faculty':
             return HttpResponseRedirect('/complaint/supervisor/')
         else:
-            return HttpResponse("<h1>wrong user credentials</h1>")
+            return HttpResponseRedirect('/complaint/user/')
     else:
         return HttpResponseRedirect('/')
 
@@ -628,7 +629,10 @@ def caretaker(request):
 
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)  
-        a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
+        try:
+            a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
+        except:
+            return HttpResponseRedirect('/complaint/user/')
         b = a.area
         history = []
         historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location=b).order_by('-id')
@@ -868,12 +872,12 @@ def supervisor(request):
         try:
             a = get_object_or_404(Supervisor, sup_id=y)
         except :
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/complaint/user/')
 
         #print(a)
         # if(len(a)==0) :
         #     return render('../dashboard/')
-        a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=a)
+        a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=y)
         all_caretaker = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
         numtemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location =  area).filter(status = 0).count()
