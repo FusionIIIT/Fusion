@@ -10,6 +10,7 @@
 
 
 <center><b>Final Registration</b></center>
+
 <div class="ui vertical segment">
     {% if curr_sem.semester_no != 8 %}
     {% if frd %}
@@ -101,10 +102,10 @@
 
 
                 <div class="ui divider"></div>
-
+ 
                 <div class="three fields" style="width: 100%">
                     <div class="field" style="width: 30%; margin-right: 5px">
-                        <select class="ui dropdown" name="mode" required="True">
+                        <select class="ui dropdown" name="mode" id="mode" required="True">
                             <option value="">Fee Payment Mode</option>
                             {% for i in fee_payment_mode_list %}
                             <option value="{{ i }}">{{i}}</option>
@@ -112,34 +113,70 @@
                         </select>
                     </div>
                     <div class="field" style="width: 35%;margin-left: 5px">
-                        <input placeholder="challan NO. / transaction ID" name='transaction_id' type="text"
+                        <input placeholder="challan NO. / transaction ID" id="transaction_id" name='transaction_id' type="text"
                             required="True"> <br>
                     </div>
                     <div class="field" style="width: 25%;margin-left: 5px">
-                        <input type="file" name="fee_receipt" id="fee_receipt" required >
+                        <input type="file" name="fee_receipt" id="fee_receipt" accept=".jpg,.jpeg,.png"  required >
                     </div>
-
+ 
                 </div>
+ 
+                <div class="three fields" style="width: 100%">
+                    <div class="field" style="width: 30%; margin-left: 5px">
+                        <input type="number" name="fee_paid" id="fee_paid" placeholder="Amount Paid" required="True">
+                    </div>
+                    <div class="field" style="width: 35%; margin-left: 5px">
+                        <input type="number" name="actual_fee" id="actual_fee" placeholder="Actual Fee" required="True" value={{actual_fee_values}}> <br>
+                    </div>
+                    <div class="field" style="width: 25%; margin-right: 5px">
+                        <select class="ui dropdown" name="reason">
+                            <option value="">Reason for less/more fee</option>
+                            <option value="Adjustment">Adjustment</option>
+                            <option value="MCM">MCM</option>
+                            <option value="MMVY">MMVY</option>
+                            <option value="SC/ST Scholarship">SC/ST Scholarship</option>
+                            <option value="Other Scholarship">Other Scholarship</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field" style="width: 30%; margin-right: 5px">
+                    <input type="date" name="deposit_date" id="deposit_date" required="True" >
+                </div>
+                
+                <div class="three fields" style="width: 100%">
+                    <div class="field ui checkbox" style="width:50%; margin-right: 5px">
+                        <input id="edu_loan" name='edu_loan' type="checkbox">
+                        <label>Education Loan</label>
+                    </div>
+                </div>
+                <div class="three fields" style="width: 100%">
+                    <div class="field" style="width:50%;">
+                        <input placeholder="UTR Number" id="utr_number" name='utr_number' type="text" disabled> <br>
+                    </div>
+                </div>
+                
+ 
                 {% if final_registered_course|length != 0 %}
                 <div class="extra content">
                     <div class="" style="text-align: center;">
-                        <button class="ui disabled button">Register</button>
+                        <button class="ui primary button">Register</button>
                     </div>
                 </div>
                 {% endif %}
             </div>
         </form>
     </div>
-
-
+ 
+ 
     {% comment %} <form id='payment' action='/academic-procedures/final_registration/'>
         {% csrf_token %}
-
-
-
+ 
+ 
+ 
         <h3>Fee Payment</h3>
-
-
+ 
+ 
         <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_test_p860XxWC2yFrgd"
             data-amount="2500000" data-currency="INR" data-order_id="{{payment.id}}" data-buttontext="Pay with Razorpay"
             data-name="IIITDM Jabalpur" data-description="Test transaction"
@@ -147,7 +184,7 @@
             data-prefill.name="{{ name }}" data-prefill.email="{{ email }}" data-prefill.contact="{{ phone }}"
             data-theme.color="#F37254"></script>
         <input type="hidden" custom="Hidden Element" name="hidden">
-
+ 
     </form> {% endcomment %}
     {% endif %}
     {% else %}
@@ -162,16 +199,16 @@
     {% endif %}
 </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
     $(function () {
@@ -184,10 +221,10 @@
             $('#view_1').show();
         });
         /*$("#final_student_register").submit(function (event) {
-
+ 
             event.preventDefault();
             var friendForm = $(this);
-
+ 
             var posting = $.post(friendForm.attr('action'), friendForm.serialize());
             // if success:
             posting.done(function (data) {
@@ -201,7 +238,7 @@
             });
         });*/
         $("#change_course").submit(function (event) {
-
+ 
             var inp = document.getElementsByClassName("choices");
             var count = 0;
             for (var i = 0; i < inp.length; i++) {
@@ -209,12 +246,12 @@
                     count = count + parseInt(inp[i].getAttribute("data-value2"));
                 }
             }
-
+ 
             event.preventDefault();
             var friendForm = $(this);
-
+ 
             var posting = $.post(friendForm.attr('action'), friendForm.serialize());
-
+ 
             var min = parseInt(document.getElementById("mincr").value);
             if (count <= min) {
                 alert("You Can't Register as Minimum Credits: " + min);
@@ -232,8 +269,53 @@
                     window.location = "/academic-procedures/main/";
                 });
             }
-            
+        });
+        //function to detect value change on mode
+        $("#mode").on("change", function () {
+            if($("#mode")[0].value === "Edu Loan"){
+                //Disable transaction_id field
+                $("#transaction_id")[0].required = false;
+                $("#transaction_id")[0].value = "";
+                $("#transaction_id")[0].disabled = true;
+                //Disable edu_loan checkbox
+                if($("#edu_loan")[0].checked === false){
+                    $("#edu_loan").trigger("click");
+                }  
+                $("#edu_loan")[0].disabled = true;
+            }
+            else {
+                $("#transaction_id")[0].required = true;
+                $("#transaction_id")[0].disabled = false;
+                //Enable edu_loan checkbox
+                $("#edu_loan")[0].disabled = false;
+                if($("#edu_loan")[0].checked === true){
+                    $("#edu_loan").trigger("click");
+                }  
+            }
+        });
+        //function for edu_loan checkbox and related utr_number field
+        $("#edu_loan").on('change',function () {
+            if (this.checked) {
+                $("#utr_number")[0].disabled = false;
+                $("#utr_number")[0].required = true;
+            } else {
+                $("#utr_number")[0].disabled = true;
+                $("#utr_number")[0].value = "";
+            }
+        });
+        //function to check file size on upload
+        $("#fee_receipt").on("change", function () {
+            const file = this.files[0];
+            const fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+            if (fileExt != "jpg" && fileExt != "jpeg" && fileExt != "png") {
+                alert("Supported file types are *.jpg/*.jpeg/*.png");
+                $("#fee_receipt")[0].value = "";
+            }
+            else if (file.size > 512000) {
+                alert("File size is more than 500KB");
+                $("#fee_receipt")[0].value = "";
+            }
         });
     });
-
+ 
 </script>
