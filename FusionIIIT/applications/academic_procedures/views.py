@@ -1,4 +1,5 @@
 from asyncio.log import logger
+import traceback
 from ctypes import Union
 import json
 from itertools import chain
@@ -266,11 +267,31 @@ def academic_procedures_student(request):
         user_branch = get_user_branch(user_details)
 
         batch = obj.batch_id
+
+        #Actual Fee values in final registration form autofill purpose
         actual_fee_values=0
-        if batch.year==2019 or batch.year==2020:
-            actual_fee_values = 73040
-        elif batch.year==2021:
-            actual_fee_values = 83720
+        if phd_flag==True:
+            if batch.year==2015 or batch.year==2016:
+                actual_fee_values=25000
+            elif batch.year==2017:
+                actual_fee_values=27000
+            elif batch.year==2018:
+                actual_fee_values=28700
+            elif batch.year==2019 or batch.year==2020:
+                actual_fee_values=32450
+            elif batch.year==2021:
+                actual_fee_values=39100
+        elif masters_flag==True:
+            if batch.year==2019 or batch.year==2020:
+                actual_fee_values=73750
+            elif batch.year==2021:
+                actual_fee_values=79000
+        elif ug_flag==True:
+            if batch.year==2019 or batch.year==2020:
+                actual_fee_values = 73040
+            elif batch.year==2021:
+                actual_fee_values = 83720
+        
         curr_id = batch.curriculum
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
@@ -1307,7 +1328,7 @@ def pre_registration(request):
                             semester_id = sem_id
                         )
                 registration_check.save()
-                messages.successs(request, "Successfully Registered.")
+                messages.success(request, "Successfully Registered.")
                 return HttpResponseRedirect('/academic-procedures/stu')
             except Exception as e:
                 messages.error(request, "Error in Registration.")
@@ -1390,13 +1411,12 @@ def allot_courses(request):
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
-                #print(">>>>>",roll_no,course_slot_name,course_code,course_name,type(roll_no))s
                 user=User.objects.get(username=roll_no)
                 user_info = ExtraInfo.objects.get(user=user)
                 student = Student.objects.get(id=user_info)
-                course_slot=CourseSlot.objects.get(name=course_slot_name,semester=sem_id)
-                course = Courses.objects.get(code=course_code,name=course_name)
-
+                course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                #print(">>>>>",roll_no,course_slot_name,course_code,course_name)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
                 final_registrations.append(final_registration)
@@ -1411,7 +1431,6 @@ def allot_courses(request):
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
     except Exception as e:
-        print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
         messages.error(request, 'Error: Query does not match. Please check if all the data input is in the correct format.')
         return HttpResponseRedirect('/academic-procedures/main')
         # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
