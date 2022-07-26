@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^acad_person/verifyCourse/', views.verify_course, name='verifyCourse'),
     url(r'^acad_person/addCourse/', views.acad_add_course, name="acad_add_course"),
     url(r'^acad_person/student_list$', views.student_list, name='studentlist'),
+    url(r'^acad_person/course_list$', views.course_list, name='courseList'),
     url(r'^acad_person/$', views.acad_person, name='acad_person'),
     url(r'^acad_person/verifyCourse/drop/$',
         views.dropcourseadmin, name='dropcourseadmin'),
