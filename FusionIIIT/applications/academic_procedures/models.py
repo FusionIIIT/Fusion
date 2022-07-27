@@ -657,7 +657,11 @@ class FeePayments(models.Model):
     mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
     transaction_id = models.CharField(max_length = 40)
     fee_receipt = models.FileField(null=True,upload_to='fee_receipt/')
-    
+    deposit_date = models.DateField(default = datetime.date.today)
+    utr_number = models.CharField(null = True, max_length = 40)
+    fee_paid = models.IntegerField(default=0)
+    reason = models.CharField(null=True, max_length = 20)
+    actual_fee = models.IntegerField(default=0)
     class Meta:
         db_table = 'FeePayments'
 
