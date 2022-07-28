@@ -2199,8 +2199,8 @@ def student_list(request):
                 'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
                     'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
-                    'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt'
-                    ,'student_id__id__user__username').order_by('student_id__id__user')
+                    'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
+                    'student_id__id__user__username').order_by('student_id__id__user')
         else :
             reg_table = []
 
