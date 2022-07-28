@@ -13,7 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Max
+from django.db.models import Max,Value,IntegerField,CharField,F,Sum
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -37,6 +37,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
+from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
 
 
 
@@ -2174,7 +2175,7 @@ def get_batch_branch_data(result_year):
 
 @login_required(login_url='/accounts/login')
 def student_list(request):
-    if(request.POST):
+    if(request.POST and (request.GET["excel_export"] == "false")):
         batch = request.POST["batch"]
 
         year = demo_date.year
@@ -2190,21 +2191,21 @@ def student_list(request):
         branch_option = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
         date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
 
+
         batch_id = Batch.objects.get(id = batch)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
-        if (len(student_obj)!=0):
-            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, #student_id__studentregistrationchecks__final_registration_flag = True
-            ).select_related(
+        if (student_obj):
+            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
                 'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
                     'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
-                    'student_id__category','student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
-                    'student_id__id__user__username').order_by('student_id__id__user')
+                    'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt'
+                    ,'student_id__id__user__username').order_by('student_id__id__user')
         else :
             reg_table = []
- 
+
         html = render_to_string('academic_procedures/student_table.html',{'student': reg_table}, request)
- 
+
         maindict = {'date': date,
                     'query_option1': batch_year_option,
                     'query_option2': branch_option,
@@ -2212,6 +2213,72 @@ def student_list(request):
                     'queryflag': queryflag}
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
+
+    elif(request.POST) and (request.GET["excel_export"] == "true"):
+        batch = request.POST["batch"]
+        year = demo_date.year
+        month = demo_date.month
+        yearr = str(year) + "-" + str(year+1)
+        semflag = 0
+        queryflag = 1
+        if(month >= 7):
+            semflag = 1
+        else:
+            semflag = 2
+        batch_year_option = get_batch_query_detail(month, year)
+        branch_option = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+        date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+
+
+        batch_id = Batch.objects.get(id = batch)
+        student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
+
+        table=[("Admission Year","Semester","Roll Number","Full Name","Program","Discipline",
+            "Specialization","Gender","Category","PWD Status","Mobile Number","Actual Fee","Fee Paid By Student",
+            "Reason for Less or more feeReason for Less or more fee (Adjustement/MCM/MMVY/SC/ST Scholarship/Other Scholarship)",
+            "Date for Fee deposition","Mode","If Loan account enter UTR Number","Upload Fee Receipt path")]
+        
+        if (student_obj):
+
+            table += (student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
+                'student_id','student_id__id','student_id__id__user','student_id__id__department').annotate(
+                    admission_year = F('student_id__batch'),
+                    semester = Sum('student_id__curr_semester_no') + 1,
+                    roll_no = F('student_id__id__user__username'),
+                    full_name = Concat('student_id__id__user__first_name',Value(' '),'student_id__id__user__last_name'),
+                    program = F('student_id__programme'),
+                    discipline = F('student_id__id__department__name'),
+                    specialization = F('student_id__specialization'),
+                    gender = F('student_id__id__sex'),
+                    category = F('student_id__category'),
+                    pwd_status = Value("YES", output_field = CharField()) if F('student_id__pwd_status') == True else Value("NO", output_field = CharField()),
+                    phone_no = F('student_id__id__phone_no'),
+                    date_deposited = Concat(Cast(ExtractDay('deposit_date'), CharField()), Value('/'), Cast(ExtractMonth('deposit_date'), CharField()), Value('/'), Cast(ExtractYear('deposit_date'), CharField()), output_field = CharField()),
+                ).order_by('student_id__id__user__username').values_list(
+                    'admission_year','semester','roll_no',
+                    'full_name','program','discipline',
+                    'specialization','gender','category',
+                    'pwd_status','phone_no','actual_fee',
+                    'fee_paid','reason','date_deposited',
+                    'mode','utr_number','fee_receipt'))
+
+            excel_response = BytesIO()
+
+            final_register_workbook = Workbook(excel_response)
+            final_register_worksheet = final_register_workbook.add_worksheet()
+                
+            for i in range(len(table)):
+                for j in range(len(table[i])):
+                    final_register_worksheet.write(i,j,table[i][j])
+
+            final_register_workbook.close()
+            excel_response.seek(0)
+
+            response = HttpResponse(excel_response.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{batch_id.name}_{batch_id.discipline.acronym}_{batch_id.year}_final_registered.xlsx"'
+            return response
+        else:
+            return HttpResponse(json.dumps({'error' : "No registered students found"}), content_type="application/json")
 
 @login_required(login_url='/accounts/login')
 def course_list(request):

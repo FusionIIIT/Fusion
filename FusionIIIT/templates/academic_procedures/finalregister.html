@@ -105,6 +105,7 @@
  
                 <div class="three fields" style="width: 100%">
                     <div class="field" style="width: 30%; margin-right: 5px">
+                        <label for="mode">Mode of Payment</label>
                         <select class="ui dropdown" name="mode" id="mode" required="True">
                             <option value="">Fee Payment Mode</option>
                             {% for i in fee_payment_mode_list %}
@@ -113,23 +114,28 @@
                         </select>
                     </div>
                     <div class="field" style="width: 35%;margin-left: 5px">
-                        <input placeholder="challan NO. / transaction ID" id="transaction_id" name='transaction_id' type="text"
+                        <label for="transaction_id">Challan No./Transaction ID</label>
+                        <input placeholder="Challan No./Transaction ID" id="transaction_id" name='transaction_id' type="text"
                             required="True"> <br>
                     </div>
                     <div class="field" style="width: 25%;margin-left: 5px">
-                        <input type="file" name="fee_receipt" id="fee_receipt" accept=".jpg,.jpeg,.png"  required >
+                        <label for="fee_receipt">Fee receipt (.pdf)</label>
+                        <input type="file" name="fee_receipt" id="fee_receipt" accept=".pdf" required >
                     </div>
  
                 </div>
  
                 <div class="three fields" style="width: 100%">
                     <div class="field" style="width: 30%; margin-left: 5px">
-                        <input type="number" name="fee_paid" id="fee_paid" placeholder="Amount Paid" required="True">
-                    </div>
-                    <div class="field" style="width: 35%; margin-left: 5px">
+                        <label for="actual_fee">Actual Fee Amount</label>
                         <input type="number" name="actual_fee" id="actual_fee" placeholder="Actual Fee" required="True" value={{actual_fee_values}}> <br>
                     </div>
+                    <div class="field" style="width: 35%; margin-left: 5px">
+                        <label for="fee_paid">Fee Amount Paid</label>
+                        <input type="number" name="fee_paid" id="fee_paid" placeholder="Amount Paid" required="True">
+                    </div>
                     <div class="field" style="width: 25%; margin-right: 5px">
+                        <label for="reason">Reason for Less Fee</label>
                         <select class="ui dropdown" name="reason">
                             <option value="">Reason for less/more fee</option>
                             <option value="Adjustment">Adjustment</option>
@@ -141,13 +147,14 @@
                     </div>
                 </div>
                 <div class="field" style="width: 30%; margin-right: 5px">
+                    <label for="deposit_date">Fee Deposit Date</label>
                     <input type="date" name="deposit_date" id="deposit_date" required="True" >
                 </div>
                 
                 <div class="three fields" style="width: 100%">
                     <div class="field ui checkbox" style="width:50%; margin-right: 5px">
+                        <label for="edu_loan">Education Loan (UTR Number)</label>
                         <input id="edu_loan" name='edu_loan' type="checkbox">
-                        <label>Education Loan</label>
                     </div>
                 </div>
                 <div class="three fields" style="width: 100%">
@@ -307,8 +314,8 @@
         $("#fee_receipt").on("change", function () {
             const file = this.files[0];
             const fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
-            if (fileExt != "jpg" && fileExt != "jpeg" && fileExt != "png") {
-                alert("Supported file types are *.jpg/*.jpeg/*.png");
+            if (fileExt != "pdf") {
+                alert("Supported file type is *.pdf");
                 $("#fee_receipt")[0].value = "";
             }
             else if (file.size > 512000) {
