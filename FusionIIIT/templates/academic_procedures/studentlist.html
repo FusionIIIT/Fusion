@@ -5,7 +5,7 @@
   $(document).on('submit','#query_form',function(e)
     {
         e.preventDefault();
-        var url_ = '/academic-procedures/acad_person/student_list';
+        var url_ = '/academic-procedures/acad_person/student_list?excel_export=false';
         $.ajax({
             type:'POST',
             url: url_,
@@ -28,6 +28,30 @@
             }
         });
     });
+    const fetchExcelSheet = async ()=>{
+        const url = '/academic-procedures/acad_person/student_list?excel_export=true';
+        $("#loading-img").show();
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            body :  new URLSearchParams({
+              'batch' : $('#1').val(),
+              'csrfmiddlewaretoken' : $('input[name=csrfmiddlewaretoken]').val()
+            }),
+        });
+        if(response.ok && response.headers.get('Content-Type')==="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"){
+          const responseBlob = await response.blob()
+          const file = window.URL.createObjectURL(responseBlob);
+          window.location.assign(file);
+        }
+        else {
+          alert("No Registered Students Found");
+        }
+        $("#loading-img").hide();
+    };
 </script>
 
 
@@ -67,10 +91,13 @@
   </table>
   <br>
   <center>
-        <button class="ui secondary button">
-            Fetch
-            </button>
-            <br>
+    <button class="ui secondary button" type="submit">
+      Fetch
+    </button>
+    <button class="ui secondary button" onclick="fetchExcelSheet()" type="button">
+      Fetch Excel Sheet
+    </button>
+    <br>
   </center>
 
 </form>

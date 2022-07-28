@@ -34,7 +34,8 @@ class Constants:
     )
 
     PaymentMode = (
-        ('Online Payment','Online Payment'),
+        ('Axis Easypay','Axis Easypay'),
+        ('Subpaisa','Subpaisa'),
         ('NEFT','NEFT'),
         ('RTGS','RTGS'),
         ('Bank Challan','Bank Challan'),
