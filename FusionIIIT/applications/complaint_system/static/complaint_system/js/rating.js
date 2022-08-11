@@ -10,22 +10,18 @@
 
 
 $(document).ready(function(){
-  console.log("TTTTTTTT");
+  /*console.log("TTTTTTTT");*/
 });
 
 
 
  function sub(event)
         {
-          var date = new Date();
-          console.log(date.toUTCString());
-        console.log('HIT');
         var specific_location= $('input[name="specific_location"]').val();
         var Location = $('input[name="Location"]').val();
         var complaint_type =  $('input[name="complaint_type"]').val() ;
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
-        console.log(myfile);
         var fileUpload = document.getElementById("file");
         var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
         
@@ -186,7 +182,6 @@ function assignworkersubmit()
 {
 
    var assign_worker = $('input[name="assign_worker"]').val();
-   console.log(assign_worker);
    if (assign_worker == "")
    {
     alert("Please fill all the details");
