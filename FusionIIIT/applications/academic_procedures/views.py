@@ -1,4 +1,6 @@
 from asyncio.log import logger
+import traceback
+from ctypes import Union
 import json
 from itertools import chain
 from io import BytesIO
@@ -11,7 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Max
+from django.db.models import Max,Value,IntegerField,CharField,F,Sum
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -35,6 +37,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
+from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
 
 
 
@@ -77,8 +80,7 @@ def academic_procedures(request):
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
     
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-   
-
+    
     if str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
         return HttpResponseRedirect('/academic-procedures/stu/')
@@ -266,6 +268,31 @@ def academic_procedures_student(request):
         user_branch = get_user_branch(user_details)
 
         batch = obj.batch_id
+
+        #Actual Fee values in final registration form autofill purpose
+        actual_fee_values=0
+        if phd_flag==True:
+            if batch.year==2015 or batch.year==2016:
+                actual_fee_values=25000
+            elif batch.year==2017:
+                actual_fee_values=27000
+            elif batch.year==2018:
+                actual_fee_values=28700
+            elif batch.year==2019 or batch.year==2020:
+                actual_fee_values=32450
+            elif batch.year==2021:
+                actual_fee_values=39100
+        elif masters_flag==True:
+            if batch.year==2019 or batch.year==2020:
+                actual_fee_values=73750
+            elif batch.year==2021:
+                actual_fee_values=79000
+        elif ug_flag==True:
+            if batch.year==2019 or batch.year==2020:
+                actual_fee_values = 73040
+            elif batch.year==2021:
+                actual_fee_values = 83720
+        
         curr_id = batch.curriculum
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
@@ -280,8 +307,9 @@ def academic_procedures_student(request):
         cpi = get_cpi(user_details.id)
 
         # branch change flag
-        branchchange_flag=True  # True for testing, to be initialised as False
-        if user_sem==2:
+        # Only First Year B.Tech student should have this option
+        branchchange_flag=False
+        if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
 
         pre_registration_date_flag = get_pre_registration_eligibility(current_date)
@@ -336,13 +364,17 @@ def academic_procedures_student(request):
             pre_registered_course_show = None
 
         try:
-            final_registered_course = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            final_registered_course_show=[]
+            for final_registered_course in final_registered_courses:
+                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
-            drop_courses_options = get_drop_course_options(currently_registered_course)
+            #drop_courses_options = get_drop_course_options(currently_registered_course)
 
         except Exception as e:
-            final_registered_course = None
-            drop_courses_options = None
+            final_registered_courses = None
+            final_registered_course_show = None
+            #drop_courses_options = None
             add_courses_options = None
 
         fee_payment_mode_list = dict(Constants.PaymentMode)
@@ -437,7 +469,9 @@ def academic_procedures_student(request):
                             'currently_registered': currently_registered_course,
                             'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
-                            'final_registered_course' : final_registered_course,
+                            'final_registered_course' : final_registered_courses,
+                            'final_registered_course_show' : final_registered_course_show,
+                            'actual_fee_values' : actual_fee_values,
                             'current_credits' : current_credits,
                             'courses_list': next_sem_branch_course,
                             'fee_payment_mode_list' : fee_payment_mode_list,
@@ -464,7 +498,7 @@ def academic_procedures_student(request):
                            # 'change_branch': change_branch,
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
-                            'drop_courses_options' : drop_courses_options,
+                            #'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
@@ -1295,7 +1329,7 @@ def pre_registration(request):
                             semester_id = sem_id
                         )
                 registration_check.save()
-                messages.successs(request, "Successfully Registered.")
+                messages.success(request, "Successfully Registered.")
                 return HttpResponseRedirect('/academic-procedures/stu')
             except Exception as e:
                 messages.error(request, "Error in Registration.")
@@ -1314,48 +1348,35 @@ def get_student_registrtion_check(obj, sem):
 def final_registration(request):
     if request.method == 'POST':
         if request.POST.get('type_reg') == "register" :
-            #print("------------> request post is ",request.POST)
-            #print("----------- > request file ",request.FILES)
             try:
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
                 current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
                 current_user = Student.objects.all().filter(id=current_user.id).first()
 
                 sem_id = Semester.objects.get(id = request.POST.get('semester'))
-                choice = request.POST.getlist('choice')
-                slot = request.POST.getlist('slot')
-                values_length = 0
-                values_length = len(choice)
 
                 mode = str(request.POST.get('mode'))
                 transaction_id = str(request.POST.get('transaction_id'))
+                deposit_date = request.POST.get('deposit_date')
+                utr_number = str(request.POST.get('utr_number'))
+                fee_paid = request.POST.get('fee_paid')
+                actual_fee = request.POST.get('actual_fee')
+                reason = str(request.POST.get('reason'))
+                if reason=="":
+                    reason=None
                 fee_receipt = request.FILES['fee_receipt']
-                #print("--------- > ",fee_receipt)
 
-                f_reg = []
-                for x in range(values_length):
-                    if choice[x] != '0':
-                        course_id = Courses.objects.get(id = choice[x])
-                        courseslot_id = CourseSlot.objects.get(id = slot[x])
-                        if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
-                            p = FinalRegistration(
-                                course_id = course_id,
-                                semester_id=sem_id,
-                                student_id= current_user,
-                                course_slot_id = courseslot_id,
-                                verified = False,
-                                )                                
-                            f_reg.append(p)
-                        else:
-                            messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
-                            return HttpResponseRedirect('/academic-procedures/main')
-                FinalRegistration.objects.bulk_create(f_reg)
                 obj = FeePayments(
                     student_id = current_user,
                     semester_id = sem_id,
                     mode = mode,
                     transaction_id = transaction_id,
-                    fee_receipt = fee_receipt
+                    fee_receipt = fee_receipt,
+                    deposit_date = deposit_date,
+                    utr_number = utr_number,
+                    fee_paid = fee_paid,
+                    actual_fee = actual_fee,
+                    reason = reason
                     )
                 obj.save()
                 try:
@@ -1363,63 +1384,6 @@ def final_registration(request):
                     messages.info(request, 'Final-Registration Successful')
                 except Exception as e:
                     return HttpResponseRedirect('/academic-procedures/main')
-                return HttpResponseRedirect('/academic-procedures/main')
-            except Exception as e:
-                return HttpResponseRedirect('/academic-procedures/main')
-
-        elif request.POST.get('type_reg') == "change_register" :
-            try:
-                current_user = get_object_or_404(User, username=request.POST.get('user'))
-                current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-                current_user = Student.objects.all().filter(id=current_user.id).first()
-
-                sem_id = Semester.objects.get(id = request.POST.get('semester'))
-
-                FinalRegistration.objects.filter(student_id = current_user, semester_id = sem_id).delete()
-
-                count = request.POST.get('ct')
-                count = int(count)
-
-                mode = str(request.POST.get('mode'))
-                transaction_id = str(request.POST.get('transaction_id'))
-
-                f_reg=[]
-                for i in range(1, count+1):
-                    i = str(i)
-                    choice = "choice["+i+"]"
-                    slot = "slot["+i+"]"
-                    if request.POST.get(choice) != '0':
-                        try:
-                            course_id = Courses.objects.get(id = request.POST.get(choice))
-                            courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
-                            if FinalRegistration .objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit:
-                                p = FinalRegistration(
-                                    course_id = course_id,
-                                    semester_id=sem_id,
-                                    student_id= current_user,
-                                    course_slot_id = courseslot_id,
-                                    verified = False
-                                    )
-                                f_reg.append(p)
-                            else:
-                                messages.info(request, 'Final-Registration Falied\n'+course_id.code+'-'+course_id.name+' registration limit reached.')
-                                return HttpResponseRedirect('/academic-procedures/main')
-                        except Exception as e:
-                            return HttpResponseRedirect('/academic-procedures/main')
-                FinalRegistration.objects.bulk_create(f_reg)
-                obj = FeePayments(
-                    student_id = current_user,
-                    semester_id = sem_id,
-                    mode = mode,
-                    transaction_id = transaction_id
-                    )
-                obj.save()
-                try:
-                    StudentRegistrationChecks.objects.filter(student_id = current_user, semester_id = sem_id).update(final_registration_flag = True)
-                    messages.info(request, 'registered course change Successful')
-                except Exception as e:
-                    return HttpResponseRedirect('/academic-procedures/main')
-
                 return HttpResponseRedirect('/academic-procedures/main')
             except Exception as e:
                 return HttpResponseRedirect('/academic-procedures/main')
@@ -1448,31 +1412,26 @@ def allot_courses(request):
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
-                print(">>>>>",roll_no,course_slot_name,course_code,course_name,type(roll_no))
                 user=User.objects.get(username=roll_no)
                 user_info = ExtraInfo.objects.get(user=user)
                 student = Student.objects.get(id=user_info)
-                course_slot=CourseSlot.objects.get(name=course_slot_name,semester=sem_id)
-                course = Courses.objects.get(code=course_code,name=course_name)
-
+                course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                #print(">>>>>",roll_no,course_slot_name,course_code,course_name)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
-                print(i,final_registration)
                 final_registrations.append(final_registration)
 
             try:
                 FinalRegistration.objects.bulk_create(final_registrations)
-                print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
                 messages.success(request, 'Successfully uploaded!')
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
             except Exception as e:
-                print(">>>>>>>>>>>>>",e)
                 messages.error(request, 'Error: '+str(e))
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
     except Exception as e:
-        print("->>>>>>>>>>>>>>>>>>>>>>>>>",e)
         messages.error(request, 'Error: Query does not match. Please check if all the data input is in the correct format.')
         return HttpResponseRedirect('/academic-procedures/main')
         # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -2216,7 +2175,7 @@ def get_batch_branch_data(result_year):
 
 @login_required(login_url='/accounts/login')
 def student_list(request):
-    if(request.POST):
+    if(request.POST and (request.GET["excel_export"] == "false")):
         batch = request.POST["batch"]
 
         year = demo_date.year
@@ -2234,34 +2193,18 @@ def student_list(request):
 
 
         batch_id = Batch.objects.get(id = batch)
-        student_obj = Student.objects.all().filter(batch_id = batch_id)
+        student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
+        if (student_obj):
+            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
+                'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
+                    'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
+                    'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
+                    'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
+                    'student_id__id__user__username').order_by('student_id__id__user')
+        else :
+            reg_table = []
 
-        student = []
-
-        for obj in student_obj:
-            curr_id = batch_id.curriculum
-            sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no + 1)
-            try:
-                reg = StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem_id).first()
-                pay = FeePayments.objects.all().filter(student_id = obj, semester_id = sem_id).first()
-                pay_fee_receipt_short_path = '/media/fee_receipt/'+pay.fee_receipt.path.split('\\')[-1]
-                #print("======================== > ",pay_fee_receipt_short_path)
-                final = FinalRegistration.objects.all().filter(student_id = obj, semester_id = sem_id,verified = False)
-            except Exception as e:
-                reg = None
-                pay = None
-                final = None
-            if reg:
-                if reg.final_registration_flag == True and final:
-                    student.append((obj,pay,final,pay_fee_receipt_short_path))
-                else:
-                    continue
-            else:
-                continue
-
-
-        html = render_to_string('academic_procedures/student_table.html',
-                                {'student': student}, request)
+        html = render_to_string('academic_procedures/student_table.html',{'student': reg_table}, request)
 
         maindict = {'date': date,
                     'query_option1': batch_year_option,
@@ -2271,6 +2214,84 @@ def student_list(request):
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
 
+    elif(request.POST) and (request.GET["excel_export"] == "true"):
+        batch = request.POST["batch"]
+        year = demo_date.year
+        month = demo_date.month
+        yearr = str(year) + "-" + str(year+1)
+        semflag = 0
+        queryflag = 1
+        if(month >= 7):
+            semflag = 1
+        else:
+            semflag = 2
+        batch_year_option = get_batch_query_detail(month, year)
+        branch_option = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+        date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+
+
+        batch_id = Batch.objects.get(id = batch)
+        student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
+
+        table=[("Admission Year","Semester","Roll Number","Full Name","Program","Discipline",
+            "Specialization","Gender","Category","PWD Status","Mobile Number","Actual Fee","Fee Paid By Student",
+            "Reason for Less or more feeReason for Less or more fee (Adjustement/MCM/MMVY/SC/ST Scholarship/Other Scholarship)",
+            "Date for Fee deposition","Mode","If Loan account enter UTR Number","Upload Fee Receipt path")]
+        
+        if (student_obj):
+
+            table += (student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
+                'student_id','student_id__id','student_id__id__user','student_id__id__department').annotate(
+                    admission_year = F('student_id__batch'),
+                    semester = Sum('student_id__curr_semester_no') + 1,
+                    roll_no = F('student_id__id__user__username'),
+                    full_name = Concat('student_id__id__user__first_name',Value(' '),'student_id__id__user__last_name'),
+                    program = F('student_id__programme'),
+                    discipline = F('student_id__id__department__name'),
+                    specialization = F('student_id__specialization'),
+                    gender = F('student_id__id__sex'),
+                    category = F('student_id__category'),
+                    pwd_status = Value("YES", output_field = CharField()) if F('student_id__pwd_status') == True else Value("NO", output_field = CharField()),
+                    phone_no = F('student_id__id__phone_no'),
+                    date_deposited = Concat(Cast(ExtractDay('deposit_date'), CharField()), Value('/'), Cast(ExtractMonth('deposit_date'), CharField()), Value('/'), Cast(ExtractYear('deposit_date'), CharField()), output_field = CharField()),
+                ).order_by('student_id__id__user__username').values_list(
+                    'admission_year','semester','roll_no',
+                    'full_name','program','discipline',
+                    'specialization','gender','category',
+                    'pwd_status','phone_no','actual_fee',
+                    'fee_paid','reason','date_deposited',
+                    'mode','utr_number','fee_receipt'))
+
+            excel_response = BytesIO()
+
+            final_register_workbook = Workbook(excel_response)
+            final_register_worksheet = final_register_workbook.add_worksheet()
+                
+            for i in range(len(table)):
+                for j in range(len(table[i])):
+                    final_register_worksheet.write(i,j,table[i][j])
+
+            final_register_workbook.close()
+            excel_response.seek(0)
+
+            response = HttpResponse(excel_response.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{batch_id.name}_{batch_id.discipline.acronym}_{batch_id.year}_final_registered.xlsx"'
+            return response
+        else:
+            return HttpResponse(json.dumps({'error' : "No registered students found"}), content_type="application/json")
+
+@login_required(login_url='/accounts/login')
+def course_list(request):
+    if(request.method == "POST"):
+        request_body = json.loads(request.body)
+        student_id = request_body['student_id']
+        semester_id = request_body['semester_id']
+ 
+        final_registration_table = FinalRegistration.objects.all().filter(semester_id = semester_id, verified = False)
+        final = final_registration_table.filter(student_id = student_id, semester_id = semester_id)
+        html = render_to_string('academic_procedures/student_course_list.html',{"course_list":final}, request)
+ 
+        return HttpResponse(json.dumps({'html': html}),content_type="application/json")
 
 def process_verification_request(request):
     if request.is_ajax():
