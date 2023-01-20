@@ -246,10 +246,10 @@
                             {% comment %}Form Tag ends here!{% endcomment %}
 
                           {% if placementrecord == 1 %}
-                            <br>
+                            <!-- <br> -->
                           {% elif placementrecord %}
-                              <br>
-                              <br>
+                              <!-- <br>
+                              <br> -->
                               <!-- Pagination Section starts here  --->
                     {% if pagination_placement %}
 
@@ -290,7 +290,7 @@
                         </center>
                     {% endif %}
                     <!-- Pagination Section ends here --->
-                              <div class="ui divider"></div>
+                              <hr/>
                               <br>
 
                           <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
@@ -351,8 +351,9 @@
 
 
                     <!--All Placement related data-->
-<br>
-                              <hr style="width:100%;text-align:left;margin-left:0; margin-top:2rem;">
+
+                              <hr>
+                              <br>
                                 <center>
                                     {% if placement_search_record != " " %}
                                     <table id="tab" style="border:1px solid black; width:100%;">
@@ -389,6 +390,7 @@
                                         {% endfor %}
                                     </table>
                                    {% else %}
+                                
                                 <h2>No Data Found.</h2>
                                     {% if current2 %}
                                     <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
@@ -463,8 +465,7 @@
                                         {% comment %}The add a new skill Accordian ends here!{% endcomment %}
                                     </form>
 
-                                  <br>
-                                  <br>
+                                 
                     <!-- Pagination Section starts here  --->
                     {% if pagination_pbi %}
 
@@ -505,7 +506,7 @@
                         </center>
                     {% endif %}
                     <!-- Pagination Section ends here --->
-                                  <div class="ui divider"></div>
+                                  <hr/>
                                   <br>
 
                                   {% if pbirecord == 1 %}
@@ -671,8 +672,8 @@
                       </form>
 
 
-                                  <br>
-                                  <br>
+                                
+                                  
 
                                   <!-- Pagination Section starts here  --->
                     {% if pagination_higher %}
@@ -714,7 +715,7 @@
                         </center>
                     {% endif %}
                     <!-- Pagination Section ends here --->
-                                  <div class="ui divider"></div>
+                                  <hr/>
                                   <br>
 
                                   {% if higherrecord == 1 %}
