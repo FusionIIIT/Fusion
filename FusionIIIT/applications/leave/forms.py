@@ -21,7 +21,7 @@ class StudentApplicationForm(forms.Form):
     end_date = forms.DateField(label='To')
     purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
     address = forms.CharField(label='Address')
-    document = forms.FileField(label='Related Document', required=False)
+    document = forms.FileField(label='Related Document', required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
     def __init__(self, *args, **kwargs):
         if 'user' in kwargs:
