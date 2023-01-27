@@ -83,16 +83,17 @@
                      var now = today.getHours();
 
 
-                     var dateFilled = document.getElementById('date');
-                     var from_time = document.getElementById('from_time');
-                     var to_time = document.getElementById('to_time');
-                     if(dateFilled == today && from_time <= now) {
-                        alert('From time should be a future time!');
+                     var dateFilled = new Date(document.getElementById('date').value).setHours(0, 0, 0, 0);
+                     var from_time = document.getElementById('from_time').value;
+                     var to_time = document.getElementById('to_time').value;
+                    
+                     if(dateFilled >= today) {
+                        alert('From date filled should be a future date!');
                         return;
                      }
-                     if(from_time < to_time) {
+                     if(to_time && from_time > to_time) {
                       alert('From time should be less than To time');
-                      return;
+                      return false;
                      }
 
                      if(trimfield(document.getElementById("description").value) == '')
