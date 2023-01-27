@@ -21,7 +21,7 @@ from . import serializers
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
-User = get_user_model()
+User = get_user_model()  
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -29,11 +29,12 @@ def login(request):
     serializer = serializers.UserLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_and_authenticate_user(**serializer.validated_data)
-    data = serializers.AuthUserSerializer(user).data
+    data = serializers.AuthUserSerializer(user).data 
+  
     resp = {
         'success' : 'True',
         'message' : 'User logged in successfully',
-        'token' : data['auth_token']
+        'token' : data['auth_token'] 
     }
     return Response(data=resp, status=status.HTTP_200_OK)
 

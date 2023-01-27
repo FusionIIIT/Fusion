@@ -37,7 +37,7 @@ urlpatterns = [
     url(r'^__debug__/', include(debug_toolbar.urls)),
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
-
+ 
 
     url(r'^eis/', include('applications.eis.urls')),
     url(r'^mess/', include('applications.central_mess.urls')),
