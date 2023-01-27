@@ -87,7 +87,7 @@
                      var from_time = document.getElementById('from_time').value;
                      var to_time = document.getElementById('to_time').value;
                     
-                     if(dateFilled >= today) {
+                     if(dateFilled < today) {
                         alert('From date filled should be a future date!');
                         return;
                      }
