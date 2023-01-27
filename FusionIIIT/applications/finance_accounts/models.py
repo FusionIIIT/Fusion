@@ -1,11 +1,10 @@
 from django.db import models
-
-
+from django.contrib.auth.models import User
 class Paymentscheme(models.Model):
     month = models.CharField(max_length = 70 , null = True)
     year = models.IntegerField(null = True)
     pf = models.IntegerField(null = True)
-    name = models.CharField(max_length = 70)
+    name = models.CharField(max_length = 70) 
     designation = models.CharField(max_length = 50)
     pay = models.IntegerField()
     gr_pay = models.IntegerField()
@@ -24,19 +23,23 @@ class Paymentscheme(models.Model):
     electricity_charges = models.IntegerField()
     others = models.IntegerField()
     gr_reduction = models.IntegerField(default=0)
-    net_payment = models.IntegerField(default=0)
+    net_payment = models.IntegerField(default=0) 
+    User=models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
     senior_verify = models.BooleanField(default = False)
     ass_registrar_verify = models.BooleanField(default = False)
     ass_registrar_aud_verify = models.BooleanField(default = False)
     registrar_director_verify = models.BooleanField(default = False)
     runpayroll = models.BooleanField(default = False)
-    view = models.BooleanField(default = True)
-
+    view = models.BooleanField(default = True) 
+    def __str__(self):
+      return self.name
+         
     class Meta:
        constraints = [
             models.UniqueConstraint(fields=['month', 'year', 'pf'], name='Unique Contraint 1')
         ]
-
+    
+   
 
 class Receipts(models.Model):
         receipt_id = models.AutoField(primary_key=True)
@@ -52,7 +55,10 @@ class Payments(models.Model):
         ToWhom = models.CharField(max_length=80)
         FromWhom = models.CharField(max_length=80)
         Purpose = models.CharField(max_length=20)
-        Date = models.DateField()
+        Date = models.DateField()  
+        def __str__(self):
+          return self.Purpose 
+        
 
 class Bank(models.Model):
         bank_id = models.AutoField(primary_key=True)
@@ -64,7 +70,7 @@ class Bank(models.Model):
         class Meta:
            constraints = [
                 models.UniqueConstraint(fields=['Bank_Name','Branch_Name'], name='Unique Contraint 2')
-            ]
+            ] 
 
 class Company(models.Model):
         company_id = models.AutoField(primary_key=True)
@@ -73,3 +79,7 @@ class Company(models.Model):
         End_Date = models.DateField(null = True, blank = True)
         Description = models.CharField(max_length=200)
         Status = models.CharField(max_length=200)
+
+
+        def __str__(self):
+          return self.Company_Name 

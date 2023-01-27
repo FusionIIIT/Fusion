@@ -37,11 +37,12 @@ def financeModule(request):
     """
 
     context = {
+
     }
     k = HoldsDesignation.objects.select_related().filter(working=request.user)
     flag = 0
     for z in k:
-        if(str(z.designation) == 'dealing assistant'):
+        if (str(z.designation) == 'dealing assistant'):
             flag = 1
             b = Paymentscheme.objects.filter(view=True, senior_verify=False)
             context = {
@@ -60,6 +61,7 @@ def financeModule(request):
             context = {
                 'b': b
             }
+
             return render(request, "financeAndAccountsModule/financeAndAccountsModulesrda.html", context)
 
         if (str(z.designation) == 'asst. registrar fa'):
@@ -96,8 +98,16 @@ def financeModule(request):
             context = {
                 'b': b
             }
-            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
-    if(flag == 0):
+            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context) 
+        if (str(z.designation) == 'student'):
+            flag = 1
+            b = Paymentscheme.objects.filter(
+                registrar_director_verify=True, view=True)
+            context = {
+                'b': ""
+            }
+            return HttpResponse("You are not authorised to view the page!!!")
+    if (flag == 0):
         return render(request, "financeAndAccountsModule/employee.html", context)
 
 
@@ -117,7 +127,7 @@ def previewing(request):
 
     flag = 0
     for z in k:
-        if(str(z.designation) == 'dealing assistant'):
+        if (str(z.designation) == 'dealing assistant'):
             flag = 1
             month = request.POST.get("month")
             year = request.POST.get("number1")
@@ -222,7 +232,7 @@ officeOfRegistrar
 
     for z in k:
         if request.method == "POST":
-            if(str(z.designation) == 'dealing assistant'):
+            if (str(z.designation) == 'dealing assistant'):
                 a = request.POST.getlist('box')
                 pay_scheme = []
                 for i in range(len(a)):
@@ -238,7 +248,7 @@ officeOfRegistrar
                 Paymentscheme.objects.bulk_update(
                     pay_scheme, ['senior_verify'])
 
-            if(str(z.designation) == 'sr dealing assitant'):
+            if (str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.getlist('box')
                 sr_pay_scheme = []
                 for i in range(len(a)):
@@ -254,7 +264,7 @@ officeOfRegistrar
                 Paymentscheme.objects.bulk_update(
                     sr_pay_scheme, ['senior_verify', 'ass_registrar_verify'])
 
-            if(str(z.designation) == 'asst. registrar fa'):
+            if (str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.getlist('box')
                 asst_pay_scheme = []
                 for i in range(len(a)):
@@ -270,7 +280,7 @@ officeOfRegistrar
                 Paymentscheme.objects.bulk_update(
                     asst_pay_scheme, ['ass_registrar_verify', 'ass_registrar_aud_verify'])
 
-            if(str(z.designation) == 'asst. registrar aud'):
+            if (str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.getlist('box')
                 aud_pay_scheme = []
                 for i in range(len(a)):
@@ -286,7 +296,7 @@ officeOfRegistrar
                 Paymentscheme.objects.bulk_update(
                     aud_pay_scheme, ['registrar_director_verify', 'ass_registrar_aud_verify'])
 
-            if(str(z.designation) == 'Registrar'):
+            if (str(z.designation) == 'Registrar'):
                 a = request.POST.getlist('box')
                 reg_pay_scheme = []
                 for i in range(len(a)):
@@ -304,7 +314,7 @@ officeOfRegistrar
                 Paymentscheme.objects.bulk_update(
                     reg_pay_scheme, ['runpayroll', 'view', 'registrar_director_verify'])
 
-            if(str(z.designation) == 'director'):
+            if (str(z.designation) == 'director'):
                 a = request.POST.getlist('box')
                 dir_pay_scheme = []
                 for i in range(len(a)):
@@ -342,7 +352,7 @@ def previous(request):
 
     for z in k:
         if request.method == "POST":
-            if(str(z.designation) == 'dealing assistant'):
+            if (str(z.designation) == 'dealing assistant'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -354,7 +364,7 @@ def previous(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModuleds.html", context)
 
-            if(str(z.designation) == 'sr dealing assitant'):
+            if (str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -365,7 +375,7 @@ def previous(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModulesrda.html", context)
 
-            if(str(z.designation) == 'asst. registrar fa'):
+            if (str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -376,7 +386,7 @@ def previous(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
-            if(str(z.designation) == 'asst. registrar aud'):
+            if (str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -387,7 +397,7 @@ def previous(request):
                 }
                 return render(request, "financeAndAccountsModule/finanaceAndAccountsModulearaud.html", context)
 
-            if(str(z.designation) == 'Registrar'):
+            if (str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -398,7 +408,7 @@ def previous(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
-            if(str(z.designation) == 'director'):
+            if (str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
 
@@ -427,7 +437,7 @@ def createPayments(request):
     k = HoldsDesignation.objects.select_related().filter(working=request.user)
 
     for z in k:
-        if(str(z.designation) == "asst. registrar fa"):
+        if (str(z.designation) == "asst. registrar fa"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -441,7 +451,7 @@ def createPayments(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
-        if(str(z.designation) == "asst. registrar aud"):
+        if (str(z.designation) == "asst. registrar aud"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -455,7 +465,7 @@ def createPayments(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModulearaud.html", context)
 
-        if(str(z.designation) == "Registrar"):
+        if (str(z.designation) == "Registrar"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -469,7 +479,7 @@ def createPayments(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
-        if(str(z.designation) == "director"):
+        if (str(z.designation) == "director"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -524,7 +534,7 @@ def previousPayments(request):
 
     for z in k:
         if request.method == "POST":
-            if(str(z.designation) == 'asst. registrar fa'):
+            if (str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -535,7 +545,7 @@ def previousPayments(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
-            if(str(z.designation) == 'asst. registrar aud'):
+            if (str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -546,7 +556,7 @@ def previousPayments(request):
                 }
                 return render(request, "financeAndAccountsModule/finanaceAndAccountsModulearaud.html", context)
 
-            if(str(z.designation) == 'Registrar'):
+            if (str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -558,7 +568,7 @@ def previousPayments(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
-            if(str(z.designation) == 'director'):
+            if (str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -587,7 +597,7 @@ def createReceipts(request):
     k = HoldsDesignation.objects.select_related().filter(working=request.user)
 
     for z in k:
-        if(str(z.designation) == "asst. registrar fa"):
+        if (str(z.designation) == "asst. registrar fa"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -601,7 +611,7 @@ def createReceipts(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
-        if(str(z.designation) == "asst. registrar aud"):
+        if (str(z.designation) == "asst. registrar aud"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -615,7 +625,7 @@ def createReceipts(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModulearaud.html", context)
 
-        if(str(z.designation) == "Registrar"):
+        if (str(z.designation) == "Registrar"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -629,7 +639,7 @@ def createReceipts(request):
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
-        if(str(z.designation) == "director"):
+        if (str(z.designation) == "director"):
             t_id = request.POST.get("t_id")
             toWhom = request.POST.get("toWhom")
             fromWhom = request.POST.get("fromWhom")
@@ -662,7 +672,7 @@ def previousReceipts(request):
 
     for z in k:
         if request.method == "POST":
-            if(str(z.designation) == 'asst. registrar fa'):
+            if (str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -673,7 +683,7 @@ def previousReceipts(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
-            if(str(z.designation) == 'asst. registrar aud'):
+            if (str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -684,7 +694,7 @@ def previousReceipts(request):
                 }
                 return render(request, "financeAndAccountsModule/finanaceAndAccountsModulearaud.html", context)
 
-            if(str(z.designation) == 'Registrar'):
+            if (str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -695,7 +705,7 @@ def previousReceipts(request):
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
-            if(str(z.designation) == 'director'):
+            if (str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
                 month_no = getMonth(a)
@@ -749,7 +759,8 @@ def createCompany(request):
 
         @variables
         Basic details of a new Company.
-    """
+    """ 
+    
     k = HoldsDesignation.objects.select_related().filter(
         working=request.user, designation=Designation.objects.get(name='adminstrator'))
 
@@ -860,6 +871,6 @@ def printSalary(request):
     c = Paymentscheme.objects.filter(month=month, year=year)
     context = {
         'c': c,
-    }
+    }   
 
-    return Render.render('financeAndAccountsModule/payroll_content4.html', context)
+    return Render.render('financeAndAccountsModule/payroll_content4.html', context) 
