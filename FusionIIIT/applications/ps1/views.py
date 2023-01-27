@@ -718,7 +718,7 @@ def delete(request,id):
     #problem over here no need of render since it doesnot affect the url
     #return render(request, 'filetracking/drafts.html', context)
 
-    return redirect('/ps1/composed_indents/')
+    return redirect('/purchase-and-store/composed_indents/')
 
 
 @login_required(login_url = "/accounts/login")
