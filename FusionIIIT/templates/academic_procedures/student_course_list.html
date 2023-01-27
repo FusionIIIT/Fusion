@@ -1,0 +1,29 @@
+{% load static %}
+ 
+{% if course_list %}
+    <table style="width: 100%">
+    <tr>
+        <th style="width: 20%">
+            <center>Course ID</center>
+        </th>
+        <th style="width: 60%">
+            <center>Course Name</center>
+        </th>
+        <th style="width: 20%">
+            <center>Credits</center>
+        </th>
+    </tr>
+    {% for course in course_list %}    
+        <tr>
+            <td style="width: 20%">
+                <center>{{course.course_id.code}}</center>
+            </td>
+            <td style="width: 60%">{{course.course_id.name}}</td>
+            <td style="width: 20%">
+                <center>{{course.course_id.credit}}</center>
+            </td>
+        </tr>
+    {%endfor%}
+{%endif%}
+ 
+</table>
