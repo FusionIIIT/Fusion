@@ -875,7 +875,7 @@ def ajax_dropdown_for_users(request):
          context - return the httpresponce containing the matched username
     """
     if request.method == 'GET':
-        users = User.objects.all()[::100]
+        users = User.objects.filter(is_staff=True)
         users = serializers.serialize('json', list(users))
 
         context = {
