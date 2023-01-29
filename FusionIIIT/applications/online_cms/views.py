@@ -39,13 +39,21 @@ def viewcourses(request):
         student = Student.objects.select_related('id').get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
         register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
-        courses = collections.OrderedDict()   #courses in which student is registerd
+        courses = []  #courses in which student is registerd
+        print(register)
+        # serializer=OCMSStudentSerializer(register,many=True)
+        
         for reg in register:   #info of the courses
-            instructor = Curriculum_Instructor.objects.select_related().get(course_id=reg.course_id)
-            courses[reg] = instructor
+            course={}
+            course['data']=reg.curr_id
+            # course=reg.curr_id
+            course['instructor'] = Curriculum_Instructor.objects.select_related().get(curriculum_id=reg.curr_id)
+            courses.append(course)
+        # print(serializer.data)
+        # return Response(serializer.data)
+        # return Response({'status':200})
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
-
                        'extrainfo': extrainfo})
     else:   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
