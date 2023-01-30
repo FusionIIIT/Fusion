@@ -1,5 +1,6 @@
 from django.conf.urls import url, include
 
+
 from . import views
 
 app_name = 'globals'
@@ -20,6 +21,7 @@ urlpatterns = [
     url(r'^view_issue/(?P<id>\d+)/$', views.view_issue, name="view_issue"),
     url(r'^support_issue/(?P<id>\d+)/$', views.support_issue, name="support_issue"),
     url(r'^logout/$', views.logout_view, name="logout_view"),
-    # API urls
+    # API urls 
     url(r'^api/', include('applications.globals.api.urls'))
+                          
 ]

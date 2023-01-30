@@ -77,6 +77,7 @@ def complaint_reassign(request,wid,iid):
 
 
             except Caretaker.DoesNotExist:
+            # except Workers.DoesNotExist:
                 flag = 'no_worker'
 
         except StudentComplain.DoesNotExist:
@@ -161,6 +162,7 @@ def assign_worker(request, comp_id1):
             try:
                 #care = Caretaker.objects.filter(area=temp).first()
                 if Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a).count() == 0:
+                # if Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a, worker_type=detail.complaint_type).count() == 0:
                     flag = 'no_worker'
                 else:
                     workertemp1 = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
@@ -174,6 +176,7 @@ def assign_worker(request, comp_id1):
 
 
             except Caretaker.DoesNotExist:
+            # except Workers.DoesNotExist:
                 flag = 'no_worker'
 
         except StudentComplain.DoesNotExist:
@@ -767,7 +770,7 @@ def submitfeedback(request, complaint_id):
             newrate = c1
 
         Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.location).update(rating=newrate)
-        return HttpResponseRedirect('/complaint/user/')
+        # return HttpResponseRedirect('/complaint/user/')
         return render(request,"complaintModule/feedback.html",{'a' : a})
         
     else:

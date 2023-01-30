@@ -83,6 +83,6 @@ class StudentComplain(models.Model):
 class Supervisor(models.Model):
     sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     area = models.CharField(choices=Constants.AREA, max_length=20)
-
+    
     def __str__(self):
         return str(self.sup_id.user.username)

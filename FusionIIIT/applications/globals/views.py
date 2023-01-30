@@ -728,7 +728,7 @@ def dashboard(request):
         return render(request, "dashboard/director_dashboard2.html", {})
     elif( "dean_rspc" in designation):
         return render(request, "dashboard/dashboard.html", context)
-    elif user.extrainfo.user_type != 'student':
+    elif(user.extrainfo.user_type != 'student'):
         designat = HoldsDesignation.objects.select_related().filter(user=user)
         response = {'designat':designat}
         context.update(response)
