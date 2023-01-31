@@ -312,7 +312,8 @@ def academic_procedures_student(request):
         if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
 
-        pre_registration_date_flag = get_pre_registration_eligibility(current_date)
+        pre_registration_date_flag = get_pre_registration_eligibility(current_date, user_sem, year)
+        # print("PRD: ", pre_registration_date_flag)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
@@ -326,7 +327,10 @@ def academic_procedures_student(request):
             final_registration_flag = student_registration_check_final.final_registration_flag
 
         # print(">>>>>>>>>>>>>>>>>>>>>>",student_registration_check_pre.pre_registration_flag)
+        
         acad_year = get_acad_year(user_sem, year)
+        # print("acad_year: ", year)
+        # print("user_sem: ", user_sem)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
 
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
@@ -1214,9 +1218,30 @@ def phd_details(request):
 def get_student_register(id):
     return Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = id)
 
-def get_pre_registration_eligibility(current_date):
+def get_pre_registration_eligibility(current_date, user_sem, year):
+    '''
+        This function is used to extract the elgibility of pre-registration for a given semester
+        for a given year from the Calendar table.
+        
+        @param:
+                current_date - current date at the user end
+                user_sem - current semester of the user(integer)
+                year - current year at the user end
+
+        @variables:
+               pre_registration_date - stores the object returned from calendar table for a given description
+               prd_start_date - holds start date of the pre registeration
+               prd_end_date - holds end date of the pre registration
+               
+        #exception handling:
+        In case calendar table has no row for the  given description pre_registration_date will store None value,
+        Therefore from_date and to_date attributes cannot be accessed so the function will return False.
+        
+    '''
     try:
-        pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
+        # print(f"Pre Registration {user_sem} {year}")
+        # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem} {year}").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
         if current_date>=prd_start_date and current_date<=prd_end_date:
