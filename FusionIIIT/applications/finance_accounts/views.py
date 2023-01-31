@@ -96,7 +96,11 @@ def financeModule(request):
             context = {
                 'b': b
             }
-            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
+            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context) 
+        if (str(z.designation) == 'student'):
+            flag = 1
+           
+            return HttpResponse("You are not authorised to visit this page!!")
     if(flag == 0):
         return render(request, "financeAndAccountsModule/employee.html", context)
 
@@ -356,7 +360,7 @@ def previous(request):
 
             if(str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.get('selectmonth')
-                b = request.POST.get('selectyear')
+                b = request.POST.get('selectyear')  
 
                 c = Paymentscheme.objects.filter(
                     month=a, year=b, runpayroll=True)
@@ -856,8 +860,8 @@ def printSalary(request):
 
     month = request.POST.get("month")
     year = request.POST.get("year")
-
-    c = Paymentscheme.objects.filter(month=month, year=year)
+    runpayroll=True
+    c = Paymentscheme.objects.filter(month=month, year=year, runpayroll=runpayroll)
     context = {
         'c': c,
     }
