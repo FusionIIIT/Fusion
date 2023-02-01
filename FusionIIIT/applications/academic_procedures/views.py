@@ -313,7 +313,6 @@ def academic_procedures_student(request):
             branchchange_flag=True
 
         pre_registration_date_flag = get_pre_registration_eligibility(current_date, user_sem, year)
-        # print("PRD: ", pre_registration_date_flag)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
@@ -329,8 +328,6 @@ def academic_procedures_student(request):
         # print(">>>>>>>>>>>>>>>>>>>>>>",student_registration_check_pre.pre_registration_flag)
         
         acad_year = get_acad_year(user_sem, year)
-        # print("acad_year: ", year)
-        # print("user_sem: ", user_sem)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
 
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
@@ -1239,7 +1236,6 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
         
     '''
     try:
-        # print(f"Pre Registration {user_sem} {year}")
         # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
         pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem} {year}").first()
         prd_start_date = pre_registration_date.from_date
