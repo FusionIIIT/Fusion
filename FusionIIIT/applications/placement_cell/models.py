@@ -1,6 +1,6 @@
 # imports
 import datetime
-
+from applications.globals.models import ExtraInfo
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -330,6 +330,8 @@ class PlacementStatus(models.Model):
 
 
 class PlacementRecord(models.Model):
+    # id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+    # id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     name = models.CharField(max_length=100, default='')

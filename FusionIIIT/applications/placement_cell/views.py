@@ -29,6 +29,7 @@ from applications.academic_information.models import Student
 from notification.views import placement_cell_notif
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
                                         HoldsDesignation)
+from applications.academic_information.models import Student
 from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     AddExperience, AddReference, AddPatent, AddProfile, AddProject,
                     AddPublication, AddSchedule, AddSkill, ManageHigherRecord,
@@ -1975,7 +1976,7 @@ def placement_statistics(request):
                        id__icontains=rollno))
                     )))
 
-                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
+                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT",name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
 
 
 
@@ -2608,17 +2609,30 @@ def cv(request, username):
     # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
+    student_info=get_object_or_404(Student,Q(id=user.username))
+    # print("Student------>",vars(student_info))
+    batch=student_info.batch
+    # print("Year----->",user.date_joined.year)
+    # print("User----->",vars(user))
+    # print("Profile---->",vars(profile))
     now = datetime.datetime.now()
-    if int(str(profile.id)[:2]) == 20:
-        if (now.month>4):
-          roll = 1+now.year-int(str(profile.id)[:4])
-        else:
-          roll = now.year-int(str(profile.id)[:4])
+    print("year----->",now.year)
+    if now.year-batch<=4:
+        roll=now.year-batch
     else:
-        if (now.month>4):
-          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
-        else:
-          roll = (now.year)-int("20"+str(profile.id)[0:2])
+        roll=4
+        
+    # if int(str(profile.id)[:2]) == 20:
+    #     if (now.month>4):
+    #       roll = 1+now.year-int(str(profile.id)[:4])
+    #     else:
+    #       roll = now.year-int(str(profile.id)[:4])
+    # else:
+    #     if (now.month>4):
+    #       roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+    #     else:
+    #       roll = (now.year)-int("20"+str(profile.id)[0:2])
+    
 
     student = get_object_or_404(Student, Q(id=profile.id))
     skills = Has.objects.select_related('skill_id','unique_id').filter(Q(unique_id=student))
