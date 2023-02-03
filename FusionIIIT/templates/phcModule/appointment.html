@@ -41,7 +41,6 @@
             if(day < 10)
               day = '0' + day.toString();
             var maxDate = year + '-' + month + '-' + day;
-            alert(maxDate);
             $('#inputdate').attr('min', maxDate);
           });
         </script>
@@ -130,14 +129,41 @@
       <div class="two fields" >
         <div class="field">
           <label>From</label>
-          <input type="date" placeholder="From" id="start_date" name="start_date">
-          <p id="stdt"></p>
-
+          <input type="date" id="inputdate1" name="inputdate1">
+          <script>
+            $(function(){
+              var dtToday = new Date();
+              var month = dtToday.getMonth() + 1;
+              var day = dtToday.getDate();
+              var year = dtToday.getFullYear();
+              if(month < 10)
+                month = '0' + month.toString();
+              if(day < 10)
+                day = '0' + day.toString();
+              var maxDate = year + '-' + month + '-' + day;
+              $('#inputdate1').attr('min', maxDate);
+            });
+          </script>
+          <p id="dte"></p>
         </div>
         <div class="field">
           <label>To</label>
-          <input type="date" placeholder="To" id="end_date" name="end_date">
-          <p id="endt"></p>
+          <input type="date" id="inputdate2" name="inputdate2">
+          <script>
+            $(function(){
+              var dtToday = new Date();
+              var month = dtToday.getMonth() + 1;
+              var day = dtToday.getDate();
+              var year = dtToday.getFullYear();
+              if(month < 10)
+                month = '0' + month.toString();
+              if(day < 10)
+                day = '0' + day.toString();
+              var maxDate = year + '-' + month + '-' + day;
+              $('#inputdate2').attr('min', maxDate);
+            });
+          </script>
+          <p id="dte"></p>
         </div>
       </div>
       <div class="field">
