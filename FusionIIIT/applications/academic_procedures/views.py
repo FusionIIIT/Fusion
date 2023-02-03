@@ -298,7 +298,7 @@ def academic_procedures_student(request):
 
         try:
             semester_no = obj.curr_semester_no+1
-            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no+1)
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
             user_sem = semester_no
             
         except Exception as e:
