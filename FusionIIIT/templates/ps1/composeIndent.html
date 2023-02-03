@@ -150,7 +150,11 @@
                 </div>
 
                 <br>
-
+                <div>
+                    <div class="ui large right floated secondary button" onclick="addmoreHandler()">
+                        Add More<i class="ui add icon right floated"></i>
+                    </div>
+                </div>
                 <div>
                     <a class="right floated item">
 
@@ -160,7 +164,19 @@
                     </a>
                 </div>
 
+               
+                
+                <div class="ui modal">
+                    <div class='header'>Add New File</div>
+                    <div class='content'>
+                        {% include "ps1/addNewItem.html"%}
+                    </div>
+                </div> 
+
+                
+
                 <br>
+               
                 <br>
                 <div class="field">
                             <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
@@ -190,8 +206,8 @@
                 </div>
 
 
-                <div>
-                    <a class="right floated item">
+                <div style='margin-bottom:30px;'>
+                    <a class="right floated item" >
 
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
                                 Send<i class="ui send icon right floated"></i>
@@ -213,7 +229,11 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 
+
 <script type="text/javascript">
+    const addmoreHandler = ()=>{
+        $('.ui.modal').modal('show');
+    }
 
 
         $('#input_search1').keyup(function(){
