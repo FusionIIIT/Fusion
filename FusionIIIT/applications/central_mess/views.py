@@ -417,7 +417,11 @@ def mess_info(request):
             mess_option =  form.cleaned_data['mess_option']
             Messinfo.objects.create(student_id=student_id, mess_option=mess_option)
         return HttpResponseRedirect("/mess")
-
+    user_id = request.user
+    student_id = Student.objects.select_related(
+        'id').only('id__id').get(id__id=user_id)
+    if Messinfo.objects.filter(student_id=student_id).exists():
+        return HttpResponseRedirect("/mess")
     form = MessInfoForm()
     context = {
         "form": form
@@ -911,7 +915,7 @@ def submit_mess_committee(request):
         user_details - extract details and designation of the user from the database
     """
     roll_number = request.POST['rollnumber']
-
+    print(roll_number)
     data = add_mess_committee(request, roll_number)
     return JsonResponse(data)
 
