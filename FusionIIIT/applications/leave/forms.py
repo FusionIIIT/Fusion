@@ -40,6 +40,10 @@ class StudentApplicationForm(forms.Form):
 """
         lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
 
+        # if lt is None, use default
+        if lt is None:
+            lt = LeaveType()
+
         if lt.requires_proof and not data.get('document'):
             errors['document'] = [f'{lt.name} Leave requires document proof']
 
@@ -49,12 +53,20 @@ class StudentApplicationForm(forms.Form):
             else:
                 errors['start_date'] = ['Start Date must be less than End Date']
 
-        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+        try:
+            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+        except LeaveType.DoesNotExist:
+            leave_type = LeaveType()
+
         count = get_leave_days(data.get('start_date'), data.get('end_date'),
                                leave_type, False, False)
 
-        remaining_leaves = LeavesCount.objects.get(user=self.user, leave_type=leave_type) \
+        try:
+            remaining_leaves = LeavesCount.objects.get(user=self.user, leave_type=leave_type) \
                                               .remaining_leaves
+        except LeavesCount.DoesNotExist:
+            remaining_leaves = LeavesCount().remaining_leaves              
+
         if remaining_leaves < count:
             errors['leave_type'] = f'You have only {remaining_leaves} {leave_type.name} leaves' \
                                     ' remaining.'
@@ -117,7 +129,11 @@ class LeaveSegmentForm(forms.Form):
         errors = dict()
 
         def check_special_leave_overlap(start_date, end_date, leave_type_id):
-            leave_type = LeaveType.objects.get(id=leave_type_id)
+            try:
+                leave_type = LeaveType.objects.get(id=leave_type_id)
+            except LeaveType.DoesNotExist:
+                leave_type = LeaveType()
+            
             if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
                 if count < 0:
@@ -324,7 +340,11 @@ class BaseLeaveFormSet(BaseFormSet):
         for form in self.forms:
             try:
                 data = form.cleaned_data
-                leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+
+                try:
+                    leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                except LeaveType.DoesNotExist:
+                    leave_type = LeaveType() 
                 #if leave_type.is_station:
                 #    continue
 
@@ -399,7 +419,11 @@ class LeaveSegmentFormOffline(forms.Form):
         errors = dict()
 
         def check_special_leave_overlap(start_date, end_date, leave_type_id):
-            leave_type = LeaveType.objects.get(id=leave_type_id)
+            try:
+                leave_type = LeaveType.objects.get(id=leave_type_id)
+            except LeaveType.DoesNotExist:
+                leave_type = LeaveType()
+
             if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
                 if count < 0:
@@ -575,7 +599,10 @@ class BaseLeaveFormSetOffline(BaseFormSet):
         for form in self.forms:
             try:
                 data = form.cleaned_data
-                leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                try:
+                    leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                except LeaveType.DoesNotExist:
+                    leave_type = LeaveType()
                 #if leave_type.is_station:
                 #    continue
 
