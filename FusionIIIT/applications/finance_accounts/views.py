@@ -149,9 +149,10 @@ def previewing(request):
             income = int(pay) + int(gr_pay) + int(da) + int(ta) + \
                 int(hra) + int(fpa) + int(special_allow)
             net_payment = (income - gr_reduction)
-
+            userid = request.POST.get("userid")
+            
             a = Paymentscheme(month=month, year=year, pf=pf, name=name, designation=designation, pay=pay, gr_pay=gr_pay, da=da, ta=ta, hra=hra, fpa=fpa, special_allow=special_allow, nps=nps, gpf=gpf,
-                              income_tax=income_tax, p_tax=p_tax, gslis=gslis, gis=gis, license_fee=license_fee, electricity_charges=electricity_charges, others=others, gr_reduction=gr_reduction, net_payment=net_payment)
+                              income_tax=income_tax, p_tax=p_tax, gslis=gslis, gis=gis, license_fee=license_fee, electricity_charges=electricity_charges, others=others, gr_reduction=gr_reduction, net_payment=net_payment,userId = userid)
             a.save()
             context = {
             }
