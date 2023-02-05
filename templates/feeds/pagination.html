@@ -1,0 +1,79 @@
+<div>
+  <div class="paginationparent">
+    <div class="ui pagination menu column" id="pagination">
+
+      <a class = "item firstpage" href="?page_number=1&keyword={{keyword}}&search=search">
+        <i class="icon angle double left"> </i>
+      </a>
+      {% if pages.previous_page > 1 %}
+        <a class = "item previouspage" href="?page_number={{pages.previous_page}}&keyword={{keyword}}&search=search">
+      {% else %}
+        <a class = "item previouspage" href="?page_number=1&keyword={{keyword}}&search=search">
+      {% endif %}
+        <i class="icon angle left"> </i>
+      </a>
+
+      {% if pages.previous_page > 0 %}
+        <a class = "item previouspage" href="?page_number={{pages.previous_page}}&keyword={{keyword}}&search=search">
+          {{pages.previous_page}}
+        </a>
+      {% endif %}
+
+      <a class = "active item currentpage">
+        {{pages.current_page}}
+      </a>
+
+      {% if pages.next_page <= pages.total_page %}
+        <a class = "item nextpage" href="?page_number={{pages.next_page}}&keyword={{keyword}}&search=search">
+          {{pages.next_page}}
+        </a>
+      {% endif %}
+
+      {% if pages.next_page > pages.total_page %}
+        <a class = "item nextpage" href="?page_number={{pages.total_page}}&keyword={{keyword}}&search=search">
+      {% else %}
+        <a class = "item nextpage" href="?page_number={{pages.next_page}}&keyword={{keyword}}&search=search">
+      {% endif %}
+        <i class="icon angle right"> </i>
+      </a>
+
+      <a class = "item lastpage" href="?page_number={{pages.total_page}}&keyword={{keyword}}&search=search">
+        <i class="icon angle double right"> </i>
+      </a>
+
+    </div>
+  </div>
+</div>
+{% if pages.total_page == pages.current_page or pages.total_page == 0 %}
+    <script>
+       // document.getElementsByClassName('lastpage')[1].removeAttribute('href');
+       var elm_first = $('.lastpage').removeAttr('href')
+           elm_first.css("pointer-events","none")
+           elm_first.css("background-color","#0000000D")
+
+       var elm_second = $('.nextpage').removeAttr('href')
+           elm_second.css("pointer-events","none")
+           elm_second.css("background-color","#0000000D")
+
+    </script>
+{% endif %}
+
+{% if pages.current_page == 1 or pages.total_page == 0 %}
+    <script>
+       // document.getElementsByClassName('lastpage')[1].removeAttribute('href');
+       var elm_first = $('.firstpage').removeAttr('href')
+           elm_first.css("pointer-events","none")
+           elm_first.css("background-color","#0000000D")
+
+        var elm_second = $('.previouspage').removeAttr('href')
+            elm_second.css("pointer-events","none")
+            elm_second.css("background-color","#0000000D")
+    </script>
+{% endif %}
+
+<!-- This will disable the currentpage anchor tag -->
+  <script>
+    var elm_second = $('.currentpage').removeAttr('href')
+        elm_second.css("pointer-events","none")
+        elm_second.css("background-color","#0000000D")
+  </script>

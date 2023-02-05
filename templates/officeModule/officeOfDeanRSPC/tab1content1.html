@@ -1,0 +1,140 @@
+ {% block tab1content1 %}
+<form action="{%url 'office_module:p_register' %}" method ="POST" enctype="multipart/form-data">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+         
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Title</label>
+                <input value="" class="ui large input" name="project_title" placeholder="Project Title" required>
+            </div>
+
+            <div class="six wide field">
+                <label>Sponsoring Agency / Client</label>
+                <input value="" class="ui large input" name="sponsored_agency">
+            </div>
+            
+            <div class="four wide field">
+                <label>Project Start Date</label>
+                <input value="" class="ui large input" type="date" name="start_date" required>
+            </div>
+
+            <div class="four wide field">
+                <label>Fund Received Date</label>
+                <input value="" class="ui large input" type="date" name="fund_recieved_date" required>
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Duration (In weeks)</label>
+                <input value="" placeholder="Number of weeks eg. 42.." type="number" min="0" class="ui large input"  name="duration" required>
+            </div>
+
+            <div class="six wide field">
+                <label>Is there any Agreement(MoU)</label>
+                <select class="ui search fluid dropdown" name="agreement">
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            
+            <div class="four wide field">
+                <label>Total amount sanctioned</label>
+                <input value="" class="ui large input" type="number" min="0" name="amount_sanctioned" required>
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Type</label>
+                <select class="ui search fluid dropdown" name="project_type" required>
+                    <option value="sponsoered research">Sponsored Research</option>
+                    <option value="consultancy">Consultancy</option>
+<!--                    <option value="testing">Testing</option>-->
+                </select>
+            </div>
+
+            <div class="four wide field">
+                <label>CO_PI</label>
+                <input class="ui large input" placeholder="Co PI name if any" name="copi_name">
+            </div>
+
+            <div class="four wide field">
+                <label>Project Operated By</label>
+                <select class="ui search fluid dropdown" name="project_operated">
+                    <option value="Only By PI">Only By PI</option>
+                    <option value="PI and Co_pi">PI and Co_pi</option>
+                    
+                </select>
+            </div>
+
+        </div>
+
+        <div class="field">
+            <label>Attachments</label>
+            <input class="ui input" type="file" name='p_register'>
+        </div>
+
+        <div class="field">
+            <label>Details and Description</label>
+            <textarea rows="2" name="remarks"></textarea>
+        </div>
+
+        <!--<div class="two fields">
+            <div class="six wide field">
+                <label>PI</label>
+                <input class="ui large input" name="pi_name" >
+        </div>-->
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<h4 class="ui dividing header">Report:</h4>
+
+<table class="ui fixed sortable celled table">
+    <thead>
+    <tr>
+
+        <th class="sorted ascending" style="width: 7%;">PR Id</th>
+        <th class="" style="width: 15%;" >Project Title</th>
+        <th class="" style="width: 20%;">sponser</th>
+        <th class="" style="width: 20%;">Rspc res.</th>
+
+        <th style="width:20%">Project Type</th>
+        <th style="width:20%">duration</th>
+        <th style="width:20%">Start date</th>
+        
+
+
+    </tr>
+    </thead>
+
+    <tbody>{% for pr in project_r %}
+    <tr>
+        <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ pr.id }}</div>{{ pr.id }}.</td>
+        <td id="pr{{ forloop.counter }}A">{{ pr.project_title }}</td>
+        <td id="pr{{ forloop.counter }}B">{{ pr.sponsored_agency }}</td>
+        <td id="pr{{ forloop.counter }}C">{{ pr.DRSPC_response }}</td>
+        <td id="pr{{ forloop.counter }}D">{{ pr.project_type}}</td>
+        <td id="pr{{ forloop.counter }}E">{{ pr.duration}}</td>
+        <td id="pr{{ forloop.counter }}F">{{ pr.start_date  }}</td>
+        
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="ui divider"></div>
+
+  {% endblock %}

@@ -1,0 +1,90 @@
+{% block hall_staff_edit %}
+<h3 align="center"> HALL STAFF EDIT </h3><br><br>
+<form action="{% url 'hostelmanagement:staff_edit_schedule' %}" method ="POST" id="hall_staff_edit_form">
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        
+       <div class="two fields">
+           <div class="six wide field">
+               <label>Staff Type</label>
+               <select class="ui search fluid dropdown" name="staff_type" required>
+                   <option value="">Select</option>
+                   <option value="Caretaker">Caretaker</option>
+                   <option value="Gaurd">Gaurd</option>
+               </select>
+           </div>
+        </div>
+    
+        <div class="two fields">
+           <div class="six wide field">
+                <label>Staff Name</label>
+                <div class="ui fluid search selection dropdown">
+                    <input name="Staff_name"  type="hidden">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select</div>
+                    <div class="menu">
+                        {% for staff in staff%}
+                        <div class="item" data-value={{ staff.pk }}>
+                        {{staff.id.user.first_name}} {{staff.id.user.last_name}}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+           <div class="six wide field">
+               <label>Day</label>
+               <select class="ui search fluid dropdown" name="day" required>
+                   <option value="">Select</option>
+                   <option value="Monday">Monday</option>
+                   <option value="Tuesday">Tuesday</option>
+                   <option value="Wednesday">Wednesday</option>
+                   <option value="Thursday">Thursday</option>
+                   <option value="Friday">Friday</option>
+                   <option value="Saturday">Saturday</option>
+                   <option value="Sunday">Sunday</option>
+               </select>
+           </div>
+           
+       </div>
+       
+       <div class="two fields">
+            <div class="six wide field">
+                <label>Start Time</label>
+                <input type="time"  class="ui large input"  name="start_time" required>
+           </div>
+            <div class="six wide field">
+                <label>End Time</label>
+                <input type="time"  class="ui large input"  name="end_time" required>
+           </div>
+
+       </div>
+
+       <div class="field">
+           <button class="ui primary button right floated" type="submit" onclick="checkInputs('hall_staff_edit_form'); return checkTimes();">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+<script type="text/javascript">
+   
+   function isNumberKey(evt){
+   var charCode = (evt.which) ? evt.which : event.keyCode
+   if (charCode > 31 && (charCode < 48 || charCode > 57))
+       return false;
+   return true;
+}
+
+</script>
+
+ {% endblock %} 
+
+
+
+
+

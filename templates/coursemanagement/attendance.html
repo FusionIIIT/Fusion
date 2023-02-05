@@ -1,0 +1,191 @@
+{% load static %} {% block attendance %}
+
+
+<!-- <link rel = "stylesheet" type = "text/css" href = "../static/css/attendance.css"> -->
+<style type="text/css">
+ .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+</style>
+
+
+<div class="ui pointing secondary menu">
+        <a class="active item" data-tab="view">
+          View Attendance
+        </a>
+        <a class=" item" data-tab="submit">
+            Submit Attendance
+        </a>
+       
+</div>
+
+
+
+<div class="ui active tab segment" id="refresh_attend_tab" data-tab="view">
+
+	<p> Total Attendance = {{total_attendance}} </p>
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+        <thead>
+            <tr>
+                <th style="width: 30%;">Roll No.</th>
+                <th style="width: 30%;">Total Present</th>
+                      
+            </tr>
+        </thead>
+        <tbody>
+        	<!-- {% for roll_no, name in students.items %}
+        		<tr>
+        			<td>{{roll_no}}</td>
+        			<td>{{name}}</td>
+        			<td></td>
+        		</tr>
+            {% endfor %}
+                       -->
+                   
+			{% for roll_no, present in present_attendance.items %}    
+			<tr>
+        			<td>{{roll_no}}</td>
+        			<td>{{present}}</td>
+        		</tr>
+        	{% endfor %}
+
+                  
+        </tbody>
+    </table>  
+</div>
+</div>
+<div class="ui tab segment" id="refresh_submit_tab" data-tab="submit">
+    <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{curriculum.course_code}}/attendance">
+    {% csrf_token %}
+
+    	<div class="field">
+                <label>Date</label>
+                    <input type="Date" name="date">
+         </div>
+
+
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+	        <thead>
+	            <tr>
+	                <th style="width: 30%;">Roll No.</th>
+	                <th style="width: 30%;">Name</th>
+	                <th style="width: 30%;">Present/Absent</th>
+	                      
+	            </tr>
+	        </thead>
+	        <tbody>
+            	{% for roll_no, name in students.items %}
+        		<tr>
+        			<td>{{roll_no}}</td>
+        			<td>{{name}}</td>
+        			<input type="input" hidden="hidden" name="Roll" value={{roll_no}}>	
+               		<td><label class="switch">
+                        	<input type="checkbox" name="Present_absent" id="Present_absent" value={{roll_no}}>
+                        	<span class="slider round"></span>
+                    	</label></td>
+           		 </tr>
+            {% endfor %}
+               
+            </tbody>
+	    </table>
+	</div>
+
+	   <!--  <div class="one wide field">
+            <label><br></label>
+                 <a href="#" onclick="document.getElementById('form199').submit();">
+                    <div class="ui primary button">Save</div>
+             </a>
+         </div>  -->
+<input type="submit" class="ui primary button" id="submit_attendance" value="Upload">
+
+	</form>
+</div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+$(function() {
+    $("#attendance_submit").submit(function(event) {
+            $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
+            $("#refresh_submit_tab").load(" #refresh_submit_tab > *");
+            event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('Upload Successful');
+                // window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Failed');
+                // window.location = "/academic-procedures/main/";
+            });
+    });
+});
+
+</script>

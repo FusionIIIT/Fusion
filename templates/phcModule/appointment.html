@@ -1,0 +1,243 @@
+{% load static %}
+{% block appointment %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="doctorappointment">
+            Doctor Apppointment
+        </a>
+
+        <a class="item" data-tab="ambulancerequest">
+            Ambulance Request
+        </a>
+    </div>
+
+    {% comment %}the doctor appointment tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="doctorappointment">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+                
+                  <div class="field">
+                      <label>Doctor</label>
+                      <select id="doc" class="ui search fluid" name="doctor_id" required="true">
+                        <option selected hidden>--SELECT--</option>
+                        {% for doctor in doctors %}
+                        <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                        {% endfor %}
+                      </select>
+                   </div>
+                <div class="field">
+                  <label>Date of Appointment</label>
+                  <!-- on selection of doctor few days should be displayed -->
+                  
+                  
+                              <input type="date" placeholder="Select" id="date" name="date">
+                              <p id="dte"></p>
+                              <label>From Time</label>
+                              <input type="time" placeholder="Select" id="from_time" name="from_time">
+                              <p id="from_time"></p>
+                              <label>To Time</label>
+                              <input type="time" placeholder="Select" id="to_time" name="to_time">
+                              <p id="to_time"></p>
+
+
+                    
+                  
+              </div>
+
+
+                <div class="field">
+                    <label>Issues/Symptoms</label><p id="desc"></p>
+                    <div class="ui fluid input">
+                        <textarea id="description" class="ui textarea" rows="2" name="description" required="true"></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+                      <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
+                    </div>
+
+                </div>
+            </form>
+          <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+          <script type="text/javascript">
+
+
+
+             function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+				 
+						
+					
+					
+					
+                $('#appo').on('click',function(e){
+                     e.preventDefault();
+
+                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
+                     var today = new Date(new Date());
+                     var now = today.getHours();
+
+                     if(trimfield(document.getElementById("description").value) == '')
+                       {
+                       $('#desc').html('*Please fill out the Description!');
+                       document.getElementById("description").focus();
+                        }
+																										
+
+                     else{
+                     $.ajax({
+                     type:'post',
+                     url:'/healthcenter/student/',
+                     data: {
+                     csrfmiddlewaretoken: '{{ csrf_token }}',
+                     doctor:$("#doc").val(),
+                     date:$("#date").val(),
+                     description:$("#description").val(),
+                     appointment:$("#appo").val(),
+                     },
+                     success: function(data){
+                        var dte = new Date(data.dt);
+                        dte.setHours(0, 0, 0, 0);
+
+                         alert("Appointment requested.Check history for the status of appointment. ")
+                         document.getElementById("doc").value=""
+                         document.getElementById("date").value=""
+                         document.getElementById("description").value=" "
+                         $('#desc').html('');
+                         window.location.reload();
+                         $('#app_dte').html('');
+
+                   }
+                  });
+                    }
+                });
+
+              </script>
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+    {% comment %}the ambulance appointment tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="ambulancerequest">
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+                <div class="two fields" >
+                    <div class="field">
+                        <label>From</label>
+                                <input type="date" placeholder="From" id="start_date" name="start_date">
+                                <p id="stdt"></p>
+
+                    </div>
+                    <div class="field">
+                        <label>To</label>
+
+                          <input type="date" placeholder="To" id="end_date" name="end_date">
+                          <p id="endt"></p>
+
+
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <label>Reason</label>
+                    <div class="ui fluid input">
+                        <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
+                        <p id="reas"></p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <div >
+                      <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
+                    </div>
+                </div>
+
+            </form>
+            <script type="text/javascript">
+
+            function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+
+              $('#amb_submit').click(function(e)
+                                                  {
+                                                    var startDate = document.getElementById('start_date').value;
+                                                    var endDate = document.getElementById('end_date').value;
+                                                    var start = new Date(startDate);
+                                                    var end=new Date(endDate);
+
+                                                    var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+
+                                                    $('#stdt').html('');
+                                                    $('#endt').html('');
+                                                    if ( +start < +today ) {
+                                                        $('#stdt').html('You cannot enter a date before today!.');
+                                                        return false;
+                                                    }
+                                                    if(endDate!="")
+                                                    {
+                                                    if ( +end < +start ) {
+                                                        $('#endt').html('You cannot enter a date before start date!.');
+                                                        return false;
+                                                    }
+                                                  }
+
+                                                   if(trimfield(document.getElementById("reason").value) == '')
+                                                     {
+                                                           $('#reas').html('*Please fill out the details!');
+                                                           document.getElementById("reason").focus();
+                                                      }
+
+                                                   else{
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/student/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      start_date:$("#start_date").val(),
+                                                      end_date:$("#end_date").val(),
+                                                      reason:$("#reason").val(),
+                                                      amb_submit:$("#amb_submit").val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("Ambulance requested.");
+                                                      document.getElementById("start_date").value="";
+                                                      document.getElementById("end_date").value="";
+                                                      document.getElementById("reason").value="";
+                                                      window.location.reload();
+
+                                                      $('#reas').html('');
+                                                      $('#stdt').html('');
+                                                      $('#endt').html('');
+
+                                                    }
+                                                  });
+                                                  }
+                                                });
+
+</script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+
+
+    {% comment %}the ambulance appointment tab ends here {% endcomment %}
+{% endblock %}

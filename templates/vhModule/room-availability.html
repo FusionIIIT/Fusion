@@ -1,0 +1,458 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui active tab" data-tab="roomstatus">
+        <div class="ui vertical segment">
+           
+                   <b> Number of Available Rooms: {{ available_rooms|length }}</b>
+                
+            <br>
+            <br>
+
+
+                <table class="ui table" style="margin-bottom: 16px;">
+                <thead>
+                <!-- <tr>Ground Floor</tr> -->
+                </thead>
+
+
+                <tbody>
+                    <tr>
+                            <td>
+                                {% if 'G1' not in available_rooms %}
+                                <div class="ui tiny label">G1</div>
+                                {% else %}
+                                <div class="ui green tiny label">G1</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G2' not in available_rooms %}
+                                <div class="ui tiny label">G2</div>
+                                {% else %}
+                                <div class="ui green tiny label">G2</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G3' not in available_rooms %}
+                                <div class="ui tiny label">G3</div>
+                                {% else %}
+                                <div class="ui green tiny label">G3</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G4' not in available_rooms %}
+                                <div class="ui tiny label">G4</div>
+                                {% else %}
+                                <div class="ui green tiny label">G4</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G5' not in available_rooms %}
+                                <div class="ui tiny label">G5</div>
+                                {% else %}
+                                <div class="ui green tiny label">G5</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G6' not in available_rooms %}
+                                <div class="ui tiny label">G6</div>
+                                {% else %}
+                                <div class="ui green tiny label">G6</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G7' not in available_rooms %}
+                                <div class="ui tiny label">G7</div>
+                                {% else %}
+                                <div class="ui green tiny label">G7</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G8' not in available_rooms %}
+                                <div class="ui tiny label">G8</div>
+                                {% else %}
+                                <div class="ui green tiny label">G8</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G9' not in available_rooms %}
+                                <div class="ui tiny label">G9</div>
+                                {% else %}
+                                <div class="ui green tiny label">G9</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'G10' not in available_rooms %}
+                                <div class="ui tiny label">G10</div>
+                                {% else %}
+                                <div class="ui green tiny label">G10</div>
+                                {% endif %}
+                            </td>
+                   
+                            <td>
+                                <font color="white">aaaaa</font>
+                                <!-- {% if 'G11' not in available_rooms %}
+                                <div class="ui tiny label">G11</div>
+                                {% else %}
+                                <div class="ui green tiny label">G11</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <font color="white">aaaaa</font>
+                                <!-- {% if 'G12' not in available_rooms %}
+                                <div class="ui tiny label">G12</div>
+                                {% else %}
+                                <div class="ui green tiny label">G12</div>
+                                {% endif %} -->
+                            </td>
+                    </tr>
+                    
+                </tbody>  
+            </table>
+
+            <table class="ui table" style="margin-bottom: 16px;">
+                <thead>
+                <!-- <tr>First Floor</tr> -->
+                </thead>
+
+
+                <tbody>
+                    <tr>
+                            <td>
+                                {% if 'F1' not in available_rooms %}
+                                <div class="ui tiny label">F1</div>
+                                {% else %}
+                                <div class="ui green tiny label">F1</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F2' not in available_rooms %}
+                                <div class="ui tiny label">F2</div>
+                                {% else %}
+                                <div class="ui green tiny label">F2</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F3' not in available_rooms %}
+                                <div class="ui tiny label">F3</div>
+                                {% else %}
+                                <div class="ui green tiny label">F3</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F4' not in available_rooms %}
+                                <div class="ui tiny label">F4</div>
+                                {% else %}
+                                <div class="ui green tiny label">F4</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F5' not in available_rooms %}
+                                <div class="ui tiny label">F5</div>
+                                {% else %}
+                                <div class="ui green tiny label">F5</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F6' not in available_rooms %}
+                                <div class="ui tiny label">F6</div>
+                                {% else %}
+                                <div class="ui green tiny label">F6</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F7' not in available_rooms %}
+                                <div class="ui tiny label">F7</div>
+                                {% else %}
+                                <div class="ui green tiny label">F7</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F8' not in available_rooms %}
+                                <div class="ui tiny label">F8</div>
+                                {% else %}
+                                <div class="ui green tiny label">F8</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F9' not in available_rooms %}
+                                <div class="ui tiny label">F9</div>
+                                {% else %}
+                                <div class="ui green tiny label">F9</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F10' not in available_rooms %}
+                                <div class="ui tiny label">F10</div>
+                                {% else %}
+                                <div class="ui green tiny label">F10</div>
+                                {% endif %}
+                            </td>
+                   
+                            <td>
+                                {% if 'F11' not in available_rooms %}
+                                <div class="ui tiny label">F11</div>
+                                {% else %}
+                                <div class="ui green tiny label">F11</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'F12' not in available_rooms %}
+                                <div class="ui tiny label">F12</div>
+                                {% else %}
+                                <div class="ui green tiny label">F12</div>
+                                {% endif %}
+                            </td>
+                    </tr>
+                    
+                </tbody>  
+            </table>
+
+            <table class="ui table" style="margin-bottom: 16px;">
+                <thead>
+                <!-- <tr>Second Floor</tr> -->
+                </thead>
+
+
+                <tbody>
+                    <tr>
+                            <td>
+                                {% if 'S1' not in available_rooms %}
+                                <div class="ui tiny label">S1</div>
+                                {% else %}
+                                <div class="ui green tiny label">S1</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'S2' not in available_rooms %}
+                                <div class="ui tiny label">S2</div>
+                                {% else %}
+                                <div class="ui green tiny label">S2</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'S3' not in available_rooms %}
+                                <div class="ui tiny label">S3</div>
+                                {% else %}
+                                <div class="ui green tiny label">S3</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'S4' not in available_rooms %}
+                                <div class="ui tiny label">S4</div>
+                                {% else %}
+                                <div class="ui green tiny label">S4</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'S5' not in available_rooms %}
+                                <div class="ui tiny label">S5</div>
+                                {% else %}
+                                <div class="ui green tiny label">S5</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                &nbsp;
+                                <!-- <font color="white">aaaa</font> -->
+                                {% if 'S6' not in available_rooms %}
+                                <div class="ui tiny label">S6</div>
+                                {% else %}
+                                <div class="ui green tiny label">S6</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaa</font>
+                                <!-- {% if 'S7' not in available_rooms %}
+                                <div class="ui tiny label">S7</div>
+                                {% else %}
+                                <div class="ui green tiny label">S7</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaa</font>
+                                <!-- {% if 'S8' not in available_rooms %}
+                                <div class="ui tiny label">S8</div>
+                                {% else %}
+                                <div class="ui green tiny label">S8</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaa</font>
+                                <!-- {% if 'S9' not in available_rooms %}
+                                <div class="ui tiny label">S9</div>
+                                {% else %}
+                                <div class="ui green tiny label">S9</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaa</font>
+                                <!-- {% if 'S10' not in available_rooms %}
+                                <div class="ui tiny label">S10</div>
+                                {% else %}
+                                <div class="ui green tiny label">S10</div>
+                                {% endif %} -->
+                            </td>
+                   
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaaa</font>
+
+                                <!-- {% if 'S11' not in available_rooms %}
+                                <div class="ui tiny label">S11</div>
+                                {% else %}
+                                <div class="ui green tiny label">S11</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <!-- &nbsp; -->
+                                <font color="white">aaaaa</font>
+                                <!-- {% if 'S12' not in available_rooms %}
+                                <div class="ui tiny label">S12</div>
+                                {% else %}
+                                <div class="ui green tiny label">S12</div>
+                                {% endif %} -->
+                            </td>
+                    </tr>
+                    
+                </tbody>  
+            </table>
+
+            <table class="ui table" style="margin-bottom: 16px;">
+                <thead>
+                <!-- <tr>Third Floor</tr> -->
+                </thead>
+
+
+                <tbody>
+                    <tr>
+                            <td>
+                                {% if 'T1' not in available_rooms %}
+                                <div class="ui tiny label">T1</div>
+                                {% else %}
+                                <div class="ui green tiny label">T1</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T2' not in available_rooms %}
+                                <div class="ui tiny label">T2</div>
+                                {% else %}
+                                <div class="ui green tiny label">T2</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T3' not in available_rooms %}
+                                <div class="ui tiny label">T3</div>
+                                {% else %}
+                                <div class="ui green tiny label">T3</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T4' not in available_rooms %}
+                                <div class="ui tiny label">T4</div>
+                                {% else %}
+                                <div class="ui green tiny label">T4</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T5' not in available_rooms %}
+                                <div class="ui tiny label">T5</div>
+                                {% else %}
+                                <div class="ui green tiny label">T5</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T6' not in available_rooms %}
+                                <div class="ui tiny label">T6</div>
+                                {% else %}
+                                <div class="ui green tiny label">T6</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T7' not in available_rooms %}
+                                <div class="ui tiny label">T7</div>
+                                {% else %}
+                                <div class="ui green tiny label">T7</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'T8' not in available_rooms %}
+                                <div class="ui tiny label">T8</div>
+                                {% else %}
+                                <div class="ui green tiny label">T8</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <font color="white">aaaa</font>
+
+                                <!-- {% if 'T9' not in available_rooms %}
+                                <div class="ui tiny label">T9</div>
+                                {% else %}
+                                <div class="ui green tiny label">T9</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <font color="white">aaaaa</font>
+
+                               <!--  {% if 'T10' not in available_rooms %}
+                                <div class="ui tiny label">T10</div>
+                                {% else %}
+                                <div class="ui green tiny label">T10</div>
+                                {% endif %} -->
+                            </td>
+                   
+                            <td>
+                                <font color="white">aaaaa</font>
+
+                               <!--  {% if 'T11' not in available_rooms %}
+                                <div class="ui tiny label">T11</div>
+                                {% else %}
+                                <div class="ui green tiny label">T11</div>
+                                {% endif %} -->
+                            </td>
+                            <td>
+                                <font color="white">aaaaa</font>
+                                <!-- {% if 'T12' not in available_rooms %}
+                                <div class="ui tiny label">T12</div>
+                                {% else %}
+                                <div class="ui green tiny label">T12</div>
+                                {% endif %} -->
+                            </td>
+                    </tr>
+                    
+                </tbody>  
+            </table>
+
+
+           <!--  <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+
+                    <th rowspan="2">Room Number</th>
+                    <th rowspan="2">Floor</th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for room in available_rooms %}
+                    <tr>
+                        <td>
+                            {{ room }}
+                        </td>
+                        <td>
+                            {{ room.room_floor }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table> -->
+            <br>
+            <br>
+        </div>
+    </div>
+{% endblock %}
+

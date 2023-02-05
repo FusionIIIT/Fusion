@@ -1,0 +1,98 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block view_meeting %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui secondary pointing menu">
+        <a class="ui active item" data-tab="" id="meeting_info">
+            Meeting information
+        </a>
+        <a class="ui item" data-tab="" id="meeting_min">
+            Meeting Minutes
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="" id="meeting_info_tab">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date</th>
+                    <th>Venue</th>
+                    <th>Agenda</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in meeting %}
+                <tr>
+                    <td>{{item.meet_date}}</td>
+                    <td>{{item.venue}}</td>
+                    <td>{{item.agenda}}</td>
+                    <td>{{item.meeting_time}}</td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+
+<div class="ui tab" data-tab="" id="meeting_min_tab">
+    <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date - Agenda</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in minutes %}
+                <tr>
+                    <td>{{item.meeting_date}}</td>
+                    <td><a href="{{item.mess_minutes.url}}">{{item.mess_minutes}}</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+    </div>
+
+</div>
+
+
+{% endblock %}
+{% endblock %}
+{% block javascript %}
+
+<script>
+
+    $(document).ready(function() {
+        $('#meeting_info').on('click', function () {
+            $(this).addClass('active');
+            $('#meeting_min').removeClass('active');
+            $('#meeting_info_tab').show();
+            $('#meeting_min_tab').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#meeting_min').on('click', function () {
+            $(this).addClass('active');
+            $('#meeting_info').removeClass('active');
+
+             $('#meeting_info_tab').hide();
+            $('#meeting_min_tab').show();
+
+        });
+    });
+
+</script>
+{% endblock %}

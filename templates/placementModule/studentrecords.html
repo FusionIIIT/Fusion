@@ -1,0 +1,1105 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Placement Schedule
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                {% for c in current %}
+                    {% if c.designation.name == 'student' %}
+                     <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     {% endif %}
+                 {% endfor %}
+
+
+                {% for c in current2 %}
+                    {% if c.designation.name == 'placement officer' %}
+                        {% if students or invitecheck == 1 or student_record_check == 1 %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>(9-4-22)-->
+                    {% endif %}
+                {% endfor %}
+
+
+                {% for c in current1 %}
+                    {% if c.designation.name == 'placement chairman' %}
+                        {% if students %}
+                           <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>-->
+                    {% endif %}
+
+
+                  <!--  <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>     9-4-22
+                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                        Placement Visits
+                        <i class="right floated chevron right icon"></i>
+                    </a>-->
+                {% endif %}
+                {% endfor %}
+
+                <!--Added placement schedule tab here-->
+                {% if current3 %}           <!--Added condition before schedule tab so that it appears for students only-->
+                <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
+                    Placement Statistics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+                <!--Added student record tab here-->
+                {% if current1 %}
+              <!--  <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                    Student Record
+                    <i class="right floated chevron right icon"></i>
+                </a>(9-4-22)-->
+
+
+
+                <!--Placement officers could schedule placement -->
+                <!--<a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
+                    Add Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>-->
+                <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
+                    Add Placement Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if current1 %}
+                <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
+                    Add Chairman Visit
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %} The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+
+            {% comment %}The tab menu starts here!{% endcomment %}
+            <div class="ui pointing secondary menu">
+                <!--<a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="search">
+                    Search
+                </a>-->
+
+                <a class="{% if invitation_status_tab %}active item{% else %}item{% endif %}" data-tab="sendinvite">
+                    Send Invitation
+                </a>
+
+                <a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="invitation_status">
+                    Invitation Status
+                </a>
+            </div>
+
+            {% if not students and student_record_check == 1 %}
+              <div class="ui error message">
+                <i class="close icon"></i>
+                <div class="header">
+                  There is no such record of this type.
+                </div>
+                <ul>
+                  <li>try changing some fields or,</li>
+                  <li>include some more fields in search</li>
+                </ul>
+              </div>
+            {% endif %}
+
+        <!--    <div id="searchTab" class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="search">
+                <form method="post" class="ui form" role="form" action="{% url 'placement:student_records' %}">
+                    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                    <div class="ui accordion field">
+                       <div class="title">
+                            <i class="icon dropdown"></i>
+                            Search a Student!
+                        </div>
+
+
+                        {{ form1.non_field_errors }}
+                        <div class=" content">
+                            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                              {% csrf_token %}
+                                <div class="two fields">
+                                    <div class="field">
+                                      {{ form1.name.errors }}
+                                        <label>
+                                            Name
+                                        </label>
+
+                                        <div class="ui large input">
+                                            {{ form1.name }}
+                                        </div>
+                                    </div>
+
+                                    <div class="field">
+                                      {{ form1.rollno.errors }}
+                                        <label>
+                                            Roll Number or Year
+                                        </label>
+
+                                        <div class="ui large input">
+                                            {{ form1.rollno }}
+                                        </div>
+                                    </div>
+
+                                    <div class="field">
+                                      {{ form1.cpi.errors }}
+                                        <label>
+                                            Min. CPI
+                                        </label>
+
+                                        {{ form1.cpi }}
+                                    </div>
+                                </div>
+
+                                <div class="three fields">
+
+                                    <div class="field">
+                                      {{ form1.programme.errors }}
+                                        <label>
+                                            Programme
+                                        </label>
+                                        {{ form1.programme }}
+                                    </div>
+
+                                    <div id="AllDept" class="field">
+                                      <div id = "B.TechSearch" class="dept field">
+                                        {{ form1.dep_btech.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_btech }}
+                                      </div>
+
+                                      <div id = "B.DesSearch" class="dept field">
+                                        {{ form1.dep_bdes.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_bdes }}
+                                      </div>
+
+                                      <div id = "M.TechSearch" class="dept field">
+                                        {{ form1.dep_mtech.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_mtech }}
+                                      </div>
+
+                                      <div id = "M.DesSearch" class="dept field">
+                                        {{ form1.dep_mdes.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_mdes }}
+                                      </div>
+
+                                      <div id = "PhDSearch" class="dept field">
+                                        {{ form1.dep_phd.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_phd }}
+                                      </div>
+                                    </div>
+
+                                    <div class="field">
+                                      {{ form1.debar.errors }}
+                                        <label>Debarred</label>
+                                        {{ form1.debar }}
+                                    </div>
+
+                                    <div class="field">
+                                      {{ form1.placed_type.errors }}
+                                        <label>Placed</label>
+                                        {{ form1.placed_type }}
+                                    </div>
+
+                                </div>
+
+                                <div class="two fields">
+                                    <div class="field">
+                                      {{ form1.skill.errors }}
+                                        <label>Skills</label>
+                                        {{ form1.skill }}
+                                    </div>
+                                    <div class="field"></div>
+                                    <div class="field" style="padding-top:40px">
+                                        <button name="recordsubmit" value="recordsubmit" class="ui large primary button right floated" type="submit">
+                                            Search
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {% comment %}
+                                <br><div class="ui divider"></div><br>
+                                <div class="three fields">
+                                  <div class="two wide field"></div>
+                                  <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="achievementcheck" value=1 checked="">
+                                    <label>Achievements</label>
+                                    </div>
+                                  </div>
+                                    <br><br>
+                                  <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="educationcheck" value=1 checked="">
+                                    <label>Education</label>
+                                    </div>
+                                  </div>
+                                  <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="publicationcheck" value=1 checked="">
+                                    <label>Publications</label>
+                                    </div>
+                                  </div>
+                                </div>
+                                    <br><br>
+                                <div class="three fields">
+                                  <div class="two wide field"></div>
+                                  <div class="fields">
+                                     <div class="ui slider checkbox">
+                                     <input type="checkbox" name="internshipcheck" value=1 checked="">
+                                     <label>Internships</label>
+                                     </div>
+                                   </div>
+                                     <br><br>
+                                   <div class="fields">
+                                     <div class="ui slider checkbox">
+                                     <input type="checkbox" name="projectcheck" value=1 checked="">
+                                     <label>Projects</label>
+                                     </div>
+                                   </div>
+                                    <br><br>
+                                  <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="patentcheck" value=1 checked="">
+                                    <label>Patents</label>
+                                    </div>
+                                  </div>
+                               </div>
+                                    <br><br>
+
+                               <div class="three fields">
+                                 <div class="two wide field"></div>
+                                 <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="coursecheck" value=1 checked="">
+                                    <label>Courses</label>
+                                    </div>
+                                  </div>
+                                    <br><br>
+                                  <div class="fields">
+                                    <div class="ui slider checkbox">
+                                    <input type="checkbox" name="skillcheck" value=1 checked="">
+                                    <label>Skills</label>
+                                    </div>
+                                  </div><br>
+                                  <div class="field">
+                                      <button name="getcvsubmit" value="getcvsubmit" class="ui large primary button right floated" type="submit">
+                                          Get CVs
+                                      </button>
+                                  </div>
+                              </div>
+
+                              {% endcomment %}
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                </form>
+
+                {% comment %}Form Tag ends here!{% endcomment %}
+
+                {% if students %}
+
+
+                  <form method="post" target="_blank" action="{% url 'placement:student_records' %}" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="pdf_gen_std_record" value="pdf_gen_std_record" class="ui medium positive button right floated" type="submit">
+                    PDF
+                  </button></form>
+
+
+                  <form method="post" target="_blank" action="{% url 'placement:student_records' %}" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="excel_gen_std_record" value="excel_gen_std_record" class="ui medium positive button right floated" type="submit">
+                    Excel Sheet
+                  </button></form>
+
+
+                  {% if no_pagination %}
+
+                    <center>
+                      <div class="ui pagination menu">
+                        {% if students.has_previous %}
+                        <a href="?page={{students.previous_page_number}}" class="item">
+                          Previous
+                        </a>
+                        {% endif %}
+
+                        {% if is_disabled %}
+                          <a href="?page=1" class="item">1</a>
+                          <div class="disabled item">
+                            ...
+                          </div>
+                        {% endif %}
+
+                        {% for i in page_range %}
+                          {% if students.number == i %}
+                            <a href="?page={{i}}" class="active item">{{ i }} </a>
+                          {% else %}
+                            <a href="?page={{ i }}" class="item">{{ i }}</a>
+                          {% endif %}
+                        {% endfor %}
+
+
+
+                        {% if students.has_next %}
+                        <div class="disabled item">
+                          ...
+                        </div>
+                        <a href="?page={{students.next_page_number}}" class="item">
+                          Next
+                        </a>
+                        {% endif %}
+                      </div>
+                    </center>
+                  {% endif %}
+
+
+                  <br>
+                  <br><br>
+
+                  <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                      <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>CPI</th>
+                            <th>Department</th>
+                            <th>Discipline</th>
+                            <th>View Profile</th>
+                            <th>Placed</th>
+                            <th>Debarred?</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {% for student in students %}
+                          <tr>
+                              <td>
+                                  <div class="content">
+                                      {{ student.id.user.first_name}} {{ student.id.user.last_name }}
+                                      <div class="sub header">
+                                          {{ student.id.id }}
+                                      </div>
+                                  </div>
+                              </td>
+
+                              <td>
+                                  {{ student.cpi }}
+                              </td>
+
+                              <td>
+                                  {{ student.programme }}
+                              </td>
+
+                              <td>
+                                  {{ student.id.department.name }}
+                              </td>
+
+                              <td>
+                                  <a class="ui inverted huge circular icon button" target="_blank" href="/placement/cv/{{ student.id.user.username }}/" style="margin: auto;">
+                                      <i class="attach black icon"></i>
+                                  </a>
+                              </td>
+
+                              <td>
+                                {% if student.studentplacement.unique_id == student %}
+                                  {% if student.studentplacement.placed_type == "PLACED" %}
+                                    Yes
+                                  {% else %}
+                                    No
+                                  {% endif %}
+                                {% endif %}
+                              </td>
+
+                              <td>
+                                <form method="post" class="ui form" role="form" action="{% url 'placement:student_records' %}">
+                                  {% csrf_token %}
+                                    {% if student.studentplacement.unique_id == student %}
+                                      {% if student.studentplacement.debar == "DEBAR" %}
+                                        <button name="undebar" type="submit" class="ui green mini button right floated" value="{{ student.studentplacement.pk }}">
+                                        Undebar</button>
+                                        {% else %}
+                                        <button name="debar" type="submit" class="ui red mini button right floated" value="{{ student.studentplacement.pk }}">
+                                        Debar</button>
+                                      {% endif %}
+                                    {% endif %}
+                                </form>
+                              </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                  </table>
+                {% endif %}
+
+
+            </div>-->
+
+
+            <div id="sendTab" class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="sendinvite">
+              <form method="post" action="{% url 'placement:student_records' %}" class="ui form" role="form">
+                {{ form13.non_field_errors }}
+                      {% csrf_token %}
+                <div class="field">
+                    {{ form13.company.errors }}
+                      <label>
+                          Company Name
+                      </label>
+                      <div class="ui fluid large input">
+                        {{ form13.company }}
+                      </div>
+                </div>
+
+                <div class="three fields">
+                  <div class="field">
+                    {{ form13.programme.errors }}
+                      <label>
+                          Programme
+                      </label>
+                      {{ form13.programme }}
+                  </div>
+
+                  <div id="AllDept" class="field">
+                    <div id = "B.TechSend" class="dept field">
+                      {{ form13.dep_btech.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_btech }}
+                    </div>
+
+                   <div id = "B.DesSend" class="dept field">
+                      {{ form13.dep_bdes.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_bdes }}
+                    </div>
+
+                    <div id = "M.TechSend" class="dept field">
+                      {{ form13.dep_mtech.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_mtech }}
+                    </div>
+
+                    <div id = "M.DesSend" class="dept field">
+                      {{ form13.dep_mdes.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_mdes }}
+                    </div>
+
+                    <div id = "PhDSend" class="dept field">
+                      {{ form13.dep_phd.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_phd }}
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    {{ form13.rollno.errors }}
+                      <label>Year or Roll Number</label>
+                      {{ form13.rollno }}
+                  </div>
+
+                  <div class="field">
+                    {{ form13.cpi.errors }}
+                      <label>Min. CPI</label>
+                      {{ form13.cpi }}
+                  </div>
+
+              </div>
+              <div class="four fields">
+                <div class="field">
+                  {{ form13.no_of_days.errors }}
+                    <label>Valid For (Days)</label>
+                  {{ form13.no_of_days }}
+                </div>
+                <div class="field"></div>
+                <div class="field"></div>
+                <div class="field" >
+                    <div><br></div>
+                    <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
+                        Send
+                    </button>
+                </div>
+              </div>
+              <br><div class="row"></div><br>
+              </form>
+            </div>
+
+            <div class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="invitation_status">
+              <div class="ui vertical segment">
+                <div class="ui two item menu">
+                    <a class="{% if mnpbi_post %}item{% else %}active item{% endif %}" data-tab="Placement">
+                      Placement
+                    </a>
+
+                    <a class="{% if mnpbi_post %}active item{% else %}item{% endif %}" data-tab="PBI">
+                      PBI
+                    </a>
+                </div>
+              </div>
+
+              <div class="{% if mnpbi_post %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
+                {% if not placementstatus_placement and officer_manage %}
+                  <div id="placement_invitation_error_message" class="ui error message">
+                    <i onclick="placementInvitationStatusErrorMessage();" class="close icon"></i>
+                    <div class="header">
+                      There is no such record of this type.
+                    </div>
+                    <ul>
+                      <li>try changing some fields or,</li>
+                      <li>include some more fields in search</li>
+                    </ul>
+                  </div>
+                {% endif %}
+                <div class="ui vertical segment">
+                    <form method="post" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        <div class="ui active accordion field">
+                            <div class="title">
+                                <i class="icon dropdown"></i>
+                                Manage Placement Records!
+                            </div>
+                            {{ form11.non_field_errors }}
+                            <div class="active content">
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                  {% csrf_token %}
+                                    <div class="three fields">
+                                        <div class="eight wide field">
+                                          {{ form11.stuname.errors }}
+                                            <label for="{{ form11.stuname.id_for_label }}">Student</label>
+                                            <div class="ui fluid large input">
+                                                {{ form11.stuname }}
+                                            </div>
+                                        </div>
+
+                                        <div class="four wide field">
+                                          {{ form11.roll.errors }}
+                                            <label for="{{ form11.roll.id_for_label }}">Roll Number</label>
+                                            <div class="ui fluid large input">
+                                                {{ form11.roll }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% comment %}The start and end date input{% endcomment %}
+                                    <div class="two fields">
+                                      <div class="twelve wide field">
+                                        {{ form11.company.errors }}
+                                          <label for="{{ form11.company.id_for_label }}">Company</label>
+                                          <div class="ui input">
+                                              {{ form11.company }}
+                                          </div>
+                                      </div>
+
+                                        <div class="four wide field">
+                                          {{ form11.ctc.errors }}
+                                            <label for="{{ form11.ctc.id_for_label }}">CTC</label>
+                                            <div class="ui input">
+                                                {{ form11.ctc }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+
+                                    <div class="four wide field">
+                                        <button name="studentplacementsearchsubmit" value="studentplacementsearchsubmit" class="ui fluid large primary button" type="submit">
+                                            Search
+                                        </button>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if placementstatus_placement %}
+                      <br>
+                      <!-- Pagination Section starts here  --->
+                      {% if no_pagination %}
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementstatus_placement.has_previous %}
+                            <a href="?placement_page={{placementstatus.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?placement_page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementstatus_placement.number == i %}
+                                <a href="?placement_page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?placement_page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+                            {% if placementstatus_placement.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?placement_page={{placementstatus_placement.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                      {% endif %}
+                      <!-- Pagination Section ends here --->
+                      <br>
+                      <div class="ui divider"></div>
+
+                      <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+                            <thead>
+                            <tr>
+                                <th class="four wide">Student</th>
+                                <th class="six wide">Company</th>
+                                <th class="two wide">CTC (LPA)</th>
+                                <th class="two wide">Invitation</th>
+                                <th class="two wide">Delete</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                              {% for student in placementstatus_placement %}
+                                {% if student.notify_id.placement_type == 'PLACEMENT' %}
+                                <tr>
+                                    <td>
+                                        <h4 class="ui image header">
+
+                                            <div class="content">
+                                              {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                                <div class="sub header">
+                                                  {{ student.unique_id.id.id }}
+                                                </div>
+                                            </div>
+                                        </h4>
+                                    </td>
+
+                                    <td>
+                                        {{ student.notify_id.company_name }}
+                                    </td>
+
+                                    <td>
+                                        {{ student.notify_id.ctc }}
+                                    </td>
+
+                                    <td>
+                                      {{ student.invitation }}
+                                    </td>
+
+                                    <td>
+                                      <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
+                                        {% csrf_token %}
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                            <i class="delete red icon"></i>
+                                        </button>
+                                      </form>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                              {% endfor %}
+                            </tbody>
+
+                      </table>
+                    {% endif %}
+
+                </div>
+              </div>
+
+              <div class="{% if mnpbi_post %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
+                  {% if not placementstatus_pbi and mnpbi_post %}
+                    <div id="pbi_invitation_error_message" class="ui error message">
+                      <i onclick="pbiInvitationStatusErrorMessage();" class="close icon"></i>
+                      <div class="header">
+                        There is no such record of this type.
+                      </div>
+                      <ul>
+                        <li>try changing some fields or,</li>
+                        <li>include some more fields in search</li>
+                      </ul>
+                    </div>
+                  {% endif %}
+                  <div class="ui vertical segment">
+                      <form method="post" class="ui form" role="form" action="{% url 'placement:invitation_status' %}">
+                          <div class="ui active accordion field">
+                              <div class="title">
+                                  <i class="icon dropdown"></i>
+                                  Manage PBI Records!
+                              </div>
+                              {{ form9.non_field_errors }}
+                              <div class="active content">
+                                  <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                    {% csrf_token %}
+                                      <div class="three fields">
+                                          <div class="eight wide field">
+                                            {{ form9.stuname.errors }}
+                                              <label for="{{ form9.stuname.id_for_label }}">Student</label>
+                                              <div class="ui fluid large input">
+                                                  {{ form9.stuname }}
+                                              </div>
+                                          </div>
+
+                                          <div class="four wide field">
+                                            {{ form9.roll.errors }}
+                                              <label for="{{ form9.roll.id_for_label }}">Roll Number</label>
+                                              <div class="ui fluid large input">
+                                                  {{ form9.roll }}
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      {% comment %}The start and end date input{% endcomment %}
+                                      <div class="two fields">
+                                          <div class="twelve wide field">
+                                            {{ form9.company.errors }}
+                                              <label for="{{ form9.company.id_for_label }}">Company</label>
+                                              <div class="ui input">
+                                                  {{ form9.company }}
+                                              </div>
+                                          </div>
+
+                                          <div class="four wide field">
+                                            {{ form9.ctc.errors }}
+                                              <label for="{{ form9.ctc.id_for_label }}">CTC</label>
+                                              <div class="ui input">
+                                                  {{ form9.ctc }}
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      <div class="two fields">
+
+                                      <div class="four wide field">
+                                          <button name="studentpbisearchsubmit" value="studentpbisearchsubmit" class="ui fluid large primary button" type="submit">
+                                              Search
+                                          </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </form>
+
+                    {% if placementstatus_pbi %}
+                      <br>
+
+                      <!--
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pdf_gen_invitation_status_placement" value="pdf_gen_invitation_status_placement">
+                        <button name="pdf_gen_invitation_status" value="pdf_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        PDF
+                      </button></form>
+
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement">
+                        <button name="excel_gen_invitation_status" value="excel_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        Excel Sheet
+                      </button></form>
+                      -->
+
+                      <!-- Pagination Section starts here  --->
+                    {% if no_pagination %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementstatus_pbi.has_previous %}
+                            <a href="?pbi_page={{placementstatus_pbi.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?pbi_page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementstatus_pbi.number == i %}
+                                <a href="?pbi_page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?pbi_page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if placementstatus_pbi.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?pbi_page={{placementstatus_pbi.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                      <br>
+
+                      <div class="ui divider"></div>
+                        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+                            <thead>
+                            <tr>
+                              <th class="four wide">Student</th>
+                              <th class="six wide">Company</th>
+                              <th class="two wide">CTC (LPA)</th>
+                              <th class="two wide">Invitation</th>
+                              <th class="two wide">Delete</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for student in placementstatus_pbi %}
+                              {% if student.notify_id.placement_type == 'PBI' %}
+                              <tr>
+                                <td>
+                                    <h4 class="ui image header">
+
+                                        <div class="content">
+                                          {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                            <div class="sub header">
+                                              {{ student.unique_id.id.id }}
+                                            </div>
+                                        </div>
+                                    </h4>
+                                </td>
+
+                                <td>
+                                    {{ student.notify_id.company_name }}
+                                </td>
+
+                                <td>
+                                   {{ student.notify_id.ctc }}
+                                </td>
+
+                                <td>
+                                    {{ student.invitation }}
+                                </td>
+
+                                <td>
+                                  <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
+                                        {% csrf_token %}
+                                         <input type="hidden" name="pbi_tab_active" value="pbi_tab_active">
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                            <i class="delete red icon"></i>
+                                        </button>
+                                      </form>
+                                </td>
+                              </tr>
+                              {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                    {% endif %}
+                  </div>
+              </div>
+
+            </div>
+
+            {% if students %}
+              <br>
+              <br>
+              <div class="ui divider"></div>
+
+
+            {% endif %}
+
+            {% if invitecheck == 1 %}
+            <div id="mydiv" class="ui positive message">
+              <div class="header">
+                Notification Sent!
+              </div>
+              <p>Placement <b>Invitation</b> is sent to selected students.</p>
+            </div>
+            {% endif %}
+
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="text/javascript">
+  function pbiInvitationStatusErrorMessage(){
+    $('#pbi_invitation_error_message').css('display', 'none');
+  }
+
+  function placementInvitationStatusErrorMessage(){
+    $('#placement_invitation_error_message').css('display', 'none');
+  }
+
+</script>
+
+<script>
+  var fade_out = function() {
+    $("#mydiv").fadeOut().empty();
+  }
+  setTimeout(fade_out, 8000);
+
+  //---------------------change Dept according to Programme selected-----------------------------
+  changeDeptForSearch(true);
+  changeDeptForSend(true);
+
+  function changeDeptForSearch(first_time_call=false){
+    console.log('hello world');
+
+    var e = document.getElementById("id_programme_search");
+    var prog_name = e.options[e.selectedIndex].value;
+
+    if(!first_time_call)
+      $("#searchTab #AllDept input[type=checkbox]").each(function () {
+          $(this).prop("checked", false);
+      });
+
+    prog_name += 'Search';
+    console.log(prog_name);
+
+    $('#searchTab .dept').hide();
+    var x = document.getElementById(prog_name);
+    x.style.display = "block";
+
+  }
+
+  function changeDeptForSend(first_time_call=false){
+    console.log('hello world');
+
+    var e = document.getElementById("id_programme_send");
+    var prog_name = e.options[e.selectedIndex].value;
+
+    if(!first_time_call)
+      $("#sendTab #AllDept input[type=checkbox]").each(function () {
+          $(this).prop("checked", false);
+      });
+
+    prog_name += "Send";
+    console.log(prog_name);
+
+    $('#sendTab .dept').hide();
+    var x = document.getElementById(prog_name);
+    x.style.display = "block";
+
+  }
+
+</script>
+{% endblock %}

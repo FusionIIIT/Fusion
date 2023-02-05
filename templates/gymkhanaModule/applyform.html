@@ -1,0 +1,263 @@
+{% block applyform %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubmembershipform">
+            Club Membership Form
+        </a>
+
+        <a class="item" data-tab="newclubform">
+            New Club Form
+        </a>
+    </div>
+    <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
+    <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
+    
+    <div class="ui active tab" data-tab="clubmembershipform">
+        <div class="ui vertical segment">
+            <form method="Post" id="club_membership_form">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name</label>
+                            <input type="text" name="user_name" readonly="" class="ui large input" value="{{ request.user.extrainfo }}" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Email</label>
+                            <input name="email" placeholder="Email" readonly="" class="ui large input" type="email" value="{{ request.user.email }}" required />
+                        </div>
+                    </div>
+                    <div class="ui eight field">
+                        <label>Club</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="club">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                {% for i in Club_name %}
+                                {% if i.status == "confirmed" %}
+                                    <div class="item" data-value="{{i.club_name}}">{{i.club_name}}</div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- <select class="ui search fluid dropdown" name="club" required />
+                            <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if i.club_name not in Curr_club %}
+                                <option value="{{ i.club_name }}">{{ i.club_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select> -->
+                    </div>
+
+                    <div class="field">
+                        <label>Achievements</label>
+                        <textarea rows="2" name="achievements" required /></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_membership','club_membership_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+
+
+    <div class="ui tab" data-tab="newclubform">
+        <div class="ui vertical segment">
+            <form method="post" id="new_club_form" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="three fields">
+                        <div class="eight wide field">
+                            <label>Club</label>
+                            <input type="text" placeholder="Club" class="ui large input" name="club_name" required>
+                        </div>
+                        <div class="eight wide field">
+                            <label>Category</label>
+                            <div class="ui selection dropdown">
+                                <input type="hidden" name="category">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select</div>
+                                <div class="menu">
+                                        <div class="item" data-value="Technical">Technical</div>
+                                        <div class="item" data-value="Cultural">Cultural</div>
+                                        <div class="item" data-value="Sports">Sports</div>
+                                        <div class="item" data-value="others">Others</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Co-ordinator</label>
+                            <input list="dropdown-menu1" name="co" id="co_Search" type="text" />
+                                <datalist class="dropdown-menu" id="dropdown-menu1"></datalist>
+                            <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
+                                <option value="">Select</option>
+
+                            </select> -->
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Co Co-ordinator</label>
+                            <input list="dropdown-menu2" name="coco" id="co_co_Search" type="text" />
+                                <datalist class="dropdown-menu" id="dropdown-menu2"></datalist>
+                                <!-- <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                                    <option value="">Select</option>
+
+                                </select> -->
+                        </div>
+
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Faculty Incharge</label>
+                        <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
+                            <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                            <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
+                                <option value="">Select</option>
+                    
+                            </select> -->
+                    </div>
+
+
+                    <div class="field">
+                        <label>Attachments (if any)</label>
+                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file" name="file" accept=".pdf" required></input>
+                        <span id="lblError" style="color: red;"></span>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_club','new_club_form',event);">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        $('#co_Search').on('input', function(){
+            current_value = $('#co_Search').val();
+            if(current_value.length > 4){
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu1').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu1').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        }
+        });
+
+        $('#co_co_Search').on('input', function(){
+            current_value = $('#co_co_Search').val();
+            // console.log("keyup function");
+            if(current_value.length > 4 ) {
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu2').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu2').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        }
+        });
+
+        $('#faculty_Search').on('input', function(){
+            current_value = $('#faculty_Search').val();
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/faculty_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu3').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i]);
+                        $('#dropdown-menu3').append('<option value="'+response[i]+'">'+response[i]+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        });
+
+        function ValidateExtension() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload");
+            var lblError = document.getElementById("lblError");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+
+    </script>
+
+
+{% endblock %}

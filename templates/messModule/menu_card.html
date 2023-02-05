@@ -1,0 +1,139 @@
+{% block menucard %}
+{% for d in desig %}
+    {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
+
+        <a class="active item" data-tab="thirteenth">
+            View Menu
+        </a>
+
+        <a class="item" data-tab="fifteenth">
+            Meeting information
+        </a>
+
+        <a class="item" data-tab="sixteenth">
+            Feedback Statistics
+        </a>
+
+        <a class="item" data-tab="forteenth">
+            View Feedback | Statistics
+        </a>
+
+    {% endif %}
+
+{% if info.user_type == 'student' %}
+        {% if d.designation.name == 'student' %}
+        
+
+            <a class="active item"  data-tab="fourth">
+            Menu | Bill | Payment Details
+            </a>
+
+            <a class=" item" data-tab="first">
+                Feedback
+            </a>
+
+            
+            <a class="item" data-tab="sixth">
+                Apply For Non-veg | Check History
+            </a>
+
+            <!-- <a class="item" data-tab="ninth">
+                Meeting Information
+            </a> -->
+            
+
+            <a class="item" data-tab="second">
+                Applications
+            </a>
+            
+ <!--  
+            <a class="item" data-tab="third">
+                Apply For Vacation Food
+            </a>
+
+            <a class="item" data-tab="fifth">
+                Special Food Request | Choose mess
+            </a>
+            -->
+            
+
+
+        {% endif %}
+        {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
+            <a class="item" data-tab="fifteenth">
+                Meeting information
+            </a>
+<!--
+            <a class="item" data-tab="tenth">
+                Meeting Minutes
+            </a>
+            -->
+
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>
+            <!--
+            <a class="item" data-tab="sixteenth">
+                Feedback Statistics
+            </a>
+            -->
+
+
+        {% endif %}
+        {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>
+
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
+
+            <a class="item" data-tab="ninth">
+                Meeting Information
+            </a>
+
+            <a class="item" data-tab="eleventh">
+                View Special Food Request
+            </a>
+{##}
+{#            <a class="item" data-tab="seventeenth">#}
+{#                Publish Minutes#}
+{#            </a>#}
+            <!--
+            <a class="item" data-tab="sixteenth">
+                Feedback Statistics
+            </a>
+            -->
+        {% endif %}
+    {% endif %}
+
+
+    {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+        <a class="item" data-tab="seventh">
+            Respond to requests
+        </a>
+
+        <a class="item" data-tab="twentytwo">
+            Non-Veg Orders
+        </a>
+
+        <a class="item" data-tab="nineteenth">
+            Menu Requests
+        </a>
+
+        <a class="active item" data-tab="thirteenth">
+            View Menu
+        </a>
+
+        <a class="item" data-tab="twelfth">
+            Mess Activities
+        </a>
+    {% endif %}
+
+
+{% endfor %}
+{% endblock %}

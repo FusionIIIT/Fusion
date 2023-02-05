@@ -1,0 +1,74 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Faculty List Department Wise
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %} 
+	
+{% comment %} {% block CSE_faculty_List  %} {% endcomment %}
+
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+             {{ department }} faculty List
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        {% comment %} <div class=""> {% endcomment %}
+           
+		   {% if fac_list %}
+          <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
+                <td> id </td>
+                <td> faculty name </td>
+				<!-- <td> title </td> -->
+                <td> sex </td>
+				<td> date_of_birth </td>
+                <td> address </td>
+				<td> phone_no </td>
+                <td> user_type </td>
+				<td> department </td>
+                <td> github </td>
+                
+            </tr>
+            </thead>
+
+            {% for fcu in fac_list %}
+              <tr>
+                <td>{{ fcu.id }}</td>
+                <td><a href = "{% url 'globals:profile' %}">{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+			    <!-- <td>{{ fcu.title }}</td> -->
+                <td>{{ fcu.sex }}</td>
+				<td>{{ fcu.date_of_birth }}</td>
+                <td>{{ fcu.address }}</td>
+				<td>{{ fcu.phone_no }}</td>
+                <td>{{ fcu.user_type }}</td>
+				<td>{{ fcu.department.name }}</td>
+                <td>{{ fcu.id.faculty_about.github }}</td>
+              </tr>
+              
+            {% endfor %}
+        </table>
+
+      {% else %}
+        <p>No Records. Table Not Created.</p>
+      {% endif %}
+
+            
+            <div class="ui divider"></div>
+        {% comment %} </div> {% endcomment %}
+    </div>
+
+
+{% comment %} {% endblock %} {% endcomment %}
+
+{% include 'department/alert.html' %}
+{% endblock %}

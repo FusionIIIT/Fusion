@@ -1,0 +1,295 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+	{{request.user}}
+{% endblock %}
+
+{% comment %} {% block extra %}
+	{{form_answer.media}}
+{% endblock %} {% endcomment %}
+
+{% block body %}
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
+
+    {% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+    {% block stylesheet%}
+        <style>
+            .ui.segment:first-child {
+                margin-top: 1rem;
+            }
+            
+            .bio{
+                display: flex;
+                justify-content: center;
+            }
+            .ui.action.input input[type="file"] {
+                display: none;
+            }
+        </style>
+        
+    {% endblock %}
+
+    {% comment %} Main Tabs for navigation {% endcomment %}
+    <div class="ui grid page" style="margin-bottom:25px;">
+        <div class="column">
+            <div class="ui segment">
+                <div class="ui pointing secondary demo menu">
+                    <a class="active red item" data-tab="profile"><i class="icon user sign"></i>Profile</a>
+                    <a class="blue item" data-tab="activity"><i class="icon chart bar outline"></i>Activity</a>
+                    {% if request.user == profile.user %}
+                    <a class="green item" data-tab="editProfile"><i class="icon edit sign"></i>Edit Profile</a>
+                    {% endif %}
+                    <a class="green item floated right" href="{% url 'feeds:feeds' %}"><i class="icon arrow left"></i>Back</a>
+                </div>
+
+                {% comment %} Profile start {% endcomment %}
+                <div class="ui center active tab" data-tab="profile">
+                    {% comment %} Profile Card {% endcomment %}
+                    <div class="ui centered special cards">
+                        <div class="card">
+                            <div class="blurring dimmable image">
+                                <div class="ui dimmer">
+                                    <div class="content">
+                                        <div class="center">
+                                            <div class="ui inverted button"><i class="icon user sign"></i>{{profile.user.username}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if profile.profile_picture %}
+                                    {% if no_img %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
+                                    {% else %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                    {% endif %}
+                                {% else %}
+                                    <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
+                                {% endif %}
+                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">{{profile.user.username}}</h5></div>
+                            </div>
+                            <div class="content center aligned">
+                                <a class="header mr-auto">{{profile.user.first_name}}</a>
+                                <div class="meta">
+                                    <span class="date">Student at IIITDM Jabalpur</span>
+                                </div>
+                            </div>
+                            <div class="extra content">
+                                <div class="left floated"><i class="icon marker"></i>Madhya Pradesh</div> <div class="right floated"><i class="icon github"></i>thesid01</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %}  Profile card end{% endcomment %}
+
+                    {% comment %} Bio start {% endcomment %}
+                    <div class="ui divider"></div>
+                    <div class="ui placeholder segment">
+                        <div class="ui two column very relaxed stackable grid">
+                            <div class="column">
+                                <h3 class="ui header">Bio</h3>
+                                <div class="bio description">
+                                    {% if profile == "" %}<b>Bio not available Go to Edit profile </b> {% else %}{{profile.bio}} {% endif %}
+                                </div>
+                            </div>
+                            <div class="middle aligned column">
+                                <h3 class="ui header">Stats</h3>
+                                {% comment %} <div class="description"> {% endcomment %}
+                                <div class="ui grid">
+                                    <div class="eight wide column">
+                                        <div style="margin-left:15px;">{{answer_given}}</div>
+                                        <div><i class="icon write"></i> answers</div>
+                                    </div>
+                                    <div class="eight wide column">
+                                        <div style="margin-left:15px;">{{question_asked}}</div>
+                                        <div><i class="icon list ul"></i> questions</div>
+                                    </div>
+                                </div>
+                                <div class"ui divider"></div>
+                                <div class="teal" style="margin:15px 0;">
+                                    <i class="icon marker teal"></i> {{extra.address}}
+                                    <div class="divider"></div>
+                                    <i class="icon eye teal"></i> {{profile.profile_view}} profile views
+                                    <div class="divider"></div>
+                                    <i class="icon sign in teal"></i> <b>Last Login:</b> {{last_login}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui vertical divider">
+                            <i class="icon heart"></i>
+                        </div>
+                    </div>
+
+                    {% comment %} Bio end {% endcomment %}
+
+                    {% comment %} Personal Display {% endcomment %}
+                    <div class="ui divider"></div>
+                    <h3 class="ui header">Tags</h3>
+                    {% for i in tags %}
+                        <div class="ui image label" style="margin:5px 0;">
+                            {{i}}
+                        </div>
+                    {% endfor %}
+                    {% comment %} Personal Display end {% endcomment %}
+
+                    {% comment %} Top stats {% endcomment %}
+                    <div class="ui divider"></div>
+                    <h3 class="ui header">Top Answer</h3>
+                    <p style="margin-left:15px;">
+                        {% if top_ans_len is 0 %}
+                            You have not given any answer till Now.
+                        {% else %}
+                            {{top_ans_len.0.subject}} - {{top_ans_len.0.description}}
+                        {% endif %}
+                    </p>
+
+                    <h3 class="ui header">Top Question</h3>
+
+                    <p style="margin-left:15px;">
+                        {% if top_ques_len is 0 %}
+                            You have not asked any Question till Now.
+                        {% else %}
+                            <a href="/feeds/question_id_/{{top_ques.0.id}}">{{top_ques.0.subject}} - {{top_ques.0.description}}</a>
+                        {% endif %}
+                    </p>
+                    {% comment %} Top stats end {% endcomment %}
+                </div>
+                {% comment %} Profile start {% endcomment %}
+
+                {% comment %} Activity start {% endcomment %}
+                <div class="ui tab" data-tab="activity">
+                    <div class="ui grid">
+                        <div class="four wide column">
+                            <div class="ui secondary vertical vdemo pointing menu">
+                                <a class="active red item" data-tab="summary"><i class="icon user sign"></i>Summary</a>
+                                <a class="blue item" data-tab="answer"><i class="icon user sign"></i>Answers</a>
+                                <a class="blue item" data-tab="hidden"><i class="icon user sign"></i>Hidden</a>
+                                <a class="red item" data-tab="questions"><i class="icon user sign"></i>Questions</a>
+                            </div>
+                        </div>
+                        <div class="twelve wide column">
+                            <div class="ui tab" data-tab="summary">
+                                TODO: Summary
+                            </div>
+
+                            <div class="ui tab" data-tab="answer">
+                                <div class="ui relaxed divided list">
+                                    {% for q in top_ans %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header" href="/feeds/question_id_/{{q.question.id }}">{{q.question.subject}}</a>
+                                        <div class="description">{{q.content}}</div>
+                                        <p>{{q.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="ui tab" data-tab="questions">
+                                
+                                <div class="ui relaxed divided list">
+                                    {% for q in top_ques %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header" href="/feeds/question_id_/{{q.id }}">{{q.subject}}</a>
+                                        <div class="description">{{q.description}}</div>
+                                        <p class="floated right">{{q.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="ui tab" data-tab="hidden">
+                                
+                                <div class="ui relaxed divided list">
+                                    {% for q in hidden_ques %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header" href="/feeds/question_id_/{{q.id }}">{{q.question.subject}}</a>
+                                        <div class="description">{{q.question.description}}</div>
+                                        <p class="floated right">{{q.question.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %} Activity end {% endcomment %}
+
+                {% if request.user == profile.user %}
+                <div class="ui tab segment centered" data-tab="editProfile">
+
+                    <form method="POST" action="" class="ui center floated form" enctype='multipart/form-data' >
+                    {% csrf_token %}
+                        <div>
+                            <label>Choose Your Profile Pic</label>
+                        </div>
+                        <div class="ui action input">
+                            <input type="text" placeholder="File 2" readonly>
+                            <input type="file" name="profile_img">
+                            <div class="ui icon button">
+                                <i class="attach icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="ui form">
+                            <div class="field">
+                                <label>Bio</label>
+                                <textarea name="bio"></textarea>
+                            </div>
+                        </div>
+
+                        <br>
+                        <div class="actions">
+                            <button type="submit" name="update" value="update_qus" class="ui submit positive button">
+                                Save
+                            </button><br>
+                            <div class="ui hidden divider"></div>
+                        </div>
+                    </form>
+
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.special.cards .image').dimmer({
+                on: 'hover'
+            });
+
+            $("input:text").click(function() {
+                $(this).parent().find("input:file").click();
+            });
+
+            $('input:file', '.ui.action.input')
+            .on('change', function(e) {
+                var name = e.target.files[0].name;
+                var ext =name.split('.').pop().toLowerCase();
+                if($.inArray(ext, ['gif','png','jpg','jpeg']) == -1) {
+                    alert('Only gif, png, jpg, jpeg');
+                }else{
+                    $('input:text', $(e.target).parent()).val(name);
+                }
+            });
+            $('.ui.vdemo.menu .item').tab({history:false});
+        });
+    </script>
+{% endblock%}

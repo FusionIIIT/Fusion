@@ -1,0 +1,36 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="inward">
+            Inward Files
+            </a>
+        </h3>
+
+    </div>
+
+    <div class="ui divider"></div>
+
+    <table class="ui very basic celled sortable table">
+        <div class="field">
+                    <label>Select designation:
+<!--                        <select required class="ui fluid search selection dropdown" name="designation">-->
+<!--                           <option selected hidden>Select</option>-->
+<!--                         <form action="/filetracking/fileview/" method="get">-->
+                             {% for designation in designation %}
+                             <td> <a href="{% url 'filetracking:fileview2' designation.id %}"><button class="ui primary button">
+                                 {{designation}}
+                             </button></a></td>
+                            {% endfor %}
+<!--                         </form>-->
+                        </select>
+                    </label>
+                </div>
+
+    </table>
+
+    <br>
+
+{% endblock %}

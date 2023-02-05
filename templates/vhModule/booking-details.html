@@ -1,0 +1,249 @@
+
+
+
+
+{% load static %}
+{% block booking-details %}
+
+
+<!-- action -->
+
+{% for booking in active_bookings %}
+{% for result in booking.visitor.all %}
+
+{% if forloop.first %}
+
+<div class="ui modal" id='booking-details-{{ booking.id }}'>
+  <div class="header">Booking Request Action</div>
+  <div class="scrolling content">
+  <!-- <div class="scrolling content"> -->
+
+    <div class="ui pointing secondary menu">
+        <a class="item active" data-tab="view-visitors-detail">
+            Visitor's Details
+        </a> 
+        <a class="item" data-tab="view-request-booking">
+            Booking Details
+        </a>
+ 
+    </div>
+
+
+    <!-- request booking datatab starts here! -->
+
+
+    <div class="ui tab" data-tab="view-request-booking">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%; padding-right: 3.5%;">
+
+   <form class="ui large form">
+            <!-- <div class="field">
+                <label>Name</label>
+                <input type="text" value="{{ booking.intender.username }}" readonly>
+            </div> -->
+        <div class="field">
+            <div class="two fields">
+                <!-- <div class="field">
+                    <label>Phone </label>
+                    <input  type="number" value="{{ booking.intender.phone }}" readonly>
+                </div> -->
+
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" value="{{ booking.intender.username }}" readonly>
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input type="Email" value="{{ booking.intender.email }}" readonly>
+                </div>
+            </div>
+            </div>
+
+
+            <div class="two fields">
+                <div class="field">
+                    <label>From:</label>
+                    <div class="ui calendar" id="rangestart2">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" class="date-selector" value="{{ booking.booking_from }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>To:</label>
+                    <div class="ui calendar" id="rangeend2">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" value="{{ booking.booking_to }}" class="date-selector">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="three fields">
+
+                    {% if user_designation == 'Intender'  %}
+                    <div class="field">
+                        <label>Category</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
+                        </div>
+                    </div>
+                {% else %}
+
+                <div class="field">
+                    <label>Category (required*)</label>
+
+                    <div class="ui fluid search selection dropdown">
+                        <input name="category-{{ booking.id }}" type="hidden" required="">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">{{ booking.visitor_category }}</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="A">
+                                A
+                            </div>
+
+                            <div class="item" data-value="B">
+                                B
+                            </div>
+
+                            <div class="item" data-value="C">
+                                C
+                            </div>
+
+                            <div class="item" data-value="D">
+                                D
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                    <div class="field">
+                        <label>Number Of People</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.person_count }}" type="number">
+                        </div>
+                    </div>
+
+                    {% if user_designation == 'VhCaretaker'  %}
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
+                    <label>Rooms *</label>
+                    <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
+                        {% for key, values in available_rooms.items %}
+                            {% if key == booking.id %}
+                                {% for room in values %}
+                                    <option value='{{ room }}'>{{ room }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                </div>
+            </div>
+
+            <div class="field">
+            <label>Purpose Of Visit ####</label>
+                <div class="ui fluid input">
+                    <input rows="2" value="{{ booking.purpose }}" readonly >
+                            
+                </div>
+            </div>
+
+            <input type="hidden" name="booking-id" value="{{ booking.id }}">
+            {% if user_designation == 'Intender' %}
+        <div class="field">
+            <div class="ui large red button right floated" onclick="cancel_active_booking('{{ booking.id }}', '{{ booking.booking_from }}')">
+                Cancel
+            </div>
+        </div>
+        {% endif %}
+        <br>
+        <br>
+    </form>
+
+    </div>
+    </div>
+
+<!-- request booking datatab ends here! -->
+
+<!-- visitor's detail datatab starts here! -->
+
+
+
+    <div class="ui active tab" data-tab="view-visitors-detail">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-1">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name</label>
+                                <input type="text" value="{{ result.visitor_name }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input type="text" value="{{ result.visitor_email }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone</label>
+                                <input type="text" value="{{ result.visitor_phone }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Organization</label>
+                                <input type="text" value="{{ result.visitor_organization }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                           <input type="text" value="{{ result.visitor_address }}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+
+    <!-- visitors detail datatab ends here! -->
+    <div class="ui divider"></div>
+    <br>
+    <br>
+
+
+</div>
+</div>
+
+{% endif %}
+
+{% endfor %}
+    {% endfor %}
+
+{% endblock %}

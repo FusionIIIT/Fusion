@@ -1,0 +1,80 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<div class="ui vertical segment">
+      
+     {% for items in expense_history2 %} 
+    
+    <div class="card" style = "margin-bottom: 5%;
+    border-style: groove;
+    padding: 2%;">
+      <div class="card-header">
+         
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Roll No :{{items.userid}}</h5>
+        <p class="card-text">Date added : {{items.date_added}}
+          <br>
+          Name : {{items.name}}
+          <br>
+          Purpose : {{items.spent_on}}
+          <br>
+          Amount : {{items.amount}}
+          <br>
+          Remarks : {{items.remarks}}
+          <br>
+          Status : {{items.status}}
+         <!---- <br>
+          Receipt : <a href="#">view</a>
+          <br>-->
+        </p>
+        <div  class="ui stackable doubling grid">
+        <div class="two wide column">
+          <form action="/income-expenditure/decline/" method="POST" id="decline">{% csrf_token %}
+            <input hidden type="text" name = 'id' value="{{ items.id }}">
+            <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Decline</button>
+             </form>
+        </div>
+        <div class="two wide column">
+          <form action="/income-expenditure/approve/" method="POST" id="approve">{% csrf_token %}
+            <input hidden type="text" name = 'id' value="{{ items.id }}">
+            
+            <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Approve</button>
+          </form>
+        </div>
+      <div class="five wide column">
+        <form action="/income-expenditure/stb/" method="POST" id="stb">{% csrf_token %}
+          <input hidden type="text" name = 'id' value="{{ items.id }}">
+          <button class="ui primary button" type='submit' style="background-color: #FE7153; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1); font-size: 80%;">Transferred to Bank</button>
+        </form>
+      </div>
+    </div>
+      </div>
+      </div>
+      {% endfor %}
+
+  </div>
+
+
+
+  <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#del_expenditure").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Expenditure deleted Successfully');
+            window.location = "/income-expenditure/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to delete Expenditure');
+            window.location = "/income-expenditure/main/";
+        });
+    });
+});
+</script>

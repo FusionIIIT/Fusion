@@ -1,0 +1,63 @@
+{% load static %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+            Bonafide
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/bonafide_pdf/ ">
+                {%csrf_token%}
+                <div class="ui header">
+                    Apply for Bonafide:
+                </div>
+
+                <br>
+
+                
+
+                <div class="field">
+                    <label for="purpose">Please select the Purpose of Bonafide</label>
+                    <select name="purpose" onchange="checkPurpose(this.value);" id="selectTag">
+                        <option value="Fee Structure">Bonafide for Fee Structure</option>
+                        <option value="Sim Card">Bonafide for Sim Card</option>
+                        <option value="Passport">Bonafide for Passport</option>
+                        <option value="Education loan">Bonafide for Education loan</option>
+                        <option value="Other purposes">Other purposes</option>
+                    </select>
+                    <br>
+                    <textarea id="purposeText" rows="2" style="display: none;"></textarea>
+                </div>
+
+                <br>
+
+                <button class="ui large primary button right floated">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function checkPurpose(val){
+            var element = document.getElementById('purposeText');
+            if(val == "Other purposes"){
+                element.style.display = 'block';
+                element.setAttribute("name","purpose");
+            }
+            else {
+                element.style.display = 'none';
+                element.removeAttribute("name");
+            }
+        }
+    </script>

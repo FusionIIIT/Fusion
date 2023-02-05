@@ -1,0 +1,81 @@
+{% load static %}
+{% block changemenu %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="changemenu">
+            Request For Menu Change
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="changemenu" id="menu_change_div">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="ui stackable grid doubling">
+                    <div class="ui row">
+                        <div class="ui sixteen wide column">
+                            <div class="ui active tab" data-tab="changemenu">
+                                <form class="ui form" method="post" action="{% url 'mess:messmenusubmit'%}">
+                                <!--<form class="ui form" method="post" >-->
+                                    {% csrf_token %}
+                                    <div class="ui row">
+                                        <div>
+                                            <label>
+                                                Dish - Meal Time *
+                                            </label>
+                                            <br>
+
+{#                                            <select class="ui fluid search selection dropdown" name="dish" id="dish">#}
+                                            <select class="ui dropdown" name="dish" id="dish">
+                                                <option>
+                                                    Select Food Item
+                                                </option>
+                                                {% for item in menu %}
+                                                <option value="{{item.dish}}" id="{{item.pk}}">
+                                                    {{item.dish}}-{{item.meal_time}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <br>
+                                            <label>
+                                                Change To *
+                                            </label>
+                                            <br>
+                                            <div class="ui input">
+                                                <input placeholder="Food" name="newdish" id = "newdish" required = "true">
+                                            </div>
+                                            <br>
+                                            <br>
+                                            <label>
+                                                Reason *
+                                            </label>
+                                            <br>
+                                            <div class="ui input">
+                                                <input placeholder="Why?" name="reason" id="reason" required= "true">
+                                            </div>
+
+                                        </div> 
+                                    </div>
+                                    <div class="ui row">
+                                        <br>
+                                        <button type="submit" class="ui primary button right floated" onclick="return change_menu()">
+                                            Place Request
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% block javascript %}
+<script>
+
+</script>
+{% endblock %}
+{% endblock %}

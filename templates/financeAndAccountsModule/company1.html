@@ -1,0 +1,40 @@
+<form action="/finance/createCompany/" method="post">
+    {% csrf_token %}
+<div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+<div class="five fields">
+            <div class="four wide field">
+                <label>Company Name</label>
+                <input type="text" class="ui large input" name = "c_name">
+            </div>
+
+            <div class="four wide field">
+                <label>Start Date</label>
+                <input type="date" class="ui large input" name = "start_date">
+            </div>
+
+            <div class="four wide field">
+                <label>End Date</label>
+                <input type="date" class="ui large input" name = "end_date">
+            </div>
+
+            <div class="four wide field">
+                <label>Description</label>
+                <input type="text" class="ui large input" name = "description">
+            </div>
+
+            <div class="four wide field">
+                <label>Status</label>
+                <input type="text" class="ui large input"  name = "status">
+            </div>
+
+        </div>
+    <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+</div>
+</form>
+
+<br><br>
+<div class="ui divider"></div>

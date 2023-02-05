@@ -1,0 +1,175 @@
+{% load static %}
+<style type="text/css">
+  .verify {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.verify:hover {
+  background-color: #ddd; 
+}
+</style>
+{% if student %}
+
+            {% for stu in student %}
+            {% if stu %}
+                    <div class="verify" id = "ver-{{forloop.counter}}" data="{{forloop.counter}}">
+                      <table style="border-width: 0px;width: 100%;">
+                      <tr>
+                        <td style="width: 30%; padding: 3px"> Roll No : {{ stu.student_id__id }}</td>
+                        <td style="width: 50%; padding: 3px"> Full Name : {{ stu.student_id__id__user__first_name }} {{stu.student_id__id__user__last_name}}</td>
+                        <td style="width: 20%; padding: 3px"> Batch : {{ stu.student_id__batch  }}</td>
+                        </tr>
+                        <tr>
+                        <td style="width: 30%; padding: 3px"> Department : {{ stu.student_id__id__department__name  }}</td>
+                        <td style="width: 50%; padding: 3px"> Programme : {{ stu.student_id__programme  }}</td>
+                        <td style="width: 20%; padding: 3px"> Semester : {{stu.student_id__curr_semester_no|add:"1"}}</td>
+                       
+                        </tr>
+                        <td style="width: 30%; padding: 3px"> Gender : {{ stu.student_id__id__sex  }}</td>
+                        <td style="width: 50%; padding: 3px"> Mobile Number : {{ stu.student_id__id__phone_no  }}</td>
+                        <td style="width: 20%; padding: 3px"> Category : {{ stu.student_id__category  }}</td>
+                        </tr>
+                        <tr>
+                        {% if stu.student_id__pwd_status %}
+                        <td style="width: 20%; padding: 3px"> PWD Status : YES</td>
+                        {% else %}
+                        <td style="width: 20%; padding: 3px"> PWD Status : NO</td>
+                        {% endif %}
+                        {% if master_flag %}
+                        <td style="width: 60%; padding: 3px"> Specialization : {{ stu.student_id__specialization  }}</td>
+                        {% endif %}
+                        <td  style="width: 20%; padding: 3px"><div  data='{{ stu.student_id__id__user__username }}' data-two="{{forloop.counter}}" class="reg-approve ui basic green button">Approve</div>
+                        </td>
+                      </tr>
+                        </table>
+                        <div class="pay" id="tran{{forloop.counter}}" hidden>
+                         
+                          <table style="border-width: 0px;width: 100%">
+                            <td style="width: 40%">
+                              <p>Payment Mode : {{stu.mode}}</p>
+                              <p>Transaction ID : {{stu.transaction_id}}</p>
+                              <p>Deposit Date : {{stu.deposit_date}}</p>
+                              <p>Actual Fee : {{stu.actual_fee}}
+                              <p>Fee Paid : {{stu.fee_paid}}</p>
+                              {% if stu.utr_number is not None %}
+                              <p>UTR Number : {{stu.utr_number}}</p>
+                              {% endif %}
+                              {% if stu.reason is not None %}
+                              <p>Reason for less/more fee : {{stu.reason}}</p>
+                              {% endif %}
+                              <p>Fee Receipt: <a href="/media/{{stu.fee_receipt}}" target="_blank">/media/{{stu.fee_receipt}}</a></p>
+                            </td>
+                            <td style="width: 40%">
+                              <label for="fname">Remarks</label>
+                              <input type="text" id="fname" class="reason" placeholder="Remarks">
+                            </td>
+                            <td style="width: 20%"><div data='{{ stu.student_id__id__user__username }}' data-two="{{forloop.counter}}" class="reg-disapprove ui basic red button" style="margin-right: 10px">Decline</div></td>
+                          </table><br><br>
+                         
+                          <form onsubmit="requestCourses(event,'{{stu.student_id__id}}','{{stu.student_id__curr_semester_no|add:1}}')">
+                            <center><button class="ui basic button" type="submit"> Registered Courses<i class="caret right icon"></i></button></center>
+                          </form>
+                        </div>
+                      </div>
+              {% endif %}
+              {% endfor %}    
+                          <CENTER><BR><BR>  <B> NO MORE RECORDS FOUND</B> </center>
+               
+              {% else %}
+              <CENTER><BR><BR>  <B> NO RECORDS FOUND</B> </center>
+                {% endif %}
+               
+               
+               
+              <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+              <script type="text/javascript">
+              var i;
+                      $('.reg-approve').on('click', function(e){
+                          var id = $(this).attr('data-two');
+                          var student_id = $(this).attr('data');
+                          $.ajax({
+                              type: 'post',
+                              url: '/academic-procedures/process_verification_request/',
+                              data: {
+                                  student_id: student_id,
+                                  status_req: 'accept',
+                                  csrfmiddlewaretoken: '{{ csrf_token }}'
+                              },
+                              success: function(data) {
+                                  $('#ver-' + id).remove();
+                                  $('.process-modal p').html('<center>'+data.message+'</center>');
+                                  $('.process-modal').modal('show');
+                              },
+               
+                              error: function(data, err) {
+                                  if(err) {
+                                      $('.fail-modal').modal('show');
+                                  }
+                              }
+                          });
+                          // });
+                      });
+                      $('.verify').on('click', function(e){
+                          var i = $(this).attr('data');
+                          $('.pay').hide();
+                          $('#tran'+i).show();
+                      });
+                      $('.reg-disapprove').on('click', function(e){
+                          var id = $(this).attr('data-two');
+                          var student_id = $(this).attr('data');
+                          var reason = $('#fname').val();
+                          $.ajax({
+                              type: 'post',
+                              url: '/academic-procedures/process_verification_request/',
+                              data: {
+                                  student_id: student_id,
+                                  status_req: 'reject',
+                                  reason: reason,
+                                  csrfmiddlewaretoken: '{{ csrf_token }}'
+                              },
+                              success: function(data) {
+                                  $('#ver-' + id).remove();
+                                  $('.process-modal p').html('<center>'+data.message+'</center>');
+                                  $('.process-modal').modal('show');
+                              },
+               
+                              error: function(data, err) {
+                                  if(err) {
+                                      $('.fail-modal').modal('show');
+                                  }
+                              }
+                          });
+                      });
+                      async function requestCourses(event,student_id,semester_id){
+                        event.preventDefault();
+                        const course_list_url = '/academic-procedures/acad_person/course_list';
+                        const response = await fetch(course_list_url, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                          },
+                          body: JSON.stringify({
+                            student_id,
+                            semester_id,
+                          })
+                        });
+                        if(response.ok){
+                          const html = (await response.json()).html;
+                          event.target.innerHTML = html;
+                        }
+                      }
+                   
+                      </script>

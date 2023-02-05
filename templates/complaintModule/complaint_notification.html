@@ -1,0 +1,82 @@
+{% load static %}
+{% block complaint_notification %}
+
+{% load notifications_tags %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="notification">
+        Complaint Notifications
+    </a>
+</div>
+    <div class="ui one cards" style="padding: 2px">
+        {% for notice in notification %}
+            {% comment %}A single notification starts here!{% endcomment %}
+                {% if notice.unread %}
+                <div class="ui blue card" id="notif{{notice.id}}">
+                {% else %}
+                <div class="ui card" id="notif{{notice.id}}">
+                {% endif %}
+                <div class="content">
+                    <div class="header">
+                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+                    </div>
+                    <div class="meta">
+                        {{ notice.timesince }} ago
+                    </div>
+
+                    <div class="description">
+                        {{ notice.verb }}
+                        {% ifnotequal notice.actor notice.recipient %}
+                        -by {{ notice.actor.first_name }} {{ notice.actor.last_name }}
+                        {% endifnotequal %}
+                    </div>
+                    
+                </div>
+            </div>
+
+
+            {% comment %}A single notification ends here!{% endcomment %}
+        {% endfor %}
+
+    </div>
+
+    <script type="text/javascript">
+
+                    $('.notif-status').click(function(){
+                    var slug = $(this).attr("slug");
+                    var id = $(this).attr("notif-id");
+                    var status = document.getElementById("notif-sp"+id).innerHTML;
+                    var url;
+                    if(status=="Mark as Unread"){
+                        url = '{% url 'notifications:mark_as_unread' 0 %}'.replace('0', slug);
+                    }
+                    else{
+                        url = '{% url 'notifications:mark_as_read' 0 %}'.replace('0', slug);
+                    }
+                        $.ajax(
+                            {
+                                type:"GET",
+                                url: url,
+
+                                success: function(data)
+                                {
+                                    if(status=="Mark as Unread"){
+                                        $("#notif-status"+id).removeClass("ui right floated button");
+                                        $("#notif-status"+id).addClass("ui right floated blue button");
+                                        $("#notif"+id).removeClass("ui card");
+                                        $("#notif"+id).addClass("ui blue card");
+                                        document.getElementById("notif-sp"+id).innerHTML= "Mark as Read";
+                                    }
+                                    else{
+                                        $("#notif-status"+id).removeClass("ui right floated blue button");
+                                        $("#notif-status"+id).addClass("ui right floated button");
+                                        $("#notif"+id).removeClass("ui blue card");
+                                        $("#notif"+id).addClass("ui card");
+                                        document.getElementById("notif-sp"+id).innerHTML= "Mark as Unread";
+                                    }
+
+                                }
+                             })
+
+                   });
+                   </script>
+{% endblock %}

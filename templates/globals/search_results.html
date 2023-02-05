@@ -1,0 +1,28 @@
+{% load static %}
+
+{% block searchresults %}
+    {% if not sresults %}
+        <h4>No results to show.</h4>
+        <p>Here are things you can try:
+            <ul>
+                <li>Recheck the spelling of your query</li>
+                <li>Try again with a query longer than 2 letters</li>
+            </ul>
+        </p>
+
+    {% endif %}
+
+	<div class="ui cards" style="padding: 2px">
+        {% for user in sresults %}
+		<a class="ui card" href="{% url 'globals:profile' %}{{user.username}}">
+            <div class="content">
+                <img class="right floated mini ui image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="header">{{user.first_name}} {{user.last_name}}</div>
+                <div class="meta">{{user.extrainfo.user_type}} in {{user.extrainfo.department.name}}</div>
+                                <div class="meta">{{user.email}} </div>
+
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% endblock %}

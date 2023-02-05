@@ -1,0 +1,69 @@
+{% load static %}
+
+
+<style>
+.course_marks {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.course_marks:hover {
+  background-color: #ddd; 
+}
+
+</style>
+
+
+
+
+<B><center><p id="hd">Submit Marks</p></center></B>
+
+<div id="course_list">
+	{% for obj in courses_list%}
+	<div class="course_marks" data1 ="{{obj.course_id.id}}" data2="{{obj.course_id.name}}">{{obj.course_id}}</div>
+	{% endfor %}
+</div>
+
+<div id="course_data">
+	
+</div>
+
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.course_marks').on('click',function(e){
+			var course_code = $(this).attr("data2");
+			var course_id = $(this).attr("data1");
+			$.ajax({
+				type:"POST",
+		        url: "/academic-procedures/course_marks_data/",
+		        data:{
+		        		course_id : course_id,
+		                csrfmiddlewaretoken: '{{ csrf_token }}'
+		        },
+		        success: function( data ) 
+		        {
+		        	$('#hd').hide();
+		        	$('#course_list').hide(400);
+		        	$("#course_data").html(data.data);
+		        	$("#course_data").show();
+		        }
+			});
+		});
+	});
+
+</script>

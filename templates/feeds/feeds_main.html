@@ -1,0 +1,251 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+	Feeds
+{% endblock %}
+
+{% block extra %}
+	{{form_answer.media}}
+{% endblock %}
+
+{% block body %}
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/> -->
+
+	{% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+	<div class='ui stackable doubling grid'>
+
+		{% comment %} <div class="sixteen wide column">
+			<!-- Search Bar Section -->
+			{% include 'feeds/search_section.html' %}
+			<!-- Search Bar Section ends here-->
+		</div> {% endcomment %}
+		<div  class="column"></div>
+		<!-- First section of the page starts here -->
+		<div  class="three wide column">
+			{% comment %} {% include 'feeds/first_section.html' %} {% endcomment %}
+			{% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+			<div class="ui divider"></div>
+			{% include 'feeds/first_section.html' %}
+
+            {% comment %} The Tab-Menu starts here!
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div> {% endcomment %}
+		</div>
+		<!-- First section of the page ends here -->
+
+		<!-- Middle section of the page -->
+		<div class="eight wide column">
+			{% include 'feeds/middle_section.html' %}
+		</div>
+		<!-- First section of the page ends here -->
+
+		<!-- Third section of the page starts here -->
+		<div class="three wide column">
+			{% include 'feeds/third_section.html' %}
+		</div>
+		<!-- Third section of the page ends here -->
+		<div  class="column"></div>
+		<div class="sixteen wide column"></div>
+	</div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+
+    <script type="text/javascript">
+    	function readURL(input){
+    		if(input.files && input.files[0]){
+    			var reader = new FileReader();
+
+    			reader.onload = function(e){
+    				$('#image1')
+    					.attr('src', e.target.result)
+    					.width(150)
+    					.height(200);
+    			};
+    			reader.readAsDataURL(input.files[0]);
+    		}
+    	}
+    </script>
+
+    <!-- js for requests -->
+ 	<script type="text/javascript">
+ 		$(document).ready(function(event){
+ 			$(document).on('click', '#request', function(event){
+ 				console.log('submitted');
+ 				event.preventDefault();
+ 				var pk = $(this).attr('value');
+ 				$.ajax({
+ 					type: 'POST',
+ 					url: '/feeds/request/',
+ 					data: {
+ 						id: pk,
+ 						'csrfmiddlewaretoken': '{{ csrf_token }}'
+ 					},
+ 					success: function(response){
+ 						console.log('ajax successful');
+ 						$('#request-section'+ pk).html(response['form']);
+ 						console.log(response['form']);
+ 						console.log(pk);
+ 					}
+ 				});
+ 			});
+ 		});
+ 	</script>
+
+    <!-- Comments Section Ajax -->
+    <script type="text/javascript">
+    	$(document).on('submit','.comment-form', function(event){
+    		console.log("Hey there");
+    		event.preventDefault();
+    		var pk = $(this).attr('id');
+    		var string = $('#chat-msg'+pk).val();
+    		console.log(string);
+    		console.log($(this).serialize());
+
+
+    		$.ajax({
+    			type: 'POST',
+    			url: '/feeds/comment_text/',
+    			data: {
+    				id: pk,
+    				comment_box: string,
+    				'csrfmiddlewaretoken': '{{csrf_token}}',
+    			},
+
+    			success:function(result){
+    				console.log("yup");
+    				$('#main_comments'+pk).html(result['form']);
+    				document.getElementById('chat-msg'+pk).value = '';
+    				// $('chat-msg'+pk).val('');
+    				// $('#1').append('<br>'+ result['status'] + '<br>');
+    				// document.getElementById('12'+pk).innerHTML = document.getElementById('comment-text' + pk).innerHTML + result['form'] + '<br>' + document.getElementById('like_button_div').innerHTML;
+    				// $('#comment-text' + pk).append(result['form']);
+    				// console.log(result['form']);
+    			}
+
+    		});
+    	});
+    </script>
+    <!-- Comments Section Ajax ends here -->
+
+	<!-- Question upvote Ajax-->
+	<script type="text/javascript">
+ 		upvote_post = (id)=>{
+			console.log("upvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/upvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#upcaret'+pk).removeClass("outline");
+						$('#downcaret'+pk).addClass("outline");
+					}
+					console.log("upvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question upvote Ajax-->
+
+	<!-- Question downvote Ajax-->
+	<script type="text/javascript">
+ 		downvote_post = (id)=>{
+			console.log("downvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/downvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#downcaret'+pk).removeClass("outline");
+						$('#upcaret'+pk).addClass("outline");
+					}
+					console.log("downvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question downvote Ajax-->
+
+	<script>
+		$(document).ready(()=>{
+			$(".paginationparent").css({"paddingLeft": ($(".paginationparent").width()- $("#pagination").width())/2})
+		})
+	</script>
+
+
+	<!-- Tags based question -->
+	<script type="text/javascript">
+		function tags_based(id){
+			console.log('first');
+			$("a.active item").removeClass('active');
+			// $(this).addClass('active');
+			// var id = $(this).attr('id');
+			console.log(id);
+			if(id == 'Top-Stories'){
+				location.href = '/feeds/';
+			}
+			else{
+				console.log('script');
+				document.location.href = '/feeds/' + id + '/';
+			}
+			return false;
+		}
+
+		function removeTag(id){
+			console.log('Remove Tag');
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/remove_tag/',
+				data:{
+					id: id,
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+				success: function(response){
+					$(`#${id}`).parent().hide();
+					if(response.done==1){
+						alert("tag removed successfully")
+						 location.reload();
+					}else{
+						alert("Sorry tag not removed")
+					}
+				}
+			});
+			return false;
+		}
+	</script>
+
+{% endblock javascript %}

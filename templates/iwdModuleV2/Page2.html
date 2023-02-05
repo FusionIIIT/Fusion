@@ -1,0 +1,181 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui header">
+        Page 2
+    </div>
+    <div class="ui one cards" style="padding: 2px;">
+      <div class="ui blue card" id="noti">
+          <div class="content">
+
+              <table class="ui orange table">
+                  <thead>
+                      <th> Details:-</th>
+                  </thead>
+                  <tbody>
+
+                      <tr>
+                          <td>Project id</td>
+                          <td>{{x.id.id}}</td>
+                      </tr>
+                      <tr>
+                          <td>Corrigendum</td>
+                          <td>  <div style="display:flex;justify-content: space-between;">
+                            <div><a href="">Download</a></div>
+                              <div ><a href="http://172.27.16.216/iwdModuleV2/corrigendumView">i</a></div>
+                      </div>
+                          </td>
+                      </tr>
+                      <tr>
+                        <td>Addendum</td>
+                        <td>  <div style="display:flex;justify-content: space-between;">
+                          <div><a href="">Download</a></div>
+                            <div><a href="http://172.27.16.216/iwdModuleV2/addendumView">i</a></div>
+                    </div>
+                        </td>
+                      </tr>
+                      <tr>
+                          <td>Pre-bid meeting details</td>
+                          <td>  <div style="display:flex;justify-content: space-between;">
+                            <div><a href="">Download</a></div>
+                              <div><a href="http://172.27.16.216/iwdModuleV2/preBidDetailsView">i</a></div>
+                      </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td>Technical-bid meeting details</td>
+                          <td>  <div style="display:flex;justify-content: space-between;">
+                            <div><a href="">Download</a></div>
+                              <div><a href="http://172.27.16.216/iwdModuleV2/technicalBidView">i</a></div>
+                      </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td>Technically qualified agencies</td>
+                          <td>{{x.technicallyQualifiedAgencies}}</td>
+                      </tr>
+                      <tr>
+                          <td>Financial-bid meeting details</td>
+                          <td>  <div style="display:flex;justify-content: space-between;">
+                            <div><a href="">Download</a></div>
+                              <div><a href="http://172.27.16.216/iwdModuleV2/financialBidView">i</a></div>
+                      </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td>Name of Lowest(L1) Agency</td>
+                          <td>{{x.nameOfLowestAgency}}</td>
+                      </tr>
+                      <tr>
+                          <td>Letter of intent</td>
+                          <td>  <div style="display:flex;justify-content: space-between;">
+                            <div><a href="">Download</a></div>
+                              <div><a href="http://172.27.16.216/iwdModuleV2/letterOfIntentView">i</a></div>
+                      </div>
+                          </td>
+                      </tr>
+                      <tr>
+                        <td>Work order</td>
+                        <td>  <div style="display:flex;justify-content: space-between;">
+                          <div><a href="">Download</a></div>
+                            <div><a href="http://172.27.16.216/iwdModuleV2/workOrderFormView">i</a></div>
+                    </div>
+                        </td>
+                    </tr>
+                    <tr>
+                      <td>Agreement Letter</td>
+                      <td>  <div style="display:flex;justify-content: space-between;">
+                          <div><a href="">Download</a></div>
+                          <div><a href="http://172.27.16.216/iwdModuleV2/agreementView">i</a></div>
+                  </div>
+                      </td>
+                  </tr>
+                  <tr>
+                    <td>Milestones</td>
+                    <td>  <div style="display:flex;justify-content: space-between;">
+                      <div><a href="">Download</a></div>
+                        <div><a href="http://172.27.16.216/iwdModuleV2/milestoneView">i</a></div>
+                </div>
+                    </td>
+                </tr>
+                  </tbody>
+              </table>
+              <a href="http://172.27.16.216/iwdModuleV2/page3View/">Next</a>
+          </div>
+      </div>
+  </div>
+
+
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

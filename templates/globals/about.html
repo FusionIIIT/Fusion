@@ -1,0 +1,248 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Team
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <br>
+
+    <div class="ui stackable doubling grid container">
+
+        <div class="row">
+            <h1 class="ui header" style="margin: auto;">
+                Meet Our Team!
+            </h1>
+        </div>
+        <div class="ui divider"></div>
+
+        <div class="row">
+            <div class="ui four wide column">
+                <div class="ui secondary vertical pointing compact huge menu">
+                    <a class="active item" data-tab="psgTeam">
+                        Project Steering Group
+                    </a>
+
+                    {% for k, i in teams.items %}
+                        <a class="item" data-tab="{{i.teamId}}">
+                            {{ i.teamName}}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ui twelve wide column">
+                <div class="ui active tab" data-tab="psgTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in psgTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="AcademicsTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in AcademicsTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="uiTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in uiTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="ScholarshipTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in ScholarshipTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                  <div class="ui tab" data-tab="CourseManagementTeam">
+                      <div class="ui stackable doubling three centered cards">
+                          {% for key, value in CourseManagementTeam.items %}
+                              <div class="ui card">
+                                  <div class="teamImage image">
+                                      <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                  </div>
+                                  <div class="content">
+                                      <a class="header">{{ value.devName }}</a>
+                                      <div class="meta">
+                                          <span>{{ value.devTitle }}</span>
+                                      </div>
+                                  </div>
+                              </div>
+                          {% endfor %}
+                      </div>
+                  </div>
+                <div class="ui tab" data-tab="eisTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in eisTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="complaintTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in complaintTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="ui tab" data-tab="leaveTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in leaveTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div class="ui tab" data-tab="CentralMessTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in CentralMessTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="PlacementTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in PlacementTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="ui tab" data-tab="ComplaintTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in ComplaintTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% comment %}
+            TODO: Ask Logic for this here!!!
+
+              </div>
+            {% endcomment %}
+
+
+
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% load static %}
+{% block newevent %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newevent">
+            New Event
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="newevent">
+        <div class="ui vertical segment">
+            <form method="post"  id="new_event_form" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="field">
+                        <label> {{ club_details }} </label>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Event name</label>
+                        <input  placeholder="Event Name" class="ui  largeinput" name="event_name" required></input>
+                    </div>
+                    
+                    <div class="eight wide field">
+                        <label>Incharge</label>
+                        <input class="ui  largeinput" name="incharge" required></input>                    
+                    </div>
+                    
+
+                    <div class="field" id="dest_choices">
+                        <label>Venue </label>
+                        {{ choice }}
+                    </div>
+                    <div class="field venueType">
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="venue_type" id="venue_type" >
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                {% for i in venue %}
+                                    <div class="item" data-value="{{i}}">{{i}}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                 </div>
+                    <div class="Two fields">
+                      <div class="field">
+                        <label>Date</label>
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="date"  data-date-format="YYYY-MM-DD" placeholder="From" id = "events_date" name="date" oninput="showEvents()" required>
+                        </div>
+                      </div>
+
+                   </div>
+
+                    <div class="Two fields">
+                      <div class="field">
+                          <label>Start Time</label>
+                          <input type="time" class="ui large input" name="start_time" required>
+                      </div>
+
+                        <div class="field">
+                            <label>End Time</label>
+                            <input type="time" class="ui large input" name="end_time" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Poster (if any)</label>
+                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="event_poster" required></input>
+                        {% comment %} <span id="lblError1" style="color: red;"></span> {% endcomment %}
+                    </div>
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_event','new_event_form',event)" >
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+  
+{% endblock %}
+
+    
+{% block javascript %}
+
+    <script type="text/javascript">
+
+        function getDifference(a, b) {
+            var i = 0;
+            var j = 0;
+            var result = "";
+
+            while (j < b.length)
+            {
+                if (a[i] != b[j] || i == a.length)
+                    result += b[j];
+                else
+                    i++;
+                j++;
+            }
+            return result;
+        }
+
+        $('#venue_type').change(function(){
+            $("#venue_details").val('') ;
+            $("div.venueDetails").find("div.dropdown").find("div.text").html('');
+            var venueType = $('#venue_type option:selected').text() ;
+            $.ajax({
+                url: "/gymkhana/get_venue/",
+                type: "post",
+                data: {'venueType':venueType},
+                success: function(response){
+                    // console.log("Hii")
+                    response = JSON.parse(response);
+                    var i ;
+                    $('#set_choices').empty();
+                    for(i=0 ; i<response.length ; i++){
+                        console.log(response[i])
+                        $('#set_choices').append($('<option>', {
+                            value: response[i],
+                            text: response[i]
+                        }));
+                    }
+                }
+            });
+        });
+
+        function showEvents(){
+            var date = $("#events_date").val();
+            console.log("Gymkhana.html;date"+date);
+            $.ajax({
+                url: "/gymkhana/date_events/",
+                type: "post",
+                data: {'date': date},
+                success: function(response){
+                    // console.log("hello")
+                    console.log(response)
+                    response = JSON.parse(response);
+                    console.log(response)
+                    $("#dateDetails").html('<h2>Booked Events</h2>');
+                    if (jQuery.isEmptyObject(response) == false){
+                        for(var key in response){
+                            $("#dateDetails").append(
+                                '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+response[key].fields.club+'</th>\
+                                <th>'+response[key].fields.event_name+'</th>\
+                                <th>'+response[key].fields.incharge+'</th>\
+                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                                <th>'+response[key].fields.venue+'</th>\
+                                </tr></thead><tbody>\
+                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                                </tbody></table>') ;
+                        }
+                    }
+                    else
+                    {
+                        $("#dateDetails").append('<h5>No booked events for the selected date</h5>');
+                    }
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

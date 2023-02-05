@@ -1,0 +1,211 @@
+{% load static %}
+{% block senate %}
+
+<style type="text/css">
+  
+.course_link{
+  color: black;
+}
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        $('#visualize').click(function()
+        {
+            $('#pdf_modal').modal('show');
+        });
+        $('#visualize2').click(function()
+        {
+            $('#pdf_modal2').modal('show');
+        });
+        $('#visualize3').click(function()
+        {
+            $('#pdf_modal3').modal('show');
+        });
+        $('#visualize5').click(function()
+        {
+            $('#pdf_modal5').modal('show');
+        });
+        $('#visualize4').click(function()
+        {
+            $('#pdf_modal4').modal('show');
+        });
+    });
+
+</script>
+
+
+
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="first-currsem">
+        Sem {{ details.user_sem }} Year {{ details.year}}
+    </a>
+    <a class=" item" data-tab="second-currsem" >
+        Time-Table
+    </a>
+    <a class=" item" data-tab="third-currsem" >
+        Academic Calender
+    </a>
+    <a class=" item" data-tab="fourth-currsem" >
+        List of Holidays
+    </a>
+    <a class=" item" data-tab="fifth-currsem" >
+        Exam Time Table
+    </a>
+</div>
+
+
+<!--  Course Registered -->
+<div class="ui active tab segment" data-tab="first-currsem">
+
+  <table class="ui very basic collapsing celled sortable table"
+         style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                /*margin: auto;*/
+                width: 100%">
+
+      <thead>
+        <tr>
+          <th style="width: 6%;"> <center>#</center></th>
+          <th style="width: 13%"><center>Course ID</center></th>
+          <th style="width: 50%"><center>Course Name</center></th>
+          <th style="width: 10%"><center>Credits</center></th>
+          <th style="width: 10%"><center>Semester</center></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for items in currently_registered %}
+          <tr>
+            <td><center>{{ forloop.counter }} .</center></td>
+            <td><center>
+              <a href="{% url 'programme_curriculum:view_a_course' items.1.id %}">{{ items.1.code }}</a>
+            </td>
+            <td>
+                {{ items.1.name}}
+            </td>
+            <td>
+                <center>{{ items.1.credit }}</center>
+            </td>
+            <td>
+                <center>{{curr_sem.semester_no}}</center>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+  <br>
+  <div class="ui divider"></div>
+    <div class="container">
+  <!-- <div class="row">
+      <div><span class="pull-left"><h3>Current CPI - {{ cur_cpi }}</h3></span></div>
+      <div><span class="pull-left"><h3>Current SPI - {{ cur_spi }}</h3></span></div>
+
+  </div> -->
+    </div>
+</div>
+
+
+
+
+
+<!--  TIME-TABLE -->
+<div class="ui tab segment" data-tab="second-currsem">
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tt">
+          Core Courses Time table
+        </a>
+        <a class=" item" data-tab="commontt" >
+          common Time Table
+        </a>    
+    </div>
+
+
+    <div class="ui active tab segment" data-tab="tt">
+      <div style="width:100%;height:100%" id='pdf_modal4' class="ui sixteen wide column fullscreen modal">
+        <i class="close  icon"></i>
+        {% if details.user_branch|upper == "CSE" %}
+          <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/TT_CSE.pdf" %}" %}"></iframe>
+        {% elif details.user_branch|upper == "ME" %}
+          <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/TT_ME.pdf" %}" %}"></iframe>
+        {% elif details.user_branch|upper == "ECE" %}
+          <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/TT_ECE.pdf" %}" %}"></iframe>
+        {% endif %}
+      </div>
+      <CENTER><B><a id='visualize4' style="cursor: pointer;">VIEW TIME-TABLE</a></B></CENTER>
+      <BR><BR>
+    </div>
+
+    <div class="ui tab segment" data-tab="commontt">
+      <div style="width:100%;height:100%" id='pdf_modal3' class="ui sixteen wide column fullscreen modal">
+        <i class="close  icon"></i>
+        <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/TT_NS.pdf" %}" %}"></iframe>
+      </div>
+      <CENTER><B><a id='visualize3' style="cursor: pointer;">VIEW COMMON TIME-TABLE</a></B></CENTER>
+      <BR><BR>
+    </div>
+
+    <br>
+    <div class="ui divider"></div>
+</div>
+
+
+
+
+
+<!-- ACADEMIC CALENDER -->
+<div class="ui tab segment" data-tab="third-currsem">
+    <div style="width:100%;height:100%" id='pdf_modal5' class="ui sixteen wide column fullscreen modal">
+        <i class="close  icon"></i>
+        <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/academic_calender.pdf" %}" %}"></iframe>
+    </div>
+      <CENTER><B><a id='visualize5' style="cursor: pointer;">{{ details.year }} Academic Calender</a></B></CENTER>
+      <BR><BR>
+    <br>
+    <div class="ui divider"></div>
+</div>
+
+
+
+
+<!-- LIST OF HOLIDAYS -->
+<div class="ui tab segment" data-tab="fourth-currsem">
+                <div style="width:100%;height:100%" id='pdf_modal2' class="ui sixteen wide column fullscreen modal">
+                    <i class="close  icon"></i>
+                    <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/List_of_Holidays.pdf" %}"></iframe>
+                </div>
+                  <CENTER><B><a id='visualize2' style="cursor: pointer;">VIEW LIST OF HOLIDAYS</a> </CENTER></B>
+
+
+
+                  <br>
+                  <div class="ui divider"></div>
+</div>
+
+
+
+
+
+
+<!-- EXAM TIME-TABLE -->
+<div class="ui tab segment" data-tab="fifth-currsem">
+               <div style="width:100%;height:100%" id='pdf_modal' class="ui sixteen wide column fullscreen modal">
+                    <i class="close  icon"></i>
+                    <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/END_SEM_EXAM_TT.pdf" %}"></iframe>
+                </div>
+                  <CENTER><B><a id='visualize' style="cursor: pointer;">END SEM TIME TABLE</a> </CENTER></B>
+
+                  <br>
+                  <div class="ui divider"></div>
+</div>
+
+{% endblock %}
+
+
+
+

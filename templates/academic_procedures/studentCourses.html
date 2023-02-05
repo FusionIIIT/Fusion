@@ -1,0 +1,138 @@
+{% load static %}
+
+<script>
+    let addCourseButton = document.querySelector(".addCourseButton");
+    addCourseButton.addEventListener("click",()=>
+        { 
+            $('.ui.addCourseForm.modal')
+            .modal('show')
+            ;
+        });  
+</script>
+
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if dict2 %}
+        <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.firstname }}&nbsp;{{ dict2.lastname }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+        </B>
+        {% endif %}
+        {% if details %}
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+                <tr>
+                    <th>
+                        Reg ID#
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Drop Course
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% csrf_token %}
+                {% for items in details %}
+
+                <tr class="{{ items.rid }}">
+                    <td>
+                        {{ items.rid }}
+                    </td>
+                    <td>
+                        {{ items.course_id }}
+                    </td>
+                    <td>
+                        {{ items.course_name }}
+                    </td>
+                    <td>
+                        {{ items.credits }}
+                    </td>
+                    <td>
+                        {{ items.sem }}
+                    </td>
+                    <td>
+                        <A class="ui blue label"
+                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}">
+                            DROP </A>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+                </form>
+            </tbody>
+        </table>
+
+        <br>
+        {% else %}
+        <br>
+        <br> <br> <br>
+        <CENTER>
+            <B> NO RECORDS FOUND </B>
+        </center>
+        {% endif %}
+
+        <div class="ui divider"></div>
+        {% comment %} <button class="ui fluid positive button addCourseButton">Add Course</button> {% endcomment %}
+        
+        <div class="ui modal addCourseForm">
+            <p>Fill details for the Course you want to add</p>
+            <form class="ui form" action = "/academic-procedures/acad_person/addCourse/" method = "post">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Course </label>
+                    <select class="ui fluid dropdown" name = "course_id">
+                        <option value="">Select</option>
+                        {% for course in course_list %}
+                            <option value="{{course.id}}">{{course.code}} - {{course.name}}</option>
+                        {% endfor%}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Semester Id</label>
+                    <select class="ui fluid dropdown" name = "semester_id">
+                        <option value="">Select</option>
+                        {% for sem in semester_list %}
+                            <option value="{{sem.id}}">{{sem.curriculum.name}}, sem - {{sem.semester_no}}</option>
+                        {% endfor%}
+                    </select>
+                </div>
+
+                <input type = "text" value = {{dict2.roll_no}} name="roll_no" hidden/>
+                <button class="ui fluid positive button" type="submit" name = "AddCourse" value = "submit">Add Course</button>
+                
+            </form>
+          </div>
+
+        
+    </div>
+</div>

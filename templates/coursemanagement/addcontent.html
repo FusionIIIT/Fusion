@@ -1,0 +1,91 @@
+{% load static %} {% block addcontent %}
+
+<!-- <div class="ui pointing secondary menu">
+    <a class="active item" data-tab="video">
+            Add Video
+        </a>
+
+    <a class="item" data-tab="slide">
+            Add Slide
+        </a>
+</div>  -->
+
+<div class="ui active tab segment" data-tab="slide" id="add_doc_refresh">
+  <h4 class="ui dividing header">Add a Slide</h4>
+  <div class="ui blue button" id="add_slide_button">
+      Add Slides   </div>
+  <form class="ui form" id="form2" enctype="multipart/form-data" style="display: none">
+    {% csrf_token %}
+      <div class="field">
+          <!--  code change starts -->
+          <div class="One field">
+              <div class="field">
+                  <label> Name <font color="red" size="4.5">*</font></label>
+                  <input placeholder="Name" name="name" type="text">
+              </div>
+          </div>
+          <!-- code change ends -->
+      </div>
+      <div class="field">
+          <div class="fields">
+              <div class="six wide field">
+                  <label>Description <font color="red" size="4.5">*</font></label>
+                  <input placeholder="Description" name="description" type="text">
+              </div>
+
+              <div class="six wide field">
+                  <label>Slide File <font color="red" size="4.5">*</font></label>
+                  <input placeholder="Slide File" id="doc" name="doc" accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/pdf"  type="file">
+              </div>
+          </div>
+          <div class="fields">
+            <div class="two wide field">
+              <label><br></label>
+                <div class="ui primary button" id="submit_doc">
+                  Save
+                  <i class="ui save icon right floated"></i>
+                </div>
+                <div class="load" id="load_submit_doc" style="display:none">
+                  <img src="{% static 'globals/img/loading.gif'%}" alt="#loading">
+                  <span >Your file is being uploaded!</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </form>
+  <br>
+    <h4 class="ui dividing header">Report:</h4>
+
+<div style="overflow:scroll;height:20em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+        <thead>
+            <tr>
+                <th class="sorted ascending" style="width: 14%;">Sr.</th>
+                <th class="" style="width: 35%;">Name</th>
+                <th > Open </th>
+                <th class="" style="width:20%">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            
+                {% for slide in slides %}
+                <tr>
+                  <td>{{forloop.counter}}</td>
+                  <td>{{slide.document_name}}</td>
+                  <td ><button class="ui primary button" style="mae">
+                    <a id='visualize' href="/{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
+
+                  </button></td>
+                  <td><a href="#"><i class="trash dustbin outline icon" data-pk="{{slide.pk}}" id="dustbin_slide_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
+                  </tr>
+                {% endfor %}
+            
+
+        </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}

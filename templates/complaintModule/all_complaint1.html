@@ -1,0 +1,183 @@
+{% load static %}
+{% block all_complaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="all_complaint">
+            All Complaint History
+        </a>
+        <a class="item" data-tab="feedback">
+            Feedback Received
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="all_complaint">
+        <div class="ui vertical segment">
+            Location of all these complaint is : <b>{{ area }}</b>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th >
+                        Register Date
+                    </th>
+                    <th >
+                        Finished Date
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                     <th>
+                        Specific Location
+                    </th>
+                    <th>
+                        Details
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                    <th>
+                        Worker Name
+                    </th>
+                </tr>
+                </thead>
+                {% for a in all_complaint %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{ a.complainer.user }}
+                                <div class="sub header">
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_finish }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+
+                    <td>
+                        <a href="./detail3/{{ a.id }}/"> Click here!</a>
+                        {% if a.remarks != 'Pending' %}
+                           ( {{ a.remarks }} )
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if a.status == 0 %}
+                             <i class="large orange warning icon"></i>
+
+                        {% elif a.status == 1 %}
+                             <i class="large orange add user icon"></i>
+
+                        {% elif a.status == 2 %}
+                             <i class="large green checkmark icon"></i>
+
+                        {% elif a.status == 3 %}
+                             <i class="large red x icon"></i>
+
+                        {% endif %}
+
+                    </td>
+                    <td>
+                        {% if a.worker_id == NULL %}
+                            NOT ASSIGN
+
+                        {% else %}
+                            <b>{{ a.worker_id }}</b>
+
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Assign Worker &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="feedback">
+        <div class="ui vertical segment ">
+            Location of all these complaint is : <b>{{ area }}</b>
+            <p></p>
+            {% for i in all_complaint %}
+            <div class="ui header">
+                <div>Complaint ID :{{ i.id }}</div>
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Name :
+                            {{ i.complainer.user.username }}</label>
+                    </div>
+                    <div class="">
+                        <label>Complaint Date: {{ i.complaint_date }}</label>
+                    </div>
+                </div>
+            </div>
+            <div class="extra content">
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Complaint Finished On :
+                            {{ i.complaint_finish }}</label>
+                    </div>
+                    <div class="">
+                        <label>Feedback :
+                            {% if i.feedback != '' %}
+                                <h3><i>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<u>{{ i.feedback }}</u></i></h3>
+                            {% else %}
+                                Not received
+                            {% endif %}</label>
+
+                    </div>
+                </div>
+                <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+            </div>
+            <div class="ui divider"></div>
+            {% endfor %}
+
+
+            <br>
+
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Assign Worker &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{% load humanize %}
+
+<div class="ui modal details inventory_consumable_{{ inventory.id }}">
+    <div class="header">
+        {{ inventory.inventoryType }}
+    </div>
+    <div class="scrolling content">
+        <div class="description">
+            <div class="ui pointing secondary menu">
+                <a class="item active" data-tab="inventory_consumable_{{ inventory.id }}_specifications"><i
+                        class="bar chart icon"></i>Specifications</a>
+                {% if inventory.remarks %}
+                <a class="item" data-tab="inventory_consumable_{{ inventory.id }}_remarks">
+                    <i class="sticky note icon"></i>
+                    Remarks
+                </a>
+                {% endif %}
+            </div>
+            <div class="ui tab basic segment active" data-tab="inventory_consumable_{{ inventory.id }}_specifications">
+                <div class="ui two column centered grid">
+                    <div class="twelve wide column">
+                        <table class="ui definition table">
+                            <tbody>
+                                <tr>
+                                    <td class="four wide">Inventory name</td>
+                                    <td class="inventoryType">{% if inventory.inventoryType %}
+                                        {{ inventory.inventoryType }}
+                                        {% endif %}</td>
+                                </tr>
+
+                                {% if inventory.inventoryType.manufacturer %}
+                                <tr>
+                                    <td>Manufacturer</td>
+                                    <td class="manufacturer">
+                                        {{ inventory.inventoryType.manufacturer }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+
+                                {% if inventory.inventoryType.model %}
+                                <tr>
+                                    <td>Model</td>
+                                    <td class="model">
+                                        {{ inventory.inventoryType.model }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+
+                                <tr>
+                                    <td>Building</td>
+                                    <td class="building">
+                                        {% if inventory.building %}
+                                        {{ inventory.building }}
+                                        &nbsp;
+                                        <button
+                                            class="ui secondary mini button details building_{{ inventory.building.id }}">Details</button>
+                                        {% else %}
+                                        IIITDMJ
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                {% if inventory.work %}
+                                <tr>
+                                    <td>Work</td>
+                                    <td class="work">
+                                        {{ inventory.work }}
+                                        &nbsp;
+                                        <button
+                                            class="ui secondary mini button details {{ inventory.work.get_workType_display|slugify }}_{{ inventory.work.id }}">Details</button>
+                                    </td>
+                                </tr>
+                                {% endif %}
+
+                                <tr>
+                                    <td>Quantity</td>
+                                    <td class="quantity">{{ inventory.quantity|intcomma }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Present Quantity</td>
+                                    <td class="presentQuantity">{{ inventory.presentQuantity|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Rate</td>
+                                    <td class="rate">
+                                        ₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}&nbsp;per unit</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost</td>
+                                    <td class="cost">
+                                        ₹&nbsp;{{ inventory.cost|intcomma }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Date Ordered</td>
+                                    <td class="dateOrdered">{% if inventory.dateOrdered %} {{ inventory.dateOrdered }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Date Received</td>
+                                    <td class="dateReceived">{% if inventory.dateReceived %}
+                                        {{ inventory.dateReceived }}
+                                        {% endif %}</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if inventory.remarks %}
+            <div class="ui tab basic segment" data-tab="inventory_consumable_{{ inventory.id }}_remarks">
+                <p>{{ inventory.remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui black deny large button">
+            Close
+        </div>
+    </div>
+</div>
+<script type='module'>
+    $(document).ready(function () {
+        $('.inventory_consumable_{{ inventory.id }}.details.modal')
+            .modal({
+                centered: false
+            })
+            .modal('setting', 'closable', false)
+            .modal('attach events', '.inventory_consumable_{{ inventory.id }}.details.button',
+                'show');
+    });
+</script>

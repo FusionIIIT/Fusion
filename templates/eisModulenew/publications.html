@@ -1,0 +1,754 @@
+{% load static %}
+
+{% block publications %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if mark2 != 1 and mark3 != 1 %}ui active item{% else %}ui item{% endif %}" data-tab="journal">
+            Journal
+        </a>
+
+        <a class="{% if mark3 == 1 %}ui active item{% else %}ui item{% endif %}" data-tab="conference">
+            Conference
+        </a>
+
+        <a class="{% if mark2 == 1 %}ui active item{% else %}ui item{% endif %}" data-tab="books">
+            Books
+        </a>
+    </div>
+
+
+    {% comment %}The Journal segment starts here!{% endcomment %}
+
+    <div class="{% if mark2 != 1 and mark3 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="journal">
+        {% if request.user == user %}
+        <h4 class="ui dividing header">Add a Journal</h4>
+        <form class="ui form" id="journalform" name="journalform" method="POST" action="{% url 'eis:journal_insert' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Author</label>
+                        <input placeholder="Author" id='authors' name="authors" type="text" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Co-author(s)</label>
+                        <input placeholder="Co-Author" id="co_author" name="co_author" type="text" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Journal Name</label>
+                        <input placeholder="Name of the Journal" id='name' name="name" type="text" required>
+                    </div>
+                    <div class="four wide field">
+                        <label>Journal File</label>
+                       <input placeholder="Journal" id='journal' name="journal" type="file">
+                    </div>
+
+                    <div class="four wide field">
+                        <label>Year</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" id="year" name="year">
+                            <i class="dropdown icon" ></i>
+                            <div class="default text">2021</div>
+                            <div class="menu">
+                                <div class="item" data-value="2021">2021</div>
+                                <div class="item" data-value="2020">2020</div>
+                                <div class="item" data-value="2019">2019</div>
+                                <div class="item" data-value="2018">2018</div>
+                                <div class="item" data-value="2017">2017</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                                
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" id="title" name="title" type="text" required>
+                        </div>
+                    </div>
+
+                    
+                </div>
+
+                <div class="ui accordion field">
+                    <div class="title " id='x' name='x' >
+                        <i class="icon dropdown"></i>
+                        Optional  Journal Details
+                    </div>
+                    <div class="content fields " id='y' name='y'>
+                        <div class=" four fields">
+                               <div class="field">
+                                <label>Volume No./Issue No.</label>
+                                <input placeholder="Volume No./Issue No." name="volume" id="volume" type="text">
+                               </div>
+                             <div class="  field">
+                                <label>Page No.</label>
+                                <input placeholder="Page No." id="page" name="page" type="text">
+                            </div>
+                             <div class=" field">
+                                <label>Paper Reference No.</label>
+                                <input placeholder="Paper Reference No." id="ref" name="ref" type="text">
+                            </div>
+                             <div class="field">
+
+            
+                                <label>Date of Submission</label>
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example2d">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" name="dos" id="dos" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                                
+                            </div>
+                      </div>
+                            <div class=" four fields">
+                               <div class="field">
+                                <label>Date of Publication(DOP)</label>
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example2a">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" id="dop" name="dop" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                               </div>
+                    <div class="  field">
+                        <label>Status</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input type="hidden" id="status" name="status">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Status</div>
+                                <div class="menu">
+                                    <div class="item" data-value="Communicated">Communicated</div>
+                                    <div class="item" data-value="Accepted">Accepted</div>
+                                    <div class="item" data-value="Published">Published</div>
+
+                                </div>
+                            </div>
+                    </div>
+                    <div class="four wide field">
+                        <label>Choose</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" id="sci" name="sci">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Choose</div>
+                            <div class="menu">
+                                <div class="item" data-value="SCI">SCI</div>
+                                <div class="item" data-value="SCIE">SCIE</div>
+                            </div>
+                        </div>
+
+                    </div>
+                             <div class="field">
+                                <label>Date of Issuance(DOI)</label>
+                               <!-- Code change starts -->
+                                 <div class="ui calendar" id="example2b">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" id="doi" name="doi" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                      </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <button class="ui right floated primary button" id="savejournal" name="savejournal"  style="display: block;">
+                Save
+                <i class="ui save icon right floated"></i>
+            </button>
+            <button class="ui right floated primary button" id="editjournal" name="editjournal" style="display: none;">
+                Update
+                <i class="ui edit icon right floated"></i>
+            </button>
+            <input type="text" id="journalpk" name="journalpk" hidden>
+            <input type="text" id="index" name="index" hidden>
+        </form>
+        <br>
+        
+        {% endif %}
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if publications.has_previous %}
+                        <a href="?page=1" >&laquo; first</a>
+                        <a href="?page={{ publications.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ publications.number }} of {{ publications.paginator.num_pages }}.
+                    </span>
+
+                    {% if publications.has_next %}
+                        <a href="?page={{ publications.next_page_number }}">next</a>
+                        <a href="?page={{ publications.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+            <table class="ui celled table">
+                <thead>
+                <tr>
+                    <th class="sorted ascending" >Sr.</th>
+                    <th >Title of Paper</th>
+                    <th >Authors</th>
+                    <th >Details</th>
+                    <th >Download</th>
+                    {% if request.user == user %}
+                    <th >Action</th>
+                    {% endif %}
+                </tr>
+                </thead>
+
+
+                <tbody>
+
+                    {% for publication in journal %}
+                        
+
+
+
+                        <tr>
+                            <td>{{ forloop.counter}}</td>
+                            <td>{{ publication.title_paper }}</td>
+                            <td>{{ publication.authors }}</td>
+                            <td> <input type="button" id="view"
+                                   class="ui red mini button left floated" 
+                                   onclick="viewpaper('{{ forloop.counter}}', '{{publication.name}}',
+                                    '{{publication.authors}}','{{publication.co_authors}}', '{{publication.title_paper}}',
+                                     '{{publication.year}}','{{publication.volume_no}}', '{{publication.page_no}}',
+                                    '{{publication.reference_number}}','{{publication.date_submission}}', 
+                                    '{{publication.date_publication}}', '{{publication.status}}', 
+                                    '{{publication.is_sci}}','{{publication.doi}}')" value = "View"> </td>
+                            <td><a href="{{ publication.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
+                            {% if request.user == user %}
+                            <td>
+                                <button type="button"
+                                   id="editButton"
+                                   class="ui button left floated" onclick="editpaper(
+                                    '{{ forloop.counter }}','{{publication.pk}}',
+                                    '{{publication.name}}','{{publication.authors}}',
+                                    '{{publication.co_authors}}', '{{publication.title_paper}}', '{{publication.year}}',
+                                    '{{publication.volume_no}}', '{{publication.page_no}}',
+                                    '{{publication.reference_number}}','{{publication.date_submission}}', 
+                                    '{{publication.date_publication}}', '{{publication.status}}', 
+                                    '{{publication.is_sci}}','{{publication.doi}}')"
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
+                            
+                                <a href="{% url 'eis:emp_research_papersDelete' publication.pk forloop.counter 1%}"
+                                   id="editButton"
+                                   class="ui blue button left floated" onclick=""
+                                   value = "Delete">
+                                   <i class="ui red delete icon"></i>
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        
+                    {% endfor %}
+                    {% block viewpapermodal %}
+                        {% include 'eisModulenew/viewpapermodal.html' %}
+                    {% endblock %}
+
+                </tbody>
+            </table>
+        </div>
+            <div class="pagination">
+                <h4><span class="step-links">
+                    {% if publications.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ publications.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ publications.number }} of {{ publications.paginator.num_pages }}.
+                    </span>
+
+                    {% if publications.has_next %}
+                        <a href="?page={{ publications.next_page_number }}">next</a>
+                        <a href="?page={{ publications.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+    </div>
+
+    {% comment %}The Journal segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Conference segment starts here!{% endcomment %}
+
+    <div class="{% if mark3 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="conference">
+        {% if request.user == user %}
+        <h4 class="ui dividing header">Add a conference</h4>
+        <form name="conferenceform" id="conferenceform" class="ui form" method="POST" action="{% url 'eis:conference_insert' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Author</label>
+                        <input placeholder="Author" id='authors3' name="authors3" type="text" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Co-author(s)</label>
+                        <input placeholder="Co-Author" id="co_author3" name="co_author3" type="text" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Conference Name</label>
+                        <input placeholder="Name of the Conference" id='name3' name="name3" type="text" required>
+                    </div>
+                    <div class="four wide field">
+                        <label>conference File</label>
+                       <input placeholder="conference" id='journal3' name="journal3" type="file">
+                    </div>
+
+                    <div class="four wide field">
+                        <label>Year</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" id="year3" name="year3">
+                            <i class="dropdown icon" ></i>
+                            <div class="default text">2021</div>
+                            <div class="menu">
+                                <div class="item" data-value="2021">2021</div>
+                                <div class="item" data-value="2020">2020</div>
+                                <div class="item" data-value="2019">2019</div>
+                                <div class="item" data-value="2018">2018</div>
+                                <div class="item" data-value="2017">2017</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                                
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" id="title3" name="title3" type="text" required>
+                        </div>
+                    </div>
+
+                    
+                </div>
+
+                <div class="ui accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Optional  Conference Details
+                    </div>
+                    <div class="content fields">
+                        <div class=" four fields">
+                               <div class="field">
+                                <label>Venue/Host Institute</label>
+                                <input placeholder="Venue/Host Institute" id="venue3" name="venue3" type="text">
+                               </div>
+                             <div class="  field">
+                                <label>Date of Submission(DOS)</label>
+                                 <div class="ui calendar" id="example2">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" id="dos3" name="dos3" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                             <div class=" field">
+                                <label>Date of Acceptance(DOA)</label>
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example2e">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" id="doa3" name="doa3" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                             <div class="field">
+                                <label>Date of Publication(DOP)</label>
+                                 <!-- Code change starts -->
+                                 <div class="ui calendar" id="example2f">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" id="dop3" name="dop3" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                      </div>
+                            <div class=" four fields">
+                               <div class="field">
+                                <label>Page No.</label>
+                                <input placeholder="Date of Publication"  id="page_no3" name="page_no3" type="text">
+                               </div>
+                             <div class="  field">
+                                <label>Status</label>
+                                    <div class="ui fluid search selection dropdown">
+                                        <input type="hidden" id="status3" name="status3">
+                                        <i class="dropdown icon"></i>
+                                        <div class="default text">Status</div>
+                                        <div class="menu">
+                                            <div class="item" data-value="Communicated">Communicated</div>
+                                            <div class="item" data-value="Accepted">Accepted</div>
+                                            <div class="item" data-value="Published">Published</div>
+
+                                        </div>
+                                    </div>
+                            </div>
+                             <div class=" field">
+                                <label>Conference Date(s)</label>
+                                <input placeholder="SCI/SCIE" type="text">
+                            </div>
+                             <div class="field">
+                                <label>ISBN No</label>
+                                <input placeholder="Date of Issuance" id="isbn_no3" name="isbn_no3" type="text">
+                            </div>
+                      </div>
+
+                     
+                    </div>
+                </div>
+
+            </div>
+            <button class="ui right floated primary button" id="saveconference" name="saveconference"  style="display: block;">
+                Save
+                <i class="ui save icon right floated"></i>
+            </button>
+            <button class="ui right floated primary button" id="editconference" name="editconference" style="display: none;">
+                Update
+                <i class="ui edit icon right floated"></i>
+            </button>
+            <input type="text" id="conferencepk" name="conferencepk" hidden>
+            <input type="text" id="index3" name="index3" hidden>
+        </form>
+        
+        <br>
+        {% endif %}
+
+        <h4 class="ui dividing header">Report: </h4>
+
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if conferences.has_previous %}
+                    <a href="?page3=1" >&laquo; first</a>
+                    <a href="?page3={{ conferences.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ conferences.number }} of {{ conferences.paginator.num_pages }}.
+                </span>
+
+                {% if conferences.has_next %}
+                    <a href="?page3={{ conferences.next_page_number }}">next</a>
+                    <a href="?page3={{ conferences.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+      <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+        
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Title of Paper</th>
+                <th >Authors</th>
+                <th >Details</th>
+                <th >Download</th>
+                {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+
+            <tbody>
+
+                {% for conference in conference %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ conference.title_paper }}</td>
+                        <td>{{ conference.authors }}</td>
+                        <td> <input type="button" id="view"
+                               class="ui red mini button left floated" 
+                               onclick="viewconference( '{{conference.name}}','{{conference.authors}}',
+                                '{{conference.co_authors}}', '{{conference.title_paper}}', '{{conference.year}}',
+                                '{{conference.venue}}', '{{conference.date_submission}}',
+                                '{{conference.date_acceptance}}','{{conference.date_publication}}', 
+                                '{{conference.page_no}}', '{{conference.status}}', 
+                                '{{conference.isbn_no}}')" value = "View"> </td>
+                        <td><a href="{{ conference.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
+                        {% if request.user == user %}
+                        <td>
+                            <button
+                               id="editButton"
+                               class="ui button left floated" onclick="editconference( 
+                                '{{conference.pk}}','{{ forloop.counter }}',
+                                '{{conference.name}}','{{conference.authors}}',
+                                '{{conference.co_authors}}', '{{conference.title_paper}}', '{{conference.year}}',
+                                '{{conference.venue}}', '{{conference.date_submission}}',
+                                '{{conference.date_acceptance}}','{{conference.date_publication}}', 
+                                '{{conference.page_no}}', '{{conference.status}}', 
+                                '{{conference.isbn_no}}')"
+                               ><i class="ui black edit icon"></i>
+                            </button>
+                        
+                            <a href="{% url 'eis:emp_research_papersDelete' conference.pk forloop.counter 2 %}" 
+                               id="deleteButton"
+                               class="ui blue button left floated" onclick=""
+                               ><i class="ui red delete icon"></i>
+                            </button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    
+                {% endfor %}
+                {% block viewconferencemodal %}
+                    {% include 'eisModulenew/viewconferencemodal.html' %}
+                {% endblock %}
+
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4><span class="step-links">
+                {% if conferences.has_previous %}
+                    <a href="?page3=1">&laquo; first</a>
+                    <a href="?page3={{ conferences.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ conferences.number }} of {{ conferences.paginator.num_pages }}.
+                </span>
+
+                {% if conferences.has_next %}
+                    <a href="?page3={{ conferences.next_page_number }}">next</a>
+                    <a href="?page3={{ conferences.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+    </div>
+    {% comment %}The Conference segment ends here!{% endcomment %}
+
+
+    {% comment %}The Books segment starts here!{% endcomment %}
+    <div class="{% if mark2 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="books">
+        {% if request.user == user %}<h4 class="ui dividing header">Add a Book/Book Chapter</h4>
+        
+            <form class="ui form" method="POST" id="booksform" name="booksform" action="{% url 'eis:book_insert' %}" enctype="multipart/form-data" >
+                {% csrf_token %}
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Publish Type</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input type="hidden" id="book_p_type" name="book_p_type" required>
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select Type</div>
+                                <div class="menu">
+                                    <div class="item" data-value="Book">Book</div>
+                                    <div class="item" data-value="Monograph">Monograph</div>
+                                    <div class="item" data-value="Book Chapter">Book Chapter</div>
+                                    <div class="item" data-value="Handbook">Handbook</div>
+                                    <div class="item" data-value="Technical Report">Technical Report</div>
+                                </div>
+                            </div>  
+                        </div>
+
+                        <div class="field">
+                            <label>Author</label>
+                            <input placeholder="Author" type="text" name="book_author" id="book_author" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Publisher</label>
+                    <div class="fields">
+                        <div class="twelve wide field">
+                            <input placeholder="Publisher" type="text" id="book_publisher" name="book_publisher" required>
+                        </div>
+
+                        <div class="four wide field">
+                            <div class="ui fluid search selection dropdown">
+                                <input type="hidden" id="book_year" name="book_year" required>
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Publishing Year</div>
+                                <div class="menu">
+                                    <div class="item" data-value="2021">2021</div>
+                                <div class="item" data-value="2020">2020</div>
+                                <div class="item" data-value="2019">2019</div>
+                                <div class="item" data-value="2018">2018</div>
+                                <div class="item" data-value="2017">2017</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="fourteen wide field">
+                            <div class="field">
+                                <label>Title</label>
+                                <input type="text" id="book_title" name="book_title" required>
+                            </div>
+                        </div>
+
+                        <button class="ui right floated primary button" id="savebook" name="savebook"  style="display: block;">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </button>
+                        <button class="ui right floated primary button" id="editbook" name="editbook" style="display: none;">
+                            Update
+                            <i class="ui edit icon right floated"></i>
+                        </button>
+                        <input type="text" id="bookspk2" name="bookspk2" hidden>
+                        <input type="text" id="index15" name="index15" hidden>
+                    </div>
+
+                </div>
+            </form>
+        
+        <br>{% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if books.has_previous %}
+                        <a href="?page2=1" >&laquo; first</a>
+                        <a href="?page2={{ books.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ books.number }} of {{ books.paginator.num_pages }}.
+                    </span>
+
+                    {% if books.has_next %}
+                        <a href="?page2={{ books.next_page_number }}">next</a>
+                        <a href="?page2={{ books.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h3>
+            </div>
+              <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+        
+            <table class="ui celled table">
+                <thead>
+                <tr>
+                    <th class="sorted ascending" >Sr.</th>
+                    <th >Title of Book</th>
+                    <th >Authors</th>
+                    <th >Publish Type</th>
+                    <th >Year</th>
+                    <th >Publisher</th>
+                    {% if request.user == user %}
+                    <th>Action</th>
+                    {% endif %}
+                </tr>
+                </thead>
+
+
+                <tbody>
+
+                    
+                </tbody>
+            </table>
+            </div>
+            <div class="pagination">
+                <h4><span class="step-links">
+                    {% if books.has_previous %}
+                        <a href="?page2=1">&laquo; first</a>
+                        <a href="?page2={{ books.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ books.number }} of {{ books.paginator.num_pages }}.
+                    </span>
+
+                    {% if books.has_next %}
+                        <a href="?page2={{ books.next_page_number }}">next</a>
+                        <a href="?page2={{ books.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+    </div>
+    {% comment %}The Books segment ends here!{% endcomment %}
+
+  
+  {% endblock %}

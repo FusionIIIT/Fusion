@@ -1,0 +1,271 @@
+{% load static %}
+
+{% block others %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if mark15 != 1 %}active item {% else %} item {% endif %}" data-tab="other1">
+            Achievements
+        </a>
+
+        <a class="{% if mark15 == 1 %}active item {% else %} item {% endif %}" data-tab="other2">
+            Experts Lectures/Invited Talks
+        </a>
+
+       
+        <!-- <a class="item" data-tab="other3">
+            Keynote/Planery Address
+        </a>
+
+        <a class="item" data-tab="other4">
+            Session Chaired
+        </a> -->
+    </div>
+
+
+    {% comment %}The  Achievement segment starts here!{% endcomment %}
+    <div class="{% if mark15 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="other1">
+        <h4 class="ui dividing header" id="changes12">Add an Achievement</h4>
+            <form class="ui form"  method="post" action="{% url 'eis:award_insert' %}" onsubmit="return validateaward()">
+            {% csrf_token %}
+           
+            <div style="display: none;"> <input type="text" id="achZ" name="ach_id"></div>
+            <div class="field">
+                <label>Year/Month/Day</label>
+                <div class=" four fields">
+                    <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                             <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="a_day"  id="achC"  >
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Day</div>
+                            <div class="menu">
+                                {% for i in "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                              {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                     <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                             <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="a_month" id="achF">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Month</div>
+                            <div class="menu">
+                                {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                    </div>
+                     <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="a_year" id="achE" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Year</div>
+                            <div class="menu">
+                                {% for i in year_range %}
+                                <div class="item" data-value="{{ i }}">{{ i }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>   
+
+                    <div class=" field">
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="type"  id="achA" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Achievement Type</div>
+                            <div class="menu">
+                                <div class="item" data-value="Awards">Awards</div>
+                                <div class="item" data-value="Honours">Honours</div>
+                                <div class="item" data-value="Prizes">Prizes</div>
+                                <div class="item" data-value="Others">Others</div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              
+
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Details</label>
+                            <input placeholder="Title" type="text"   id="achB" name="details" required>
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <button class="ui primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+        
+       <!--scrollbar -->
+  <div style="width: 45vw; height: 400px; overflow-y: scroll">   
+            
+        <table class="ui fixed sortable celled table" id="ach">
+            <thead>
+            <tr>
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Achievement</th>
+                <th class="" style="width: 53%;">Title </th>
+                <th class="" style="width: 15%;">Day/Month/Year</th>
+
+                <th style="width:10%">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for award in awards %}
+            <tr>
+                <td id="ach{{ forloop.counter }}Z"><div style="display: none;">{{ award.id }}</div>{{ forloop.counter }}.</td>
+                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
+                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
+                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{ award.a_day }} / {% endif %}{% if award.a_month %}{{ award.a_month }} / {% endif %}{% if award.a_year %}{{ award.a_year }}{% endif %}</td>
+                <td><a  class="ui button left floated" onclick="updateACH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i> </a><a class="ui blue button left floated" href="{% url 'eis:achievement_delete' award.id %}"><i id="bt" class="ui red delete icon" ></i></a></td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+
+
+        </table>
+    </div>
+    </div>
+
+    {% comment %}The Achievements segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Expert Lectures segment starts here!{% endcomment %}
+    <div class="{% if mark15 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="other2">
+        <h4 class="ui dividing header"  id="changes13">Add a Expert Lecture/Invited Talks</h4>
+           <form class="ui form"  method="post" action="{% url 'eis:talk_insert' %}"  onsubmit="return validateexp()">
+                           <div style="display: none;"> <input type="text" id="lecZ" name="lec_id"></div>
+            {% csrf_token %}
+            <div class="field">
+                <div class="three fields">
+                <!-- code change starts -->
+                    <div class="field">
+                        <label>Presentation Type</label>
+                        
+                          <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="type"  id="lecA" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Presentation Type</div>
+                            <div class="menu">
+                                <div class="item" data-value="Invited Talk">Invited Talk</div>
+                                <div class="item" data-value="Expert Lecture">Expert Lecture</div>
+                              
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- code change ends -->
+
+                    <div class="field">
+                        <label>Place</label>
+                        <input placeholder="Place" type="text" name="place" id="lecC" required>
+                    </div>
+                      <div class="field">
+                        <label>Date</label>
+                        <!-- <input placeholder="Client" type="text"> -->
+                        <!-- code change starts -->
+                             <div class="ui calendar" id="example2g">
+                                <div class="ui input left icon">
+                                  <i class="calendar icon"></i>
+                                  <input type="text" placeholder="Date/Time" name="l_date" id="lecD" required>
+                                </div>
+                              </div>
+                          <!-- code change ends -->
+                    </div>
+                     
+                </div>
+            </div>
+
+            <div class="field">
+                
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text" name="title"  id="lecB" required>
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <button class="ui primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 400px; overflow-y: scroll">
+        <table class="ui fixed sortable celled table" id="talk">
+            <thead>
+            <tr>
+              
+
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Presented</th>
+                <th class="" style="width: 30%;">Title </th>
+                <th class="" style="width: 20%;">Place</th>
+                  <th style="width:18%">Date</th>
+                <th style="width:10%">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for talk in talks %}
+            <tr id="r1">
+                <td id="lec{{ forloop.counter }}Z"><div style="display: none;">{{ talk.id }}</div>{{ forloop.counter }}.</td>
+                <td id="lec{{ forloop.counter }}A">{{ talk.l_type }}</td>
+                <td id="lec{{ forloop.counter }}B">{{ talk.title }}</td>
+                <td id="lec{{ forloop.counter }}C">{{ talk.place }}</td>
+                <td id="lec{{ forloop.counter }}D">{{ talk.l_date }}</td>
+                <td><a class="ui button left floated " onclick="updateLEC({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><br><a class="ui blue button left floated" href="{% url 'eis:emp_expert_lecturesDelete' talk.id %}"><i id="bt" class="ui red delete icon" ></i></a></td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+
+
+        </table>
+       
+    </div>
+    </div>
+
+    <!-- {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="other3">
+       eofere
+
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %} -->
+{% endblock %}

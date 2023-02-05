@@ -1,0 +1,39 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    <div style="margin-left:100px; margin-right:100px;">
+		<form class="ui large form" method="POST" enctype="multipart/form-data" action = "/office/officeOfRegistrar/forwardsubmit/">
+			{% csrf_token %}
+			<input hidden name="track_id" value="{{ track_id }}">
+			<div class="field">
+		            <label>Forward To:
+		            	<input type ="text" name = "receiver">
+		            </label>
+		    </div>
+		    <div class="field">
+		         <label>Receiver Designation:
+		            <input type ="text" name = "designation">              
+		        </label>
+		    </div>
+		    <div>
+	            <a class="right floated item">
+
+	                <button type="submit" name="send" class="ui large right floated primary button" onclick="popup()">
+	                            Send<i class="ui save icon right floated"></i>
+	                        </button>
+	            </a>
+	        </div>
+		</form>
+	</div>
+{% endblock %}

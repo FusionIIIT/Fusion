@@ -1,0 +1,84 @@
+ {% load static %}
+{% block conference %}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="Conference/Symposium">
+            Conference/Symposium
+        </a>
+
+
+    </div>
+
+ <div class="ui active tab segment" data-tab="Conference/Symposium">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+
+
+     <div class="ui pointing pagination menu">
+                {% for consymp in consymps %}
+                {% if forloop.counter0|divisibleby:30 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="consymp-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:30 30 1 %}
+
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for consymp in consymps %}
+
+            {% if forloop.counter0|divisibleby:30 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="consymp-{{ forloop.counter0 }}">
+
+        <table class="ui fixed sortable celled table" id="consymp">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 14%;" >Role</th>
+                <th class="" style="width: 28%;">Conference Details </th>
+                <th class="" style="width: 16%;">Venue</th>
+                <th style="width:23%"><center>From-TO</center></th>
+                <th class="" style="width: 30 %;">Action</th>-->
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 13%;" >Role</th>
+                <th class="" style="width: 25%;"> Conference Name</th>
+                <th class="" style="width: 20%;">Venue</th>
+                 <th style="width:25%">From-TO</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% endif %}
+            <tr>
+                <td id="conf{{ forloop.counter }}Z"><div style="display: none;">{{ consymp.id }}</div>{{ forloop.counter }}.</td>
+                {% if consymp.role1 == 'Any Other' %}
+                    <td id="conf{{ forloop.counter }}Y">{{ consymp.role2 }}</td>
+                {% elif consymp.role1 == 'Organised' %}
+                    <td id="conf{{ forloop.counter }}Y">{{ consymp.role1 }}: {{ consymp.role2 }}</td>
+                {% else %}
+                <td id="conf{{ forloop.counter }}Y">{{ consymp.role1 }}</td>
+                {% endif %}
+                <td id="conf{{ forloop.counter }}A">{{ consymp.name }}</td>
+                <td id="conf{{ forloop.counter }}B">{{ consymp.venue }}</td>
+                <td id="conf{{ forloop.counter }}C">{{ consymp.start_date }} - {{ consymp.end_date }}</td>
+            </tr>
+
+            {% if forloop.counter0|add:1|divisibleby:30 %}
+             </tbody>
+
+        </table>
+            </div>
+            {% endif %}
+            {% endfor %}
+     {% if not consymps.all.count|divisibleby:30 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+
+
+
+
+    </div>
+    {% endblock %}

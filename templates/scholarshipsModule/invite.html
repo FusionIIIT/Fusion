@@ -1,0 +1,274 @@
+{% load static %}
+{% block winners %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
+            Invite Applications
+        </a>
+        <a class="{% if last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="recent_app">
+              Recent Invite Applications
+        </a>
+        <!-- <a class="item" data-tab="aa">
+                Announce Award
+        </a> -->
+
+      <!--<a class="item" data-tab="bsa">
+            Browse Submitted Applications
+        </a>-->
+
+    </div>
+
+    <div class="ui tab" data-tab="aa">
+      <div class="ui vertical segment">
+        {% block notionalprize %}
+            {% include 'scholarshipsModule/notionalprize.html' with ch=ch %}
+        {% endblock %}
+        </div>
+    </div>
+
+    <!--<div class="ui tab" data-tab="bsa">
+       <div class="ui vertical segment">
+        {% block browsecat %}
+            {% include 'scholarshipsModule/browse1.html' %}
+        {% endblock %}
+        </div>
+    </div>-->
+
+    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                {% csrf_token %}
+                <div class="three fields">
+                    <div class="six wide field">
+                        <label>Type</label>
+                        <select id="award_id" class="ui fluid search selection large dropdown" onchange="populate_batches_convocation()" name="type" required>
+                                <option value="">Select</option>
+                                <option value="Merit-cum-Means Scholarship">Merit-cum-Means Scholarship</option>
+                                <option value="Convocation Medals">Convocation Medals</option>
+                            </select>
+                    </div>
+                    <div class="six wide field">
+                        <label>Programme</label>
+                        <script>
+                            function populate_batches_convocation(){
+                                let award_name=document.getElementById("award_id").value.toString();
+                                let prog=document.getElementById("programme_id").value.toString();
+                                if(award_name=="Convocation Medals"){
+                                    let tenure=4;
+                                    if(prog=="PhD"){
+                                        // do nothing 
+                                        return;
+                                    }else if(prog=="B.Tech"){
+                                        tenure=4;
+                                    }else if(prog=="B.Des"){
+                                        tenure=4;
+                                    }else if(prog=="M.Tech"){
+                                        tenure=2;
+                                    }else if(prog=="M.Des"){
+                                        tenure=2;
+                                    }
+                                    let d=new Date();
+                                    let m=parseInt(d.getMonth().toString());
+                                    let yr=parseInt(d.getFullYear().toString());
+                                    
+                                    let batch_year=yr-tenure;
+                                    if(m>7){
+                                        batch_year=batch_year+1;
+                                    }
+                                    var x = document.getElementById("batch_convocation");
+                                    let i,
+                                    L = x.options.length - 1;
+                                    for (i = L; i >= 0; i--) {
+                                        x.remove(i);
+                                    }
+                                    var option = document.createElement("option");
+                                    option.text = batch_year;
+                                    option.value=batch_year;
+                                    x.add(option);
+                                    x.selectedIndex = "0";
+                                }else{
+                                    let d=new Date();
+                                    let tenure=5;
+                                    let m=parseInt(d.getMonth().toString());
+                                    let yr=parseInt(d.getFullYear().toString());
+                                    let batch_year=yr;
+                                    if(m<7){
+                                        batch_year=batch_year-1;
+                                    }
+                                    var x = document.getElementById("batch_convocation");
+                                    let i,
+                                    L = x.options.length - 1;
+                                    for (i = L; i >= 0; i--) {
+                                        x.remove(i);
+                                    }
+                                    for(i=1;i<=tenure;i++){
+                                        var option = document.createElement("option");
+                                        option.text = (batch_year-tenure+i).toString();
+                                        option.value=(batch_year-tenure+i).toString();
+                                        x.add(option);
+                                    }
+                                    var option = document.createElement("option");
+                                    option.text = "All";
+                                    option.value="All";
+                                    x.add(option);
+                                    x.selectedIndex = 0;
+                                }
+
+                            }
+
+                        </script>
+                        <select class="ui fluid search selection large dropdown" id="programme_id" onchange="populate_batches_convocation()" name="programme">
+                                <option value="">Select</option>
+                                <option value="B.Tech"> B.Tech </option>
+                                <option value="B.Des"> B.Des </option>
+                                <option value="M.Tech"> M.Tech </option>
+                                <option value="M.Des"> M.Des </option>
+                                <option value="PhD"> PhD </option>
+                            </select>
+                    </div>
+                    <div class="six wide field">
+                        <label>Batch</label>
+                        <select class="ui fluid search selection large dropdown" id="batch_convocation" name="batch" required>
+                                <option value="">Select</option>
+                                {% for y in active_batches %}
+                                    <option value="{{ y }}">{{ y }}</option>
+                                {% endfor %}
+                                <option value="all">All</option>
+                           <!--<input type="text" value="all" name="batch" placeholder="All Batches"  required>-->
+                        </select>
+                    </div>
+
+
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>Start date</label>
+
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input class="invite dates" type="date" id="frm" name="From" placeholder="YYYY-MM-DD" required>
+                            </div>
+
+                    </div>
+
+                    <div class="field">
+                      <div id="show_error_message"></div>
+                        <label>End Date</label>
+
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input class="invite dates" type="date" id="to" name="To" placeholder="YYYY-MMM-DD" onchange="date_check()" required>
+                            </div>
+                        </div>
+
+                </div>
+                <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Remarks:</label>
+                           <textarea rows="3" name="remarks"></textarea>
+                    </div>
+               </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <button  name="Submit" type="submit" class="ui primary large right floated button">
+                        Submit
+                    </button>
+                </div>
+
+                <br>
+                <br>
+            </form>
+
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+    <div class="{% if last_clicked == 'Enddate_updated' %} ui active tab {% else %} ui tab {% endif %}" data-tab="recent_app">
+        <div class="ui vertical segment">
+
+          <table class="ui celled table">
+              <thead>
+              <tr>
+                  <th >Award Name</th>
+                  <th >Start Date </th>
+                  <th >End Date</th>
+                  <th >Invited On</th>
+                  <th> Batch <th>
+                  <th> </th>
+              </tr>
+              </thead>
+
+              <tbody>
+                    {% for i in release %}
+                  <tr>
+                      <td>{{ i.award }}</td>
+                      <td>{{ i.startdate }}</td>
+                      <td>{{ i.enddate }}</td>
+                      <td>{{ i.date_time }}</td>
+                      <td>{{ i.programme}} - {{ i.batch }}</td>
+                      <td> <button class="ui primary button" id = 'update_release_btn' value='{{ i.id}}'>Update</button> </td>
+                  </tr>
+                      {% endfor %}
+              </tbody>
+          </table>
+    </div>
+
+    <div class="ui modal">
+      <div class="header">Extend End-date Of Application </div>
+      <div class="content">
+        <input type='date' name = 'updated_enddate' id= "enddate_up" required>
+        <input type="hidden" name="update_release_id" id= "update_release_id" value="">
+      </div>
+      <div class="actions">
+        <div class="ui approve button" id = "update_enddate_modal_btn">Update</div>
+        <div class="ui cancel button">Cancel</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  $(document).on('click','#update_release_btn',function (event) {
+          var s = $(this).val();
+          $('#update_release_id').val(s);
+          $('.ui.modal')
+            .modal('show');
+      });
+  $(document).on('click','#update_enddate_modal_btn',function (event) {
+          event.preventDefault();
+          var x = $('#update_release_id').val();
+          var y = $('#enddate_up').val();
+          $.ajax({
+              url: '/spacs/updateEndDate/',
+              type: 'GET',
+              data:{
+                  up_id:x,
+                  up_d:y,
+                },
+              success: function (response) {
+                  if(response.result==='Success'){
+                    location.reload();
+                      console.log(response.result)
+                  }
+                  else{
+                      console.log(response.result);
+                  }
+
+              }
+          });
+      });
+
+function date_check(){
+    var from=document.getElementById("frm").value;
+    var to=document.getElementById("to").value;
+    if(from>=to)
+    {
+      alert("End Date is less Than Start Date");
+    }
+  }
+</script>
+
+{% endblock %}

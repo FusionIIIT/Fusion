@@ -1,0 +1,241 @@
+{% load static %}
+<div>
+    <div class="ui success message center aligned">
+        {% comment %} <div class="ui vertical buttons"> {% endcomment %}
+            <button class="ui inverted  red button" id="modal-script">
+            {% ifequal request.path "/feeds/admin" %}
+                {% if is_admin or administrative_role %}
+                Post update
+                {% else %}
+                Ask a Question?
+                {% endif %}
+            {% else %}
+                Ask a Question?
+            {% endifequal %}
+            </button>
+            <h3 class="ui header" style="margin:5px 0px">More Options:</h3>
+            <div class="ui left labeled button" tabindex="0">
+                <a class="ui basic right pointing label" href={% url 'feeds:feeds' %}>
+                    Feed Home
+                </a>
+                <div class="ui button">
+                    <i class="newspaper  outline icon"></i>
+                </div>
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="ui left labeled button" tabindex="0">
+                <a class="ui basic right pointing label" href={% url 'feeds:feeds_admin' %}>
+                    Admin Panel
+                </a>
+                <div class="ui button">
+                    <i class="shield alternate icon"></i>
+                </div>
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="ui left labeled button" tabindex="0">
+                <a class="ui basic right pointing label" href={% url 'feeds:profile' request.user.username %}>
+                    Show Activity
+                </a>
+                <div class="ui button">
+                    <i class="clipboard check icon"></i>
+                </div>
+            </div>
+        {% comment %} </div> {% endcomment %}
+    </div>
+    {% comment %} <div class="ui success message"> {% endcomment %}
+        <div class="ui fluid center aligned input inline fields">
+            <form method="get" action="{% url 'feeds:feeds' %}">
+            <input type="search" name="keyword" placeholder="Search in feeds...">
+            <button type="submit" name="search" value="search" class="ui search button">
+            <i class="ui search icon"></i></button>
+            </form>
+        </div>
+
+        <div class="ui divider"></div>
+    {% comment %} </div> {% endcomment %}
+    {% ifnotequal request.path "/feeds/admin" %}
+    <div class="ui success message">
+        Filters:
+        {{ request.path }}
+    </div>
+    {% endifnotequal%}
+    <div class="ui success message">
+        <h3 class="ui header">Feeds by Administration:</h3>
+        <div class="ui middle  aligned divided list"  style="max-height: 180px; overflow-y: scroll;">
+            {% for r in role %}
+            <div class="item">
+                <img class="ui avatar image" src={% static 'admin-settings-male.png' %}>
+                <div class="content">
+                <a class="header" href={% url 'feeds:administrative_view' r.role %}>{{r.role}}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Modal Starts here...... -->
+<div class="ui modal" id="post_modal">
+    <i class="close icon"></i>
+    <div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
+    <div class="scrolling content">
+        <div class="ui message">
+            <div class="header">
+                Check these things
+            </div>
+            <ul class="list">
+                <li>Please try to add How, What, Why in subject.</li>
+                <li>Be specific to your problem.</li>
+            </ul>
+        </div>
+
+        <form method="post" action="{% url 'feeds:feeds' %}" onsubmit="return ques_validate()" enctype="multipart/form-data">{% csrf_token %}
+            <div class="ui large form">
+                <div class="field">
+                    <label>Subject</label>
+                    <input id="subject" type="text" name="subject" placeholder="Subject for your problem..." required>
+                </div>
+
+                <div class="field">
+                    {{ form_answer }}
+                </div>
+
+                <div class="field">
+                    <label>Add Tag</label>
+                        <div class='ui multiple search selection dropdown seasons'>
+                            <input class="ques_Add_tag" name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"><i class="tags icon"></i>Select</div>
+                            <div class="menu">
+                                {% for allowed_subtag in subtags %}
+                                <div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                </div>
+
+                <div class="field">
+                    <label>Upload File</label>
+                    <input type="file" id="file" name="file" style="border-radius: 3px;">
+                </div>
+
+                <div class="ui hidden divider"></div>
+                <div class="field">
+                    <div class="ui black checkbox">
+                        <input type="checkbox" id="anonymous" name="anonymous">
+                        <label>Ask Anonymously</label>
+                    </div>
+                </div>
+                {% ifequal request.path "/feeds/admin" %}
+                    {% if is_admin or administrative_role %}
+                        <input type="text" id="from_admin" name="from_admin" value="from_admin" hidden>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictVote" name="RestrictVote">
+                                <label>Restrict Vote?</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
+                                <label>Restrict Answer?</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictComment" name="RestrictComment">
+                                <label>Restrict Comment?</label>
+                            </div>
+                        </div>
+                    {% endif %}
+                {%endifequal%}
+                <div class="ui hidden divider"></div>
+
+                <div class="actions">
+                    <button type="submit" name="add_qus" value="add_qus" class="ui submit positive button" style="float: right;">
+                        Post
+                    </button><br>
+                    <div class="ui hidden divider"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal ends here -->
+
+
+{% block javascript %}
+
+    <script>
+        function ques_validate(){
+            var da = $(".ques_Add_tag").val();
+            if(da == "Add_Tag")
+                return false;
+            else
+                return true;
+        }
+    </script>
+
+    <script>
+        function update_ques_validate(id){
+            var da = $(".update_Add_Tag"+id).val();
+            console.log(da)
+            if(da == "Add_Tag")
+                return false;
+            else
+                return true;
+        }
+    </script>
+
+    <!-- Modal for Ask a Question? -->
+    <script type="text/javascript">
+        $('#modal-script').on('click', function(){
+            $('#post_modal')
+            .modal('show');
+        });
+
+        $('#report').on('click', function(){
+            $('#report_modal')
+            .modal('show');
+        });
+
+        $(document).ready(function(){
+            $(document).on("click","#update_post",function(){
+                {% comment %} alert($(this).attr('value')); {% endcomment %}
+                $('#update_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
+
+            $(document).on("click","#delete_post",function(){
+                {% comment %} alert('#delete_post'+ $(this).attr('value')); {% endcomment %}
+                $('#delete_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
+
+            $(document).on("click","#hide_post",function(){
+                {% comment %} alert('#hide_post'+ $(this).attr('value')); {% endcomment %}
+                $('#hide_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
+        });
+
+        $('#answer').on('click', function(){
+            console.log("give answer")
+            $('#answer_modal')
+            .modal('show');
+        });
+    </script>
+    <!-- Modal ends here -->
+    <script>
+    if ( window.history.replaceState ) {
+    window.history.replaceState( null, null, window.location.href );
+    }
+    </script>
+{% endblock javascript %}

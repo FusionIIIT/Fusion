@@ -1,0 +1,104 @@
+{% load static %}
+
+{% block file-requests %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    {% comment %} <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="first">
+            Special Request
+        </a>
+    </div> {% endcomment %}
+
+    {% comment %} <div class="ui active tab" data-tab="first"> {% endcomment %}
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" action="">
+                {% csrf_token %}
+                <div class="ui header">
+                    Add a new Request:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Request Type</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="request_type" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Brief of Request</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="meet_request">
+                                    Meet Request
+                                </div>
+
+                                <div class="item" data-value="noc_request">
+                                    Request NOC
+                                </div>
+
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Request To</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="request_to" type="hidden" required="true">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">To Faculty</div>
+
+                            <div class="menu">
+                                {% for fcu in faculty %}
+                                    <div class="item" data-value={{ fcu.user.username}}>
+                                        {{fcu.title}} {{ fcu.user.first_name}} {{ fcu.user.last_name}}
+                                        <!-- {{ fcu.user.first_name}} &nbsp {{ fcu.user.second_name}} -->
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Request Details</label>
+                    <div class="ui large input">
+                        <input placeholder="Details of Request" name="request_details">
+                    </div>
+                </div>
+
+                {% comment %} <div class = "file">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="upload_request" accept=".pdf, .jpg, .jpeg, .png" >
+                </div> {% endcomment %}
+
+                <br>
+
+                <button class="ui large primary button right floated" onclick="request()">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            {% comment %} <br> {% endcomment %}
+            {% comment %} <div class="ui divider"></div> {% endcomment %}
+        </div>
+    {% comment %} </div> {% endcomment %}
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+{% endblock %}

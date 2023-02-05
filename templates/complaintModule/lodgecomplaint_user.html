@@ -1,0 +1,160 @@
+{% load static %}
+{% block lodgecomplaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+            Complaint
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        <div class="ui vertical segment">
+            <!-- fill the form details -->
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="">
+                {% csrf_token %}
+                <div class="ui header">
+                    Add a new Complaint:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Complaint Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="complaint_type" type="hidden" name="complaint_type" required="True">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Complaint Type</div>
+
+                            <div class="menu" >
+                                <div class="item" data-value="Electricity" >
+                                    Electricity
+                                </div>
+
+                                <div class="item" data-value="carpenter" >
+                                    Carpenter
+                                </div>
+
+                                <div class="item" data-value="plumber">
+                                    Plumber
+                                </div>
+                                <div class="item" data-value="garbage" >
+                                    Garbage
+                                </div>
+                                <div class="item" data-value="dustbin" >
+                                    Dustbin
+                                </div>
+                                <div class="item" data-value="internet" >
+                                    Internet
+                                </div>
+                                <div class="item" data-value="other" >
+                                    Other
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Location<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="Location" type="hidden" required>
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Location</div>
+
+                            <div class="menu" id="Location">
+                                <div class="item" data-value="hall-1">
+                                    Hall-1
+                                </div>
+
+                                <div class="item" data-value="hall-3">
+                                    Hall-3
+                                </div>
+
+                                <div class="item" data-value="hall-4">
+                                    Hall-4
+                                </div>
+
+                                <div class="item" data-value="CC1">
+                                    CC1
+                                </div>
+
+                                <div class="item" data-value="CC2">
+                                    CC2
+                                </div>
+                                 <div class="item" data-value="core_lab">
+                                    CORE LAB
+                                </div>
+                                 <div class="item" data-value="LHTC" >
+                                    LHTC
+                                </div>
+                                 <div class="item" data-value="NR2" >
+                                    NR2
+                                </div>
+                                 <div class="item" data-value="Rewa_Residency" >
+                                    Rewa Residency
+                                </div>
+                                 <div class="item" data-value="Maa Saraswati Hostel" >
+                                    Maa Saraswati Hostel
+                                </div>
+                                 <div class="item" data-value="Nagarjun Hostel" >
+                                    Nagarjun Hostel
+                                </div>
+                                 <div class="item" data-value="Panini Hostel" >
+                                    Panini Hostel
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Specific Location<sup><i class="small red asterisk icon"></i></sup></label>
+                    <div class="ui large input">
+                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Complaint Details<sup><i class="small red asterisk icon"></i></sup></label>
+                    <input placeholder="What is your Complaint?" name="details" required></textarea>
+                </div>
+
+                <div class = "field">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                </div> 
+                    Complaint Will be Register with your User ID : {{ comp_id }}
+                <input type="text"  name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
+
+                <br>
+
+                <button class="ui large primary button right floated" onclick= "sub(),disabled=true">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+   
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+{% endblock %}

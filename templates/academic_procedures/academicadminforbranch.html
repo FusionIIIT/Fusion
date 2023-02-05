@@ -1,0 +1,41 @@
+{% load static %}
+{% block branch_change %}
+    {% comment %}The grid starts here!{% endcomment %}
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="first">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% block changebranch %}
+                    {%  include 'academic_procedures/branch_change.html' %}
+                {%  endblock %}
+            </div>
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    {% comment %}The grid ends here!{% endcomment %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

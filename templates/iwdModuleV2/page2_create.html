@@ -1,0 +1,194 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui header">
+        Page 2:
+    </div>
+
+
+    {% comment %}the doctor appointment tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="doctorappointment">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="">{% csrf_token %}
+
+                <div class="field">
+                    <label>Project ID<sup><i class="small red asterisk icon"></i></sup></label><p id="id"></p>
+                    <div class="ui fluid input">
+                        <textarea id="project_id" class="ui textarea" rows="1" name="id" required="true"></textarea>
+                    </div>
+                </div>
+              <br>
+            <!-- For both  the below fileds I'm using one div so that they are together -->
+            <div class="fields">
+                <div class = "eight wide field">
+                    <label for="file">Attach Corrigendum ( PDF )</label>
+                    <input type="file" id="corrigendum_pdf" name="corrigendum" accept=".pdf" >
+                    </div>
+
+                    <div class = "eight wide field">
+                        <label for="file">Attach Addendum ( PDF )</label>
+                        <input type="file" id="addendum_pdf" name="addendum" accept=".pdf" >
+                        </div>
+
+            </div>
+<br>
+            <div class="fields">
+                <div class = "eight wide field">
+                    <label for="file">Attach Pre-bid Meeting Details ( PDF )</label>
+                    <input type="file" id="pre-bid-pdf" name="preBid" accept=".pdf" >
+                    </div>
+
+                    <div class = "eight wide field">
+                        <label for="file">Attach Technial-bid Meeting Details ( PDF )</label>
+                        <input type="file" id="technial-bid-pdf" name="technicalBid" accept=".pdf" >
+                        </div>
+
+            </div>
+
+            <br>
+
+            <div class="field">
+                <label>Technically Qualified Agencies<sup></sup></label><p id="qualified_agencies"></p>
+                <div class="ui fluid input">
+                    <textarea id="qualified_agencies" class="ui textarea" rows="1" name="qualifiedAgencies" ></textarea>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="fields">
+                <div class = "eight wide field">
+                    <label for="file">Attach Financial-bid Meeting Details ( PDF )</label>
+                    <input type="file" id="financial-bid-pdf" name="financialBid" accept=".pdf" >
+                    </div>
+
+                      <div class="field">
+                    <label>Name Of Lowest (L-1) Agency<sup><i class="small red asterisk icon"></i></sup></label><p id="id"></p>
+                    <div class="ui fluid input">
+                        <textarea id="project_id" class="ui textarea" rows="1" name="lowAgency"></textarea>
+                    </div>
+                </div>
+                </div>
+<br>
+
+                <div class="fields">
+                    <div class = "eight wide field">
+                        <label for="file">Attach Letter of Intent ( PDF )</label>
+                        <input type="file" id="letter_of_intent_pdf" name="letterOfIntent" accept=".pdf" >
+                        </div>
+
+                        <div class = "eight wide field">
+                            <label for="file">Attach Work Order ( PDF )</label>
+                            <input type="file" id="work_order_pdf" name="workOrder" accept=".pdf" >
+                            </div>
+
+                </div>
+    <br>
+                <div class="fields">
+                    <div class = "eight wide field">
+                        <label for="file">Attach Agreement Letter ( PDF )</label>
+                        <input type="file" id="agreement_letter_pdf" name="agreementLetter" accept=".pdf" >
+                        </div>
+
+                        <div class = "eight wide field">
+                            <label for="file">Attach Milestones ( PDF )</label>
+                            <input type="file" id="milestones_pdf" name="milestones" accept=".pdf" >
+                            </div>
+
+                </div>
+
+
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+                      <input type="submit" name="Submit" value="Next" class="ui small right floated primary button" />
+                      </a>
+                    </div>
+
+                </div>
+            </form>
+
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

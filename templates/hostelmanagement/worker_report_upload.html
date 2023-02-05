@@ -1,0 +1,83 @@
+{% block worker_report %}
+
+<h3 align="center"> Worker Report Monthy Form </h3><br><br>
+
+<form action="{% url 'hostelmanagement:workerreport' %}" method ="POST" enctype="multipart/form-data">
+   
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet(xls not xlsx) in following format:</h4>
+            HALL NO. WORKER ID | NAME | DATES
+            <h4 class="ui dividing header"><a href="..\media\hostel_management\worker_report.xls">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+        </div>
+            <div class="field">
+                        <!-- <div class="eight wide column"> -->
+
+                            <label>Select month</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="month" type="hidden" style="width:10px;">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="01">
+                                        Jan
+                                    </div>
+                                    <div class="item" data-value="02">
+                                        Feb
+                                    </div>
+                                    <div class="item" data-value="03">
+                                        Mar
+                                    </div>
+                                    <div class="item" data-value="04">
+                                        Apr
+                                    </div>
+                                    <div class="item" data-value="05">
+                                        May
+                                    </div>
+                                    <div class="item" data-value="06">
+                                        June
+                                    </div>
+                                    <div class="item" data-value="07">
+                                        July
+                                    </div>
+                                    <div class="item" data-value="08">
+                                        Aug
+                                    </div>
+                                    <div class="item" data-value="09">
+                                        Sept
+                                    </div>
+                                    <div class="item" data-value="10">
+                                        Oct
+                                    </div>
+                                    <div class="item" data-value="11">
+                                        Nov
+                                    </div>
+                                    <div class="item" data-value="12">
+                                        Dec
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+       <div class="field">
+        <label for="file">Upload File (.xls)</label>
+           <input type='file' name= "upload_report" accept=".xls" required> 
+
+           <button class="ui primary button right floated" type="submit">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+{% endblock %}

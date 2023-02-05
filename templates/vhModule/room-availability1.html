@@ -1,0 +1,62 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="roomstatus">
+            Room Availability
+        </a>
+        <a class="item" data-tab="billstatus">
+            Bill Details
+        </a>
+    </div>
+    <div class="ui active tab"  data-tab="roomstatus">
+    {% for room in available_rooms %}
+        
+    {% endfor %}
+
+    <form class="ui form" id="find-room-status">
+        <div class="three fields">
+            <div class="field">
+                <label>From:</label>
+                <div class="ui calendar" id="rangestart3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From" name="start-date" class="date-selector">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To:</label>
+                <div class="ui calendar" id="rangeend3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To" name="end-date" class="date-selector">
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label><font color="white">l</font></label>
+            <!-- </br> -->
+                
+                    <div class="ui blue button center floated" onclick="find_available_rooms( '{{ available_rooms }}' )">
+                        Submit
+                    </div>
+                
+            </div>
+        </div>
+    </form>
+    
+    <div class="ui divider"></div>
+    <div id="replace-this-div"></div>
+</div>
+
+<div class="ui tab"  data-tab="billstatus">
+
+    {% block generate_records %}
+                    {% include 'vhModule/generate_records.html' %}
+                {% endblock %}
+</div>
+
+
+{% endblock %}
+

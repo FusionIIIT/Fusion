@@ -1,0 +1,97 @@
+{% load static %}
+{% block bookameal %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="bookameal">
+            Meals Record
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="bookameal">
+        <div class="ui vertical segment">
+                    <table class="ui structured sortable celled table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="four wide">Name</th>
+                                <th colspan="5"><center>Meals Served</center></th>
+                                <th rowspan="2" >Submit</th>
+                            </tr>
+
+                            <tr>
+                                <th>Bed-Tea</th>
+                                <th>Breakfast</th>
+                                <th>Lunch</th>
+                                <th>Eve Tea</th>
+                                <th>Dinner</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for key, value in active_visitors.items %}
+
+                            <form id="form{{visitor.visitor.id}}">
+                                <tr>
+                                    <td>
+                                        <h4 class="ui image header">
+                                            <div class="content">
+                                                {{ value.visitor_name }}
+                                                <div class="sub header">
+                                                    {{ value.visitor_email }}
+                                                </div>
+                                            </div>
+                                        </h4>
+                                    </td>
+
+                                    <td>
+                                        <div class="ui checkbox">
+                                            <input type="checkbox" value="1" name="food{{value.id}}">
+                                            <label></label>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="ui checkbox">
+                                            <input type="checkbox" value="2" name="food{{value.id}}">
+                                            <label></label>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="ui checkbox">
+                                            <input type="checkbox" value="3" name="food{{value.id}}">
+                                            <label></label>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="ui checkbox">
+                                            <input type="checkbox" value="4" name="food{{value.id}}">
+                                            <label></label>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="ui checkbox">
+                                            <input type="checkbox" value="5" name="food{{value.id}}">
+                                            <label></label>
+                                        </div>
+                                    </td>
+                                    <input type="hidden" value="{{ value.id }}" name="id">
+                                    <input type="hidden" value="{{ key }}" name="meal-booking-id">
+                                    <td>
+                                        <div class="field">
+                                            <label></label>
+                                            <button class="ui primary right floated button bookameal-submit" id="btn{{value.id}}" data-pk="{{value.id}}">
+                                                Update
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </form>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+{% endblock %}
+

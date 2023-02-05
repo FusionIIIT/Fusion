@@ -1,0 +1,254 @@
+{% load static %} {% block viewperformance %}
+
+<div class="ui pointing secondary menu">
+    <a class="item active tab vptab" id="assignmenttab" data-tab="assignment">Assignment</a>
+
+    <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a>
+    <!-- {% if Lecturer == 1 %}
+      <a class="item tab vptab" id="viewmarkstab" data-tab="viewmarks"> Exams </a>
+    {% endif %} -->
+
+</div>
+<!-- Assignment -->
+ <div class="ui bottom attached vptabdata active tab segment" id="assignmenttabdata" data-tab="assignment" style="overflow:scroll;overflow-y:hidden ">
+  {% if Lecturer is 0 %}
+    <h4>Results</h4>
+    {% if assignment|length  %}
+    <div class="ui top attached tabular menu">
+      {% for assi in assignment %}
+        <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{assi.assignment_name}}</a>
+      {% endfor %}
+    </div>
+    {% for assi in assignment %}
+    <div class="ui {% if forloop.counter is 1 %}active {% endif %} bottom attached tab segment performance" id="result{{forloop.counter}}" data-tab="{{forloop.counter}}">
+        <table class="ui very basic collapsing celled table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Marks</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for sa in student_assignment %}
+                {% if sa.0.assignment_id.pk == assi.pk %}
+                <tr>
+                  <td>
+                    <h4 class="ui image header">
+                      <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                        <div class="content">
+                          <p style="text-align:center">{{request.user.first_name}}  {{request.user.last_name}}</p>
+                        </div>
+                    </h4>
+                  </td>
+                  <td>
+                    {{sa.0.score}}
+                  </td>
+                  <td>
+                    {{sa.0.feedback}}
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endfor %}
+      {% else %}
+      <h3>You didn't submit any assignment</h3>
+      {% endif %}
+  {% else %}
+    <h4>Results</h4>
+    {% if assignment|length  %}
+      <div class="ui top attached tabular menu">
+        {% for assi in assignment %}
+          <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{assi.assignment_name}}</a>
+        {% endfor %}
+      </div>
+      {% for assi in assignment %}
+      <div class="ui {% if forloop.counter is 1 %}active {% endif %} bottom attached tab segment performance" id="result{{forloop.counter}}" data-tab="{{forloop.counter}}">
+          <table class="ui very basic collapsing celled table">
+              <thead>
+                  <tr>
+                      <th>Student</th>
+                      <th>Total Marks</th>
+                      <th>Feedback</th>
+                  </tr>
+              </thead>
+              <tbody>
+                {% for stu_ass in student_assignment %}
+                  {% if stu_ass.0.assignment_id.pk == assi.pk %}
+                    {% for sa in stu_ass %}
+                    <tr>
+                      <td>
+                        <h4 class="ui image header">
+                          <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                            <div class="content">
+                              <p style="text-align:center">{{sa.student_id.id.user.first_name}}  {{sa.student_id.id.user.last_name}}</p>
+                            </div>
+                        </h4>
+                      </td>
+                      <td>
+                        {{sa.score}}
+                      </td>
+                      <td>
+                        {{sa.feedback}}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+      {% endfor %}
+    {% else %}
+      <h3>No Assignment has been uploaded </h3>
+    {% endif %}
+  {% endif %}
+</div>
+<div class="ui bottom attached tab vptabdata segment" id="quiztabdata" data-tab="quiz">
+  {% if Lecturer is 0 %}
+    <h4>Results</h4>
+    {% if quizs|length  %}
+    <div class="ui top attached tabular menu">
+      {% for quiz in quizs %}
+        <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{quiz.quiz_id.quiz_name}}</a>
+      {% endfor %}
+    </div>
+    {% for quiz in quizs %}
+      <div class="ui {% if forloop.counter is 1 %}active {% endif %} bottom attached tab segment performance" id="result{{forloop.counter}}" data-tab="{{forloop.counter}}">
+        <table class="ui very basic collapsing celled table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Total Marks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <h4 class="ui image header">
+                  <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                  <div class="content">
+                    <p style="text-align:center">{{request.user.first_name}}  {{request.user.last_name}}</p>
+                  </div>
+                </h4>
+              </td>
+              <td>
+                {{quiz.score}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  {% else %}
+  <h3>You didn't participate in any quiz or no quiz was conducted</h3>
+  {% endif %}
+  {% else %}
+  <h4>Results</h4>
+  {% if quizs|length  %}
+    <div class="ui top attached tabular menu">
+      {% for quiz in quizs %}
+        <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{quiz.0.quiz_id.quiz_name}}</a>
+      {% endfor %}
+    </div>
+    {% for quiz in quizs %}
+    <div class="ui {% if forloop.counter is 1 %}active {% endif %} bottom attached tab segment performance" id="result{{forloop.counter}}" data-tab="{{forloop.counter}}">
+      <table class="ui very basic collapsing celled table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Total Marks</th>
+          </tr>
+        </thead>
+          <tbody>
+          {% for stu in quiz %}
+            <tr>
+              <td>
+                <h4 class="ui image header">
+                  <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                  <div class="content">
+                    <p style="text-align:center">{{stu.student_id.id.user.first_name}} {{stu.student_id.id.user.last_name}}</p>
+                  </div>
+                </h4>
+              </td>
+              <td>
+                {{stu.score}}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div>
+    {% endfor %}
+  {% else %}
+    <h3>No quiz was conducted</h3>
+  {% endif %}
+  {% endif %}
+</div>
+
+<div class="ui bottom attached tab vptabdata segment" id="viewmarkstabdata" data-tab="viewmarks" style="overflow:scroll;overflow-y:hidden ">
+    <!-- <h4>Add Marks</h4> -->
+        <table class="ui very basic collapsing celled table" id="marks_table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Name</th>
+              <th> Quiz 1 </th>
+              <th> Quiz 2 </th>
+              <th> Mid Semester </th>
+              <th> End Semester </th>
+              <th> Total Marks </th>
+              <!-- {% for key, tuple in test_marks.items %}
+              <th> {{tuple.1}}</th>
+                {% endfor %} -->
+            </tr>
+          </thead>
+          <tbody>
+          {% for key, tuple in students.items %}
+            <tr>
+              <td>{{key}}</td>
+              <td>{{tuple.0}}</td> <!-- name-->
+            {% for key, tuple2 in test_marks.items %}
+
+              {% if tuple.1 == tuple2.0 %} <!-- rid-->
+                {% if tuple2.1 == 'Quiz 1' %}
+                  <td> {{tuple2.2}}</td>
+
+
+
+                {% elif tuple2.1 == 'Quiz 2' %}
+                  <td></td>
+                  <td> {{tuple2.2}}</td>
+
+
+
+                {% elif tuple2.1 == 'Mid Sem' %}
+                  <td> {{tuple2.2}}</td>
+
+
+
+                {% elif tuple2.1 == 'End Sem' %}
+                  <td> {{tuple2.2}}</td>
+                {% endif %}
+              {% endif %}
+
+            {% endfor %}
+            </tr>
+
+          {% endfor %}
+          </tbody>
+        </table>
+    </div>
+
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    $("#viewmarkstabdata").click(function(){
+      $("#marks_table").unbind();
+  });
+</script>

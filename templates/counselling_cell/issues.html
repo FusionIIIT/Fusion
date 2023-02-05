@@ -1,0 +1,87 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block Issues %}
+{% comment %} Df-(,5{ {% endcomment %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="issues">
+            Raise Issue
+        </a>
+
+        <a class="item" data-tab="viewissues">
+            Status
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="issues" id="issues">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST" action="../counselling/raise_issue/">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Raise issue Form :
+                    </div>
+
+                    <br>
+
+                    <div class="two fields" style="margin-left: 1px;">
+
+                        <div class="two fields" >
+                            <div class="twelve wide field">
+                                <label>Category<span  style="color:red; "><b>*</b></span></label>
+                                <select class="ui dropdown" name="category" id="category">
+                                    {% for category in categories%}
+                                    <option value="{{category.id}}">{{category}}</option>
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Description of Issue<span  style="color:red; "><b>*</b></span></label>
+                        <textarea rows="10" id="description" name="description" required="true"></textarea>
+                    </div>
+                    
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewissues">
+
+    {% block viewstatus %}
+            {% include 'counselling_cell/Status.html' %}
+            {% endblock %}
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+{% endblock %}
+
+
+

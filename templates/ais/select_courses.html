@@ -1,0 +1,46 @@
+{% load static %}
+{% block optional %}
+<table class="ui celled table">
+    <thead>
+        <tr>
+            <th>Course ID</th>
+            <th>Course Name</th>
+            <th>Credits</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+    <form class="ui form" id='select_opt' action='/aims/select_opt/' method='post'>
+    {% csrf_token %}
+    {% for i in opt_courses %}
+        <tr>
+            <td>{{ i.course_id }}</td>
+            <td>{{ i.course_name }}</td>
+            <td>{{ i.credits }}</td>
+            <td><input name="choice" type="checkbox" value="{{ i.course_id }}"></td>
+        </tr>
+    {% endfor %}
+    
+</table>
+<button class="ui button black create_btn" type="submit">Submit</button>
+</form>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    
+    $(function() {
+    $("#select_opt").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);            
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Optional Course Selected');
+                window.location = "/aims/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to Select Optional Course');
+                window.location = "/aims/";
+            });             
+        });
+    });
+</script>

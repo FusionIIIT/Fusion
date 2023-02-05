@@ -1,0 +1,85 @@
+
+{% load static %}
+{% block Issues %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            FILE PATENT
+        </a>
+
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="feedback" id="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST" action="{% url 'research_procedures:patent_status_update' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Change Status
+                    </div>
+
+                    <br>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Patent ID*</label>
+                                <select class="ui dropdown" name="id" id="id">
+                                    {% for patent in patents %}
+                                    <option value="{{patent.application_id}}">{{patent.application_id}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Status*</label>
+                                <select class="ui dropdown" name="status" id="status">
+                                    <option value="Approved">Approved</option>
+                                    <option value="Disapproved">Disapproved</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                   
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit">
+                            Save
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+    {% block viewstatus %}
+            {% include 'rs/Status.html' %}
+            {% endblock %}
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock javascript %}
+
+

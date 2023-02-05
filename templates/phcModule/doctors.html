@@ -1,0 +1,219 @@
+{% load static %}
+
+{% block doctors %}
+    <div class="ui pointing secondary menu">
+       <a class="active item" data-tab="viewdoctor">
+            Doctors
+       </a>
+        <a class="item" data-tab="adddoctor">
+            Add Doctor
+        </a>
+        <a class="item" data-tab="removedoctor">
+            Remove Doctor
+        </a>
+    </div>
+    {% comment %}the view doctor tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="viewdoctor">
+         <div id="docs_print" class="ui vertical segment" >
+              <!--  <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button>  -->
+
+                <script>
+    $('#pr_docs').click(function(e){
+        var sTable = document.getElementById('docs_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >PHC Doctors</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+        <table  border=1 class="ui definition padded table" style="margin: auto;">
+        </br>
+          </br>
+              </br>
+        <thead>
+
+        <tr>
+          <td style="font-weight:bold;color:black;">Doctor</td>
+          
+          {% for d in doct %}
+          {{count.doctor_count}}
+          <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td >Specialization</td>
+          {% for d in doctors %}
+          {{count.doctor_count}}
+          <td style="word-wrap:break-word;">{{d.specialization}}</td>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <td >Phone Number</td>
+          {% for d in doctors %}
+          {{count.doctor_count}}
+          <td style="word-wrap:break-word;">{{d.doctor_phone}}</td>
+          {% endfor %}
+        </tr>
+        </thead>
+        </table>
+
+
+        </div>
+    </div>
+{% comment %}the view doctor tab ends here {% endcomment %}
+
+
+    {% comment %}the add doctor tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="adddoctor">
+      <p id="doc_add"></p>
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Doctor Name</label>
+                <div class="ui fluid large input">
+                    <input placeholder="Doctor Name" id="new_doctor" name="new_doctor" type="text">
+                </div>
+                </div>
+                <div class="field">
+                    <label>Specialization</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Specialization" id="specialization" name="specialization" type="text">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Phone Number</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Phone" id="phone" name="phone" type="number">
+                    </div>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="add_doctor" name="add_doctor"  value="Submit" class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#add_doctor').click(function(e)
+                                                  {
+                                                    var new_doctor = document.getElementById('new_doctor').value;
+                                                    var specialization = document.getElementById('specialization').value;
+                                                    var phone = document.getElementById('phone').value;
+                                                    if ( new_medicine==""||phone==""||specialization=="") {
+                                                        $('#doc_add').html('Enter valid details');
+                                                        return false;
+                                                    }
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      new_doctor:$("#new_doctor").val(),
+                                                      specialization:$("#specialization").val(),
+                                                      phone:$("#phone").val(),
+                                                      add_doctor:$('#add_doctor').val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("added doctor");
+
+                                            {% comment %}          $('#phc_docs').find('tbody');
+$('#phc_docs tbody').append("<tr><td>" + data.doctor + "</td><td>" + data.specialization + "</td><td>"  + data.phone + "</td></tr>");
+                                                       {% endcomment %}
+
+                                                      document.getElementById("new_doctor").value="";
+                                                      document.getElementById("specialization").value="";
+                                                      document.getElementById("phone").value="";
+                                                      window.location.reload();
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+    {% comment %}the add doctor tab ends here {% endcomment %}
+
+    {% comment %}the remove medicine tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="removedoctor">
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Doctor</label>
+                <select id="doc_active" class="ui search fluid dropdown" name="doctor_id" required="true">
+                  <option selected hidden>--SELECT--</option>
+                  {% for doctor in doctors %}
+                  <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="remove_doctor" name="remove_doctor"  value="Submit"class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#remove_doctor').click(function(e)
+                                                  {
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      doctor_active:$("#doc_active").val(),
+                                                      remove_doctor:$('#remove_doctor').val()
+                                                    },
+                                                      success: function(data){
+                                                      $('#'+data.id).parent().remove();
+
+                                                      alert("removed doctor : "+data.doc);
+                                                      document.getElementById("doc_active").value="";
+                                                      window.location.reload();
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+    {% comment %}the remove doctor tab ends here {% endcomment %}
+
+{% endblock %}

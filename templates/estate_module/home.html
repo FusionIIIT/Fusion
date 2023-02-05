@@ -1,0 +1,143 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Estate
+{% endblock title %}
+
+{% block override_base_links %}
+
+<link rel="stylesheet" href="{% static 'estate_module/semantic.min.css' %}" />
+
+<script defer src="{% static 'estate_module/jquery.min.js' %}"></script>
+<script defer src="{% static 'estate_module/semantic.min.js' %}"></script>
+<script defer src="{% static 'globals/js/tab.js' %}"></script>
+<script defer src="{% static 'globals/js/tablesort.js' %}"></script>
+<script defer src="{% static 'estate_module/sidebar.js' %}"></script>
+
+{% endblock override_base_links %}
+
+{% block css %}
+<style>
+    .ui.segment {
+        margin-top: 0;
+    }
+</style>
+{% endblock css %}
+
+{% block body %}
+
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock navBar %}
+
+<div class="ui stackable doubling grid">
+
+    <div class="column">
+    </div>
+
+    <div class="three wide column">
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock usercard %}
+
+        <div class="ui divider"></div>
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            {% for menuitem, menuitem_data in menuitems.items %}
+            <a class="{% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item" data-tab="{{ menuitem|slugify }}">
+                {{ menuitem }}
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <div class="ten wide column">
+        {% if messages %}
+        {% for message in messages %}
+
+        <script type='module'>
+            $('body')
+                .toast({
+                    position: 'top left',
+                    title: '{{ message.tags|title }}!',
+                    message: '{{ message }}',
+                    class: '{{ message.tags }}',
+                    showProgress: 'bottom',
+                    displayTime: 6000,
+                    /*className: {
+                        toast: 'ui message'
+                    }*/
+                });
+        </script>
+
+
+        {% endfor %}
+        {% endif %}
+
+        {% comment %} <button class="ui right labeled icon blue new_inventory button">
+            <i class="plus icon"></i>
+            New Inventory
+        </button> {% endcomment %}
+
+        {% comment %} {% include inventory_data.template_dir|add:'/edit_modal.html' %} {% endcomment %}
+        {% include inventory_data.consumable.template_dir|add:'/edit_modal.html' %}
+        {% include inventory_data.non_consumable.template_dir|add:'/edit_modal.html' %}
+        {% include subWork_data.template_dir|add:'/edit_modal.html' %}
+
+
+        {% for menuitem, menuitem_data in menuitems.items %}
+        <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab raised segment"
+            data-tab="{{ menuitem|slugify }}">
+            {% include menuitem_data.template_dir|add:'/home.html' %}
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% comment %} {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% endcomment %}
+    {% include inventory_data.consumable.template_dir|add:'/new_modal.html' %}
+    {% include inventory_data.non_consumable.template_dir|add:'/new_modal.html' %}
+    {% include subWork_data.template_dir|add:'/new_modal.html' %}
+
+    {% comment %} {% for inventory in inventory_data.all %}
+    {% include inventory_data.template_dir|add:'/detail.html' with menuitem='Inventory' %}
+    {% endfor %} {% endcomment %}
+
+    {% for inventory in inventory_data.consumable.all %}
+    {% include inventory_data.consumable.template_dir|add:'/detail.html' with menuitem='Consumable Inventory' %}
+    {% endfor %}
+
+    {% for inventory in inventory_data.non_consumable.all %}
+    {% include inventory_data.non_consumable.template_dir|add:'/detail.html' with menuitem='Non Consumable Inventory' %}
+    {% endfor %}
+
+    {% for subWork in subWork_data.all %}
+    {% include subWork_data.template_dir|add:'/detail_modal.html' %}
+    {% endfor %}
+
+</div>
+
+{% block javascript %}
+<script type='module'>
+    $('select:not(#id_issued_to)')
+        .addClass('search selection dropdown');
+    $('select:not(#id_issued_to)')
+        .dropdown({
+            clearable: true,
+            fullTextSearch: true,
+            forceSelection: false
+        });
+    $('.ui.calendar')
+        .calendar({
+            type: 'date',
+            startMode: 'year'
+        });
+</script>
+
+{% endblock javascript %}
+
+{% endblock body %}

@@ -1,0 +1,129 @@
+{% load static %}
+{% block allot_courses %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <h2>
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    </h2>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="allotment">
+        Allot Student Courses
+    </a>
+</div>
+
+
+
+<div class="ui active tab segment" data-tab="allotment">
+
+    <form class="ui form" method="POST" action='/academic-procedures/acad_person/allot_courses/'
+        enctype="multipart/form-data" id='allot_courses_form'>
+        {% csrf_token %}
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet in following format:</h4>
+            RollNo | CourseSlot Name | CourseCode | CourseName
+            <h4 class="ui dividing header"><a href="../media/Administrator/academic_procedures/sample_courses_allotment.xlsx">Download</a>
+                the sample Excel, fill the data accordingly and then upload the same</h4>
+        </div>
+        <div class="field">
+            <label>Programme</label>
+            <select class="ui dropdown" required="true" name="batch">
+                <option value=""> Select Batch </option>
+                {% for batch in batch_branch_data %}
+                <option value="{{batch.id}}" id="batch">{{batch.name}} {{batch.discipline.acronym}} {{batch.year}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Semester</label>
+            <select class="ui dropdown" required="true" name="semester">
+                <option value="NULL" class="sem">Select Semester</option>
+                <option value="1" class="sem">1</option>
+                <option value="2" class="sem">2</option>
+                <option value="3" class="sem">3</option>
+                <option value="4" class="sem">4</option>
+                <option value="5" class="sem">5</option>
+                <option value="6" class="sem">6</option>
+                <option value="7" class="sem">7</option>
+                <option value="8" class="sem">8</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <input type="file" name="allotedCourses" required
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="alloted_courses">
+        </div>
+
+        <div class="field">
+            <button class="ui primary button" type="submit"><i class="upload icon"></i> Upload</button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript">
+
+$(function() {
+    $("#allot_courses_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        // if success:
+        posting.done(function(data) {
+            alert('Posted');
+            window.location = "/academic-procedures/main/";
+        });
+        // if failure
+        posting.fail(function(data) {
+            alert('Queries does not match');
+            // window.location = "/academic-procedures/main/";
+        });
+    });
+});
+ 
+//  $(document).ready(function () {
+//         $(document).on('submit','#allot_courses_form',function (event) {
+//             event.preventDefault();
+//             $.ajax({
+//                 url: '/academic_procedures/acad_person/allot_courses/',
+//                 type: 'POST',
+//                 data: {
+//                     allotedCourses: $('#alloted_courses').val(),
+//                     batch: $('#batch').val(),
+//                     semester: $('.sem').val(),
+//                     csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+//                 },
+//                 success: function (response) {
+//                     console.log(response)
+//                     console.log(data)
+//                     if(response.result==='Success'){
+//                         $( '#allot_courses_form' ).each(function(){
+//                             this.reset();
+//                         });
+//                     }
+//                     else{
+//                         alert(response.message);
+//                     }
+//                 }
+//             });
+//         });
+//     });
+
+
+</script>
+{% endblock %}
+
+
+{% comment %}
+Display course slot codes, and their course as per batch and semester
+{% endcomment %}

@@ -1,0 +1,86 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+    
+<div class="ui vertical segment">
+    <form id="add_expenditure_form" action='/income-expenditure/addExpenditure/' method="POST">{% csrf_token %}
+        <div class="ui form" style="border: black" > 
+
+            <div class="field">
+                <select class="ui dropdown" name="spent_on">
+                    <option value="">Spent On</option>
+                    {% for i in expenditure_types %}
+                    <option value="{{ i.id }}">{{ i }}</option>
+                    {% endfor%}
+                </select>
+            </div>
+
+            <div class="field">          
+                <input class="Amount" placeholder="Amount" name='amount' required="true" type="number"><br>            
+            </div>
+
+            <div class="two fields">
+                <div class = "field">
+                   
+                    <input class="Date"  name = "date_spent" required="true" type="date" min="{{min_date}}" max="{{max1_date}}" >
+                </div>
+                
+                <div class = "field">
+                    <input hidden placeholder ="Choose File" name = "expenditure_receipt"  type="file">
+                </div>
+            </div>
+            
+            <div class="two fields">
+                <div class = "field">
+                    <input placeholder ="Remarks" name = "remarks"  type="text">
+                </div>
+            </div>
+            
+            <br>
+
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type='submit'>Add Expenditure</button></center>
+    </form>
+</div>
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#add_expenditure_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+        var Amount = document.querySelector('.Amount')
+        var date = document.querySelector('.Date').value.toString();
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        var result = date.localeCompare(today);
+
+        if(Amount.value<=0)
+        {
+            alert("amount must be greater than 0");
+        }
+        else if(result === 1) {
+            alert('You cannot add future date');
+        }
+        else
+        {
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Expenditure added Successfully');
+                window.location = "/income-expenditure/main/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to add Expenditure');
+                window.location = "/income-expenditure/main/";
+            });
+        }
+    });
+});
+</script>

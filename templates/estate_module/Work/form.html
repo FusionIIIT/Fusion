@@ -1,0 +1,159 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+{% with menuitem_data.form as workForm %}
+<div class="two fields">
+    <div class="required field">
+        {{ workForm.name.label_tag }}
+        {{ workForm.name }}
+    </div>
+
+    <div class="required field">
+        {{ workForm.contractorName.label_tag }}
+        {{ workForm.contractorName }}
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="required field">
+        {{ workForm.workType.label_tag }}
+        {{ workForm.workType }}
+
+    </div>
+
+    <div class="field">
+        {{ workForm.building.label_tag }}
+        {{ workForm.building }}
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ workForm.dateIssued.label_tag }}
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ workForm.dateIssued }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ workForm.dateStarted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ workForm.dateStarted }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ workForm.dateCompleted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ workForm.dateCompleted }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="field">
+        {{ workForm.costEstimated.label_tag }}
+
+        <div class="ui left icon input">
+            {{ workForm.costEstimated }}
+            <i class="rupee sign icon"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ workForm.costActual.label_tag }}
+
+        <div class="ui left icon input">
+            {{ workForm.costActual }}
+            <i class="rupee sign icon"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ workForm.status.label_tag }}
+        {{ workForm.status }}
+
+    </div>
+
+</div>
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Extra Information
+</h4>
+<div class="field">
+    {{ workForm.remarks.label_tag }}
+    {{ workForm.remarks }}
+</div>
+{% endwith %}
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                name: {
+                    identifier: 'name',
+                    rules: [{
+                        type: 'empty',
+                        prompt: '{{ menuitem|slugify }} work name cannot be blank'
+                    }]
+                },
+                workType: {
+                    identifier: 'workType',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'workType cannot be blank'
+                    }]
+                },
+                /*building: {
+                    identifier: 'building',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Estate cannot be blank'
+                    }]
+                },*/
+                contractorName: {
+                    identifier: 'contractorName',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Contractor Name cannot be blank'
+                    }]
+                },
+                dateIssued: {
+                    identifier: 'dateIssued',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Issued cannot be blank'
+                    }]
+                },
+                costEstimated: {
+                    identifier: 'costEstimated',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Estimated Cost must be an integer'
+                    }]
+                },
+                costActual: {
+                    identifier: 'costActual',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Actual Cost must be an integer'
+                    }]
+                },
+            }
+        });
+</script>
+
+<p></p>

@@ -1,0 +1,243 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block invitation %}
+<div class="ui pointing secondary menu">
+    <a class="ui active item" data-tab="" id="mi">
+        Meeting Invitation
+    </a>
+    <a class="ui item" data-tab="" id="pm">
+        Previous Meetings
+    </a>
+    <a class="ui item" data-tab="" id="um">
+        Upload Minutes
+    </a>
+</div>
+<div class="ui active tab" data-tab="" id="mitab">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+{#        <form  method="POST" class="ui large form" action="{% url 'mess:invitation' %}">#}
+        <form  method="POST" class="ui large form">
+            {% csrf_token %}
+
+            {% comment %} The invitation form  starts here! {% endcomment %}
+
+            {% comment %}The form row starts here!{% endcomment %}
+
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Date*</label>
+                    <!-- <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i> -->
+                            <input  name="date" type="date" placeholder="Date" required="true" id="date">
+                        <!-- </div>
+                    </div> -->
+                </div>
+
+                <div class="field">
+                    <label>Time*</label>
+                    <input name="time" type="time" required="true" id="time">
+                </div>
+
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Agenda*</label>
+                    <input name="agenda" placeholder="Agenda" type="text" required="true" id="agenda">
+
+                </div>
+                 <div class="field">
+                    <label>Place*</label>
+                                <select  name="venue" class="ui fluid dropdown" required="true" id="venue">
+                                    <option value="Cm1">Central Mess I</option>
+                                    <option value="Cm2">Central Mess II</option>
+                                </select>
+
+                </div>
+
+            </div>
+           <!-- <div class="field">
+                   <label>Description*</label>
+                        <textarea name="description" rows="2" required="true" id="description"></textarea>
+            </div> -->
+
+            <div class="field">
+                <label><br></label>
+                <button class="ui primary right floated button" onclick="return invitation()">
+                    Submit
+                </button>
+
+
+            </div>
+            <br>
+
+        </form>
+    </div>
+    </div>
+
+    <div class="ui tab" data-tab="" id="pmtab">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date</th>
+                    <th>Venue</th>
+                    <th>Agenda</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody id="invitation_table">
+                    {% for item in meeting %}
+                <tr>
+                    <td>{{item.meet_date}}</td>
+                    <td>{{item.venue}}</td>
+                    <td>{{item.agenda}}</td>
+                    <td>{{item.meeting_time}}</td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="" id="umtab">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes" action="{% url 'mess:minutes' %}">
+            {% csrf_token %}
+                <div class="field">
+                    <div class="three fields">
+                        {{form.as_p}}
+                        <div class="field">
+                            <label><br></label>
+                            <input type="submit" value="Save" />
+                        </div>
+                    </div>
+                </div>
+        </form>
+        <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date - Agenda</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in minutes %}
+                <tr>
+                    <td>{{item.meeting_date}}</td>
+                    <td><a href="{{item.mess_minutes.url}}">{{item.mess_minutes}}</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}
+{% block javascript %}
+<script>
+
+   $(document).ready(function(){
+     $('#um').on('click',function(){
+        $(this).addClass('active');
+         $('#pm').removeClass('active');
+          $('#mi').removeClass('active');
+         $('#umtab').show();
+          $('#mitab').hide();
+           $('#pmtab').hide();
+     });
+
+ });
+ $(document).ready(function(){
+     $('#mi').on('click',function(){
+        $(this).addClass('active');
+         $('#pm').removeClass('active');
+          $('#um').removeClass('active');
+        $('#pmtab').hide();
+          $('#mitab').show();
+           $('#umtab').hide();
+     });
+
+ });
+  $(document).ready(function(){
+     $('#pm').on('click',function(){
+        $(this).addClass('active');
+         $('#mi').removeClass('active');
+          $('#um').removeClass('active');
+         $('#mitab').hide();
+          $('#umtab').hide();
+           $('#pmtab').show();
+     });
+
+ });
+
+</script>
+
+<script type="text/javascript">
+    function required_check_invitation(){
+            if (($("#agenda").val().length == 0)|| ($("#time").val().length == 0)|| ($("#date").val().length == 0))
+            {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+    function invitation(){
+        check = required_check_invitation();
+            if (check === 0){
+                alert("Enter all required fields");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'invitation/',
+                    dataType: 'json',
+                    data: {
+                        'date': $("#date").val(),
+                        'agenda': $("#agenda").val(),
+                        'venue': $("#venue").val(),
+                        'time': $("#time").val()
+                    },
+                    success: function (data) {
+                        if (data.status === 1) {
+                            alert(data.message);
+                            $("#mess_invitation").load(location.href + " #mess_invitation>*", "");
+                            $("#invitation_table").prepend("<tr><td>" + data.date + "</td><td>" +
+                                $("#venue").val() + "</td><td>" + $("#agenda").val() + "</td><td>" +
+                                data.time, +"</td></tr>");
+
+                            document.getElementById('date').value = "";
+                            document.getElementById('agenda').value = "";
+                            document.getElementById('venue').value = "";
+                            document.getElementById('time').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                        else if (data.status === 2) {
+                            alert(data.message);
+                            $("#mess_invitation").load(location.href + " #mess_invitation>*", "");
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                    }
+                });
+            }
+        return false;
+        }
+</script>
+{% endblock %}

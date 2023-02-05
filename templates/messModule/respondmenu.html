@@ -1,0 +1,176 @@
+
+{% load static %}
+{% block body %}
+{% block respondmenu %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="respondtomenuchange">
+        Respond to Menu Change
+    </a>
+
+    <a class="item" data-tab="menupastrecords" onclick="getMenu()">
+        Past Records
+    </a>
+
+</div>
+
+
+<div class="ui active tab" data-tab="respondtomenuchange" id="respondtomenuchange">
+    <div class="ui vertical segment">
+        <table class="ui very basic collapsing celled large sortable table"
+               style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+        <thead>
+        <th>Details</th>
+        <th>Accept/Reject</th>
+        </thead>
+            <tbody>
+            {% for list in newmenu %}
+            {% if list.status == '1' %}
+            <tr id="m-{{list.pk}}">
+            <td>
+                <div class="content">
+                    <strong>Date of Application:</strong> {{list.app_date}}
+                    <br>
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <br>
+                    <strong>Reason:</strong> {{list.reason}}
+                    <br>
+                    <strong>Items to be changed: </strong> {{list.dish}}
+                    <br>
+                    <strong>Items to be added:</strong> {{list.request}}
+                    <br>
+                </div>
+            </td>
+                <td>
+                    <div class="ui buttons">
+                        <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
+                                onclick="acceptReqMess({{list.pk}})">A
+                        </button>
+
+                        <div class="or"></div>
+                        <button class="ui negative button" name="submit" value="reject"
+                                onclick="rejectReqMess({{list.pk}})">R
+                        </button>
+                    </div>
+                </td>
+                <hr>
+            </tr>
+
+            {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
+<div class="ui tab" data-tab="menupastrecords">
+    <div class="ui vertical segment">
+      {% for list in newmenu %}
+            {% if list.status == '2' %}
+
+                <div class="content" id="menuap-{{list.pk}}">
+                    <p style="text-align: center; "><strong>Accepted</strong></p>
+                    <strong>Date of Application:</strong> {{list.app_date}}
+                    <br>
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <br>
+                    <strong>Reason:</strong> {{list.reason}}
+                    <br>
+                    <strong>Items changed: </strong> {{list.dish}}
+                    <br>
+                    <strong>Items added:</strong> {{list.request}}
+                    <br>
+
+                </div>
+                <hr>
+
+            {% endif %}
+        {% if list.status == '0' %}
+
+                <div class="content" id="menurp-{{list.pk}}">
+                    <p style="text-align: center; "><strong>Rejected</strong></p>
+                    <strong>Date of Application:</strong> {{list.app_date}}
+                    <br>
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <br>
+                    <strong>Reason:</strong> {{list.reason}}
+                    <br>
+                    <strong>Items changed: </strong> {{list.dish}}
+                    <br>
+                    <strong>Items added:</strong> {{list.request}}
+                    <br>
+
+                </div>
+                <hr>
+
+            {% endif %}
+      {% endfor %}
+
+
+    </div>
+</div>
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+
+    <script>
+
+         function acceptReqMess(id){
+         document.getElementById('m-'+id).style.display="none";
+         $.ajax({
+                type: 'POST',
+                url: 'response',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'idm':id,
+                    'status':'2',
+                },
+                success: function(data) {
+                    alert("Request has been accepted");
+                    ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
+                },
+                error: function(data, err) {
+                    alert(err.message);
+
+                }
+            });
+         }
+         function rejectReqMess(id){
+                    document.getElementById('m-'+id).style.display="none";
+             $.ajax({
+                    type: 'POST',
+                    url: 'response',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                        'idm':id,
+                        'status':'0',
+                    },
+                    success: function(data) {
+
+                        if(data.status == '1')
+                            {
+                                alert("Application Rejected");
+                                ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
+                            }
+                        },
+                    error: function(data, err) {
+                        alert(err.message);
+
+                    }
+                });
+         }
+
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% block convenor_form %}
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<!--     <div class="ui pointing secondary menu">
+        {% if form_name == 'senate_registration' %}
+            <a class="active item" data-tab="registration">
+                Senate Registration
+            </a>
+        {% elif form_name == 'mess_registration' %}
+            <a class="active item" data-tab="registration">
+                Mess Registration
+            </a>
+        {% elif form_name == 'hostel_registration' %}
+            <a class="active item" data-tab="registration">
+                Hostel Registration
+            </a>
+        {% endif %}
+    </div> -->
+<!--roll , email, branch, cpi , batch-->
+    <div class="ui active tab" data-tab="registration">
+        <div class="ui vertical segment">
+            <form method="Post" id="registration__form">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name</label>
+                            <input type="text" name="user_name" readonly='' class="ui large input" value = '{{user.first_name}} {{user.last_name}}' required/>
+                        </div>
+
+                        <div class="field">
+                            <label>Roll Number</label>
+                            <input name="roll" type="text" readonly='' class="ui large input" value="{{request.user.username}}" required/>
+                        </div>
+
+                    </div>
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Branch</label>
+                            <input name="branch" class="ui large input" readonly='' value = '{{request.user.extrainfo.department.name}}' required/>
+                        </div>
+
+                        <div class="field">
+                            <label>CPI</label>
+                            <input type="number" name="cpi" readonly="" class="ui large input" value = '{{cpi}}' required/>
+
+                        </div>
+                    </div>
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Programme</label>
+                            <input type="text" name="programme" readonly="" class="ui large input" value = '{{programme}}' required/>
+
+                        </div>
+
+                    </div>
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('registration_form','registration__form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+
+{% endblock %}

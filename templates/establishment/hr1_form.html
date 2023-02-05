@@ -1,0 +1,32 @@
+
+    <div>
+
+        {% if cpda %}
+        {% if admin %}
+        {% include 'establishment/cpda_admin.html' %}
+        {% elif reviewer %}
+        {% include 'establishment/cpda_reviewer.html' %}
+        {% else %}
+        {% include 'establishment/cpda.html' %}
+        {% endif %}
+        {% elif ltc %}
+        {% if admin %}
+        {% include 'establishment/ltc_admin.html' %}
+        {% else %}
+        {% include 'establishment/ltc.html' %}
+        {% endif %}
+        {% elif appraisal %}
+        {% if hod %}
+        {% include 'establishment/appraisal_hod.html' %}
+        {% elif director %}
+        {% include 'establishment/appraisal_director.html' %}
+        {% elif admin %}
+        {% include 'establishment/appraisal_admin.html' %}
+        {% else %}
+        {% include 'establishment/appraisal.html' %}
+        {% endif %}
+        {% endif %}
+        </div>
+     
+    
+    

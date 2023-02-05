@@ -1,0 +1,105 @@
+{% load static %}
+{% block complainthistory %}
+
+<center><b>Drop Couse(s)</b></center>
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if adc_date_flag %}
+                    {% if drop_courses_options %}
+                        <form id='drop_courses' action='/academic-procedures/drop_course/'>
+                        {% csrf_token %}
+                            <input type="text" hidden="true" id="min_credit" value="{{ curr_sem.curriculum.min_credit }}">
+                            <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
+                            <table  class="ui very basic collapsing celled sortable table"               
+                                    style= "padding-left: 2.5%;
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Course ID</th>
+                                    <th>Course Name</th>
+                                    <th>Credits</th>
+                                    <th>Semester</th>
+                                    <th>Select Course</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for items in drop_courses_options %}
+                                            <tr>
+                                                <td>{{forloop.counter}}</td>
+                                                <td>{{ items.code }}
+                                                </td>
+                                                <td>{{ items.name}}</td>
+                                                <td>{{ items.credit }}</td>
+                                                <td>{{curr_sem.semester_no}}
+                                                    <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
+                                                </td>
+                                                <td>
+                                                    <input class="choice1" name = "choice" id="mycheck" type="checkbox" value="{{ items.id }}" data-valuetwo="{{items.credit}}">
+                                                    <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                                </td>
+                                            </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <div class="ui divider"></div>
+                        <center><button class="ui negative basic button">Drop Course(s)</button></center></form>
+                    {% else %}
+                        <B> No Courses to drop</B>
+                    {% endif %}
+        {% else %}
+            <b><center>You have to wait for the date</center></b>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#drop_courses").submit(function(event) {
+
+        var credits = parseInt(document.getElementById("cr_count").value);
+        var min_credits = parseInt(document.getElementById("min_credit").value);
+        var checkboxing = document.getElementsByClassName("choice1");
+        var test =0;
+        console.log(checkboxing)
+        for(var i=0; i<checkboxing.length;i++){
+            console.log(checkboxing)
+            if(checkboxing[i].checked==true){
+                credits = credits - parseInt(checkboxing[i].getAttribute("data-valuetwo"));
+                test =test+1;
+            }
+        }
+
+        if(credits < min_credits ){
+            alert("You need to earn at least " + min_credits.toString() + " credits in one semester ");
+            window.location = "/academic-procedures/main/" ;           
+        }else if(test ==0 ){
+            alert("please Select a course");
+            window.location = "/academic-procedures/main/" ;           
+        }else{
+        event.preventDefault();
+        var friendForm = $(this);
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+
+        posting.done(function(data) {
+            alert('Course Drop Successful');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to drop a course');
+            window.location = "/academic-procedures/main/";
+        });
+    }
+    });
+});
+</script>

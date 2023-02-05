@@ -1,0 +1,1874 @@
+{% extends 'establishment/common.html' %}
+
+{% block sidetabmenu %}
+{% comment %}The Tab-Menu starts here!{% endcomment %}
+<div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'establishment:ltc' %}">
+    LTC
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% if request.user.extrainfo.user_type == 'faculty' or director %}
+  <a class="item" href="{% url 'establishment:cpda' %}">
+    CPDA
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% endif %}
+  <a class="item active" href="{% url 'establishment:appraisal' %}">
+    Appraisal
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% comment %}The Tab-Menu ends here!{% endcomment %}
+{% endblock %}
+
+{% block content %}
+{% load semanticui %}
+{% load static %}
+{% block appraisal %}
+
+
+<div class="ui top attached tabular menu">
+  <a class="item active" data-tab="appraisal_one">
+      Appraisal Form
+  </a>
+  <a class="item" data-tab="appraisal_two">
+      Active
+  </a>
+  <a class="item" data-tab="appraisal_three">
+      Archived
+  </a>
+    <a class="item" data-tab="appraisal_four">
+        Review
+    </a>
+    <a class="item" data-tab="appraisal_five">
+        Reviewed
+    </a>
+</div>
+
+
+
+<!-- Appraisal Form -->
+<div class="ui bottom attached tab segment active" data-tab="appraisal_one">
+    <div class="content">
+        <div class="description">
+            <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
+                {% csrf_token %}
+
+                <label for="specific_field_knowledge"><b>Specific Field Knowledge:</b></label><br><br>
+                <textarea id="specific_field_knowledge" name="specific_field_knowledge" rows="3" cols="30"></textarea><br><br>
+                <label for="current_research_interest"><b>Current Research Interest:</b></label><br><br>
+                <textarea id="current_research_interest" name="current_research_interest" rows="3" cols="30"></textarea><br><br><br>
+
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
+                <!-- <p>1.1 &emsp;&emsp;<u>Teaching</u></p> -->
+
+                <style>
+                	* { font: 17px Calibri; }
+                    table { width: 70%; }
+                    table, th, td { border: solid 1px #DDD;
+                        border-collapse: collapse; padding: 2px 3px; text-align: center;
+                    }
+                    th {background-color:#f1f1c1}
+                </style>
+
+                <body>
+
+                  <!--
+                  Table for CoursesInstructed
+                  -->
+                    <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                    <table>  <!-- the container to add the TABLE -->
+                      <tr>
+                        <th>Semester</th>
+                        <th>Course-Name</th>
+                        <th>Course Number</th>
+                      </tr>
+                        {% for em in user_courses %}
+                            <tr>
+                              <td>{{em.curriculum_id.sem}}</td>
+                              <td>{{em.curriculum_id.course_id.course_name}}</td>
+                              <td>{{em.curriculum_id.course_code}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                  <!-- End of Table CoursesInstructed -->
+
+                  <!--
+                  Table for NewCoursesOffered
+                  -->
+
+                  <!--
+                  Table for NewCoursesOffered
+                  -->
+                  <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                  <div id="new_courses"></div>    
+                  <table id="NewCoursesOffered">  <!-- the container to add the TABLE -->
+                    <tr>
+                      <th>Course-Name</th>
+                      <th>Course Number</th>
+                      <th>UG/PG</th>
+                      <th>YEAR</th>
+                      <th>Semester</th>
+                      <th>Tutorial Hours/week</th>
+                    </tr>
+                  </table>
+                  <p><input type="button" value="Add New Course" onclick="javascript:addRowNewCourses()"/></p>
+              <!-- End of Table NewCoursesOffered -->
+
+              <!--
+                Table for NewCourseMaterial
+              -->
+              <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
+                <div id="new_courses_material"></div>  
+                <table id="NewCourseMaterial">
+                  <tr>
+                    <th>Course-Name</th>
+                    <th>Course Number</th>
+                    <th>UG/PG</th>
+                    <th>Type of Activity</th>
+                    <th>Web/Public</th>
+                  </tr>
+                </table>
+                <p><input type="button" value="Add New Course Material" onclick="javascript:addRowNewCoursesMaterial()"/></p>
+
+                <!-- {% for em in user_courses %}
+                <h2>{{em}}</h2>
+                {% endfor %} -->
+
+
+
+                <hr style="height:5px;background-color:#333;">
+                <h2>2.&emsp; RESEARCH ELEMENT</h2>
+                <!--
+                  Table for NewCourseMaterial
+                -->
+                  <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                  <!-- <div id="thesis"></div>  the container to add the TABLE
+                  <p><input type="button" value="Add Thesis/Research Supervision" onclick="javascript:addThesis()"/></p> -->
+                  <table>
+                    <tr>
+                      <th>Name of Student (MTech/PhD)</th>
+                      <th>Title Of Thesis / Thesis Topic</th>
+                      <th>Year</th>
+                      <th>Semester</th>
+                      <th>Status(Completed / Submitted / In progress)</th>
+                    </tr>
+                    {% for object in thesis %}
+                      <tr>
+                        <td>{{object.s_name}}</td>
+                        <td>{{object.title}}</td>
+                        <td>{{object.s_year}}</td>
+                        <td>{{object.semester}}</td>
+                        <td>{{object.status}}</td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                <!-- End of Table NewCourseMaterial -->
+
+                <!--
+                  Table for NewCourseMaterial
+                -->
+                  <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                  <!-- <div id="sponsored_projects"></div>  <!-- the container to add the TABLE
+                  <p><input type="button" value="Add applicant_sponsored_projects" onclick="javascript:addSponsoredProjects()"/></p> -->
+                  <table>
+                    <tr>
+                      <th>Title Of Project</th>
+                      <th>Sponsoring Agency / Organization</th>
+                      <th>Project Funding (Rs.)</th>
+                      <th>Project Duration</th>
+                      <th>Status(Completed / Submitted / In progress)</th>
+                      <th>Remarks</th>
+                    </tr>
+                    {% for object in consultancy_projects %}
+                    <tr>
+                      <td>{{object.title}}</td>
+                      <td>{{object.client}}</td>
+                      <td>{{object.financial_outlay}}</td>
+                      <td>{{object.start_date}} to {{object.end_date}}</td>
+                      <td>{{object.status}}</td>
+                      <td>{{object.remarks}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for object in research_projects %}
+                    <tr>
+                      <td>{{object.title}}</td>
+                      <td>{{object.funding_agency}}</td>
+                      <td>{{object.financial_outlay}}</td>
+                      <td>{{object.start_date}} to {{object.finish_date}}</td>
+                      <td>{{object.status}}</td>
+                      <td>{{object.remarks}}</td>
+                    </tr>
+                    {% endfor %}
+                  </table>
+                  <br><br>
+                <!-- End of Table NewCourseMaterial -->
+
+                <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
+                <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                <br>
+                <table>
+                  {% for object in patents %}
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                      <td>Patent</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                      <td>{{object.p_no}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                      <td>{{object.title}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                      <td>{{object.status}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+                <br>
+
+                <table>
+                  {% for object in tech_transfer %}
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                      <td>Technology Transfer</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                      <td>{{object.details}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+                <br><br>
+
+
+                <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
+                <!-- <textarea name="publications" rows="2" cols="30" placeholder="Journal, Conference, Book, Book Chapter, Technical Report, etc."></textarea> -->
+                <br>
+                <table>
+                  {% for object in publications %}
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                      <td>{{object.p_type}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                      <td>{{object.title}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                      <td>{{object.publisher}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                      <td>{{object.authors}}</td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                      <td>{{object.pyear}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+
+                <br><br>
+                <label for="conferences_meeting_attended"><h3>2.5 &emsp; Conferences Attended:</h3></label>
+                <textarea name="conferences_meeting_attended" rows="2" cols="30"></textarea>
+                <br><br>
+                <label for="conferences_meeting_organized"><h3>2.6 &emsp; Conferences Organized:</h3></label>
+                <!-- <textarea name="conferences_meeting_organized" rows="2" cols="30"></textarea> -->
+                <br>
+                <table>
+                  <tr>
+                    <th><strong>Name</strong></th>
+                    <th><strong>Venue</strong></th>
+                    <th><strong>Role</strong></th>
+                  </tr>
+                  {% for object in conferences %}
+                    <tr>
+                      <td>{{object.name}}</td>
+                      <td>{{object.venue}}</td>
+                      <td>{{object.role1}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+                <br><br>
+
+                <label><h3>2.7 &emsp; Professional Recognition</h3></label>
+                <br>
+                <label><h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4></label>
+                <table>
+                  <tr>
+                    <th>Award Type</th>
+                    <th>Details</th>
+                  </tr>
+                  {% for object in achievments %}
+                    <tr>
+                      <td>{{object.a_type}}</td>
+                      <td>{{object.details}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+                <br>
+
+                <label><h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4></label>
+                <table>
+                  <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Sponsoring Agency</th>
+                    <th>Venue</th>
+                    <th>Role</th>
+                  </tr>
+                  {% for object in events %}
+                    <tr>
+                      <td>{{object.type}}</td>
+                      <td>{{object.name}}</td>
+                      <td>{{object.sponsoring_agency}}</td>
+                      <td>{{object.venue}}</td>
+                      <td>{{object.role}}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+                <br>
+
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
+                <br>
+                <label for="admin_assign"><h3>3.1 &emsp; Administrative Assignments:</h3></label>
+                <textarea name="admin_assign" rows="1" cols="30" placeholder="please mention institute/discipline level"></textarea>
+                <br><br>
+                <label for="sevice_to_ins"><h3>3.2 &emsp; Service To Institute Community:</h3></label>
+                <textarea name="sevice_to_ins" rows="1" cols="20" placeholder="please mention institute/others"></textarea>
+                <br><br>
+                <label for="extra_info"><h3>3.3 &emsp; Any Other Contribution:</h3></label>
+                <textarea name="extra_info" rows="1" cols="20"></textarea>
+                <br><br>
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2>
+                <textarea name="faculty_comments" rows="3" cols="30" placeholder="Your comments on your performance so far and this academic year particularly"></textarea>
+                <br><br>
+                <hr  style="height:5px;background-color:#333;">
+                <br><br>
+                <button type="submit" name="appraisal_request" class="ui large primary button">
+                    Submit Request
+                </button>
+                </body>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Appraisal Active -->
+<div class="ui tab segment" data-tab="appraisal_two">
+    <div class="content">
+        <div class="description">
+          <div class="ui items">
+            {% for app in appraisal_active_apps %}
+              <div class="item">
+                  <div class="content">
+                      <div class="header">Status : {{app.status}}</div>
+                      <div class="meta">
+                          <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
+                      </div>
+                      <div class="meta">
+                          <span>Director Remarks: {{app.appraisal_tracking.remark_director}}</span>
+                      </div>
+                      <div>
+                          <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                              View
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <div class="ui modal view-{{app.id}}">
+                  <i class="close icon"></i>
+                  <div class="header">
+                      View Appraisal
+                  </div>
+                  <div class="content">
+                      <div class="description" id='appraisal_form_v{{app.id}}'>
+
+                          <label>Status : {{ app.status }}</label><br>
+                          <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
+                          <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
+                          <hr style="height:5px;background-color:#333;">
+
+                          <label><strong>Name: </strong> {{app.applicant.username}} </label><br>
+                          <label><strong>Designation: </strong>{{app.designation}}</label><br>
+                          <label><strong>Discipline: </strong>{{app.discipline}}</label><br>
+                          <label><strong>Specific Field Of Knowledge: </strong>{{app.knowledge_field}}</label><br>
+                          <label><strong>Current Research Element: </strong>{{app.research_interest}}</label><br>
+                          <hr style="height:5px;background-color:#333;">
+
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
+
+                          <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Semester</th>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                            </tr>
+                              {% for em in user_courses %}
+                                  <tr>
+                                    <td>{{em.curriculum_id.sem}}</td>
+                                    <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                    <td>{{em.curriculum_id.course_code}}</td>
+                                  </tr>
+                              {% endfor %}
+                          </table>
+
+                          <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>YEAR</th>
+                              <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
+                            </tr>
+                            {% for obj in new_courses_offered %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
+                          <table>
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>Type of Activity</th>
+                              <th>Web/Public</th>
+                            </tr>
+                          {% for obj in new_courses_material %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
+                          </table>
+
+                          <hr style="height:5px;background-color:#333;">
+
+
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
+
+                          <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                          <table>
+                            <tr>
+                              <th>Name of Student (MTech/PhD)</th>
+                              <th>Title Of Thesis / Thesis Topic</th>
+                              <th>Year</th>
+                              <th>Semester</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                            </tr>
+                            {% for object in thesis %}
+                              <tr>
+                                <td>{{object.s_name}}</td>
+                                <td>{{object.title}}</td>
+                                <td>{{object.s_year}}</td>
+                                <td>{{object.semester}}</td>
+                                <td>{{object.status}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+
+                          <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                          <table>
+                            <tr>
+                              <th>Title Of Project</th>
+                              <th>Sponsoring Agency / Organization</th>
+                              <th>Project Funding (Rs.)</th>
+                              <th>Project Duration</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                              <th>Remarks</th>
+                            </tr>
+                            {% for object in consultancy_projects %}
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.client}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.end_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
+                            {% endfor %}
+                            {% for object in research_projects %}
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.funding_agency}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.finish_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
+                          <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                          <br>
+                          <table>
+                            {% for object in patents %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                <td>Patent</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                                <td>{{object.p_no}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                <td>{{object.title}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                <td>{{object.status}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <table>
+                            {% for object in tech_transfer %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                <td>Technology Transfer</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                <td>{{object.details}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
+                          <br>
+                          <table>
+                            {% for object in publications %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                                <td>{{object.p_type}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                <td>{{object.title}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                <td>{{object.publisher}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                <td>{{object.authors}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                                <td>{{object.pyear}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.5 &emsp; Conferences Attended:</h3></label>
+                          <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                          <label><h3>2.6 &emsp; Conferences Organized:</h3></label>
+                          <table>
+                            <tr>
+                              <th><strong>Name</strong></th>
+                              <th><strong>Venue</strong></th>
+                              <th><strong>Role</strong></th>
+                            </tr>
+                            {% for object in conferences %}
+                              <tr>
+                                <td>{{object.name}}</td>
+                                <td>{{object.venue}}</td>
+                                <td>{{object.role1}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.7 &emsp; Professional Recognition</h3></label>
+                          <br>
+                          <label><h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4></label>
+                          <table>
+                            <tr>
+                              <th>Award Type</th>
+                              <th>Details</th>
+                            </tr>
+                            {% for object in achievments %}
+                              <tr>
+                                <td>{{object.a_type}}</td>
+                                <td>{{object.details}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <label><h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4></label>
+                          <table>
+                            <tr>
+                              <th>Type</th>
+                              <th>Name</th>
+                              <th>Sponsoring Agency</th>
+                              <th>Venue</th>
+                              <th>Role</th>
+                            </tr>
+                            {% for object in events %}
+                              <tr>
+                                <td>{{object.type}}</td>
+                                <td>{{object.name}}</td>
+                                <td>{{object.sponsoring_agency}}</td>
+                                <td>{{object.venue}}</td>
+                                <td>{{object.role}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <hr  style="height:5px;background-color:#333;">
+
+
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <br>
+                          <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
+                          <label>{{app.admin_assign}}</label>
+                          <br><br>
+
+                          <label><h3>3.2 &emsp; Service To Institute Community: </h3></label>
+                          <label>{{app.sevice_to_ins}}</label>
+                          <br><br>
+
+                          <label><h3>3.3 &emsp; Any Other Contribution: </h3></label>
+                          <label>{{app.extra_info}}</label>
+                          <br><br>
+                          <hr  style="height:5px;background-color:#333;">
+
+                          <label>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label>{{app.faculty_comments}}</label>
+                          <br><br>
+
+                          <hr  style="height:5px;background-color:#333;">
+                          <br><br>
+
+
+                      </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v{{app.id}}')" value="Print">Print </button>
+                  </div>
+                  <div class="actions">
+                      <div class="ui black deny button">
+                          Cancel
+                      </div>
+                  </div>
+              </div>
+              {% empty %}
+                        <tr><td colspan="3">No Active Request</td><tr>
+                          <hr>
+            {% endfor %}
+          </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Appraisal Archived -->
+<div class="ui tab segment" data-tab="appraisal_three">
+    <div class="content">
+        <div class="description">
+          <div class="ui items">
+            {% for app in appraisal_archive_apps %}
+              <div class="item">
+                  <div class="content">
+                      <div class="header">Status : {{app.status}}</div>
+                              <div class="meta">
+                                  <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
+                              </div>
+                              <div class="meta">
+                                  <span>Director Remarks: {{app.appraisal_tracking.remark_director}}</span>
+                              </div>
+                      <div>
+                          <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                              View
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <div class="ui modal view-{{app.id}}">
+                  <i class="close icon"></i>
+                  <div class="header">
+                      View Appraisal
+                  </div>
+                  <div class="content">
+                      <div class="description" id='appraisal_form_v_a{{app.id}}'>
+
+                          <label>Status : {{ app.status }}</label><br>
+                          <label>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</label><br>
+                          <label>Director Remarks: {{app.appraisal_tracking.remark_director}}</label><br>
+                          <hr style="height:5px;background-color:#333;">
+
+                          <label><strong>Name: </strong> {{app.applicant.username}} </label><br>
+                          <label><strong>Designation: </strong>{{app.designation}}</label><br>
+                          <label><strong>Discipline: </strong>{{app.discipline}}</label><br>
+                          <label><strong>Specific Field Of Knowledge: </strong>{{app.knowledge_field}}</label><br>
+                          <label><strong>Current Research Element: </strong>{{app.research_interest}}</label><br>
+                          <hr style="height:5px;background-color:#333;">
+
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
+
+                          <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Semester</th>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                            </tr>
+                              {% for em in user_courses %}
+                                  <tr>
+                                    <td>{{em.curriculum_id.sem}}</td>
+                                    <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                    <td>{{em.curriculum_id.course_code}}</td>
+                                  </tr>
+                              {% endfor %}
+                          </table>
+
+                          <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>YEAR</th>
+                              <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
+                            </tr>
+                            {% for obj in new_courses_offered %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
+                          <table>
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>Type of Activity</th>
+                              <th>Web/Public</th>
+                            </tr>
+                          {% for obj in new_courses_material %}
+                              {% if obj.appraisal == app %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
+                          </table>
+
+                          <hr style="height:5px;background-color:#333;">
+
+
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
+
+                          <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                          <table>
+                            <tr>
+                              <th>Name of Student (MTech/PhD)</th>
+                              <th>Title Of Thesis / Thesis Topic</th>
+                              <th>Year</th>
+                              <th>Semester</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                            </tr>
+                            {% for object in thesis %}
+                              <tr>
+                                <td>{{object.s_name}}</td>
+                                <td>{{object.title}}</td>
+                                <td>{{object.s_year}}</td>
+                                <td>{{object.semester}}</td>
+                                <td>{{object.status}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+
+                          <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                          <table>
+                            <tr>
+                              <th>Title Of Project</th>
+                              <th>Sponsoring Agency / Organization</th>
+                              <th>Project Funding (Rs.)</th>
+                              <th>Project Duration</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                              <th>Remarks</th>
+                            </tr>
+                            {% for object in consultancy_projects %}
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.client}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.end_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
+                            {% endfor %}
+                            {% for object in research_projects %}
+                            <tr>
+                              <td>{{object.title}}</td>
+                              <td>{{object.funding_agency}}</td>
+                              <td>{{object.financial_outlay}}</td>
+                              <td>{{object.start_date}} to {{object.finish_date}}</td>
+                              <td>{{object.status}}</td>
+                              <td>{{object.remarks}}</td>
+                            </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
+                          <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                          <br>
+                          <table>
+                            {% for object in patents %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                <td>Patent</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                                <td>{{object.p_no}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                <td>{{object.title}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                <td>{{object.status}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <table>
+                            {% for object in tech_transfer %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                <td>Technology Transfer</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                <td>{{object.details}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
+                          <br>
+                          <table>
+                            {% for object in publications %}
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                                <td>{{object.p_type}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                <td>{{object.title}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                <td>{{object.publisher}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                <td>{{object.authors}}</td>
+                              </tr>
+                              <tr>
+                                <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                                <td>{{object.pyear}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.5 &emsp; Conferences Attended:</h3></label>
+                          <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                          <label><h3>2.6 &emsp; Conferences Organized:</h3></label>
+                          <table>
+                            <tr>
+                              <th><strong>Name</strong></th>
+                              <th><strong>Venue</strong></th>
+                              <th><strong>Role</strong></th>
+                            </tr>
+                            {% for object in conferences %}
+                              <tr>
+                                <td>{{object.name}}</td>
+                                <td>{{object.venue}}</td>
+                                <td>{{object.role1}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.7 &emsp; Professional Recognition</h3></label>
+                          <br>
+                          <label><h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4></label>
+                          <table>
+                            <tr>
+                              <th>Award Type</th>
+                              <th>Details</th>
+                            </tr>
+                            {% for object in achievments %}
+                              <tr>
+                                <td>{{object.a_type}}</td>
+                                <td>{{object.details}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <label><h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4></label>
+                          <table>
+                            <tr>
+                              <th>Type</th>
+                              <th>Name</th>
+                              <th>Sponsoring Agency</th>
+                              <th>Venue</th>
+                              <th>Role</th>
+                            </tr>
+                            {% for object in events %}
+                              <tr>
+                                <td>{{object.type}}</td>
+                                <td>{{object.name}}</td>
+                                <td>{{object.sponsoring_agency}}</td>
+                                <td>{{object.venue}}</td>
+                                <td>{{object.role}}</td>
+                              </tr>
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <hr  style="height:5px;background-color:#333;">
+
+
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <br>
+                          <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
+                          <label>{{app.admin_assign}}</label>
+                          <br><br>
+
+                          <label><h3>3.2 &emsp; Service To Institute Community: </h3></label>
+                          <label>{{app.sevice_to_ins}}</label>
+                          <br><br>
+
+                          <label><h3>3.3 &emsp; Any Other Contribution: </h3></label>
+                          <label>{{app.extra_info}}</label>
+                          <br><br>
+                          <hr  style="height:5px;background-color:#333;">
+
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label>{{app.faculty_comments}}</label>
+                          <br><br>
+
+                          <hr  style="height:5px;background-color:#333;">
+                          <br><br>
+
+
+                      </div>
+                      <button class="ui large primary button" onclick="printDiv('appraisal_form_v_a{{app.id}}')" value="Print">Print </button>
+                  </div>
+                  <div class="actions">
+                      <div class="ui black deny button">
+                          Cancel
+                      </div>
+                  </div>
+              </div>
+              {% empty %}
+                        <tr><td colspan="3">No Archive Avaliable</td><tr>
+                          <hr>
+            {% endfor %}
+          </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Appraisal Review By Director-->
+<div class="ui tab segment" data-tab="appraisal_four">
+    <div class="content">
+        <div class="description">
+          <div class="ui items">
+            {% for app in review_apps_director %}
+              <div class="item">
+                  <div class="content">
+                      <div class="header">Application ID : {{app.appraisal.id}}</div>
+                      <div class="meta">
+                          <span>Applicant: {{app.appraisal.applicant.username}}</span>
+                      </div>
+                      <div>
+                          <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                              View
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <div class="ui modal view-{{app.id}}">
+                  <i class="close icon"></i>
+                  <div class="header">
+                      View Appraisal
+                  </div>
+                  <div class="content">
+                      <div class="description">
+
+                          <label><strong>Name: </strong> {{app.appraisal.applicant.username}} </label><br>
+                          <label><strong>Designation: </strong>{{app.appraisal.designation}}</label><br>
+                          <label><strong>Discipline: </strong>{{app.appraisal.discipline}}</label><br>
+                          <label><strong>Specific Field Of Knowledge: </strong>{{app.appraisal.knowledge_field}}</label><br>
+                          <label><strong>Current Research Element: </strong>{{app.appraisal.research_interest}}</label><br>
+                          <hr style="height:5px;background-color:#333;">
+
+                          <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
+
+                          <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Semester</th>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                            </tr>
+                              {% for em in course_objects_all %}
+                                  {% if em.instructor_id.user == app.appraisal.applicant %}
+                                        <tr>
+                                          <td>{{em.curriculum_id.sem}}</td>
+                                          <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                          <td>{{em.curriculum_id.course_code}}</td>
+                                        </tr>
+                                  {% endif %}
+                              {% endfor %}
+                          </table>
+
+                          <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>YEAR</th>
+                              <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
+                            </tr>
+                            {% for obj in new_courses_offered_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
+                          <table>
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>Type of Activity</th>
+                              <th>Web/Public</th>
+                            </tr>
+                          {% for obj in new_courses_material_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
+                          </table>
+
+                          <hr style="height:5px;background-color:#333;">
+
+
+                          <h2>2.&emsp; RESEARCH ELEMENT</h2>
+
+                          <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                          <table>
+                            <tr>
+                              <th>Name of Student (MTech/PhD)</th>
+                              <th>Title Of Thesis / Thesis Topic</th>
+                              <th>Year</th>
+                              <th>Semester</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                            </tr>
+                            {% for object in thesis_all %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.s_name}}</td>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.s_year}}</td>
+                                    <td>{{object.semester}}</td>
+                                    <td>{{object.status}}</td>
+                                  </tr>
+                                {% endif %}
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+
+                          <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                          <table>
+                            <tr>
+                              <th>Title Of Project</th>
+                              <th>Sponsoring Agency / Organization</th>
+                              <th>Project Funding (Rs.)</th>
+                              <th>Project Duration</th>
+                              <th>Status(Completed / Submitted / In progress)</th>
+                              <th>Remarks</th>
+                            </tr>
+                            {% for object in consultancy_projects_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.client}}</td>
+                                    <td>{{object.financial_outlay}}</td>
+                                    <td>{{object.start_date}} to {{object.end_date}}</td>
+                                    <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
+                                  </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for object in research_projects_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.finish_date and object.finish_date <= app.appraisal.end_date or app.appraisal.start_date <= object.date_submission and object.date_submission <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.funding_agency}}</td>
+                                    <td>{{object.financial_outlay}}</td>
+                                    <td>{{object.start_date}} to {{object.finish_date}}</td>
+                                    <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
+                                  </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
+                          <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                          <br>
+                          <table>
+                            {% for object in patents_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Patent</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                                      <td>{{object.p_no}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                      <td>{{object.status}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <table>
+                            {% for object in tech_transfer_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Technology Transfer</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                      <td>{{object.details}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
+                          <br>
+                          <table>
+                            {% for object in publications_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.publication_date and object.publication_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                                      <td>{{object.p_type}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                      <td>{{object.publisher}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                      <td>{{object.authors}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                                      <td>{{object.pyear}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.5 &emsp; Conferences Attended:</h3></label>
+                          <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                          <label><h3>2.6 &emsp; Conferences Organized:</h3></label>
+                          <table>
+                            <tr>
+                              <th><strong>Name</strong></th>
+                              <th><strong>Venue</strong></th>
+                              <th><strong>Role</strong></th>
+                            </tr>
+                            {% for object in conferences_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role1}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br><br>
+
+                          <label><h3>2.7 &emsp; Professional Recognition</h3></label>
+                          <br>
+                          <label><h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4></label>
+                          <table>
+                            <tr>
+                              <th>Award Type</th>
+                              <th>Details</th>
+                            </tr>
+                            {% for object in achievments_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                    {% if app.appraisal.start_date <= object.achievment_date and object.achievment_date <= app.appraisal.end_date %}
+                                        <tr>
+                                          <td>{{object.a_type}}</td>
+                                          <td>{{object.details}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <label><h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4></label>
+                          <table>
+                            <tr>
+                              <th>Type</th>
+                              <th>Name</th>
+                              <th>Sponsoring Agency</th>
+                              <th>Venue</th>
+                              <th>Role</th>
+                            </tr>
+                            {% for object in events_all %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.type}}</td>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.sponsoring_agency}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role}}</td>
+                                    </tr>
+                                {% endif %}
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+                          <br>
+
+                          <hr  style="height:5px;background-color:#333;">
+
+
+                          <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
+                          <br>
+                          <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
+                          <label>{{app.appraisal.admin_assign}}</label>
+                          <br><br>
+
+                          <label><h3>3.2 &emsp; Service To Institute Community: </h3></label>
+                          <label>{{app.appraisal.sevice_to_ins}}</label>
+                          <br><br>
+
+                          <label><h3>3.3 &emsp; Any Other Contribution: </h3></label>
+                          <label>{{app.appraisal.extra_info}}</label>
+                          <br><br>
+                          <hr  style="height:5px;background-color:#333;">
+
+                          <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                          <label>{{app.appraisal.faculty_comments}}</label>
+                          <br><br>
+
+                          <hr  style="height:5px;background-color:#333;">
+                          <br><br>
+
+                          <form class="ui large form" method="post" enctype="multipart/form-data" id="form2">
+                              {% csrf_token %}
+                              <label><strong>Application ID:</strong></label>
+                              <input type="text" name="app_id" value={{app.appraisal.id}} readonly><br><br>
+                              <label><strong>Remarks:</strong></label>
+                              <textarea name="remarks_director" rows="2" cols="30"></textarea><br><br>
+                              <label><strong>Please select your result:</strong></label><br>
+                              <input type="radio" id="outstanding" name="result" value="outstanding">
+                              <label for="outstanding">OUTSTANDING</label><br>
+                              <input type="radio" id="excellant" name="result" value="excellant">
+                              <label for="excellant">EXCELLENT</label><br>
+                              <input type="radio" id="very good" name="result" value="very good">
+                              <label for="very good">VERY GOOD</label><br>
+                              <input type="radio" id="good" name="result" value="good">
+                              <label for="good">GOOD</label><br>
+                              <input type="radio" id="poor" name="result" value="poor">
+                              <label for="poor">POOR</label><br>
+                              <br><br>
+                              <button type="submit" name="director_appraisal_review" class="ui large primary button">
+                                  Submit Request
+                              </button>
+                          </form>
+                      </div>
+                  </div>
+                  <div class="actions">
+                      <div class="ui black deny button">
+                          Cancel
+                      </div>
+                  </div>
+              </div>
+              {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                          <hr>
+            {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Reviewed Applications By Director -->
+<div class="ui tab segment" data-tab="appraisal_five">
+    <div class="content">
+        <div class="description">
+          <div class="ui items">
+          {% for app in reviewed_apps_director %}
+            {% for app2 in appraisal_all %}
+            {% if app.appraisal == app2 %}
+            <div class="item">
+                <div class="content">
+                    <div class="header">Application ID : {{app.appraisal.id}}</div>
+                    <div class="meta">
+                        <span>Applicant: {{app.appraisal.applicant.username}}</span>
+                    </div>
+                    <div>
+                        <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                            View
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="ui modal view-{{app.id}}">
+                <i class="close icon"></i>
+                <div class="header">
+                    View Appraisal
+                </div>
+                <div class="content">
+                    <div class="description">
+
+                        <label>Status : {{ app2.status }}</label><br>
+                        <label>Director Remarks: {{app.remark_director}}</label><br>
+                        <hr style="height:5px;background-color:#333;">
+
+                        <label><strong>Name: </strong> {{app.appraisal.applicant.username}} </label><br>
+                        <label><strong>Designation: </strong>{{app.appraisal.designation}}</label><br>
+                        <label><strong>Discipline: </strong>{{app.appraisal.discipline}}</label><br>
+                        <label><strong>Specific Field Of Knowledge: </strong>{{app.appraisal.knowledge_field}}</label><br>
+                        <label><strong>Current Research Element: </strong>{{app.appraisal.research_interest}}</label><br>
+                        <hr style="height:5px;background-color:#333;">
+
+                        <h2>1.&emsp; INSTRUCTION ELEMENT</h2>
+
+                        <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                        <table>  <!-- the container to add the TABLE -->
+                          <tr>
+                            <th>Semester</th>
+                            <th>Course-Name</th>
+                            <th>Course Number</th>
+                          </tr>
+                            {% for em in course_objects_all %}
+                                {% if em.instructor_id.user == app.appraisal.applicant %}
+                                      <tr>
+                                        <td>{{em.curriculum_id.sem}}</td>
+                                        <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                        <td>{{em.curriculum_id.course_code}}</td>
+                                      </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+
+                        <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and  Taught</h3>
+                          <table>  <!-- the container to add the TABLE -->
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>YEAR</th>
+                              <th>Semester</th>
+                              <th>Tutorial Hours/week</th>
+                            </tr>
+                            {% for obj in new_courses_offered_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.year}}</td>
+                                  <td>{{obj.semester}}</td>
+                                  <td>{{obj.tutorial_hrs_wk}}</td>
+                                </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </table>
+
+                          <h3>1.3 &emsp; New Course Material / Instructional Software Developed</h3>
+                          <table>
+                            <tr>
+                              <th>Course-Name</th>
+                              <th>Course Number</th>
+                              <th>UG/PG</th>
+                              <th>Type of Activity</th>
+                              <th>Web/Public</th>
+                            </tr>
+                          {% for obj in new_courses_material_all %}
+                              {% if obj.appraisal == app.appraisal %}
+                                <tr>
+                                  <td>{{obj.course_name}}</td>
+                                  <td>{{obj.course_num}}</td>
+                                  <td>{{obj.ug_or_pg}}</td>
+                                  <td>{{obj.activity_type}}</td>
+                                  <td>{{obj.availiability}}</td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %} 
+                          </table>
+
+                        <hr style="height:5px;background-color:#333;">
+
+
+                        <h2>2.&emsp; RESEARCH ELEMENT</h2>
+
+                        <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                        <table>
+                          <tr>
+                            <th>Name of Student (MTech/PhD)</th>
+                            <th>Title Of Thesis / Thesis Topic</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                            <th>Status(Completed / Submitted / In progress)</th>
+                          </tr>
+                          {% for object in thesis_all %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.s_name}}</td>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.s_year}}</td>
+                                    <td>{{object.semester}}</td>
+                                    <td>{{object.status}}</td>
+                                  </tr>
+                                {% endif %}
+                              {% endif %}
+                          {% endfor %}
+                        </table>
+
+                        <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                        <table>
+                          <tr>
+                            <th>Title Of Project</th>
+                            <th>Sponsoring Agency / Organization</th>
+                            <th>Project Funding (Rs.)</th>
+                            <th>Project Duration</th>
+                            <th>Status(Completed / Submitted / In progress)</th>
+                            <th>Remarks</th>
+                          </tr>
+                          {% for object in consultancy_projects_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.title}}</td>
+                                      <td>{{object.client}}</td>
+                                      <td>{{object.financial_outlay}}</td>
+                                      <td>{{object.start_date}} to {{object.end_date}}</td>
+                                      <td>{{object.status}}</td>
+                                      <td>{{object.remarks}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for object in research_projects_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.finish_date and object.finish_date <= app.appraisal.end_date or app.appraisal.start_date <= object.date_submission and object.date_submission <= app.appraisal.end_date %}
+                                  <tr>
+                                    <td>{{object.title}}</td>
+                                    <td>{{object.funding_agency}}</td>
+                                    <td>{{object.financial_outlay}}</td>
+                                    <td>{{object.start_date}} to {{object.finish_date}}</td>
+                                    <td>{{object.status}}</td>
+                                    <td>{{object.remarks}}</td>
+                                  </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                        <br><br>
+
+                        <label for="other_research_element"><h3>2.3 &emsp; Other Research Element:</h3></label>
+                        <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                        <br>
+                        <table>
+                          {% for object in patents_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Patent</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Project Number</strong></td>
+                                      <td>{{object.p_no}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                      <td>{{object.status}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                          {% endfor %}
+                        </table>
+                        <br>
+
+                        <table>
+                          {% for object in tech_transfer_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                      <td>Technology Transfer</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                      <td>{{object.details}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                          {% endfor %}
+                        </table>
+                        <br><br>
+
+                        <label for="publications"><h3>2.4 &emsp; Publication(s)</h3></label>
+                        <br>
+                        <table>
+                          {% for object in publications_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.publication_date and object.publication_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publication Type</strong></td>
+                                      <td>{{object.p_type}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                      <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                      <td>{{object.publisher}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                      <td>{{object.authors}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="background-color:#f1f1c1"><strong>Publishing Year</strong></td>
+                                      <td>{{object.pyear}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                        <br><br>
+
+                        <label><h3>2.5 &emsp; Conferences Attended:</h3></label>
+                        <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                        <label><h3>2.6 &emsp; Conferences Organized:</h3></label>
+                        <table>
+                          <tr>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Venue</strong></th>
+                            <th><strong>Role</strong></th>
+                          </tr>
+                          {% for object in conferences_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                  {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role1}}</td>
+                                    </tr>
+                                  {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                        <br><br>
+
+                        <label><h3>2.7 &emsp; Professional Recognition</h3></label>
+                        <br>
+                        <label><h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4></label>
+                        <table>
+                          <tr>
+                            <th>Award Type</th>
+                            <th>Details</th>
+                          </tr>
+                          {% for object in achievments_all %}
+                                {% if object.user == app.appraisal.applicant %}
+                                    {% if app.appraisal.start_date <= object.achievment_date and object.achievment_date <= app.appraisal.end_date %}
+                                        <tr>
+                                          <td>{{object.a_type}}</td>
+                                          <td>{{object.details}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                          {% endfor %}
+                        </table>
+                        <br>
+
+                        <label><h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4></label>
+                        <table>
+                          <tr>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Sponsoring Agency</th>
+                            <th>Venue</th>
+                            <th>Role</th>
+                          </tr>
+                          {% for object in events_all %}
+                              {% if object.user == app.appraisal.applicant %}
+                                {% if app.appraisal.start_date <= object.start_date and object.start_date <= app.appraisal.end_date or app.appraisal.start_date <= object.end_date and object.end_date <= app.appraisal.end_date %}
+                                    <tr>
+                                      <td>{{object.type}}</td>
+                                      <td>{{object.name}}</td>
+                                      <td>{{object.sponsoring_agency}}</td>
+                                      <td>{{object.venue}}</td>
+                                      <td>{{object.role}}</td>
+                                    </tr>
+                                {% endif %}
+                              {% endif %}
+                          {% endfor %}
+                        </table>
+                        <br>
+
+                        <hr  style="height:5px;background-color:#333;">
+
+
+                        <h2>3.&emsp; ADMINISTRATION ASSIGNMENT</h2>
+                        <br>
+                        <label><h3>3.1 &emsp; Administrative Assignments: </h3></label>
+                        <label>{{app.appraisal.admin_assign}}</label>
+                        <br><br>
+
+                        <label><h3>3.2 &emsp; Service To Institute Community: </h3></label>
+                        <label>{{app.appraisal.sevice_to_ins}}</label>
+                        <br><br>
+
+                        <label><h3>3.3 &emsp; Any Other Contribution: </h3></label>
+                        <label>{{app.appraisal.extra_info}}</label>
+                        <br><br>
+                        <hr  style="height:5px;background-color:#333;">
+
+                        <label><h2>4.&emsp;SELF-APPRAISAL BY FACULTY</h2></label>
+                        <label>{{app.appraisal.faculty_comments}}</label>
+                        <br><br>
+
+                        <hr  style="height:5px;background-color:#333;">
+                        <br><br>
+
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="ui black deny button">
+                        Cancel
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% empty %}
+                        <tr><td colspan="3">No Reviewed Application</td><tr>
+                        <hr>
+            {% endfor %}
+          </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript">
+  
+  var count2 = 0;
+  var counter_string2 = "0";
+  var arrHead2 = new Array();	// array for header.
+  arrHead2 = ['Course-Name','Course Number','UG/PG','YEAR','Semester','Tutorial (Hours/week)']
+
+  var count3 = 0;
+  var counter_string3 = "0";
+  var arrHead3 = new Array();	// array for header.
+  arrHead3 = ['Course-Name','Course Number','UG/PG','Type of Activity','Web/Public']
+
+
+function addRowNewCourses() {
+    count2 = count2 + 1;
+    counter_string2 = count2.toString();
+    var newcourseTab = document.getElementById('NewCoursesOffered');
+    var rowCnt2 = newcourseTab.rows.length;  // table row count.
+    var tr = newcourseTab.insertRow(rowCnt2);
+
+    for(var c = 0; c < arrHead2.length; c++){
+        var td = document.createElement('td');
+        td = tr.insertCell(c);
+        console.log(arrHead2[c]);
+        if(c == 0 || c == 2){
+          // Course Name: Text input field
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'text');
+          ele.setAttribute('value', '');
+          ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string2);
+          td.appendChild(ele);
+        }
+        else{
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'number');
+          ele.setAttribute('value', 0.0);
+          ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string2);
+          td.appendChild(ele);
+        }
+    }
+}
+
+function addRowNewCoursesMaterial(){
+      count3 = count3 + 1;
+      counter_string3 = count3.toString();
+      var newCourseMaterialTab = document.getElementById('NewCourseMaterial');
+      var rowCnt3 = newCourseMaterialTab.rows.length;
+      var tr = newCourseMaterialTab.insertRow(rowCnt3);
+      for(var c = 0; c < arrHead3.length; c++){
+        var td = document.createElement('td');
+        td = tr.insertCell(c);
+        if(c == 1){
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'number');
+          ele.setAttribute('value', 0.0);
+          ele.setAttribute('name', arrHead3[c] + '1.1.3' + counter_string3);
+          td.appendChild(ele);
+        }else {
+          var ele = document.createElement('input');
+          ele.setAttribute('type', 'text');
+          ele.setAttribute('value', '');
+          ele.setAttribute('name', arrHead3[c] + '1.1.3' + counter_string3);
+          td.appendChild(ele);
+        }
+      }
+  }
+
+// delete TABLE row function.
+function removeRow(oButton) {
+    console.log("Check");
+    var courseTab = document.getElementById('CoursesInstructed');
+    courseTab.deleteRow(oButton.parentNode.parentNode.rowIndex); // button -> td -> tr.
+}
+
+
+</script>
+{% endblock %}

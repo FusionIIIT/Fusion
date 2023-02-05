@@ -1,0 +1,153 @@
+{% load static %}
+{% block nomination_details %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        {% if "Convenor" in Curr_desig %}
+            <a class="ui item" data-tab="form_available">
+                 Form Availability
+            </a>
+        {% endif %}
+
+<!--         {% if "Convenor" in Curr_desig %}
+            {% if form_name == 'senate_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Senate Nomination Requests
+                </a>
+            {% elif form_name == 'mess_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Mess Nomination Requests
+                </a>
+            {% elif form_name == 'hostel_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Hostel Nomination Requests
+                </a>
+            {% endif %}
+        {% endif %} -->
+
+
+    </div>
+
+    <div class="ui tab" data-tab="form_available">
+
+        <div class="ui vertical segment">
+            <form method="Post" id="form__available" >
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        <div class="field">
+                            <label>Registration Type</label>
+                            <select class="ui search fluid dropdown" name="registration" id ="registration" >
+                                <option value="senate_registration">Senate Registration</option>
+                                <option value="mess_registration">Mess Registration</option>
+                                <option value="hostel_registration">Hostel Registration</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="field">
+                            <label>Form Availability</label>
+                            <select class="ui search fluid dropdown" name="available" id ="available" >
+                                <option value="On">On </option>
+                                <option value="Off">Off </option>
+
+                            </select>
+
+                        </div>
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('form_avail','form__available',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+
+    <div class="ui active tab" data-tab="nomination_requests">
+        <div class="ui vertical segment">
+            <form method="Post" id="delete__requests" >
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('delete_requests','delete__requests',event)">
+                            Delete Requests
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+
+        <div class="ui vertical segment">
+        <form method="post" action="" id="nom_requests">
+        {% csrf_token %}
+            <table id="mytable" class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+
+                    <th class="four wide column">
+                        Roll Number
+                    </th>
+
+                    <th>
+                        Branch
+                    </th>
+
+                    <th>
+                        CPI
+                    </th>
+
+                    <th>
+                        Programme
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                        {% for i in registration_form %}
+
+                                <tr>
+                                    <td class="collapsing">
+                                        {{ i.user_name }}
+                                    </td>
+                                    <td>
+                                        {{ i.roll }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.branch }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.cpi }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.programme }}
+                                    </td>
+
+                                </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
+
+
+        </form>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}

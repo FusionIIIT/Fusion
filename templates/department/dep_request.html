@@ -1,0 +1,126 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Department - Faculty View
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}    
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+            
+            
+
+            <div class="ui divider"></div>
+
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui huge fluid vertical pointing menu"
+                    style="max-width: 320px;">
+
+                    <a class="active item" data-tab="first" id="announcement">
+                        Make Announcement
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="second" id="br_ann">
+                        Browse Announcement
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="third" id="request_status">
+                        Request Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    
+                    
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+            {% comment %}
+                The left-rail segment ends here!
+            {% endcomment %}
+
+        
+
+            {% comment %}
+                The central-rail segment starts here!
+            {% endcomment %}
+            <div class="eight wide column">
+
+                {% comment %}Make announcement{% endcomment %}
+                <div class="ui active tab segment" data-tab="first">
+                    {% block make_announcement %}
+                        {% if user_designation == "faculty" %}
+                                {% include "department/make_announcements_fac.html" %}
+                        {% elif user_designation == "staff" %}
+                                {% include "department/make_announcements_staff.html" %}
+                        {% endif %}
+                    {% endblock %}
+                </div>
+                {% comment %}Make announcement{% endcomment %}
+
+                {% comment %}See announcement{% endcomment %}
+                <div class="ui tab segment" data-tab="second">
+                    {% block browse_announcement %}
+                        {% if user_designation == "faculty" %}
+                            {% include "department/browse_announcements.html" %}
+                        {% elif user_designation == "staff" %}
+                            {% include "department/browse_announcements_staff.html" %}
+                        {% endif %}
+                    {% endblock %}
+                </div>
+                {% comment %}See announcement{% endcomment %}
+            
+                {% comment %}status of request!{% endcomment %}
+                <div class="ui tab segment" data-tab="third">
+                    {% block request_status %}
+                        {% include "department/request_status.html" %} 
+                    {% endblock %}
+                </div>
+                {% comment %}status of request!{% endcomment %}
+
+                
+
+            </div>
+            
+            <div class="three wide column">
+                <div class="row">
+                    {% comment %}
+                        TODO: the right rail!
+                    {% endcomment %}
+                </div>
+            </div>
+            {% comment %}The right-rail segment ends here!{% endcomment %}
+            
+            {% comment %}The right-margin segment!{% endcomment %}
+            <div class="column"></div>
+
+
+    </div>
+        {% comment %}The grid ends here!{% endcomment %}
+
+
+{% include 'department/alert.html' %}
+{% endblock %}

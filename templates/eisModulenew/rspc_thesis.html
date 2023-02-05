@@ -1,0 +1,138 @@
+{% load static %}
+
+{% block thesis %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="PG">
+            PG Thesis
+        </a>
+
+        <a class="item" data-tab="PhD">
+            PhD Thesis
+        </a>
+    </div>
+
+
+    {% comment %}The PG Thesis supervision segment starts here!{% endcomment %}
+    <div class="ui active tab segment" data-tab="PG">
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for mtech in mtechs %}
+                {% if forloop.counter0|divisibleby:50 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="mtech-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:50 50 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for mtech in mtechs %}
+
+            {% if forloop.counter0|divisibleby:50 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="mtech-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 50%;" >Student</th>
+                <th class="" style="width: 30%;">Title </th>
+                <th class="" style="width: 20%;">Year</th>
+
+                <th style="width:23%">Supervisor</th>
+
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr id="r1">
+                <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ mtech.id }}</div> {{ forloop.counter }}.</td>
+                <td id="s{{ forloop.counter }}A"><b>Name: </b>{{ mtech.s_name }}<br/><b>Roll No.: </b>{{ mtech.rollno }}</td>
+                <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
+                <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}</td>
+                <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
+
+            </tr>
+
+            {% if forloop.counter0|add:1|divisibleby:50 %}
+
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not mtechs.all.count|divisibleby:50 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The PG Thesis supervision segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The PhD Thesis supervision segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="PhD">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for phd in phds %}
+                {% if forloop.counter0|divisibleby:50 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="phd-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:50 50 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for phd in phds %}
+
+            {% if forloop.counter0|divisibleby:50 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="phd-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table" id="phd">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">Student</th>
+                <th class="">Title</th>
+                <th class="">Year</th>
+                <th class="">Supervisor</th>
+                <th class="">Action</th>-->
+
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 50%;" >Student</th>
+                <th class="" style="width: 30%;">Title </th>
+                <th class="" style="width: 20%;">Year</th>
+
+                <th style="width:23%">Other Details</th>
+
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr id="r2">
+                <td id="phd{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div>{{ forloop.counter }}.</td>
+                <td id="phd{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+                <td id="phd{{ forloop.counter }}B">{{ phd.title }}</td>
+                <td id="phd{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
+                <td id="phd{{ forloop.counter }}D">{{ phd.supervisors }}</td>
+            </tr>
+
+            {% if forloop.counter0|add:1|divisibleby:50 %}
+
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not phds.all.count|divisibleby:50 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The PhD Thesis supervision segment ends here!{% endcomment %}
+{% endblock %}

@@ -1,0 +1,137 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+  Module name
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+       <div class="eight wide column">
+          {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}
+          <br></br>
+          <div style="overflow-x:auto;">
+          <table class="ui very basic collapsing celled sortable table "
+            style="padding-left: 2.5%;width:"400":
+                                                               padding-right: 2.5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+         <thead>
+         <tr>
+             <th>
+              id
+             </th>
+             <th>
+                Indentor name
+             </th>
+             <th>
+                Item name
+             </th>
+             <th>
+                Expected cost
+             </th>
+             <th>
+                 quantity
+             </th>
+             <th>
+                  Purpose
+             </th>
+             <th>
+                  Intended purchase date
+             </th>
+
+             <th class="three wide column">
+                Amount
+             </th>
+
+             <th class="three wide column">
+                Nature
+             </th>
+
+         </tr>
+         </thead>
+         <tbody>
+           {% csrf_token %}
+       {% for data in alldata  %}
+       <tr>
+         <td>
+           {{ data.id}}
+         </td>
+         <td>
+           {{data.indentor_name}}
+         </td>
+          <td>
+             {{data.item_name}}
+          </td>
+          <td>
+              {{data.expected_cost}}
+          </td>
+          <td>
+              {{data.quantity}}
+          </td>
+          <td>
+              {{data.purpose}}
+          </td>
+          <td>
+              {{data.expected_purchase_date}}
+          </td>
+          <td>
+              {{data.expected_amount}}
+          </td>
+          <td>
+              {{data.nature_of_item1}}
+          </td>
+          <td>
+              {{data.HOD_approve_tag}}
+          </td>
+
+         </tr>
+         {% endfor %}
+           </tbody>
+         </table>
+            </div>
+          </div>
+
+
+</div>
+
+{% endblock %}

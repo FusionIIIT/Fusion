@@ -1,0 +1,57 @@
+{% load custom_tags %}
+{% block {{hall.hall_id}} %}
+{% comment %} <table class="ui fixed sortable celled table"> {% endcomment %}
+<table class="ui fixed sortable table">
+    <thead>
+    <tr>
+        <th class="four wide">Staff Name</th>
+        <th class="four wide">Caretaker/Guard</th>
+        <th class="three wide">Day</th>
+        <th class="three wide">Start Time</th>
+        <th class="three wide">End Time</th>
+        {% if user in hall_caretaker%}
+            {% ifequal current_hall hall_id %}
+                <th class="two wide">Delete</th>
+            {% endifequal %}
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for staff in hall_staffs|get_hall_no:hall_id %}
+    <tr>
+        <td>
+            {{ staff.staff_id.id.user.first_name }} {{ staff.staff_id.id.user.last_name }}
+        </td>
+
+        <td>
+            {{ staff.staff_type }}
+        </td>
+
+        <td>
+            {{ staff.day }}
+        </td>
+
+        <td>
+            {{ staff.start_time }}
+        </td>
+
+        <td>
+            {{ staff.end_time }}
+        </td>
+        {% if user in hall_caretaker%}
+            {% ifequal current_hall hall_id %}
+                <td>
+                    <form method="post"  action="{% url 'hostelmanagement:staff_delete_schedule' %}" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button class="mini ui button" type="submit" value="{{ staff.staff_id.pk }}" name="dlt_schedule" onclick="return confirm('Are you sure you want to DELETE this staff schedule?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                                                                    width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg></button>
+                    </form>
+                </td>
+            {% endifequal %}
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

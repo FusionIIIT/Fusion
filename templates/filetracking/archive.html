@@ -1,0 +1,53 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="inward">
+            Archived Files 
+            </a>
+        </h3>
+
+    </div>
+
+    <div class="ui divider"></div>
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+            <th>Created By</th>
+            <th>File ID</th>
+            <th>Subject</th>
+            <th>Date</th>
+            <th>View File</th>
+            <th>Forward</th>
+          
+        </tr>
+        </thead>
+        <tbody>
+        {% for j in draft %}
+          {% ifequal designations j.designation|stringformat:'s' %}
+             <tr>
+                 <td>{{j.uploader.user}} - {{j.designation}}</td>
+                 <td>{{request.user.extrainfo.department.name}}-{{j.upload_date.year}}-{{j.upload_date.month}}-#{{j.id}}</td>
+                 <td>{{j.subject}}</td>
+                 <td>{{j.upload_date}}</td>
+                 <td><a href="{% url 'filetracking:archive_finish' j.id %}"><button class="ui primary button">
+                              View
+                    </button></a></td>
+                    <td><a href="{% url 'filetracking:forward' j.id %}"><button class="ui primary button">
+                        Forward
+              </button></a></td>
+
+                
+              </tr>
+          {% endifequal %}
+        {% endfor %}
+        </tbody>
+
+    </table>
+
+    <br>
+
+{% endblock %}

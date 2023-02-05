@@ -1,0 +1,57 @@
+{% comment %} ACAD ADMIN will drop course here {% endcomment%}
+{% load static %}
+{% block courses_list %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+<script type="text/javascript">
+    $(function () {
+        $("#get_course_form").submit(function (event) {
+            event.preventDefault();
+            var friendForm = $(this);
+            console.log("hello", friendForm);
+            console.log(friendForm.serialize());
+            var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+            posting.done(function (jsondata) {
+                $("#loading").hide();
+                console.log(jsondata);
+                $('#student_course_list').html(jsondata.html);
+            });
+            posting.fail(function (data) {
+                alert('Failed to Change');
+            });
+        })
+        return false;
+    });
+</script>
+
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="this">
+        Registered Courses for Sem {{ date.semflag }} {{ date.year }}
+
+    </a>
+</div>
+<div class="ui active tab" data-tab="this">
+    <div class="ui vertical segment">
+        <form class="ui form" action="/academic-procedures/acad_person/verifyCourse/" method="post"
+            id="get_course_form">
+            {% csrf_token %}
+            <div class="field">
+                <label>Roll no</label>
+                <input type="text" id="rollNo" name="rollNo" required>
+            </div>
+            <div class="field">
+                <button class="ui fluid primary button" type="submit" onclick="getStudentCourses()">
+                    Get student course
+                </button>
+            </div>
+        </form>
+
+        <div id="student_course_list" style="margin-top: 30px"></div>
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
+{% endblock %}

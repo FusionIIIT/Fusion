@@ -1,0 +1,255 @@
+{% load static %}
+
+{% block browse_announcement %}
+
+    <h1><center> View Category-wise Announcements </center></h1>
+
+    {% comment %} tabs ui {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="all">
+            All Students
+        </a>
+        
+        <a class="item" data-tab="cse">
+            CSE
+        </a>
+        
+        <a class="item" data-tab="ece">
+            ECE
+        </a>
+
+        <a class="item" data-tab="me">
+            ME
+        </a>
+
+        <a class="item" data-tab="sm">
+            SM
+        </a>
+
+    </div>
+
+    <div class="ui active tab" data-tab="all">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.all %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            <br><div class="ui divider"></div><br>
+                        </div>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content facilities {% endcomment %}
+    <div class="ui tab" data-tab="cse">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.cse %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            <br><div class="ui divider"></div><br>
+                        </div>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content faculty {% endcomment %}
+    <div class="ui tab" data-tab="ece">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.ece %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            <br><div class="ui divider"></div><br>
+                        </div>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% comment %} tabs contains Announcement_List {% endcomment %}
+    <div class="ui tab" data-tab="me">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.me %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            <br><div class="ui divider"></div><br>
+                        </div>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% comment %} tabs content students {% endcomment %}
+    <div class="ui tab" data-tab="sm">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+
+                        <div class="ui vertical segment" data-tab="Year-1">
+
+                            {% comment %} {% if ann_list %} {% endcomment %}
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+
+                                </thead>
+
+                                {% for stu in announcements.sm %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        {% if stu.upload_announcement %}
+                                            <td><a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            </table>
+                            {% comment %} {% endif %} {% endcomment %}
+                            <br><div class="ui divider"></div><br>
+                        </div>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+{% endblock %}

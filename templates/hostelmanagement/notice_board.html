@@ -1,0 +1,41 @@
+{% load custom_tags %}
+{% block {{hall.hall_id}} %}
+
+    {% for notice in hall_notices|get_hall_no:hall_id %}
+
+    <div class="ui secondary segment">
+        <div class="ui segment" >
+            <h2 class="ui center aligned header">{{notice.head_line|truncatechars_html:50}}</h2>
+            <h4 style="text-align:right;">{{notice.posted_by.user.first_name}} {{notice.posted_by.user.last_name}} - {{notice.posted_by.user.username}}</h4>
+
+            <div class="ui styled accordion">
+                <div class="title">
+                        <i class="dropdown icon"></i>
+                        More
+                    </div>
+
+                
+                <div class="content">
+                    <h3 style="color:grey;">Description</h3>
+                    <h4 class="transition hidden" style="color:black;">{{notice.description}}</h4>
+                    <h4 class="ui dividing header"><a href="..\media\{{notice.content}}">Content Link</a></h4>
+                </div>
+                
+            </div>
+            <br>
+            
+            {% if user in hall_caretaker or hall_warden %}
+                {% ifequal current_hall notice.hall.hall_id %}
+                    <form method="post"  action="{% url 'hostelmanagement:delete_notice' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button class="mini ui negative basic button" type="submit" value="{{ notice.pk }}" name="dlt_notice" style="margin-left:90%" onclick="return confirm('Are you sure you want to DELETE this notice?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                                                                        width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg></button>
+                    </form>
+                {% endifequal %}
+            {% endif %}
+        </div>
+      </div>
+    
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,41 @@
+
+{% load static %}
+
+    <form class="ui form" method="POST" action='/academic-procedures/manual_grade_submission/' id="manual_grade_form"
+        enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet in following format:</h4>
+            RollNo | Student Name | Quiz1 | Mid Term | Quiz2 | End Term | Other | Total | Grade  
+            <h4 class="ui dividing header"><a href="../../media/Administrator/academic_information/Manual_Grade_Name.xlsx">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+        </div>
+
+        <div class="field">
+            <input type="file" name="manual_grade_xsl" id="manual_grade_xsl" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        </div>
+
+        <div class="field">
+            <button class="ui primary button" type="submit"><i class="upload icon"></i> Upload</button>
+        </div>
+    </form>
+
+<!-- <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		 $("#manual_grade_form").submit(function(event) {
+             event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('You have successfully registered');
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Registration Failed');
+            });
+    });
+	});
+
+</script> -->

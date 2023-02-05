@@ -1,0 +1,443 @@
+{% load static %}
+
+
+<b><center><h3>{{course}}</h3></center></b>
+<br>
+{% if grade_submission_date_eligibility %}
+<p id="warning" style="color: red"></p>
+<div class="ui form" style="border: black; width: 100%;" > 
+	<div style="display: inline-block; width: 19%;">
+		<center><b>O</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="100" readonly="True" id="hi0" name="hi0" style="height: 30px;opacity: 0.5;" data='0'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="96" readonly="True" id="ih0" name="ih0" style="height: 30px;opacity: 0.5;" data='0'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>A+</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="95" id="hi1" name="hi1" style="height: 30px;" data='1'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="86" id="ih1" name="ih1" style="height: 30px;opacity: 0.5;" readonly="True" data='1'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>A</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="85" id="hi2" name="hi2" style="height: 30px;" data='2'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="76" id="ih2" name="ih2" style="height: 30px;opacity: 0.5;" readonly="True" data='2'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>B+</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="75" id="hi3" name="hi3" style="height: 30px;" data='3'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="66" id="ih3" name="ih3" style="height: 30px;opacity: 0.5;" readonly="True" data='3'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>B</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="65" id="hi4" name="hi4" style="height: 30px;" data='4'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="56" id="ih4" name="ih4" style="height: 30px;opacity: 0.5;" readonly="True" data='4'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>C+</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="55" id="hi5" name="hi5" style="height: 30px;" data='5'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="46" id="ih5" name="ih5" style="height: 30px;opacity: 0.5;" readonly="True" data='5'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>C</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="45" id="hi6" name="hi6" style="height: 30px;" data='6'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="36" id="ih6" name="ih6" style="height: 30px;opacity: 0.5;" readonly="True" data='6'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>D+</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="35" id="hi7" name="hi7" style="height: 30px;" data='7'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="26" id="ih7" name="ih7" style="height: 30px;opacity: 0.5;" readonly="True" data='8'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>D</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="25" id="hi8" name="hi8"  style="height: 30px;" data='8'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="16" id="ih8" name="ih8" style="height: 30px;opacity: 0.5;" readonly="True" data='8'></div>
+		</div>
+	</div>
+	<div style="display: inline-block; width: 19%;">
+		<center><b>F</b></center>
+		<div class="fields" style="padding-left: 5px; padding-right: 5px;">
+			<div class="field" style="padding-right: 0px;"><input type="number" step="0.1" min="0" max="100" value="15" id="hi9" name="hi9" style="height: 30px;" data='9'></div>
+			<p style="margin-top: 5px; padding-left: 2px; padding-right: 2px"> - </p>
+			<div class="field" style="padding-left: 0px;"><input type="number" step="0.1" min="0" max="100" value="0"  id="ih9" name="ih9" style="height: 30px;opacity: 0.5;" readonly="True" data='9'></div>
+		</div>
+	</div>
+</div>
+
+
+<div class="class_data">
+  <table id="class_data">
+    <tr style="background-color: #f1f1f1">
+    <td style="width: 5%" align="right"><b>A+:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>A:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>B+:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>B:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>C+:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>C:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>D+:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>D:</b></td>
+    <td style="width: 5%" align="left"></td>
+    <td style="width: 5%" align="right"><b>F:</b></td>
+    <td style="width: 5%" align="left"></td>
+  </tr>
+  </table>
+</div>
+
+{% endif %}
+
+<div class="wrap">
+	<form id='marks_submission_form' action='/academic-procedures/submit_marks/'>
+    {% csrf_token %}
+
+	<div style="width: 100%">
+    <table class="head ui celled table"
+         style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                background-color: #ddd;
+                width: 100%">
+        <tr>
+          <th style="width: 20%;"> <center>Roll No.</center></th>
+          <th style="width: 10%"><center>Quiz 1</center></th>
+          <th style="width: 10%"><center>Mid-Sem</center></th>
+          <th style="width: 10%"><center>Quiz 2</center></th>
+          <th style="width: 10%"><center>End-Sem</center></th>
+          <th style="width: 10%"><center>Other</center></th>
+          <th style="width: 15%"><center>Total</center></th>
+          {% if grade_submission_date_eligibility %}
+          <th style="width: 15%"><center>Grade</center></th>
+          {% endif %}
+        </tr>
+
+    </table>
+	</div>
+
+	<div id="inner_table">
+    	<table id="tb" class=" ui celled table"
+         style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                /*margin: auto;*/
+                width: 100%">
+        {% for items in enrolled_student_list %}
+          <tr>
+            <td style="width: 20%"><center><input type="text" name="user" value="{{ items.rollno}}" hidden="True">{{ items.rollno}}</center></td>
+            <td style="width: 10%"><center><input type="number" name="q1_marks" step=0.1 min="0" max="100" value="{{items.q1}}"  onchange="change_grade()"></center></td>
+            <td style="width: 10%"><center><input type="number" name="mid_marks" step=0.1 min="0" max="100" value="{{items.mid_term}}" onchange="change_grade()"></center></td>
+            <td style="width: 10%"><center><input type="number" name="q2_marks" step=0.1 min="0" max="100" value="{{items.q2}}" onchange="change_grade()"></center></td>
+            <td style="width: 10%"><center><input type="number" name="end_marks" step=0.1 min="0" max="100" value="{{items.end_term}}" onchange="change_grade()"></center></td>
+            <td style="width: 10%"><center><input type="number" name="other_marks" step=0.1 min="0" max="100" value="{{items.other}}" onchange="change_grade()" ></center></td>
+            <td style="width: 15%"><center><input type="number" name="total_marks" step=0.1 min="0" max="100" value="0" readonly></center></td>
+            {% if grade_submission_date_eligibility %}
+            <td style="width: 15%"><center><input type="text" name="grade" value="" required="True"></center></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+
+  </table>
+  <div class="bn_back1"><div href="" class="back1" style="text-decoration: none;
+                                                            display: inline-block;
+                                                            padding: 8px 16px;
+                                                            cursor: pointer;">&laquo; Back</div>
+	<button class="ui primary button" style="background-color: green" >Submit Marks</button>
+		</div>
+</div>
+<input type="text" name="course_id" value="{{course.id}}" hidden="True">
+
+<input type="text" name="final_submit" value="{{grade_submission_date_eligibility}}" hidden="True">
+</form>
+
+</div>
+
+
+
+
+
+
+
+
+  <style type="text/css">
+.wrap {
+    width: 100%;
+    max-height: 30%;
+}
+.wrap table {
+    width: 100%;
+    table-layout: fixed;
+}
+table tr td {
+    word-wrap: break-word;
+}
+#inner_table {
+	width: 100%;
+    overflow-y: auto;
+}
+
+.bn_back1 button{
+    float: right;
+}
+.wrap input {
+  width: 100%;
+  border-width: 0px;
+  align-content: center;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+  </style>
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+$(".field input").change(function(){
+    var i = Number($(this).attr('data'));
+    var j = i-1;
+    /*alert(i);*/
+    if(Number($('#hi'+i).val()) < Number($('#ih'+i).val()) || (Number($('#hi'+i).val())+1) > Number($('#hi'+j).val()) ){
+      $("#warning").show();
+    	$("#warning").text("please set an appropriate criteria");
+    	$('#hi'+i).val(Number($('#ih'+j).val())-1);
+    }
+    else{
+    	$("#warning").text("");
+    	if(Number($('#hi'+i).val())+1>100){
+        $("#warning").show();
+    		$("#warning").text("maximum awarded marks are 100");
+    		$('#hi'+i).val(Number($('#ih'+j).val())-1);
+    	}
+    	else{
+    		$('#ih'+j).val(Number($('#hi'+i).val())+1);
+    	}
+    }
+});
+
+$(document).ready(function () {
+   myFunction(); 
+   change_grade();    
+   fill_class_data();
+});
+
+
+function myFunction() {
+	var size = screen.height;
+	size = size*2/3+"px";
+  	document.getElementById("inner_table").style.height = size;
+}
+
+
+
+function change_grade(){
+  	var count = $('#tb tr').length;
+  	var table = document.getElementById('tb');
+    $("#warning").hide();
+
+  	for (x = 0; x < count; x++){
+  		q1 = Number(document.getElementsByName("q1_marks")[x].value);
+  		mid = Number(document.getElementsByName("mid_marks")[x].value);
+  		q2 = Number(document.getElementsByName("q2_marks")[x].value);
+  		end = Number(document.getElementsByName("end_marks")[x].value);
+  		other = Number(document.getElementsByName("other_marks")[x].value);
+  		total = q1+mid+q2+end+other;
+      if(total>100){
+        $("#warning").text("maximum awarded marks are 100");
+      }
+      else{
+  		document.getElementsByName("total_marks")[x].value = total;
+    }
+  	} 
+
+
+  	var marks;
+  	for (i = 0; i < count; i++) { 
+  		
+  		marks = document.getElementsByName("total_marks")[i].value;
+  		if( marks >= Number($('#ih0').val()) && marks <= Number($('#hi0').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'O';
+  		}
+  		else if( marks >= Number($('#ih1').val()) && marks <= Number($('#hi1').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'A+';
+  		}
+  		else if( marks >= Number($('#ih2').val()) && marks <= Number($('#hi2').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'A';
+  		}
+  		else if( marks >= Number($('#ih3').val()) && marks <= Number($('#hi3').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'B+';
+  		}
+  		else if( marks >= Number($('#ih4').val()) && marks <= Number($('#hi4').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'B';
+  		}
+  		else if( marks >= Number($('#ih5').val()) && marks <= Number($('#hi5').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'C+';
+  		}
+  		else if( marks >= Number($('#ih6').val()) && marks <= Number($('#hi6').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'C';
+  		}
+  		else if( marks >= Number($('#ih7').val()) && marks <= Number($('#hi7').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'D+';
+  		}
+  		else if( marks >= Number($('#ih8').val()) && marks <= Number($('#hi8').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'D';
+  		}
+  		else if( marks >= Number($('#ih9').val()) && marks <= Number($('#hi9').val()))
+  		{
+  			document.getElementsByName("grade")[i].value = 'F';
+  		}
+	}
+  fill_class_data();
+}
+
+function fill_class_data(){
+  var count = $("#tb tr").length;
+  var a1=0;
+  var a=0;
+  var b1=0;
+  var b=0;
+  var c1=0;
+  var c=0;
+  var d1=0;
+  var d=0;
+  var f=0;
+  for (x = 0; x < count; x++){
+     g = document.getElementsByName("grade")[x].value;
+      if(g == 'A+'){
+        a1 = a1+1;
+      }
+      else if(g == 'A'){
+        a = a+1;
+    }
+    else if(g == 'B+'){
+        b1 = b1+1;
+    }
+    else if(g == 'B'){
+        b = b+1;
+    }
+    else if(g == 'C+'){
+        c1 = c1+1;
+    }
+    else if(g == 'C'){
+        c = c+1;
+    }
+    else if(g == 'D+'){
+        d1 = d1+1;
+    }
+    else if(g == 'D'){
+        d = d+1;
+    }
+    else if(g == 'F'){
+        f = f+1;
+    }
+  } 
+  document.getElementById("class_data").rows[0].cells[1].innerHTML = a1;
+  document.getElementById("class_data").rows[0].cells[3].innerHTML = a;
+  document.getElementById("class_data").rows[0].cells[5].innerHTML = b1;
+  document.getElementById("class_data").rows[0].cells[7].innerHTML = b;
+  document.getElementById("class_data").rows[0].cells[9].innerHTML = c1;
+  document.getElementById("class_data").rows[0].cells[11].innerHTML = c;
+  document.getElementById("class_data").rows[0].cells[13].innerHTML = d1;
+  document.getElementById("class_data").rows[0].cells[15].innerHTML = d;
+  document.getElementById("class_data").rows[0].cells[17].innerHTML = f;
+}
+
+
+$(function() {
+    $("#marks_submission_form").submit(function(event) {
+             event.preventDefault();
+            var form = $(this);
+            var posting = $.post( form.attr('action'), form.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('You have successfully submitted');
+                window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Submission Failed');
+                window.location = "/academic-procedures/main/";
+            });
+            
+    });
+    $('.back1').on('click',function(e){
+      $('#course_data').hide(400);
+      $('#course_data').html("");
+      $('#course_list').show(400);
+    });
+});
+</script>
+
+
+
+<!--         <tr>
+          <th style="width: 20%;"> <center></center></th>
+          <th style="width: 10%"><input style="background-color: #f1f1f1;" type="number" name="max_q1" placeholder="out of:"></th>
+          <th style="width: 10%"><input style="background-color: #f1f1f1;" type="number" name="max_mid" placeholder="out of:""out of:"></th>
+          <th style="width: 10%"><input style="background-color: #f1f1f1;" type="number" name="max_q2" placeholder="out of:"></th>
+          <th style="width: 10%"><input style="background-color: #f1f1f1;" type="number" name="max_end" placeholder="out of:"></th>
+          <th style="width: 10%"><input style="background-color: #f1f1f1;" type="number" name="max_other" placeholder="out of:"></th>
+          <th style="width: 15%"><center>-/100</center></th>
+          {% if grade_submission_date_eligibility %}
+          <th style="width: 15%"><center></center></th>
+          {% endif %}
+        </tr> -->

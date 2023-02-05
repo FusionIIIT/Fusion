@@ -1,0 +1,38 @@
+{% load static %}
+{% if lib_d < 0 %}
+<h4>Your Entry in Dues is not entered yet.</h4>
+{% else %} 
+<center><b>Dues</b></center>
+<div class="ui vertical segment" style="width: 100%">   
+    <table class="ui very basic celled sortable table" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+            <th style="10%">Mess Due</th>
+            <th style="20%">Hostel Due</th>
+            <th style="10%">Library Due</th>
+            <th style="10%">Placement Cell Due</th>
+            <th style="10%">Academic Due</th>
+            <th style="10%">Total Due</th>
+            </tr>
+        </thead>
+            <tr>
+                <td style="10%">{{ mess_d }}</td>
+                <td style="10%">{{ hos_d }}</td>
+                <td style="10%">{{ lib_d }}</td>
+                <td style="10%">{{ pc_d }}</td>
+                <td style="10%">{{ acad_d }}</td>
+                <td style="10%">{{ tot_d }}</td>
+            </tr>
+    </table>
+
+ {% if tot_d == 0 %}
+    <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/dues_pdf/ ">
+    {%csrf_token%}
+        <br><br>
+        <button class="ui large primary button right floated">
+            Click Here to get No Dues
+        </button>
+    </form>
+ {% endif %}
+</div>
+{% endif %}

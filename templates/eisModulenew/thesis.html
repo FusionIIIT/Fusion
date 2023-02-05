@@ -1,0 +1,331 @@
+{% load static %}
+
+{% block thesis %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if mark9 != 1 %}active item{% else %} item {% endif %}" data-tab="PG">
+            PG Thesis
+        </a>
+
+        <a class="{% if mark9 == 1 %}active item{% else %} item {% endif %}" data-tab="PhD">
+            PhD Thesis
+        </a>
+    </div>
+
+
+    {% comment %}The PG Thesis supervision segment starts here!{% endcomment %}
+    <div class="{% if mark9 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="PG">
+        {% if request.user == user %} <h4 class="ui dividing header" id="changes3">Add a Thesis</h4>
+        <form class="ui form" method="post" action="{% url 'eis:pg_insert' %}" onsubmit="return validatepg()">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="fZ" name="pg_id"></div>
+            <div class="field">
+               <div class="One field">
+                    <div class="field">
+                        <label> Name</label>
+                        <input placeholder="Name" type="text"   id="fA" type=text name="name" required>
+                    </div>
+
+                  
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="fields">
+                    <div class="six wide field">
+                        <label>Roll Number</label>
+                        <input placeholder="Roll Number" type="text" name="roll" id="fE" required>
+                    </div>
+                     <div class="four wide field">
+                         <label>Month</label>
+                              <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="month"  id="fX"  required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Month</div>
+                            <div class="menu">
+                               {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="four wide field">
+                        <label>Year</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" id="fC" name="s_year" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Year</div>
+                            <div class="menu">
+                                {% for r in year_range %}
+                                <div class="item" data-value="{{ r }}"  >{{ r }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="seven wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text"  id="fB" name="title"  required>
+                        </div>
+                    </div>
+                     <div class="six wide field">
+                        <label>Supervisor</label>
+                        <input placeholder="Supervisor"   id="fD" type=text name="sup" required>
+                    </div>
+
+                    
+                </div>
+
+            </div>
+            <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        <br>
+        {% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if thesis.has_previous %}
+                    <a href="?page8=1" >&laquo; first</a>
+                    <a href="?page8={{ thesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ thesis.number }} of {{ thesis.paginator.num_pages }}.
+                </span>
+
+                {% if thesis.has_next %}
+                    <a href="?page8={{  thesis.next_page_number }}">next</a>
+                    <a href="?page8={{ thesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+     
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >Student</th>
+                <th >Title </th>
+                <th >Year</th>
+
+                <th >Supervisor</th>
+
+                 {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for mtech in mtechs %}
+                <tr>
+                    <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ mtech.id }}</div> {{ forloop.counter}}.</td>
+                    <td id="s{{ forloop.counter }}A"><b>Name: </b>{{ mtech.s_name }}<br/><b>Roll No.: </b>{{ mtech.rollno }}</td>
+                    <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
+                    <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}</td>
+                    <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
+                     {% if request.user == user %}
+                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id forloop.counter 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if thesis.has_previous %}
+                    <a href="?page8=1" >&laquo; first</a>
+                    <a href="?page8={{ thesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ thesis.number }} of {{ thesis.paginator.num_pages }}.
+                </span>
+
+                {% if thesis.has_next %}
+                    <a href="?page8={{  thesis.next_page_number }}">next</a>
+                    <a href="?page8={{ thesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+    </div>
+    {% comment %}The PG Thesis supervision segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The PhD Thesis supervision segment starts here!{% endcomment %}
+    <div class="{% if mark9 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="PhD">
+         {% if request.user == user %}<h4 class="ui dividing header"  id="changes4">Add a Thesis</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:phd_insert' %}" onsubmit="return validatephd()">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="phdZ" name="phd_id"></div>
+            <div class="field">
+                 <div class="One field">
+                    <div class="field">
+                        <label> Name</label>
+                        <input placeholder="Name" type="text" name="name"  id="phdA" required>
+                    </div>
+
+                   <!--  <div class="field">
+                        <label>Last Name</label>
+                        <input placeholder="Last Name" type="text">
+                    </div> -->
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="fields">
+                    <div class="six wide field">
+                        <label>Roll Number</label>
+                        <input placeholder="Roll Number" type="text"  name="roll" id="phdE" required>
+                    </div>
+                     <div class="four wide field">
+                         <label>Month</label>
+                              <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="month"  id="phdX"  required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Month</div>
+                            <div class="menu">
+                               {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="four wide field">
+                        <label>Year</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden"  name="s_year" id="phdC" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Year</div>
+                            <div class="menu">
+                                {% for r in year_range %}
+                                <div class="item" data-value="{{ r }}">{{ r }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="seven wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text"  name="title" id="phdB" required>
+                        </div>
+                    </div>
+                     <div class="six wide field">
+                        <label>Supervisor</label>
+                        <input placeholder="Supervisor" type="text"  name="sup" id="phdD" required>
+                    </div>
+
+                    
+                        
+                    
+                </div>
+
+            </div>
+            <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        <br>
+        {% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if phdthesis.has_previous %}
+                    <a href="?page9=1" >&laquo; first</a>
+                    <a href="?page9={{ phdthesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ phdthesis.number }} of {{ phdthesis.paginator.num_pages }}.
+                </span>
+
+                {% if phdthesis.has_next %}
+                    <a href="?page9={{  phdthesis.next_page_number }}">next</a>
+                    <a href="?page9={{ phdthesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+     
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Student</th>
+                <th >Title </th>
+                <th >Year</th>
+
+                <th >Supervisor</th>
+
+                 {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for phd in phds %}
+                <tr>
+                    <td id="phd{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div>{{ forloop.counter }}.</td>
+                <td id="phd{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+                <td id="phd{{ forloop.counter }}B">{{ phd.title }}</td>
+                <td id="phd{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
+                <td id="phd{{ forloop.counter }}D">{{ phd.supervisors }}</td>
+                 {% if request.user == user %}
+                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id forloop.counter 2%}"><i id="bt" class="red delete icon"></i></a> </td>
+                 {% endif %}
+
+
+
+
+                    <!-- <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div> {{ forloop.counter|add:sr9 }}.</td>
+                    <td id="s{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+                    <td id="s{{ forloop.counter }}B">{{ phd.title }}</td>
+                    <td id="s{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
+                    <td id="s{{ forloop.counter }}D">{{ phd.supervisors }}</td>
+
+                     <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td> -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if phdthesis.has_previous %}
+                    <a href="?page9=1" >&laquo; first</a>
+                    <a href="?page9={{ phdthesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ phdthesis.number }} of {{ phdthesis.paginator.num_pages }}.
+                </span>
+
+                {% if phdthesis.has_next %}
+                    <a href="?page9={{  phdthesis.next_page_number }}">next</a>
+                    <a href="?page9={{ phdthesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+        
+    </div>
+    {% comment %}The PhD Thesis supervision segment ends here!{% endcomment %}
+{% endblock %}

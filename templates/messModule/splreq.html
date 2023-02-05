@@ -1,0 +1,151 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block splreq %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="splreq">
+        Special Request
+    </a>
+    <a class="item" data-tab="splreq_acc">
+        Accepted Requests
+    </a>
+</div>
+<div class="ui active tab" data-tab="splreq">
+    <div class="ui vertical strip segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Student Id</th>
+                  <th>Request Dates</th>
+{#                  <th>End Date</th>#}
+                  <th>Food</th>
+                  <th>purpose</th>
+                  <th>accept/reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in sprequest %}
+                <tr id="accpt-{{var.pk}}">
+                    <th class="two wide">
+                        {{var.app_date}}
+                    </th>
+                    <td class="two wide">
+                        {{var.student_id.id|truncatewords:1|slice:"-4"}}
+                    </td>
+                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+{#                    <td>{{var.end_date}}</td>#}
+                    <td class="three wide">{{var.item1}}, {{var.item2}}</td>
+                    <td>{{var.request}}</td>
+                    <td>
+                            <div class="ui buttons">
+                                    <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="acceptSplReq({{var.pk}})">A</button>
+                        <div class="or"></div>
+              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectSplReq({{var.pk}})" >R</button>
+                        </div>
+                        <!--<form action="{{var.pk}}/specialrequestresponse/" method="POST">-->
+                        <!--{% csrf_token %}-->
+                        <!--<div class="ui buttons">-->
+                                    <!--<button class="acbtn ui positive button" name="submit" value="approve" onclick="acceptSplReq({{var.pk}})">A</button>-->
+
+                        <!--<div class="or"></div>-->
+              <!--<button class="ui negative button" name="submit" value="reject" >R</button>-->
+                        <!--</div>-->
+                        <!--</form>-->
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="splreq_acc">
+    <div class="ui vertical strip segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Student Id</th>
+                  <th>Request Dates</th>
+                  <th>Food</th>
+                  <th>purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in sprequest_past %}
+                <tr>
+                    <th class="two wide">
+                        {{var.app_date}}
+                    </th>
+                    <td class="two wide">
+                        {{var.student_id.id|truncatewords:1|slice:"-4"}}
+                    </td>
+                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+{#                    <td>{{var.end_date}}</td>#}
+                    <td class="three wide">{{var.item1}}, {{var.item2}}</td>
+                    <td>{{var.request}}</td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
+
+<script>
+function acceptSplReq(id){
+
+      document.getElementById('accpt-'+id).style.display="none";
+
+         $.ajax({
+                type: 'POST',
+                url: 'specialrequestresponse',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id':id,
+                    'status':'2',
+
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+}
+
+            });
+
+         }
+
+         function rejectSplReq(id){
+document.getElementById('accpt-'+id).style.display="none";
+
+
+         $.ajax({
+                type: 'POST',
+                url: 'specialrequestresponse',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id':id,
+                    'status':'0',
+
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                }
+            });
+
+         }
+
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,1171 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+<!--
+<link href="http://vjs.zencdn.net/5.8.8/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+-->
+
+
+{% block title %}
+    Course Management
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    <div class="ui stackable doubling grid">
+
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %}
+
+            <div class="ui divider"></div>
+
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+              <h3 style="margin-left:15px; margin-top:10px;"> {{course.course_name}}  </h3>
+                <a class="active item sidetab" data-tab="first" data-num="11">
+                  Course Content
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% if Lecturer == 0%}  <!-- this section is for student side -->
+                <a class="item sidetab" data-tab="second" data-num="12">
+                  Assignments
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                <a class="item sidetab" data-tab="third" data-num="13">
+                  View Performance
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% if Lecturer == 1 %}   <!-- this is for faculty side only -->
+          <!--        <a class="item sidetab" data-tab="fourth" data-num="14">
+                    Add Documents/Videos
+                  <i class="right floated chevron right icon"></i>
+                </a> -->
+                  <a class="item sidetab" data-tab="fifth" data-num="15">
+                    Assessment
+                  <i class="right floated chevron right icon"></i>
+                  </a>
+                  <a class="item sidetab" data-tab="seventh" data-num="17">
+                      Attendance
+                    <i class="right floated chevron right icon"></i>
+                  </a>
+                  
+                <a class="item sidetab" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab" data-tab="fourth" data-num="18">
+                  Topics
+                  <i class="right floated chevron right icon"></i>
+                </a>
+              {% endif %}
+              
+              <a class="item sidetab" data-tab="eighth" data-num="19">
+                Comments
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+            
+        </div>
+
+        <div class="ten wide column" >
+            <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    video {
+                        position: relative;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        margin-bottom: 4em;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+
+                    .play-icon {
+                        cursor: pointer;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+
+                    svg:hover #play-svg {
+                        fill: #CC181E;
+                    }
+
+                </style>
+
+
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        margin: 1px;
+                        padding: 5px;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+                </style>
+                <div class="ui pointing secondary menu">
+                  <a class="item tabs" data-num="1" data-tab="quiz">
+                    Quiz
+                 </a>
+                  <a class="item tabs" data-num="2" data-tab="assignment">
+                   Assignment
+                  </a>
+                  <a class="active item tabs" data-num="3" data-tab="videos">
+                    Videos
+                 </a> 
+                 <a class="item tabs" data-num="4" data-tab="slides">
+                  Slides
+                 </a>
+                  <a class="item tabs" data-num="5" data-tab="time-table">
+                     Time-Table/Quiz
+                  </a>
+                </div>
+                <div class="ui tab segment" id="1" data-tab="quiz" style="display:none">
+                  <h4 class="ui dividing header">Quizzes</h4>
+                  {% if Lecturer is 1 %}
+                    <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/create_quiz/">Create a New Quiz</a>
+                  {% endif %}
+                  <table class="ui very basic collapsing celled table">
+                    <thead>
+                      <tr>
+                        <th>Quiz-Name</th>
+                        <th>Start-Time</th>
+                        <th>End-Time</th>
+                        <th>Duration</th>
+                        <th>Penalty</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for quiz in fut_quiz %}
+                      <tr>
+                        <td>
+                          {{quiz.quiz_name}}
+                        </td>
+                        <td>
+                          {{quiz.start_time}}
+                        </td>
+                        <td>
+                          {{quiz.end_time}}
+                        </td>
+                        <td>
+                        {% if quiz.d_day != '0' %}  {{quiz.d_day}} days {% endif %}{{quiz.d_hour}} hours {% if quiz.d_minute != '0' %}{{quiz.d_minute}} minutes{% endif %}
+                        </td>
+                        <td>
+                          {{quiz.negative_marks}}
+                        </td>
+                        <td>
+                          <div class="fields">
+                            <div class="one wide field">
+                              <label><br></label>
+                              <!-- <a href="/ocms/quiz/{{quiz.pk}}" > -->
+                              {% if Lecturer is 0 %}
+                              <!-- if the student have not give n the quiz already then only show the enter button -->
+                                {% if quiz.pk not in quizs_pk %}
+                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d H:i:s'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}" onclick="disabled">
+                                 Enter
+
+                                 <i class="arrow right icon"></i>
+                                </div>
+                               {% else %}
+                               <div class="ui primary button disabled " data-start="{{quiz.start_time|date:'Y-m-d'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
+                                Finished
+
+                              </div>
+
+                               {% endif %}
+                               {% else %}
+<!--                                <a class="remove_quiz" style="margin-bottom:10px;padding-left:10px" id="quiz{{quiz.pk}}" data-pk="{{quiz.pk}}"><i class="remove large icon"></i></a> -->
+
+                               <a class="remove_quiz" id="quiz{{quiz.pk}}" data-pk="{{quiz.pk}}"><i class="ui blue button">Delete Quiz</i></a>
+                               <br>
+                               <br>
+                               <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/edit_quiz/{{quiz.pk}}">
+                                Edit Quiz
+                               </a>
+                               {% endif %}
+                             <!-- </a> -->
+                           </div>
+                         </div>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                   </tbody>
+                    </table>
+
+                </div>
+
+                <div class="ui tab segment" id="2" data-tab="assignment" style="display:none">
+                   {% if Lecturer == 1 %}
+                  <div id="add_assign_block" style="display: block;">
+                  
+                    {% block addassignments %} {% include 'coursemanagement/submitassignments.html' %} {% endblock %}
+
+                  </div>
+                  {% else %}
+                 
+                 <div class="ui active tab segment box" id="21" data-tab="submitassignment">
+                  
+                    <h4 class="ui dividing header">Submitable Assignments </h4>
+                    
+
+                    <table class="ui fixed single line sortable celled table">
+                        <thead>
+                            <tr>
+                                <th class="sorted ascending" style="width: 20%;">Sr.</th>
+                                <th class="" style="width: 30%;">Assignment Name</th>
+                                <th class="" style="width: 25%;">Last Submit Date</th>
+                                <th class="" style="width:25%">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                          {% for assi in assignment %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{assi.assignment_name}}</td>
+                                <td>{{assi.submit_date}}</td>
+                                <td> <a href="{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                                  </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif%}
+                </div>
+                
+                <div class="ui tab segment" id="3" data-tab="videos" style="display:none">
+                  <div class="ui four column grid">
+                      <div id="add_video_block" style="display: block;">
+                       {% block addvideo %} {% include 'coursemanagement/addvideo.html' %} {% endblock %}
+                    </div>
+                  </div>
+                </div>
+ 
+                <div class="ui tab segment" id="4" data-tab="slides" style="display:block">
+                    <div class="ui four column grid">
+                       {% if Lecturer == 1 %}
+                            <div id="add_slides_block" style="display: block;">
+                  
+                              {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
+                            </div>
+                          {% else %}
+                        <div class="row" style="margin-left:20px">
+                            <h4 class="ui dividing header">{{course.course_name}}</h4>
+
+                        </div>
+                        
+                        {% if slides %}
+                          
+                          {% for slide in slides %}
+                            <div class="row">     
+                              <div class="column">
+                                <button class="ui primary button" style="mae">
+                                 <a id='visualize' href="{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
+
+                               </button>
+
+                              </div>
+
+                            </div>
+                          
+                          {% endfor %}
+                          
+                        {% else %}
+                        <div class="row" style="margin-left:20px">
+                            <h4 class="ui header">No slides</h4><br>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="ui tab segment" id="5" data-tab="time-table" style="display:none">
+                    <h4 class="ui dividing header">Quiz Time Table</h4>
+                    <table class="ui single line table">
+                        <thead>
+                            <tr>
+                                <th>Quiz Name</th>
+                                <th>Date</th>
+                                <th>Time</th> </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz in fut_quiz %}
+                            <tr>
+                                <td>{{quiz.quiz_name}}</td>
+                                <td>{{quiz.start_time |date:'Y-m-d'}}</td>
+                                <td>{{quiz.start_time |date:'H:i'}}</td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="ui tab segment" id="12" data-tab="second" style="display:none">
+                {% block submitassignments %} {% include 'coursemanagement/submitassignments.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="13" data-tab="third" style="display:none">
+                {% block viewperformance %} {% include 'coursemanagement/viewperformance.html' %} {% endblock %}
+            </div>
+             <div class="ui tab segment" id="17" data-tab="seventh" style="display:none">
+                {% block attendance %} {% include 'coursemanagement/attendance.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="15" data-tab="fifth" style="display:none">
+                {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+                {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="18" data-tab="fourth" style="display:none">
+              {% block topics %} {% include 'coursemanagement/topics.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="19" data-tab="eighth" style="display:none">
+              {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+    <!-- <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script> -->
+    <script type="text/javascript">
+      $(document).ready(function() {
+      var prevassessmenttab = 1;
+      $('#tab1').addClass('active');
+      $('#tabdata1').addClass('active');
+      $('.tabheading').click(function(){
+        pk = $(this).attr('data-pk');
+        $('#tab'+prevassessmenttab).removeClass('active');
+        $('#tab'+pk).addClass('active');
+        $('#tabdata'+prevassessmenttab).removeClass('active');
+        $('#tabdata'+pk).addClass('active');
+
+        prevassessmenttab = pk;
+      });
+      var vptab = 'assignmenttab';
+
+      $('#assignmenttab').addClass('active');
+      $('#assignmenttabdata').addClass('active');
+      $('.vptab').click(function(){
+        event.preventDefault();
+        id = $(this).attr('id');
+        $('#'+vptab).removeClass('active');
+        $('#'+id).addClass('active');
+        $('#'+vptab+"data").removeClass('active');
+        $('#'+id+"data").addClass('active');
+
+        vptab = id;
+      });
+      });
+
+
+    </script>
+
+    <script>
+         $(".pointing.pagination.menu")
+            .tab()
+        ;
+
+
+    function assess_student(element){
+      if(event.key === 'Enter') {
+        var pk=element.getAttribute("data-assign");
+
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert(pk);
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/ajax_assess',
+            data: {
+                'pk': pk,
+                'marks':element.value,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+                alert(data);
+                $('#score'+pk).text(element.value);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      }
+    }
+
+    function assess_feedback(element){
+      if(event.key === 'Enter') {
+        var pk=element.getAttribute("data-feedback");
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert(pk);
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{curriculum.course_code}}/ajax_feedback',
+            data: {
+                'pk': pk,
+                'feedback':element.value,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+                alert(data);
+
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      }
+    }
+
+    $('.qbremove').click(function(){
+      var pk=$(this).attr('data-pk');
+      var csrf = $('input[name=csrfmiddlewaretoken]').val();
+
+      $.ajax({
+          type: 'POST',
+          url: '/ocms/{{curriculum.course_code}}/remove_bank',
+          data: {
+              'pk': pk,
+              'csrfmiddlewaretoken': csrf
+          },
+          success: function(data) {
+            alert(data.message);
+            var x = document.getElementById("qb"+pk);
+            x.style.display = "none";
+            if(data.numberof_qbs == 0)
+            {
+              var y = document.getElementById("qbtable");
+              y.style.display="none";
+              $('<div class="row" style="margin-left:20px"><h4 class="ui header">No Question Banks added till Now</h4><br></div>').insertBefore('#create_qbank');
+
+            }
+          },
+          error: function(data, err) {
+              alert(err.message);
+          }
+      });
+    });
+
+
+    $('.topicremove').click(function(){
+      var pk=$(this).attr('data-pk');
+      var csrf = $('input[name=csrfmiddlewaretoken]').val();
+
+      $.ajax({
+          type: 'POST',
+          url: '/ocms/{{curriculum.course_code}}/remove_topic',
+          data: {
+              'pk': pk,
+              'csrfmiddlewaretoken': csrf
+          },
+          success: function(data) {
+            alert(data.message);
+            var x = document.getElementById("topic"+pk);
+            x.style.display = "none";
+            if(data.numberof_topics == 0)
+            {
+              var y = document.getElementById("topictable");
+              y.style.display="none";
+              $('<div class="row" style="margin-left:20px"><h4 class="ui header">No Topics added till Now</h4><br></div>').insertBefore('#create_qbank');
+
+            }
+          },
+          error: function(data, err) {
+              alert(err.message);
+          }
+      });
+    });
+
+
+
+    $('#create_qbank').click(function(){
+      var x = document.getElementById("qbank");
+      if(x.style.display === "none")
+        x.style.display = "block";
+      else {
+        x.style.display = "none";
+      }
+    });
+    $('#create_topic').click(function(){
+      var x = document.getElementById("topic");
+      if(x.style.display === "none")
+        x.style.display = "block";
+      else {
+        x.style.display = "none";
+      }
+    });
+
+    $(document).ready(function(){
+      var quiz_btn=document.getElementsByClassName('quiz_btn');
+      for (i = 0; i < quiz_btn.length; i++) {
+          var re = window.setInterval(fun, 1000);
+          var pk = quiz_btn[i].getAttribute('data-pk');
+          var start = new Date(quiz_btn[i].getAttribute('data-start'));
+          function fun()
+          {
+            if({{Lecturer}} == "0"){
+              var now=new Date();
+              // alert(start+''+now);
+              if (start < now){
+                $('#quiz'+pk).removeClass('disabled');
+              }
+            }
+          }
+        }
+      });
+
+      $('.remove_quiz').click(function(){
+        var pk=$(this).attr('data-pk');
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{curriculum.course_code}}/remove_quiz',
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+              alert(data);
+               $("#1").load(" #1 > *");           //refresh the quiz div(in tabs) that is in viewcourse.html
+
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      });
+      $(document).on('click','.dustbin',function(){
+        var id = $(this).attr('id');
+        var pk = $(this).attr('data-pk');
+        var list = id.split('_');
+        var type = list[1];
+        var number = list[2];
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{curriculum.course_code}}/delete/',
+            data: {
+                'type': type,
+                'pk':pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                alert(data.msg);
+                $("#add_video_block").load(" #add_video_block > *");
+                $("#add_doc_refresh").load(" #add_doc_refresh > *");
+                $("#add_assign_block").load(" #add_assign_block > *");
+                $("#student_assign_refresh").load(" #student_assign_refresh > *");
+            },
+            error: function(data, err) {
+                alert("err");
+            }
+        });
+
+      });
+      $('.quiz_btn').click(function(){
+          var pk=$(this).attr('data-pk');
+          alert('Do not close');
+          window.open('/ocms/quiz/'+pk,'myWindow', "width=1500, height=1000");
+        });
+              function toggleContent() {
+            $('.modulesContent').toggle();
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+        var ini = 4;
+        var ini1 = "result1";
+        $('.per').click(function(){
+          // alert("ASD");
+          event.preventDefault();
+          var x = document.getElementById(ini1);
+
+          num = $(this).attr('data-tab');
+
+          var y = document.getElementById("result"+num);
+          x.style.display = "none";
+          x.removeClass = "active";
+          y.addClass = "active";
+          y.style.display = "block";
+          ini1 = "result"+num;
+        });
+
+    $('.tabs').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(ini);
+        num = $(this).attr('data-num');
+        console.log(num);
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        ini = num;
+    });
+
+
+        var assini = 21;
+    $('.assitabs').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(assini);
+        num = $(this).attr('data-number');
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        assini = num;
+    });
+
+    var sideini = 11;
+    $('.sidetab').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(sideini);
+        num = $(this).attr('data-num');
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        sideini = num;
+    });
+    </script>
+    <script>
+       $('.url.example .ui.embed').embed();
+       $(document).ready(function(){
+          $('#visualize').click(function(){
+              $('#pdf_modal').modal('show').height('80%');
+          });
+        });
+        
+        /*JS  of timer starts*/
+      $(document).ready(function(){
+        var deadline = new Date("2017/11/01");
+        function updateClock(){
+          var today = Date();
+          var diff = Date.parse(deadline) - Date.parse(today);
+          if(diff<=0){
+            clearInterval(interval);
+          }
+          else{
+            var seconds = Math.floor((diff/1000)%60);
+            var minutes = Math.floor((diff/1000/60)%60);
+            var hours = Math.floor((diff/1000/60/60)%24);
+            var days = Math.floor(diff/(1000*60*60*24)%30.5);
+            var months = Math.floor(diff/(1000*60*60*24*30.5)%12);
+               $("#months").text(('0'+months).slice(-2));
+               $("#days").text(('0'+days).slice(-2));
+               $("#hours").text(('0'+hours).slice(-2));
+               $("#minutes").text(('0'+minutes).slice(-2));
+               $("#seconds").text(('0'+seconds).slice(-2));
+          }//EOF ELSE
+        }//EOF FUNCTION
+       var interval = setInterval(updateClock,1000);
+      });//EOF DOCUMENT.READY
+      /*JS mof timer ends*/
+      $('.modal-btn').click(function(){
+        pk = $(this).attr('data-pk');
+        $('#vid_modal'+pk)
+          .modal('show');
+      });
+    </script>
+
+    <script type="text/javascript">
+      //reseting the form
+      function resetForm($form1) {
+          $form1.find('input:text, input:password').val('');
+      }
+
+
+      //on clicking enter submit text in the new added text box
+      function key_down(input_r){
+
+          var pk=input_r.getAttribute('data-pk');
+          if(event.keyCode == 13){
+              $("#button_r"+pk).click();
+          }
+      }
+
+      // submitting a new question
+       $(document).on('click','.submit_new',function(event) {
+        event.preventDefault();
+        var parent = $(this).parent();
+        var question = $('input[name=new_comment]').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        if (question != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/ocms/{{curriculum.course_code}}/ajax_new',
+                data: {
+                    'question': question,
+                    'csrfmiddlewaretoken': csrf
+                },
+                 // dataType: 'jsonp',
+                success: function(data) {
+                    // location.reload();
+                    alert("success");
+                    resetForm($('#new'));
+                    $('<div class="question"id="question' + data.pk + '"><div class="comment comment_q" id="comment' + data.pk + '"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content" data-pk="' + data.pk + '" id="question' + data.pk + '"><a class="author">' + data.name + '</a><div class="metadata"><span class="date">' + data.time + '</span></div><div class="text"><p>' + data.question + '</p></div><div class="actions" ><a class="reply remove_q" onclick="func_q(this)" data-pk="' + data.pk +
+                        '" id = "remove' + data.pk + '"name = "remove' + data.pk + '">remove</a></div></div></div><div class="comments answer" style="padding:10px"><div class="ui form field" style="margin-bottom:10px"><input type="text" onkeydown="key_down(this)" id="reply_n_' + data.pk + '" data-pk="' + data.pk + '" name="comment' + data.pk + '" placeholder="Enter Your Comment"></div><input type="submit" id="button_r' + data.pk + '" onclick="reply_q(this)" class="ui blue submit button submit_r" data-pk="' + data.pk + '" name="submit" value="Reply"></input></div>').insertBefore(parent);
+                         $("#comments_refresh").load(" #comments_refresh > *");
+                },
+                error: function(data, err) {
+                    alert("err");
+                    //$("#comments_refresh").load(" #comments_refresh > *");
+                }
+            });
+        } else {
+            $('input[name=new_comment]').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=new_comment]').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+
+    });
+    // submittin a new reply
+      $(document).on('click','.submit_r',function(event){
+        var parent=$(this).parent();
+        event.preventDefault();
+        pk=$(this).attr('data-pk');
+        var reply= $('input[name=comment'+pk+']').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        if (reply != "") {
+          $.ajax({
+            type:'POST',
+            url:'/ocms/{{curriculum.course_code}}/ajax_reply',
+            data:{ 'question':pk,
+                   'reply': reply,
+                   'csrfmiddlewaretoken':csrf
+            },
+            success:function(data){
+                resetForm($('#'+pk));
+                $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.replier+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'"  onclick="func(this)" id="remove' + data.pk + '"name="remove' + data.pk + '">remove</a></div></div></div>').insertBefore(parent);
+                $("#comments_refresh").load(" #comments_refresh > *");
+            },
+            error: function(data,err){
+              alert(err);
+             // $("#comments_refresh").load(" #comments_refresh > *");
+            }
+          });
+        }
+        else {
+            $('input[name=comment' + pk + ']').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=comment' + pk + ']').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+      });
+      //submitting a new reply to a newly posted question using ajax
+      function reply_q(current){
+        var pk = current.getAttribute('data-pk');
+        var parent = current.parentNode.lastChild.previousSibling;
+        var p = $(parent);
+        var reply = $('input[name=comment'+pk+']').val();
+        if (reply != "") {
+          $.ajax({
+            type:'POST',
+            url:'/ocms/{{curriculum.course_code}}/ajax_reply',
+            data:{ 'question':pk,'reply': reply,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+            success:function(data){
+              $('#reply_n_'+pk).val("");
+              $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.replier+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'" onclick="func(this)" id="remove'+data.pk+'"name="remove'+data.pk+'">remove</a></div></div></div>').insertBefore(p);
+                //$("#comments_refresh").load(" #comments_refresh > *");
+            },
+            error: function(data,err){
+              alert(err);
+            // $("#comments_refresh").load(" #comments_refresh > *");
+            }
+          });
+        }else {
+            $('input[name=comment' + pk + ']').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=comment' + pk + ']').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+      }
+      //to check if a user is autherized to delete a comment
+      function check_user(user){
+        if({{Lecturer}})
+        {
+            return 1;
+        }
+        else {
+          if (user == {{ user.pk }})
+            return 1;
+          else
+          {
+            alert("you are not authourized to remove the comment");
+            return 0;
+          }
+
+        }
+      }
+      //removing an old reply
+      $(document).on('click','.remove_r',function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+            $.ajax({
+              type:'POST',
+              url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#comment'+pk).hide();
+                $("#comments_refresh").load(" #comments_refresh > *");
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      //removing an old question
+      $(document).on('click','.remove_q',function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+              $.ajax({
+              type:'POST',
+              url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#question'+pk).hide();
+                $("#comments_refresh").load(" #comments_refresh > *");
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      // deletng the reply just created
+      function func(btn){
+        var pk = btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+
+      //deleting a question just created
+      function func_q(btn){
+        var pk=btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+    </script>
+    <script>
+    $(document).ready(function() {
+        $('table').tablesort();
+    });
+
+    $(document).on('click','#submit_vid',function() {
+        var data = new FormData();
+        var img = $('#vid')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form1').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_vid').show();
+        $.ajax({
+            url: "/ocms/{{curriculum.course_code}}/add_video",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_vid').hide();
+                alert(data);
+                $("#add_video_refresh").load(" #add_video_refresh > *");
+            },
+            error: function(data, err) {
+                alert(err.message);
+                //  setTimeout("location.reload(true);",200);
+            }
+        });
+    });
+    $(document).on('click','#submit_doc',function() {
+        var data = new FormData();
+        var img = $('#doc')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form2').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_doc').show();
+        $.ajax({
+            url: "/ocms/{{curriculum.course_code}}/add_documents",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_doc').hide();
+                alert(data);
+                $("#add_doc_refresh").load(" #add_doc_refresh > *");
+            },
+            error: function(data, err) {
+                alert(err.message);
+                //setTimeout("location.reload(true);",200);
+            }
+        });
+    });
+
+    $(document).on('click','#add_assignment',function() {
+        var data = new FormData();
+        var img = $('#assignment')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form4').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_add_assignment').show();
+        $.ajax({
+            url: "/ocms/{{curriculum.course_code}}/add_assignment",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_add_assignment').hide();
+                alert(data);
+                //location.reload();
+                 $("#add_assign_block").load(" #add_assign_block > *");
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+
+    $(document).on('click','#submit_assign',function() {
+        var data = new FormData();
+        var img = $('#assign')[0].files
+        var selectedValue = $('#assign_topic').val();
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        var other_data = $('#form3').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_assign').show();
+        data.append('assignment_topic',selectedValue);
+        $.ajax({
+            url: "/ocms/{{curriculum.course_code}}/upload_assignment",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_assign').hide();
+                alert(data);
+                $("#student_assign_refresh").load(" #student_assign_refresh > *");
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+     $(document).on('click','#create_assign',function(){
+        var x = document.getElementById("form4");
+         if (x.style.display == "none") {
+            x.style.display = "block";
+
+        } else {
+            x.style.display = "none";
+        }
+        
+       });
+      $(document).on('click','#add_video_button',function(){
+        var x = document.getElementById("form1");
+         if (x.style.display == "none") {
+            x.style.display = "block";
+
+        } else {
+            x.style.display = "none";
+        }
+        
+       });
+      $(document).on('click','#add_slide_button',function(){
+        var x = document.getElementById("form2");
+         if (x.style.display == "none") {
+            x.style.display = "block";
+
+        } else {
+            x.style.display = "none";
+        }
+        
+       });
+        $(document).on('click','#submit_marks',function(e) {
+        var pk=$(this).attr("enteredmarks");
+
+        var marks = document.getElementById("enteredmarks").value;
+        console.log(marks);
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        alert(pk);
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{curriculum.course_code}}/edit_marks',
+            dataType : "json",
+            data: {
+                'pk': pk,
+                'marks': marks,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+                alert(data);
+                //$('#score'+pk).text(element.value);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+
+
+//for practice objective assignment
+  /*  $(document).ready(function(){
+       var objective = document.getElementsByClassName('objective'); 
+    });
+    $('.objective').click(function(){
+    });*/
+
+
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,148 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="three fields">
+                    <div class="eight wide field" style="display: none;">
+                        <label for="post_title">Select user</label>
+
+                        <select name="extra_info" required id="id_extra_info">
+                            <option value="{{employee.id}}" selected>{{employee}}</option>
+                        </select>
+
+                    </div>
+
+                    <div class="eight wide field">
+                        <label for="post_title">User</label>
+                        <select>
+                            <option value="" disabled selected>{{employee}}</option>
+                        </select>
+                    </div>
+
+
+                    <div class="eight wide field">
+                        <label for="post_title">Joining Date</label>
+
+                        <input type="date" name="start_date" id="id_start_date">
+
+
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">End date</label>
+
+                        <input type="date" name="end_date" id="id_end_date">
+
+
+
+
+                    </div>
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Job Title</label>
+
+                        <input type="text" name="job_title" maxlength="50" required="" id="id_job_title">
+
+
+
+
+
+
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Organization</label>
+
+                        <input type="text" name="organisation" maxlength="100" required="" id="id_organisation">
+
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Description</label>
+
+                        <input type="text" name="description" maxlength="300" required="" id="id_description">
+
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">Salary Source</label>
+
+                        <input type="text" name="salary_source" maxlength="100" required="" id="id_salary_source">
+
+
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+
+                        <label for="post_title">Designation</label>
+
+                        <input type="text" name="designation" maxlength="100" required="" id="id_designation">
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Service type</label>
+
+                        <select name="service_type" required="" id="id_service_type">
+                            <option value="" selected="">---------</option>
+
+                            <option value="LIEN">LIEN</option>
+
+                            <option value="DEPUTATION">DEPUTATION</option>
+
+                            <option value="OTHER">OTHER</option>
+
+                        </select>
+
+                    </div>
+                </div>
+
+
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+
+
+
+            </div>
+        </form>
+
+
+
+
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+<!-- <script>
+    $(function () {
+        $("#id_start_date").datetimepicker({
+            format: 'Y/m/d',
+        });
+    });
+</script> -->

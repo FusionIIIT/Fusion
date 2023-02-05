@@ -1,0 +1,125 @@
+<style>
+
+</style>
+
+
+{% load static %}
+{% block complainthistory %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<center><b>Add Course(s)</b></center>
+
+<div class="ui vertical segment">
+    {% if adc_date_flag %}
+    {% if details.cpi >= 6.0 %}
+    {% if add_courses_options %}
+    <form id='add_course_form' action='/academic-procedures/addCourse/'> {% csrf_token %}
+        <input type="text" hidden="true" id="credit_count" value="{{current_credits}}">
+        <input type="text" hidden="true" id="req_credit_count" value="{{ requested_credits }}">
+        <h5></h5>
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                               padding-right: 2.5%;
+                                               padding-top: 1%;
+                                               padding-bottom: 1.5%;
+                                               margin: auto;">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Slot name</th>
+                    <th>Slot type</th>
+                    <th>Semester</th>
+                    <th>Credits</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in add_courses_options %}
+                <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.0.id }}' hidden="True">
+                <tr>
+                    <td>{{forloop.counter}}.</td>
+                    <td>{{item.0.name}}</td>
+                    <td>{{item.0.type}}</td>
+                    <td>{{curr_sem.semester_no}}
+                        <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
+                    </td>
+                    <td>{{item.0.courses.all.0.credit}} </td>
+                    <td>
+                        <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
+                            <option value="0">Select course</option>
+                            {% for items in item.1 %}
+                            <option value='{{items.id}}' class="values" data-value2="{{items.credit}}">
+                                {{items.code}}-{{ items.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                {% endfor %}
+                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+            </tbody>
+        </table>
+        <div class="ui divider"></div>
+        <center><button class="ui positive basic button">Add Course(s)</button>
+        </center>
+    </form>
+    {% else %}
+    <B>
+        <CENTER>NO COURSES TO ADD
+    </B></CENTER>
+    {% endif %}
+    {% else %}
+    <B>
+        <center>You do not have minimum CPI required to add course</center>
+    </B>
+    {% endif %}
+    {% else %}
+    <b>
+        <center>You have to wait for the date</center>
+    </b>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#add_course_form").submit(function (event) {
+
+            var credits = parseInt(document.getElementById("credit_count").value) + parseInt(document.getElementById("req_credit_count").value);
+
+            var inp = document.getElementsByClassName("values");
+            var test = 0;
+            for (var i = 0; i < inp.length; i++) {
+                if (inp[i].selected) {
+                    credits = credits + parseInt(inp[i].getAttribute("data-value2"));
+                    test = test + 1
+                }
+            }
+            if (credits >= 27) {
+                alert("You Can not earn more than 26 credits in one semester");
+                window.location = "/academic-procedures/main/";
+            } else if (test == 0) {
+                alert("please Select a course");
+                window.location = "/academic-procedures/main/";
+            } else {
+                event.preventDefault();
+                var friendForm = $(this);
+
+                var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+                posting.done(function (data) {
+                    alert('Course(s) added Successfully');
+                    window.location = "/academic-procedures/main/";
+                });
+                posting.fail(function (data) {
+                    alert('Failed to add course, some error occured');
+                    window.location = "/academic-procedures/main/";
+                });
+            }
+        });
+    });
+</script>

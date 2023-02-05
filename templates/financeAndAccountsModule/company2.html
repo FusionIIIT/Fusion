@@ -1,0 +1,111 @@
+<h1>
+    View Company
+</h1>
+
+<table class="ui very basic collapsing celled sortable table"
+        style="padding-left: 2.5%; padding-right: 2.5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
+                <tr>
+
+                    <th class="four wide column" >
+                        Company name
+                    </th>
+
+                    <th class="four wide column">
+                        Start Date
+                    </th>
+
+                    <th class="four wide column">
+                        End Date
+                    </th>
+
+                    <th class="six wide column">
+                        Description
+                    </th>
+
+                    <th class="four wide column">
+                        Status
+                    </th>
+
+
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for info in c %}
+                <tr>
+
+
+
+                    <td>
+                        {{info.Company_Name}}
+                    </td>
+
+                    <td>
+                        {{info.Start_Date}}
+                    </td>
+
+                    <td>
+                        {{info.End_Date}}
+                    </td>
+
+                    <td>
+                        {{info.Description}}
+                    </td>
+
+                    <td>
+                        {{info.Status}}
+                    </td>
+
+
+                </tr>
+                
+                {% endfor %}
+                <tr>
+
+
+                </tbody>
+            </table>
+
+
+
+<form action="/finance/alterCompany/" method="post">
+    {% csrf_token %}
+<div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+<div class="five fields">
+            <div class="four wide field">
+                <label>Company Name</label>
+                <input type="text" class="ui large input" name = "c_name">
+            </div>
+
+            <div class="four wide field">
+                <label>Start Date</label>
+                <input type="date" class="ui large input" name = "start_date">
+            </div>
+
+            <div class="four wide field">
+                <label>End Date</label>
+                <input type="date" class="ui large input" name = "end_date">
+            </div>
+
+            <div class="four wide field">
+                <label>Description</label>
+                <input type="text" class="ui large input" name = "description">
+            </div>
+
+            <div class="four wide field">
+                <label>Status</label>
+                <input type="text" class="ui large input" name = "status">
+            </div>
+
+        </div>
+    <div class="field">
+            <button class="ui primary button right floated" type="submit" name = "update">
+                Submit
+            </button>
+        </div>
+</div>
+</form>
+
+<br><br>
+<div class="ui divider"></div>

@@ -1,0 +1,170 @@
+{% load static %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+<script type="text/javascript">
+  $(document).on('submit','#query_form',function(e)
+    {
+        e.preventDefault();
+        var url_ = '/academic-procedures/acad_person/student_list?excel_export=false';
+        $.ajax({
+            type:'POST',
+            url: url_,
+            data:{
+                batch :$('#1').val() ,
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            },
+            beforeSend: function() {
+              $("#loading-img").show();
+           },
+            success: function(jsondata)
+            {
+              $("#loading-img").hide();
+              console.log(jsondata);
+              $('#student_data').html(jsondata.html);
+            },
+            error: function(data)
+            {
+              alert("Some Error Occured")
+            }
+        });
+    });
+    const fetchExcelSheet = async ()=>{
+        const url = '/academic-procedures/acad_person/student_list?excel_export=true';
+        $("#loading-img").show();
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            body :  new URLSearchParams({
+              'batch' : $('#1').val(),
+              'csrfmiddlewaretoken' : $('input[name=csrfmiddlewaretoken]').val()
+            }),
+        });
+        if(response.ok && response.headers.get('Content-Type')==="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"){
+          const responseBlob = await response.blob()
+          const file = window.URL.createObjectURL(responseBlob);
+          window.location.assign(file);
+        }
+        else {
+          alert("No Registered Students Found");
+        }
+        $("#loading-img").hide();
+    };
+</script>
+
+
+
+<div class="ui pointing secondary menu">
+  <a class="active item" data-tab="verify_course">
+  Verify Student Registration for Semester {{ date.semflag }} : {{ date.year }}
+  </a>
+</div>
+
+<div class="ui active tab segment" data-tab="verify_course">
+{% if course_verification_date %}
+  <form id='query_form' action='/academic-procedures/acad_person/student_list' method="POST">
+    {% csrf_token %}
+    <table>
+      <tr>
+        <td>
+          <B>
+            &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  Select Batch Year:
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </B>
+        </td>
+        <td>
+          <select class="ui dropdown" id="1" required="true">
+            <option value=""> Select Batch </option>
+            {% for batch in batch_branch_data %}
+            <option value="{{batch.id}}">{{batch.name}} {{batch.discipline.acronym}}  {{batch.year}}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+  </table>
+  <br>
+  <center>
+    <button class="ui secondary button" type="submit">
+      Fetch
+    </button>
+    <button class="ui secondary button" onclick="fetchExcelSheet()" type="button">
+      Fetch Excel Sheet
+    </button>
+    <br>
+  </center>
+
+</form>
+
+
+        <div id="loading-img" style="margin-top: 30px" hidden>
+          <center><div class="lds-css ng-scope"><div style="width:100%;height:100%" class="lds-rolling"><div></div></div>
+        </div></center>
+      </div>
+               <div id="student_data" style="margin-top: 30px"></div>
+        {% comment %}  {% endcomment %}
+            <div class="ui divider">
+
+            </div>
+
+    {% else %}
+      Verifications will start only after Registrations have been completed!!
+    {% endif %}
+  </div>
+
+
+<style type="text/css">@keyframes lds-rolling {
+  0% {
+    -webkit-transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+@-webkit-keyframes lds-rolling {
+  0% {
+    -webkit-transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.lds-rolling {
+  position: relative;
+}
+.lds-rolling div,
+.lds-rolling div:after {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border: 20px solid #8cd0e5;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+.lds-rolling div {
+  -webkit-animation: lds-rolling 1s linear infinite;
+  animation: lds-rolling 1s linear infinite;
+  top: 100px;
+  left: 100px;
+}
+.lds-rolling div:after {
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.lds-rolling {
+  width: 40px !important;
+  height: 40px !important;
+  -webkit-transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
+  transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
+}
+</style>

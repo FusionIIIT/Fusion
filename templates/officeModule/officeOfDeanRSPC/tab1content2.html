@@ -1,0 +1,101 @@
+ {% block tab1content1 %}
+<form action="{%url 'office_module:p_extension' %}" method ="POST" enctype="multipart/form-data">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project No</label>
+                <input value="" class="ui large input" name="project_id" type="number" min="0" required>
+            </div>
+
+            <div class="six wide field">
+                <label>Previous Duration</label>
+                <input value="" class="ui large input" name="" type="number" min="0" required>
+            </div>
+            
+             <div class="six wide field">
+                <label>Current Duration</label>
+                <input value="" class="ui large input" name="extended_duration" placeholder="Current duration in weeks" type="number" min="0" required>
+            </div>
+        </div>
+        
+<!--         <div class="three fields">
+            <div class="six wide field">
+                <label>Previous Duration</label>
+                <input value="" class="ui large input" name="">
+            </div>
+
+           <div class="six wide field">
+                <label>Current Duration(Extended in Years)</label>
+                <input value="" class="ui large input" name="extended_duration">
+            </div>
+            
+        </div> -->
+
+        <div class="two fields">
+
+            <div class="six wide field">
+            <label>Extension Sanctioned and Required up to(Enclose sanction letter)</label>
+            <input class="ui input" type="file" name='extension_file' required>
+            </div>
+
+            <!--<div class="six wide field">
+                <label>Extension Sanctioned and Required up to(Enclose sanction letter) </label>
+                <input value="" class="ui large input" name="details">
+            </div>-->
+
+            <div class="six wide field">
+                <label>Any relevant additional details on extension sought/sanctioned.
+	
+                </label>
+               <textarea rows="3" name="extension_details"></textarea>
+            </div>
+        </div>
+
+       
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<h4 class="ui dividing header">Report:</h4>
+
+<table class="ui fixed sortable celled table">
+    <thead>
+    <tr>
+
+        <th class="sorted ascending" style="width: 7%;">User</th>
+        <th class="" style="width: 15%;" >Project ID</th>
+        <th class="" style="width: 20%;">Project Title</th>
+        <th class="" style="width: 20%;">Rspc res.</th>
+
+        <th style="width:20%">Extended duration</th>
+        <th style="width:20%">Date</th>
+     
+
+    </tr>
+    </thead>
+
+    <tbody>{% for pr in project_ext %}
+    <tr>
+        <td id="visit{{ forloop.counter }}Z"><div style="display: none;">{{ pr.project_id_id }}</div>{{ forloop.counter }}.</td>
+        <td id="pr{{ forloop.counter }}A">{{ pr.project_id_id }}</td>
+        <td id="pr{{ forloop.counter }}B">{{ pr.project_id.project_title}}</td>
+        <td id="pr{{ forloop.counter }}C">{{ pr.DRSPC_response }}</td>
+        <td id="pr{{ forloop.counter }}D">{{ pr.extended_duration}}</td>
+        <td id="pr{{ forloop.counter }}E">{{ pr.date }}</td>
+       
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div class="ui divider"></div>
+  {% endblock %}

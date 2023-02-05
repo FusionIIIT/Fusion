@@ -1,0 +1,84 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+
+
+<form id='income' method='POST' action='/income-expenditure/viewIncomeStats/' target="_blank">{% csrf_token %}
+  <div id="view_stats" class="field" style="border : 0">
+     <h2>View Income Stats</h2><br>
+      <select id='income_year' class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
+
+         {% for year in inc_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;">Get Stats</button>
+</div>
+</form>
+
+<br>
+<br>
+<br>
+
+<form id='expenditure' method='POST' action='/income-expenditure/viewExpenditureStats/' target="_blank">{% csrf_token %}
+      <div id="view_stats" class="field" style="border : 0">
+        <h2>View Expenditure Stats</h2><br>
+      <select id='expenditure_year' class="ui dropdown" name="year">
+          <option value="">Select Financial Year</option>
+
+         {% for year in exp_fin_years %}
+          <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+         {% endfor %}
+         
+      </select>
+      <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
+  </div>
+</form>
+<form id='compare' method='POST' action='/income-expenditure/compare/' target="_blank">{% csrf_token %}
+  <div id="view_stats" class="field" style="border : 0">
+    <h2>Compare Income And Expenditure</h2><br>
+  <select id='compare_year' class="ui dropdown" name="year">
+      <option value="">Select Financial Year</option>
+
+     {% for year in exp_fin_years %}
+      <option  value = {{year}}>{{year}} - {{year|add:1}}</option>
+     {% endfor %}
+     
+  </select>
+  <button class="ui primary button" style="float: right;" onclick="new_function()">Get Stats</button>
+</div>
+</form>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+
+  const income = document.getElementById('income');
+  const expenditure = document.getElementById('expenditure');
+  const income_year = document.getElementById('income_year');
+  const expenditure_year = document.getElementById('expenditure_year');
+
+  income.addEventListener('submit', (event) => {
+    if (income_year.value === "") {
+      event.preventDefault();
+      alert("Please Select a Financial Year");
+    }
+  })
+
+  expenditure.addEventListener('submit', (event) => {
+    if (expenditure_year.value === "") {
+      event.preventDefault();
+      alert("Please Select a Financial Year");
+    }
+  })
+
+  compare.addEventListener('submit', (event) => {
+    if (compare_year.value === "") {
+      event.preventDefault();
+      alert("Please Select a Financial Year");
+    }
+  })
+
+
+</script>

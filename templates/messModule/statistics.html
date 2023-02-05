@@ -1,0 +1,160 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block statistics %}
+
+    
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="1">
+            Mess1
+        </a>
+        <a class=" item" data-tab="2">
+            Mess2
+        </a>
+    </div>
+
+
+    <div class="ui active tab" data-tab="1">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Feedback Statistics:
+            </div>
+
+
+            <div class="content">
+                <div class="description">
+                    {% comment %}The HTML5 Canvas for the Chart starts here!{% endcomment %}
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+
+            <div class="extra content">
+
+                <br>
+
+                <div class="ui four equal width blue small stackable statistics"
+                     style="margin: auto;">
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count2}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Food&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count3}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Hygiene&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count1}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Maintenance
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count4}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Others
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="2">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Feedback Statistics:
+            </div>
+
+
+            <div class="content">
+                <div class="description">
+                    {% comment %}The HTML5 Canvas for the Chart starts here!{% endcomment %}
+                    <canvas id="myChart2"></canvas>
+                </div>
+            </div>
+
+            <div class="extra content">
+
+                <br>
+
+                <div class="ui four equal width blue small stackable statistics"
+                     style="margin: auto;">
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count6}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Food&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count7}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Hygiene&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count5}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Maintenance
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count8}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Others
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+{% endblock %}

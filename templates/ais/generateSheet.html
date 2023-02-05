@@ -1,0 +1,176 @@
+{% load static %}
+{% block generateSheet %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+<script type="text/javascript">
+  $(document).on('submit','#gen_form',function(e)
+    {
+        e.preventDefault();
+        var url_ = '/academic-procedures/acad_person/gen_course_list';
+        $.ajax({
+            type:'POST',
+            url: url_,
+            data:{
+                batch: $('#batch').val(),
+                course: $('#course').val(),
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            },
+            beforeSend: function() {
+              $("#loading").show();
+           },
+            success: function(jsondata)
+            {
+              $("#loading").hide();
+              console.log(jsondata);
+              $('#course_list').html(jsondata.html);
+            },
+            error: function(data)
+            {
+              alert("Some Error Occured")
+            }
+        });
+    });
+</script>
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="this">
+        This Semester
+    </a>
+    <a class="item" data-tab="prereg">
+        Pre Registration Report
+    </a>
+</div> 
+
+<div class="ui active tab segment" data-tab="this">
+    <form class="ui form" action="/academic-procedures/acad_person/gen_course_list" method="post" id="gen_form">
+        {% csrf_token %}
+        <div class="field">
+            <label>Batch</label>
+            <div class="ui fluid search selection dropdown">
+              <input type="hidden" id="batch" name="batch" required="true">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Batch from list</div>
+              <div class="menu">
+              {% for i in batch_grade_data.batch_grade_data %}
+                <div class="item" data-value="{{i.batch_list_year}}">{{i.batch_list_year}}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+            <label>This Semester Courses</label>
+            <div class="ui fluid search selection dropdown" id="courselist">
+                <input type="hidden" id="course" name="course" required="true">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select Courses from list</div>
+                <div class="menu">
+                {% for i in courses_list %}
+                <div class="item" data-value="{{ i.id }}"><i class="{{ i.id }}"></i>{{i.code}} - {{i.name}}</div>
+                {% endfor%}
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <button class="ui fluid primary button" type="submit">
+                Generate Student List
+            </button>
+        </div>
+    </form>
+
+
+    <div id="loading" style="margin-top: 30px" hidden>
+        <center>
+            <div class="lds-css ng-scope">
+                <div style="width:100%;height:100%" class="lds-rolling">
+                </div>
+            </div>
+        </center>
+    </div>
+    <div id="course_list" style="margin-top: 30px"></div>
+      {% comment %}  {% endcomment %}
+    <div class="ui divider"></div>
+
+</div>
+
+
+
+<div class="ui tab segment" data-tab="prereg">
+    <form class="ui form" action="/aims/generate_preregistration_report" method="post" id="form_10">
+        {% csrf_token %}
+        <div class="field">
+          <label>Select Batch</label>
+          <select class="ui dropdown" id="batch_branch" name="batch_branch" required="true">
+            <option value=""> Select Batch </option>
+            {% for batch in batch_branch_data %}
+            <option value="{{batch.id}}">{{batch.name}} {{batch.discipline.acronym}}  {{batch.year}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Select Semester</label>
+          <input type="number" id="semester_no" name="semester_no" required>
+        </div>
+        <div class="field">
+            <button class="ui fluid primary button" type="submit">Generate PreRegistration Summary</button>
+        </div>
+    </form>
+</div>
+    {% comment %}
+</div> {% endcomment %}
+
+
+
+<style type="text/css">@keyframes lds-rolling {
+    0% {
+      -webkit-transform: translate(-50%, -50%) rotate(0deg);
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      -webkit-transform: translate(-50%, -50%) rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  @-webkit-keyframes lds-rolling {
+    0% {
+      -webkit-transform: translate(-50%, -50%) rotate(0deg);
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      -webkit-transform: translate(-50%, -50%) rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  .lds-rolling {
+    position: relative;
+  }
+  .lds-rolling div,
+  .lds-rolling div:after {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border: 20px solid #8cd0e5;
+    border-top-color: transparent;
+    border-radius: 50%;
+  }
+  .lds-rolling div {
+    -webkit-animation: lds-rolling 1s linear infinite;
+    animation: lds-rolling 1s linear infinite;
+    top: 100px;
+    left: 100px;
+  }
+  .lds-rolling div:after {
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+  }
+  .lds-rolling {
+    width: 40px !important;
+    height: 40px !important;
+    -webkit-transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
+    transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
+  }
+  </style>
+
+{% endblock %}
+

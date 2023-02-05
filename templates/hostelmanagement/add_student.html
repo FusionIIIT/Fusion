@@ -1,0 +1,52 @@
+{% block add_student %}
+<h3 align="center"> Student Room Allotment Application Form </h3><br><br>
+<!-- <form action="{%url 'office_module:teaching_form' %}" method ="POST"> -->
+<form action={% url 'hostelmanagement:edit_student_room' %} method ="POST" id="edit_student_form">
+   {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        
+       <div class="three fields">
+           <div class="six wide field">
+               <label>Roll no.</label>
+               {% comment %} <input value="" class="ui large input" name="roll_no" required onkeypress="return isNumberKey(event)"> {% endcomment %}
+               <select class="ui search fluid dropdown" name="roll_no" required>
+                   <option value="">Select</option>
+                   {% for i, students in halls_student.items %}
+                        {% for st in students %}
+                        <option value="{{st.id.user.username}}">{{st.id.user.username}}</option>
+                        {% endfor %}
+                   {%endfor%}
+               </select>
+           </div>
+
+
+           <div class="six wide field">
+                <label>Room no.</label>
+                {% comment %} <input value="" class="ui large input" name="room_no" required> {% endcomment %}
+                <select class="ui search fluid dropdown" name="hall_room_no" required>
+                   <option value="">Select</option>
+                   
+                   {% for room in room_avail%}
+                        <option value="{{room.hall}}-{{room.block_no}}-{{room.room_no}}">{{room.hall.hall_id}}-{{room.block_no}}-{{room.room_no}}</option>
+                   {% endfor %}
+               </select>
+           </div>
+
+
+           
+       </div>
+
+       <div class="field">
+           <button class="ui primary button right floated" type="submit" onclick="checkInputs('edit_student_form')">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+ {% endblock %}

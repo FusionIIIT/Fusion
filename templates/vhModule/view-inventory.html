@@ -1,0 +1,70 @@
+{% load static %}
+{% block viewinventory %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewinventory">
+            Inventory
+        </a>
+    </div>
+
+    <button class="ui primary button" style="float: right;" onclick="modalAddItem()">Add Item</button>
+    <br>
+    <br>
+    <div class="ui active tab" data-tab="viewinventory">
+        <div class="ui vertical segment">
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Consumable</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in inventory %}
+                    <tr class="inventory-item">
+                        <td>
+                            {{ item.item_name }}
+                        </td>
+
+                        <td>
+                            <div class="field" style="display: none" id=select-{{item.id}}>
+                                <div class="ui input">
+                                    <input name="quantity" type="number" onchange='submit_inventory_form("{{ item.id}}")' id="input-{{item.id}}">
+                                </div>
+                            </div>
+
+                            <span style="display: inline;" id=show-{{item.id}} >
+                                {{ item.quantity }}
+                            </span>
+                            <i class="edit icon" onclick="update_inventory_form('{{ item.id }}')" style="float: right;" id="submit-{{item.id}}"></i>
+                        </td>
+
+                        <td>
+                            {% if item.consumable %}
+                                <i class="large green checkmark icon"></i>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <input type="hidden" name="csrf" value="{{ csrf_token }}">
+            <button type="Submit" name="submit" id="update-inventory-submit" style="display: none">Submit and Add More</button>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+
+
+<div class="ui modal" id="addItemModal">
+  <div class="header">Add Items</div>
+  <div class="scrolling content">
+    {% include 'vhModule/add-item-modal.html' %}
+  </div>
+</div>
+{% endblock %}
+
+

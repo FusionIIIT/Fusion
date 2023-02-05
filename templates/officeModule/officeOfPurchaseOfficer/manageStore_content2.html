@@ -1,0 +1,121 @@
+
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+  Module name
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+          {% include 'officeModule/officeOfPurchaseOfficer/manageStore.html' %}
+          <br></br>
+
+
+
+<form class= "ui form" method = "POST" id = "add_items" action="{% url 'office_module:add_items' %}">
+    {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 12px;">
+        <div class="ui eight wide field">
+            <label>
+                Item Name
+            </label>
+            <input class="ui large input" placeholder="Item Name" id="item_name" name="item_name" type="text">
+        </div>
+        <div class="ui eight wide field">
+            <label>
+              quantity
+            </label>
+            <input class="ui large input" placeholder="Quantity" id="quant" name="quant" type="number">
+        </div>
+        <div class="field">
+            <label>Type of Item</label>
+            <br>
+            <div class="field">
+                <div class="ui large radio checkbox">
+                    <input name="nature_of_item2" id="nature_of_item2" type="radio">
+                    <label> Consumable</label>
+                </div>
+            </div>
+
+            <div class="three wide field">
+                <div class="ui large radio checkbox">
+                    <input name="nature_of_item2" id="nature_of_item2" type="radio">
+                    <label> Non-Consumable</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="ui eight wide field">
+            <label>
+                Quantity
+            </label>
+            <input class="ui large input" placeholder="Quantity" name="quant" id="quant"  type="number">
+        </div> -->
+        <!-- <div class="ui eight wide field">
+            <label>
+              quantity
+            </label>
+            <input class="ui large input" placeholder="Quantity" id="quant" name="quant" type="number">
+        </div> -->
+        <div class="ui eight wide field">
+            <label>
+                Order id
+            </label>
+            <input class="ui large input" placeholder="order id" id="order_id" name="order_id" type="number">
+        </div>
+
+        <div class="ui eight wide field">
+            <label>
+                <br>
+            </label>
+            <button class="ui right floated primary button" type="submit" name="additems">Add</button>
+        </div>
+
+    </div>
+</form>
+
+<br>
+<br>
+</div>
+<!-- <div class="ui divider"></div> -->
+{% endblock %}

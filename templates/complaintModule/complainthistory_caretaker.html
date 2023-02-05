@@ -1,0 +1,160 @@
+
+<!--HTML file for user to view the history of the Resolved complaints that were took care by him-->
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="active item" data-tab="complainthistory">
+            Resolved Complaints
+        </a>
+        
+
+    </div>
+
+
+
+
+    <div class="ui active  tab" data-tab="complainthistory">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+            
+            
+        
+       
+            {% csrf_token %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                  
+                    <td>
+                        <b>Student</b>
+                    </td>
+
+                    <td class="one wide column">
+                       <b> Date&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; </b>
+                    </td>
+
+                    <td>
+                         <b>Complaint <br>
+                        Type</b>
+                    </td>
+
+                    <td>
+                        <b>Location</b>
+                    </td>
+
+                   <!--  <th>
+                        Specific <br> Location
+                    </th> -->
+
+                    <td class="three wide column">
+                        <b>Details</b>
+                    </td>
+
+                    
+                    <td class="four large column">
+                        <b>Worker <br> Name</b>
+                    </td>
+                    <td class="four large column">
+                        <b>Feedback</b>
+                    </td>
+                </tr>
+                </thead>
+
+                {% for a in history %}
+                    {% if a.status == 2 %}
+                <tbody>
+                
+                  <tr>
+                
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{ a.complainer.user }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+
+                    <td>
+                        {{ a.location }} <br>
+                   
+                        {{ a.specific_location }}
+                    </td>
+                    
+                    <td>
+                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                   
+
+                  
+                    <td>
+                        {% if a.worker_id == NULL %}
+                            NOT ASSIGN
+                            <td></td>
+                        {% else %}
+                            <b>{{ a.worker_id.name }}</b>
+                          
+                            
+                        {% endif %}
+                    </td>
+                    {% if a.feedback != "" %}
+                    <td>
+                        <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="View feedback" ><i class="large green comments icon"></i></button></a>
+                    </td>
+                     {% else %}
+                    <td>
+                        <b>---</b>
+                    </td>
+                    {% endif %}
+
+
+                </tr>
+                
+
+                </tbody>
+                    {%endif%}
+                {% endfor %}
+            </table>
+
+                <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
+            <br>
+            <div class="ui divider"></div>
+
+
+    
+    <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large green checkmark icon"></i> : These Complaints have been  RESOLVED! &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                </div>
+            </div>
+        </div>
+    </div>
+  
+
+
+
+
+
+
+    
+
+{% endblock %}

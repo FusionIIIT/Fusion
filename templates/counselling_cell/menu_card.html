@@ -1,0 +1,154 @@
+
+
+{% block menucard %}
+{% comment %} <h1>hgiuigi</h1>
+{% for d in desig %} {% endcomment %}
+<!--
+    {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
+
+        <a class="active item" data-tab="thirteenth">
+            View Menu
+        </a>
+
+        <a class="item" data-tab="fifteenth">
+            Meeting information
+        </a>
+
+        <a class="item" data-tab="sixteenth">
+            Feedback Statistics
+        </a>
+
+        <a class="item" data-tab="forteenth">
+            View Feedback | Statistics
+        </a>
+
+    {% endif %}
+    -->
+
+    <!-- {% comment %} {% if info.user_type == 'student' %}
+        {% if d.designation.name == 'student' %} {% endcomment %} -->
+        
+            <a class="active item" data-tab="seventh">
+                Counselling Team Details
+            </a>
+            {% if user_role == 'faculty_counsellor' or user_role == 'head_counsellor' %}
+            <a class="item" data-tab="second">
+                Appoint Student Coordinators
+            </a>
+            {% endif %}
+
+            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'student_guide' or user_role == 'head_counsellor' %}
+                
+                <a class="item" data-tab="twelfth">
+                Raised Issue
+                </a>
+            {% endif %}
+
+            {% if user_role == 'student' %}
+                <a class="item"  data-tab="eighth">
+                Raise An Issue
+                </a>
+            {% endif %}
+            <a class=" item" data-tab="first">
+                Frequently Asked Questions
+            </a>
+            {% if user_role == 'student' or user_role == 'student_guide' or user_role == 'faculty' %}
+                <a class="item"  data-tab="sixth">
+                    View Scheduled Meetings
+                </a>
+            {% endif %}
+            {% if user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'head_counsellor'  %}
+                <a class="item" data-tab="sixth">
+                Schedule Meetings
+                </a>
+                <a class="item" data-tab="third">
+                Appoint Student Guide
+                </a>
+                <a class="item" data-tab="eleventh">
+                Assign Student To Student Guides
+                </a>
+            {% endif%}
+
+
+            
+
+<!--
+        
+        {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
+            <a class="item" data-tab="fifteenth">
+                Meeting information
+            </a>
+
+            <a class="item" data-tab="tenth">
+                Meeting Minutes
+            </a>
+            
+
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>-->
+            <!--
+            <a class="item" data-tab="sixteenth">
+                Feedback Statistics
+            </a>
+            -->
+<!--
+
+        {% endif %}
+        {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>
+
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
+
+            <a class="item" data-tab="nineteenth">
+                Menu Requests
+            </a>
+
+            <a class="item" data-tab="ninth">
+                Meeting Information
+            </a>
+
+            <a class="item" data-tab="eleventh">
+                View Special Food Request
+            </a>
+{##}
+{#            <a class="item" data-tab="seventeenth">#}
+{#                Publish Minutes#}
+{#            </a>#}
+            
+            <a class="item" data-tab="sixteenth">
+                Feedback Statistics
+            </a>
+            
+        {% endif %}-->
+
+
+<!--
+    {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+        <a class="item" data-tab="seventh">
+            Respond to requests
+        </a>
+
+        <a class="item" data-tab="twentytwo">
+            Non-Veg Orders
+        </a>
+
+        <a class="active item" data-tab="thirteenth">
+            View Menu
+        </a>
+
+        <a class="item" data-tab="twelfth">
+            Mess Activities
+        </a>
+    {% endif %}-->
+
+
+<!-- {% comment %} {% endfor %} {% endcomment %} -->
+{% endblock %}

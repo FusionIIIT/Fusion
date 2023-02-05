@@ -1,0 +1,51 @@
+{% load static %}
+{% block changebranch %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Branch Change
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+            <form name="branch_change" id='branch_change' method="post" action="/academic-procedures/brach-change-request/">
+            {% csrf_token %}
+            {% comment %} Rendering fields manually {% endcomment %}
+            <label for="id_branches">Branches:</label>
+            <select name = "branches" required id = "id_branches">
+                <option value selected>-------</option>
+                <option value="51">Computer Science Engineering</option>
+                <option value="30">Electronics and Communication Engineering</option>
+                <option value="37">Mechanical Engineering</option>
+                <option value="53">Smart Manufacturing</option>
+            </select>
+                <input type="submit">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#branch_change").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        // if success:
+        posting.done(function(data) {
+            alert('Applied For Branch Change');
+            window.location = "/academic-procedures/main/";
+        });
+        // if failure
+        posting.fail(function(data) {
+            alert('DB error occured');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>
