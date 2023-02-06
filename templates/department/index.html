@@ -52,7 +52,10 @@
                     SM Department
                     <i class="right floated chevron right icon"></i>
                 </a>
-            
+                <a class="active item" data-tab="fifth" id="DESIGN_Dep">
+                    DESIGN Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -98,6 +101,11 @@
             <div class="ui tab segment" data-tab="fourth">
                 {% block SM_Dep %}
                     {% include "department/sm_dep.html" %}
+                {% endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="fifth">
+                {% block DESIGN_Dep %}
+                    {% include "department/DESIGN_dep.html" %}
                 {% endblock %}
             </div>
             {% comment %}SM{% endcomment %}
