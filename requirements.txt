@@ -45,7 +45,7 @@ markdown2==2.4.2
 numpy==1.22.3
 oauthlib==3.1.0
 openpyxl==3.0.7
-Pillow==8.1.0
+Pillow==9.3.0
 prompt-toolkit==3.0.10
 psycopg2-binary==2.8.6
 pycparser==2.20
