@@ -861,8 +861,9 @@ def printSalary(request):
 
     month = request.POST.get("month")
     year = request.POST.get("year")
-    runpayroll=True
-    c = Paymentscheme.objects.filter(month=month, year=year, runpayroll=runpayroll)
+    runpayroll=True 
+    userid ='abc@123'
+    c = Paymentscheme.objects.filter(month=month, year=year, userId=userid)
     context = {
         'c': c,
     }

@@ -106,7 +106,7 @@ def main_page(request):
 	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
 	expense_history2 = otherExpense.objects.all().order_by("date_added")
-	expense_history2 = expense_history2[::-1]
+	# expense_history2 = expense_history2[::-1]
 	expense_history= otherExpense.objects.filter(userid = request.user)
 	fixed_attributes = FixedAttributes.objects.all()
 
@@ -146,7 +146,7 @@ def main_page(request):
 				{
 					'income_sources':income_sources,
 					'income_history':income_history,
-					'expense_history2':expense_history2,
+					# 'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
@@ -161,7 +161,7 @@ def main_page(request):
 		if (s.programme=="M.Tech" or s.programme=="M.Des" or s.programme=="PhD") :
 			return render(
 					request,
-					'../templates/incomeExpenditure/iesu.html',
+					'../templates/incomeExpenditure/ie.html',
 					{
 						'fin_years':fin_years,
 						'min_date':min_date,
@@ -173,14 +173,19 @@ def main_page(request):
 		else:
 			return render(
 					request,
-					'../templates/incomeExpenditure/iebt.html',
+					'../templates/incomeExpenditure/ie.html',
 					{
-						'fin_years':fin_years,
-						'min_date':min_date,
-						'expense_history':expense_history,
-						'max1_date':max_date,
-						'inc_fin_years':inc_fin_years,
-						'exp_fin_years':exp_fin_years,
+						'income_sources':income_sources,
+					'income_history':income_history,
+					# 'expense_history2':expense_history2,
+					'expenditure_types':expenditure_types,
+					'expenditure_history':expenditure_history,
+					'fin_years':fin_years,
+					'fixedDetails':fixed_attributes,
+					'min_date':min_date,
+					'max1_date':max_date, 
+					'inc_fin_years':inc_fin_years,
+					'exp_fin_years':exp_fin_years,
 					})
 
 
