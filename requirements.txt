@@ -30,7 +30,7 @@ django-pagedown==2.2.0
 djangorestframework==3.12.2
 django-semanticui-forms==1.6.5
 django-unused-media==0.2.2
-future==0.18.2
+future==0.18.3
 # gunicorn
 html-text==0.5.2
 html5lib==1.1
