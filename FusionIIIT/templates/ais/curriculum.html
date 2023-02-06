@@ -48,8 +48,12 @@
         </div>
 
         <div class="field">
-            <label>Batch</label>    
-            <input placeholder="Batch" type="number" name="batch" id="batch_curr" required>
+            <label>Batch</label>
+            <select  name="batch">
+                {% for i in batch_grade_data.batch_grade_data %}
+                <option value="{{i.batch_list_year}}">{{i.batch_list_year}}</option>
+                {% endfor%}
+            </select>
         </div>
 
         <div class="field">
@@ -132,7 +136,11 @@
 
         <div class="field">
             <label>Batch</label>
-            <input placeholder="Batch" type="number" name="AddBatch" id="addbatch" required>
+            <select  name="batch">
+                {% for i in batch_grade_data.batch_grade_data %}
+                <option value="{{i.batch_list_year}}">{{i.batch_list_year}}</option>
+                {% endfor%}
+            </select>
         </div>
 
         <div class="field">
@@ -161,7 +169,7 @@
 
             <tbody>
                 <tr>
-                    <td><input type="number" name="semester_0" required></td>
+                    <td><input type="number" name="semester_0" min="1" max="8" required></td>
                     <td><input name="course_code_0" required></td>
                     <td><select name="course_name_0" required>
                             <option value=""></option>
@@ -177,7 +185,7 @@
                             {% endfor%}
                         </select>
                     </td>
-                    <td><input type="number" name="credits_0" required></td>
+                    <td><input type="number" name="credits_0" min="1" required></td>
                     <td><input type="radio" name="optional_0" class="ui radio checkbox"></td>
                 </tr>
 
