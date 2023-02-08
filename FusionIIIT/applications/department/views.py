@@ -120,15 +120,16 @@ def dep_main(request):
         request_to = request.POST.get('request_to', '')
         request_details = request.POST.get('request_details', '')
         request_date = date.today()
-
-        obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
-                                                    request_date=request_date,
-                                                    brief=request_type,
-                                                    request_details=request_details,
-                                                    status="Pending",
-                                                    remarks="--",
-                                                    request_receiver=request_to
-                                                    )
+        
+        if request_type and request_to and request_details:
+            obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
+                                                        request_date=request_date,
+                                                        brief=request_type,
+                                                        request_details=request_details,
+                                                        status="Pending",
+                                                        remarks="--",
+                                                        request_receiver=request_to
+                                                        )
     
     if user_designation == "student":
         return render(request,"department/index.html", {"announcements":context,
