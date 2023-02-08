@@ -560,12 +560,22 @@
                         <option value="Directorate"> Directorate </option>
                     </select>
                 </div>
+                               
                 <div class="field">
                     <label>Date</label>
                     <div class="ui calendar" id="rangestart">
                         <div class="ui input left icon ">
                             <i class="calendar icon"> </i>
-                            <input required="required" type="date" placeholder="Date" name="adate" id="adate" >
+                            <input required="required" type="date" placeholder="Date" name="adate" id="adate" style="width : 300px">
+                            <script language="javascript">
+                                var today = new Date();
+                                var dd = String(today.getDate()).padStart(2, '0');
+                                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                                var yyyy = today.getFullYear();
+                        
+                                today = yyyy + '-' + mm + '-' + dd;
+                                $('#adate').attr('min',today);
+                            </script>
                         </div>
                     </div>
                 </div>
