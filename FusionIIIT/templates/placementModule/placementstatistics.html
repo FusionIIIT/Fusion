@@ -438,7 +438,7 @@
                                                               <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
                                                           </div>
 
-                                                        <div class="field">
+                                                        {% comment %} <div class="field">
                                                           {{ form3.ctc.errors }}
                                                             <label for="{{ form3.ctc.id_for_label }}">
                                                                 min CTC (LPA)
@@ -447,7 +447,7 @@
                                                             <div class="ui large input">
                                                                 {{ form3.ctc }}
                                                             </div>
-                                                        </div>
+                                                        </div> {% endcomment %}
                                                     </div>
                                                     <div class="two fields">
                                                     <div class="field">
