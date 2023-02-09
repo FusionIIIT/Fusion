@@ -70,6 +70,7 @@ def viewcourses(request):
 
 
 
+
 @login_required
 def course(request, course_code):
     '''
@@ -89,6 +90,8 @@ def course(request, course_code):
         #course material uploaded by the instructor
         # videos = CourseVideo.objects.filter(course_id=course)
         videos = []
+        # if request.method == 'POST':
+            # if(request)
         # if request.method == 'POST':
         #     search_url = "https://www.googleapis.com/youtube/v3/search"
         #     video_url = "https://www.googleapis.com/youtube/v3/videos"
@@ -170,6 +173,7 @@ def course(request, course_code):
 
         #         videos.append(video_data)
             # print(videos)
+        
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = Assignment.objects.select_related().filter(course_id=course)
@@ -218,6 +222,7 @@ def course(request, course_code):
                        'curriculum': curriculum})
 
     else:
+
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -297,12 +302,20 @@ def course(request, course_code):
         #     }
 
         #     videos.append(video_data)
+        # if request.method == 'POST':
+        #     form = UploadSlideForm(request.POST, request.FILES)
+        #     if form.is_valid():
+        #         tempform=form.save(commit=False)
+        #         tempform.course_id=course
+        #         tempform.save()
         videos=[]
+        slides1=CourseSlide.objects.select_related().filter(course_id=course)
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         marks = []
         quizs = []
         assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment1 = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
@@ -335,13 +348,15 @@ def course(request, course_code):
                        'course': course,
                        'answers': answers,
                        'assignment': assignment,
+                       'assignment1': assignment1,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
                        'questionbank': qb,
                        'students': students,
                        'total_attendance' : total_attendance,
                        'present_attendance':present_attendance,
-                       'test_marks': test_marks
+                       'test_marks': test_marks,
+                       'slides1':slides1
                        })
 
 #when student uploads the assignment's solution
@@ -396,6 +411,8 @@ def add_document(request, course_code):
             description = request.POST.get('description')
             doc = request.FILES.get('img')
             name = request.POST.get('name')
+            # obj =CourseDocuments.objects.create(course_id=course,description=description,)
+            #  = request.FILES['img']
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
@@ -410,15 +427,24 @@ def add_document(request, course_code):
         fs.save(filename + file_extenstion, doc)
         uploaded_file_url = full_path + filename + file_extenstion
         #save the info/details in the database
-        CourseDocuments.objects.create(
+        print(settings.MEDIA_ROOT)
+        CourseSlide.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
             description=description,
-            document_url=uploaded_file_url,
-            document_name=name+file_extenstion
+            document_name=name,
+            doc=doc
         )
+        # CourseDocuments.objects.create(
+        #     course_id=course,
+        #     upload_time=datetime.datetime.now(),
+        #     description=description,
+        #     document_url=uploaded_file_url,
+        #     document_name=name+file_extenstion
+        # )
         return HttpResponse("Upload successful.")
     else:
+        
         return HttpResponse("not found")
 
 #it is to delete things(assignment, slides, videos, ) from the dustin icon or delete buttons
@@ -645,6 +671,7 @@ def add_assignment(request, course_code):                 #from faculty side
             return HttpResponse("Please Enter The Form Properly")
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
+        print(full_path)
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
             cmd = "mkdir " + full_path
@@ -652,13 +679,20 @@ def add_assignment(request, course_code):                 #from faculty side
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
         uploaded_file_url = full_path + filename + file_extenstion
-        assign = Assignment(
+        print(uploaded_file_url)
+        CourseAssignment.objects.create(
             course_id=course,
             submit_date=request.POST.get('myDate'),
-            assignment_url=uploaded_file_url,
+            doc=assi,
             assignment_name=name
         )
-        assign.save()
+        # assign = Assignment(
+        #     course_id=course,
+        #     submit_date=request.POST.get('myDate'),
+        #     assignment_url=uploaded_file_url,
+        #     assignment_name=name
+        # )
+        # assign.save()
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
