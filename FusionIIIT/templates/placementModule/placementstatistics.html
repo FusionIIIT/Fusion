@@ -220,7 +220,7 @@
                                                   <input type="number" min="1900" max="2099" step="1" value="2016" required name="year"/>
                                               </div>
 
-                                              <div class="field">
+                                              {% comment %} <div class="field">
                                                 {{ form3.ctc.errors }}
                                                   <label for="{{ form3.ctc.id_for_label }}">
                                                       min CTC (LPA)
@@ -229,7 +229,7 @@
                                                   <div class="ui large input">
                                                       {{ form3.ctc }}
                                                   </div>
-                                              </div>
+                                              </div> {% endcomment %}
                                           </div>
                                           <div class="two fields">
                                           <div class="field">
@@ -360,7 +360,7 @@
                                             <th style="border:1px solid black; ">Roll No.</th>
                                             {% comment %} <th style="border:1px solid black; ">Placement Type</th> {% endcomment %}
                                             <th style="border:1px solid black;">Name</th>
-                                            {% comment %} <th style="border:1px solid black; ">CTC</th> {% endcomment %}
+                                            <th style="border:1px solid black; ">CTC</th>
                                             {% comment %} <th style="border:1px solid black; ">Year</th> {% endcomment %}
                                             {% comment %} <th style="border:1px solid black;">Test Score</th>
                                             <th style="border:1px solid black;">Test Type</th> {% endcomment %}
@@ -371,7 +371,7 @@
                                             <td style="border:1px solid black; text-align:center">{{ rec.id }}</td>
                                             {% comment %} <td style="border:1px solid black;">{{ rec.placement_type }}</td> {% endcomment %}
                                             <td style="border:1px solid black; text-align:center">{{ rec.name }}</td>
-                                            {% comment %} <td style="border:1px solid black; text-align:center">{{ rec.ctc }}</td> {% endcomment %}
+                                            <td style="border:1px solid black; text-align:center">{{ rec.ctc }}</td>
                                             {% comment %} <td style="border:1px solid black; text-align:center">{{ rec.year }}</td> {% endcomment %}
                                             {% comment %} <td style="border:1px solid black;">{{ rec.test_score }}</td> {% endcomment %}
                                             {% comment %} <td style="border:1px solid black;">{{ rec.test_type }}</td> {% endcomment %}
