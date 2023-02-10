@@ -23,6 +23,7 @@ from notification.views import scholarship_portal_notif
 from .validations import MCM_list, MCM_schema, gold_list, gold_schema, silver_list, silver_schema, proficiency_list,proficiency_schema
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from .helpers import getBatch
 # Create your views here.
 
 
@@ -1039,24 +1040,25 @@ def sendStudentRenderRequest(request, additionalParams={}):
     update_con_flag = False
     x_notif_mcm_flag = False
     x_notif_con_flag = False
+    student_batch = getBatch(request.user.extrainfo.student)
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
-            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_mcm_flag = True
                 if no_of_mcm_filled > 0:
                     update_mcm_flag = True
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_con_flag = True
                 if no_of_con_filled > 0:
                     update_con_flag = True
         else:
-            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
                 except:
                     pass
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
