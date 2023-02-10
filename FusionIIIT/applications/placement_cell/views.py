@@ -1857,7 +1857,7 @@ def placement_statistics(request):
 
     #working here to fetch all placement record
     all_records=PlacementRecord.objects.all()
-    print("All records",all_records)
+    # print("All records",all_records)
 
 
 
@@ -2177,7 +2177,7 @@ def placement_statistics(request):
                 pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
                                                           name__icontains=cname,
-                                                          ctc__gte=ctc, year=year)),
+                                                          year=year)),
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
