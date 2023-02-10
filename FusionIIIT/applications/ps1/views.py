@@ -858,6 +858,6 @@ def dealing_assistant(request):
     print(request.user.extrainfo.id)
     print(type(request.user.extrainfo.id))
     if request.user.extrainfo.id=='132' :
-        return redirect('/ps1/entry/')   
+        return redirect('/purchase-and-store/entry/')   
     else:
-        return redirect('/ps1')       
+        return redirect('/purchase-and-store')       
