@@ -279,6 +279,7 @@
                     <th>Rebate Amt</th>
                     <th>NonVeg Amt</th>
                     <th>Total</th>
+                    <th>Paid</th>
                 </tr></thead>
                 <tbody>
                 {% for stu in monthly_bill %}
@@ -289,6 +290,14 @@
                     <td>{{stu.rebate_amount}}</td>
                     <td>{{stu.nonveg_total_bill}}</td>
                     <td>{{stu.total_bill}}</td>
+                    <td>
+                        {% if stu.paid %}
+                            <i class="large green checkmark icon"></i>
+                        {% else %}
+                         <i class="large red x icon"></i>
+                        {% endif %}
+                    </td>
+
                 </tr>
                 {% endfor %}
                 </tbody>
