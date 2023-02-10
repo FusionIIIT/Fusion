@@ -1857,7 +1857,7 @@ def placement_statistics(request):
 
     #working here to fetch all placement record
     all_records=PlacementRecord.objects.all()
-    print(all_records)
+    print("All records",all_records)
 
 
 
@@ -1976,8 +1976,8 @@ def placement_statistics(request):
                        id__icontains=rollno))
                     )))
 
-                p = PlacementRecord.objects.filter(Q(name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
-
+                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT",name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
+                print(p)
 
 
 
@@ -2018,7 +2018,7 @@ def placement_statistics(request):
             request.session['rollno'] = rollno
             request.session['year'] = form.cleaned_data['year']"""
 
-            print(p)
+            # print(p)
 
 
             total_query = p.count()
@@ -2104,7 +2104,7 @@ def placement_statistics(request):
                         last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
             except Exception as e:
-                print(e)
+                print("Exception",e)
                 placementrecord = ''
 
             if placementrecord != '':
@@ -2160,10 +2160,10 @@ def placement_statistics(request):
                 stuname = ''
                 first_name = ''
                 last_name = ''
-            if form.cleaned_data['ctc']:
-                ctc = form.cleaned_data['ctc']
-            else:
-                ctc = 0
+            # if form.cleaned_data['ctc']:
+            #     ctc = form.cleaned_data['ctc']
+            # else:
+            ctc = 0
             if form.cleaned_data['cname']:
                 cname = form.cleaned_data['cname']
             else:
@@ -2186,7 +2186,7 @@ def placement_statistics(request):
                                                               id__icontains=rollno))
                                                            )))))
                 p1 = PlacementRecord.objects.filter(
-                    Q(placement_type="PBI", name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
+                    Q(placement_type="PBI", name__icontains=stuname, year__icontains=year))
             """else:
                 pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
