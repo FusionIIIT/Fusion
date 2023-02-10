@@ -157,6 +157,7 @@ def mess(request):
                 feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
+                menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
                 # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
                 for f in feed:
                     if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
@@ -205,6 +206,7 @@ def mess(request):
                     'sprequest': sprequest,
                     'splrequest': splrequest,
                     'sprequest_past': sprequest_past,
+                    'menuchangerequest':menuchangerequest,
                     'programme':programme,
                     'count1': count1,
                     'count2': count2,
@@ -228,6 +230,8 @@ def mess(request):
                 feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
+                menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+                
                 # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
                 for f in feed2:
                     if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
@@ -277,6 +281,7 @@ def mess(request):
                     'sprequest': sprequest,
                     'splrequest': splrequest,
                     'sprequest_past': sprequest_past,
+                    'menuchangerequest':menuchangerequest,  
                     'count1': count1,
                     'count2': count2,
                     'count3': count3,
