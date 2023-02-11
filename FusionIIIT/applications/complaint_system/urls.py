@@ -23,12 +23,26 @@ urlpatterns = [
     url(r'^caretaker/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<cid>[0-9]+)/discharge_worker/$', views.discharge_worker,name='discharge_worker'),
     url(r'^caretaker/worker_id_know_more/(?P<work_id>[0-9]+)/$', views.worker_id_know_more, name='come_back_to_this'),
     url(r'^caretaker/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
-    #url(r'^caretaker/list_caretakers_area/$', views.caretaker, name='caretaker'),
+    # url(r'^caretaker/list_caretakers_area/$', views.caretaker, name='caretaker'),
     url(r'^caretaker/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
     url(r'^caretaker/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),
     url(r'^caretaker/search_complaint$', views.search_complaint),
     
-    
+    #headdept
+    url(r'^depthead/$', views.department_head, name='department_head'),
+    # url(r'^depthead/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_care),
+    url(r'^depthead/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<cid>[0-9]+)/discharge_worker/$', views.discharge_worker,name='discharge_worker'),
+    url(r'^depthead/worker_id_know_more/(?P<work_id>[0-9]+)/$', views.worker_id_know_more, name='come_back_to_this'),
+    url(r'^depthead/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
+    #url(r'^caretaker/list_caretakers_area/$', views.caretaker, name='caretaker'),
+    url(r'^depthead/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
+    url(r'^depthead/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),
+    url(r'^depthead/search_complaint$', views.search_complaint),
+
+    url(r'^depthead/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
+    url(r'^depthead/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
+    url(r'^depthead/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
+
     # supervisor
     url(r'^supervisor/$', views.supervisor),
     url(r'^supervisor/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_super),
