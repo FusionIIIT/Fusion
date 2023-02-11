@@ -102,11 +102,11 @@ def complaint_reassign(request,wid,iid):
 
             complaint_finish = request.POST.get('complaint_finish', '')
             worker_id = request.POST.get('assign_worker', '')
-            w = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=worker_id)
+            w = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=worker_id)
             StudentComplain.objects.select_for_update().filter(id=iid).\
                 update(worker_id=w, status=1)
             url = '/complaint/depthead/worker_id_know_more/'+wid;
-            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=iid)
+            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=iid)
             student=0
             message = "Your complaint has been re-assigned"
             complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert',complainer_details.id,student,message)
@@ -127,23 +127,23 @@ def complaint_reassign(request,wid,iid):
         
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
-        a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
-        b = a.area
+        a = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
+        b = a.work_type
         comp_id = y.id
         try:
-            detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(id=iid).first()
+            detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=iid).first()
             total_depthead = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').all()
-            total_deptheads_in_area = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=b)
+            total_deptheads_in_area = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(work_type=b)
             worker = []
             workertemp = []
             flag = ''
             temp = detail.location
             try:
             
-                if Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').filter(Depthead_id=a).count() == 0:
+                if Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').filter(depthead_id=a).count() == 0:
                     flag = 'no_worker'
                 else:
-                    workertemp = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').filter(Depthead_id=a)
+                    workertemp = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').filter(depthead_id=a)
                     j = 1
                     for i in workertemp:
                         worker.append(i)
@@ -292,10 +292,10 @@ def assign_worker(request, comp_id1):
         if type == 'assign':
             complaint_finish = request.POST.get('complaint_finish', '')
             worker_id = request.POST.get('assign_worker', '')
-            w = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=worker_id)
-            StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').select_for_update().filter(id=comp_id1).\
+            w = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=worker_id)
+            StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').select_for_update().filter(id=comp_id1).\
                 update(worker_id=w, status=1)
-            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=comp_id1)
+            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=comp_id1)
             student = 0
             message = "Worker has been assigned to your complaint"
             complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student,message)
@@ -319,7 +319,7 @@ def assign_worker(request, comp_id1):
         b = a.work_type
         comp_id = y.id
         try:
-            detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(id=comp_id1).first()
+            detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=comp_id1).first()
             total_depthead = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').all()
             total_deptheads_in_area = Depthead.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(work_type=b and id!=a.id)
             workertemp = []
@@ -328,11 +328,11 @@ def assign_worker(request, comp_id1):
             temp = detail.location
             try:
                 #care = Caretaker.objects.filter(area=temp).first()
-                if Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').filter(Depthead_id=a).count() == 0:
+                if Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').filter(depthead_id=a).count() == 0:
                 # if Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a, worker_type=detail.complaint_type).count() == 0:
                     flag = 'no_worker'
                 else:
-                    workertemp1 = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').filter(Depthead_id=a)
+                    workertemp1 = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').filter(depthead_id=a)
                     workertemp = workertemp1.filter(worker_type=detail.complaint_type)
                     j = 1
                     for i in workertemp:
@@ -376,14 +376,14 @@ def discharge_worker(request,wid,cid):
     current_user = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
 
-    this_worker = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=wid)
-    com_in_concern= StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=cid);
+    this_worker = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=wid)
+    com_in_concern= StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=cid);
     com_in_concern.worker_id=None;
     com_in_concern.status=0;
     StudentComplain.objects.select_for_update().filter(id=cid).\
                 update(worker_id=None, status=0)
     #StudentComplain.objects.get(id=cid).delete()
-    url='/complaint/Depthead/detail2/'+cid;
+    url='/complaint/depthead/detail2/'+cid;
     return HttpResponseRedirect(url)
 
 
@@ -445,17 +445,17 @@ def worker_id_know_more(request, work_id):
     """
     function to know pending complaints assigned to the worker
     """
-    this_worker = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=work_id)
-    num = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(worker_id=this_worker).count();
-    complaints_list = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(worker_id=this_worker);
+    this_worker = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=work_id)
+    num = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(worker_id=this_worker).count();
+    complaints_list = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(worker_id=this_worker);
     complaints_list_onhold = []
     for i in complaints_list:
         if i.status == 1:
             complaints_list_onhold.append(i)
     numpend = len(complaints_list_onhold)
-    work_under_Depthead1 = this_worker.Depthead_id.staff_id.user.first_name
-    work_under_Depthead2 = this_worker.Depthead_id.staff_id.user.last_name
-    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_Depthead1':work_under_Depthead1,'work_under_Depthead2':work_under_Depthead2, 'num':num, 'complaints_list':complaints_list, 'complaints_list_onhold':complaints_list_onhold, 'numpend':numpend})
+    work_under_depthead1 = this_worker.depthead_id.staff_id.user.first_name
+    work_under_depthead2 = this_worker.depthead_id.staff_id.user.last_name
+    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_depthead1':work_under_depthead1,'work_under_depthead2':work_under_depthead2, 'num':num, 'complaints_list':complaints_list, 'complaints_list_onhold':complaints_list_onhold, 'numpend':numpend})
 
 
 
@@ -567,7 +567,7 @@ def user(request):
                                 upload_complaint=comp_file)
 
             
-        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).order_by('-id')
+        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(complainer=y).order_by('-id')
         history = []
         j = 1
         k = 1
@@ -629,7 +629,7 @@ def user(request):
     else:
         a = get_object_or_404(User, username=request.user.username)
         y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).order_by('-id')
+        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(complainer=y).order_by('-id')
         history=[]
 
         notification = Notification.objects.filter(recipient=a.id)
@@ -679,8 +679,7 @@ def user(request):
         return render(request, "complaintModule/complaint_user.html",
                       {'history': history,'notification':notification, 'comp_id': y.id})
 
-    return render(request, "complaintModule/complaint_user.html",
-                      {'history': history, 'comp_id': comp_id })
+    
 @login_required
 def save_comp(request):
     """
@@ -935,32 +934,31 @@ def caretaker(request):
             k=k+1
         
 
-        total_worker = []
-        total_workertemp = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
-        j = 1
-        # for i in total_workertemp:
-        #     if j%2 != 0:
-        #         total_worker.append(i)
-        #     j = j + 1
+        # total_worker = []
+        # total_workertemp = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
+        # j = 1
+        # # for i in total_workertemp:
+        # #     if j%2 != 0:
+        # #         total_worker.append(i)
+        # #     j = j + 1
         
 
-        for i in total_workertemp:
-            total_worker.append(i)
+        # for i in total_workertemp:
+        #     total_worker.append(i)
 
-        complaint_assign_no = []
+        # complaint_assign_no = []
 
-        for x in total_worker:
-            worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=x.id)
-            temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=worker).count()
-            worker.total_complaint = temp
-            complaint_assign_no.append(worker)
+        # for x in total_worker:
+        #     worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=x.id)
+        #     temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=worker).count()
+        #     worker.total_complaint = temp
+        #     complaint_assign_no.append(worker)
 
         notification = Notification.objects.filter(recipient=current_user.id)
         notification = notification.filter(data__exact={'url':'complaint:detail2','module':'Complaint System'})
         return render(request, "complaintModule/complaint_caretaker.html",
-                      {'history': history, 'comp_id': y.id, 
-                      'notification': notification, 'total_worker':
-                        total_worker, 'complaint_assign_no': complaint_assign_no})
+                      {'history': history, 
+                      'notification': notification})
         
 
 
@@ -969,21 +967,21 @@ def caretaker(request):
         a = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
         b = a.area
         history = []
-        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(location=b).order_by('-id')
-        total_worker = []
-        total_workertemp = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
-        j = 1
-        for i in total_workertemp:
-            total_worker.append(i)
+        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(location=b).order_by('-id')
+        # total_worker = []
+        # total_workertemp = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').filter(caretaker_id=a)
+        # j = 1
+        # for i in total_workertemp:
+        #     total_worker.append(i)
             
-        complaint_assign_no = []
-        complaint_assign_no = []
+        # complaint_assign_no = []
+        # complaint_assign_no = []
 
-        for x in total_worker:
-            worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=x.id)
-            temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=worker).count()
-            worker.total_complaint = temp
-            complaint_assign_no.append(worker)
+        # for x in total_worker:
+        #     worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=x.id)
+        #     temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(worker_id=worker).count()
+        #     worker.total_complaint = temp
+        #     complaint_assign_no.append(worker)
 
         overduecomplaint = []
         j = 1
@@ -1008,8 +1006,7 @@ def caretaker(request):
 
         
         return render(request, "complaintModule/complaint_caretaker.html",
-                      { 'history': history, 'comp_id': y.id, 'total_worker': total_worker,
-                        'complaint_assign_no': total_worker,
+                      { 'history': history, 'comp_id': y.id, 
                         'notification':notification,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
 
@@ -1047,24 +1044,24 @@ def department_head(request):
             y = None
         intage = int(age)
         intphone = int(phone)
-        # if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
-        #     x = Workers(caretaker_id=a,
-        #                 name=name,
-        #                 age=age,
-        #                 phone=phone,
-        #                 worker_type=worker_type)
-        #     if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
-        #         x.save()
+        if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
+            x = Workers(depthead_id=a,
+                        name=name,
+                        age=age,
+                        phone=phone,
+                        worker_type=worker_type)
+            if not Workers.objects.filter(depthead_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
+                x.save()
 
         if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
-            obj, created = Workers.objects.get_or_create( Depthead_id=a,
+            obj, created = Workers.objects.get_or_create( depthead_id=a,
                         name=name,
                         age=age,
                         phone=phone,
                         worker_type=worker_type)
         
-        b = a.area
-        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(location=b).order_by('-id')
+        b = a.work_type
+        historytemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(complaint_type=b).order_by('-id')
         history = []
         j = 1
         k = 1
@@ -1100,7 +1097,7 @@ def department_head(request):
 
         notification = Notification.objects.filter(recipient=current_user.id)
         notification = notification.filter(data__exact={'url':'complaint:detail2','module':'Complaint System'})
-        return render(request, "complaintModule/complaint_caretaker.html",
+        return render(request, "complaintModule/complaint_depthead.html",
                       {'history': history, 'comp_id': y.id, 
                       'notification': notification, 'total_worker':
                         total_worker, 'complaint_assign_no': complaint_assign_no})
@@ -1189,15 +1186,15 @@ def changestatus(request, complaint_id, status):
             context - Holds data needed to make necessary changes in the template.
     """
     if status == '3':
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=complaint_id).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=complaint_id).\
             update(status=status, worker_id='')
         return HttpResponseRedirect('/complaint/caretaker/')
     elif status == '2':
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=complaint_id).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=complaint_id).\
             update(status=status, worker_id='')
         return HttpResponseRedirect('/complaint/caretaker/')
     else:
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=complaint_id).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=complaint_id).\
             update(status=status)
         return HttpResponseRedirect('/complaint/caretaker/')
 
@@ -1240,8 +1237,8 @@ def removew(request, work_id):
             support_count - Total supporters of the above issue.
             context - Holds data needed to make necessary changes in the template.
     """
-    worker = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=work_id)
-    temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(worker_id=worker).count()
+    worker = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=work_id)
+    temp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(worker_id=worker).count()
     if temp == 0:
         worker.delete()
         return HttpResponseRedirect('/complaint/depthead/')
@@ -1267,9 +1264,9 @@ def submitfeedback(request, complaint_id):
     if request.method == 'POST':
         feedback = request.POST.get('feedback', '')
         rating = request.POST.get('rating', '')
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=complaint_id).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=complaint_id).\
         update(feedback=feedback, flag=rating)
-        a = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=complaint_id).first()
+        a = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=complaint_id).first()
         care = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.location).first()
         rate = care.rating
         newrate = 0
@@ -1282,11 +1279,10 @@ def submitfeedback(request, complaint_id):
             newrate = c1
 
         Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.location).update(rating=newrate)
-        # return HttpResponseRedirect('/complaint/user/')
-        return render(request,"complaintModule/feedback.html",{'a' : a})
+        return HttpResponseRedirect('/complaint/user/')
         
     else:
-        a = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=complaint_id)
+        a = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=complaint_id)
         return render(request, "complaintModule/submit_feedback.html", {'a': a})
 
 
@@ -1440,7 +1436,7 @@ def search_complaint(request):
 def resolvepending(request, cid):
     a = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-    thiscomplaint = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=cid)
+    thiscomplaint = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=cid)
     if request.method == 'POST':
         newstatus = request.POST.get('yesorno','')
         comment = request.POST.get('comment')
@@ -1449,11 +1445,11 @@ def resolvepending(request, cid):
             intstatus = 2
         else:
             intstatus = 3
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=cid).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=cid).\
         update(status=intstatus)
-        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(id=cid).\
+        StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=cid).\
         update(comment=comment)
-        complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=cid)
+        complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=cid)
         student=0
         message = "Congrats! Your complaint has been resolved"
         complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
@@ -1469,7 +1465,7 @@ def resolvepending(request, cid):
 # def resolvepending(request, cid):
 #     a = get_object_or_404(User, username=request.user.username)
 #     y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-#     thiscomplaint = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=cid)
+#     thiscomplaint = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=cid)
 #     if request.method == 'POST':
 #         newstatus = request.POST.get('yesorno','')
 #         comment = request.POST.get('comment')
@@ -1478,11 +1474,11 @@ def resolvepending(request, cid):
 #             intstatus = 2
 #         else:
 #             intstatus = 3
-#         StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(id=cid).\
+#         StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=cid).\
 #         update(status=intstatus)
-#         StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(id=cid).\
+#         StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(id=cid).\
 #         update(comment=comment)
-#         complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=cid)
+#         complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=cid)
 #         student=0
 #         message = "Congrats! Your complaint has been resolved"
 #         complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
@@ -1539,20 +1535,20 @@ def detail(request, detailcomp_id1):
     """
     function that shows detail about complaint
     """
-    detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=detailcomp_id1)
+    detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=detailcomp_id1)
     if(detail.worker_id is None):
         worker_name = None
         worker_id = detail.worker_id  
     else:
         worker_id = detail.worker_id.id
-        worker = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=worker_id)
+        worker = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=worker_id)
         worker_name = worker.name
     a=User.objects.get(username=detail.complainer.user.username)           
     y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
     num=0
     if detail.upload_complaint != "":
         num = 1
-    temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').filter(complainer=y).first()                                                                  
+    temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(complainer=y).first()                                                                  
     comp_id=temp.id 
     return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":detail.id,"num":num,"worker_name":worker_name})
 
@@ -1580,13 +1576,13 @@ def detail(request, detailcomp_id1):
 #for Depthead
 @login_required
 def detail2(request, detailcomp_id1):
-    detail2 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').get(id=detailcomp_id1)
+    detail2 = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').get(id=detailcomp_id1)
     if(detail2.worker_id is None):
         worker_name = None
         worker_id = detail2.worker_id  
     else:
         worker_id = detail2.worker_id.id
-        worker = Workers.objects.select_related('Depthead_id','Depthead_id__staff_id','Depthead_id__staff_id__user','Depthead_id__staff_id__department').get(id=worker_id)
+        worker = Workers.objects.select_related('depthead_id','depthead_id__staff_id','depthead_id__staff_id__user','depthead_id__staff_id__department').get(id=worker_id)
         worker_name = worker.name
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
@@ -1594,7 +1590,7 @@ def detail2(request, detailcomp_id1):
     
     if detail2.upload_complaint != "":
         num = 1
-    temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__Depthead_id__staff_id','worker_id__Depthead_id__staff_id__user','worker_id__Depthead_id__staff_id__department').filter(complainer=y).first()                                                               
+    temp=StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__depthead_id__staff_id','worker_id__depthead_id__staff_id__user','worker_id__depthead_id__staff_id__department').filter(complainer=y).first()                                                               
     comp_id=temp.id 
     return render(request, "complaintModule/complaint_depthead_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name,"wid":worker_id})
 
