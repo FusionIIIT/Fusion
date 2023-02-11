@@ -44,11 +44,11 @@ class Caretaker(models.Model):
     def __str__(self):
         return str(self.id) + '-' + self.area
 
-class depthead(models.Model):
-    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+class Depthead(models.Model):
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, default=2900)
     # area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-3')
     work_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
-                                   max_length=20, default='other')
+                                   max_length=20, default='Electricity')
     # rating = models.IntegerField(default=0)
     # myfeedback = models.CharField(max_length=400, default='this is my feedback')
     # no_of_comps = models.CharField(max_length=1000)
@@ -57,7 +57,8 @@ class depthead(models.Model):
         return str(self.id) + '-' + self.work_type
 
 class Workers(models.Model):
-    caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
+    depthead_id = models.ForeignKey(Depthead, on_delete=models.CASCADE, default=2019)
+    # caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
