@@ -9,13 +9,10 @@ urlpatterns = [
     url(r'^$', views.check, name='complaint'),
   #  url(r'^login/$', views.login1, name='complaint'),
     url(r'^user/$', views.user),
-
     url(r'^user/caretakerfb/$' , views.caretaker_feedback),
-
     url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
     url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail,name='detail'),
-   # url(r'^user/check_complaint/$', views.save_comp),
-    
+   # url(r'^user/check_complaint/$', views.save_comp),   
     
     # caretaker
     url(r'^caretaker/$', views.caretaker, name='caretaker'),
@@ -37,8 +34,7 @@ urlpatterns = [
     url(r'^depthead/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
     #url(r'^caretaker/list_caretakers_area/$', views.caretaker, name='caretaker'),
     # url(r'^depthead/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
-    url(r'^depthead/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),
-    
+    url(r'^depthead/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),  
     url(r'^depthead/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
     url(r'^depthead/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
     url(r'^depthead/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
@@ -48,10 +44,7 @@ urlpatterns = [
     url(r'^supervisor/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_super),
     url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/$', views.caretaker_id_know_more),
     url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/complaint_reassign_super/(?P<iid>[0-9]+)/$', views.complaint_reassign_super, name = 'complaint_reassign_super'),
-    url(r'^supervisor/detail3/(?P<detailcomp_id1>[0-9]+)/$', views.detail3, name = 'detail3'),
-    
-    
-    
+    url(r'^supervisor/detail3/(?P<detailcomp_id1>[0-9]+)/$', views.detail3, name = 'detail3'),  
     
     # CRUD task
     # url(r'^caretaker/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),

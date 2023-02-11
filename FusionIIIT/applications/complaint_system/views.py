@@ -1016,7 +1016,7 @@ def caretaker(request):
 @login_required
 def department_head(request):
     """
-    The function is used to display details to the caretaker such as registered complaints and allows to assign workers
+    The function is used to display details to the department head such as registered complaints and allows to assign workers
     @param:
             request - trivial.
 

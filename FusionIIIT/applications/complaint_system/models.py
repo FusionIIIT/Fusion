@@ -46,12 +46,8 @@ class Caretaker(models.Model):
 
 class Depthead(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, default=2900)
-    # area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-3')
     work_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
                                    max_length=20, default='Electricity')
-    # rating = models.IntegerField(default=0)
-    # myfeedback = models.CharField(max_length=400, default='this is my feedback')
-    # no_of_comps = models.CharField(max_length=1000)
 
     def __str__(self):
         return str(self.id) + '-' + self.work_type
