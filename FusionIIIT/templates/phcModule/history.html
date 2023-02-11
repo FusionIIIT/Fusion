@@ -340,20 +340,21 @@
                 <thead>
                 <tr>
 
+                    <th>
+                        Date
+                    </th>
+
                     <th class="three wide">
                         Doctor
                     </th>
 
                     <th>
-                      Description
+                        Description
                     </th>
-
+                    
                     <th>
-                     Date
+                        Prescription
                     </th>
-
-                  
-
 
                 </tr>
                 </thead>
@@ -361,6 +362,10 @@
                 <tbody>
                 {% for appointment in appointments %}
                 <tr>
+                    <td style="white-space:nowrap;">
+                        {{appointment.date}}
+                    </td>
+
                     <td>
                         {{appointment.doctor_id}}
                     </td>
@@ -369,15 +374,13 @@
                         {{appointment.description}}
                     </td>
 
-                    <td style="white-space:nowrap;">
-                        {{appointment.date}}
+                    <td>
+                        {{appointment.prescription_on_appointment}}
                     </td>
 
                    
 					<td>
-
                         <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />
-
                     </td> 
                 </tr>
                 {% endfor %}
@@ -387,7 +390,7 @@
     </div>
 	
 	<script type="text/javascript">
-            function rm(id){
+        function rm(id){
            
 			var dis = this;
             var d = window.confirm('Are you sure, you want to delete the appointment?');
@@ -412,7 +415,7 @@
 
             
       }
-      </script>
+    </script>
 	
     <div class="ui tab" data-tab="complainthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
