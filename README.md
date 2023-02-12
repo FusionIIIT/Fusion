@@ -190,3 +190,20 @@ The project now supports notifications across all modules. To implement notifica
   module_notif(sender, receiver, type)
   ```
 * The Notifications should then appear in the dashboard for the recipient
+
+## Setting up Fusion using Docker
+- Make sure you have docker & docker-compose setup properly.
+- Update `FusionIIIT/Fusion/settings/development.py`
+```python
+DATABASES = {
+     'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'fusiondb',
+        'HOST': os.environ.get("DB_HOST"),
+        'USER': 'fusionuser',
+        'PASSWORD': 'password',
+    }
+}
+```
+- Run `docker-compose up`
+- Once the server starts, run `sudo docker exec -i fusion_db_1 psql -U fusionuser -d fusiondb < path_to_db_dump`
