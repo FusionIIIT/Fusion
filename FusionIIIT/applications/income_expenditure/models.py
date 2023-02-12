@@ -50,9 +50,9 @@ class BalanceSheet(models.Model):
 		return str(self.date_added)
 
 
-class otherExpense(models.Model):
+class studentExpense(models.Model):
 	spent_on=models.CharField(max_length=100,null=False)
-	status=models.CharField(max_length=20,null=False)
+	status=models.CharField(max_length=25,null=False)
 	name=models.CharField(max_length=30,null=False)
 	userid=models.CharField(max_length=10,null=False)
 	amount=models.IntegerField()
