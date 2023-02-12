@@ -317,7 +317,6 @@ def academic_procedures_student(request):
             branchchange_flag=True
 
         pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
-        print("start_date: ", prd_start_date)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
