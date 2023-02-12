@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect
 # in conjunction with SRS. After that, everything will become easier.
 
 def dashboard(request):
-    eligible = False
+    eligible = True
     userObj = request.user
     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
     for p in userDesignationObjects:
