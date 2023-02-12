@@ -99,13 +99,11 @@ def convener_view(request):
             )
             
             # It updates the student Notification table on the spacs head sending the mcm invitation
-            if batch == 'all':
+            if batch.lower() == 'all':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
-                recipient = Student.objects.filter(programme=programme).filter(query)
+                recipient = Student.objects.filter(programme=programme).filter(batch__in=active_batches)
             else:
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
-            
+                recipient = Student.objects.filter(programme=programme, batch=batch)
             # Notification starts
             convenor = request.user
             for student in recipient:
@@ -1013,7 +1011,6 @@ def sendConvenerRenderRequest(request, additionalParams={}):
     source = Constants.FATHER_OCC_CHOICE
     time = Constants.TIME
     release = Release.objects.all()
-    notification = Notification.objects.select_related('student_id','release_id').all()
     spi = Spi.objects.all()
     context.update({ 'source': source, 'time': time, 'ch': ch, 'spi': spi, 'release': release})
     context.update(additionalParams)
