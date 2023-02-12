@@ -12,11 +12,13 @@ class Constants:
         ('hall-1', 'hall-1'),
         ('hall-3', 'hall-3'),
         ('hall-4', 'hall-4'),
-        ('CC1', 'CC1'),
-        ('CC2', 'CC2'),
+        ('library', 'CC1'),
+        ('computer center', 'CC2'),
         ('core_lab', 'core_lab'),
         ('LHTC', 'LHTC'),
         ('NR2', 'NR2'),
+        ('NR3', 'NR3'),
+        ('Admin building', 'Admin building'),
         ('Rewa_Residency', 'Rewa_Residency'),
         ('Maa Saraswati Hostel', 'Maa Saraswati Hostel'),
         ('Nagarjun Hostel', 'Nagarjun Hostel'),
@@ -54,7 +56,6 @@ class Depthead(models.Model):
 
 class Workers(models.Model):
     depthead_id = models.ForeignKey(Depthead, on_delete=models.CASCADE, default=2019)
-    # caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
