@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - /private/var/lib/postgresql:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=fusiondb
+      - POSTGRES_USER=fusionuser
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/app
+    ports:
+      - 8000:8000
+    command: python FusionIIIT/manage.py runserver 0.0.0.0:8000
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
