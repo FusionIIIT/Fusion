@@ -280,3 +280,44 @@ class Director_gold(models.Model):
 
     class Meta:
         db_table = 'Director_gold'
+
+
+class Chairman_gold(models.Model):
+    nearest_policestation = models.TextField(max_length=30, default='station')
+    nearest_railwaystation = models.TextField(max_length=30, default='station')
+    correspondence_address = models.TextField(max_length=150, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    award_type = models.CharField(max_length=50, null=True)
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
+    relevant_document = models.FileField(null=True, blank=True)
+    date = models.DateField(default=datetime.date.today)
+    financial_assistance = models.TextField(max_length=1000 ,null=True)
+    grand_total = models.IntegerField(null=True)
+    inside_achievements = models.TextField(max_length=1000, null=True)
+    justification = models.TextField(max_length=1000, null=True)
+    outside_achievements = models.TextField(max_length=1000, null=True)
+
+
+    class Meta:
+        db_table = 'Chairman_gold'
+        
+class Academic_Performance_silver(models.Model):
+    nearest_policestation = models.TextField(max_length=30, default='station')
+    nearest_railwaystation = models.TextField(max_length=30, default='station')
+    correspondence_address = models.TextField(max_length=150, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    award_type = models.CharField(max_length=50, null=True)
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
+    relevant_document = models.FileField(null=True, blank=True)
+    date = models.DateField(default=datetime.date.today)
+    financial_assistance = models.TextField(max_length=1000 ,null=True)
+    grand_total = models.IntegerField(null=True)
+    inside_achievements = models.TextField(max_length=1000, null=True)
+    justification = models.TextField(max_length=1000, null=True)
+    outside_achievements = models.TextField(max_length=1000, null=True)
+
+
+    class Meta:
+        db_table = 'Academic_Performance_silver'
