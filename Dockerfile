@@ -27,7 +27,7 @@ COPY . $FUSION_HOME
 # RUN cd FusionIIIT && python manage.py migrate
 
 # port where the Django app runs  
-EXPOSE 8000
+EXPOSE 8009
 
 # start server  
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8009"]
