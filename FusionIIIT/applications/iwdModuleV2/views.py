@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect
 # in conjunction with SRS. After that, everything will become easier.
 
 def dashboard(request):
-    eligible = False
+    eligible = True
     userObj = request.user
     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
     for p in userDesignationObjects:
@@ -320,10 +320,12 @@ def ExtensionOfTimeForm(request):
     return render(request, 'iwdModuleV2/page3_support_1_extension_of_time.html', {})
 
 
-def page1View(request):
-    request.session['projectId'] = request.POST['id']
+def page1View(request ):
+    if request.POST:
+      request.session['projectId'] = request.POST['id']   
     projectPageOne = PageOneDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
-    return render(request, 'iwdModuleV2/Page1.html', {'x': projectPageOne})
+    
+    return render(request, 'iwdModuleV2/Page1.html', {'x': projectPageOne })
 
 
 def page2View(request):
