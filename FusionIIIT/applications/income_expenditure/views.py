@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
 
 
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet, otherExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -106,7 +106,7 @@ def main_page(request):
 	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
 	expense_history2 = otherExpense.objects.all().order_by("date_added")
-	# expense_history2 = expense_history2[::-1]
+	expense_history2 = expense_history2[::-1]
 	expense_history= otherExpense.objects.filter(userid = request.user)
 	fixed_attributes = FixedAttributes.objects.all()
 
@@ -146,7 +146,7 @@ def main_page(request):
 				{
 					'income_sources':income_sources,
 					'income_history':income_history,
-					# 'expense_history2':expense_history2,
+					'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
@@ -161,7 +161,7 @@ def main_page(request):
 		if (s.programme=="M.Tech" or s.programme=="M.Des" or s.programme=="PhD") :
 			return render(
 					request,
-					'../templates/incomeExpenditure/ie.html',
+					'../templates/incomeExpenditure/iesu.html',
 					{
 						'fin_years':fin_years,
 						'min_date':min_date,
@@ -173,11 +173,11 @@ def main_page(request):
 		else:
 			return render(
 					request,
-					'../templates/incomeExpenditure/ie.html',
+					'../templates/incomeExpenditure/iebt.html',
 					{
 						'income_sources':income_sources,
 					'income_history':income_history,
-					# 'expense_history2':expense_history2,
+					'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
