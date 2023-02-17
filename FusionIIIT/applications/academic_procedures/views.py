@@ -316,7 +316,7 @@ def academic_procedures_student(request):
         if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
 
-        pre_registration_date_flag = get_pre_registration_eligibility(current_date, user_sem, year)
+        pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
@@ -507,6 +507,7 @@ def academic_procedures_student(request):
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
+                            'prd_start_date': prd_start_date,
                             'frd': final_registration_date_flag,
                             'adc_date_flag': add_or_drop_course_date_flag,
                             'pre_registration_flag' : pre_registration_flag,
@@ -1245,11 +1246,13 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
         if current_date>=prd_start_date and current_date<=prd_end_date:
-            return True
+            return True, None
+        if current_date<prd_start_date:
+            return False, prd_start_date
         else :
-            return False
+            return False, None
     except Exception as e:
-        return False
+        return False, None
 
 def get_final_registration_eligibility(current_date):
     try:
