@@ -5,7 +5,7 @@ from django.shortcuts import render, reverse
 
 from django.contrib import messages
 
-from applications.globals.models import HoldsDesignation, Designation
+from applications.globals.models import HoldsDesignation, Designation,ExtraInfo
 
 from .models import Bank, Company, Payments, Paymentscheme, Receipts
 
@@ -855,15 +855,15 @@ def printSalary(request):
       Basic details of an employee's salary including basic pay, ta, da, hra, nps etc.
 
     """
-
+    user=request.user
     k = HoldsDesignation.objects.select_related().filter(
         working=request.user, designation=Designation.objects.get(name='adminstrator'))
 
     month = request.POST.get("month")
     year = request.POST.get("year")
     runpayroll=True 
-    userid ='abc@123'
-    c = Paymentscheme.objects.filter(month=month, year=year, userId=userid)
+    userid =user.extrainfo.user.email 
+    c = Paymentscheme.objects.filter(month=month, year=year, userId=userid,runpayroll=runpayroll)
     context = {
         'c': c,
     }
