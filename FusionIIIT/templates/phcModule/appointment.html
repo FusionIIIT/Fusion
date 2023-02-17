@@ -14,8 +14,9 @@
     {% comment %}the doctor appointment tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="doctorappointment">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                
+            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+              {% csrf_token %}
+              
                   <div class="field">
                       <label>Doctor</label>
                       <select id="doc" class="ui search fluid" name="doctor_id" required="true">
