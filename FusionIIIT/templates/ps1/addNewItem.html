@@ -1,32 +1,37 @@
-<div class="ui form">
-  <div class="field">
-    <label>Title</label>
-    <input type="text" placeholder="Title of Indent" />
-  </div>
-  <div class="field">
-    <label>Description</label>
-    <textarea rows="3" placeholder="Enter the description"></textarea>
-  </div>
-
+{% block add_new_item_modal %}
+<form class="ui form" id="item-form">
   <div class="field">
     <label>Item Details</label>
     <div class="two fields">
       <div class="field">
-        <input type="text" placeholder="Item Name" />
+        <input type="text" placeholder="Item Name" name="item_name" />
       </div>
       <div class="field">
-        <input type="number" placeholder="Quantity" />
+        <input type="number" placeholder="Quantity" name="quantity" />
       </div>
     </div>
   </div>
   <div class="field">
+    <label>Description</label>
+    <textarea
+      rows="3"
+      placeholder="Enter the description"
+      name="desc"
+    ></textarea>
+  </div>
+
+  <div class="field">
     <label>Stocks and Costs</label>
     <div class="two fields">
       <div class="field">
-        <input type="number" placeholder="Present Stock" />
+        <input type="number" placeholder="Present Stock" name="present_stock" />
       </div>
       <div class="field">
-        <input type="number" placeholder="Estimated Cost" />
+        <input
+          type="number"
+          placeholder="Estimated Cost"
+          name="estimated_cost"
+        />
       </div>
     </div>
   </div>
@@ -34,11 +39,19 @@
     <div class="two fields">
       <div class="field">
         <label>Purpose</label>
-        <textarea rows="3" placeholder="Enter the Purpose"></textarea>
+        <textarea
+          rows="3"
+          placeholder="Enter the Purpose"
+          name="purpose"
+        ></textarea>
       </div>
       <div class="field">
         <label>Specification</label>
-        <textarea rows="3" placeholder="Enter the specification"></textarea>
+        <textarea
+          rows="3"
+          placeholder="Enter the specification"
+          name="specification"
+        ></textarea>
       </div>
     </div>
   </div>
@@ -48,7 +61,7 @@
       <div class="field">
         <label>Item Type</label>
 
-        <select class="ui fluid dropdown">
+        <select class="ui fluid dropdown" name="indent_type">
           <option value="Equipment">Equipment</option>
           <option value="Machinery">Machinery</option>
           <option value="Furniture">Furniture</option>
@@ -57,7 +70,7 @@
       </div>
       <div class="field">
         <label>Expected Delivery</label>
-        <input type="date" id="start" />
+        <input type="date" id="start" name="expected_delivery" />
       </div>
     </div>
   </div>
@@ -65,11 +78,11 @@
     <div class="two fields">
       <div class="field">
         <label>Budgetory Head</label>
-        <textarea rows="3"> </textarea>
+        <textarea rows="3" name="budgetary_head"> </textarea>
       </div>
       <div class="field">
         <label>Sources of Supply</label>
-        <textarea rows="3"> </textarea>
+        <textarea rows="3" name="sources_of_supply"> </textarea>
       </div>
     </div>
   </div>
@@ -127,10 +140,69 @@
       accept=".pdf, .jpg, .jpeg, .png"
     />
   </div>
-</div>
 
-<div class="action">
-  <div class="ui floated primary button" style="margin-top: 20px" tabindex="0">
-    Add this Item
+  <div class="action">
+    <button
+      class="ui floated primary button"
+      type="submit"
+      style="margin-top: 20px"
+      tabindex="0"
+    >
+      Add this Item
+    </button>
   </div>
-</div>
+</form>
+
+<script type="text/javascript">
+  document.getElementById("item-form").addEventListener(
+    "submit",
+    function (event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const formFields = form.elements;
+      //const node = document.createElement("li");
+      console.log(formFields?.myfile?.files[0]);
+
+      document.getElementById("textify").innerHTML += ` <tr>
+      <td>
+        <h3>${formFields?.item_name?.value}</h3>
+      </td>
+      <td class="single line">
+        <span>Quantity : <strong>${
+          formFields?.quantity?.value
+        }</strong></span><br><br>
+        <span>Stock Present : <strong>${
+          formFields?.present_stock?.value
+        }</strong></span>
+      </td>
+      <td>
+        <div class="ui list">
+            <div class="item">
+                <div class="header">Purpose</div>
+                ${formFields?.purpose?.value}
+            </div>
+            <div class="item">
+                <div class="header">Specification</div>
+                ${formFields?.specification?.value}
+            </div>
+        </div>
+      </td>
+      <td class="left aligned">
+        <a  target="_blank" href=${URL.createObjectURL(
+          formFields?.myfile?.files[0]
+        )}>${formFields?.myfile?.files[0].name}</a>
+      </td>
+      <td>
+          <button class='ui red button'>Delete</button>
+      </td>
+    </tr>
+  `;
+
+      document.getElementById("item-form").reset();
+    },
+    false
+  );
+</script>
+
+{% endblock %}

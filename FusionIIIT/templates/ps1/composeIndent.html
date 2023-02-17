@@ -18,9 +18,47 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
+            
+
+
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
-                <div class="field">
+            {% comment %} <div class="field">
+                <label>Title of Indent File*</label>
+                <textarea rows="1" name="title" required></textarea>
+            </div> {% endcomment %}
+
+
+             <div class="field" >
+                 <label> Item Details </label>
+                <table class="ui celled padded table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity & Stocks</th>
+                            <th>Purpose & Specification</th>
+                            <th>File</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id='textify'>
+
+            
+                    </tbody>
+                    <tfoot class="full-width">
+                        <tr>
+                        <th></th>
+                        <th colspan="4">
+                            <div class="ui right floated small secondary labeled icon button " onclick="addmoreHandler()">
+                                Add Item <i class="ui add icon right floated"></i>
+                            </div>
+                        
+                        </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+               <div class="field">
                         <label>Title of Indent File*</label>
                         <textarea rows="1" name="title" required></textarea>
                 </div>
@@ -41,13 +79,13 @@
 
                 <div class="field">
                     <label>Quantity*</label>
-                    <input type="number" name="quantity" required></input>
+                    <input type="number" name="quantity" required/>
                 </div>
 
 
                 <div class="field">
                     <label>Present Stock*</label>
-                    <input type="number"  name="present_stock" required></input>
+                    <input type="number"  name="present_stock" required/>
                 </div>
 
                 <div class="field">
@@ -140,16 +178,16 @@
 
                         </select>
                     </label>
-                </div>
+                </div> 
 
-                <br>
+                 <br>
 
                 <div class = "left floated item">
                       <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
                       <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
-                <br>
+                <br> 
                 <div>
                     <div class="ui large right floated secondary button" onclick="addmoreHandler()">
                         Add More<i class="ui add icon right floated"></i>
@@ -162,16 +200,11 @@
                             Save to drafts<i class="ui save icon right floated"></i>
                         </button>
                     </a>
-                </div>
+                </div> 
 
                
                 
-                <div class="ui modal">
-                    <div class='header'>Add New File</div>
-                    <div class='content'>
-                        {% include "ps1/addNewItem.html"%}
-                    </div>
-                </div> 
+                
 
                 
 
@@ -219,6 +252,13 @@
 
             </form>
 
+            <div class="ui modal">
+                    <div class='header'>Add New Item</div>
+                    <div class='scrolling content'>
+                        {% include "ps1/addNewItem.html"%}
+                    </div>
+            </div> 
+
             <br>
 
         </div>
@@ -231,8 +271,10 @@
 
 
 <script type="text/javascript">
+
+   
     const addmoreHandler = ()=>{
-        $('.ui.modal').modal('show');
+        $('.ui.modal').modal({ blurring : true }).modal('show');
     }
 
 
