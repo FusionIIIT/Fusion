@@ -80,6 +80,18 @@ class HallWarden(models.Model):
     def __str__(self):
         return str(self.hall) + '  (' + str(self.faculty.id.user.username) + ')'
     
+class HallAdmin(models.Model):
+    """
+    Records the admin of Hall of Residences.
+
+    'hall' refers to the related Hall of Residence.
+    'faculty' refers to the acting admin for the same Hall of Residence.
+    """
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.hall) + 'admin ' + '(' + str(self.faculty) + ')'
 
 class GuestRoomDetail(models.Model):
     """

@@ -13,7 +13,7 @@ from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
-from .forms import HostelNoticeBoardForm
+from .forms import GuestRoomBookingForm, HostelNoticeBoardForm
 import re
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -67,11 +67,11 @@ def hostel_view(request, context={}):
     hall_student=""
     current_hall=""
     get_avail_room=[]
-    get_hall=get_caretaker_hall(hall_caretakers,request.user) 
-    if get_hall:
-        get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
-        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
-        current_hall='hall'+str(get_hall_num[0])
+    # get_hall=get_caretaker_hall(hall_caretakers,request.user) 
+    # if get_hall:
+    #     get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
+    #     hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
+    #     current_hall='hall'+str(get_hall_num[0])
     
     for hall in all_hall:
         total_rooms=HallRoom.objects.filter(hall=hall)
@@ -355,8 +355,44 @@ def edit_attendance(request):
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+@login_required
+def request_guest_room(request):
+    """
+    This function is used by the student to book a guest room.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    """
+    if request.method == "POST":
+        intender = request.user
+        form = GuestRoomBookingForm(commit=False)
+        if form.is_valid():
+            guest_room_booking = form.save(commit=False)
+            guest_room_booking.intender = intender
+            guest_room_booking.save()
+            messages.success(request,"Room booked successfuly")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+    else:
+        form = GuestRoomBookingForm()
+        halls = Hall.objects.all()
+        available_rooms = GuestRoomDetail.objects.get(room_status="Available")
+        context = {
+            'form': form,
+            'halls': halls,
+            'available_rooms': available_rooms
+        }
+        return render(request, 'hostelmanagement/guest_room_booking.html', context)
 
-
+        
+@login_required
+def allot_hostel_room(request):
+    if request.method == "POST":
+        body = request.body
+        student = body.get('student')
+        hall_no = body.get('hall_no')
+        room_no = body.get('room_no')
+        alot_student = Student.objects.get(id=student.id)
+        alot_student.hall_no = hall_no
+        alot_student.room_no = room_no
 
 @login_required
 def generate_worker_report(request):
