@@ -40,9 +40,6 @@ class StudentApplicationForm(forms.Form):
         if data.get('end_date') < today:
             errors['end_date'] = ['Past Dates are not allowed']
 
-        print(data.get('document').size)
-
-
         try:
             fileS = data.get('document').size
             if int(fileS) > 2048000:
