@@ -4,15 +4,15 @@ DEBUG = True
 
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusiondb',
-        'HOST': os.environ.get("DB_HOST"),
-        'USER': 'fusionuser',
-        'PASSWORD': 'password',
+        'NAME': 'fusionlab',
+        'HOST': 'localhost',
+        'USER': 'fusion_admin',
+        'PASSWORD': 'hello123',
     }
 }
 

@@ -9,7 +9,7 @@ services:
       - POSTGRES_USER=fusionuser
       - POSTGRES_PASSWORD=password
     ports:
-      - "5459:5459"
+      - "5432:5432"
   app:
     build:
       context: .
@@ -17,8 +17,8 @@ services:
     volumes:
       - .:/home/app
     ports:
-      - 8009:8009
-    command: python FusionIIIT/manage.py runserver 0.0.0.0:8009
+      - 8000:8000
+    command: python FusionIIIT/manage.py runserver 0.0.0.0:8000
     environment:
       - DB_HOST=db
     depends_on:
