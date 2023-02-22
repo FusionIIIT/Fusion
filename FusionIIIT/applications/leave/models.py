@@ -32,7 +32,7 @@ class Constants:
 
 #@python_2_unicode_compatible
 class LeaveType(models.Model):
-    name = models.CharField(max_length=40, null=False)
+    name = models.CharField(max_length=40, null=False, default='casual')
     max_in_year = models.IntegerField(default=2)
     requires_proof = models.BooleanField(default=False)
     authority_forwardable = models.BooleanField(default=False)
