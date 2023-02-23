@@ -117,7 +117,7 @@ def add_vacation_food_request(request, student):
         }
         return data
 
-    vacation_check = Vacation_food.objects.filter(student_id =student)
+    vacation_check = Vacation_food.objects.filter(student_id=student).prefetch_related('student_id','student_id__id','student_id__id__user','student_id__id__department')
 
     date_format = "%Y-%m-%d"
     b = datetime.strptime(str(start_date), date_format)
@@ -334,9 +334,9 @@ def add_leave_request(request, student):
             }
             return data
 
-    rebates = Rebate.objects.filter(student_id=student)
-    rebate_check = rebates.filter(Q(status='1') | Q(status='2'))
-
+    rebate_check = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student, status__in=['1', '2'])
+    
+    
     for r in rebate_check:
         a = datetime.strptime(str(r.start_date), date_format)
         c = datetime.strptime(str(r.end_date), date_format)
@@ -373,8 +373,8 @@ def add_mess_meeting_invitation(request):
     venue = request.POST['venue']
     agenda = request.POST['agenda']
     time = request.POST['time']
-    members_mess = HoldsDesignation.objects.filter(Q(designation__name__contains='mess_convener')
-                                                   | Q(designation__name__contains='mess_committee')|Q(designation__name='mess_manager')
+    members_mess = HoldsDesignation.objects.select_related().filter(Q(designation__name__contains='mess_convener')
+                                                       | Q(designation__name__contains='mess_committee')|Q(designation__name='mess_manager')
                                                    | Q(designation__name='mess_warden'))
     date_today = str(today_g.date())
     if date <= date_today:
@@ -470,8 +470,8 @@ def add_special_food_request(request, student):
         return data
     spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
-    requests_food = Special_request.objects.filter(student_id=student)
-    s_check = requests_food.filter(Q(status='1') | Q(status='2'))
+    s_check = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student,status__in=['1', '2']).order_by('-app_date')
+
 
     for r in s_check:
         a = datetime.strptime(str(r.start_date), date_format)
@@ -541,14 +541,14 @@ def add_mess_committee(request, roll_number):
     print("\n\n\\n\n\n\n\n")
     print(roll_number)
     mess = Messinfo.objects.get(student_id__id=roll_number)
-    print(mess)
+    print(mess) 
     if mess.mess_option == 'mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     else:
         designation = Designation.objects.get(name='mess_committee_mess2')
     # designation = Designation.objects.get(name='mess_committee')
     # add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
-    check_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) &
+    check_obj=HoldsDesignation.objects.select_related().filter(Q(user__username=roll_number) &
                                                 (Q(designation__name__contains='mess_committee')
                                                  | Q(designation__name__contains='mess_convener')))
     if check_obj:
@@ -570,18 +570,18 @@ def add_mess_committee(request, roll_number):
 
 
 def generate_bill():
-    student_all = Student.objects.all()
     month_t = datetime.now().month - 1
     month_g = last_day_prev_month.month
     first_day_prev_month = last_day_prev_month.replace(day=1)
     # previous_month = month_t.strftime("%B")
+    student_all = Student.objects.prefetch_related('nonveg_data_set','rebate_set')
     amount_c = MessBillBase.objects.latest('timestamp')
     for student in student_all:
         nonveg_total_bill=0
         rebate_count = 0
         total = 0
-        nonveg_data = Nonveg_data.objects.filter(student_id=student)
-        rebates = Rebate.objects.filter(student_id=student)
+        nonveg_data = student.nonveg_data_set.all()
+        rebates = student.rebate_set.all()
         for order in nonveg_data:
             if order.order_date.strftime("%B") == previous_month:
                 nonveg_total_bill = nonveg_total_bill + order.dish.price
@@ -610,7 +610,7 @@ def generate_bill():
                                        month=previous_month,
                                        year = previous_month_year,
                                        total_bill=total):
-            print("exists")
+           1
         elif Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
                                        year = previous_month_year):
