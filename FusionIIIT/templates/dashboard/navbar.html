@@ -1,13 +1,58 @@
 {% load static %}
+
+{% block css %}
+    <style>
+        .menu1 {
+            display: flex;
+        }
+
+        .user-logo {
+            margin-left: auto !important;
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: row;
+        }
+
+        .sizer {
+            font-size: 1.35rem !important;
+        }
+
+        @media (max-width:1200px) {
+            .menu1 {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            
+            .user-logo {
+                margin-left: 0 !important;
+            }
+
+            .sizer {
+                font-size: clamp(1.1rem, 1.5vw, 1.35rem) !important;
+            }
+        }
+
+        @media (max-width:1000px) {
+            .menu1 {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sizer {
+                font-size: clamp(1.1rem, 1.5vw, 1.35rem) !important;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block navBar %}
     {% include 'dashboard/sidenavbar.html' %}
 
     <div>
-        <div class="ui stackable massive inverted top attached menu" id="navbar">
+        <div class="ui inverted menu sizer menu1" id="navbar">
             <a class="item" id="sidebartrigger">
                 <i class="sidebar icon"></i>
             </a>
-
 
             <a class="item" href="{% url 'globals:dashboard' %}">
                 {% load notifications_tags %}
@@ -16,10 +61,12 @@
                 Dashboard
                 <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
             </a>
+
             <div class="item">
                 <a class="icon mail" href = '/feedback'>
                 <i class="comment icon"></i>Feedback</a>
             </div>
+            
             <div class="item">
                 <form method="GET" action="{% url 'globals:search' %}">
                     <div class="ui search">
@@ -28,11 +75,11 @@
                           <button type="submit" class="ui button"><i class="search icon"></i></button>
                         </div>
                         <div class="results"></div>
-                    </div>
-                    
+                    </div>        
                 </form>
             </div>
-            <div class="right inverted menu">
+
+            <div class="user-logo">
                 <a class="item" href="{% url 'globals:profile' %}">
                     {% comment %}
                         TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
@@ -40,18 +87,19 @@
                     <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
+                
                 {% comment %}
-                <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
-                    <div class="text">Notifications</div>
-                    <i class="dropdown"></i>
-                    <div class="ui red circular label">22</div>
-                        TODO: Make dropdown menu
-                    <div class="menu">
-                        <div class="item">Notification1</div>
-                        <div class="item">Notification1</div>
-                    </div>
-                    {% endcomment %}
-                </a>
+                    <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
+                        <div class="text">Notifications</div>
+                        <i class="dropdown"></i>
+                        <div class="ui red circular label">22</div>
+                            TODO: Make dropdown menu
+                        <div class="menu">
+                            <div class="item">Notification1</div>
+                            <div class="item">Notification1</div>
+                        </div>
+                    </a>
+                {% endcomment %}
                     
                 <div class="ui fluid popup bottom left transition">
                     <div class="ui four column relaxed equal height stackable doubling grid">
@@ -106,7 +154,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <a class="right item" href="/accounts/logout">
@@ -116,22 +163,10 @@
                     <i class="ui inverted sign out icon"></i>
                     Logout
                 </a>
-
             </div>
         </div>
 
         <div class="ui divider"></div>
-
-
-
-
-        {% block data%}
-
-        {% endblock %}
-
-
-
+        {% block data %} {% endblock %}
     </div>
-
-
 {% endblock %}
