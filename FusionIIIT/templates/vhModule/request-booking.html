@@ -23,14 +23,7 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.0%; padding-right: 3.0%;">
 
             <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto; overflow-x: hidden;">
-                <div class="field">
-                <label></label>
-                    <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
-                        Next
-                    </div>
-                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
-
-                </div>
+                
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
@@ -55,6 +48,8 @@
                 {% if user_designation == 'Intender' %}
                 <input type="hidden" name="intender" value="{{ user.id }}">
                 {% endif %}
+
+
                 <div class="four fields">
                     <div class="field">
                         <label>Arrival Date *</label>
@@ -126,6 +121,9 @@
                             <div class="default text">Select</div>
 
                             <div class="menu">
+                                    <div class="item" data-value="01">
+                                    00
+                                     </div>
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -331,10 +329,10 @@
                     
                     <div class="field">
                         <label>Departure Date *</label>
-                        <div class="ui calendar" id="rangeend1">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="To" name="request-booking-to" class="date-selector">
+                            <div class="ui calendar" id="rangestart1" >
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                <input type="text" placeholder="To" name="request-booking-to" class="date-selector"  >
                             </div>
                         </div>
 
@@ -350,6 +348,7 @@
                                 <div class="default text">Select</div>
 
                                 <div class="menu">
+                                    
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -399,6 +398,9 @@
                             <div class="default text">Select</div>
 
                             <div class="menu">
+                                    <div class="item" data-value="01">
+                                        00
+                                    </div>
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -716,7 +718,15 @@
                             </div>
                 </div>
 
-            
+              <div> <br/> <br/> </div>
+              <div class="field">
+                <label></label>
+                    <div class="ui large primary button  floated" id="next-button" style="position : center ; margin-left :50% ;margin-right : 50%" onclick="next_action(event)">
+                        Next
+                    </div>
+                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+
+                </div>
 
             </form>
         </div>
