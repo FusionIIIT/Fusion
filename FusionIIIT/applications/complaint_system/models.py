@@ -46,7 +46,7 @@ class Caretaker(models.Model):
     def __str__(self):
         return str(self.id) + '-' + self.area
 
-class Depthead(models.Model):
+class SectionIncharge(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, default=2900)
     work_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
                                    max_length=20, default='Electricity')
@@ -55,7 +55,7 @@ class Depthead(models.Model):
         return str(self.id) + '-' + self.work_type
 
 class Workers(models.Model):
-    depthead_id = models.ForeignKey(Depthead, on_delete=models.CASCADE, default=2019)
+    secincharge_id = models.ForeignKey(SectionIncharge, on_delete=models.CASCADE, default=2019)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)

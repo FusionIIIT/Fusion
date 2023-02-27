@@ -1,5 +1,5 @@
 
-<!--HTML file for the main page of depthead-->
+<!--HTML file for the main page of secincharge-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -105,7 +105,7 @@
             {% comment %}The ... starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block complainthistory %}
-                    {%  include 'complaintModule/complainthistory_depthead.html' %}
+                    {%  include 'complaintModule/complainthistory_secincharge.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... ends here!{% endcomment %}
@@ -113,7 +113,7 @@
             {% comment %}The ... starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third">
                 {% block resolvecomplaint %}
-                    {%  include 'complaintModule/resolvecomplaint_depthead.html' %}
+                    {%  include 'complaintModule/resolvecomplaint_secincharge.html' %}
                 {%  endblock %}
             </div>
             <div class="ui tab segment" data-tab="fourth">

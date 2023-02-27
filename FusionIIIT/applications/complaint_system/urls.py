@@ -22,15 +22,15 @@ urlpatterns = [
     url(r'^caretaker/search_complaint$', views.search_complaint),
     url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
  
-    # depthead
-    url(r'^depthead/$', views.department_head, name='department_head'),
-    url(r'^depthead/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<cid>[0-9]+)/discharge_worker/$', views.discharge_worker,name='discharge_worker'),
-    url(r'^depthead/worker_id_know_more/(?P<work_id>[0-9]+)/$', views.worker_id_know_more, name='come_back_to_this'),
-    url(r'^depthead/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
-    url(r'^depthead/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),  
-    url(r'^depthead/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
-    url(r'^depthead/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
-    url(r'^depthead/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
+    # secincharge
+    url(r'^secincharge/$', views.section_incharge, name='department_head'),
+    url(r'^secincharge/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<cid>[0-9]+)/discharge_worker/$', views.discharge_worker,name='discharge_worker'),
+    url(r'^secincharge/worker_id_know_more/(?P<work_id>[0-9]+)/$', views.worker_id_know_more, name='come_back_to_this'),
+    url(r'^secincharge/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
+    url(r'^secincharge/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),  
+    url(r'^secincharge/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
+    url(r'^secincharge/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
+    url(r'^secincharge/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
 
     # supervisor
     url(r'^supervisor/$', views.supervisor),
