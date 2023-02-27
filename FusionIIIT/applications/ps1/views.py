@@ -184,7 +184,7 @@ def ps1(request):
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
-                    return redirect('/ps1/')
+                    return redirect('/purchase-and-store/')
 
                 upload_file = request.FILES.get('myfile')
 
@@ -861,3 +861,46 @@ def dealing_assistant(request):
         return redirect('/ps1/entry/')   
     else:
         return redirect('/ps1')       
+
+def ajax_dropdown_for_users(request):
+
+    """
+    This function returns the usernames of receiver  on the forward or compose file template.
+
+     @param:
+            request - trivial.
+                    
+
+    @variables: 
+         context - return the httpresponce containing the matched username
+    """
+    if request.method == 'GET':
+        users = User.objects.filter(is_staff=True)
+        users = serializers.serialize('json', list(users))
+
+        context = {
+            'users': users
+        }
+        return HttpResponse(JsonResponse(context), content_type='application/json')
+
+def ajax_dropdown_for_designations(request):
+    """
+    This function returns the designation of receiver on the forward or compose file template.
+    this will return all the designations and then the indenter will enter the designation of the reciever 
+    selecting from that dropdown itself
+
+
+     @param:
+            request - trivial.
+
+    @variables: 
+         context - return the httpresponce containing the designations
+    """
+    if request.method == 'GET':
+        hold = Designation.objects.all()
+        holds = serializers.serialize('json', list(hold))
+        context = {
+        'holds' : holds
+        }
+
+        return HttpResponse(JsonResponse(context), content_type='application/json')

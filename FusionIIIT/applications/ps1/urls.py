@@ -24,5 +24,7 @@ urlpatterns = [
     url(r'^stock_edit/$', views.stock_edit, name='stock_edit'),
     url(r'^stock_update/$', views.stock_update, name='stock_update'),
     url(r'^entry/$', views.entry, name='entry'),
-    url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant')
+    url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant'),
+    url(r'^ajax/users/$',views.ajax_dropdown_for_users,name='ajax_dropdown_for_users'),
+    url(r'^ajax/designations/$',views.ajax_dropdown_for_designations,name='ajax_dropdown_for_designations')
 ]
