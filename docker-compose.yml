@@ -5,9 +5,9 @@ services:
     volumes:
       - /private/var/lib/postgresql:/var/lib/postgresql
     environment:
-      - POSTGRES_DB=fusiondb
-      - POSTGRES_USER=fusionuser
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=fusionlab
+      - POSTGRES_USER=fusion_admin
+      - POSTGRES_PASSWORD=hello123
     ports:
       - "5432:5432"
   app:
