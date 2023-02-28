@@ -3,8 +3,9 @@ services:
   db:
     image: postgres:13-alpine
     volumes:
-      - /private/var/lib/postgresql:/var/lib/postgresql
+      - /private/var/lib/postgresql:/var/lib/postgresql/data
     environment:
+      - PGDATA=/var/lib/postgresql/data/some_name/
       - POSTGRES_DB=fusionlab
       - POSTGRES_USER=fusion_admin
       - POSTGRES_PASSWORD=hello123
