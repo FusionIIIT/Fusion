@@ -18,7 +18,7 @@ services:
       - .:/home/app
     ports:
       - 8000:8000
-    command: python FusionIIIT/manage.py runserver 0.0.0.0:8000
+    command: /bin/bash docker-entrypoint.sh
     environment:
       - DB_HOST=db
     depends_on:
