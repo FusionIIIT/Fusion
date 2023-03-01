@@ -23,7 +23,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 
-urlpatterns = [
+urlpatterns = [                   
     url(r'^', include('applications.globals.urls')),
     url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),

@@ -1,5 +1,6 @@
 from django.conf.urls import url, include
 
+
 from . import views
 
 app_name = 'globals'
@@ -24,4 +25,5 @@ urlpatterns = [
     url(r'^resetallpass/$', views.reset_all_pass, name='resetallpass'),
     # API urls
     url(r'^api/', include('applications.globals.api.urls'))
+                          
 ]
