@@ -2,7 +2,7 @@
 
 {% block CSE_Dep %}
 
-    <h1><center> Welcome to ME Department </center></h1>
+    <h1><center> Welcome to DESIGN Department </center></h1>
 
     {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
@@ -21,13 +21,12 @@
         <a class="item" data-tab="students">
             Students
         </a>
-        {% if user.extrainfo.department.name == "ME" %}
+        {% if user.extrainfo.department.name == "Design" %}
         <a class="item" data-tab="announcement">
             Announcements
         </a>
         {% endif %}
-        {% comment %}
-         <a class="item" data-tab="Request">
+        {% comment %} <a class="item" data-tab="Request">
             Requests
         </a> {% endcomment %}
         <a class="item" data-tab="Alumni">
@@ -36,11 +35,7 @@
         <a class="item" data-tab="Track records">
             Track records
         </a>
-
     </div>
-
-
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
@@ -50,13 +45,13 @@
                             Our Mission :
                         </h3>
                         <p>
-                            The primary focus of our pedagogy is to impart technical know-how to students, promote their problem solving and innovation skills and make them abreast with new technologies. The department offers a wide spectrum of optional courses to the students to pursue their interest. The course contents are periodically updated to keep them inline with the global developments. Undergraduate students are encouraged for hands-on-training, in the form of course projects and participate in various sponsored research projects.
+                            The mission of the Computer Engineering Department is to provide educational programs that would encourage students to read critically, reason analytically, communicate persuasively, apply professionally and prepare them to excel in the field of computing.
                         </p>
                         <h3>
                             Our Vision :
                         </h3>
                         <p>
-                            The vision of the mechanical Engineering Department is to recognize itself as renowned department in the field of Research and technical education in Mechanical Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
+                            The vision of the Computer Engineering Department is to recognize itself as renowned department in the field of technical education in Computer Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
                         </p>
                     </span>
                     <div class="ui divider"></div>
@@ -86,85 +81,31 @@
                         <ol>
                             <li>
                                 <p>
-                                    <b>Health Monitoring, Measurement and Instrumentation Lab:</b> 
+                                    <b>Advanced Manufacturing Laboratory :</b> This Laboratory contains Rapid Prototyping Machine, CNC Controlled Abrasive Waterjet Machine, CNC Milling Center, CNC Turning Center, Dynamometer, Electro Chemical Machining System, Injection Moulding Machine etc.
                                 </p>
                             </li>
                             <br>
                             <li>
                                 <p>
-                                    <b>Kinematics and Dynamics Lab :</b> 
+                                    <b>Biometric Laboratory :</b> This Laboratory contains S Series, H Series, W Series cameras and p6 p520(Tower Model), p6 p520:8203 Model servers Made by IBM etc.
                                 </p>
                             </li>
                             <br>
                             <li>
                                 <p>
-                                    <b>PG Research Lab :</b>
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Fluid Mechaniccs Lab :</b> 
+                                    <b>Digital Signal Processing and Image Processing Laboratory :</b> This Laboratory contains DSP Starter SPARTAN-3 kit (DSK), TMS 320C6713 DSK with CCS (Code Composer Studio), Image Daughter Kit with CCD Cameras, Bloom with DSP, Matrox Imaging Library, Matrox Morphis, Frame Graber Card, Color CCD Camera for online Processing etc.
                                 </p>
                             </li>
                             <br>
                             <li>
                                 <p>
-                                    <b>Automobile Lab :</b> 
+                                    <b>Infrared Imaging Laboratory :</b> This Laboratory contains Radiometeric calibration, Extender rings, NDT Base Module, Central computing unit with TFT display, Software Modules for Lockin, Transient-and Pulse Measurement, Module Pulse- and Transient- Thermography, Source for Vibro- Thermography etc.
                                 </p>
                             </li>
                             <br>
                             <li>
                                 <p>
-                                    <b>IT Workshop/Computational Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Material Characterization Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Machine Dynamics and Vibrations Lab :</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Mechatronics Lab:</b> 
-                              </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Robotics Lab:</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biomedical Engineering and Technology Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>CFD Lab :</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Dieless Manufacturing Center:</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Manufacturing Innovation Center:</b> 
+                                    <b>Materials Research Laboratory :</b> This Laboratory contains three important instruments for material characterization which are X-Ray Diffractometer (XRD), Scanning Electron Microscope (SEM) and Atomic Force Microscope (AFM) including SPM, MFM etc.
                                 </p>
                             </li>
                         </ol>
@@ -176,6 +117,9 @@
     </div>
 
     {% comment %} tabs content faculty {% endcomment %}
+
+
+
     {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
@@ -190,8 +134,6 @@
                                 <thead>
                                     <td> Serial No. </td>
                                     <td> Faculty Name </td>
-                                    <td> Research Interest </td>
-                                    <td> Email </td>
                                     <!-- <td> title </td> -->
                                     {% comment %} <td> sex </td>
                                     <td> date_of_birth </td>
@@ -203,21 +145,21 @@
 
                                 </thead>
 
-                                {% for fcu in fac_list.me_f %}
-                                <tr>
-                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.id }}</a></td>
-                                    {% comment %} <td>{{ fcu.title }}</td> 
-                                    <td>{{ fcu.sex }}</td>
-                                    <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
-                                    <td>{{ fcu.phone_no }}</td>
-                                    {% comment %} <td>{{ fcu.user_type }}</td>
-                                    <td>{{ fcu.department.name }}</td>
-                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
-                                    {% endwith %}
-                                </tr>
+                                {% for fcu in fac_list.design_f %}
+                                    <tr>
+                                        {% with "/eis/profile/"|add:fcu.user.username as link %}
+                                        <td>{{ fcu.id }}</td>
+                                        <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
+                                        <!-- <td>{{ fcu.title }}</td> -->
+                                        {% comment %} <td>{{ fcu.sex }}</td>
+                                        <td>{{ fcu.date_of_birth }}</td>
+                                        <td>{{ fcu.address }}</td>
+                                        <td>{{ fcu.phone_no }}</td> {% endcomment %}
+                                        {% comment %} <td>{{ fcu.user_type }}</td>
+                                        <td>{{ fcu.department.name }}</td>
+                                        <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                                        {% endwith %}
+                                    </tr>
 
                                 {% endfor %}
 
@@ -231,13 +173,14 @@
         </div>
     </div>
 
-    {% comment %} tabs contains Announcement_List {% endcomment %}
+{% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
-        {% if user.extrainfo.department.name == "ME" %}
+        {% if user.extrainfo.department.name == "Design" %}
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
+
                         <div class="ui vertical segment" data-tab="Year-1">
 
                             {% comment %} {% if ann_list %} {% endcomment %}
@@ -252,7 +195,7 @@
 
                                 </thead>
 
-                                {% for stu in announcements.me %}
+                                {% for stu in announcements.design %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
                                         <td>{{ stu.maker_id.user }}</td>
@@ -281,12 +224,7 @@
                             {% comment %} {% endif %} {% endcomment %}
                             {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
-                        {% comment %} <a class="active item" href="/dep/browse_announcements/">
-                            <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
-                            <button style="border: solid; float: left; display: block;" >
-                                Browse Announcement
-                            </button>
-                        </a> {% endcomment %}
+                        
                     </span>
                     <div class="ui divider"></div>
                 </div>
@@ -294,7 +232,7 @@
         </div>
         {% endif %}
     </div>
-
+    
     {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
@@ -308,10 +246,10 @@
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{3111111}}">
+                                <a class="item" href="./All_Students/{{1111111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        PhD ME Students
+                                        PhD Design Students
                                     </button>
                                 </a>
                                 <br>  
@@ -324,22 +262,23 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{31111}}">
+                                <a class="item" href="./All_Students/{{11111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
-                                        First Year ME
+                                        First Year Design
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{311111}}">
+                                <a class="item" href="./All_Students/{{111111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        Second Year ME
+                                        Second Year Design
                                     </button>
                                 </a>
                                 <br>     
                             </div>
                         </div>
                             
+                        
 
                         <div class="ui styled accordion">
                             <div class="title">
@@ -348,32 +287,32 @@
                             </div>
                             <div class="content">
                                 {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
-                                <a class="active item" href="./All_Students/{{3}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="active item" href="./All_Students/{{1}}">
+                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        First Year ME
+                                        First Year Design
                                     </button>
                                 </a>
                                 {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
-                                <a class="active item" href="./All_Students/{{31}}">
+                                <a class="active item" href="./All_Students/{{11}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        Second Year ME
+                                        Second Year Design
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{311}}">
+                                <a class="active item" href="./All_Students/{{111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        Third Year ME
+                                        Third Year Design
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{3111}}">
+                                <a class="active item" href="./All_Students/{{1111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        Final Year ME
+                                        Final Year Design
                                     </button>
-                                </a><br>
-                               
+                                </a>
+                                <br>
                             </div>
                         </div>
 
@@ -384,7 +323,7 @@
         </div>
     </div>
 
-     <div class="ui tab" data-tab="Request">
+    <div class="ui tab" data-tab="Request">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
@@ -406,7 +345,7 @@
                                 <div class="content">
                                     <div class="description">
                                         <span>
-                                            {% with fac_list.staffNme as faculty %}
+                                            {% with fac_list.staffNcse as faculty %}
                                                 {% block file-requests %}
                                                     {% include "department/file_request.html" %}
                                                 {% endblock %}
@@ -457,5 +396,6 @@
             </div>
         </div>
     </div>
+    
 
 {% endblock %}

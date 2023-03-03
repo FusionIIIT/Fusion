@@ -25,8 +25,9 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% comment %}The user image card ends here!{% endcomment %}
-            
-            
+
+            <div class="ui divider"></div>
+
 
             {% comment %} <div class="ui divider"></div> {% endcomment %}
 
@@ -51,6 +52,12 @@
 
                 <a class="item" data-tab="fourth" id="SM_Dep">
                     SM Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <!-- Added button for design department  -->
+                <a class="item" data-tab="fifth" id="DESIGN_Dep">
+                    Design Department
                     <i class="right floated chevron right icon"></i>
                 </a>
             
@@ -102,6 +109,14 @@
                 {% endblock %}
             </div>
             {% comment %}SM{% endcomment %}
+
+            {% comment %}Design Department!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block DESIGN_Dep %}
+                    {% include "department/design_dep.html" %}
+                {% endblock %}
+                {% comment %}Design Department!{% endcomment %}
+            </div>
         </div>
         
         <div class="three wide column">
