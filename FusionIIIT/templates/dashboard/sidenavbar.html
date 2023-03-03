@@ -50,75 +50,75 @@
                 <a class="item" href="/programme_curriculum">
                     <h4> Programme & Curriculum Module </h4>
                 </a>
-                <a class = "item" href="/gymkhana">
+                <a class = "item disabled" href="/gymkhana">
                     <h4> Gymkhana Module </h4>
                 </a>
-				<a class="item" href="/iwdModuleV2">
+				<a class="item disabled" href="/iwdModuleV2">
                                 <h4>IWD Module</h4>
                             </a>
                 {% if request.user.extrainfo.user_type == 'faculty' or request.user.extrainfo.user_type == 'staff' %}
-                <a class = "item" href="{% url 'establishment:establishment' %}">
+                <a class = "item disabled" href="{% url 'establishment:establishment' %}">
                     <h4> Establishment Module </h4>
                 </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == 'faculty' %}
                 {%for desig in designat%}
                 {% if 'hradmin' == desig.designation.name %}
-                <a class = "item" href="/hr2/hradmin/">
+                <a class = "item disabled" href="/hr2/hradmin/">
                     <h4> HR2 Module </h4>
                 </a>
                 {% endif %}
                 {%endfor %}
                 {% endif %}
-                <a class = "item" href="/library/library">
+                <a class = "item disabled" href="/library/library">
                     <h4> Library Module </h4>
                 </a>
-    			    <a class="item" href="{% url 'spacs:spacs' %}">
+    			    <a class="item disabled" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
 
-                            <a class="item" href="{% url 'complaint:complaint' %}">
+                            <a class="item disabled" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
                             </a>
                               {% if user.extrainfo.user_type != 'faculty' %}
-                            <a class="item" href="{% url 'mess:mess' %}">
+                            <a class="item disabled" href="{% url 'mess:mess' %}">
                                 <h4>Central Mess Module</h4>
                             </a>
                             {% endif %}
 
-                            <a class="item" href="{% url 'feeds:feeds' %}">
+                            <a class="item disabled" href="{% url 'feeds:feeds' %}">
                                 <h4>Feeds Module</h4>
                             </a>
                             
 
-                            <a class="item" href="{% url 'healthcenter:healthcenter' %}">
+                            <a class="item disabled" href="{% url 'healthcenter:healthcenter' %}">
                                 <h4>Health Center Module</h4>
                             </a>
 
-                            <a class="item" href="{% url 'leave:leave' %}">
+                            <a class="item disabled" href="{% url 'leave:leave' %}">
                                 <h4>Leave Module</h4>
                             </a>
 
-                             <a class="item" href="/counselling">
+                             <a class="item disabled" href="/counselling">
                                 <h4>Counselling cell Module</h4>
                             </a>
 
-                            <a class="item" href="{% url 'placement:placement' %}">
+                            <a class="item disabled" href="{% url 'placement:placement' %}">
                                 <h4>Placement Module</h4>
                             </a>
 			    
-		            <a class="item" href="/purchase-and-store">
+		            <a class="item disabled" href="/purchase-and-store">
                                 <h4> Purchase and Store </h4>
                             </a>	
 
-                            <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
+                            <a class="item disabled" href="{% url 'visitorhostel:visitorhostel' %}">
                                 <h4>Visitor Hostel Module</h4>
                             </a>
 
-                            <a class="item" href="{% url 'hostelmanagement:hostel_view' %}">
+                            <a class="item disabled" href="{% url 'hostelmanagement:hostel_view' %}">
                                 <h4>Hostel Module</h4>
                             </a>
-			    <a class="item" href="{% url 'filetracking:filetracking' %}">
+			    <a class="item disabled" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
                         </div>
@@ -133,48 +133,48 @@
                 <i class="large inverted user icon right floated"></i>
             </a>
             {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfDeanStudents'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanStudents'%}">
     <span class="inverted header">Office Of Dean Students</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
 {% if "Dean (RSPC)" in desig %}
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfDeanRSPC'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanRSPC'%}">
     <span class="inverted header">Office Of Dean RSPC</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 
 {% endif %}
-<a class="centered raised item" href="{% url 'office_module:officeOfDeanAcademics'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanAcademics'%}">
     <span class="inverted header">Office Of Dean Academics</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:directorOffice'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:directorOffice'%}">
     <span class="inverted header">Director Office</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfPurchaseOfficer'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfPurchaseOfficer'%}">
     <span class="inverted header">Office Of Purchase Officer</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfRegistrar'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfRegistrar'%}">
     <span class="inverted header">Office Of Registrar</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfDeanPnD'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanPnD'%}">
     <span class="inverted header">Office Of P & D</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
@@ -182,11 +182,11 @@
 
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item" href="{% url 'office_module:officeOfHOD'%}">
+<a class="centered raised item disabled" href="{% url 'office_module:officeOfHOD'%}">
     <span class="inverted header">Office Of HOD {Branch}</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
-<a class="centered raised item" href="/finance/finance">
+<a class="centered raised item disabled" href="/finance/finance">
     <span class="inverted header">Finance and Accounts</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
@@ -195,7 +195,7 @@
 
 
             {% comment %}The Activity Log Item starts here!{% endcomment %}
-            <a class="centered raised item" href='/about'%}>
+            <a class="centered raised item disabled" href='/about'%}>
                 <span class="inverted header">Meet our team!</span>
                   <i class="briefcase icon right floated"></i>
             </a>
