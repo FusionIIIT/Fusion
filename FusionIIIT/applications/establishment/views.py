@@ -1523,9 +1523,9 @@ def cpda(request):
         Function handles generation and submission of CPDA form.
     """
 
-    if(is_faculty(request)==False and is_director(request)==False):
+    # if(is_faculty(request)==False and is_director(request)==False):
         # if(is_director(request)==False):
-            return HttpResponseRedirect('/dashboard/')
+            # return HttpResponseRedirect('/dashboard/')
     # if(is_student(request)==True):
     #     return HttpResponseRedirect('/dashboard/')
 

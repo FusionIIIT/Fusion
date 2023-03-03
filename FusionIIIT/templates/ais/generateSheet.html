@@ -110,7 +110,7 @@
         </div>
         <div class="field">
           <label>Select Semester</label>
-          <input type="number" id="semester_no" name="semester_no" required>
+          <input type="number" min="1" max="8" id="semester_no" name="semester_no" required="true">
         </div>
         <div class="field">
             <button class="ui fluid primary button" type="submit">Generate PreRegistration Summary</button>
@@ -119,8 +119,6 @@
 </div>
     {% comment %}
 </div> {% endcomment %}
-
-
 
 <style type="text/css">@keyframes lds-rolling {
     0% {
