@@ -12,7 +12,7 @@ DATABASES = {
         'NAME': 'fusionlab',
         'HOST': 'localhost',
         'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'PASSWORD': 'admin',
     }
 }
 
