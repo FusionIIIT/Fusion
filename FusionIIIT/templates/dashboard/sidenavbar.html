@@ -50,75 +50,75 @@
                 <a class="item" href="/programme_curriculum">
                     <h4> Programme & Curriculum Module </h4>
                 </a>
-                <a class = "item disabled" href="/gymkhana">
+                <a class = "item" href="/gymkhana">
                     <h4> Gymkhana Module </h4>
                 </a>
-				<a class="item disabled" href="/iwdModuleV2">
+				<a class="item" href="/iwdModuleV2">
                                 <h4>IWD Module</h4>
                             </a>
                 {% if request.user.extrainfo.user_type == 'faculty' or request.user.extrainfo.user_type == 'staff' %}
-                <a class = "item disabled" href="{% url 'establishment:establishment' %}">
+                <a class = "item" href="{% url 'establishment:establishment' %}">
                     <h4> Establishment Module </h4>
                 </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == 'faculty' %}
                 {%for desig in designat%}
                 {% if 'hradmin' == desig.designation.name %}
-                <a class = "item disabled" href="/hr2/hradmin/">
+                <a class = "item" href="/hr2/hradmin/">
                     <h4> HR2 Module </h4>
                 </a>
                 {% endif %}
                 {%endfor %}
                 {% endif %}
-                <a class = "item disabled" href="/library/library">
+                <a class = "item" href="/library/library">
                     <h4> Library Module </h4>
                 </a>
-    			    <a class="item disabled" href="{% url 'spacs:spacs' %}">
+    			    <a class="item" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
 
-                            <a class="item disabled" href="{% url 'complaint:complaint' %}">
+                            <a class="item" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
                             </a>
                               {% if user.extrainfo.user_type != 'faculty' %}
-                            <a class="item disabled" href="{% url 'mess:mess' %}">
+                            <a class="item" href="{% url 'mess:mess' %}">
                                 <h4>Central Mess Module</h4>
                             </a>
                             {% endif %}
 
-                            <a class="item disabled" href="{% url 'feeds:feeds' %}">
+                            <a class="item" href="{% url 'feeds:feeds' %}">
                                 <h4>Feeds Module</h4>
                             </a>
                             
 
-                            <a class="item disabled" href="{% url 'healthcenter:healthcenter' %}">
+                            <a class="item" href="{% url 'healthcenter:healthcenter' %}">
                                 <h4>Health Center Module</h4>
                             </a>
 
-                            <a class="item disabled" href="{% url 'leave:leave' %}">
+                            <a class="item" href="{% url 'leave:leave' %}">
                                 <h4>Leave Module</h4>
                             </a>
 
-                             <a class="item disabled" href="/counselling">
+                             <a class="item" href="/counselling">
                                 <h4>Counselling cell Module</h4>
                             </a>
 
-                            <a class="item disabled" href="{% url 'placement:placement' %}">
+                            <a class="item" href="{% url 'placement:placement' %}">
                                 <h4>Placement Module</h4>
                             </a>
 			    
-		            <a class="item disabled" href="/purchase-and-store">
+		            <a class="item" href="/purchase-and-store">
                                 <h4> Purchase and Store </h4>
                             </a>	
 
-                            <a class="item disabled" href="{% url 'visitorhostel:visitorhostel' %}">
+                            <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
                                 <h4>Visitor Hostel Module</h4>
                             </a>
 
-                            <a class="item disabled" href="{% url 'hostelmanagement:hostel_view' %}">
+                            <a class="item" href="{% url 'hostelmanagement:hostel_view' %}">
                                 <h4>Hostel Module</h4>
                             </a>
-			    <a class="item disabled" href="{% url 'filetracking:filetracking' %}">
+			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
                         </div>
