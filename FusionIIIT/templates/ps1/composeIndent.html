@@ -18,9 +18,47 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
+            
+
+
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
-                <div class="field">
+            {% comment %} <div class="field">
+                <label>Title of Indent File*</label>
+                <textarea rows="1" name="title" required></textarea>
+            </div> {% endcomment %}
+
+
+             <div class="field" >
+                 <label> Item Details </label>
+                <table class="ui celled padded table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity & Stocks</th>
+                            <th>Purpose & Specification</th>
+                            <th>File</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id='textify'>
+
+            
+                    </tbody>
+                    <tfoot class="full-width">
+                        <tr>
+                        <th></th>
+                        <th colspan="4">
+                            <div class="ui right floated small secondary labeled icon button " id='add_more_items'>
+                                Add Item <i class="ui add icon right floated"></i>
+                            </div>
+                        
+                        </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+               <div class="field">
                         <label>Title of Indent File*</label>
                         <textarea rows="1" name="title" required></textarea>
                 </div>
@@ -41,13 +79,13 @@
 
                 <div class="field">
                     <label>Quantity*</label>
-                    <input type="number" name="quantity" required></input>
+                    <input type="number" name="quantity" required/>
                 </div>
 
 
                 <div class="field">
                     <label>Present Stock*</label>
-                    <input type="number"  name="present_stock" required></input>
+                    <input type="number"  name="present_stock" required/>
                 </div>
 
                 <div class="field">
@@ -140,17 +178,21 @@
 
                         </select>
                     </label>
-                </div>
+                </div> 
 
-                <br>
+                 <br>
 
                 <div class = "left floated item">
                       <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
                       <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
-                <br>
-
+                <br> 
+                <div>
+                    <div class="ui large right floated secondary button" onclick="addmoreHandler()">
+                        Add More<i class="ui add icon right floated"></i>
+                    </div>
+                </div>
                 <div>
                     <a class="right floated item">
 
@@ -158,9 +200,16 @@
                             Save to drafts<i class="ui save icon right floated"></i>
                         </button>
                     </a>
-                </div>
+                </div> 
+
+               
+                
+                
+
+                
 
                 <br>
+               
                 <br>
                 <div class="field">
                             <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
@@ -190,8 +239,8 @@
                 </div>
 
 
-                <div>
-                    <a class="right floated item">
+                <div style='margin-bottom:30px;'>
+                    <a class="right floated item" >
 
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
                                 Send<i class="ui send icon right floated"></i>
@@ -203,6 +252,154 @@
 
             </form>
 
+            <div class="ui modal">
+                <div class='header'>Add New Item</div>
+                <div class='scrolling content'>
+                    <form class="ui form" id="item-form">
+                        <div class="field">
+                            <label>Item Details</label>
+                            <div class="two fields">
+                                <div class="field">
+                                    <input type="text" placeholder="Item Name" name="item_name" />
+                                </div>
+                                <div class="field">
+                                    <input type="number" placeholder="Quantity" name="quantity" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Description</label>
+                            <textarea
+                                rows="3"
+                                placeholder="Enter the description"
+                                name="desc"
+                            ></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label>Stocks and Costs</label>
+                            <div class="two fields">
+                                <div class="field">
+                                    <input type="number" placeholder="Present Stock" name="present_stock" />
+                                </div>
+                                <div class="field">
+                                    <input
+                                    type="number"
+                                    placeholder="Estimated Cost"
+                                    name="estimated_cost"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>Purpose</label>
+                                    <textarea
+                                    rows="3"
+                                    placeholder="Enter the Purpose"
+                                    name="purpose"
+                                    ></textarea>
+                                </div>
+                                <div class="field">
+                                    <label>Specification</label>
+                                    <textarea
+                                    rows="3"
+                                    placeholder="Enter the specification"
+                                    name="specification"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>Item Type</label>
+
+                                    <select class="ui fluid dropdown" name="indent_type">
+                                    <option value="Equipment">Equipment</option>
+                                    <option value="Machinery">Machinery</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Fixture">Fixture</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Expected Delivery</label>
+                                    <input type="date" id="start" name="expected_delivery" />
+                                </div>
+                            </div>
+                        </div>
+                            {% comment %} <div class="field">
+                                <div class="two fields">
+                                <div class="field">
+                                    <label>Budgetory Head</label>
+                                    <textarea rows="3" name="budgetary_head"> </textarea>
+                                </div>
+                                <div class="field">
+                                    <label>Sources of Supply</label>
+                                    <textarea rows="3" name="sources_of_supply"> </textarea>
+                                </div>
+                                </div>
+                            </div> {% endcomment %}
+                        <div class="field">
+                            <div class="three fields">
+                                <div class="field">
+                                    <h5>Nature of Item*</h5>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="nature" value="True" /> Consumable
+                                    </label>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="nature" value="False" /> Non Consumable
+                                    </label>
+                                </div>
+
+                                <div class="field">
+                                    <h5>Indigenous*</h5>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="indigenous" value="True" /> Yes
+                                    </label>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="indigenous" value="False" /> No
+                                    </label>
+                                </div>
+
+                                <div class="field">
+                                    <h5>Replaced*</h5>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="replaced" value="True" /> Yes
+                                    </label>
+                                    <label class="radio-inline">
+                                    <input type="radio" name="replaced" value="False" /> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="left floated item">
+                            <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                            <input
+                            type="file"
+                            id="file"
+                            name="myfile"
+                            accept=".pdf, .jpg, .jpeg, .png"
+                            />
+                        </div>
+
+                        <div class="action">
+                            <button
+                            class="ui floated primary button"
+                            type="submit"
+                            style="margin-top: 20px"
+                            tabindex="0"
+                            >
+                            Add this Item
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div> 
+
             <br>
 
         </div>
@@ -213,77 +410,178 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 
-<script type="text/javascript">
 
+    <script type="text/javascript">
+            
+        const addmoreHandler = ()=>{
+            $('.ui.modal').modal({ blurring : true }).modal('show');
+        }
 
-        $('#input_search1').keyup(function(){
+        document.getElementById('add_more_items').addEventListener('click',addmoreHandler,false)
 
-            console.log('asdasd');
-            value = $('#input_search1').val();
+        let Items = []; /* This is the array which will store the details of the Items of the indentFile*/
 
-              $.ajax({
+        document.getElementById("item-form").addEventListener(
+        "submit",
+        function (event) {
+            event.preventDefault();
+            const form = event.target;
+            const formFields = form.elements;
+            
+            Items.push({
+                item_name : formFields?.item_name?.value,
+                quantiy : formFields?.quantity?.value,
+                desc : formFields?.desc?.value,
+                present_stock: formFields?.present_stock?.value,
+                estimated_cost: formFields?.estimated_cost?.value,
+                purpose : formFields?.purpose?.value,
+                specification : formFields?.specification?.value,
+                indent_type : formFields?.indent_type?.value,
+                expected_delivery : formFields?.expected_delivery?.value,
+                nature : formFields?.nature?.value,
+                indigenous : formFields?.indigenous?.value,
+                replaced : formFields?.replaced?.value,
+                file : formFields?.myfile?.files[0],
+            }) //  Pushing the Item into Items array 
+            console.log(Items)
+
+            const formData = new FormData();
+            formData.append("first",1)
+            formData.append("items" , JSON.stringify(Items));
+
+            console.log("This is Formdata value : ")
+            for(const value of formData?.values()){
+                console.log(value)
+
+            }
+            
+            $.ajax({
                 type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
+                url: '/purchase-and-store/test_route/',
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response){
                     console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
+                    result = JSON.parse(response.data);
+                    console.log(result)
                 },
                 error: function(rs, e){
                     console.log('error-------');
                 },
+            }); 
+
+                document.getElementById("textify").innerHTML += ` <tr>
+                <td>
+                    <h3>${formFields?.item_name?.value}</h3>
+                </td>
+                <td class="single line">
+                    <span>Quantity : <strong>${
+                    formFields?.quantity?.value
+                    }</strong></span><br><br>
+                    <span>Stock Present : <strong>${
+                    formFields?.present_stock?.value
+                    }</strong></span>
+                </td>
+                <td>
+                    <div class="ui list">
+                        <div class="item">
+                            <div class="header">Purpose</div>
+                            ${formFields?.purpose?.value}
+                        </div>
+                        <div class="item">
+                            <div class="header">Specification</div>
+                            ${formFields?.specification?.value}
+                        </div>
+                    </div>
+                </td>
+                <td class="left aligned">
+                    <a  target="_blank" href=${URL.createObjectURL(
+                    formFields?.myfile?.files[0]
+                    )}>${formFields?.myfile?.files[0].name}</a>
+                </td>
+                <td>
+                    <button class='ui red button'>Delete</button>
+                </td>
+                </tr>
+                `;
+                // document.getElementById("item-form").reset();
+        },
+        false
+        );
+
+
+
+
+            $('#input_search1').keyup(function(){
+
+                console.log('asdasd');
+                value = $('#input_search1').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/filetracking/ajax/',
+                    data: {
+                        'value': value,
+                        'csrfmiddlewaretoken': '{{csrf_token}}'
+                    },
+                    dataType: 'json',
+                    success: function(response){
+                        console.log('coming-----------------------');
+
+                        console.log(response.holds[0]);
+
+                        all_designations = JSON.parse(response.holds);
+                        console.log(all_designations[0].fields.name);
+                        app = []
+                        $('#input_list1').html('');
+                        for(var i=0;i<all_designations.length;i++){
+                        $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                        }
+                    },
+                    error: function(rs, e){
+                        console.log('error-------');
+                    },
+                });
+                console.log("dsfagdfdshadf");
             });
-            console.log("dsfagdfdshadf");
-        });
     </script>
 
     <script type="text/javascript">
-        $('#input_search').keyup(function(){
 
-            console.log('asdasd');
-            value = $('#input_search').val();
+            $('#input_search').keyup(function(){
 
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax_dropdown/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
+                console.log('asdasd');
+                value = $('#input_search').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/filetracking/ajax_dropdown/',
+                    data: {
+                        'value': value,
+                        'csrfmiddlewaretoken': '{{csrf_token}}'
+                    },
+                    dataType: 'json',
+                    success: function(response){
+                        console.log('coming-----------------------');
 
 
 
-                    all_users = JSON.parse(response.users);
-                    console.log(all_users[0].fields.username);
-                    app = []
-                    $('#input_list').html('');
-                    for(var i=0;i<all_users.length;i++){
-                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
+                        all_users = JSON.parse(response.users);
+                        console.log(all_users[0].fields.username);
+                        app = []
+                        $('#input_list').html('');
+                        for(var i=0;i<all_users.length;i++){
+                        $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                        }
+                    },
+                    error: function(rs, e){
+                        console.log('error-------');
+                    },
+                });
+                console.log("dsfagdfdshadf");
             });
-            console.log("dsfagdfdshadf");
-        });
-</script>
+    </script>
 
 {% endblock %}
 

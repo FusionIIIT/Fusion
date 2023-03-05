@@ -1,0 +1,208 @@
+{% block add_new_item_modal %}
+<form class="ui form" id="item-form">
+  <div class="field">
+    <label>Item Details</label>
+    <div class="two fields">
+      <div class="field">
+        <input type="text" placeholder="Item Name" name="item_name" />
+      </div>
+      <div class="field">
+        <input type="number" placeholder="Quantity" name="quantity" />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Description</label>
+    <textarea
+      rows="3"
+      placeholder="Enter the description"
+      name="desc"
+    ></textarea>
+  </div>
+
+  <div class="field">
+    <label>Stocks and Costs</label>
+    <div class="two fields">
+      <div class="field">
+        <input type="number" placeholder="Present Stock" name="present_stock" />
+      </div>
+      <div class="field">
+        <input
+          type="number"
+          placeholder="Estimated Cost"
+          name="estimated_cost"
+        />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Purpose</label>
+        <textarea
+          rows="3"
+          placeholder="Enter the Purpose"
+          name="purpose"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label>Specification</label>
+        <textarea
+          rows="3"
+          placeholder="Enter the specification"
+          name="specification"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Item Type</label>
+
+        <select class="ui fluid dropdown" name="indent_type">
+          <option value="Equipment">Equipment</option>
+          <option value="Machinery">Machinery</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Fixture">Fixture</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Expected Delivery</label>
+        <input type="date" id="start" name="expected_delivery" />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Budgetory Head</label>
+        <textarea rows="3" name="budgetary_head"> </textarea>
+      </div>
+      <div class="field">
+        <label>Sources of Supply</label>
+        <textarea rows="3" name="sources_of_supply"> </textarea>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="three fields">
+      <div class="field">
+        <h5>Nature of Item*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="nature" value="True" /> Consumable
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="nature" value="False" /> Non Consumable
+        </label>
+      </div>
+
+      <div class="field">
+        <h5>Indigenous*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="indigenous" value="True" /> Yes
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="indigenous" value="False" /> No
+        </label>
+      </div>
+
+      <div class="field">
+        <h5>Replaced*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="replaced" value="True" /> Yes
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="replaced" value="False" /> No
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label
+      >Create as:
+      <select class="ui fluid search selection dropdown" name="design">
+        <option selected hidden>Select</option>
+
+        {% for designations in designations %}
+        <option value="{{designations.id}}">{{designations}}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="left floated item">
+    <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+    <input
+      type="file"
+      id="file"
+      name="myfile"
+      accept=".pdf, .jpg, .jpeg, .png"
+    />
+  </div>
+
+  <div class="action">
+    <button
+      class="ui floated primary button"
+      type="submit"
+      style="margin-top: 20px"
+      tabindex="0"
+    >
+      Add this Item
+    </button>
+  </div>
+</form>
+
+<script type="text/javascript">
+  document.getElementById("item-form").addEventListener(
+    "submit",
+    function (event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const formFields = form.elements;
+      //const node = document.createElement("li");
+      console.log(formFields?.myfile?.files[0]);
+
+      document.getElementById("textify").innerHTML += ` <tr>
+      <td>
+        <h3>${formFields?.item_name?.value}</h3>
+      </td>
+      <td class="single line">
+        <span>Quantity : <strong>${
+          formFields?.quantity?.value
+        }</strong></span><br><br>
+        <span>Stock Present : <strong>${
+          formFields?.present_stock?.value
+        }</strong></span>
+      </td>
+      <td>
+        <div class="ui list">
+            <div class="item">
+                <div class="header">Purpose</div>
+                ${formFields?.purpose?.value}
+            </div>
+            <div class="item">
+                <div class="header">Specification</div>
+                ${formFields?.specification?.value}
+            </div>
+        </div>
+      </td>
+      <td class="left aligned">
+        <a  target="_blank" href=${URL.createObjectURL(
+          formFields?.myfile?.files[0]
+        )}>${formFields?.myfile?.files[0].name}</a>
+      </td>
+      <td>
+          <button class='ui red button'>Delete</button>
+      </td>
+    </tr>
+  `;
+
+      document.getElementById("item-form").reset();
+    },
+    false
+  );
+</script>
+
+{% endblock %}
