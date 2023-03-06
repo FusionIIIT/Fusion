@@ -9,11 +9,16 @@ from .models import LeaveMigration, LeaveRequest, LeavesCount
 def get_designation(user):
     desig = list(HoldsDesignation.objects.all().filter(working = user).values_list('designation'))
     b = [i for sub in desig for i in sub]
-    c=str(Designation.objects.get(id=b[0]))
-    for i in b:
-        if str(Designation.objects.get(id=i))=='Assistant Registrar':
-            c='Assistant Registrar'
-            break
+    try:
+        c=str(Designation.objects.get(id=b[0]))
+        for i in b:
+            obj = Designation.objects.get(id=i)
+            if str(obj)=='Assistant Registrar':
+                c='Assistant Registrar'
+            elif str(obj)== 'administrative':
+                c='administrative'
+    except:
+        c = 'administrative'
     print(c)
     return c
 

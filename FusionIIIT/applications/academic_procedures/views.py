@@ -2650,11 +2650,11 @@ def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)
     html  = template.render(context_dict)
     result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
-
+# ISO-8859-1
 def generate_grade_pdf(request):
     instructor = Curriculum_Instructor.objects.all().select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(curriculum_id = verified_marks_students_curr).first()
     context = {'verified_marks_students' : verified_marks_students,
@@ -3077,6 +3077,9 @@ def Bonafide_form(request):
             return response
         return HttpResponse("PDF could not be generated")
 
+def get_user_info(request):
+    user_list = ExtraInfo.objects.values()
+    return JsonResponse(list(user_list), safe=False)
 
 # def bonafide(request):
 #     # if this is a POST request we need to process the form data

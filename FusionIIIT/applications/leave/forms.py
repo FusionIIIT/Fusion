@@ -39,7 +39,7 @@ class StudentApplicationForm(forms.Form):
             errors['end_date'] = ['Past Dates are not allowed']
 """
         lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
-
+        
         if lt.requires_proof and not data.get('document'):
             errors['document'] = [f'{lt.name} Leave requires document proof']
 

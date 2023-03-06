@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^generate_grade_sheet_pdf/$', views.generate_grade_sheet_pdf),
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$', views.Bonafide_form),
+    url(r'^get_user_info$', views.get_user_info),
     url(r'^test_ret/$', views.test_ret),
     url(r'^api/', include('applications.academic_procedures.api.urls')),
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
