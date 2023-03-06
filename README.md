@@ -12,7 +12,7 @@
 
 ## Software Requirements
 
-* Python `3.8`or `3.9`
+* Python `3.8` or `3.9`
 * Git
 
 ## How to get started
