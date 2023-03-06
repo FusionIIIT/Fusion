@@ -4,7 +4,8 @@
 
 ## System Configuration
 
-* Ubuntu `20.04` **(Recommended)** * MacOS 10.9 and later
+* Ubuntu `20.04` **(Recommended)** 
+* MacOS 10.9 and later
 * *OR* WSL for Windows `10` \(Follow the guide below\) :  
     [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 * *OR* Windows `7/8/8.1/10`
