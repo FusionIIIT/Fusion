@@ -613,7 +613,6 @@ def section_incharge(request):
                         total_worker, 'complaint_assign_no': complaint_assign_no})
         
 
-
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)  
         a = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
