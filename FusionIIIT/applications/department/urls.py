@@ -11,5 +11,7 @@ urlpatterns = [
     url(r'^staffView/$', views.staff_view, name='staff_view'),
     url(r'^All_Students/(?P<bid>[0-9]+)/$', views.all_students,name='all_students'),
     url(r'^approved/$', views.approved, name='approved'),
-    url(r'^deny/$', views.deny, name='deny')
+    url(r'^deny/$', views.deny, name='deny'),
+    url(r'^announcement_api/$', views.AnnouncementAPI.as_view(), name='announcement_api'),
+    url(r'^request_api/$', views.SpecialRequestAPI.as_view(), name='request_api')
 ]
