@@ -1,4 +1,4 @@
-
+<center><b>Mess Bill History</b></center>
     <table class="ui celled table"
     style="padding-left: 2.5%;
             padding-right: 2.5%;
@@ -45,4 +45,36 @@
         {% endfor %}
         </tbody>
     </table>
-    
+<br>
+<br>
+<center><b>Mess Dues</b></center>
+{% if m_year < 0 %}
+<h4>Your Entry in Mess Dues is not entered yet.</h4>
+{% else %} 
+    <table class="ui celled table"
+    style="padding-left: 2.5%;
+            padding-right: 2.5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            width: 100%">
+        <thead>
+            <tr style="border-radius: 3px;">
+                <th rowspan="2">Month</th>
+                <th rowspan="2">Year</th>
+                <th rowspan="2">Description</th>
+                <th rowspan="2">Amount</th>
+                <th rowspan="2">Remaining Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr >                
+            <td>{{ m_month }}</td>
+            <td>{{ m_year }}</td>
+            <td>{{ m_des }}</td>
+            <td>{{ m_amount }}</td>
+            <td>{{ m_r_amount }}</td>
+         </tr>
+        </tbody>
+    </table>
+{% endif %}   
