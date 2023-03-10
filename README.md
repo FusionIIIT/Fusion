@@ -190,3 +190,8 @@ The project now supports notifications across all modules. To implement notifica
   module_notif(sender, receiver, type)
   ```
 * The Notifications should then appear in the dashboard for the recipient
+
+## Setting up Fusion using Docker
+- Make sure you have docker & docker-compose setup properly.
+- Run `docker-compose up`
+- Once the server starts, run `sudo docker exec -i fusion_db_1 psql -U fusion_admin -d fusionlab < path_to_db_dump`
