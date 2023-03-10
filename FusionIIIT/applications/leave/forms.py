@@ -49,11 +49,7 @@ class StudentApplicationForm(forms.Form):
 
 
         lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
-
-        # if lt is None, use default
-        if lt is None:
-            lt = LeaveType()
-
+        
         if lt.requires_proof and not data.get('document'):
             errors['document'] = [f'{lt.name} Leave requires document proof']
 

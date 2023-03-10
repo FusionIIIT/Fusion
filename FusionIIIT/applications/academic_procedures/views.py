@@ -436,6 +436,20 @@ def academic_procedures_student(request):
                 logging.warning("entry in DB not found for student")
 
         tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
+        # Mess Dues 
+        m_year, m_amount, m_r_amount= -1, -1, -1
+        m_month ,m_des="","" 
+        if student_flag:
+            try:         
+                obj = MessDue.objects.select_related().get(student_id=Student.objects.select_related('id','id__user','id__department').get(id=request.user.username))
+
+                m_year= obj.year
+                m_month= obj.month
+                m_amount= obj.amount
+                m_des= obj.description
+                m_r_amount=obj.remaining_amount
+            except ObjectDoesNotExist:
+                logging.warning("entry in DB not found for student")
         obj = Student.objects.select_related('id','id__user','id__department').get(id=request.user.username)
         course_list = []
         for i in registers:
@@ -525,7 +539,12 @@ def academic_procedures_student(request):
                            'mess_d':mess_d,
                            'pc_d':pc_d,
                            'hos_d':hos_d,
-                            'tot_d':tot_d,
+                           'tot_d':tot_d,
+                           'm_year': m_year,
+                           'm_month': m_month,
+                           'm_amount': m_amount,
+                           'm_des': m_des,
+                           'm_r_amount': m_r_amount,
                            'attendence':attendence,
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
@@ -3104,7 +3123,6 @@ def Bonafide_form(request):
             response['Content-Disposition'] = 'attachment; filename=Bonafide.pdf' 
             return response
         return HttpResponse("PDF could not be generated")
-
 
 # def bonafide(request):
 #     # if this is a POST request we need to process the form data
