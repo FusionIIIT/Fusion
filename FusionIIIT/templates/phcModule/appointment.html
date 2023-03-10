@@ -97,6 +97,8 @@
                      csrfmiddlewaretoken: '{{ csrf_token }}',
                      doctor:$("#doc").val(),
                      date:$("#date").val(),
+                    from_time:$("#from_time").val(),
+                    to_time:$("#to_time").val(),
                      description:$("#description").val(),
                      appointment:$("#appo").val(),
                      },
@@ -104,7 +106,12 @@
                         var dte = new Date(data.dt);
                         dte.setHours(0, 0, 0, 0);
 
-                         alert("Appointment requested.Check history for the status of appointment. ")
+                        if(data.status == '1') {
+                          alert("Appointment requested.Check history for the status of appointment. ")
+                        } else if (data.status == '0') {
+                          alert(data.message);
+                        }
+
                          document.getElementById("doc").value=""
                          document.getElementById("date").value=""
                          document.getElementById("description").value=" "
