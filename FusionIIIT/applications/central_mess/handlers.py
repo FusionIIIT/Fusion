@@ -155,11 +155,8 @@ def add_menu_change_request(request, student):
     :return:
     """
     try:
-        print("inside add_menu")
         dish = Menu.objects.get(dish=request.POST.get("dish"))
-        print(dish, "-------------------------------------------------------------------")
         new_dish = request.POST.get("newdish")
-        print(new_dish)
         reason = request.POST.get("reason")
         # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
         menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
@@ -172,7 +169,6 @@ def add_menu_change_request(request, student):
         data = {
             'status': 0
         }
-        print(e)
         return data
 
 
@@ -538,10 +534,7 @@ def add_bill_base_amount(request):
 
 
 def add_mess_committee(request, roll_number):
-    print("\n\n\\n\n\n\n\n")
-    print(roll_number)
     mess = Messinfo.objects.get(student_id__id=roll_number)
-    print(mess) 
     if mess.mess_option == 'mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     else:
