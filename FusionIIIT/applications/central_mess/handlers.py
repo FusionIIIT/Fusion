@@ -602,7 +602,7 @@ def generate_bill():
         if Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
                                        year = previous_month_year,
-                                       total_bill=total):
+                                       total_bill=total).exists():
            1
         elif Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
