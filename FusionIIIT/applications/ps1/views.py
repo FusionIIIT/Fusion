@@ -255,6 +255,9 @@ def composed_indents(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+          return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         # 'draft': draft,
@@ -285,6 +288,9 @@ def drafts(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         # 'draft': draft,
@@ -296,6 +302,9 @@ def drafts(request):
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
 
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     tracking_objects=Tracking.objects.all()
     tracking_obj_ids=[obj.file_id for obj in tracking_objects]
@@ -317,6 +326,10 @@ def indentview(request,id):
 
 @login_required(login_url = "/accounts/login")
 def draftview(request,id):
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
     indent_ids=[indent.file_info for indent in indents]
@@ -341,7 +354,9 @@ def draftview(request,id):
 def indentview2(request,id):
 
 
-
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     indent_files = IndentFile.objects.all().values('file_info')
     print(indent_files)
     in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
@@ -372,6 +387,9 @@ def inward(request):
                     in_file - The Tracking object filtered by receiver_id i.e, present working user.
                     context - Holds data needed to make necessary changes in the template.
     """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     in_file=Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
 
@@ -384,6 +402,9 @@ def inward(request):
     return render(request, 'ps1/inwardIndent.html', context)
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     file = File.objects.get(pk = id)
 
     context = {
@@ -419,6 +440,9 @@ def forwardindent(request, id):
     # start = timer()
     
     # end = timer()
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     indent=IndentFile.objects.select_related('file_info').get(file_info=id)
     file=indent.file_info
     # start = timer()
@@ -567,6 +591,9 @@ def createdindent(request, id):
                     holdsdesignations = HoldsDesignation objects.
                     context - Holds data needed to make necessary changes in the template.
     """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     # start = timer()
     
     # end = timer()
@@ -658,7 +685,9 @@ def createdindent(request, id):
 
 
 def AjaxDropdown1(request):
-    print('brefore post')
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     if request.method == 'POST':
         value = request.POST.get('value')
         # print(value)
@@ -676,7 +705,7 @@ def AjaxDropdown1(request):
 
 
 def AjaxDropdown(request):
-    print('asdasdasdasdasdasdasdas---------------\n\n')
+    # print('asdasdasdasdasdasdasdas---------------\n\n')
     # Name = ['student','co-ordinator','co co-ordinator']
     # design = Designation.objects.filter(~Q(name__in=(Name)))
     # hold = HoldsDesignation.objects.filter(Q(designation__in=(design)))
@@ -685,6 +714,9 @@ def AjaxDropdown(request):
 
     # for h in hold:
     #     arr.append(ExtraInfo.objects.filter(user=h.user))
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     if request.method == 'POST':
         value = request.POST.get('value')
@@ -703,6 +735,9 @@ def test(request):
 
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     file = File.objects.get(pk = id)
     file.delete()
 
@@ -722,12 +757,12 @@ def delete(request,id):
 
 
 @login_required(login_url = "/accounts/login")
-
 def Stock_Entry(request):
-    
-    
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    else :
         if request.method=='GET' :
-            
             return HttpResponseRedirect('../stock_view')
         
         if request.method =="POST":
@@ -768,6 +803,9 @@ def Stock_Entry(request):
 def stock_edit(request): 
     # stocks=StockEntry.objects.get(pk=id)
     # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
    
 
     if request.method =="POST":
@@ -791,6 +829,9 @@ def stock_edit(request):
     #    return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
         
 def stock_update(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     if request.method =="POST":
         if 'save' in request.POST:
             id=request.POST.get('id')
@@ -815,6 +856,10 @@ def stock_update(request):
 #     return render(request,'ps1/stock_view.html',{'StockEntry':sto})
 # @login_required(login_url = "/accounts/login")
 def stock_view(request):
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     
     sto=StockEntry.objects.all()
     if sto:
@@ -826,8 +871,12 @@ def stock_view(request):
             print()   
         
     return render(request,'ps1/stock_view.html',{'sto':sto})
+
 @login_required(login_url = "/accounts/login")    
 def stock_delete(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     
     if request.method=='POST':
         
@@ -841,6 +890,9 @@ def stock_delete(request):
     return HttpResponseRedirect('../stock_view')   
 @login_required(login_url = "/accounts/login")   
 def entry(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     if request.method=='POST':
         id=request.POST.get('id')
@@ -855,6 +907,9 @@ def entry(request):
     return render(request,'ps1/entry.html',{'ent':ent})
     
 def dealing_assistant(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     print(request.user.extrainfo.id)
     print(type(request.user.extrainfo.id))
     if request.user.extrainfo.id=='132' :
