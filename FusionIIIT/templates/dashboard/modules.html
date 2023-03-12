@@ -231,8 +231,41 @@
                                     </div>
                                 </div>
                             </a>
+                        </div>
                     </div>
-                </div>
+                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% if 'student' != request.user.extrainfo.user_type %}
+                    <div class="row">
+                        <div class="column">
+                            <a class="ui large label disabled" href="/hr2/administrativeProfile">
+                                <div class="ui centered grid">
+                                    <div class="row">
+                                        <i class="ui briefcase icon big"></i>
+                                    </div>
+
+                                    <div class="row">
+                                        <span class="ui sub header centered">Admin &nbsp; Profile</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- <div class="column">
+                            <a class="ui large label disabled" href="/leave">
+                                <div class="ui centered grid">
+                                    <div class="row">
+                                        <i class="ui file icon big"></i>
+                                    </div>
+
+                                    <div class="row">
+                                        <span class="ui sub header centered">Leave Module</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div> -->
+                    </div>
+                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% endif %}
+
             </div>
             {% comment %}
             <a class="ui bottom attached blue label">
