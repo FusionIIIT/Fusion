@@ -355,12 +355,14 @@ def user(request):
         else:
           dsgn = "rewacaretaker"
         caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = dsgn)
-    
+        secincharge_name = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(work_type = comp_type)
+
 
         # This is to allow the student
-        student = 1
+        student = 0
         message = "A New Complaint has been lodged"
         complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, secincharge_name.staff_id.user,'lodge_comp_alert',obj1.id,1,message)
 
         messages.success(request,message)
         return HttpResponseRedirect('/complaint/user')
@@ -485,7 +487,7 @@ def caretaker(request):
         
 
         notification = Notification.objects.filter(recipient=current_user.id)
-        notification = notification.filter(data__exact={'url':'complaint:detail2','module':'Complaint System'})
+        notification = notification.filter(data__exact={'url':'complaint:detail','module':'Complaint System'})
         return render(request, "complaintModule/complaint_caretaker.html",
                       {'history': history, 
                       'notification': notification})
@@ -515,7 +517,7 @@ def caretaker(request):
                     overduecomplaint.append(i)
         
         notification = Notification.objects.filter(recipient=current_user.id)
-        notification = notification.filter(data__exact={'url':'complaint:detail2','module':'Complaint System'})
+        notification = notification.filter(data__exact={'url':'complaint:detail','module':'Complaint System'})
         
 
         
@@ -610,7 +612,6 @@ def section_incharge(request):
                       'notification': notification, 'total_worker':
                         total_worker, 'complaint_assign_no': complaint_assign_no})
         
-
 
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)  
