@@ -298,23 +298,33 @@ $('.bookameal-submit').click(function(event){
     event.preventDefault();
     var pk = $(this).attr('data-pk');
     var food = []
+    // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
     $('input[name=food'+pk+']:checked').each(function(){
         food.push($(this).val());
     });
+    var jsondata = {
+            'pk' : pk,
+            'booking' : $('input[name="meal-booking-id"]').val(),
+            'numberofpeople': 1,
+            'food':food,
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/record-meal/',
         data: {
             'pk' : pk,
             'booking' : $('input[name="meal-booking-id"]').val(),
-            'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
+            'numberofpeople': 1,
             'food':food,
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
         },
         success: function(data) {
             alertModal('Great! Meals recorded successfully');
         },
-        error: function(data, err) {
+        error: function (data, err) {
+           
             alertModal('Something missing! Please refill the form');
         }
     });
@@ -382,7 +392,7 @@ $('#add-more-items-inventory').click(function(event){
 
 $('#add-item-form-submit').click(function(event){
     event.preventDefault();
-    if($('input[name="consumable"]:checked')){
+    if($('input[name=="consumable"].checked')){
         consumable = 'True';
     }
     else{
@@ -396,7 +406,7 @@ $('#add-item-form-submit').click(function(event){
             'item_name' : $('input[name="item-name"]').val(),
             'quantity' : $('input[name="quantity_add"]').val(),
             'cost' : $('input[name="cost"]').val(),
-            'consumable' : consumable,
+            'consumable' : $('input[name="consumable"]:checked'),
             'bill_number' : $('input[name="bill_number"]').val()
         },
         success: function(data) {
