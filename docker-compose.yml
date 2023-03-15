@@ -2,6 +2,7 @@ version: "3.9"
 services:
   db:
     image: postgres:13-alpine
+    restart: always
     volumes:
       - /private/var/lib/postgresql:/var/lib/postgresql/data
     environment:
@@ -15,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - .:/home/app
     ports:
