@@ -11,11 +11,11 @@
     <h4 class="ui dividing header">{{course.course_name}}</h4>
 
     <div class="ui top attached tabular menu">
-      {% for assi in assignment %}
+      {% for assi in assignment1 %}
         <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
       {% endfor %}
     </div>
-    {% for assi in assignment %}
+    {% for assi in assignment1 %}
     <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
         <table class="ui very basic collapsing celled table">
             <thead>
@@ -54,9 +54,10 @@
                           <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
                         </div>
                       </div>
+                      <input type="submit" class="ui primary button" id="submit_marks" value="Upload">
                     </td>
                     <td>
-                      <a class="ui primary button" href="{{sa.upload_url}}">Download</a>
+                      <a class="ui primary button" href="{{sa.doc.url}}">Download</a>
                     </td>
                     <td >
                       {% if sa.score %}

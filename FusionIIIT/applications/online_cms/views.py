@@ -174,12 +174,12 @@ def course(request, course_code):
         #         videos.append(video_data)
             # print(videos)
         
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
-        assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
         for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi, student_id=student)
             student_assignment.append(sa)
         '''
         marks to store the marks of quizes of student
@@ -309,7 +309,10 @@ def course(request, course_code):
         #         tempform.course_id=course
         #         tempform.save()
         videos=[]
+        # slides1=None
+        # assignment1=None
         slides1=CourseSlide.objects.select_related().filter(course_id=course)
+        # slides
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         marks = []
@@ -317,8 +320,9 @@ def course(request, course_code):
         assignment = Assignment.objects.select_related().filter(course_id=course)
         assignment1 = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
-        for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
+        for assi in assignment1:
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi)
+            print("hii",sa)
             student_assignment.append(sa)
         for q in quiz:
             qs = QuizResult.objects.select_related().filter(quiz_id=q)
@@ -370,7 +374,7 @@ def upload_assignment(request, course_code):
             doc = request.FILES.get('img')    #the images in the assignment
             assi_name = request.POST.get('assignment_topic')
             name = request.POST.get('name')
-            assign = Assignment.objects.get(pk=assi_name)
+            assign = CourseAssignment.objects.get(pk=assi_name)
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
@@ -382,16 +386,27 @@ def upload_assignment(request, course_code):
             cmd = "mkdir " + full_path
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
-        fs.save(name + file_extenstion, doc)  #saving the media files
-        uploaded_file_url = full_path+ "/" + name + file_extenstion
+        # fs.save(name + file_extenstion, doc)  #saving the media files
+        # uploaded_file_url = full_path+ "/" + name + file_extenstion
         # to save the solution of assignment the database
-        sa = StudentAssignment(
-         student_id=student,
-         assignment_id=assign,
-         upload_url=uploaded_file_url,
-         assign_name=name+file_extenstion
+        StudentAssignment1.objects.create(
+            student_id=student,
+            doc=doc,
+            assignment_id=assign,
+            course_code=course_code,
+            assign_name=name+file_extenstion
+            # upload_time=datetime.datetime.now(),
+            # description=description,
+            # document_name=name,
+            # doc=doc
         )
-        sa.save()
+        # sa = StudentAssignment(
+        #  student_id=student,
+        #  assignment_id=assign,
+        #  upload_url=uploaded_file_url,
+        #  assign_name=name+file_extenstion
+        # )
+        # sa.save()
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -474,17 +489,17 @@ def delete(request, course_code):
         video.delete()
     #to delete slides/documents
     elif data_type == 'slide':
-        slide = CourseDocuments.objects.select_related().get(pk=pk, course_id=course)
+        slide = CourseSlide.objects.select_related().get(pk=pk, course_id=course)
         path = slide.document_url
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
-        stu_assi = StudentAssignment.objects.select_related().get(pk=pk)
+        stu_assi = StudentAssignment1.objects.select_related().get(pk=pk)
         path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
-        lec_assi = Assignment.objects.select_related().get(pk=pk)
+        lec_assi = CourseAssignment.objects.select_related().get(pk=pk)
         path = lec_assi.assignment_url
         lec_assi.delete()
     cmd = "rm "+path
