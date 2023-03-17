@@ -6,6 +6,34 @@
     {% endcomment %}
 
     {% comment %}The Employee Image Card starts here!{% endcomment %}
+
+    <style>
+        .name {
+            font-size: 24px;
+            padding: 0.25rem;
+        }
+        .dep {
+            padding: 0.25rem;
+        }
+        @media screen and (max-width: 1300px) {
+            .name {
+                font-size: 16px;
+            }
+            .dep {
+                font-size: 16px !important;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .name{
+                font-size: 20px;
+            }
+            .dep {
+                font-size: 20px !important;
+            }
+        }
+    </style>
+
     <div class="ui large fluid raised card" style="max-width: 25rem;">
         <div class="image">
             <img src="{% static 'globals/img/zlatan.jpg' %}">
@@ -16,13 +44,13 @@
                 TODO: Add a If-Else here!
             {% endcomment %}
             {% if user %}
-                <div style="display:flex;flex-wrap:wrap;justify-content:space-between;" class="ui large header">
-                    <div style="padding: 0.25rem;">
+                <div style="display:flex;flex-direction: column;justify-content:space-between;" class="ui large header">
+                    <div class="name">
                         {{ user.first_name }}
                         {{ user.last_name }}
                     </div>
                 
-                    <div class="meta" style="padding: 0.25rem;">
+                    <div class="meta dep">
                         {{ user.extrainfo.department.name }}
                     </div>
                 </div>
