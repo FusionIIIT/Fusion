@@ -1,4 +1,4 @@
-// go run script.go -dir ~/branches -b os-2 -og ~/branches/main -rem origin
+// go run script.go -dir ~/branches -b "ac-2 os-2" -og ~/branches/main -rem origin
 
 package main
 
@@ -21,10 +21,10 @@ type Ports struct {
 }
 
 var (
-	dirPath    = flag.String("dir", "~", "path of directory in which all branches are present")
-	branch     = flag.String("b", "", "branch which needs to be synced")
-	ogPath     = flag.String("og", "", "path of directory to be copied")
-	remoteName = flag.String("rem", "origin", "git remote name where branch is present")
+	dirPath     = flag.String("dir", "~", "path of directory in which all branches are present")
+	branchNames = flag.String("b", "", "branches which needs to be synced")
+	ogPath      = flag.String("og", "", "path of directory to be copied")
+	remoteName  = flag.String("rem", "origin", "git remote name where branch is present")
 )
 
 var branchPorts = map[string]Ports{
@@ -58,45 +58,48 @@ func main() {
 	if _, err := os.Stat(*ogPath); os.IsNotExist(err) {
 		log.Fatal("path of main directory not provided")
 	}
-	if len(*branch) == 0 {
+	if len(*branchNames) == 0 {
 		log.Fatal("no branch provided")
 	}
-	branchDir := filepath.Join(*dirPath, *branch)
-	if _, err := os.Stat(branchDir); os.IsNotExist(err) {
-		fmt.Println("Cloning ", branchDir)
-		err := CopyDirectory(*ogPath, branchDir)
-		if err != nil {
-			log.Fatal(err)
+	branches := strings.Split((*branchNames), " ")
+	for _, branch := range branches {
+		branchDir := filepath.Join(*dirPath, branch)
+		if _, err := os.Stat(branchDir); os.IsNotExist(err) {
+			fmt.Println("Cloning ", branchDir)
+			err := CopyDirectory(*ogPath, branchDir)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
+
+		fmt.Printf("Fetching branch %s from %s...\n", branch, *remoteName)
+		cmdRun(fmt.Sprintf("git -C %s fetch %s %s", branchDir, *remoteName, branch), true)
+		cmdRun(fmt.Sprintf("git -C %s stash", branchDir), true)
+
+		if !strings.Contains(cmdRun(fmt.Sprintf("git -C %s branch --show-current", branchDir), false), branch) {
+			fmt.Println(branch, "branch not found, pulling from", *remoteName, "...")
+			cmdRun(fmt.Sprintf("git -C %s switch -c %s %s/%s", branchDir, branch, *remoteName, branch), true)
+			cmdRun(
+				fmt.Sprintf(
+					"sed -i 's/5432:5432/%d:5432/' %s",
+					branchPorts[branch].Db,
+					filepath.Join(branchDir, "docker-compose.yml")),
+				true)
+			cmdRun(
+				fmt.Sprintf(
+					"sed -i 's/8000:8000/%d:8000/' %s",
+					branchPorts[branch].App,
+					filepath.Join(branchDir, "docker-compose.yml")),
+				true)
+		} else {
+			fmt.Printf("Merging %s/%s to %s\n", *remoteName, branch, *remoteName)
+			cmdRun(fmt.Sprintf("git -C %s merge %s/%s", branchDir, *remoteName, branch), true)
+		}
+		cmdRun(fmt.Sprintf("git -C %s stash pop || true", branchDir), true)
+
+		fmt.Printf("Building %s\n", branch)
+		cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
 	}
-
-	fmt.Printf("Fetching branch %s from %s...\n", *branch, *remoteName)
-	cmdRun(fmt.Sprintf("git -C %s fetch %s %s", branchDir, *remoteName, *branch), true)
-	cmdRun(fmt.Sprintf("git -C %s stash", branchDir), true)
-
-	if !strings.Contains(cmdRun(fmt.Sprintf("git -C %s branch --show-current", branchDir), false), *branch) {
-		fmt.Println(*branch, "branch not found, pulling from", *remoteName, "...")
-		cmdRun(fmt.Sprintf("git -C %s switch -c %s %s/%s", branchDir, *branch, *remoteName, *branch), true)
-		cmdRun(
-			fmt.Sprintf(
-				"sed -i 's/5432:5432/%d:5432/' %s",
-				branchPorts[*branch].Db,
-				filepath.Join(branchDir, "docker-compose.yml")),
-			true)
-		cmdRun(
-			fmt.Sprintf(
-				"sed -i 's/8000:8000/%d:8000/' %s",
-				branchPorts[*branch].App,
-				filepath.Join(branchDir, "docker-compose.yml")),
-			true)
-	} else {
-		fmt.Printf("Merging %s/%s to %s\n", *remoteName, *branch, *remoteName)
-		cmdRun(fmt.Sprintf("git -C %s merge %s/%s", branchDir, *remoteName, *branch), true)
-	}
-	cmdRun(fmt.Sprintf("git -C %s stash pop || true", branchDir), true)
-
-	fmt.Printf("Building %s\n", *branch)
-	cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
 }
 
 func cmdRun(command string, shouldPrint bool) string {
@@ -107,7 +110,7 @@ func cmdRun(command string, shouldPrint bool) string {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		log.Fatal(command," failed!\n ",err)
+		log.Fatal(command, " failed!\n ", err)
 	}
 	outerr := stderr.String()
 	out := stdout.String()
@@ -225,3 +228,4 @@ func CopySymLink(source, dest string) error {
 	}
 	return os.Symlink(link, dest)
 }
+
