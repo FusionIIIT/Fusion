@@ -20,7 +20,7 @@ For contributing to this repository, you have to follow the guidelines given in 
 
 ## How to get started
 
-* on **Ubuntu**:
+* on **Ubuntu/ Debian Based**:
 
     ```sh
     // Install the required packages using the following command:
@@ -28,6 +28,15 @@ For contributing to this repository, you have to follow the guidelines given in 
     sudo apt install python3-pip python3-dev python3-venv libpq-dev build-essential git
     sudo -H pip3 install --upgrade pip
     ```
+* on **FreeBSD**:
+
+    ```sh
+    // Install the required packages using the following command:
+    
+    sudo pkg install python3-pip python3-dev python3-venv libpq-dev build-essential git
+    sudo -H pip3 install --upgrade pip
+    ```
+
 
 * on **Windows**:
 
@@ -46,9 +55,15 @@ For contributing to this repository, you have to follow the guidelines given in 
 
 ### Setting up environment
 
+* Installing Venv in System
+  * on **Ubuntu/ Debian based Linux**: `sudo apt install python3-venv`
+  * on **FreeBSD**: `sudo pkg install python3-venv`
+
+
 * Create a virtual environment  
   * on **Ubuntu**: `python3 -m venv env`  
   * on **Windows PowerShell**: `python -m venv env`
+
 * Activate the *env*    
   * on **Ubuntu**: `source env/bin/activate`
   * on **Windows PowerShell**: `.\env\Scripts\Activate.ps1`     
