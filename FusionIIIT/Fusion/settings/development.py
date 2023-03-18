@@ -10,15 +10,9 @@ DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-<<<<<<< Updated upstream
-        'HOST': os.environ.get("DB_HOST", default='localhost'),
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
-=======
         'HOST': 'localhost',
         'USER': '20bcs100',
         'PASSWORD': 'user@123',
->>>>>>> Stashed changes
     }
 }
 
