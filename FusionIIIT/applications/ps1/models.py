@@ -39,3 +39,19 @@ class StockEntry(models.Model):
 
     class Meta:
         db_table = 'StockEntry'
+
+class GlobalStockAdmin(models.Model):
+    s_no = models.IntegerField(null=False)
+    item_name = models.CharField(max_length=250, blank=False)
+    department = models.CharField(max_length=100, blank=False)
+    section = models.CharField(max_length=100)
+    floor_no = models.IntegerField(null=False)
+    rooms = models.IntegerField(max_length=100)
+    year = models.IntegerField(null=False)
+    item_id = models.IntegerField(null=False)
+    contd = models.BooleanField
+
+    class Meta:
+        db_table = "ps2_global_admin"
+
+
