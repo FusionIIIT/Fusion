@@ -921,7 +921,9 @@ def student_records(request):
     '''
         function for searching the records of student
     '''
-    if request.user.is_staff==True:
+    
+    profile = get_object_or_404(ExtraInfo, Q(user=request.user))
+    if profile.user_type=="staff":
         user = request.user
         strecord_tab = 1
         no_pagination = 0
@@ -1227,7 +1229,8 @@ def student_records(request):
         }
 
         return render(request, 'placementModule/studentrecords.html', context)
-    return redirect('/placement')
+    else:
+        return redirect('/placement')
 
 
 @login_required
