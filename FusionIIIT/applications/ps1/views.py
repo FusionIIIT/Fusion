@@ -88,7 +88,7 @@ def create_indent_multiple(request):
 
             created_indent_file = IndentFile2.objects.create(
                 file_info = file,
-                indent_title = subject,
+                title = subject,
                 budgetary_head = budgetary_head,
                 expected_delivery = expected_delivery,
                 sources_of_supply = sources_of_supply,
@@ -115,7 +115,7 @@ def create_indent_multiple(request):
                     upload_file=item_file
                 )
                 Item.objects.create(
-                    indent_id = created_indent_file,
+                    indent_file_id = created_indent_file,
                     file_info = file_item,
                     item_name = item_name,
                     quantiy = quantiy,
