@@ -12,6 +12,10 @@ urlpatterns = [
     url(r'^All_Students/(?P<bid>[0-9]+)/$', views.all_students,name='all_students'),
     url(r'^approved/$', views.approved, name='approved'),
     url(r'^deny/$', views.deny, name='deny'),
-    url(r'^announcement_api/$', views.AnnouncementAPI.as_view(), name='announcement_api'),
-    url(r'^request_api/$', views.SpecialRequestAPI.as_view(), name='request_api')
+
+    #api routes
+    url(r'^fetchAnnouncements/$', views.AnnouncementAPI.as_view(http_method_names=['get']), name='fetchAnnouncements'),
+    url(r'^addNewAnnouncement/$', views.AnnouncementAPI.as_view(http_method_names=['post']), name='addNewAnnouncement'),
+    url(r'^fetchRequest/$', views.SpecialRequestAPI.as_view(http_method_names=['get']), name='fetchRequest'),
+    url(r'^addNewRequest/$', views.SpecialRequestAPI.as_view(http_method_names=['post']), name='addNewRequest'),
 ]
