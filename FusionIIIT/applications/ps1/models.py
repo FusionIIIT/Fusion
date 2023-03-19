@@ -32,7 +32,7 @@ class IndentFile2(models.Model):
 
     file_info = models.OneToOneField(
         File, on_delete=models.CASCADE, primary_key=True)
-    indent_title=models.CharField(max_length=250,blank=False,default="")
+    title=models.CharField(max_length=250,blank=False,default="")
     budgetary_head = models.CharField(max_length=250)
     expected_delivery = models.DateField(blank=False)
     sources_of_supply = models.CharField(max_length=250)
@@ -48,7 +48,7 @@ class IndentFile2(models.Model):
 
 class Item(models.Model):
     item_id = models.AutoField(primary_key=True)
-    indent_id = models.ForeignKey(
+    indent_file_id = models.ForeignKey(
         IndentFile2, on_delete=models.CASCADE, null=True, blank=False)
     file_info = models.OneToOneField(
         File, on_delete=models.CASCADE)
