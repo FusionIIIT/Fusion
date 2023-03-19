@@ -46,6 +46,8 @@
                 {% if user_designation == 'Intender' %}
                 <input type="hidden" name="intender" value="{{ user.id }}">
                 {% endif %}
+
+
                 <div class="four fields">
                     <div class="field">
                         <label>Arrival Date *</label>
@@ -120,6 +122,9 @@
                                 <div class="item" data-value="00">
                                     00
                                 </div>
+                                    <div class="item" data-value="01">
+                                    00
+                                     </div>
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -325,10 +330,10 @@
                     
                     <div class="field">
                         <label>Departure Date *</label>
-                        <div class="ui calendar" id="rangeend1">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="To" name="request-booking-to" class="date-selector">
+                            <div class="ui calendar" id="rangestart1" >
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                <input type="text" placeholder="To" name="request-booking-to" class="date-selector"  >
                             </div>
                         </div>
 
@@ -344,6 +349,7 @@
                                 <div class="default text">Select</div>
 
                                 <div class="menu">
+                                    
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -396,6 +402,9 @@
                                 <div class="item" data-value="00">
                                     00
                                 </div>
+                                    <div class="item" data-value="01">
+                                        00
+                                    </div>
                                     <div class="item" data-value="01">
                                         01
                                     </div>
@@ -720,7 +729,15 @@
                 
                 </div>
 
-            
+              <div> <br/> <br/> </div>
+              <div class="field">
+                <label></label>
+                    <div class="ui large primary button  floated" id="next-button" style="position : center ; margin-left :50% ;margin-right : 50%" onclick="next_action(event)">
+                        Next
+                    </div>
+                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+
+                </div>
 
             </form>
         </div>
