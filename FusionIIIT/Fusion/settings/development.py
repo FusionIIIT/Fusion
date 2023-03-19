@@ -1,4 +1,4 @@
-from Fusion.settings.common import *
+from .common import *
 
 DEBUG = True
 
