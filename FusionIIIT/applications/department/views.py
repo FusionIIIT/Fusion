@@ -29,7 +29,7 @@ from .serializers import AnnouncementSerializer, SpecialRequestSerializer
 # Announcement Api class to handle request related to announcements
 class AnnouncementAPI(APIView):
     """
-        @overriding the get method
+        overriding the get method
         if request body is empty then all the announcements will be fetched
         else body should contain id of the Announcement that is to be fetched
     """
@@ -40,13 +40,16 @@ class AnnouncementAPI(APIView):
             id = data['id']
             announcemets_obj = Announcements.objects.get(id=id)
             serializer_obj = AnnouncementSerializer(announcemets_obj , partial=True)
-            return Response({'status':200 , 'payload':serializer_obj.data})
+            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
         else:
             announcemets_obj = Announcements.objects.all()
             serializer_obj = AnnouncementSerializer(announcemets_obj , many=True)
-            return Response({'status':200 , 'payload':serializer_obj.data})
+            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
         
-    # overriding the post method
+    """
+        body should contain following attributes
+        batch, programme, department, message and upload_announcement
+    """
     def post(self , request):
         data = request.data
         batch = data['batch']
@@ -70,14 +73,14 @@ class AnnouncementAPI(APIView):
                         )
         if announcement_obj:
             announcement_obj.save()
-            return Response({'status':200 , 'payload':'Announcement added successfully'})
+            return Response({'status':HttpResponse.status_code , 'payload':'Announcement added successfully'})
         else:
-            return Response({'status':200 , 'payload':'Unable to add announcement'})
+            return Response({'status':HttpResponse.status_code , 'payload':'Unable to add announcement'})
             
 # SpecialRequest Api class to handle request related to Request
 class SpecialRequestAPI(APIView):
     """
-        @overriding the get method
+        overriding the get method
         if api-request body is empty then all the requests will be fetched
         else body should contain id of the requests that is to be fetched
     """
@@ -87,12 +90,16 @@ class SpecialRequestAPI(APIView):
             id = data['id']
             specialRequest_obj = SpecialRequest.objects.get(id=id)
             serializer_obj = SpecialRequestSerializer(specialRequest_obj , partial=True)
-            return Response({'status':200 , 'payload':serializer_obj.data})
+            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
         else:
             specialRequest_obj = SpecialRequest.objects.all()
             serializer_obj = SpecialRequestSerializer(specialRequest_obj , many=True)
-            return Response({'status':200 , 'payload':serializer_obj.data})
+            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
     
+    """
+        body should contain following attributes
+        request_type, request_to and request_details
+    """
     def post(self , request):
         data = request.data
         request_type = data['request_type']
@@ -114,9 +121,13 @@ class SpecialRequestAPI(APIView):
                             )
         if specialRequest_obj:
             specialRequest_obj.save()
-            return Response({'status':200 , 'payload':'Request added successfully'})
+            return Response({'status':HttpResponse.status_code , 'payload':'Request added successfully'})
         else:
-            return Response({'status':200 , 'payload':'Unable to add Request'})
+            return Response({'status':HttpResponse.status_code , 'payload':'Unable to add Request'})
+    """
+        body should contain following attributes
+        id, remark and status
+    """
     def put(self, request):
         data = request.data
         request_id = data['id']
@@ -125,7 +136,7 @@ class SpecialRequestAPI(APIView):
 
         SpecialRequest.objects.filter(id=request_id).update(status=status, remarks=remark)
 
-        return Response({'status':200 , 'payload':status})
+        return Response({'status':HttpResponse.status_code , 'payload':status})
 
     
 
