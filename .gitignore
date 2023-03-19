@@ -74,8 +74,8 @@ FusionIIIT/static/
 package-lock.json
 
 # Disallow migration files
-**/migrations/*
-!**/migrations/__init__.py
+# **/migrations/*
+# !**/migrations/__init__.py
 
 
 FusionIIIT/Fusion/settings/development.py
