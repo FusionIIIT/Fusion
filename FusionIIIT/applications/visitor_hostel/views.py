@@ -156,7 +156,7 @@ def visitorhostel(request):
     current_balance = 0
     for bill in all_bills:
         completed_booking_bills[bill.id] = {'intender': str(bill.booking.intender), 'booking_from': str(
-            bill.booking.booking_from), 'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill)}
+            bill.booking.booking_from), 'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill), 'bill_date': str(bill.bill_date)}
         current_balance = current_balance+bill.meal_bill + bill.room_bill
 
     for inv_bill in inventory_bill:
@@ -210,25 +210,22 @@ def visitorhostel(request):
             mess_bill = 0
             for visitor in booking.visitor.all():
                 meal = MealRecord.objects.select_related(
-                    'booking__intender', 'booking__caretaker', 'visitor', 'room').filter(visitor=visitor)
+                    'booking__intender', 'booking__caretaker', 'visitor').filter(booking_id=booking.id)
 
                 mess_bill1 = 0
                 for m in meal:
-                    if m.morning_tea == True:
-                        mess_bill1 = mess_bill1+10
-                    if m.eve_tea == True:
-                        mess_bill1 = mess_bill1+10
-                    if m.breakfast == True:
-                        mess_bill1 = mess_bill1+50
-                    if m.lunch == True:
-                        mess_bill1 = mess_bill1+100
-                    if m.dinner == True:
-                        mess_bill1 = mess_bill1+100
+                    if m.morning_tea != 0:
+                        mess_bill1 = mess_bill1+m.morning_tea*10
+                    if m.eve_tea != 0:
+                        mess_bill1 = mess_bill1+m.eve_tea*10
+                    if m.breakfast != 0:
+                        mess_bill1 = mess_bill1+m.breakfast*50
+                    if m.lunch != 0:
+                        mess_bill1 = mess_bill1+m.lunch*100
+                    if m.dinner != 0:
+                        mess_bill1 = mess_bill1+m.dinner*100
 
-                    if mess_bill1 == 270:
-                        mess_bill = mess_bill+225
-                    else:
-                        mess_bill = mess_bill + mess_bill1
+                    mess_bill = mess_bill + mess_bill1
 
             total_bill = mess_bill + room_bill
 
@@ -668,12 +665,14 @@ def check_out(request):
             id = request.POST.get('id')
             meal_bill = request.POST.get('mess_bill')
             room_bill = request.POST.get('room_bill')
+            checkout_date = datetime.date.today()
+            total_bill = int(meal_bill)+int(room_bill)
             BookingDetail.objects.select_related('intender', 'caretaker').filter(id=id).update(
                 check_out=datetime.datetime.today(), status="Complete")
             booking = BookingDetail.objects.select_related(
                 'intender', 'caretaker').get(id=id)
             Bill.objects.create(booking=booking, meal_bill=int(meal_bill), room_bill=int(
-                room_bill), caretaker=user, payment_status=True)
+                room_bill), caretaker=user, payment_status=True, bill_paid=total_bill, bill_date=checkout_date)
 
             # for visitors in visitor_info:
 
@@ -719,55 +718,33 @@ def record_meal(request):
                 'intender', 'caretaker').get(id=booking_id)
             visitor = VisitorDetail.objects.get(id=id)
             date_1 = datetime.datetime.today()
-            food = request.POST.getlist('food[]')
-            if '1' in food:
-                m_tea = True
-            else:
-                m_tea = False
+            print(id, booking_id, booking, visitor, date_1)
+            m_tea = request.POST.get("m_tea")
+            breakfast = request.POST.get("breakfast")
+            lunch = request.POST.get("lunch")
+            eve_tea = request.POST.get("eve_tea")
+            dinner = request.POST.get("dinner")
 
-            if '4' in food:
-                e_tea = True
-            else:
-                e_tea = False
-
-            if '2' in food:
-                breakfast = True
-            else:
-                breakfast = False
-
-            if '3' in food:
-                lunch = True
-            else:
-                lunch = False
-
-            if '5' in food:
-                dinner = True
-            else:
-                dinner = False
-
-            if request.POST.get('numberofpeople'):
-                person = request.POST.get('numberofpeople')
-            else:
-                person = 1
+            person = 1
 
             try:
-                meal = MealRecord.objects.select_related('booking__intender', 'booking__caretaker', 'visitor', 'room').get(
+                meal = MealRecord.objects.select_related('booking__intender', 'booking__caretaker', 'visitor').get(
                     visitor=visitor, booking=booking, meal_date=date_1)
             except:
                 meal = False
 
             if meal:
-                meal.morning_tea = m_tea
-                meal.eve_tea = e_tea
-                meal.breakfast = breakfast
-                meal.lunch = lunch
-                meal.dinner = dinner
+                meal.morning_tea += int(m_tea)
+                meal.eve_tea += int(eve_tea)
+                meal.breakfast += int(breakfast)
+                meal.lunch += int(lunch)
+                meal.dinner += int(dinner)
                 meal.save()
             else:
                 MealRecord.objects.create(visitor=visitor,
                                           booking=booking,
                                           morning_tea=m_tea,
-                                          eve_tea=e_tea,
+                                          eve_tea=eve_tea,
                                           meal_date=date_1,
                                           breakfast=breakfast,
                                           lunch=lunch,

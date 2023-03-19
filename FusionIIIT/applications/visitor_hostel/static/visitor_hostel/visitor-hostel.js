@@ -297,29 +297,24 @@ function request_booking (event) {
 $('.bookameal-submit').click(function(event){
     event.preventDefault();
     var pk = $(this).attr('data-pk');
-    var food = []
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
-    $('input[name=food'+pk+']:checked').each(function(){
-        food.push($(this).val());
-    });
+
     var jsondata = {
             'pk' : pk,
             'booking' : $('input[name="meal-booking-id"]').val(),
-            'numberofpeople': 1,
-            'food':food,
+        'm_tea': $('input[name="m_tea"]').val(),
+        'breakfast': $('input[name="breakfast"]').val(),
+        'lunch': $('input[name="lunch"]').val(),
+        'eve_tea': $('input[name="eve_tea"]').val(),
+        'dinner': $('input[name="dinner"]').val(),
+            
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
     }
     console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/record-meal/',
-        data: {
-            'pk' : pk,
-            'booking' : $('input[name="meal-booking-id"]').val(),
-            'numberofpeople': 1,
-            'food':food,
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-        },
+        data: jsondata,
         success: function(data) {
             alertModal('Great! Meals recorded successfully');
         },
@@ -392,7 +387,7 @@ $('#add-more-items-inventory').click(function(event){
 
 $('#add-item-form-submit').click(function(event){
     event.preventDefault();
-    if($('input[name=="consumable"].checked')){
+    if($('input[name="consumable"]')){
         consumable = 'True';
     }
     else{
@@ -823,10 +818,10 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-    start_date = $('input[name=start').val();
-    end_date = $('input[name=end]').val();
-
-    if(new Date(start_date)>new Date(end_date))
+    start = $('input[name=start]').val();
+    end = $('input[name=end]').val();
+    console.log(start, end,"testing")
+    if(new Date(start)>new Date(end))
     {
         alertModal('Please check start date and end date.')
         return;
@@ -834,24 +829,21 @@ function bill_between_date_range() {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/bill_between_date_range/',
+        url: '/visitorhostel/bill_between_dates/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
 
-            'start_date' : start_date,
-            'end_date' : end_date,
+            'start_date' : start,
+            'end_date' : end,
 
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
             console.log("winning");
-            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alertModal ('Error !');
-            console.log(start_date);
-            console.log(end_date);
+            alertModal ('Error !', data, err);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -860,7 +852,7 @@ function bill_between_date_range() {
 // finding available room's list between date range
 
 function find_available_rooms ( available_rooms ) {
-    start_date = $('input[name=start-date').val();
+    start_date = $('input[name=start-date]').val();
     end_date = $('input[name=end-date]').val();
     if (new Date(start_date) > new Date(end_date)) {
         alertModal ('Please check start date and end date!');

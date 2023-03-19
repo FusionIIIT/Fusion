@@ -23,15 +23,6 @@
         <div class="ui vertical stripe team segment" style="padding-left: 3.0%; padding-right: 3.0%;">
 
             <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto; overflow-x: hidden;">
-                <div class="field">
-                <label></label>
-                    <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
-                        Next
-                    </div>
-                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
-
-                </div>
-
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
                     <label>Intender Id*:</label>
@@ -126,7 +117,7 @@
                             <div class="default text">Select</div>
 
                             <div class="menu">
-                                <div class="item" data-value="01">
+                                <div class="item" data-value="00">
                                     00
                                 </div>
                                     <div class="item" data-value="01">
@@ -402,7 +393,7 @@
                             <div class="default text">Select</div>
 
                             <div class="menu">
-                                <div class="item" data-value="01">
+                                <div class="item" data-value="00">
                                     00
                                 </div>
                                     <div class="item" data-value="01">
@@ -720,6 +711,13 @@
                                     </div>
                                 </div>
                             </div>
+                </div>
+                <div class="field" style="display:flex;  justify-content: center;">
+                    <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
+                        Next
+                    </div>
+                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+                
                 </div>
 
             
@@ -1066,8 +1064,7 @@
 
                     
                 </div>
-
-
+                
 
             </form>
 
@@ -1075,7 +1072,7 @@
             <div class="ui divider"></div>
 
                     <input type="hidden" name="csrf" value="{{ csrf_token }}">
-                <div class="field">
+                <div class="field"  style="display: flex; justify-content: center;">
                     <label></label>
                     <button class="ui large primary button right floated" id="request_booking_button" 
                         onclick="request_booking(event); ll()">

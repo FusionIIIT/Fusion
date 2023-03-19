@@ -116,13 +116,12 @@ class BookingDetail(models.Model):
 class MealRecord(models.Model):
     booking = models.ForeignKey(BookingDetail, on_delete=models.CASCADE)
     visitor = models.ForeignKey(VisitorDetail, on_delete=models.CASCADE)
-    room = models.ForeignKey(RoomDetail, on_delete=models.CASCADE, default=0)
     meal_date = models.DateField()
-    morning_tea = models.BooleanField(default=False)
-    eve_tea = models.BooleanField(default=False)
-    breakfast = models.BooleanField(default=False)
-    lunch = models.BooleanField(default=False)
-    dinner = models.BooleanField(default=False)
+    morning_tea = models.IntegerField(default=0)
+    eve_tea = models.IntegerField(default=0)
+    breakfast = models.IntegerField(default=0)
+    lunch = models.IntegerField(default=0)
+    dinner = models.IntegerField(default=0)
     persons = models.IntegerField(default=0)
 
 
@@ -133,6 +132,7 @@ class Bill(models.Model):
     meal_bill = models.IntegerField(default=0)
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)
+    bill_date = models.DateField()
 
     def __str__(self):
         return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
