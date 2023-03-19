@@ -31,12 +31,12 @@ class Paymentscheme(models.Model):
     registrar_director_verify = models.BooleanField(default=False)
     runpayroll = models.BooleanField(default=False)
     view = models.BooleanField(default=True)
-    userId = models.CharField(max_length=20, null = True)
+   
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['month', 'year', 'userId'], name='Unique Contraint 1')
+                fields=['month', 'year', 'pf'], name='Unique Contraint 1')
         ]
        
     def  __str__(self):
