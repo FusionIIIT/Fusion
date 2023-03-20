@@ -2,6 +2,8 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from datetime import time
+from django import forms
 
 from applications.academic_information.models import Student
 
