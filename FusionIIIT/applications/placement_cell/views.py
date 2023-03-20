@@ -147,9 +147,7 @@ logger = logging.getLogger('django.server')
 
 def get_reference_list(request):
     if request.method == 'POST':
-        # arr = request.POST.getlist('arr[]')
-        # print(arr)
-        # print(type(arr))
+
         user = request.user
         profile = get_object_or_404(ExtraInfo, Q(user=user))
         student = get_object_or_404(Student, Q(id=profile.id))
@@ -251,16 +249,7 @@ def placement(request):
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
                 pic = request.POST.get('pic')
-                # futu = request.POST.get('futu')
-                # print(studentplacement_obj.future_aspect)
-                # print('fut=', fut)
-                # print('futu=', futu)
-                # if studentplacement_obj.future_aspect == "HIGHER STUDIES":
-                #     if futu == 2:
-                #         studentplacement_obj.future_aspect = "PLACEMENT"
-                # elif studentplacement_obj.future_aspect == "PLACEMENT":
-                #     if futu == None:
-                #         studentplacement_obj.future_aspect = "HIGHER STUDIES"
+
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
                 extrainfo_obj.age = age
@@ -1204,7 +1193,6 @@ def student_records(request):
                                 unique_id=student, no_of_days=no_of_days) for student in students] )
 
                     for st in students:
-                        #print(request.user, '-----------------------', st.id.user,'-----------------')
                         placement_cell_notif(request.user, st.id.user, "")
 
                     students = ''
@@ -1980,46 +1968,6 @@ def placement_statistics(request):
                     )))
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT",name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
-                print(p)
-
-
-
-            """placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
-                    Q(record_id__in=PlacementRecord.objects.filter(
-                        Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)),
-                    unique_id__in=Student.objects.filter(
-                        (Q(id__in=ExtraInfo.objects.filter(
-                            Q(user__in=User.objects.filter(
-                                first_name__icontains=first_name,
-                                last_name__icontains=last_name,
-                            id__icontains=rollno))))))))
-                #print("In if:", placementrecord)
-            else:
-                s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(
-                    Q(user__in=User.objects.filter(
-                        first_name__icontains=first_name,
-                        last_name__icontains=last_name),
-                        id__icontains=rollno))
-                    )))
-
-                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
-                print("Agein p:",p)
-                placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
-                    Q(record_id__in=PlacementRecord.objects.filter(
-                    Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
-                    unique_id__in=Student.objects.filter(
-                    (Q(id__in=ExtraInfo.objects.filter(
-                    Q(user__in=User.objects.filter(
-                        first_name__icontains=first_name,
-                        last_name__icontains=last_name),
-                    id__icontains=rollno)))))))
-
-            request.session['first_name'] = first_name
-            request.session['last_name'] = last_name
-            request.session['ctc'] = ctc
-            request.session['cname'] = cname
-            request.session['rollno'] = rollno
-            request.session['year'] = form.cleaned_data['year']"""
 
             # print(p)
 
@@ -2609,10 +2557,11 @@ def cv(request, username):
         extracurricularcheck = '1'
 
 
-    # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
+
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     student_info=get_object_or_404(Student,Q(id=user.username))
+    
     # print("Student------>",vars(student_info))
     batch=student_info.batch
     # print("Year----->",user.date_joined.year)
@@ -2624,17 +2573,6 @@ def cv(request, username):
         roll=now.year-batch
     else:
         roll=4
-        
-    # if int(str(profile.id)[:2]) == 20:
-    #     if (now.month>4):
-    #       roll = 1+now.year-int(str(profile.id)[:4])
-    #     else:
-    #       roll = now.year-int(str(profile.id)[:4])
-    # else:
-    #     if (now.month>4):
-    #       roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
-    #     else:
-    #       roll = (now.year)-int("20"+str(profile.id)[0:2])
     
 
     student = get_object_or_404(Student, Q(id=profile.id))
@@ -2712,7 +2650,6 @@ def export_to_xls_std_records(qs):
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Report')
 
-    # Sheet header, first row
     row_num = 0
 
     font_style = xlwt.XFStyle()
@@ -2723,7 +2660,6 @@ def export_to_xls_std_records(qs):
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
 
-    # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
 
     for student in qs:
@@ -2758,7 +2694,7 @@ def export_to_xls_invitation_status(qs):
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Report')
 
-    # Sheet header, first row
+
     row_num = 0
 
     font_style = xlwt.XFStyle()
@@ -2769,7 +2705,7 @@ def export_to_xls_invitation_status(qs):
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
 
-    # Sheet body, remaining rows
+
     font_style = xlwt.XFStyle()
 
     for student in qs:
@@ -2803,7 +2739,6 @@ def check_invitation_date(placementstatus):
             if ps.invitation=='PENDING':
                 dt = ps.timestamp+datetime.timedelta(days=ps.no_of_days)
                 if dt<datetime.datetime.now():
-                    #print('---------- time limit is finished---------------- \n\n\n\n\n')
                     ps.invitation = 'IGNORE'
                     ps.save()
     except Exception as e:
@@ -2822,7 +2757,7 @@ def add_placement_schedule(request):
 
     all_schedule_data=PlacementSchedule.objects.all()
     students=NotifyStudent.objects.all()
-    #avail_role=Role.objects.all()
+
     print(students)
     apply_for=Role.objects.all()
     print(all_schedule_data)
@@ -2837,7 +2772,6 @@ def add_placement_schedule(request):
     }
     return render(request, 'placementModule/add_placement_schedule.html', context)
 
-#saves added details in PlacementSchedule table
 def placement_schedule_save(request):
     if request.method!="POST":
         return HttpResponse("Method Not Allowed")
@@ -2850,11 +2784,10 @@ def placement_schedule_save(request):
         title=request.POST.get("title")
         location = request.POST.get("location")
         role = request.POST.get("role")
-        resume = request.POST.get("resume")                 #file
+        resume = request.POST.get("resume")
         schedule_at = request.POST.get("schedule_at")
         date = request.POST.get("placement_date")
         try:
-            #print("In try!!!")
             role_create=Role.objects.create(role=role)
             notify = NotifyStudent.objects.create(placement_type=placement_type,
                                                       company_name=company_name,
@@ -2885,7 +2818,7 @@ def delete_placement_record(request):
             if 'delete_stats' in request.POST:
                 record_id = int(request.POST['delete_stats'])
 
-            #placement_record = PlacementRecord.objects.get(id=record_id)
+
             PlacementRecord.objects.filter(id=record_id).delete()
 
             messages.success(request, 'Placement Statistics deleted Successfully!!')

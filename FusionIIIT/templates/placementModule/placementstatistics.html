@@ -66,10 +66,6 @@
                                  <i class="right floated chevron right icon"></i>
                              </a>
                          {% endif %}
-                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
-                        Manage Records
-                        <i class="right floated chevron right icon"></i>
-                    </a>(9-4-22)-->
                     {% endif %}
                 {% endfor %}
 
@@ -91,22 +87,7 @@
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
-                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
-                                 Send Notification
-                                 <i class="right floated chevron right icon"></i>
-                             </a>-->
                     {% endif %}
-
-                    <!--<a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
-                        Manage Records
-                        <i class="right floated chevron right icon"></i>
-                    </a>(9-4-22)
-                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
-                        Placement Visits
-                        <i class="right floated chevron right icon">
-
-                        </i>
-                    </a>-->
 
 
 
@@ -120,20 +101,9 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <!--Added for staff only-->
+
                 {% if current2 %}
-               <!-- <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
-                    Student Record
-                    <i class="right floated chevron right icon"></i>
-                </a>(9-4-22)-->
 
-
-
-                <!--Placement officers could schedule placement -->
-                <!--<a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
-                    Add Placement Schedule
-                    <i class="right floated chevron right icon"></i>
-                </a>-->
                 <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
                     Add Placement Record
                     <i class="right floated chevron right icon"></i>
@@ -149,9 +119,6 @@
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
-        {% comment %}
-            The left-rail segment ends here!
-        {% endcomment %}
 
 
         {% comment %} The central-rail segment starts here!{% endcomment %}
@@ -248,6 +215,7 @@
                           {% if placementrecord == 1 %}
                             <!-- <br> -->
                           {% elif placementrecord %}
+
                               <!-- <br>
                               <br> -->
                               <!-- Pagination Section starts here  --->
@@ -289,6 +257,7 @@
                           </div>
                         </center>
                     {% endif %}
+
                     <!-- Pagination Section ends here --->
                               <hr/>
                               <br>
@@ -357,6 +326,7 @@
                                 <center>
                                     {% if placement_search_record != " " %}
                                     <table id="tab" style="border:1px solid black; width:100%;">
+
                                       <tr style="border:1px solid black;">
                                         <th style="border:1px solid black;width:35% ">Roll No.</th>
                                         <th style="border:1px solid black;width:45%">Name</th>
@@ -392,11 +362,10 @@
 
 
                                         <form method="post" class="ui form" role="form">
-                                        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                                         <div class="ui accordion field">
                                             <div class="active title">
                                                 <i class="icon dropdown"></i>
-                                                Search a Student!
+                                                Search a Student
                                             </div>
                                               {{ form3.non_field_errors }}
                                             <div class="active content">
@@ -421,6 +390,7 @@
                                                               </label>
 
                                                               <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
+
                                                         </div>
 
                                                         
@@ -436,7 +406,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+
                                     </form>
 
                                  
@@ -479,6 +449,7 @@
                           </div>
                         </center>
                     {% endif %}
+
                     <!-- Pagination Section ends here --->
                                   <hr/>
                                   <br>
@@ -628,14 +599,13 @@
                                   </div>
                               </div>
                           </div>
-                          {% comment %}The add a new skill Accordian ends here!{% endcomment %}
                       </form>
 
 
                                 
                                   
 
-                                  <!-- Pagination Section starts here  --->
+                                  <!-- Pagination Section starts here  -->
                     {% if pagination_higher %}
 
                         <center>
@@ -674,6 +644,7 @@
                           </div>
                         </center>
                     {% endif %}
+
                     <!-- Pagination Section ends here --->
                                   <hr/>
                                   <br>
@@ -883,7 +854,6 @@
                       </div>
                   </div>
         </div>
-        {% comment %} The central-rail segment ends here!{% endcomment %}
 
         <div class="three wide column"></div>
     </div>
