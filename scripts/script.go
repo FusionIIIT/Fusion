@@ -111,6 +111,8 @@ func main() {
 		fmt.Printf("Building %s\n", branch)
 		cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
 		cmdRun(fmt.Sprintf("docker-compose -f %s up -d", filepath.Join(branchDir, "docker-compose.yml")), true)
+
+		fmt.Printf("%s app started at port %d\n", branch, branchPorts[branch].App)
 	}
 }
 
