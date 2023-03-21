@@ -67,6 +67,19 @@ class Constants:
         ('OWNED', 'OWNED')
     )
 
+    PROGRAMME_CHOICES = (
+        ('B', 'UNDER_GRAD'),
+        ('P', 'POST_GRAD_PHD'),
+        ('M', 'POST_GRAD_MASTER')
+    )
+
+    DISCIPLINE_CHOICES = (
+        ('C', 'CSE'),
+        ('E', 'ECE'),
+        ('M', 'ME'),
+        ('D', 'DES')
+    )
+
 
 class Award_and_scholarship(models.Model):
     award_name = models.CharField(max_length=100, default='')
@@ -186,6 +199,10 @@ class Application(models.Model):
         db_table = 'Application'
 
 class Director_silver(models.Model):
+
+    programme = models.CharField(choices=Constants.PROGRAMME_CHOICES, default='') #new attributes added
+    discipline = models.CharField(choices=Constants.DISCIPLINE_CHOICES, default='') #new attributes added
+    
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
     correspondence_address = models.TextField(max_length=150, null=True)
@@ -201,12 +218,19 @@ class Director_silver(models.Model):
     justification = models.TextField(max_length=1000, null=True)
     outside_achievements = models.TextField(max_length=1000, null=True)
 
+    individual_event = models.FileField(null=True, blank=True) #new attribute added
+    team_event = models.FileField(null=True, blank=True) #new attribute added
+
 
     class Meta:
         db_table = 'Director_silver'
 
 
 class Proficiency_dm(models.Model):
+
+    programme = models.CharField(choices=Constants.PROGRAMME_CHOICES, default='') #new attributes added
+    discipline = models.CharField(choices=Constants.DISCIPLINE_CHOICES, default='') #new attributes added
+
     relevant_document = models.FileField(null=True, blank=True)
     title_name = models.CharField(max_length=30, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -235,11 +259,19 @@ class Proficiency_dm(models.Model):
     cse_percentage = models.IntegerField(null=True)
     mech_percentage = models.IntegerField(null=True)
     design_percentage = models.IntegerField(null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
     financial_assistance = models.TextField(max_length=1000, null=True)
     grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
+    
+    sci = models.TextField(max_length=1000, null=True) #new attribute added 
+    sci_document = models.FileField(null=True, blank=True) #new attribute added 
+    scie = models.TextField(max_length=1000, null=True) #new attribute added 
+    scie_document = models.FileField(null=True, blank=True) #new attribute added 
+    ij = models.TextField(max_length=1000, null=True) #new attribute added 
+    ij_document = models.FileField(null=True, blank=True) #new attribute added 
+    nc = models.TextField(max_length=1000, null=True) #new attribute added 
+    nc_document = models.FileField(null=True, blank=True) #new attribute added 
+    workshop = models.TextField(max_length=1000, null=True) #new attribute added 
+    workshop_document = models.FileField(null=True, blank=True) #new attribute added 
 
 
     class Meta:
@@ -249,6 +281,10 @@ class Proficiency_dm(models.Model):
 class Director_gold(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     status = models.CharField(max_length=10,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
+
+    programme = models.CharField(choices=Constants.PROGRAMME_CHOICES, default='') #new attributes added
+    discipline = models.CharField(choices=Constants.DISCIPLINE_CHOICES, default='') #new attributes added
+
     correspondence_address = models.TextField(max_length=40, default='address')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
@@ -272,11 +308,22 @@ class Director_gold(models.Model):
     other_activities = models.TextField(max_length=1000 ,null=True)
     justification = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
+  
+    sci = models.TextField(max_length=1000, null=True) #new attribute added for PG
+    sci_document = models.FileField(null=True, blank=True) #new attribute added for PG
+    scie = models.TextField(max_length=1000, null=True) #new attribute added for PG
+    scie_document = models.FileField(null=True, blank=True) #new attribute added for PG
+    ij = models.TextField(max_length=1000, null=True) #new attribute added for PG
+    ij_document = models.FileField(null=True, blank=True) #new attribute added for PG
+    nc = models.TextField(max_length=1000, null=True) #new attribute added for PG
+    nc_document = models.FileField(null=True, blank=True) #new attribute added for PG
+    workshop = models.TextField(max_length=1000, null=True) #new attribute added for PG
+    workshop_document = models.FileField(null=True, blank=True) #new attribute added for PG
+    novelty = models.TextField(max_length=200, null=True) #new attribute added for PG
+    warming_letter = models.FileField(null=True, blank=True) #new attribute added for PG
+
+    jagriti = models.FileField(null=True, blank=True) #new attribute added
+    blood_donation = models.FileField(null=True, blank=True) #new attribute added
 
     class Meta:
         db_table = 'Director_gold'
