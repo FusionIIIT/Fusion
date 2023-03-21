@@ -55,7 +55,7 @@ class SectionIncharge(models.Model):
         return str(self.id) + '-' + self.work_type
 
 class Workers(models.Model):
-    secincharge_id = models.ForeignKey(SectionIncharge, on_delete=models.CASCADE)
+    secincharge_id = models.ForeignKey(SectionIncharge, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
