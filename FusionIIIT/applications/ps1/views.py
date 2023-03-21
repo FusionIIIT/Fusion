@@ -428,6 +428,29 @@ def composed_indents(request):
     }
     return render(request, 'ps1/composed_indents.html', context)
 
+
+
+@login_required(login_url = "/accounts/login")
+def drafts_for_multiple_item(request):
+    """
+        The function is used to get all the designations hold by the user.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                context - Holds data needed to make necessary changes in the template.
+    """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    designation = HoldsDesignation.objects.filter(user=request.user)
+    context = {
+        'designation': designation,
+    }
+    return render(request, 'ps1/drafts1.html', context)
+
+
 def drafts(request):
     """
         The function is used to get all the files created by user(employee).
@@ -485,6 +508,50 @@ def indentview(request,id):
         'designations': designations,
     }
     return render(request, 'ps1/indentview.html', context)
+
+
+@login_required(login_url = "/accounts/login")
+def draftview_multiple_items_indent(request,id):
+    """
+        The function is used to get all the files created by user(employee).
+        It gets all files created by user by filtering file(table) object by user i.e, uploader.
+        It displays user and file details of a file(table) of filetracking(model) in the
+        template of 'Saved files (new)' tab for indentfile with multiple items.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                draft - The File object filtered by uploader(user).
+                extrainfo - The Extrainfo object.
+                context - Holds data needed to make necessary changes in the template.
+    """
+
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+
+    indents= IndentFile2.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
+    indent_ids=[indent.file_info for indent in indents]
+    filed_indents=Tracking.objects.filter(file_id__in=indent_ids)
+    filed_indent_ids=[indent.file_id for indent in filed_indents]
+    draft = list(set(indent_ids) - set(filed_indent_ids))
+    draft_indent=IndentFile2.objects.filter(file_info__in=draft).values("file_info")
+    draft_files=File.objects.filter(id__in=draft_indent).order_by('-upload_date')
+    extrainfo = ExtraInfo.objects.all()
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    
+    context = {
+        'draft':draft_files,
+        'extrainfo': extrainfo,
+        'designations': designations,
+    }
+    return render(request, 'ps1/draftview1.html', context)
+
+
 
 @login_required(login_url = "/accounts/login")
 def draftview(request,id):
