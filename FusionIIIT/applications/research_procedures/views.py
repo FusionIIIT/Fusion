@@ -2,6 +2,8 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from applications.research_procedures.models import Patent, ResearchGroup, ResearchProject, ConsultancyProject, TechTransfer
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from django.contrib.auth.models import User
+from applications.eis.models import *
 from django.core.files.storage import FileSystemStorage
 from notification.views import research_procedures_notif
 from django.urls import reverse
@@ -231,3 +233,201 @@ def transfer_insert(request):
     tech_transfer.save()
     messages.success(request,"Successfully created Technology Transfer")
     return redirect(reverse("research_procedures:patent_registration"))
+
+# Dean RSPC Profile
+
+def rspc_profile(request):
+    # user = get_object_or_404(faculty_about, user=request.user)
+    # pf = user.user
+
+    user = get_object_or_404(User, username= request.user)
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    if extra_info.user_type == 'student':
+        return redirect('/')
+    pf = extra_info.id
+    designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
+    flag_rspc = False
+    for designation in designations:
+        # print(designation.designation_id)
+        # currDesig = Designation.objects.filter(id=designation.designation_id)
+        print(designation.designation_id)
+        currDesig = get_object_or_404(Designation, id=designation.designation_id)
+        print(currDesig.name)
+        if(currDesig.name=="dean_rspc"):    
+            flag_rspc = True
+            break
+
+    if flag_rspc != True:
+        if extra_info.user_type == 'faculty':
+            return redirect('/eis/profile/')
+    # form = ConfrenceForm()
+
+    journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
+    conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
+    books = emp_published_books.objects.all().order_by('-pyear', '-authors')
+    projects = emp_research_projects.objects.all().order_by('-start_date')
+    consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
+    patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
+    techtransfers = emp_techtransfer.objects.all().order_by('-date_entry')
+    mtechs = emp_mtechphd_thesis.objects.filter(degree_type=1).order_by('-s_year', '-a_month')
+    phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
+    fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
+    ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
+    # for fvisit in fvisits:
+    #     fvisit.countryfull = countries[fvisit.country]
+    consymps = emp_confrence_organised.objects.all().order_by('-start_date')
+    awards = emp_achievement.objects.all().order_by('-a_year', '-a_month')
+    talks = emp_expert_lectures.objects.all().order_by('-l_year', '-a_month')
+    chairs = emp_session_chair.objects.all().order_by('-start_date')
+    keynotes = emp_keynote_address.objects.all().order_by('-start_date')
+    events = emp_event_organized.objects.all().order_by('-start_date')
+    y=[]
+    for r in range(1995, (datetime.datetime.now().year + 1)):
+        y.append(r)
+
+    # pers = get_object_or_404(faculty_about, user = request.user)
+    # design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
+
+    # desig=[]
+    # for i in design:
+    #     desig.append(str(i.designation))
+    context = {'user': user,
+            #    'desig':desig,
+               'pf':pf,
+               'journal':journal,
+               'conference': conference,
+               'books': books,
+               'projects': projects,
+            #    'form':form,
+               'consultancy':consultancy,
+               'patents':patents,
+               'techtransfers':techtransfers,
+               'mtechs':mtechs,
+               'phds':phds,
+               'fvisits':fvisits,
+               'ivisits': ivisits,
+               'consymps':consymps,
+               'awards':awards,
+               'talks':talks,
+               'chairs':chairs,
+               'keynotes':keynotes,
+               'events':events,
+               'year_range':y,
+            #    'pers':pers
+               }
+    return render(request, 'eisModulenew/rspc_profile.html', context)
+
+
+# generating rspc profile of a faculty
+def rspc_profile_faculty(request):
+    # user = get_object_or_404(faculty_about, user=request.user)
+    # pf = user.user
+    username = request.GET.get('param')
+    user = get_object_or_404(User, username= request.user)
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    user_faculty = get_object_or_404(User, username= username)
+    extra_info_faculty = get_object_or_404(ExtraInfo, user=user_faculty)
+    if extra_info_faculty.user_type == 'student':
+        return redirect('/')
+    pf = extra_info.id
+    pf_faculty = extra_info_faculty.id
+    print(pf_faculty)
+    designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
+    flag_rspc = False
+    for designation in designations:
+        # print(designation.designation_id)
+        # currDesig = Designation.objects.filter(id=designation.designation_id)
+        print(designation.designation_id)
+        currDesig = get_object_or_404(Designation, id=designation.designation_id)
+        print(currDesig.name)
+        if(currDesig.name=="dean_rspc"):    
+            flag_rspc = True
+            break
+
+    if flag_rspc != True:
+        if extra_info.user_type == 'faculty':
+            return redirect('/eis/profile/')
+    # form = ConfrenceForm()
+
+    journal = emp_research_papers.objects.filter(pf_no=pf_faculty, rtype='Journal').order_by('-year', '-a_month')
+    conference = emp_research_papers.objects.filter(pf_no=pf_faculty, rtype='Conference').order_by('-year', '-a_month')
+    books = emp_published_books.objects.filter(pf_no=pf_faculty).order_by('-pyear', '-authors')
+    projects = emp_research_projects.objects.filter(user=user_faculty).order_by('-start_date')  
+    print(projects)
+    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf_faculty).order_by('-start_date')
+    patents = emp_patents.objects.filter(pf_no=pf_faculty).order_by('-p_year', '-a_month')
+    techtransfers = emp_techtransfer.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf_faculty, degree_type=1).order_by('-s_year', '-a_month')
+    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf_faculty, degree_type=2).order_by('-s_year', '-a_month')
+    fvisits = emp_visits.objects.filter(pf_no=pf_faculty, v_type=2).order_by('-start_date')
+    ivisits = emp_visits.objects.filter(pf_no=pf_faculty, v_type=1).order_by('-start_date')
+
+    # journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
+    # conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
+    # books = emp_published_books.objects.all().order_by('-pyear', '-authors')
+    # projects = emp_research_projects.objects.all().order_by('-start_date')
+    # consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
+    # patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
+    # techtransfers = emp_techtransfer.objects.all().order_by('-date_entry')
+    # mtechs = emp_mtechphd_thesis.objects.filter(degree_type=1).order_by('-s_year', '-a_month')
+    # phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
+    # fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
+    # ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
+    # for fvisit in fvisits:
+    #     fvisit.countryfull = countries[fvisit.country]
+
+    consymps = emp_confrence_organised.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    awards = emp_achievement.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    talks = emp_expert_lectures.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    chairs = emp_session_chair.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    keynotes = emp_keynote_address.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
+    events = emp_event_organized.objects.filter(pf_no=pf_faculty).order_by('-start_date')
+    y=[]
+    for r in range(1995, (datetime.datetime.now().year + 1)):
+        y.append(r)
+    # try:
+    #     pers = get_object_or_404(faculty_about, user = user)
+    # except:
+    #     pers = None
+
+    # consymps = emp_confrence_organised.objects.all().order_by('-start_date')
+    # awards = emp_achievement.objects.all().order_by('-a_year', '-a_month')
+    # talks = emp_expert_lectures.objects.all().order_by('-l_year', '-a_month')
+    # chairs = emp_session_chair.objects.all().order_by('-start_date')
+    # keynotes = emp_keynote_address.objects.all().order_by('-start_date')
+    # events = emp_event_organized.objects.all().order_by('-start_date')
+    # y=[]
+    # for r in range(1995, (datetime.datetime.now().year + 1)):
+    #     y.append(r)
+
+    # pers = get_object_or_404(faculty_about, user = request.user)
+    # design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
+
+    # desig=[]
+    # for i in design:
+    #     desig.append(str(i.designation))
+    context = {'user': user,
+            #    'desig':desig,
+               'pf':pf,
+               'journal':journal,
+               'conference': conference,
+               'books': books,
+               'projects': projects,
+            #    'form':form,
+               'consultancy':consultancy,
+               'patents':patents,
+               'techtransfers':techtransfers,
+               'mtechs':mtechs,
+               'phds':phds,
+               'fvisits':fvisits,
+               'ivisits': ivisits,
+               'consymps':consymps,
+               'awards':awards,
+               'talks':talks,
+               'chairs':chairs,
+               'keynotes':keynotes,
+               'events':events,
+               'year_range':y,
+            #    'pers':pers
+               }
+    return render(request, 'eisModulenew/rspc_profile.html', context)

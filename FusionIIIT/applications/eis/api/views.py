@@ -19,6 +19,7 @@ from . import serializers
 User = get_user_model()
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
     user_detail = serializers.UserSerializer(user).data
@@ -96,6 +97,7 @@ def profile(request, username=None):
 #     projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
 def getUser(request):
     #example request
     #http://127.0.0.1:8000/eis/api/getUser/?param=mayank
