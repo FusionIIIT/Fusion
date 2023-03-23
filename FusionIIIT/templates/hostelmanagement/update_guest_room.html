@@ -1,15 +1,12 @@
-{% load static %}
-
-{% block notice_board %}
-
+{% block update_guest_room %}
 <div class="ui secondary menu">
     <div class="ui floating dropdown labeled icon button">
     <i class="clipboard icon"></i>
-    <span class="text">Notice Board</span>
+    <span class="text">Pending Requests</span>
         <div class="menu">
         {% for hall in all_hall %}
             <a class="{% if hall.hall_id == 'vivekananda' %}item active{% else %}item{% endif %}" data-tab={{hall.hall_id}}_notice>
-                {{hall.hall_id}} Notice
+                {{hall.hall_id}} requests
             </a>
         {% endfor %}
         </div>
@@ -17,30 +14,22 @@
 {% if user in hall_caretaker or hall_warden %}
 <div class="right menu">
     <a class="item" data-tab="notice">
-        <i class="sticky note icon"></i>Notice
+        <i class="sticky note icon"></i>Requestsss
     </a>
 </div>
 {% endif %}
 </div>
-{% if user in hall_caretaker or hall_warden %}
-<div class="ui tab" data-tab="notice">
-    <div class="ui vertical segment">
-        {% block notice_form %}
-            {% include 'hostelmanagement/notice_form.html' %}
-        {% endblock %}
-    </div>
-</div>
-{% endif %}
 
+{% if user in hall_caretaker or hall_warden %}
 {% for hall in all_hall %}
     <div class="{% if hall.hall_id == 'vivekananda' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_notice>
         <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
             {% block {{hall.hall_id}} %}
-                {% include 'hostelmanagement/notice_board.html' with hall_id=hall.hall_id %}
+                {% include 'hostelmanagement/request_list.html' with hall_id=hall.hall_id %}
             {% endblock %}
         </div>
     </div>
 {% endfor %}
-
+{% endif %}
 
 {% endblock %}

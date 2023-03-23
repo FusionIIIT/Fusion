@@ -44,7 +44,7 @@ class Hall(models.Model):
     'max_accomodation' stores maximum accomodation limit of a Hall of Residence.
     'number_students' stores number of students currently residing in a Hall of Residence.
     """
-    hall_id = models.CharField(max_length=10)
+    hall_id = models.CharField(max_length=25)
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
@@ -127,13 +127,13 @@ class GuestRoomBooking(models.Model):
     'nationality' stores the nationality of the guests.
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    intender = models.ForeignKey(User, on_delete=models.CASCADE)
+    intender = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     guest_name = models.CharField(max_length=100)
     guest_phone = models.CharField(max_length=15)
     guest_email = models.CharField(max_length=40, blank=True)
     guest_address = models.TextField(blank=True)
-    rooms_required =  models.IntegerField(default=1,null=True,blank=True)
-    guest_room_id = models.ManyToManyField(GuestRoomDetail)
+    rooms_required =  models.IntegerField(default=1, null=True, blank=True)
+    guest_room_id = models.ManyToManyField(GuestRoomDetail, blank=True)
     total_guest = models.IntegerField(default=1)
     purpose = models.TextField()
     arrival_date = models.DateField(auto_now_add=False, auto_now=False)

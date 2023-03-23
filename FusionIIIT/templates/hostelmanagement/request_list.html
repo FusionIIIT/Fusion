@@ -1,0 +1,38 @@
+{% load custom_tags %}
+{% block {{hall.hall_id}} %}
+    {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %}
+    <div class="ui secondary segment">
+        <div class="ui segment" >
+            <h2 class="ui center aligned header">{{pending_request.hall.hall_id}}</h2>
+            <h4 style="text-align:right;">{{pending_request.intender.user.first_name}} {{pending_request.intender.user.last_name}} - {{pending_request.intender.user.username}}</h4>
+            
+            <div class="ui styled accordion">
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    More
+                </div>
+                <div class="content">
+                    <h3 style="color:grey;">Description</h3>
+                    <h4 class="transition hidden" style="color:black;">{{pending_request.rooms_required}}</h4>
+                </div>
+                
+            </div>
+            <br>
+            
+            
+                {% ifequal current_hall pending_request.hall.hall_id %}
+                <form method="post"  action="{% url 'hostelmanagement:update_request' %}" class="ui form" role="form">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label>Room Number</label>
+                        <input type="text" name="room_number">
+                    </div>
+                    <button class="mini ui basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" style="margin-left:90%" onclick="return confirm('Are you sure you want to REJECT this request?');"></button>
+                    <button class="mini ui negative basic button" type="submit" value="{{ pending_request.pk }}" name="reject_request" style="margin-left:90%" onclick="return confirm('Are you sure you want to REJECT this request?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                                                                    width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg></button>
+                </form>
+                {% endifequal %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

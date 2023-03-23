@@ -43,7 +43,7 @@ def hostel_view(request, context={}):
     all_hall = Hall.objects.all()
     halls_student = {}
     for hall in all_hall:
-        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4])).select_related('id__user')
+        halls_student[hall.hall_id] = Student.objects.filter(hall_id=hall.hall_id).select_related('id__user')
 
     hall_staffs = {}
     for hall in all_hall:
@@ -53,14 +53,19 @@ def hostel_view(request, context={}):
     hall_notices = {}
     for hall in all_hall:
         hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall).select_related('hall','posted_by__user')
-
+    pending_guest_room_requests = {}
+    for hall in all_hall:
+        pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender__user')
+    
     Staff_obj = Staff.objects.all().select_related('id__user')
-    hall1 = Hall.objects.get(hall_id='hall1')
-    hall3=Hall.objects.get(hall_id='hall3')
-    hall4=Hall.objects.get(hall_id='hall4')
-    hall1_staff = StaffSchedule.objects.filter(hall=hall1)
-    hall3_staff = StaffSchedule.objects.filter(hall=hall3)
-    hall4_staff = StaffSchedule.objects.filter(hall=hall4)
+    vashishtha = Hall.objects.get(hall_id='vashishtha')
+    aryabhatta = Hall.objects.get(hall_id='aryabhatta')
+    vivekananda = Hall.objects.get(hall_id='vivekananda')
+    vashishtha_staff = StaffSchedule.objects.filter(hall=vashishtha)
+    aryabhatta_staff = StaffSchedule.objects.filter(hall=aryabhatta)
+    vivekananda_staff = StaffSchedule.objects.filter(hall=vivekananda)
+    saraswati = Hall.objects.get(hall_id='saraswati')
+    saraswati_staff = StaffSchedule.objects.filter(hall=saraswati)
     hall_caretakers = HallCaretaker.objects.all().select_related()
     hall_wardens = HallWarden.objects.all().select_related()
 
@@ -103,25 +108,26 @@ def hostel_view(request, context={}):
 
 
     context = {
-        
-        'all_hall': all_hall,
-        'all_notice': all_notice,
-        'staff':Staff_obj,
-        'hall1_staff' : hall1_staff,
-        'hall3_staff' : hall3_staff,
-        'hall4_staff' : hall4_staff,
-        'hall_caretaker' : hall_caretaker_user,
-        'hall_warden' : hall_warden_user,
-        'room_avail' : get_avail_room,
-        'hall_student':hall_student,
-        'worker_report': worker_report,
-        'halls_student': halls_student,
-        'current_hall' : current_hall,
-        'hall_staffs': hall_staffs,
-        'hall_notices': hall_notices,
-        'attendance': halls_attendance,
-        **context
-    }
+    'all_hall': all_hall,
+    'all_notice': all_notice,
+    'staff': Staff_obj,
+    'vashishtha_staff': vashishtha_staff,
+    'aryabhatta_staff': aryabhatta_staff,
+    'vivekananda_staff': vivekananda_staff,
+    'saraswati_staff': saraswati_staff,
+    'hall_caretaker': hall_caretaker_user,
+    'hall_warden': hall_warden_user,
+    'room_avail': get_avail_room,
+    'hall_student': hall_student,
+    'worker_report': worker_report,
+    'halls_student': halls_student,
+    'current_hall': current_hall,
+    'hall_staffs': hall_staffs,
+    'hall_notices': hall_notices,
+    'pending_guest_room_requests': pending_guest_room_requests,
+    'attendance': halls_attendance,
+    **context
+}
 
     return render(request, 'hostelmanagement/hostel.html', context)
 
@@ -362,27 +368,52 @@ def request_guest_room(request):
     @param:
       request - HttpRequest object containing metadata about the user request.
     """
+    print("Inside book guest room")
     if request.method == "POST":
-        intender = request.user
-        form = GuestRoomBookingForm(commit=False)
+        form = GuestRoomBookingForm(request.POST)
+
         if form.is_valid():
-            guest_room_booking = form.save(commit=False)
-            guest_room_booking.intender = intender
-            guest_room_booking.save()
+            print("Iside valid")
+            hall = form.cleaned_data['hall']
+            guest_name = form.cleaned_data['guest_name']
+            guest_phone = form.cleaned_data['guest_phone']
+            guest_email = form.cleaned_data['guest_email']
+            guest_address = form.cleaned_data['guest_address']
+            rooms_required = form.cleaned_data['rooms_required']
+            total_guest = form.cleaned_data['total_guest']
+            purpose = form.cleaned_data['purpose']
+            arrival_date = form.cleaned_data['arrival_date']
+            arrival_time = form.cleaned_data['arrival_time']
+            departure_date = form.cleaned_data['departure_date']
+            departure_time = form.cleaned_data['departure_time']
+            nationality = form.cleaned_data['nationality']
+
+            newBooking = GuestRoomBooking.objects.create(hall=hall, intender=request.user.extrainfo, guest_name=guest_name, guest_address=guest_address,
+                                                        guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
+                                                        arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality= nationality)
+            newBooking.save()
             messages.success(request,"Room booked successfuly")
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-    else:
-        form = GuestRoomBookingForm()
-        halls = Hall.objects.all()
-        available_rooms = GuestRoomDetail.objects.get(room_status="Available")
-        context = {
-            'form': form,
-            'halls': halls,
-            'available_rooms': available_rooms
-        }
-        return render(request, 'hostelmanagement/guest_room_booking.html', context)
+        else:
+            messages.error(request, "Something went wrong")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
-        
+@login_required
+def update_guest_room(request):
+    if request.method == "POST":
+        request_id = request.POST['request_id']
+        approve = request.POST['approve']
+        reject = request.POST['reject']
+
+        guest_room_request = GuestRoomBooking.objects.get(pk=request_id)
+        if approve:
+            pass
+        if reject:
+            guest_room_request.status = 'Rejected'
+
+
+    pass
+       
 @login_required
 def allot_hostel_room(request):
     if request.method == "POST":
