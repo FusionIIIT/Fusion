@@ -35,7 +35,7 @@ def addstock(request):
         stock_no = request.POST.get('stock_no')
         name_of_particulars = request.POST.get('name_of_particulars')
         inventory_no = request.POST.get('inventory_no')
-        no_of_quantity = request.POST.get('no_of_quantity')
+        quantity = request.POST.get('quantity')
         rate = request.POST.get('rate')
         amount = request.POST.get('amount')
         supplier_name = request.POST.get('supplier_name')
@@ -43,13 +43,15 @@ def addstock(request):
         buy_date = request.POST.get('buy_date')
         issued_date = request.POST.get('issued_date')
         head_of_asset = request.POST.get('head_of_asset')
+        section = request.POST.get('section')
+        floor = request.POST.get('floor')
         receiver_name = request.POST.get('receiver_name')
         
         StockEntry.objects.create(
             stock_no=stock_no,
             name_of_particulars=name_of_particulars,
             inventory_no=inventory_no,
-            no_of_quantity=no_of_quantity,
+            quantity=quantity,
             rate=rate,
             amount=amount,
             supplier_name=supplier_name,
@@ -57,6 +59,8 @@ def addstock(request):
             buy_date=buy_date,
             issued_date=issued_date,
             head_of_asset=head_of_asset,
+            section=section,
+            floor=floor,
             receiver_name=receiver_name,
         )
         return HttpResponseRedirect('/purchase-and-store2/')
