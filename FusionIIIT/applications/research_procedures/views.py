@@ -240,15 +240,15 @@ def rspc_profile(request):
     # user = get_object_or_404(faculty_about, user=request.user)
     # pf = user.user
     # all_user = User.objects.all()
-    # all_extra_info = []
+    all_extra_info = []
     # for user in all_user:
-    #     curr_extra_info = ExtraInfo.objects.filter(user_id=user.id)
-    #     for curr_info in curr_extra_info:  
-    #         if(curr_info.user_type == 'faculty'):
-    #             all_extra_info.append(user)
+    curr_extra_info = ExtraInfo.objects.filter(user_type = 'faculty')
+    for curr_info in curr_extra_info:  
+        if(curr_info.user_type == 'faculty'):
+            all_extra_info.append(curr_info.user.username)
     
 
-    # print(all_extra_info)
+    print(all_extra_info)
 
 
     all_extra_info = ExtraInfo.objects.filter()
@@ -444,3 +444,39 @@ def rspc_profile_faculty(request):
             #    'pers':pers
                }
     return render(request, 'eisModulenew/rspc_profile.html', context)
+
+
+def generate_citation(request):
+    username = request.POST.get('data')
+    print(username)
+    user = get_object_or_404(User, username= request.user)
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    user_faculty = get_object_or_404(User, username= username)
+    extra_info_faculty = get_object_or_404(ExtraInfo, user=user_faculty)
+    if extra_info_faculty.user_type == 'student':
+        return redirect('/')
+    pf = extra_info.id
+    pf_faculty = extra_info_faculty.id
+    print(pf_faculty)
+    designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
+    flag_rspc = False
+    for designation in designations:
+        # print(designation.designation_id)
+        # currDesig = Designation.objects.filter(id=designation.designation_id)
+        print(designation.designation_id)
+        currDesig = get_object_or_404(Designation, id=designation.designation_id)
+        print(currDesig.name)
+        if(currDesig.name=="dean_rspc"):    
+            flag_rspc = True
+            break
+
+    if flag_rspc != True:
+        if extra_info.user_type == 'faculty':
+            return redirect('/eis/profile/')
+    
+    projects = emp_research_projects.objects.filter(user=user_faculty).order_by('-start_date')
+    context = {
+        'projects' : projects
+    }
+
+    return render(request, 'rs/citation.html', context)
