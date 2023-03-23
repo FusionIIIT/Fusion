@@ -7,6 +7,13 @@
                 <a class="ui top attached black label">
                     <span class="ui inverted header">Report</span>
                 </a>
+                <br>
+                <br>
+                <form id="search-user-form" method="post" action="{% url 'research_procedures:rspc_profile_faculty' %}">
+                  {% csrf_token %}
+                  <input type="text" name="data">
+                  <button type="submit" value="username">Search User Data</button>
+                </form>
                 <br><br>
                 <form method="post" action="{% url 'eis:rspc_generate_report' %}"  target="_blank">
                     {% csrf_token %}
@@ -367,4 +374,23 @@
             </div>
         </div>
     </div>
+    <script>
+      // const form = document.querySelector('#search-user-form');
+      // form.addEventListener('submit', event => {
+      //     event.preventDefault();
+
+      //     // Extract the input data from the form
+      //     const username = form.elements['data'].value;
+
+      //     // Send the input data to the Django view using a fetch request
+      //     fetch('http://127.0.0.1:8000/research_procedures/user_profile', {
+      //       method: 'POST',
+      //       body: JSON.stringify({ username }),
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'X-CSRFToken': '{{ csrf_token }}'
+      //       }
+      //     })
+      //   })
+    </script>
 {% endblock%}
