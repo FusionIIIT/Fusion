@@ -20,7 +20,7 @@
 {% endif %}
 </div>
 
-{% if user in hall_caretaker or hall_warden %}
+{% if user in hall_caretaker or user in hall_warden %}
 {% for hall in all_hall %}
     <div class="{% if hall.hall_id == 'vivekananda' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_notice>
         <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">

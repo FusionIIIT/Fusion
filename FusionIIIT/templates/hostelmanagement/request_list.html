@@ -2,21 +2,59 @@
 {% block {{hall.hall_id}} %}
     {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %}
     <div class="ui secondary segment">
-        <div class="ui segment" >
-            <h2 class="ui center aligned header">{{pending_request.hall.hall_id}}</h2>
-            <h4 style="text-align:right;">{{pending_request.intender.user.first_name}} {{pending_request.intender.user.last_name}} - {{pending_request.intender.user.username}}</h4>
-            
-            <div class="ui styled accordion">
-                <div class="title">
-                    <i class="dropdown icon"></i>
-                    More
-                </div>
-                <div class="content">
-                    <h3 style="color:grey;">Description</h3>
-                    <h4 class="transition hidden" style="color:black;">{{pending_request.rooms_required}}</h4>
-                </div>
-                
+        <div class="ui segment">
+            <div class="ui floating dropdown labeled icon button">
+              <i class="caret down icon"></i>
+              <span class="text">Pending</span>
+              <div class="menu">
+                <div class="item" data-value="accepted"><i class="checkmark icon"></i>Accepted</div>
+                <div class="item" data-value="rejected"><i class="remove icon"></i>Rejected</div>
+                <div class="active item" data-value="pending"><i class="wait icon"></i>Pending</div>
+              </div>
             </div>
+            <div class="ui container">
+              <h2 class="ui center aligned header">Room for {{pending_request.total_guest}} in {{pending_request.hall.hall_id}}</h2>
+              <div class="ui grid">
+                <div class="16 wide column">
+                  <table class="ui celled table">
+                    <thead>
+                      <tr>
+                        <th>Requested By</th>
+                        <th>Guest Name</th>
+                        <th>Guest Phone</th>
+                        <th>Arrival</th>
+                        <th>Departure</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{{pending_request.intender.user.username}}</td>
+                        <td>{{pending_request.guest_name}}</td>
+                        <td>{{pending_request.guest_phone}}</td>
+                        <td>{{pending_request.arrival_date}}</td>
+                        <td>{{pending_request.departure_date}}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="5">
+                          <div class="ui styled accordion" style="width : 650px">
+                            <div class="title">
+                              <i class="dropdown icon"></i>
+                              Reason
+                            </div>
+                            <div class="content">
+                              <h3 style="color:grey;">Description</h3>
+                              <h4 class="transition hidden" style="color:black;">{{pending_request.purpose}}</h4>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+           
             <br>
             
             
