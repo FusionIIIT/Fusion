@@ -974,7 +974,6 @@ def submit_mess_committee(request):
         user_details - extract details and designation of the user from the database
     """
     roll_number = request.POST['rollnumber']
-    print(roll_number)
     data = add_mess_committee(request, roll_number)
     return JsonResponse(data)
 
