@@ -17,9 +17,9 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm, MessInfoForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                     Nonveg_data, Nonveg_menu, Payments, Rebate,
+                    Payments, Rebate, 
                      Special_request, Vacation_food, MessBillBase)
-from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
+from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
@@ -67,7 +67,7 @@ def mess(request):
         student = Student.objects.select_related('id','id__user','id__department').get(id=extrainfo)
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         feedback_obj = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-fdate')
-        data = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(student_id=student).order_by('-app_date')
+        # data = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(student_id=student).order_by('-app_date')
         monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
@@ -75,7 +75,10 @@ def mess(request):
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         except:
-            return HttpResponseRedirect("/mess/info-form")
+            # return HttpResponseRedirect("/mess/info-form")
+            mess_optn= str(student)+ " - "+str(student)+ " - mess1"
+            Messinfo.objects.create(student_id=student,mess_option="mess1")
+            return HttpResponseRedirect("/mess")
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
@@ -90,7 +93,6 @@ def mess(request):
         #variable y stores the menu items
 
         y = Menu.objects.filter(mess_option=mess_optn.mess_option)
-        x = Nonveg_menu.objects.all()
 
         # for item in rebates:
         #     d1 = item.start_date
@@ -105,13 +107,13 @@ def mess(request):
         bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
         amount_c = MessBillBase.objects.latest('timestamp')
         rebate_count = 0
-        nonveg_total_bill = 0
-        for z in data:
-            if z.order_date.month == month_g:
-                nonveg_total_bill = nonveg_total_bill + z.dish.price
+        # nonveg_total_bill = 0
+        # for z in data:
+        #     if z.order_date.month == month_g:
+        #         nonveg_total_bill = nonveg_total_bill + z.dish.price
 
-            else:
-                bill.nonveg_total_bill = 0
+        #     else:
+        #         bill.nonveg_total_bill = 0
 
         for r in rebates:
             if r.status == '2':
@@ -125,7 +127,7 @@ def mess(request):
                 else:
                     rebate_count = 0
         rebate_amount = rebate_count * amount_c.bill_amount / 30
-        total_bill = amount_c.bill_amount - rebate_amount + nonveg_total_bill
+        total_bill = amount_c.bill_amount - rebate_amount 
         if bill:
             bill.update(student_id = student,
                         month = month_g_l,
@@ -133,7 +135,6 @@ def mess(request):
                         amount = amount_c.bill_amount,
                         rebate_count = rebate_count,
                         rebate_amount = rebate_amount,
-                        nonveg_total_bill=nonveg_total_bill,
                         total_bill = total_bill)
 
         else:
@@ -141,7 +142,6 @@ def mess(request):
                                        amount=amount_c.bill_amount,
                                        rebate_count=rebate_count,
                                        rebate_amount=rebate_amount,
-                                       nonveg_total_bill=nonveg_total_bill,
                                        total_bill=total_bill,
                                        month=month_g_l,
                                        year=year_g)
@@ -192,13 +192,12 @@ def mess(request):
                     'newmenu': newmenu,
                     'monthly_bill': monthly_bill,
                     'payments': payments,
-                    'nonveg': x,
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
                     'feed': feed,
                     'student': student,
-                    'data': data,
+                    # 'data': data,
                     'mess_reg': mess_reg,
                     'current_date': current_date,
                     'count': count,
@@ -260,7 +259,7 @@ def mess(request):
 
                     elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
                         count8 += 1
-
+                        
                 context = {
                     'menu': menu_data,
                     'reg_menu': y,
@@ -268,13 +267,12 @@ def mess(request):
                     'newmenu': newmenu,
                     'monthly_bill': monthly_bill,
                     'payments': payments,
-                    'nonveg': x,
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
                     'feed': feed,
                     'student': student,
-                    'data': data,
+                    # 'data': data,
                     'mess_reg': mess_reg,
                     'current_date': current_date,
                     'count': count,
@@ -304,12 +302,11 @@ def mess(request):
                    'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
                    'payments': payments,
-                   'nonveg': x,
                    'vaca': vaca_obj,
                    'info': extrainfo,
                    'feedback': feedback_obj,
                    'student': student,
-                   'data': data,
+                #    'data': data,
                    'mess_reg': mess_reg,
                    'current_date': current_date,
                    'count': count,
@@ -330,10 +327,13 @@ def mess(request):
 
     elif extrainfo.user_type == 'staff':
         current_bill = MessBillBase.objects.latest('timestamp')
-        nonveg_orders_today = Nonveg_data.objects.filter(order_date=today_g)\
-            .values('dish__dish','order_interval').annotate(total=Count('dish'))
-        nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=tomorrow_g)\
-            .values('dish__dish','order_interval').annotate(total=Count('dish'))
+        
+        # NonVeg Data Not Needed
+        # nonveg_orders_today = Nonveg_data.objects.filter(order_date=today_g)\
+        #     .values('dish__dish','order_interval').annotate(total=Count('dish'))
+        # nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=tomorrow_g)\
+        #     .values('dish__dish','order_interval').annotate(total=Count('dish'))
+        
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').all().order_by('-app_date')
         vaca_all = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-app_date')
@@ -341,7 +341,7 @@ def mess(request):
         members_mess = HoldsDesignation.objects.select_related().filter(Q(designation__name__contains='mess_convener')
                                                        | Q(designation__name__contains='mess_committee'))
         y = Menu.objects.all()
-        x = Nonveg_menu.objects.all()
+        # x = Nonveg_menu.objects.all()
         leave = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
         leave_past = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
         meeting = Mess_meeting.objects.all()
@@ -384,8 +384,6 @@ def mess(request):
                    'bill_base': current_bill,
                    'today': today_g.date(),
                    'tomorrow': tomorrow_g.date(),
-                   'nonveg_orders_t':nonveg_orders_tomorrow,
-                   'nonveg_orders': nonveg_orders_today,
                    'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
@@ -487,31 +485,32 @@ def mess_info(request):
     }
     return render(request, "messModule/messInfoForm.html", context)
 
-@login_required
-@transaction.atomic
-@csrf_exempt
-def place_order(request):
-    """
-    This function is to place non-veg food orders
 
-    @param:
-        request: contains metadata about the requested page
+# @login_required
+# @transaction.atomic
+# @csrf_exempt
+# def place_order(request):
+#     """
+#     This function is to place non-veg food orders
+
+#     @param:
+#         request: contains metadata about the requested page
     
-    @variables:
-        user: Current user
-        order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
-        extra_info: Extra information about the current user. From model ExtraInfo
-        student: Student information about the current user
-        student_mess: Mess choices of the student
-        dish_request: Predefined dish available
-    """
-    user = request.user
-    extra_info = ExtraInfo.objects.select_related().get(user=user)
-    if extra_info.user_type == 'student':
-        student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-        student_mess = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
-        add_nonveg_order(request, student)
-        return HttpResponseRedirect('/mess')
+#     @variables:
+#         user: Current user
+#         order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
+#         extra_info: Extra information about the current user. From model ExtraInfo
+#         student: Student information about the current user
+#         student_mess: Mess choices of the student
+#         dish_request: Predefined dish available
+#     """
+#     user = request.user
+#     extra_info = ExtraInfo.objects.select_related().get(user=user)
+#     if extra_info.user_type == 'student':
+#         student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+#         student_mess = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+#          add_nonveg_order(request, student)
+#         return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt
@@ -1144,24 +1143,24 @@ def download_bill_mess(request):
     return render_to_pdf('messModule/billpdfexport.html', context)
 
 
-def get_nonveg_order(request):
-    """
-    This function is to apply for non-veg order
+# def get_nonveg_order(request):
+#     """
+#     This function is to apply for non-veg order
 
-    @param:
-        request - contains metadata about the requested page 
+#     @param:
+#         request - contains metadata about the requested page 
 
-    @variables:
-        current_user - get user from request
-        user_details - extract details of the user from the database
-    """
-    date_o = request.POST['order_date']
-    nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=date_o) \
-        .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
-    data = {
-        'status': 1,
-    }
-    return JsonResponse(data)
+#     @variables:
+#         current_user - get user from request
+#         user_details - extract details of the user from the database
+#     """
+#     date_o = request.POST['order_date']
+#     nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=date_o) \
+#         .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
+#     data = {
+#         'status': 1,
+#     }
+#     return JsonResponse(data)
 
 
 def add_leave_manager(request):

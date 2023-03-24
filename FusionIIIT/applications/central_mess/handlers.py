@@ -16,7 +16,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                     Nonveg_data, Nonveg_menu, Payments, Rebate,
+                      Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
 from notification.views import central_mess_notif
 
@@ -33,32 +33,32 @@ last_day_of_this_month = first_day_of_next_month - timedelta(days=1)
 next_month = first_day_of_next_month.month
 
 
-def add_nonveg_order(request, student):
-    """
-    This function is to place non veg orders
-    :param request:
-        user: Current user
-        order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
-    :param student: student placing the order
-    :variables:
-        extra_info: Extra information about the current user. From model ExtraInfo
-        student: Student information about the current user
-        student_mess: Mess choices of the student
-        dish_request: Predefined dish available
-        nonveg_object: Object of Nonveg_data
-    :return:
-    """
-    try:
-        dish_request = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
-        order_interval = request.POST.get("interval")
-        order_date = tomorrow_g
-        nonveg_object = Nonveg_data(student_id=student, order_date=order_date,
-                                    order_interval=order_interval, dish=dish_request)
-        nonveg_object.save()
-        # messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
+# def add_nonveg_order(request, student):
+#     """
+#     This function is to place non veg orders
+#     :param request:
+#         user: Current user
+#         order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
+#     :param student: student placing the order
+#     :variables:
+#         extra_info: Extra information about the current user. From model ExtraInfo
+#         student: Student information about the current user
+#         student_mess: Mess choices of the student
+#         dish_request: Predefined dish available
+#         nonveg_object: Object of Nonveg_data
+#     :return:
+#     """
+#     try:
+#         dish_request = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+#         order_interval = request.POST.get("interval")
+#         order_date = tomorrow_g
+#         nonveg_object = Nonveg_data(student_id=student, order_date=order_date,
+#                                     order_interval=order_interval, dish=dish_request)
+#         nonveg_object.save()
+#         # messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
 
-    except ObjectDoesNotExist:
-        return HttpResponse("Seems like object does not exist")
+#     except ObjectDoesNotExist:
+#         return HttpResponse("Seems like object does not exist")
 
 
 def add_mess_feedback(request, student):
@@ -567,17 +567,18 @@ def generate_bill():
     month_g = last_day_prev_month.month
     first_day_prev_month = last_day_prev_month.replace(day=1)
     # previous_month = month_t.strftime("%B")
-    student_all = Student.objects.prefetch_related('nonveg_data_set','rebate_set')
+    student_all = Student.objects.prefetch_related('rebate_set')
     amount_c = MessBillBase.objects.latest('timestamp')
     for student in student_all:
-        nonveg_total_bill=0
+        # nonveg_total_bill=0
         rebate_count = 0
         total = 0
-        nonveg_data = student.nonveg_data_set.all()
+        # nonveg_data = student.nonveg_data_set.all()
         rebates = student.rebate_set.all()
-        for order in nonveg_data:
-            if order.order_date.strftime("%B") == previous_month:
-                nonveg_total_bill = nonveg_total_bill + order.dish.price
+        # for order in nonveg_data:
+        #     if order.order_date.strftime("%B") == previous_month:
+        #         nonveg_total_bill = nonveg_total_bill + order.dish.price
+
         for r in rebates:
             if r.status == '2':
                 if r.start_date.month == month_g:
@@ -590,14 +591,13 @@ def generate_bill():
                 else:
                     rebate_count = 0
         rebate_amount = rebate_count*amount_c.bill_amount/30
-        total = amount_c.bill_amount + nonveg_total_bill - rebate_amount
+        total = amount_c.bill_amount  - rebate_amount
         bill_object = Monthly_bill(student_id=student,
                                    month=previous_month,
                                    year = previous_month_year,
                                    amount=amount_c.bill_amount,
                                    rebate_count=rebate_count,
                                    rebate_amount=rebate_amount,
-                                   nonveg_total_bill=nonveg_total_bill,
                                    total_bill=total)
         if Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
@@ -614,7 +614,6 @@ def generate_bill():
                                                             amount=amount_c.bill_amount,
                                                             rebate_count=rebate_count,
                                                             rebate_amount=rebate_amount,
-                                                            nonveg_total_bill=nonveg_total_bill,
                                                             total_bill=total)
             # bill_object.update()
         else:

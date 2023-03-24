@@ -83,8 +83,8 @@ INTERVAL = (
 )
 
 MESS_OPTION = (
-    ('mess1', 'Veg_mess'),
-    ('mess2', 'Non_veg_mess')
+    ('mess1', 'Mess1'),
+    ('mess2', 'Mess2')
 )
 
 
@@ -126,7 +126,7 @@ class Monthly_bill(models.Model):
     amount = models.IntegerField(default=0)
     rebate_count = models.IntegerField(default=0)
     rebate_amount = models.IntegerField(default=0)
-    nonveg_total_bill = models.IntegerField(default=0)
+    # nonveg_total_bill = models.IntegerField(default=0)
     total_bill = models.IntegerField(default=0)
     paid = models.BooleanField(default=False)
 
@@ -187,26 +187,26 @@ class Vacation_food(models.Model):
         return str(self.student_id.id)
 
 
-class Nonveg_menu(models.Model):
-    dish = models.CharField(max_length=20)
-    price = models.IntegerField()
-    order_interval = models.CharField(max_length=20, choices=INTERVAL,
-                                      default='Breakfast')
+# class Nonveg_menu(models.Model):
+#     dish = models.CharField(max_length=20)
+#     price = models.IntegerField()
+#     order_interval = models.CharField(max_length=20, choices=INTERVAL,
+#                                       default='Breakfast')
 
-    def __str__(self):
-        return '{} - {}'.format(self.dish, self.price)
+#     def __str__(self):
+#         return '{} - {}'.format(self.dish, self.price)
 
 
-class Nonveg_data(models.Model):
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    order_date = models.DateField(default=datetime.date.today)
-    order_interval = models.CharField(max_length=20, choices=INTERVAL,
-                                      default='Breakfast')
-    dish = models.ForeignKey(Nonveg_menu, on_delete=models.CASCADE)
-    app_date = models.DateField(default=datetime.date.today)
+# class Nonveg_data(models.Model):
+#     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+#     order_date = models.DateField(default=datetime.date.today)
+#     order_interval = models.CharField(max_length=20, choices=INTERVAL,
+#                                       default='Breakfast')
+#     dish = models.ForeignKey(Nonveg_menu, on_delete=models.CASCADE)
+#     app_date = models.DateField(default=datetime.date.today)
 
-    def __str__(self):
-        return str(self.student_id.id)
+#     def __str__(self):
+#         return str(self.student_id.id)
 
 
 class Special_request(models.Model):
