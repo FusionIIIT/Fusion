@@ -1,4 +1,5 @@
 // go run script.go -dir ~/branches -b "ac-2 os-2" -og ~/branches/main -rem origin
+// go run script.go -dir ~/branches -b "ac-2 os-2" -og ~/branches/main -rem origin -db ~/fusiondb_07feb23.sql
 
 package main
 
@@ -27,6 +28,7 @@ var (
 	branchNames = flag.String("b", "", "branches which needs to be synced")
 	ogPath      = flag.String("og", "", "path of directory to be copied")
 	remoteName  = flag.String("rem", "origin", "git remote name where branch is present")
+	db_dumpPath = flag.String("db", "", "path of dump file that is to be imported")
 )
 
 var branchPorts = map[string]Ports{
@@ -91,7 +93,7 @@ func main() {
 		} else {
 			fmt.Printf("Merging %s/%s to %s\n", *remoteName, branch, *remoteName)
 			cmdRun(fmt.Sprintf("git -C %s merge %s/%s", branchDir, *remoteName, branch), true)
-		    cmdRun(fmt.Sprintf("docker-compose -f %s down || true", filepath.Join(branchDir, "docker-compose.yml")), true)
+			cmdRun(fmt.Sprintf("docker-compose -f %s down || true", filepath.Join(branchDir, "docker-compose.yml")), true)
 		}
 
 		fmt.Printf("Making necessary changes... \n")
@@ -111,6 +113,17 @@ func main() {
 		fmt.Printf("Building %s\n", branch)
 		cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
 		cmdRun(fmt.Sprintf("docker-compose -f %s up -d", filepath.Join(branchDir, "docker-compose.yml")), true)
+
+		if len(*db_dumpPath) > 0 {
+		    fmt.Printf("Importing dump into %s_db_1\n", branch)
+			cmdRun(
+				fmt.Sprintf(
+					"docker exec -i %s_db_1 psql -U fusion_admin -d fusionlab < %s",
+					branch,
+					*db_dumpPath,
+				),
+				true)
+		}
 
 		fmt.Printf("%s app started at port %d\n", branch, branchPorts[branch].App)
 	}
@@ -263,4 +276,3 @@ func CopySymLink(source, dest string) error {
 	}
 	return os.Symlink(link, dest)
 }
-
