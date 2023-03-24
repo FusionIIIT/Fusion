@@ -12,7 +12,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render,reverse
 from django.utils import timezone
 
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
@@ -173,7 +173,7 @@ def course(request, course_code):
 
         #         videos.append(video_data)
             # print(videos)
-        
+        # slides1=CourseSlide.objects.select_related().filter(course_id=course)
         slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = CourseAssignment.objects.select_related().filter(course_id=course)
@@ -461,6 +461,23 @@ def add_document(request, course_code):
     else:
         
         return HttpResponse("not found")
+
+@login_required
+def edit_assignment_marks(request,*args, **kwargs):
+    if request.method=='POST':
+        form=AssignmentMarks(request.POST)
+        if form.is_valid():
+            sa=StudentAssignment1.objects.get(pk=int(request.POST['assignmentid'][0]))
+            # print()
+            sa.score=form.cleaned_data['marks']
+            sa.feedback=form.cleaned_data['feedback']
+            sa.save()
+            # print(sa.course_code)
+            course_code = sa.course_code
+            url = reverse('course', args=[course_code])
+            return redirect(url)
+            # return redirect(course,course_code='CS416e')
+    return HttpResponse("Error Occured!")
 
 #it is to delete things(assignment, slides, videos, ) from the dustin icon or delete buttons
 @login_required
