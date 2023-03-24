@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('globals', '0002_auto_20230321_0041'),
+        ('globals', '0001_initial'),
         ('complaint_system', '0001_initial'),
     ]
 
