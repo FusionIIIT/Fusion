@@ -62,6 +62,13 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% endif %}
+
+                    {%if user not in hall_caretaker and user not in hall_warden%}
+                    <a class="item" data-tab="seventh">
+                        Book Guest Room Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
                 </div>
 
             </div>
@@ -107,6 +114,14 @@
             <div class="ui tab segment" data-tab="sixth">
                 {% block update_guest_room %}
                     {% include 'hostelmanagement/update_guest_room.html' %}
+                {% endblock %}
+            </div>
+            {% endif %}
+
+            {% if user not in hall_caretaker and user not in hall_warden%}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block book_guest_room_status %}
+                    {% include 'hostelmanagement/book_guest_room_status.html' %}
                 {% endblock %}
             </div>
             {% endif %}
