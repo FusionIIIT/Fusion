@@ -259,17 +259,19 @@ def edit_student_rooms_sheet(request):
             hall_no = row[1].value
             if row[0].ctype == 2:
                 roll_no = str(int(roll_no))
-            if row[1].ctype == 2:
-                hall_no = str(int(hall_no))
 
             room_no = row[2].value
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)
             is_valid = True
             student = Student.objects.filter(id=roll_no.strip())
-            hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
+            hall = Hall.objects.filter(hall_id=hall_no)
+            print("Hello----------------------->",room_no);
+            
             if student and hall.exists():
                 Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
+                for r in Room:
+                    print("room details------------------------>",r.hall,r.block_no,r.room_no,r.room_occupied,r.room_cap)
                 if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
                     continue
                 else:
@@ -294,7 +296,7 @@ def edit_student_rooms_sheet(request):
                 roll_no = str(int(roll_no))
             
 
-            hall_no = str(int(row[1].value))
+            hall_no = row[1].value
             room_no = row[2].value
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)

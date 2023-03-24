@@ -21,10 +21,7 @@ def remove_from_room(student):
     room = re.findall('[0-9]+',str(student.room_no))
     room_num=str(room[0])
     block = str(student.room_no[0])
-    if student.hall_no == 5:
-        hall = Hall.objects.get(hall_id = 'GH')
-    else:
-        hall=Hall.objects.get(hall_id="Hall "+str(student.hall_no))
+    hall=Hall.objects.get(hall_id=student.hall_id)
     Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=room_num)
     Room.room_occupied=Room.room_occupied-1
     Room.save()
@@ -38,9 +35,9 @@ def add_to_room(student, new_room, new_hall):
     block=str(new_room[0])
     room = re.findall('[0-9]+', new_room)
     student.room_no=str(block)+"-"+str(room[0])
-    student.hall_no = int(new_hall[-1])
+    student.hall_id = new_hall
     student.save()
-    hall=Hall.objects.get(hall_id="Hall "+str(student.hall_no))
+    hall=Hall.objects.get(hall_id=student.hall_id)
     Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=str(room[0]))
     Room.room_occupied=Room.room_occupied+1
     Room.save()
