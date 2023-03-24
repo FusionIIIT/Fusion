@@ -74,7 +74,7 @@ class StudentComplain(models.Model):
                                       max_length=20, default='internet')
     location = models.CharField(max_length=20, choices=Constants.AREA)
     specific_location = models.CharField(max_length=100, blank=True)
-    details = models.CharField(max_length=1000)
+    details = models.TextField()
     status = models.IntegerField(default='0')
     remarks = models.CharField(max_length=300, default="Pending")
     flag = models.IntegerField(default='0')
