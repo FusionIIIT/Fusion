@@ -1,6 +1,6 @@
-{% load custom_tags %}
-{% block {{hall.hall_id}} %}
-    {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %}
+{% comment %} {% load custom_tags %} {% endcomment %}
+{% block book_guest_room_status %}
+    {% comment %} {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %} {% endcomment %}
     <div class="ui secondary segment">
         <div class="ui segment">
             <div class="ui container">
@@ -15,6 +15,7 @@
                         <th>Guest Phone</th>
                         <th>Arrival</th>
                         <th>Departure</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -24,9 +25,10 @@
                         <td>{{pending_request.guest_phone}}</td>
                         <td>{{pending_request.arrival_date}}</td>
                         <td>{{pending_request.departure_date}}</td>
+                        <td>status</td>
                       </tr>
                       <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                           <div class="ui styled accordion" style="width : 650px">
                             <div class="title">
                               <i class="dropdown icon"></i>
@@ -44,15 +46,19 @@
                 </div>
               </div>
             </div>
-            <form method="post"  action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
+            {% comment %} <form method="post"  action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
                 {% csrf_token %}
-                <select class="ui dropdown" name="status" required>
-                  <option selected disabled value="">Status</option>
-                  <option value="Accepted">Accepted</option>
-                  <option value="Rejected">Rejected</option>
-                  <option value="Pending">Pending</option>
-              </select>
-                <div class="field">
+                <div class="ui floating dropdown labeled icon button">
+                    <i class="caret down icon"></i>
+                    <span class="text">Status</span>
+                    <div class="menu">
+                      <div class="item" data-value="accepted"><i class="checkmark icon"></i>Accepted</div>
+                      <div class="item" data-value="rejected"><i class="remove icon"></i>Rejected</div>
+                      <div class="active item" data-value="pending"><i class="wait icon"></i>Pending</div>
+                    </div>
+                  </div>
+                <div class = "two fields">
+                  <div class="field">
                     <label>Room Number</label>
                     <input type="text" name="room_number">
                 </div>
@@ -64,7 +70,7 @@
                     </div>
                 </div>
                 </div>
-            </form>
+            </form> {% endcomment %}
           </div>
            
             <br>
@@ -75,5 +81,5 @@
                 <!-- {% endifequal %} -->
             </div>
         </div>
-    {% endfor %}
+    {% comment %} {% endfor %} {% endcomment %}
 {% endblock %}
