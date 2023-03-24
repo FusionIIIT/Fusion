@@ -19,4 +19,3 @@ class StockEntry(models.Model):
 
     class Meta:
         db_table = 'ps2_stocks'
-
