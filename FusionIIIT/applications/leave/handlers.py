@@ -32,6 +32,22 @@ common_form_offline = EmployeeCommonFormOffline()
 
 
 def add_leave_segment(form, type_of_leaves):
+    """
+    Creates a new LeaveSegment object using form data and returns it.
+
+    Parameters:
+    - form: the LeaveSegmentForm object containing the form data
+    - type_of_leaves: the queryset of available LeaveType objects
+
+    Description:
+    This function creates a new LeaveSegment object using the cleaned form data. It retrieves the selected
+    LeaveType object from the provided queryset and uses the form data to create a new LeaveSegment object.
+    The function then returns the created LeaveSegment object.
+
+    Results:
+    This function returns a new LeaveSegment object created using the form data. The object includes the
+    selected LeaveType, start date, end date, start half, end half, document, and address information.
+    """
     data = form.cleaned_data
     leave_type = type_of_leaves.get(id=data.get('leave_type'))
     leave_segment = LeaveSegment(
@@ -47,6 +63,21 @@ def add_leave_segment(form, type_of_leaves):
 
 
 def add_acad_rep_segment(form):
+    """
+    Creates a new ReplacementSegment object for academic replacement using form data and returns it.
+
+    Parameters:
+    - form: the AcademicReplacementSegmentForm object containing the form data
+
+    Description:
+    This function creates a new ReplacementSegment object for academic replacement using the cleaned form data.
+    It retrieves the selected academic representative's user object and uses the form data to create a new
+    ReplacementSegment object. The function then returns the created ReplacementSegment object.
+
+    Results:
+    This function returns a new ReplacementSegment object created using the form data. The object includes the
+    replacer user object, replacement type 'academic', start date, and end date information.
+    """
     data = form.cleaned_data
     rep_user = User.objects.get(username=data.get('acad_rep'))
     rep = ReplacementSegment(
@@ -59,6 +90,21 @@ def add_acad_rep_segment(form):
 
 
 def add_admin_rep_segment(form):
+    """
+    Creates a new ReplacementSegment object for administrative replacement using form data and returns it.
+
+    Parameters:
+    - form: the AdminReplacementSegmentForm object containing the form data
+
+    Description:
+    This function creates a new ReplacementSegment object for administrative replacement using the cleaned form data.
+    It retrieves the selected administrative representative's user object and uses the form data to create a new
+    ReplacementSegment object. The function then returns the created ReplacementSegment object.
+
+    Results:
+    This function returns a new ReplacementSegment object created using the form data. The object includes the
+    replacer user object, replacement type 'administrative', start date, and end date information.
+    """
     data = form.cleaned_data
     rep_user = User.objects.get(username=data.get('admin_rep'))
     rep = ReplacementSegment(
@@ -71,6 +117,22 @@ def add_admin_rep_segment(form):
 
 
 def add_leave_segment_offline(form, type_of_leaves):
+    """
+    Creates a new LeaveSegmentOffline object using form data and returns it.
+
+    Parameters:
+    - form: the LeaveSegmentOfflineForm object containing the form data
+    - type_of_leaves: the queryset of available LeaveType objects
+
+    Description:
+    This function creates a new LeaveSegmentOffline object using the cleaned form data. It retrieves the selected
+    LeaveType object from the provided queryset and uses the form data to create a new LeaveSegmentOffline object.
+    The function then returns the created LeaveSegmentOffline object.
+
+    Results:
+    This function returns a new LeaveSegmentOffline object created using the form data. The object includes the
+    selected LeaveType, start date, end date, start half, end half, document, and address information.
+    """
     data = form.cleaned_data
     leave_type = type_of_leaves.get(id=data.get('leave_type'))
     leave_segment = LeaveSegmentOffline(
@@ -86,6 +148,21 @@ def add_leave_segment_offline(form, type_of_leaves):
 
 
 def add_acad_rep_segment_offline(form):
+    """
+    Creates a new ReplacementSegmentOffline object for academic replacement using form data and returns it.
+
+    Parameters:
+    - form: the AcademicReplacementSegmentOfflineForm object containing the form data
+
+    Description:
+    This function creates a new ReplacementSegmentOffline object for academic replacement using the cleaned form data.
+    It retrieves the selected academic representative's user object and uses the form data to create a new
+    ReplacementSegmentOffline object. The function then returns the created ReplacementSegmentOffline object.
+
+    Results:
+    This function returns a new ReplacementSegmentOffline object created using the form data. The object includes the
+    replacer user object, replacement type 'academic', start date, and end date information.
+    """
     data = form.cleaned_data
     rep_user = User.objects.get(username=data.get('acad_rep'))
     rep = ReplacementSegmentOffline(
@@ -98,6 +175,21 @@ def add_acad_rep_segment_offline(form):
 
 
 def add_admin_rep_segment_offline(form):
+    """
+    Creates a new ReplacementSegmentOffline object for administrative replacement using form data and returns it.
+
+    Parameters:
+    - form: the AdminReplacementSegmentOfflineForm object containing the form data
+
+    Description:
+    This function creates a new ReplacementSegmentOffline object for administrative replacement using the cleaned form
+    data. It retrieves the selected administrative representative's user object and uses the form data to create a new
+    ReplacementSegmentOffline object. The function then returns the created ReplacementSegmentOffline object.
+
+    Results:
+    This function returns a new ReplacementSegmentOffline object created using the form data. The object includes the
+    replacer user object, replacement type 'administrative', start date, and end date information.
+    """
     data = form.cleaned_data
     rep_user = User.objects.get(username=data.get('admin_rep'))
     rep = ReplacementSegmentOffline(
@@ -111,6 +203,27 @@ def add_admin_rep_segment_offline(form):
 
 @transaction.atomic
 def handle_faculty_leave_application(request):
+    """
+    Handle faculty leave application by validating and creating Leave, LeaveSegment,
+    and ReplacementSegment objects.
+
+    Args:
+        request (HttpRequest): HTTP request object representing the faculty leave application.
+
+    Returns:
+        HttpResponse: HTTP response object representing the success/failure of the faculty leave application.
+
+    Raises:
+        N/A
+
+    Required Modules:
+        django.db.transaction
+        django.shortcuts.redirect
+        django.shortcuts.render
+        django.urls.reverse
+        django.contrib.messages.add_message
+
+    """
     leave_form_set = LeaveFormSet(request.POST, request.FILES, prefix='leave_form',
                                   user=request.user)
     academic_form_set = AcadFormSet(request.POST, prefix='acad_form',
@@ -190,6 +303,19 @@ def handle_faculty_leave_application(request):
 
 
 def handle_staff_leave_application(request):
+    """
+    View function to handle staff leave application.
+    It renders the leave.html template for GET request and handles the leave application
+    submission for POST request.
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The HTTP response object.
+
+    Raises:
+        None
+    """
     leave_form_set = LeaveFormSet(request.POST, request.FILES, prefix='leave_form',
                                   user=request.user)
     admin_form_set = AdminFormSet(request.POST, prefix='admin_form',
@@ -264,7 +390,20 @@ def handle_staff_leave_application(request):
 
 @transaction.atomic
 def handle_student_leave_application(request):
+    """
+    Handle student leave application.
 
+    This view function handles the form submission of student leave application. If the form is valid, the leave application is
+    created and a leave request is sent to the concerned leave authority. Then, the leave balance of the student is deducted.
+
+    Parameters:
+    request : HttpRequest object
+    The HTTP request object representing the current request.
+
+    Returns:
+    HttpResponse object
+    The HTTP response object representing the resulting page.
+    """
     form = StudentApplicationForm(request.POST, request.FILES, user=request.user)
     user_designation = get_designation(request.user)
 
@@ -314,6 +453,17 @@ def handle_student_leave_application(request):
 
 
 def send_faculty_leave_form(request):
+    """
+    Method name: send_faculty_leave_form(request)
+
+    Parameters:
+        request: HttpRequest object representing the current request.
+    Short description:
+        Renders the 'leave.html' template with context data containing various form sets, leave balance, leave requests, and leave applications for a faculty member.
+
+    Results:
+        Returns an HttpResponse object that renders the 'leave.html' template with context data containing various form sets, leave balance, leave requests, and leave applications for a faculty member.
+    """
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_requests = get_pending_leave_requests(request.user)
     leave_balance = request.user.leave_balance.all()
@@ -341,6 +491,20 @@ def send_faculty_leave_form(request):
 
 
 def send_staff_leave_form(request):
+    """
+    The send_staff_leave_form function accepts a request object and generates a context dictionary containing information related to staff leave requests. The context dictionary is then rendered using the leaveModule/leave.html template and returned as an HTTP response.
+
+    Parameters:
+        request: An HTTP request object.
+
+    Returns:
+        An HTTP response object containing the leaveModule/leave.html template rendered with the context dictionary.
+
+    Short Description:
+        This function generates a context dictionary containing information related to staff leave requests and renders it using the leaveModule/leave.html template.
+    Note:
+        The function assumes that the LeaveFormSet, AdminFormSet, and common_form objects are defined and imported from other modules.
+    """
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_balance = request.user.leave_balance.all()
     leave_requests = get_pending_leave_requests(request.user)
@@ -368,6 +532,17 @@ def send_staff_leave_form(request):
 
 
 def send_student_leave_form(request):
+    """
+    Method : send_student_leave_form(request)
+    Sends the leave application form to the student user along with their leave balance and any
+    previous leave applications made by the user.
+
+    Parameters:
+        - request: HttpRequest object representing the incoming request
+
+    Returns:
+        - HttpResponse object representing the rendered leave application page with all the necessary context data.
+    """
     leave_balance = request.user.leave_balance.all()
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
     form = StudentApplicationForm(initial={}, user=request.user)
@@ -384,6 +559,20 @@ def send_student_leave_form(request):
 
 @transaction.atomic
 def intermediary_processing(request, leave_request):
+    """
+    Function: `intermediary_processing(request, leave_request)`
+
+    Parameters:
+
+        request: HttpRequest object representing the current request
+        leave_request: LeaveRequest object representing the leave request being processed
+
+    Description:
+        This function handles the processing of a leave request by an intermediary authority. It retrieves the status and remark submitted with the request, updates the leave request object with the remark, and performs the appropriate action based on the status. If the status is 'forward', the leave request is marked as forwarded and a new leave request is created for the next authority. If the status is not 'forward', the leave request is marked as rejected and the corresponding leave object is updated with the 'rejected' status and remark. The function also sends notifications to the applicant and updates the leave balance if necessary.
+
+    Returns:
+        A JsonResponse object containing a status flag and a message indicating the success or failure of the processing.
+    """
     status = request.POST.get('status')
     remark = request.POST.get('remark')
     leave_request.remark = remark
@@ -414,6 +603,18 @@ def intermediary_processing(request, leave_request):
 
 @transaction.atomic
 def authority_processing(request, leave_request):
+    """
+    authority_processing(request, leave_request)
+    Parameters:
+        - request: HTTP request object
+        - leave_request: LeaveRequest object
+
+    Short description:
+        This function handles the processing of a leave request by the Leave Sanctioning Authority.
+
+    Results:
+        This function updates the status and remark of the given leave_request object based on the action taken by the Leave Sanctioning Authority. If the leave request is accepted, it updates the status of the associated leave object, creates a migration object, and sends a notification to the applicant. If the leave request is forwarded, it creates a new LeaveRequest object for the next level of authority and sends a notification to the applicant and officer. If the leave request is rejected, it updates the status of the associated leave object, restores the leave balance, and sends a notification to the applicant.
+    """
     status = request.POST.get('status')
     remark = request.POST.get('remark')
     leave_request.remark = remark
@@ -458,6 +659,19 @@ def authority_processing(request, leave_request):
 
 @transaction.atomic
 def officer_processing(request, leave_request):
+    """
+    Method name: officer_processing(request, leave_request)
+
+    Parameters:
+        - request: HttpRequest object representing the current request
+        - leave_request: LeaveRequest object representing the leave request being processed
+        
+    Short description:
+        This function is responsible for processing a leave request by a Leave Sanctioning Officer. It updates the status and remark of the leave request and leave objects, and sends notification to the applicant.
+
+    Results:
+        The function generates a JSON response with status and message indicating whether the leave request was successfully accepted or rejected.
+    """
     status = request.POST.get('status')
     remark = request.POST.get('remark')
     leave_request.remark = remark
@@ -485,6 +699,14 @@ def officer_processing(request, leave_request):
 
 @transaction.atomic
 def process_staff_faculty_application(request):
+    """
+    Processes staff/faculty leave requests and replacement requests by updating the relevant database objects.
+    If a replacement request is accepted, and all other replacements have been accepted, the function creates a LeaveRequest object for the appropriate authority to approve the leave request. If a replacement request is rejected, the leave request associated with it is also rejected, and any other pending replacement requests are automatically rejected. If the original request was submitted by an authority, it is forwarded to the next level of authority for approval.
+
+    :param request: The HTTP request object.
+
+    :return: A JSON response indicating the success of the operation.
+    """
     is_replacement_request = request.POST.get('rep')
     status = request.POST.get('status')
     id = request.POST.get('id')
@@ -545,6 +767,16 @@ def process_staff_faculty_application(request):
 
 @transaction.atomic
 def process_student_application(request):
+    """
+    Function :  process_student_application(request)
+    Processes a student leave application by either accepting or rejecting it, based on the input parameters.
+    Args:
+        request (HttpRequest): The HTTP request object containing the input parameters.
+
+    Returns:
+        A JsonResponse object containing the status and message indicating whether the leave request was successfully 
+        accepted or rejected, or an error message if the user is not authorized to process the request.
+    """
     leave_request = LeaveRequest.objects.get(id=request.POST.get('id'))
     if request.user == leave_request.requested_from:
         status = request.POST.get('status')
@@ -573,6 +805,18 @@ def process_student_application(request):
 
 
 def delete_leave_application(request):
+    """
+    Function Name: delete_leave_application
+
+    Parameters:
+        request: HTTP request object containing data for the leave application to be deleted
+
+    Description:
+        This function handles the cancellation of a leave application by a user. The function checks if the leave exists, belongs to the user and has not been rejected, and that the start date of the leave is not past. If these conditions are met, any accepted replacement segments or leave requests associated with the leave are cancelled, and the leave is deleted. Notifications are sent to any affected users. If the conditions are not met, an error response is sent.
+
+    Returns:
+        response: A JSON response containing a status message indicating whether the leave was successfully cancelled or not.
+    """
     leave_id = request.POST.get('id')
     leave = request.user.all_leaves.filter(id=leave_id).first()
     leave_start_date = LeaveSegment.objects.filter(leave=leave).first().start_date
@@ -604,7 +848,20 @@ def delete_leave_application(request):
 
 @transaction.atomic
 def handle_offline_leave_application(request):
+    """
+    Function Name : `handle_offline_leave_application(request)`
+    Parameter list:
 
+        `request`: an HTTP request object representing the current request.
+
+    Short description:
+
+        The function handles the submission of an offline leave application by a staff or faculty member. It performs form validation, creates leave and replacement segments, deducts leave balance, sends a notification, and redirects to the leave manager page.
+
+    Results/queries:
+
+        The function creates a new instance of LeaveOffline and saves it to the database, along with its corresponding LeaveSegmentOffline and ReplacementSegmentOffline instances. It also deducts the leave balance of the applicant, sends a notification to the leave module, and redirects to the leave manager page. If the form is not valid, it displays an error message and renders the form page again with the input data. If the user is a staff member, the academic form set is not needed and is not validated. The function returns an HTTP response object.
+    """
     
     try:
         leave_form_set = LeaveFormSetOffline(request.POST, request.FILES, prefix='leave_form_offline')
@@ -737,6 +994,18 @@ def handle_offline_leave_application(request):
 
 
 def send_offline_leave_form(request):
+    """
+    Function definition: send_offline_leave_form(request)
+
+    Parameter list:
+        - request: The HTTP request sent by the client.
+
+    Short description:
+        This function generates a context dictionary with formsets and a common form to be rendered in the 'leaveModule/test.html' template.
+
+    Results:
+        The function returns a rendered HTTP response with the 'leaveModule/test.html' template, which displays formsets and a common form.
+    """
     #rep_segments = request.user.rep_requests_offline.all()
     #leave_balance = request.user.leave_balance.all()
     #user_leave_applications = LeaveOffline.objects.filter(applicant=request.user).order_by('-timestamp')
