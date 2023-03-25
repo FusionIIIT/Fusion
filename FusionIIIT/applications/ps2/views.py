@@ -1,62 +1,68 @@
-from django.http import HttpResponse,HttpResponseRedirect
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 
-def homepage(request):
-    tab =[
-        {
-        'id' : 1,
-        'name' : 'Study table',
-        'quantity' : 3888,
-        'currentlyin': 'H4'
-    },{
-        'id' : 2,
-        'name' : 'Study chair',
-        'quantity' : 3888,
-        'currentlyin': 'H4'
-    },{
-        'id' : 3,
-        'name' : 'Hostel Carts',
-        'quantity' : 3888,
-        'currentlyin': 'H4'
-    },{
-        'id' : 4,
-        'name' : 'Hostel Fans',
-        'quantity' : 3888,
-        'currentlyin': 'H4'
-    },{
-        'id' : 5,
-        'name' : 'Hostel Tubelights',
-        'quantity' : 3888,
-        'currentlyin': 'H4'
-    },{
-        'id' : 6,
-        'name' : 'Hostel office sofa set',
-        'quantity' : 14,
-        'currentlyin': 'H4'
-    },{
-        'id' : 7,
-        'name' : 'T.V.',
-        'quantity' : 20,
-        'currentlyin': 'Administration Block'
-    },{
-        'id' : 8,
-        'name' : 'Table Tennis',
-        'quantity' : 4,
-        'currentlyin': 'H4'
-    },{
-        'id' : 9,
-        'name' : 'Water Purifiers',
-        'quantity' : 84,
-        'currentlyin': 'H4'
-    },{
-        'id' : 10,
-        'name' : 'Electric Geyser',
-        'quantity' : 252,
-        'currentlyin': 'H4'
+from .models import StockEntry
+from ..globals.models import ExtraInfo, User, HoldsDesignation
+
+# Create your views here.
+def ps2(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    extraInfo = ExtraInfo.objects.get(user=current_user)
+    if(extraInfo.user_type=="student"):
+        return HttpResponseRedirect('/')
+
+    user_department = extraInfo.department.name
+
+    stocks = StockEntry.objects.all().filter(head_of_asset=user_department)
+
+    if request.user.username == 'acadadmin':
+        stocks = StockEntry.objects.all()
+    
+    context = {
+        'stocks': stocks,
     }
-    ]
-    return render(request, "./ps2/home.html/",{'tab': tab})
 
-def add(request):
-    return render(request, "./ps2/form.html/",{})
-    #return HttpResponse("<h1> START WORKING ON IT !!!</h1>")
+    return render(request, "ps2/ps2.html", context)
+
+def addstock(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    extraInfo = ExtraInfo.objects.get(user=current_user)
+    if(extraInfo.user_type=="student"):
+        return HttpResponseRedirect('/')
+    
+    if request.method == "POST":
+        stock_no = request.POST.get('stock_no')
+        name_of_particulars = request.POST.get('name_of_particulars')
+        inventory_no = request.POST.get('inventory_no')
+        quantity = request.POST.get('quantity')
+        rate = request.POST.get('rate')
+        amount = request.POST.get('amount')
+        supplier_name = request.POST.get('supplier_name')
+        bill_no = request.POST.get('bill_no')
+        buy_date = request.POST.get('buy_date')
+        issued_date = request.POST.get('issued_date')
+        head_of_asset = request.POST.get('head_of_asset')
+        section = request.POST.get('section')
+        floor = request.POST.get('floor')
+        receiver_name = request.POST.get('receiver_name')
+        
+        StockEntry.objects.create(
+            stock_no=stock_no,
+            name_of_particulars=name_of_particulars,
+            inventory_no=inventory_no,
+            quantity=quantity,
+            rate=rate,
+            amount=amount,
+            supplier_name=supplier_name,
+            bill_no=bill_no,
+            buy_date=buy_date,
+            issued_date=issued_date,
+            head_of_asset=head_of_asset,
+            section=section,
+            floor=floor,
+            receiver_name=receiver_name,
+        )
+        return HttpResponseRedirect('/purchase-and-store2/')
+
+    return render(request, "ps2/addstock.html")
