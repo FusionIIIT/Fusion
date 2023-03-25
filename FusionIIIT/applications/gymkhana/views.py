@@ -662,9 +662,12 @@ def retrun_content(request, roll, name, desig , club__ ):
 			venue.append(room[0])
 	curr_club=[]
 	if 'student' in desig:
-		user_name = get_object_or_404(User, username = str(roll))
-		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
-		student = get_object_or_404(Student, id = extra)
+		try :
+			user_name = get_object_or_404(User, username = str(roll))
+			extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
+			student = get_object_or_404(Student, id = extra)
+		except :
+			curr_club = []
 	else :
 		curr_club = []
 
@@ -775,9 +778,11 @@ def gymkhana(request):
 	designation_data = [element for designation in designations for element in designation]
 	roll_ = []
 	for designation in designation_data :
-		name_ = get_object_or_404(Designation, id = designation)
-		# #    #    print name_
-		roll_.append(str(name_.name))
+		try:
+			name_ = get_object_or_404(Designation, id = designation)
+			roll_.append(str(name_.name))
+		except:
+			pass
 	for club_data in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
 		lines =str("")
 		Types = lines.split(" ")
