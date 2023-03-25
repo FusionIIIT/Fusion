@@ -23,11 +23,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # copy api directory to docker's work directory. 
 COPY . $FUSION_HOME
 
-# Migrate all migrations
-# RUN cd FusionIIIT && python manage.py migrate
-
 # port where the Django app runs  
 EXPOSE 8000
 
 # start server  
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/bin/bash","docker-entrypoint.sh"]
