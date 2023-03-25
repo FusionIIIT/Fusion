@@ -1,17 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
-from django.contrib import messages
 from django.shortcuts import *
 from applications.filetracking.models import  File, Tracking
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
@@ -1876,4 +1872,4 @@ def forward(request, id):
 	return render(request, 'filetracking/forward.html', context)
 
 
-	
+ 
