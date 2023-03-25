@@ -403,18 +403,21 @@ def request_guest_room(request):
 @login_required
 def update_guest_room(request):
     if request.method == "POST":
-        request_id = request.POST['request_id']
-        approve = request.POST['approve']
-        reject = request.POST['reject']
-
-        guest_room_request = GuestRoomBooking.objects.get(pk=request_id)
+        approve = request.POST['accept_request'] if 'accept_request' in request.POST else None
+        reject = request.POST['reject_request'] if 'reject_request' in request.POST else None 
+        status = request.POST['status'] if 'status' in request.POST else None
+        guest_room_request = GuestRoomBooking.objects.get(pk=(approve if approve else reject))
         if approve:
-            pass
+            guest_room_request.status = status
+            guest_room_request.guest_room_id = request.POST['guest_room_id']
+            guest_room_request.save()
         if reject:
-            guest_room_request.status = 'Rejected'
+            guest_room_request.delete()
+        messages.success(request, "Changes made successfully!")
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
-    pass
+
        
 @login_required
 def allot_hostel_room(request):

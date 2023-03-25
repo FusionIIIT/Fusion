@@ -44,9 +44,10 @@
                 </div>
               </div>
             </div>
+
             <form method="post"  action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
                 {% csrf_token %}
-                <select class="ui dropdown" name="status" required>
+                <select class="ui dropdown" name="status" >
                   <option selected disabled value="">Status</option>
                   <option value="Accepted">Accepted</option>
                   <option value="Rejected">Rejected</option>
@@ -54,7 +55,7 @@
               </select>
                 <div class="field">
                     <label>Room Number</label>
-                    <input type="text" name="room_number">
+                    <input type="text" name="guest_room_id">
                 </div>
                 <div>
                     <div class = "two fields">
@@ -65,14 +66,10 @@
                 </div>
                 </div>
             </form>
+
           </div>
            
             <br>
-            
-            
-                <!-- {% ifequal current_hall pending_request.hall.hall_id %} -->
-                
-                <!-- {% endifequal %} -->
             </div>
         </div>
     {% endfor %}

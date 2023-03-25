@@ -45,7 +45,7 @@ class Hall(models.Model):
     'number_students' stores number of students currently residing in a Hall of Residence.
     """
     hall_id = models.CharField(max_length=25)
-    hall_name = models.CharField(max_length=50)
+    hall_name = models.CharField(max_length=255)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
 
@@ -93,22 +93,6 @@ class HallAdmin(models.Model):
     def __str__(self):
         return str(self.hall) + 'admin ' + '(' + str(self.faculty) + ')'
 
-class GuestRoomDetail(models.Model):
-    """
-    Records information related to guest rooms in Hall of Residences.
-
-    'hall' refers to the related Hall of Residence.
-    'room_no' stores the guest room number.
-    'room_status' stores the current status of the guest room from the available choices in 'ROOM_STATUS'.
-    """
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    room_no = models.CharField(max_length=4, unique=True)
-    room_status  = models.CharField(max_length=20, choices=HostelManagementConstants.ROOM_STATUS, default='Available')
-
-    def __str__(self):
-        return self.room_no
-
-
 class GuestRoomBooking(models.Model):
     """
     Records information related to booking of guest rooms in various Hall of Residences.
@@ -133,7 +117,7 @@ class GuestRoomBooking(models.Model):
     guest_email = models.CharField(max_length=40, blank=True)
     guest_address = models.TextField(blank=True)
     rooms_required =  models.IntegerField(default=1, null=True, blank=True)
-    guest_room_id = models.ManyToManyField(GuestRoomDetail, blank=True)
+    guest_room_id = models.CharField(max_length=150, blank=True)
     total_guest = models.IntegerField(default=1)
     purpose = models.TextField()
     arrival_date = models.DateField(auto_now_add=False, auto_now=False)
