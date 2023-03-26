@@ -1099,8 +1099,13 @@ def getCommonParams(request):
     awards = Award_and_scholarship.objects.all()
     con = Designation.objects.get(name='spacsconvenor')
     assis = Designation.objects.get(name='spacsassistant')
-    hd = HoldsDesignation.objects.get(designation=con)
-    hd1 = HoldsDesignation.objects.get(designation=assis)
+    hd = None
+    hd1 = None
+    try:
+        hd=HoldsDesignation.objects.get(designation=con)
+        hd1=HoldsDesignation.objects.get(designation=assis)
+    except:
+       print('spcacsconvenor or spcacsassistant')
     year_range = range(2013, datetime.datetime.now().year + 1)
     active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
     last_clicked = ''
