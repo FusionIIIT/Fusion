@@ -81,6 +81,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+
 		}
 
 		fmt.Printf("Fetching branch %s from %s...\n", branch, *remoteName)
@@ -285,3 +286,4 @@ func CopySymLink(source, dest string) error {
 	}
 	return os.Symlink(link, dest)
 }
+
