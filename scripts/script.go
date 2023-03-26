@@ -127,6 +127,13 @@ func main() {
 				true)
 		}
 
+		cmdRun(
+			fmt.Sprintf(
+				"docker exec -i %s_app_1 python FusionIIIT/manage.py migrate",
+				branch,
+			),
+			true)
+
 		fmt.Printf("%s app started at port %d\n", branch, branchPorts[branch].App)
 	}
 }
