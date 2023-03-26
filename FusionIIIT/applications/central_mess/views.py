@@ -300,7 +300,7 @@ def mess(request):
                 return render(request, "messModule/mess.html", context)
 
         context = {
-            'reg_menu': y,
+                   'reg_menu': y,
                    'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
                    'payments': payments,
@@ -320,9 +320,13 @@ def mess(request):
                    'desig': desig,
                    'minutes': minutes,
                    'meeting': meeting,
+                  
             }
 
         return render(request, "messModule/mess.html", context)
+
+
+        
 
     elif extrainfo.user_type == 'staff':
         current_bill = MessBillBase.objects.latest('timestamp')
@@ -342,6 +346,40 @@ def mess(request):
         leave_past = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
+        
+
+        feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-fdate')
+        for f in feed:
+            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
+            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
+                count1 += 1
+
+            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
+                count2 += 1
+
+            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
+                count3 += 1
+
+            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
+                count4 += 1
+
+        for f in feed:
+            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
+            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
+                count5 += 1
+
+            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
+                count6 += 1
+
+            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
+                count7 += 1
+
+            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
+                count8 += 1
+      
+
+
+        
         context = {
                    'bill_base': current_bill,
                    'today': today_g.date(),
@@ -360,8 +398,14 @@ def mess(request):
                    'desig': desig,
             'meeting': meeting,
             'minutes': minutes,
-        }
 
+
+             'count1': count1,
+             'count2': count2, 'count3': count3, 'feed': feed,
+             'count4': count4, 'form': form, 'count5': count5,
+             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+            
+        }
         return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'faculty':
@@ -406,6 +450,7 @@ def mess(request):
              'count2': count2, 'count3': count3, 'feed': feed,
              'count4': count4, 'form': form, 'count5': count5,
              'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+    
         }
         return render(request, 'messModule/mess.html', context)
 
@@ -929,7 +974,6 @@ def submit_mess_committee(request):
         user_details - extract details and designation of the user from the database
     """
     roll_number = request.POST['rollnumber']
-    print(roll_number)
     data = add_mess_committee(request, roll_number)
     return JsonResponse(data)
 
