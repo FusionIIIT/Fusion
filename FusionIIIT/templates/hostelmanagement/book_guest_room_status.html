@@ -1,18 +1,16 @@
-{% comment %} {% load custom_tags %} {% endcomment %}
 {% block book_guest_room_status %}
-    {% comment %} {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %} {% endcomment %}
+    {% for user_request in user_guest_room_requests %} 
     <div class="ui secondary segment">
         <div class="ui segment">
             <div class="ui container">
-              <h2 class="ui center aligned header">Room for {{pending_request.total_guest}} in {{pending_request.hall.hall_id}}</h2>
+              <h2 class="ui center aligned header">Room for {{user_request.total_guest}} in {{user_request.hall.hall_id}}</h2>
               <div class="ui grid">
                 <div class="16 wide column">
                   <table class="ui celled table">
                     <thead>
                       <tr>
-                        <th>Requested By</th>
-                        <th>Guest Name</th>
-                        <th>Guest Phone</th>
+                        <th>Requested For</th>
+                        <th>Contact</th>
                         <th>Arrival</th>
                         <th>Departure</th>
                         <th>Status</th>
@@ -20,12 +18,11 @@
                     </thead>
                     <tbody>
                       <tr>
-                        <td>{{pending_request.intender.user.username}}</td>
-                        <td>{{pending_request.guest_name}}</td>
-                        <td>{{pending_request.guest_phone}}</td>
-                        <td>{{pending_request.arrival_date}}</td>
-                        <td>{{pending_request.departure_date}}</td>
-                        <td>status</td>
+                        <td>{{user_request.guest_name}}</td>
+                        <td>{{user_request.guest_phone}}</td>
+                        <td>{{user_request.arrival_date}}</td>
+                        <td>{{user_request.departure_date}}</td>
+                        <td>{{user_request.status}}</td>
                       </tr>
                       <tr>
                         <td colspan="6">
@@ -36,7 +33,7 @@
                             </div>
                             <div class="content">
                               <h3 style="color:grey;">Description</h3>
-                              <h4 class="transition hidden" style="color:black;">{{pending_request.purpose}}</h4>
+                              <h4 class="transition hidden" style="color:black;">{{user_request.purpose}}</h4>
                             </div>
                           </div>
                         </td>
@@ -46,40 +43,10 @@
                 </div>
               </div>
             </div>
-            {% comment %} <form method="post"  action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
-                {% csrf_token %}
-                <div class="ui floating dropdown labeled icon button">
-                    <i class="caret down icon"></i>
-                    <span class="text">Status</span>
-                    <div class="menu">
-                      <div class="item" data-value="accepted"><i class="checkmark icon"></i>Accepted</div>
-                      <div class="item" data-value="rejected"><i class="remove icon"></i>Rejected</div>
-                      <div class="active item" data-value="pending"><i class="wait icon"></i>Pending</div>
-                    </div>
-                  </div>
-                <div class = "two fields">
-                  <div class="field">
-                    <label>Room Number</label>
-                    <input type="text" name="room_number">
-                </div>
-                <div>
-                    <div class = "two fields">
-                      <button class="mini ui basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" style="margin-top:10%" style="margin-left:70%" onclick="return confirm('Are you sure you want to ACCEPT this request?');">Accept</button>
-                    <button class="mini ui negative basic button" type="submit" value="{{ pending_request.pk }}" name="reject_request" style="margin-top:10%"  style="margin-left:70%" onclick="return confirm('Are you sure you want to REJECT this request?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-                        width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg>Reject</button>
-                    </div>
-                </div>
-                </div>
-            </form> {% endcomment %}
           </div>
            
             <br>
-            
-            
-                <!-- {% ifequal current_hall pending_request.hall.hall_id %} -->
-                
-                <!-- {% endifequal %} -->
             </div>
         </div>
-    {% comment %} {% endfor %} {% endcomment %}
+    {% endfor %}
 {% endblock %}

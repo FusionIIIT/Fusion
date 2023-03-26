@@ -57,6 +57,8 @@ def hostel_view(request, context={}):
     for hall in all_hall:
         pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender__user')
     
+    user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user.extrainfo).order_by("-arrival_date")
+
     Staff_obj = Staff.objects.all().select_related('id__user')
     vashishtha = Hall.objects.get(hall_id='vashishtha')
     aryabhatta = Hall.objects.get(hall_id='aryabhatta')
@@ -125,6 +127,7 @@ def hostel_view(request, context={}):
     'hall_staffs': hall_staffs,
     'hall_notices': hall_notices,
     'pending_guest_room_requests': pending_guest_room_requests,
+    'user_guest_room_requests': user_guest_room_requests,
     'attendance': halls_attendance,
     **context
 }
