@@ -92,6 +92,9 @@
                 </div>
 
                 <div class="field">
+
+
+                    
                             <label>Forward To:
 
                                     <input type ="search" id="input_search" list = "input_list" name = "receiver">
@@ -100,17 +103,31 @@
                                     </datalist>
                                
                             </label>
+                            
+                                     
                 </div>
-
+<br>
                 <div class="field">
                     <label>Receiver Designation:
-                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                        <!-- <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
                             <datalist  id="input_list1">
 
-                            </datalist>
+                            </datalist> -->
 
-
-                       
+                            <select required class="ui fluid search selection dropdown" name="recieve">
+                                <option selected hidden>Select</option>
+                                <option selected hidden>Professor</option>
+                                <option selected hidden>Assistant Professor</option>
+     
+                                <!--  {% for designations in designations %}
+                                 <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
+                                 {% endfor %} -->
+     
+                                  {% for designations in all_recievers %}
+                                 <option value="{{designations.id}}">{{designations}}</option>
+                                 {% endfor %}
+     
+                             </select>
                     </label>
                 </div>
 
@@ -219,5 +236,4 @@
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
-
 
