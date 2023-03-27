@@ -5,14 +5,23 @@ from django.http import HttpResponse
 from .models import *
 import re
    
-def get_caretaker_hall(hall_caretakers,user):
+def get_staff_hall(hall_caretakers=None, hall_wardens=None, user=None):
     """
-    This function returns hall number corresponding to a caretaker.
+    This function returns the hall number corresponding to a caretaker or warden.
     """
-    for caretaker in hall_caretakers:
-        if caretaker.staff.id.user==user:
-            return caretaker.hall
-            
+    if not user:
+        return None
+    if hall_caretakers:
+        for caretaker in hall_caretakers:
+            if caretaker.staff.id.user == user:
+                return caretaker.hall
+    if hall_wardens:
+        for warden in hall_wardens:
+            if warden.faculty.id.user == user:
+                return warden.hall
+    return None
+
+
 
 def remove_from_room(student):
     """Removes the student from his current room"""
