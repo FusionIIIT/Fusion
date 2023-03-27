@@ -801,11 +801,13 @@ def profile(request, username=None):
                 age = request.POST.get('age')
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
+                u_type = request.POST.get('user_type')
                 extrainfo_obj = ExtraInfo.objects.select_related('user','department').get(user=user)
                 extrainfo_obj.about_me = about_me
                 extrainfo_obj.date_of_birth = age
                 extrainfo_obj.address = address
                 extrainfo_obj.phone_no = contact
+                extrainfo_obj.u_type = u_type
                 extrainfo_obj.save()
                 profile = get_object_or_404(ExtraInfo, Q(user=user))
             if 'picsubmit' in request.POST:
