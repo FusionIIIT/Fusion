@@ -123,7 +123,7 @@ class Bill(models.Model):
     meal_bill = models.IntegerField(default=0)
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)
-    bill_date = models.DateField(NULL=True, blank=True)
+    bill_date = models.DateField(default="00000000", blank=True)
 
     def __str__(self):
         return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
