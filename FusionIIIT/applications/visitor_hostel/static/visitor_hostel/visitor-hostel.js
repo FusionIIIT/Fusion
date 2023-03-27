@@ -319,7 +319,6 @@ $('.bookameal-submit').click(function(event){
             alertModal('Great! Meals recorded successfully');
         },
         error: function (data, err) {
-           
             alertModal('Something missing! Please refill the form');
         }
     });
@@ -820,7 +819,7 @@ function bill_between_date_range() {
 
     start = $('input[name=start]').val();
     end = $('input[name=end]').val();
-    console.log(start, end,"testing")
+    
     if(new Date(start)>new Date(end))
     {
         alertModal('Please check start date and end date.')
@@ -858,8 +857,6 @@ function find_available_rooms ( available_rooms ) {
         alertModal ('Please check start date and end date!');
         return;
     }
-    console.log(start_date);
-            console.log(end_date);
 
     $.ajax({
         type: 'POST',
