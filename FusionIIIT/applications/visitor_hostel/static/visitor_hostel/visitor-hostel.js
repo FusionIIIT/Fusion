@@ -320,7 +320,7 @@ $('.bookameal-submit').click(function(event){
             alertModal('Great! Meals recorded successfully');
         },
         error: function (data, err) {
-            alertModal('Something missing! Please refill the form');
+            alertModal('Something missing! Please refill the form ');
         }
     });
 });
