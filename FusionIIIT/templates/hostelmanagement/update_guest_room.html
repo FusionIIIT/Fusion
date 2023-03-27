@@ -12,18 +12,11 @@
         {% endfor %}
         </div>
     </div>
-<!-- {% if user in hall_caretaker or hall_warden %}
-<div class="right menu">
-    <a class="item" data-tab="guest_room_request">
-        <i class="sticky note icon"></i>Requestsss
-    </a>
-</div>
-{% endif %} -->
 </div>
 
 
 {% for hall in all_hall %}
-<div class="{% if hall.hall_id == current_hall %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
+    <div class="{% if hall.hall_id == 'vivekananda' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
         <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
             {% block {{hall.hall_id}} %}
                 {% include 'hostelmanagement/request_list.html' with hall_id=hall.hall_id %}
