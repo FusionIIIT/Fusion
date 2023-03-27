@@ -167,7 +167,7 @@ def create_indent_multiple(request):
         'holdsdesignations': holdsdesignations,
         'designations': designations,
     }
-    return render(request, 'ps1/composeIndentMultiple.html', context)
+    return render(request, 'ps1/ComposeIndentMultiple.html', context)
             
 
        
