@@ -727,6 +727,7 @@ def record_meal(request):
 
             person = 1
 
+            
             try:
                 meal = MealRecord.objects.select_related('booking__intender', 'booking__caretaker', 'visitor').get(
                     visitor=visitor, booking=booking, meal_date=date_1)
@@ -740,6 +741,8 @@ def record_meal(request):
                 meal.lunch += int(lunch)
                 meal.dinner += int(dinner)
                 meal.save()
+                return HttpResponseRedirect('/visitorhostel/')
+
             else:
                 MealRecord.objects.create(visitor=visitor,
                                           booking=booking,

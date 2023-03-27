@@ -295,6 +295,7 @@ function request_booking (event) {
 // Meal Record
 
 $('.bookameal-submit').click(function(event){
+    console.log('hii')
     event.preventDefault();
     var pk = $(this).attr('data-pk');
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
@@ -617,7 +618,7 @@ function forward_booking (id) {
     csrfmiddlewaretoken = $('input[name=csrf]').val();
     previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
-    rooms = $('select[name=alloted-rooms-'+id+']').val();
+    rooms = $('input[name=alloted-rooms-'+id+']').val();
 
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");

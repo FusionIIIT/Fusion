@@ -70,7 +70,7 @@ class RoomDetail(models.Model):
     room_status = models.CharField(max_length=20, choices=ROOM_STATUS, default='Available')
 
     def __str__(self):
-        return self.room_number
+        return '{} - {}'.format(self.id, self.room_number , self.room_type, self.room_status, self.room_floor)
 
 
 class BookingDetail(models.Model):
