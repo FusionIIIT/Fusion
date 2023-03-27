@@ -44,29 +44,29 @@
                 </div>
               </div>
             </div>
-
-            <form method="post"  action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
+            {% if user in hall_caretaker or user in hall_warden %}
+              {% ifequal current_hall pending_request.hall.hall_id %}
+              <form method="post" action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
                 {% csrf_token %}
-                <select class="ui dropdown" name="status" >
+                <select class="ui dropdown" name="status">
                   <option selected disabled value="">Status</option>
                   <option value="Accepted">Accepted</option>
                   <option value="Rejected">Rejected</option>
                   <option value="Pending">Pending</option>
-              </select>
-                <div class="field">
+                </select>
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <div class="field" style="flex: 1; margin-right: 10px">
                     <label>Room Number</label>
                     <input type="text" name="guest_room_id">
+                  </div>
+                  <div class="two fields" style="flex: 0 0 auto;">
+                    <button class="mini ui basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" style="margin-top:15%" onclick="return confirm('Are you sure you want to ACCEPT this request?');">Accept</button>
+                    <button class="mini ui negative basic button" type="submit" value="{{ pending_request.pk }}" name="reject_request" style="margin-top:15%; margin-left: 10px" onclick="return confirm('Are you sure you want to REJECT this request?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg>Reject</button>
+                  </div>
                 </div>
-                <div>
-                    <div class = "two fields">
-                      <button class="mini ui basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" style="margin-top:10%" style="margin-left:70%" onclick="return confirm('Are you sure you want to ACCEPT this request?');">Accept</button>
-                    <button class="mini ui negative basic button" type="submit" value="{{ pending_request.pk }}" name="reject_request" style="margin-top:10%"  style="margin-left:70%" onclick="return confirm('Are you sure you want to REJECT this request?');"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-                        width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg>Reject</button>
-                    </div>
-                </div>
-                </div>
-            </form>
-
+              </form>
+              {% endifequal %}
+            {% endif %}
           </div>
            
             <br>

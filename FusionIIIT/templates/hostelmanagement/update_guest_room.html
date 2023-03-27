@@ -1,4 +1,5 @@
-{% block update_guest_room %}
+{% load static %}
+{% block request_list %}
 <div class="ui secondary menu">
     <div class="ui floating dropdown labeled icon button">
     <i class="clipboard icon"></i>
@@ -20,9 +21,9 @@
 {% endif %} -->
 </div>
 
-{% if user in hall_caretaker or user in hall_warden %}
+
 {% for hall in all_hall %}
-    <div class="{% if hall.hall_id == 'vivekananda' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
+<div class="{% if hall.hall_id == current_hall %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
         <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
             {% block {{hall.hall_id}} %}
                 {% include 'hostelmanagement/request_list.html' with hall_id=hall.hall_id %}
@@ -30,6 +31,5 @@
         </div>
     </div>
 {% endfor %}
-{% endif %}
 
 {% endblock %}

@@ -112,7 +112,7 @@
 
             {% if user in hall_caretaker or user in hall_warden %}
             <div class="ui tab segment" data-tab="sixth">
-                {% block update_guest_room %}
+                {% block request_list %}
                     {% include 'hostelmanagement/update_guest_room.html' %}
                 {% endblock %}
             </div>
@@ -125,7 +125,7 @@
                 {% endblock %}
             </div>
             {% endif %}
-            
+
         </div>
 
     </div>

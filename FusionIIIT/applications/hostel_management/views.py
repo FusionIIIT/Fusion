@@ -74,11 +74,11 @@ def hostel_view(request, context={}):
     hall_student=""
     current_hall=""
     get_avail_room=[]
-    # get_hall=get_caretaker_hall(hall_caretakers,request.user) 
-    # if get_hall:
-    #     get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
-    #     hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
-    #     current_hall='hall'+str(get_hall_num[0])
+    get_hall=get_caretaker_hall(hall_caretakers,request.user) 
+    if get_hall:
+        get_hall_name=get_hall.hall_id
+        hall_student=Student.objects.filter(hall_id=get_hall_name).select_related('id__user')
+        current_hall=get_hall_name
     
     for hall in all_hall:
         total_rooms=HallRoom.objects.filter(hall=hall)
