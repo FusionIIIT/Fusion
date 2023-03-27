@@ -14,6 +14,10 @@
 * Python `3.8`
 * Git
 
+## Contributing Guidelines
+
+For contributing to this repository, you have to follow the guidelines given in [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for smooth workflow of contributions and changes inside repository.
+
 ## How to get started
 
 * on **Ubuntu**:
@@ -104,15 +108,15 @@
 * Refer to below link for best practices regarding commit messages :  
     (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53>)
     
-# Testing Procedure: 
+## Testing Procedure: 
 
-# Selenium-webdriver 
+### Selenium-webdriver 
 
 Selenium is a browser automation library. Most often used for testing
 web-applications, Selenium may be used for any task that requires automating
 interaction with the browser.
 
-## Installation
+### Installation
 
 You can visit Selenium Official website and can download the language-specific client drivers(Java in our case)
 
@@ -132,10 +136,10 @@ Safari 10 before testing.
 | Internet Explorer | [IEDriverServer](http://selenium-release.storage.googleapis.com/index.html?path=2.39/)      |
 | Firefox           | [GeckoDriver](https://chromedriver.storage.googleapis.com/index.html?path=83.0.4103.39/)   |
 
-## Add the Cucumber Eclipse Plugin for BDD testing
+### Add the Cucumber Eclipse Plugin for BDD testing
 * Install the Cucumber Eclipse Plugin from Eclipse MarketPlace under help
 
-## Getting Started
+### Getting Started
 * Open the Test folder in Eclipse IDE(You are free to use any IDE)
   * Open the pom.xml and build the project
   * Change the driver path in System.setProperty in line 16 of Step_defination.java 
@@ -193,17 +197,6 @@ The project now supports notifications across all modules. To implement notifica
 
 ## Setting up Fusion using Docker
 - Make sure you have docker & docker-compose setup properly.
-- Update `FusionIIIT/Fusion/settings/development.py`
-```python
-DATABASES = {
-     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusiondb',
-        'HOST': os.environ.get("DB_HOST"),
-        'USER': 'fusionuser',
-        'PASSWORD': 'password',
-    }
-}
-```
 - Run `docker-compose up`
-- Once the server starts, run `sudo docker exec -i fusion_db_1 psql -U fusionuser -d fusiondb < path_to_db_dump`
+- Once the server starts, run `sudo docker exec -i fusion_db_1 psql -U fusion_admin -d fusionlab < path_to_db_dump`
+
