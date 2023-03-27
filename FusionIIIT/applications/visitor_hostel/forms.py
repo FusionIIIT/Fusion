@@ -10,7 +10,6 @@ from .models import Inventory
 #class booking_request(forms.Form):
 CHOICES = (('A', 'A',), ('B', 'B',), ('C', 'C',), ('D', 'D',))
 
-
 class ViewBooking(forms.Form):
         date_from = forms.DateField(initial=datetime.date.today)
         date_to = forms.DateField(initial=datetime.date.today)
