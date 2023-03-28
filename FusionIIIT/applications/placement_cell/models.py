@@ -2,6 +2,8 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from datetime import time
+from django import forms
 
 from applications.academic_information.models import Student
 
@@ -92,7 +94,7 @@ class Project(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.unique_id.id, self.project_name)
+        return '{} - {}'.format(self.unique_id, self.project_name)
 
 
 class Skill(models.Model):
