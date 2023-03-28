@@ -257,8 +257,6 @@ def rspc_profile(request):
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
     flag_rspc = False
     for designation in designations:
-        # print(designation.designation_id)
-        # currDesig = Designation.objects.filter(id=designation.designation_id)
         print(designation.designation_id)
         currDesig = get_object_or_404(Designation, id=designation.designation_id)
         print(currDesig.name)
@@ -267,10 +265,9 @@ def rspc_profile(request):
             break
 
     if flag_rspc != True:
-        if extra_info.user_type == 'faculty':
+        if extra_info.user_type == 'faculty' or extra_info.user_type == 'staff':
             return redirect('/eis/profile/')
-    # form = ConfrenceForm()
-
+        
     journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
     conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
     books = emp_published_books.objects.all().order_by('-pyear', '-authors')
@@ -294,20 +291,13 @@ def rspc_profile(request):
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
 
-    # pers = get_object_or_404(faculty_about, user = request.user)
-    # design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
 
-    # desig=[]
-    # for i in design:
-    #     desig.append(str(i.designation))
     context = {'user': user,
-            #    'desig':desig,
                'pf':pf,
                'journal':journal,
                'conference': conference,
                'books': books,
                'projects': projects,
-            #    'form':form,
                'consultancy':consultancy,
                'patents':patents,
                'techtransfers':techtransfers,
@@ -345,8 +335,6 @@ def rspc_profile_faculty(request):
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
     flag_rspc = False
     for designation in designations:
-        # print(designation.designation_id)
-        # currDesig = Designation.objects.filter(id=designation.designation_id)
         print(designation.designation_id)
         currDesig = get_object_or_404(Designation, id=designation.designation_id)
         print(currDesig.name)
@@ -357,7 +345,7 @@ def rspc_profile_faculty(request):
     if flag_rspc != True:
         if extra_info.user_type == 'faculty':
             return redirect('/eis/profile/')
-    # form = ConfrenceForm()
+
 
     journal = emp_research_papers.objects.filter(pf_no=pf_faculty, rtype='Journal').order_by('-year', '-a_month')
     conference = emp_research_papers.objects.filter(pf_no=pf_faculty, rtype='Conference').order_by('-year', '-a_month')
@@ -382,35 +370,13 @@ def rspc_profile_faculty(request):
     y=[]
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
-    # try:
-    #     pers = get_object_or_404(faculty_about, user = user)
-    # except:
-    #     pers = None
 
-    # consymps = emp_confrence_organised.objects.all().order_by('-start_date')
-    # awards = emp_achievement.objects.all().order_by('-a_year', '-a_month')
-    # talks = emp_expert_lectures.objects.all().order_by('-l_year', '-a_month')
-    # chairs = emp_session_chair.objects.all().order_by('-start_date')
-    # keynotes = emp_keynote_address.objects.all().order_by('-start_date')
-    # events = emp_event_organized.objects.all().order_by('-start_date')
-    # y=[]
-    # for r in range(1995, (datetime.datetime.now().year + 1)):
-    #     y.append(r)
-
-    # pers = get_object_or_404(faculty_about, user = request.user)
-    # design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
-
-    # desig=[]
-    # for i in design:
-    #     desig.append(str(i.designation))
     context = {'user': user,
-            #    'desig':desig,
                'pf':pf,
                'journal':journal,
                'conference': conference,
                'books': books,
                'projects': projects,
-            #    'form':form,
                'consultancy':consultancy,
                'patents':patents,
                'techtransfers':techtransfers,
@@ -425,7 +391,6 @@ def rspc_profile_faculty(request):
                'keynotes':keynotes,
                'events':events,
                'year_range':y,
-            #    'pers':pers
                }
     return render(request, 'eisModulenew/rspc_profile.html', context)
 
@@ -445,8 +410,6 @@ def generate_citation(request):
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
     flag_rspc = False
     for designation in designations:
-        # print(designation.designation_id)
-        # currDesig = Designation.objects.filter(id=designation.designation_id)
         print(designation.designation_id)
         currDesig = get_object_or_404(Designation, id=designation.designation_id)
         print(currDesig.name)
