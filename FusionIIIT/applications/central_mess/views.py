@@ -26,7 +26,7 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
                        handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
 from notification.views import central_mess_notif
 
-
+import csv
 today_g = datetime.today()
 month_g = today_g.month
 month_g_l = today_g.strftime('%B')
@@ -62,7 +62,12 @@ def mess(request):
     count6 = 0
     count7 = 0
     count8 = 0
-
+    # with open('/media/parasg3/Data1/College/Sem#6/Fusion/FusionIIIT/applications/central_mess/mess_students _data.csv', newline='') as csvfile:
+    #     reader = csv.reader(csvfile, delimiter=',')
+    #     next(reader) # skip the header row
+    #     for row in reader:
+    #         print(row[0])
+    #         # Messinfo.objects.create(student_id=row[0],mess_option=row[1])
     if extrainfo.user_type == 'student':
         student = Student.objects.select_related('id','id__user','id__department').get(id=extrainfo)
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
@@ -259,7 +264,7 @@ def mess(request):
 
                     elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
                         count8 += 1
-                        
+
                 context = {
                     'menu': menu_data,
                     'reg_menu': y,
@@ -1223,3 +1228,40 @@ def add_leave_manager(request):
         central_mess_notif(request.user, student.id.user, 'leave_request', message)
         add_obj.save()
     return HttpResponseRedirect('/mess')
+
+
+def searchAddOrRemoveStudent(request):
+   
+    studentId=request.GET.get('roll_number')
+    submitType=request.GET.get('type')
+    # return JsonResponse({})
+    msg=""
+    if submitType=='searchStudent':
+        try:    
+            mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+            msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
+        except:
+            msg=str(studentId)+" is not registered for Mess" 
+    elif submitType=='addStudent1' or submitType=='addStudent2':
+        messNo=request.GET.get('messNo')
+        try:
+            mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+            msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
+        except:
+            studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+            newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
+            newData.save()
+            msg=str(studentId)+" is successfully registered for Mess." 
+    elif submitType=='removeStudent':
+        studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+        try:
+            data=Messinfo.objects.get(student_id=studentId)
+            data.delete()
+            Messinfo.objects.all()
+            msg=str(studentId)+" is successfully removed from mess." 
+        except:
+            msg=str(studentId)+" is not registered for mess." 
+
+    return JsonResponse({'message':msg})
+    
+    

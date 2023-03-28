@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^selectmessconvener', views.select_mess_convener, name='selectmessconvener'),
     url(r'^billdownload', views.download_bill_mess, name='billdownload'),
     url("info-form", views.mess_info, name="info"),
-
+    url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
     url(r'^api', include('applications.central_mess.api.urls')),
     
 
