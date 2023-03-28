@@ -1247,8 +1247,8 @@ def get_pre_registration_eligibility(current_date, current_time, user_sem, year)
         pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {year}").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
-        prd_start_time =  pre_registration_date.start
-        prd_end_time =  pre_registration_date.end
+        prd_start_time =  pre_registration_date.start_time
+        prd_end_time =  pre_registration_date.end_time
         if current_date==prd_start_date and current_time>=prd_start_time:
                 return True, None
         elif current_date>prd_start_date and current_date<prd_end_date:
