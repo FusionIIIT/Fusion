@@ -94,7 +94,7 @@ class Project(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.unique_id.id, self.project_name)
+        return '{} - {}'.format(self.unique_id, self.project_name)
 
 
 class Skill(models.Model):
