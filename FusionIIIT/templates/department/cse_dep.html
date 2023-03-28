@@ -166,6 +166,14 @@
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "CSE" %}
         <div class="ui vertical segment">
+            <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
+            <div id="make-announcement-form" style="display:none;" data-status="hidden">
+            {% if user_designation == "faculty" %}
+                    {% include "department/make_announcements_fac.html" %}
+            {% elif user_designation == "staff" %}
+                    {% include "department/make_announcements_staff.html" %}
+            {% endif %}
+            </div>
             <div class="content">
                 <div class="description">
                     <span>
@@ -173,7 +181,7 @@
                         <div class="ui vertical segment" data-tab="Year-1">
 
                             {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
                                     <th>Announcement By</th>
@@ -187,7 +195,7 @@
                                 {% for stu in announcements.cse %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ user.first_name}} {{ user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -199,7 +207,7 @@
                                 {% for stu in announcements.all %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ user.first_name}} {{ user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>

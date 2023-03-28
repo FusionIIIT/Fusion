@@ -2,24 +2,12 @@
 {% block make_announcements %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="dep">
-            Announcement
-        </a>
-    </div>
-
     <div class="ui active tab" data-tab="dep">
         <div class="ui vertical segment">
             <!-- fill the form details -->
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
                   action="">
                 {% csrf_token %}
-                <div class="ui header">
-                    Make a new Announcement:
-                </div>
-
-                <br>
-
                 <div class="fields">
 
                     <div class="eight wide field">

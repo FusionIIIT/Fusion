@@ -46,6 +46,24 @@ function announce(event)
         }
     };
 
+function make_announcement_form(self)
+{
+    let form = document.getElementById("make-announcement-form");
+    let status = form.getAttribute("data-status");
+    if(status=="hidden")
+    {
+        form.setAttribute("data-status","visible");
+        form.style.display="block";
+        self.innerHTML="Done";
+    }
+    else
+    {
+        form.setAttribute("data-status","hidden");
+        form.style.display="none";
+        self.innerHTML="Add Announce";
+    }
+}
+
 function request(event)
     {
     var request_type= $('input[name="request_type"]').val();
@@ -60,7 +78,7 @@ function request(event)
     }
     else
     {
-        // event.preventDefault();
+        event.preventDefault();
         alert("please wait we are processing your request.");
         $.ajax({
             type : 'POST',
@@ -71,7 +89,6 @@ function request(event)
                 'request_details' : request_details,
             },
             success : function (data){
-
                 alert("Request successfully made!!");
                 setTimeout(function() {
             window.location.reload();
