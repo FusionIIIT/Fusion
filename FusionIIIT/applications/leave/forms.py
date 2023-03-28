@@ -120,12 +120,7 @@ class StudentApplicationFormPG(forms.Form):
         except:
             pass
 
-
-        lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
-
-        # if lt is None, use default
-        if lt is None:
-            lt = LeaveType()
+        lt = LeaveType.objects.get(name=data.get('leave_type'))
 
         if lt.requires_proof and not data.get('document'):
             errors['document'] = [f'{lt.name} Leave requires document proof']
@@ -139,26 +134,22 @@ class StudentApplicationFormPG(forms.Form):
         except:
             pass
 
-        try:
-            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
-        except LeaveType.DoesNotExist:
-            leave_type = LeaveType()
+        count = get_leave_days(data.get('start_date'), data.get('end_date'), lt, False, False)
 
-        count = get_leave_days(data.get('start_date'), data.get('end_date'),
-                               leave_type, False, False)
+        remaining_leaves = 0
 
-        try:
-            remaining_leaves = LeavesCount.objects.get(user=self.user, leave_type=leave_type) \
-                                              .remaining_leaves
-        except LeavesCount.DoesNotExist:
-            remaining_leaves = LeavesCount().remaining_leaves              
+        if lt.name.lower() == 'medical':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_medical_leave
+        elif lt.name.lower() == 'casual':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_casual_leave
+        elif lt.name.lower() == 'vacational':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_vacational_leave
+        else:
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_special_leave
 
-        try:
-            if remaining_leaves < count:
-                errors['leave_type'] = f'You have only {remaining_leaves} {leave_type.name} leaves' \
-                                        ' remaining.'
-        except:
-            pass
+        
+        if remaining_leaves < count:
+            errors['leave_type'] = f'You have only {remaining_leaves} {lt.name} leaves remaining.'
 
         raise VE(errors)
 
