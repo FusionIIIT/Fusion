@@ -18,7 +18,7 @@ from applications.academic_information.api.serializers import StudentSerializers
 def projects(request):
     username=request.query_params.get("username")
     if not username:
-        return Response({"messgae":"No Username Found"},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"No Username Found"},status=status.HTTP_400_BAD_REQUEST)
     all_projects = Project.objects.filter(unique_id=username)
     project_details=serializers.ProjectSerializer(all_projects, many=True).data
     resp={
