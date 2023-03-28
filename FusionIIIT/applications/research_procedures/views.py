@@ -372,19 +372,6 @@ def rspc_profile_faculty(request):
     fvisits = emp_visits.objects.filter(pf_no=pf_faculty, v_type=2).order_by('-start_date')
     ivisits = emp_visits.objects.filter(pf_no=pf_faculty, v_type=1).order_by('-start_date')
 
-    # journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
-    # conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
-    # books = emp_published_books.objects.all().order_by('-pyear', '-authors')
-    # projects = emp_research_projects.objects.all().order_by('-start_date')
-    # consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
-    # patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
-    # techtransfers = emp_techtransfer.objects.all().order_by('-date_entry')
-    # mtechs = emp_mtechphd_thesis.objects.filter(degree_type=1).order_by('-s_year', '-a_month')
-    # phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
-    # fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
-    # ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
-    # for fvisit in fvisits:
-    #     fvisit.countryfull = countries[fvisit.country]
 
     consymps = emp_confrence_organised.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
     awards = emp_achievement.objects.filter(pf_no=pf_faculty).order_by('-date_entry')
