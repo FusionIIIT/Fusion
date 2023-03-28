@@ -237,9 +237,6 @@ def transfer_insert(request):
 # Dean RSPC Profile
 
 def rspc_profile(request):
-    # user = get_object_or_404(faculty_about, user=request.user)
-    # pf = user.user
-    # all_user = User.objects.all()
     all_extra_info = []
     # for user in all_user:
     curr_extra_info = ExtraInfo.objects.filter(user_type = 'faculty')
