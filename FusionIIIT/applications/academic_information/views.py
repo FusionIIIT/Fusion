@@ -752,8 +752,8 @@ def add_calendar(request):
             from_date=from_date,
             to_date=to_date,
             description=desc,
-            start=start,
-            end=end)
+            start_time=start,
+            end_time=end)
         c.save()
         HttpResponse("Calendar Added")
 
@@ -810,8 +810,8 @@ def update_calendar(request):
             get_calendar_details.description = desc
             get_calendar_details.from_date = from_date
             get_calendar_details.to_date = to_date
-            get_calendar_details.start = start
-            get_calendar_details.end = end
+            get_calendar_details.start_time = start
+            get_calendar_details.end_time = end
             get_calendar_details.save()
         except Exception as e:
             from_date=""

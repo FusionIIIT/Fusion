@@ -18,8 +18,8 @@
     <td>{{ i.description }}</td><input type="hidden" name="desc" value="{{ i.description }}">
     <td>{{ i.from_date }}</td>
     <td>{{ i.to_date }}</td>
-    <td>{{ i.start}}</td>
-    <td>{{ i.end }}</td>
+    <td>{{ i.start_time}}</td>
+    <td>{{ i.end_time }}</td>
 
     <td><button class="ui button red icon" id="{{ forloop.counter }}"><i class="edit icon"></i></button>
       <div class="ui modal {{forloop.counter}}">
@@ -52,7 +52,7 @@
               </div>
 
               <div class="ui calendar" id="start">
-                <label>Start:</label><br>
+                <label>Start Time:</label><br>
                 <div class="ui input left icon">
                   <i class="calendar icon"></i>
                   <input type="time" placeholder="start" id="start_{{forloop.counter}}" name="start" value="{{i.start|time:"hh:mm:ss"}}">
@@ -60,7 +60,7 @@
               </div>
 
               <div class="ui calendar" id="end">
-                <label>End:</label><br>
+                <label>End Time:</label><br>
                 <div class="ui input left icon">
                   <i class="calendar icon"></i>
                   <input type="time" placeholder="end" id="end_{{forloop.counter}}" name="end" value="{{i.end|time:"hh:mm:ss"}}">
