@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'applications.health_center',
     'applications.online_cms',
     'applications.ps1',
+    'applications.ps2',
     'applications.programme_curriculum',
     'applications.placement_cell',
     'applications.recruitment',
@@ -278,3 +279,4 @@ YOUTUBE_DATA_API_KEY = 'api_key'
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOW_PASS_RESET = True

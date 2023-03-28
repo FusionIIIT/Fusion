@@ -264,7 +264,7 @@ def academic_procedures_student(request):
         year = demo_date.year
         
         registers = get_student_register(user_details.id)
-        user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+        # user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
         user_branch = get_user_branch(user_details)
 
         batch = obj.batch_id
@@ -297,8 +297,12 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no+1)
+            semester_no = obj.curr_semester_no+1
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
+            user_sem = semester_no
+            
         except Exception as e:
+            user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
             next_sem_id = curr_sem_id
 
         student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
@@ -312,7 +316,7 @@ def academic_procedures_student(request):
         if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
 
-        pre_registration_date_flag = get_pre_registration_eligibility(current_date)
+        pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
@@ -326,6 +330,7 @@ def academic_procedures_student(request):
             final_registration_flag = student_registration_check_final.final_registration_flag
 
         # print(">>>>>>>>>>>>>>>>>>>>>>",student_registration_check_pre.pre_registration_flag)
+        
         acad_year = get_acad_year(user_sem, year)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
 
@@ -502,6 +507,7 @@ def academic_procedures_student(request):
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
+                            'prd_start_date': prd_start_date,
                             'frd': final_registration_date_flag,
                             'adc_date_flag': add_or_drop_course_date_flag,
                             'pre_registration_flag' : pre_registration_flag,
@@ -1214,17 +1220,39 @@ def phd_details(request):
 def get_student_register(id):
     return Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = id)
 
-def get_pre_registration_eligibility(current_date):
+def get_pre_registration_eligibility(current_date, user_sem, year):
+    '''
+        This function is used to extract the elgibility of pre-registration for a given semester
+        for a given year from the Calendar table.
+        
+        @param:
+                current_date - current date at the user end
+                user_sem - current semester of the user(integer)
+                year - current year at the user end
+
+        @variables:
+               pre_registration_date - stores the object returned from calendar table for a given description
+               prd_start_date - holds start date of the pre registeration
+               prd_end_date - holds end date of the pre registration
+               
+        #exception handling:
+        In case calendar table has no row for the  given description pre_registration_date will store None value,
+        Therefore from_date and to_date attributes cannot be accessed so the function will return False.
+        
+    '''
     try:
-        pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
+        # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem} {year}").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
         if current_date>=prd_start_date and current_date<=prd_end_date:
-            return True
+            return True, None
+        if current_date<prd_start_date:
+            return False, prd_start_date
         else :
-            return False
+            return False, None
     except Exception as e:
-        return False
+        return False, None
 
 def get_final_registration_eligibility(current_date):
     try:

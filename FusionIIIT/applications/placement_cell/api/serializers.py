@@ -4,20 +4,23 @@ from rest_framework import serializers
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill,
-                                                PlacementStatus, NotifyStudent)
+                                                PlacementStatus, NotifyStudent,Conference)
 
+class ProjectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = list(Project().__dict__.keys())[1:]
 class SkillSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Skill
-        fields = ('__all__')
+        fields = list(Skill().__dict__.keys())[1:]
 
 class HasSerializer(serializers.ModelSerializer):
-    skill_id = SkillSerializer()
-
     class Meta:
         model = Has
-        fields = ('skill_id','skill_rating')
+        fields = ('skill_id_id','skill_rating')
 
     def create(self, validated_data):
         skill = validated_data.pop('skill_id')
@@ -32,26 +35,31 @@ class EducationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Education
-        fields = ('__all__')
+        fields = list(Education().__dict__.keys())[1:]
+class ExperienceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Experience
+        fields = list(Experience().__dict__.keys())[1:]
 
 class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('__all__')
-
-class ExperienceSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Experience
-        fields = ('__all__')
-
-class ProjectSerializer(serializers.ModelSerializer):
+        fields = list(Course().__dict__.keys())[1:]
+        
+class ConferenceSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Project
-        fields = ('__all__')
+        model = Conference
+        fields = list(Conference().__dict__.keys())[1:]
 
+class PublicationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Publication
+        fields = list(Publication().__dict__.keys())[1:]
+        
 class AchievementSerializer(serializers.ModelSerializer):
 
     class Meta:

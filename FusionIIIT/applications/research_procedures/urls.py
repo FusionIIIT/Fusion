@@ -1,7 +1,7 @@
 from django.urls import include
 from django.conf.urls import url
 from . import views
-
+from . import tests
 app_name="research_procedures"
 
 urlpatterns = [
@@ -12,5 +12,6 @@ urlpatterns = [
       url(r'^consult_insert$',views.consult_insert,name='consult_insert'),
       url(r'^transfer_insert$',views.transfer_insert,name='transfer_insert'),
       url(r'^api/',include('applications.research_procedures.api.urls')),
+      url(r'^test/$',tests.testfun,name = 'test')
 
 ]

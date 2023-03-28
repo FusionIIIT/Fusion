@@ -1,0 +1,22 @@
+{% block tab7 %}
+
+
+<form action = "/finance/previewing_file/" method="POST" enctype = "multipart/form-data">
+    {% csrf_token %}
+    <input type="file"
+           name="file"
+           accept = ".xlsx"
+          >
+    <p>
+    <input type="submit"
+           value="Upload"
+           style="border: 1px solid green; padding:5px; border-radius: 2px; cursor: pointer;">
+</form>
+
+
+   
+
+{% endblock %}
+<br>
+<br>
+<div class="ui divider"></div>

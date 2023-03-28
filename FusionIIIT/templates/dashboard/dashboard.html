@@ -1,15 +1,13 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
-
 {% block title %}
-Dashboard
+    Dashboard
 {% endblock %}
 
 {% block css %}
-
-<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css"
-    rel="stylesheet" type="text/css" />
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css"
+        rel="stylesheet" type="text/css" />
 
 {% endblock %}
 
@@ -41,7 +39,7 @@ Dashboard
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item" href="{% url 'globals:profile' %}">
+            <a class="item disabled" href="{% url 'globals:profile' %}">
                 View Professional Profile
                 <i class="right floated chevron right icon" style="margin-top: -2.3vh; margin-left: 2vh;"></i>
             </a>
@@ -84,7 +82,9 @@ Dashboard
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item" href="{% url 'hr2:hradmin' %}">
+            <a class="item" href="{% url 'hr2:hradmin' %}" style="display: flex;
+            justify-content: center;
+            align-items: center;">
                 Hr-Admin
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -129,20 +129,20 @@ Dashboard
                 </div>
                 {% endcomment %}
 
-                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                    {% block alerts %}
-                    {% include 'dashboard/alerts.html' %}
-                    {% endblock %}
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts %}
+                            {% include 'dashboard/alerts.html' %}
+                        {% endblock %}
+                    </div>
                 </div>
             </div>
-
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="second">
-            Work in Progress, coming soon!
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="third">
+            
+            <div class="ui bottom attached tab segment" data-tab="second">
+                Work in Progress, coming soon!
+            </div>
+            
+            <div class="ui bottom attached tab segment" data-tab="third">
                 <div id="textSegmentDiv">
-
                     <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                         {% block alerts1 %}
                             {% include 'dashboard/alerts1.html' %}
@@ -150,64 +150,51 @@ Dashboard
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
+        {% comment %} The central-rail segment ends here! {% endcomment %}
 
-    {% comment %}The central-rail segment ends here!{% endcomment %}
-
-    {% comment %}The right-rail segment starts here!{% endcomment %}
-    <div class="three wide column">
-        <div class="row">
-            {% comment %}The Modules:{% endcomment %}
+        {% comment %} The right-rail segment starts here! {% endcomment %}
+        <div class="module-container">
             {% block modules %}
-            {% include 'dashboard/modules.html' %}
+                {% include 'dashboard/modules.html' %}
             {% endblock %}
         </div>
-
+        {% comment %}The right-rail segment ends here!{% endcomment %}
     </div>
-    {% comment %}The right-rail segment ends here!{% endcomment %}
-
-    {% comment %}The right-margin segment!{% endcomment %}
-    <div class="column"></div>
-
-</div>
-{% comment %}The grid ends here!{% endcomment %}
-
-
-
+    {% comment %}The grid ends here!{% endcomment %}
 {% endblock %}
 
 {% block javascript %}
-<script
-    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-<script>
-    //----------------------calender--------------------------------
+    <script
+        src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        //----------------------calender--------------------------------
 
-    $('#rangestart').calendar({
-        monthFirst: false,
-        type: 'date',
-        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
-        formatter: {
-            date: function (date, settings) {
-                if (!date) return '';
-                var day = date.getDate();
-                var month = date.getMonth() + 1;
-                var year = date.getFullYear();
-                return year + '-' + month + '-' + day;
+        $('#rangestart').calendar({
+            monthFirst: false,
+            type: 'date',
+            minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+            formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate();
+                    var month = date.getMonth() + 1;
+                    var year = date.getFullYear();
+                    return year + '-' + month + '-' + day;
+                }
             }
-        }
-    });
+        });
 
-    /*$(document).ready(function(){
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        setTimeout(loader, 1750);
-    });
-    function loader() {
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        $("#loader").removeClass("active");
-        $("#loader").addClass("disabled");
-    }*/
-</script>
-
+        /*$(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }*/
+    </script>
 {% endblock %}
