@@ -20,7 +20,7 @@ from django.template.loader import get_template
 from django.views.generic import View
 from django.db.models import Q
 from django.contrib import messages
-from .utils import render_to_pdf, save_worker_report_sheet,get_caretaker_hall
+from .utils import render_to_pdf, save_worker_report_sheet,get_staff_hall
 from .utils import add_to_room, remove_from_room
 
 @login_required
@@ -74,11 +74,13 @@ def hostel_view(request, context={}):
     hall_student=""
     current_hall=""
     get_avail_room=[]
-    get_hall=get_caretaker_hall(hall_caretakers,request.user) 
+
+    get_hall = get_staff_hall(hall_caretakers, hall_wardens, request.user)
     if get_hall:
-        get_hall_name=get_hall.hall_id
-        hall_student=Student.objects.filter(hall_id=get_hall_name).select_related('id__user')
-        current_hall=get_hall_name
+        get_hall_name = get_hall.hall_id
+        hall_student = Student.objects.filter(hall_id=get_hall_name).select_related('id__user')
+        current_hall = get_hall_name
+
     
     for hall in all_hall:
         total_rooms=HallRoom.objects.filter(hall=hall)
@@ -171,7 +173,7 @@ def staff_edit_schedule(request):
         except:
             hall_caretakers = HallCaretaker.objects.all()
             get_hall=""
-            get_hall=get_caretaker_hall(hall_caretakers,request.user)
+            get_hall=get_staff_hall(hall_caretakers=hall_caretakers,user = request.user)
             StaffSchedule(hall=get_hall,staff_id=staff,day=day,staff_type=staff_type,start_time=start_time,end_time=end_time).save()
             messages.success(request, 'Staff schedule created successfully.')
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
@@ -488,7 +490,7 @@ class GeneratePDF(View):
 
         hall_caretakers = HallCaretaker.objects.all()
         get_hall=""
-        get_hall=get_caretaker_hall(hall_caretakers,request.user)
+        get_hall=get_staff_hall(hall_caretakers = hall_caretakers,user = request.user)
         print(get_hall)
         if months < current_month:
             worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)
