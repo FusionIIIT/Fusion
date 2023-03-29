@@ -17,7 +17,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from applications.eis.models import (faculty_about, emp_research_projects)
 
 from notification.views import department_notif
-from .models import SpecialRequest, Announcements
+from .models import SpecialRequest, Announcements , Department
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -195,6 +195,15 @@ def get_to_request(username):
     req = SpecialRequest.objects.filter(request_receiver=username)
     return req
 
+def department():
+    department = Department.objects.all()
+
+    context = {}
+
+    for dep in department:
+        context[dep.name] = dep
+    return context
+
 @login_required(login_url='/accounts/login')
 def dep_main(request):
     """
@@ -231,7 +240,7 @@ def dep_main(request):
         
         context = browse_announcements()
         context_f = faculty()
-        c_html = "<h1> hello </h1>"
+        departments = department()
         user_designation = ""
         
         if fac_view:
@@ -260,7 +269,7 @@ def dep_main(request):
         return render(request,"department/index.html", {"announcements":context,
                                                             "fac_list" : context_f,
                                                             "requests_made" : requests_made,
-                                                            "c_html":c_html
+                                                            "departments":departments
                                                         })
 
 def faculty_view(request):
@@ -287,7 +296,7 @@ def faculty_view(request):
         programme = request.POST.get('programme', '')
         message = request.POST.get('announcement', '')
         upload_announcement = request.FILES.get('upload_announcement')
-        department = request.POST.get('department')
+        department_ = request.POST.get('department')
         ann_date = date.today()
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
         getstudents = ExtraInfo.objects.select_related('user')
@@ -298,15 +307,17 @@ def faculty_view(request):
                                     programme=programme,
                                     message=message,
                                     upload_announcement=upload_announcement,
-                                    department = department,
+                                    department = department_,
                                     ann_date=ann_date)
         # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     context_f = faculty()
+    departments = department()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
                                                             "fac_list" : context_f,
+                                                            "departments":departments,
                                                             "request_to":requests_received
                                                         })
 
@@ -713,5 +724,14 @@ def deny(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
+
+def edit_department(request, department_name):
+    if request.method == "POST":
+        about = request.POST.get('dep_about')
+        Department.objects.filter(name=department_name).update(about=about)
+        return redirect('/dep/')
+
+
+        
 
 

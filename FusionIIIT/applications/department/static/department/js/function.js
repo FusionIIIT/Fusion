@@ -64,6 +64,29 @@ function make_announcement_form(self)
     }
 }
 
+function edit_about(self)
+{
+    let form = document.getElementById("edit-about-form");
+    let about = document.getElementById("about");
+    let status = form.getAttribute("data-status");
+    if(status=="hidden")
+    {
+        about.style.display="none";
+        form.setAttribute("data-status","visible");
+        form.style.display="block";
+        console.log(form);
+        self.innerHTML="Done";
+    }
+    else
+    {
+        about.style.display="block";
+        form.setAttribute("data-status","hidden");
+        form.style.display="none";
+        console.log(form);
+        self.innerHTML="Edit";
+    }
+}
+
 function request(event)
     {
     var request_type= $('input[name="request_type"]').val();

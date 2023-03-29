@@ -46,7 +46,7 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Our Mission :
                         </h3>
@@ -59,7 +59,33 @@
                         <p>
                             The vision of the Computer Engineering Department is to recognize itself as renowned department in the field of technical education in Computer Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
                         </p>
-                    </span>
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green approve" onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "CSE" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_about" id="dep_about">{{departments.CSE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </from>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green approve" onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_about" id="dep_about">{{departments.CSE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </from>
+                        </div>
+                    {% endif %}
+                    <div id="about">
+                        {{departments.CSE.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
@@ -71,7 +97,7 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Central Library :
                         </h3>
@@ -115,7 +141,8 @@
                                 </p>
                             </li>
                         </ol>
-                    </span>
+                    </span> {% endcomment %}
+                    {{departments.CSE.facility|safe}}
                     <div class="ui divider"></div>
                 </div>
             </div>
@@ -170,12 +197,12 @@
             {% if user_designation == "faculty" %}
                 <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% include "department/make_announcements_fac.html" %}
+                {% comment %} {% include "department/make_announcements_fac.html" %} {% endcomment %}
                 </div>
             {% elif user_designation == "staff" %}
                 <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% include "department/make_announcements_staff.html" %}
+                {% comment %} {% include "department/make_announcements_staff.html" %} {% endcomment %}
                 </div>
             {% endif %}
             
