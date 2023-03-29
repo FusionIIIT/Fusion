@@ -4,6 +4,8 @@ from applications.globals.models import ExtraInfo
 
 from applications.programme_curriculum.models import Batch
 
+import datetime
+
 class Constants:
     HOLIDAY_TYPE = (
         ('restricted', 'restricted'),
@@ -274,8 +276,8 @@ class Calendar(models.Model):
     '''
     from_date = models.DateField()
     to_date = models.DateField()
-    start_time = models.TimeField(default='20:00')
-    end_time = models.TimeField(default='20:00')
+    start_time = models.TimeField(default=datetime.time(20, 00))
+    end_time = models.TimeField(default=datetime.time(20, 00))
     description = models.CharField(max_length=40)
 
     class Meta:
