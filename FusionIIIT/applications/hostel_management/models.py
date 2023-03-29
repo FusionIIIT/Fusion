@@ -33,7 +33,14 @@ class HostelManagementConstants:
     ("CheckedIn" , 'Checked In'),
     ("Complete", 'Complete'),
     ("Forward", 'Forward')
-    )    
+    )
+
+    HALL_NAMES = (
+        ('saraswati', 'saraswati'),
+        ('vivekananda', 'vivekananda'),
+        ('aryabhatta', 'aryabhatta'),
+        ('vashishtha', 'vashishtha'),
+    )   
 
 
 class Hall(models.Model):
@@ -45,7 +52,7 @@ class Hall(models.Model):
     'number_students' stores number of students currently residing in a Hall of Residence.
     """
     hall_id = models.CharField(max_length=25)
-    hall_name = models.CharField(max_length=255)
+    hall_name = models.CharField(max_length=255, choices=HostelManagementConstants.HALL_NAMES)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
 
