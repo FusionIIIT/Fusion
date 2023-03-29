@@ -34,80 +34,6 @@
             </div>
         </div>
 
-    <!-- <    <div class="field">
-            <label>Funding Agency</label>
-            <div class="fields">
-                <div class="twelve wide field">
-                    <input placeholder="Publisher" id="researchC" type="text" name="funding_agency" required>
-                </div>
-
-                <div class="four wide field">
-                    <div class="ui fluid search selection dropdown">
-                        <input type="hidden" name="status" id="researchF" required>
-                        <i class="dropdown icon"></i>
-                        <div class="default text">Status</div>
-                        <div class="menu">
-                            <div class="item" data-value="Ongoing">Ongoing</div>
-                            <div class="item" data-value="Completed">Completed</div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="fields">
-                <div class="four wide field">
-                    <div class="field">
-                        <label>Submission Date</label>
-                        <div class="ui calendar" id="rangestart2">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="Submission" id="researchD" name="sub">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="four wide field">
-                    <div class="field">
-                        <label>Start Date</label>
-                        <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="Start" name="start" id="researchG" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="four wide field">
-                    <div class="field">
-                        <label>Expected Finish Date</label>
-                        <div class="ui calendar" id="rangeend">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="End" name="end" id="researchH">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="four wide field">
-                    <div class="field">
-                        <label>Financial Outlay</label>
-                        <input placeholder="" type="text" name="financial_outlay" id="researchI" required>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="fields">
-                <div class="fourteen wide field">
-                    <div class="field">
-                        <label>Title of Project</label>
-                        <input placeholder="Title" id="researchB" type="text" name="title" required>
-                    </div>
-                </div>
-            </div>
-        </div>
-        -->
 
         <button class="ui right floated primary button" type="submit">
             Search<i class="ui save icon right floated"></i>
@@ -160,31 +86,7 @@
 
                 <div class="four wide field">
 
-                    <!--  <label>Period Of Consultancy</label> 
-                    <div class="ui calendar" id="rangeend1">
-                        <div class="ui input left icon">
-                            <i class="calendar icon"></i>
-                            <input type="text" placeholder="End" name="end" id="consultancyF" required>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-
-            <div class="fields">
-                <div class="fourteen wide field">
-                    <div class="field">
-                        <label>Title</label>
-                        <input placeholder="Title" type="text" name="title" id="consultancyB" required>
-                    </div>
-                </div>
-
-
-
-            </div>
-
-        </div> -->
+                    
         <button class="ui right floated primary button" type="submit">
             Search<i class="ui save icon right floated"></i>
         </button>
@@ -194,34 +96,6 @@
 </div>
 {% comment %}The Consultancy Project ends here!{% endcomment %}
 
-<!-- 
-{% comment %}The Technology segment starts here!{% endcomment %}
 
-<div class="{% if mark7 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}"
-    data-tab="technology transfer">
-    {% if request.user == user %}<h4 class="ui dividing header" id="changes11">Add a Technology Transfer</h4>
-    <form class="ui form" method="post" action="{% url 'research_procedures:transfer_insert' %}">
-        {% csrf_token %}
-        <div style="display: none;"> <input type="text" id="techZ" name="tech_id"></div>
-        <div class="field">
-            <div class="fourteen wide field">
-                <div class="field">
-                    <label>Details</label>
-                    <input placeholder="Details" type="text" id="techA" name="details" required>
-                </div>
-            </div>
-
-
-
-        </div>
-        <button class="ui right floated primary button" type="submit">
-            Save<i class="ui save icon right floated"></i>
-        </button>
-    </form>
-
-    <br>
-    {% endif %}
-
-</div> -->
 {% comment %}The Technology segment ends here!{% endcomment %}
 {% endblock %}
