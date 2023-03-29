@@ -129,18 +129,18 @@
 
                         <div class="ui vertical segment" >
                             {% if fac_list.sm_f %}
-                            <div class="container">
+                            <div class="fac-container">
                                 {% for faculty in fac_list.sm_f %}
-                                <div class="card">
-                                    <div class="image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
-                                    <div class="content">
-                                        <div class="name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
-                                        <div class="department">Smart Manufacturing Discipline</div>
-                                        <a class="email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
-                                        <div class="reserch">Research Interests</div>
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Smart Manufacturing Discipline</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
                                     </div>
                                     {% with "/eis/profile/"|add:faculty.user.username as link %}
-                                    <a href="{{ link }}" class="btn"><i class="user icon"></i>Profile</a>
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
                                     {% endwith %}
                                 </div>
                                 {% endfor %}

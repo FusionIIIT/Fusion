@@ -1,4 +1,4 @@
-.container {
+.fac-container {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 1rem;
@@ -6,7 +6,7 @@
 }
 
 @media only screen and (min-width: 550px) {
-    .container {
+    .fac-container {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
@@ -15,7 +15,7 @@
 }
 
 @media only screen and (min-width: 992px) {
-    .container {
+    .fac-container {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 1rem;
@@ -24,7 +24,7 @@
 }
 
 @media only screen and (min-width: 1300px) {
-    .container {
+    .fac-container {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 1rem;
@@ -32,7 +32,7 @@
     }
 }
 
-.card {
+.fac-card {
     border-radius: 0.25rem;
     background-color: rgb(255, 255, 255);
     text-align: center;
@@ -41,7 +41,7 @@
     box-shadow: 0px 0px 5px 2px rgb(195, 193, 193);
 }
 
-.image {
+.fac-image {
     width: 12rem;
     height: 12rem;
     border-radius: 50%;
@@ -52,26 +52,26 @@
 
 }
 
-.content {
+.fac-content {
     margin: 1.5rem 0rem;
 }
 
-.name {
+.fac-name {
     font-size: 1.2rem;
     font-weight: 500;
 }
 
-.department {
+.fac-department {
     font-size: 0.9rem;
     font-weight: 500;
     color: gray;
 }
 
-.email {
+.fac-email {
     color: rgb(56, 56, 179);
 }
 
-.btn {
+.fac-btn {
     margin-bottom: 1.1rem;
     padding: 0.3rem 1rem;
     color: rgb(22, 22, 180);
@@ -79,7 +79,7 @@
     border-radius: 0.3rem;
 }
 
-.btn:hover {
+.fac-btn:hover {
     background-color: rgb(22, 22, 180);
     color: white;
 }

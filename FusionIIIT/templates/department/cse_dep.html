@@ -135,18 +135,18 @@
 
                         <div class="ui vertical segment" >
                             {% if fac_list.cse_f %}
-                            <div class="container">
+                            <div class="fac-container">
                                 {% for faculty in fac_list.cse_f %}
-                                <div class="card">
-                                    <div class="image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
-                                    <div class="content">
-                                        <div class="name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
-                                        <div class="department">Computer Science & Engineering</div>
-                                        <a class="email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
-                                        <div class="reserch">Research Interests</div>
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Computer Science & Engineering</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
                                     </div>
                                     {% with "/eis/profile/"|add:faculty.user.username as link %}
-                                    <a href="{{ link }}" class="btn"><i class="user icon"></i>Profile</a>
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
                                     {% endwith %}
                                 </div>
                                 {% endfor %}
@@ -166,14 +166,19 @@
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "CSE" %}
         <div class="ui vertical segment">
-            <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
-            <div id="make-announcement-form" style="display:none;" data-status="hidden">
+            
             {% if user_designation == "faculty" %}
-                    {% include "department/make_announcements_fac.html" %}
+                <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
+                <div id="make-announcement-form" style="display:none;" data-status="hidden">
+                {% include "department/make_announcements_fac.html" %}
+                </div>
             {% elif user_designation == "staff" %}
-                    {% include "department/make_announcements_staff.html" %}
+                <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
+                <div id="make-announcement-form" style="display:none;" data-status="hidden">
+                {% include "department/make_announcements_staff.html" %}
+                </div>
             {% endif %}
-            </div>
+            
             <div class="content">
                 <div class="description">
                     <span>
@@ -195,7 +200,7 @@
                                 {% for stu in announcements.cse %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ user.first_name}} {{ user.last_name}}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -207,7 +212,7 @@
                                 {% for stu in announcements.all %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ user.first_name}} {{ user.last_name}}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>

@@ -211,55 +211,57 @@ def dep_main(request):
         context_f - Stores data returned by faculty()
 
     """
-    user = request.user
-    usrnm = get_object_or_404(User, username=request.user.username)
-    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
-    ann_maker_id = user_info.id
-    user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-
-    requests_made = get_make_request(user_info)
-    
-    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
-    student = request.user.holds_designations.filter(designation__name='student').exists()
-    staff = request.user.holds_designations.filter(designation__name='staff').exists()
-    
-    context = browse_announcements()
-    context_f = faculty()
-    user_designation = ""
-    
-    if fac_view:
-        user_designation = "faculty"
-    elif student:
-        user_designation = "student"
-    else:
-        user_designation = "staff"
-
-    if request.method == 'POST':
-        request_type = request.POST.get('request_type', '')
-        request_to = request.POST.get('request_to', '')
-        request_details = request.POST.get('request_details', '')
-        request_date = date.today()
-        
-        if request_type and request_to and request_details:
-            obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
-                                                        request_date=request_date,
-                                                        brief=request_type,
-                                                        request_details=request_details,
-                                                        status="Pending",
-                                                        remarks="--",
-                                                        request_receiver=request_to
-                                                        )
-    
-    if user_designation == "student":
-        return render(request,"department/index.html", {"announcements":context,
-                                                        "fac_list" : context_f,
-                                                        "requests_made" : requests_made
-                                                    })
     # elif(str(user.extrainfo.user_type)=="faculty"):
-    elif user_designation=="faculty":
+    user = request.user
+    if user.extrainfo.user_type=="faculty":
         return HttpResponseRedirect("facView")
-    elif user_designation=="staff":
+    elif user.extrainfo.user_type =="staff":
         return HttpResponseRedirect("staffView")
+    elif user.extrainfo.user_type == "student":
+        usrnm = get_object_or_404(User, username=request.user.username)
+        user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+        ann_maker_id = user_info.id
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+
+        requests_made = get_make_request(user_info)
+        
+        fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
+        student = request.user.holds_designations.filter(designation__name='student').exists()
+        staff = request.user.holds_designations.filter(designation__name='staff').exists()
+        
+        context = browse_announcements()
+        context_f = faculty()
+        c_html = "<h1> hello </h1>"
+        user_designation = ""
+        
+        if fac_view:
+            user_designation = "faculty"
+        elif student:
+            user_designation = "student"
+        else:
+            user_designation = "staff"
+
+        if request.method == 'POST':
+            request_type = request.POST.get('request_type', '')
+            request_to = request.POST.get('request_to', '')
+            request_details = request.POST.get('request_details', '')
+            request_date = date.today()
+            
+            if request_type and request_to and request_details:
+                obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
+                                                            request_date=request_date,
+                                                            brief=request_type,
+                                                            request_details=request_details,
+                                                            status="Pending",
+                                                            remarks="--",
+                                                            request_receiver=request_to
+                                                            )
+        
+        return render(request,"department/index.html", {"announcements":context,
+                                                            "fac_list" : context_f,
+                                                            "requests_made" : requests_made,
+                                                            "c_html":c_html
+                                                        })
 
 def faculty_view(request):
     """
@@ -301,8 +303,10 @@ def faculty_view(request):
         # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
+    context_f = faculty()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
+                                                            "fac_list" : context_f,
                                                             "request_to":requests_received
                                                         })
 
@@ -346,8 +350,10 @@ def staff_view(request):
         # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
+    context_f = faculty()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
+                                                            "fac_list" : context_f,
                                                             "request_to":requests_received
                                                         })
 
