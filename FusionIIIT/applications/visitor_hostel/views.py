@@ -364,7 +364,8 @@ def request_booking(request):
                                                      departure_time=booking_to_time,
                                                      #remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
-                                                     bill_to_be_settled_by=bill_to_be_settled_by)
+                                                     bill_to_be_settled_by=bill_to_be_settled_by) 
+        bookingObject.save()
         # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
         # print (bookingObject)
         # print("Hello")
@@ -707,6 +708,7 @@ def record_meal(request):
             else:
                 person = 1
 
+            
             try:
                 meal = MealRecord.objects.select_related('booking__intender','booking__caretaker','visitor','room').get(
                     visitor=visitor, booking=booking, meal_date=date_1)
@@ -720,6 +722,8 @@ def record_meal(request):
                 meal.lunch = lunch
                 meal.dinner = dinner
                 meal.save()
+                return HttpResponseRedirect('/visitorhostel/')
+
             else:
                 MealRecord.objects.create(visitor=visitor,
                                           booking=booking,

@@ -45,6 +45,10 @@
             <a class="item" data-tab="second">
                 Applications
             </a>
+
+            <a class="item" data-tab="fifteenth">
+                View Meeting Minutes
+            </a>
             
  <!--  
             <a class="item" data-tab="third">
@@ -99,6 +103,9 @@
             <a class="item" data-tab="eleventh">
                 View Special Food Request
             </a>
+            <a class="item" data-tab="thirteenth">
+                View Menu
+            </a>
 {##}
 {#            <a class="item" data-tab="seventeenth">#}
 {#                Publish Minutes#}
@@ -113,6 +120,9 @@
 
 
     {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+    <a class="item" data-tab="forteenth">
+        View Feedback | Statistics
+    </a> 
         <a class="item" data-tab="seventh">
             Respond to requests
         </a>
@@ -131,6 +141,9 @@
 
         <a class="item" data-tab="twelfth">
             Mess Activities
+        </a>
+        <a class="item" data-tab="fifteenth">
+            View Meeting Minutes
         </a>
     {% endif %}
 

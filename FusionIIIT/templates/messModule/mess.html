@@ -33,7 +33,7 @@ Central Mess
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu"
-             style="max-width: 320px;">
+             style="max-width: 320px;margin-bottom: 1rem">
             {% block menucard %}
                 {% include 'messModule/menu_card.html' %}
             {% endblock %}
@@ -85,7 +85,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="seventh">
+        <div class="ui tab segment" data-tab="seventh" style="min-width:45rem;">
             {% block respondtoleave %}
             {% include 'messModule/respondtorequests.html' %}
             {% endblock %}
@@ -284,5 +284,5 @@ Central Mess
             }
         });
 
-</script>
+</script>   
 {% endblock %}
