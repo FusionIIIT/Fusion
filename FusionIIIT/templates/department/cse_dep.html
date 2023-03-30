@@ -61,7 +61,7 @@
                         </p>
                     </span> {% endcomment %}
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green approve" onclick="edit_about(this)">Edit</button>
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
                         <div id="edit-about-form" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" %}" method="post">
                                 {% csrf_token %}
@@ -69,10 +69,10 @@
                                   <textarea rows="20" name="dep_about" id="dep_about">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
-                            </from>
+                            </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green approve" onclick="edit_about(this)">Edit</button>
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
                         <div id="edit-about-form" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
@@ -80,7 +80,7 @@
                                   <textarea rows="20" name="dep_about" id="dep_about">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
-                            </from>
+                            </form>
                         </div>
                     {% endif %}
                     <div id="about">
@@ -195,14 +195,14 @@
         <div class="ui vertical segment">
             
             {% if user_designation == "faculty" %}
-                <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
+                <button class="ui button green " id="show_announcement_form" >Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% comment %} {% include "department/make_announcements_fac.html" %} {% endcomment %}
+                {% include "department/make_announcements_fac.html" %}
                 </div>
             {% elif user_designation == "staff" %}
-                <button class="ui button green approve" onclick="make_announcement_form(this)">Add Announcement</button>
+                <button class="ui button green " >Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% comment %} {% include "department/make_announcements_staff.html" %} {% endcomment %}
+                {% include "department/make_announcements_staff.html" %}
                 </div>
             {% endif %}
             
