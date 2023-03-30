@@ -26,7 +26,7 @@ from applications.academic_information.models import (Calendar, Course, Student,
                                                       
 from applications.central_mess.models import(Monthly_bill, Payments)
 
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor, Curriculum as Programme_Curriculum)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
@@ -298,9 +298,8 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            semester_no = obj.curr_semester_no+1
-            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
-            user_sem = semester_no
+            user_sem = obj.curr_semester_no
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = user_sem+1)
             
         except Exception as e:
             user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
@@ -1244,7 +1243,9 @@ def get_pre_registration_eligibility(current_date, current_time, user_sem, year)
     '''
     try:
         # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
-        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {year}").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem+1} {year}").first()
+        if pre_registration_date==None:
+            pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
         prd_start_time =  pre_registration_date.start_time
