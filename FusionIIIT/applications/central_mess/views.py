@@ -27,6 +27,9 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
 from notification.views import central_mess_notif
 
 import csv
+import openpyxl
+ 
+
 today_g = datetime.today()
 month_g = today_g.month
 month_g_l = today_g.strftime('%B')
@@ -1229,39 +1232,77 @@ def add_leave_manager(request):
         add_obj.save()
     return HttpResponseRedirect('/mess')
 
-
+@csrf_exempt
 def searchAddOrRemoveStudent(request):
    
-    studentId=request.GET.get('roll_number')
-    submitType=request.GET.get('type')
-    # return JsonResponse({})
-    msg=""
-    if submitType=='searchStudent':
-        try:    
-            mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
-            msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
-        except:
-            msg=str(studentId)+" is not registered for Mess" 
-    elif submitType=='addStudent1' or submitType=='addStudent2':
-        messNo=request.GET.get('messNo')
-        try:
-            mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
-            msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
-        except:
-            studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
-            newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
-            newData.save()
-            msg=str(studentId)+" is successfully registered for Mess." 
-    elif submitType=='removeStudent':
-        studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
-        try:
-            data=Messinfo.objects.get(student_id=studentId)
-            data.delete()
-            Messinfo.objects.all()
-            msg=str(studentId)+" is successfully removed from mess." 
-        except:
-            msg=str(studentId)+" is not registered for mess." 
+    if request.method=='GET':
+        submitType=request.GET.get('type')
+        msg=""
+        if submitType=='searchStudent':
+            studentId=(request.GET.get('roll_number'))
+            try:    
+                mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+                msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
+            except:
+                msg=str(studentId)+" is not registered for Mess" 
+        elif submitType=='addStudent1' or submitType=='addStudent2':
+            messNo=request.GET.get('messNo')
+            studentId=request.GET.get('roll_number')
+            try:
+                mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+                msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
+            except:
+                try:
+                    studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+                    newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
+                    newData.save()
+                    msg=str(studentId)+" is successfully registered for Mess."
+                except:
+                    msg="unable to find this student in database."
+        elif submitType=='removeStudent':
+            studentId=request.GET.get('roll_number')
+            try:
+                studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+                data=Messinfo.objects.get(student_id=studentId)
+                data.delete()
+                Messinfo.objects.all()
+                msg=str(studentId)+" is successfully removed from mess." 
+            except:
+                msg=str(studentId)+" is not registered for mess." 
+        elif (submitType=='removeAllStudent1' or submitType=='removeAllStudent2'):
+            messNo=request.GET.get('mess')
+            try:
+                Messinfo.objects.filter(mess_option=str(messNo)).delete()
+                msg="All students removed successfully from "+str(messNo)
+            except:
+                msg="can't remove students." 
 
-    return JsonResponse({'message':msg})
+        return JsonResponse({'message':msg})
+    else:
+        if(request.FILES):
+            if 'excelUpload1' in request.POST:
+                messNo='mess1'
+                excel_file = request.FILES['excel_file1']
+            else: 
+                messNo='mess2'
+                excel_file = request.FILES['excel_file2']
+            
+            wb = openpyxl.load_workbook(excel_file)
+
+            for row in wb.active:
+                studentId=(str(row[0].value)).upper()
+                try:
+                    studentHere = Student.objects.get(id=studentId)
+                    if Messinfo.objects.filter(student_id=studentId).exists():
+                        Messinfo.objects.filter(student_id=studentId).update(mess_option=str(messNo))
+                    else:
+                        newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
+                        newData.save()
+                except:
+                    1
+        messages.success(request,"Done.")
+        return HttpResponseRedirect("/mess")
+        
+     
     
     
