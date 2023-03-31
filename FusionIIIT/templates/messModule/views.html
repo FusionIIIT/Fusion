@@ -328,26 +328,6 @@
                 </tr>
             </thead>
 
-            <tbody>
-                {% for pay in payments %}
-                <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{pay.student_id}}
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>{{pay.sem}}</td>
-
-                    <td>{{pay.amount_paid}}</td>
-
-                    <td><i class="ui large green checkmark icon"></i></td>
-                </tr>
-                {% endfor %}
-            </tbody>
         </table>
 
         <br>
