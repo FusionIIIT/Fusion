@@ -294,7 +294,7 @@ def faculty_view(request):
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
         programme = request.POST.get('programme', '')
-        message = request.POST.get('announcement', '')
+        message = request.POST.get('message', '')
         upload_announcement = request.FILES.get('upload_announcement')
         department_ = request.POST.get('department')
         ann_date = date.today()
@@ -725,10 +725,17 @@ def deny(request):
     request.method = ''
     return redirect('/dep/facView/')
 
-def edit_department(request, department_name):
+def edit_department(request, department_name , field):
     if request.method == "POST":
-        about = request.POST.get('dep_about')
-        Department.objects.filter(name=department_name).update(about=about)
+        content = request.POST.get('dep_content')
+        if field == "about":
+            Department.objects.filter(name=department_name).update(about=content)
+        elif field == "facility":
+            Department.objects.filter(name=department_name).update(facility=content)
+        elif field == "achievement":
+            Department.objects.filter(name=department_name).update(achievement=content)
+
+
         return redirect('/dep/')
 
 

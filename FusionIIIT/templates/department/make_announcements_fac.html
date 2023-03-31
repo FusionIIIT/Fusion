@@ -2,14 +2,14 @@
 <div class="ui active tab" data-tab="dep">
     <div class="ui vertical segment">
         <!-- fill the form details -->
-        <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data">
+        <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" id="myForm">
             {% csrf_token %}
             <div class="equal width fields">
 
                 <div class="field">
                     <label>Programme Type<sup><i class="small red asterisk icon"></i></sup></label>
                     <div class="ui selection dropdown">
-                        <input name="programme" id="programme" type="hidden" placeholder="programme" required='true'>
+                        <input name="programme" id="programme" type="hidden" placeholder="programme" required>
                         <i class="dropdown icon"></i>
 
                         <div class="default text">Select Department Type</div>
@@ -38,7 +38,7 @@
                 <div class="field">
                     <label>Batch </label>
                     <div class="ui selection dropdown">
-                        <input name="batch" type="hidden" required='TRUE'>
+                        <input name="batch" type="hidden" required>
                         <i class="dropdown icon"></i>
 
                         <div class="default text">Select Batch</div>
@@ -72,7 +72,7 @@
                 <div class="field">
                     <label>Department<sup><i class="small red asterisk icon"></i></sup></label>
                     <div class="ui selection dropdown">
-                        <input name="department" type="hidden" placeholder="department" required='true'>
+                        <input name="department" type="hidden" placeholder="department" required>
                         <i class="dropdown icon"></i>
 
                         <div class="default text">Select Department Type</div>
@@ -105,7 +105,7 @@
 
             <div class="field">
                 <label>Announcement Details<sup><i class="small red asterisk icon"></i></sup></label>
-                <textarea placeholder="What is the Announcement?" value="" name="announcement" required></textarea>
+                <input type="text" placeholder="What is the Announcement?" name="announcement" required>
             </div>
 
             <div class="file">

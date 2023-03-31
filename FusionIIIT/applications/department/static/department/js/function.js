@@ -5,26 +5,29 @@ $(document).ready(function () {
 
 
 function announce(event) {
+    event.preventDefault();
     var message = $('input[name="announcement"]').val();
     var batch = $('input[name="batch"]').val();
     var programme = $('input[name="programme"]').val();
     var department = $('input[name="department"]').val();
-    var upload_announcement = $('input[name="upload_announcement"]').val();
+    var upload_announcement = $('input[name="upload_announcement"]')[0].files[0];
     if (message == "" || batch == "" || programme == "" || department == "") {
         alert("Fill required fields!!");
         return;
     }
     else {
+        var formData = new FormData();
+        formData.append('message', message);
+        formData.append('batch', batch);
+        formData.append('programme', programme);
+        formData.append('upload_announcement', upload_announcement);
+        formData.append('department', department);
         $.ajax({
             type: 'POST',
             url: '.',
-            data: {
-                'message': message,
-                'batch': batch,
-                'programme': programme,
-                'upload_announcement': upload_announcement,
-                'department': department,
-            },
+            data: formData,
+            contentType: false,
+            processData: false,
             success: function (data) {
 
                 alert("Announcement successfully made!!");
@@ -71,6 +74,44 @@ function edit_about(self) {
     }
     else {
         about.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_facility(self) {
+    let form = document.getElementById("edit-facility-form");
+    let facility = document.getElementById("facility");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        facility.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        facility.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_achievement(self) {
+    let form = document.getElementById("edit-achievement-form");
+    let achievement = document.getElementById("achievement");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        achievement.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        achievement.style.display = "block";
         form.setAttribute("data-status", "hidden");
         form.style.display = "none";
         console.log(form);
