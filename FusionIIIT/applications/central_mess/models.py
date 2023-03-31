@@ -139,15 +139,15 @@ class Monthly_bill(models.Model):
 
 class Payments(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    sem = models.IntegerField()
-    year = models.IntegerField(default=current_year)
+    # sem = models.IntegerField()   
+    # year = models.IntegerField(default=current_year)
     amount_paid = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = (('student_id', 'sem', 'year'),)
+        unique_together = (('student_id'),)
 
     def __str__(self):
-        return '{} - {}'.format(self.student_id.id, self.sem)
+        return '{}'.format(self.student_id.id)
 
 
 class Menu(models.Model):

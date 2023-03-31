@@ -71,11 +71,9 @@ class PaymentsAdmin(admin.ModelAdmin):
     model = Payments
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
-        ('sem', {'fields': ['sem']}),
-        ('year', {'fields': ['year']}),
         ('amount_paid', {'fields': ['amount_paid']}),
         ]
-    list_display = ('student_id', 'sem', 'year', 'amount_paid')
+    list_display = ('student_id', 'amount_paid')
 
 
 class RebateAdmin(admin.ModelAdmin):

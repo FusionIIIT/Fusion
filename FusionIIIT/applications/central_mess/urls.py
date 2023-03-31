@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^billdownload', views.download_bill_mess, name='billdownload'),
     url("info-form", views.mess_info, name="info"),
     url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
+    url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment'),
     url(r'^api', include('applications.central_mess.api.urls')),
     
 

@@ -22,8 +22,8 @@
         </a>
     </div>
 
-    <div class="ui active tab" id="menu1tab">
-        <div class="ui vertical segment">
+    <div class="ui active tab  " id="menu1tab">
+        <div class="ui vertical segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}">
             <table class="ui definition table" style="padding: 8px; padding-left: 8px; padding-right: 8px;">
                 <thead>
                 <tr>
@@ -277,9 +277,9 @@
                     <th>Monthly bill</th>
                     <th>Rebate Count</th>
                     <th>Rebate Amt</th>
-                    <th>NonVeg Amt</th>
                     <th>Total</th>
                     <th>Paid</th>
+                    <th>Due Amount</th>
                 </tr></thead>
                 <tbody>
                 {% for stu in monthly_bill %}
@@ -288,7 +288,6 @@
                     <td>{{stu.amount}}</td>
                     <td>{{stu.rebate_count}}</td>
                     <td>{{stu.rebate_amount}}</td>
-                    <td>{{stu.nonveg_total_bill}}</td>
                     <td>{{stu.total_bill}}</td>
                     <td>
                         {% if stu.paid %}
@@ -297,12 +296,19 @@
                          <i class="large red x icon"></i>
                         {% endif %}
                     </td>
+                     <td>
+                        {% if stu.paid %}
+                            0
+                        {% else  %}
+                            {{stu.due_amount}}
+                        {% endif %}
+                    </td>
 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
-
+            <h2>Total Due Amount : {{total_due}}</h2>
             <br>
             <br>
 

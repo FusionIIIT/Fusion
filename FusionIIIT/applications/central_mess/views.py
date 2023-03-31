@@ -80,14 +80,28 @@ def mess(request):
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
+        monthly_bill=monthly_bill[::-1]
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         except:
             # return HttpResponseRedirect("/mess/info-form")
-            mess_optn= str(student)+ " - "+str(student)+ " - mess1"
-            Messinfo.objects.create(student_id=student,mess_option="mess1")
-            return HttpResponseRedirect("/mess")
+            # mess_optn= str(student)+ " - "+str(student)+ " - mess1"
+            # Messinfo.objects.create(student_id=student,mess_option="mess1")
+            mess_optn={'mess_option':'no-mess'}
         
+        if len(payments)>0:
+            tot_am=payments[0].amount_paid
+            for i in range(0,len(monthly_bill)):
+                if(monthly_bill[i].paid):
+                    monthly_bill[i].due_amount=0;
+                elif monthly_bill[i].total_bill+tot_am<0:
+                    monthly_bill[i].due_amount=(monthly_bill[i].total_bill)
+                else:
+                    monthly_bill[i].due_amount=(-tot_am)
+                tot_am+=monthly_bill[i].total_bill
+            amount_due=-payments[0].amount_paid
+        else :
+            amount_due=0
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
         else:
@@ -99,61 +113,64 @@ def mess(request):
         # sprequest = Special_request.objects.filter(status='1')
         count = 0
         #variable y stores the menu items
+        try:
+            y = Menu.objects.filter(mess_option=mess_optn.mess_option)
 
-        y = Menu.objects.filter(mess_option=mess_optn.mess_option)
+            # for item in rebates:
+            #     d1 = item.start_date
+            #     d2 = item.end_date
+            #     item.duration = abs((d2 - d1).days)+1
+            #     item.save()
 
-        # for item in rebates:
-        #     d1 = item.start_date
-        #     d2 = item.end_date
-        #     item.duration = abs((d2 - d1).days)+1
-        #     item.save()
+            # for items in rebates:
+            #     if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
+            #         count += item.duration
+        
+            bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
+            amount_c = MessBillBase.objects.latest('timestamp')
+            rebate_count = 0
+            # nonveg_total_bill = 0
+            # for z in data:
+            #     if z.order_date.month == month_g:
+            #         nonveg_total_bill = nonveg_total_bill + z.dish.price
 
-        # for items in rebates:
-        #     if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
-        #         count += item.duration
+            #     else:
+            #         bill.nonveg_total_bill = 0
 
-        bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
-        amount_c = MessBillBase.objects.latest('timestamp')
-        rebate_count = 0
-        # nonveg_total_bill = 0
-        # for z in data:
-        #     if z.order_date.month == month_g:
-        #         nonveg_total_bill = nonveg_total_bill + z.dish.price
-
-        #     else:
-        #         bill.nonveg_total_bill = 0
-
-        for r in rebates:
-            if r.status == '2':
-                if r.start_date.month == month_g:
-                    if r.end_date.month == next_month:
-                        rebate_count = rebate_count + abs((last_day_of_this_month - r.start_date).days) + 1
+            for r in rebates:
+                if r.status == '2':
+                    if r.start_date.month == month_g:
+                        if r.end_date.month == next_month:
+                            rebate_count = rebate_count + abs((last_day_of_this_month - r.start_date).days) + 1
+                        else:
+                            rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+                    elif r.end_date.month == month_g:
+                        rebate_count = rebate_count + abs((r.end_date - first_day_of_this_month).days) + 1
                     else:
-                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-                elif r.end_date.month == month_g:
-                    rebate_count = rebate_count + abs((r.end_date - first_day_of_this_month).days) + 1
-                else:
-                    rebate_count = 0
-        rebate_amount = rebate_count * amount_c.bill_amount / 30
-        total_bill = amount_c.bill_amount - rebate_amount 
-        if bill:
-            bill.update(student_id = student,
-                        month = month_g_l,
-                        year = year_g,
-                        amount = amount_c.bill_amount,
-                        rebate_count = rebate_count,
-                        rebate_amount = rebate_amount,
-                        total_bill = total_bill)
+                        rebate_count = 0
+            rebate_amount = rebate_count * amount_c.bill_amount / 30
+            total_bill = amount_c.bill_amount - rebate_amount 
+            if bill:
+                bill.update(student_id = student,
+                            month = month_g_l,
+                            year = year_g,
+                            amount = amount_c.bill_amount,
+                            rebate_count = rebate_count,
+                            rebate_amount = rebate_amount,
+                            total_bill = total_bill)
 
-        else:
-            bill_object = Monthly_bill(student_id=student,
-                                       amount=amount_c.bill_amount,
-                                       rebate_count=rebate_count,
-                                       rebate_amount=rebate_amount,
-                                       total_bill=total_bill,
-                                       month=month_g_l,
-                                       year=year_g)
-            bill_object.save()
+            else:
+                bill_object = Monthly_bill(student_id=student,
+                                        amount=amount_c.bill_amount,
+                                        rebate_count=rebate_count,
+                                        rebate_amount=rebate_amount,
+                                        total_bill=total_bill,
+                                        month=month_g_l,
+                                        year=year_g)
+                bill_object.save()
+        except:
+            y=[]
+            bill=[]
 
         for d in desig:
             if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_convener_mess1':
@@ -199,7 +216,7 @@ def mess(request):
                     'messinfo': mess_optn,
                     'newmenu': newmenu,
                     'monthly_bill': monthly_bill,
-                    'payments': payments,
+                    'total_due': amount_due,
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
@@ -274,7 +291,7 @@ def mess(request):
                     'messinfo': mess_optn,
                     'newmenu': newmenu,
                     'monthly_bill': monthly_bill,
-                    'payments': payments,
+                    'total_due': amount_due,
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
@@ -309,7 +326,7 @@ def mess(request):
                    'reg_menu': y,
                    'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
-                   'payments': payments,
+                   'total_due': amount_due,
                    'vaca': vaca_obj,
                    'info': extrainfo,
                    'feedback': feedback_obj,
@@ -1303,6 +1320,41 @@ def searchAddOrRemoveStudent(request):
         messages.success(request,"Done.")
         return HttpResponseRedirect("/mess")
         
-     
-    
+@csrf_exempt
+def uploadPaymentDue(request):
+    if(request.FILES):
+        
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+
+        for row in wb.active:
+            studentId=(str(row[0].value)).upper()
+            amount=(row[1].value)
+            try:
+                studentHere = Student.objects.get(id=studentId)
+                monthly_bill = Monthly_bill.objects.select_related('student_id').filter(student_id=studentHere)
+                try:
+                    Payments.objects.filter(student_id=studentHere).delete()
+                except:
+                    1
+                Payments.objects.create(student_id=studentHere,amount_paid=(-1*(amount)))
+                if amount<=0:
+                    for x in monthly_bill:
+                        Monthly_bill.objects.filter(student_id=studentHere).filter(month=x.month).filter(year=x.year).update(paid=True)
+                else:
+                    monthly_bill=monthly_bill[::-1]
+                    curr_amount=amount
+                    for x in monthly_bill:
+                        if(curr_amount<=0):
+                            Monthly_bill.objects.filter(student_id=studentHere).filter(month=x.month).filter(year=x.year).update(paid=True)
+                        else:
+                            Monthly_bill.objects.filter(student_id=studentHere).filter(month=x.month).filter(year=x.year).update(paid=False)
+                        curr_amount-=x.total_bill;    
+                        print(x)
+            except:
+                1
+    messages.success(request,"Done.")
+    return HttpResponseRedirect("/mess")
+        
+        
     
