@@ -82,7 +82,20 @@
                                     <td>
                                         <div class="field">
                                             <label></label>
-                                            <button class="ui primary right floated button bookameal-submit" id="btn{{value.id}}" data-pk="{{value.id}}">
+                                            <button class="ui primary right floated button" id="btn{{value.id}}" data-pk="{{value.id}}"
+                                            onclick="bookameal_submit(event); ll()">
+                                                <script type='text/javascript'>
+                                                ll = function () {
+                                                    document.getElementById("submit_inventory").disabled=true; 
+                                                    console.log("1111111111111111111");    
+                                                    setTimeout('jj()', 5000);
+                                                    }
+                                                
+                                                jj=function(){
+                                                    document.getElementById("submit_inventory").disabled=false; 
+                                                    console.log("00000000000"); 
+                                                }
+                                                </script>
                                                 Update
                                             </button>
                                         </div>

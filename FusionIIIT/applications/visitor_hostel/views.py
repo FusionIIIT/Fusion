@@ -25,7 +25,7 @@ from applications.complaint_system.models import Caretaker
 import numpy as np
 from django.contrib.auth.models import User
 
-from .forms import InventoryForm
+# from .forms import InventoryForm
 
 # for notifications
 from notification.views import visitors_hostel_notif
@@ -819,19 +819,19 @@ def add_to_inventory(request):
         bill_number = request.POST.get('bill_number')
         quantity = int((request.POST.get('quantity')))
         cost = int(request.POST.get('cost'))
-        consumable = request.POST.getlist('consumable')
-        isConsumable = False
-        print(consumable)
-        if consumable:
+        consumable = request.POST.get('consumable')
+        if consumable == 'false':
+            isConsumable = False
+        else:
             isConsumable = True
         print(isConsumable)
-        # Inventory.objects.create(
-        #     item_name=item_name, quantity=quantity, consumable=isConsumable)
+        Inventory.objects.create(
+            item_name=item_name, quantity=quantity, consumable=isConsumable)
 
-        # item = Inventory.objects.get(item_name=item_name)
-        # item_id = item.pk
-        # InventoryBill.objects.create(
-        #     bill_number=bill_number, cost=cost, item_name_id=item_id)
+        item = Inventory.objects.get(item_name=item_name)
+        item_id = item.pk
+        InventoryBill.objects.create(
+            bill_number=bill_number, cost=cost, item_name_id=item_id)
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')

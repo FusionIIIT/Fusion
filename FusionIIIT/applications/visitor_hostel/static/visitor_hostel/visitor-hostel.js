@@ -294,14 +294,14 @@ function request_booking (event) {
 
 // Meal Record
 
-$('.bookameal-submit').click(function(event){
+function bookameal_submit(event){
     console.log('hii')
     event.preventDefault();
     var pk = $(this).attr('data-pk');
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
-
+    console.log(pk);
     var jsondata = {
-            'pk' : pk,
+            'pk' : $('input[name="id"]').val(),
             'booking' : $('input[name="meal-booking-id"]').val(),
         'm_tea': $('input[name="m_tea"]').val(),
         'breakfast': $('input[name="breakfast"]').val(),
@@ -323,7 +323,7 @@ $('.bookameal-submit').click(function(event){
             alertModal('Something missing! Please refill the form ');
         }
     });
-});
+};
 
 // Update Inventory
 
@@ -361,49 +361,71 @@ function submit_inventory_form(id){
 
 // Adding more items to inventory
 
-$('#add-more-items-inventory').click(function(event){
+// $('#add-more-items-inventory').click(function(event){
 
+//     $.ajax({
+//         type: 'POST',
+//         url: '/visitorhostel/add-to-inventory/',
+//         data: {
+//             'item' : $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value,
+//             'quantity' : $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value,
+//             'amount' : $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value,
+//             'consumable' : $('.reset-this-form')[0].children[2].children[3].children[1].children[0].value,
+//             'csrfmiddlewaretoken': '{{csrf_token}}'
+//         },
+//         success: function(data) {
+//             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+//             $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+//             $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+//         },
+//         error: function(data, err) {
+//             alertModal('Something missing! Please refill the form');
+//         }
+//     });
+
+// });
+
+function add_inventory_item(event) {
+    event.preventDefault();
+    jsondata = {
+        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+        'item_name' : $('input[name="item_name"]').val(),
+        'quantity' : $('input[name="quantity_add"]').val(),
+        'cost' : $('input[name="cost"]').val(),
+        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+        'bill_number' : $('input[name="bill_number"]').val()
+    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/add-to-inventory/',
-        data: {
-            'item' : $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value,
-            'quantity' : $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value,
-            'amount' : $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value,
-            'consumable' : $('.reset-this-form')[0].children[2].children[3].children[1].children[0].value,
-            'csrfmiddlewaretoken': '{{csrf_token}}'
-        },
+        data: jsondata,
         success: function(data) {
             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
             $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
             $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
         },
-        error: function(data, err) {
+        error: function(xhr, data, err) {
             alertModal('Something missing! Please refill the form');
         }
+
     });
-
-});
-
-$('#add-item-form-submit').click(function(event){
+}
+$('.add-item-form-submit').click(function(event){
     event.preventDefault();
-    if($('input[name="consumable"]')){
-        consumable = 'True';
+    jsondata = {
+        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+        'item_name' : $('input[name="item_name"]').val(),
+        'quantity' : $('input[name="quantity_add"]').val(),
+        'cost' : $('input[name="cost"]').val(),
+        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+        'bill_number' : $('input[name="bill_number"]').val()
     }
-    else{
-        consumable = 'False';
-    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/add-to-inventory/',
-        data: {
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-            'item_name' : $('input[name="item-name"]').val(),
-            'quantity' : $('input[name="quantity_add"]').val(),
-            'cost' : $('input[name="cost"]').val(),
-            'consumable' : $('input[name="consumable"]:checked'),
-            'bill_number' : $('input[name="bill_number"]').val()
-        },
+        data: jsondata,
         success: function(data) {
             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
             $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
@@ -689,28 +711,28 @@ function cancel_active_booking (id, booking_from) {
 
 // Edit Inventory
 
-$("#edit-inventory").click(function(e){
-    $(".inventory-item").slideToggle();
-    $(".inventory-form").slideToggle();
-    $("#update-inventory-submit").slideToggle();
-});
-$("#update-inventory-submit").click(function(e){
-    event.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/bookaroom/',
-        data: {
-            'csrfmiddlewaretoken' : '{{csrf_token}}',
-            'data' : data
-        },
-        success: function(data) {
-            alertModal("Congratulations! Inventory is updated successfully");
-        },
-        error: function(data, err) {
-            alertModal('Something missing! PLease refill the form');
-        }
-    });
-});
+// $("#edit-inventory").click(function(e){
+//     $(".inventory-item").slideToggle();
+//     $(".inventory-form").slideToggle();
+//     $("#update-inventory-submit").slideToggle();
+// });
+// $("#update-inventory-submit").click(function(e){
+//     event.preventDefault();
+//     $.ajax({
+//         type: 'POST',
+//         url: '/visitorhostel/bookaroom/',
+//         data: {
+//             'csrfmiddlewaretoken' : '{{csrf_token}}',
+//             'data' : data
+//         },
+//         success: function(data) {
+//             alertModal("Congratulations! Inventory is updated successfully");
+//         },
+//         error: function(data, err) {
+//             alertModal('Something missing! PLease refill the form');
+//         }
+//     });
+// });
 
 // Submit Visitor Details
 

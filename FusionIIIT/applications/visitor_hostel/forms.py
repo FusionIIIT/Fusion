@@ -5,8 +5,6 @@ from django.forms import ModelForm
 
 from applications.visitor_hostel.models import *
 
-from .models import Inventory
-
 #class booking_request(forms.Form):
 CHOICES = (('A', 'A',), ('B', 'B',), ('C', 'C',), ('D', 'D',))
 
@@ -20,14 +18,14 @@ class RoomAvailability(forms.Form):
         date_to = forms.DateField(initial=datetime.date.today)
 
 
-class InventoryForm(forms.Form):
-        # class Meta:
-        #     model = Inventory
-        #     fields = ["item_name", "quantity"]
-        item_name = forms.CharField(max_length=20)
-        quantity = forms.IntegerField(min_value=0)
-        consumable = forms.BooleanField(initial=False)
-        # checkbox = ["consumable"]
+# class InventoryForm(forms.Form):
+#         # class Meta:
+#         #     model = Inventory
+#         #     fields = ["item_name", "quantity"]
+#         item_name = forms.CharField(max_length=20)
+#         quantity = forms.IntegerField(min_value=0)
+#         consumable = forms.BooleanField(initial=False)
+#         # checkbox = ["consumable"]
 
 
 class Room_booking(forms.Form):
