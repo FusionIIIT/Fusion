@@ -81,14 +81,7 @@ def mess(request):
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         monthly_bill=monthly_bill[::-1]
-        try:
-            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
-        except:
-            # return HttpResponseRedirect("/mess/info-form")
-            # mess_optn= str(student)+ " - "+str(student)+ " - mess1"
-            # Messinfo.objects.create(student_id=student,mess_option="mess1")
-            mess_optn={'mess_option':'no-mess'}
-        
+       
         if len(payments)>0:
             tot_am=payments[0].amount_paid
             for i in range(0,len(monthly_bill)):
@@ -114,29 +107,14 @@ def mess(request):
         count = 0
         #variable y stores the menu items
         try:
+            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
             y = Menu.objects.filter(mess_option=mess_optn.mess_option)
 
-            # for item in rebates:
-            #     d1 = item.start_date
-            #     d2 = item.end_date
-            #     item.duration = abs((d2 - d1).days)+1
-            #     item.save()
-
-            # for items in rebates:
-            #     if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
-            #         count += item.duration
         
             bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
             amount_c = MessBillBase.objects.latest('timestamp')
             rebate_count = 0
-            # nonveg_total_bill = 0
-            # for z in data:
-            #     if z.order_date.month == month_g:
-            #         nonveg_total_bill = nonveg_total_bill + z.dish.price
-
-            #     else:
-            #         bill.nonveg_total_bill = 0
-
+            
             for r in rebates:
                 if r.status == '2':
                     if r.start_date.month == month_g:
@@ -169,7 +147,8 @@ def mess(request):
                                         year=year_g)
                 bill_object.save()
         except:
-            y=[]
+            mess_optn={'mess_option':'no-mess'}
+            y = Menu.objects.filter(mess_option="mess1")
             bill=[]
 
         for d in desig:
