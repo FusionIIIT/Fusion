@@ -29,7 +29,7 @@ class CourseDocuments(models.Model):
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
-    document_url = models.CharField(max_length=500, null=True,blank=True)
+    document_url = models.CharField(max_length=100, null=True,blank=True)
     # media = models.FileField(upload_to=content_file_name, null=True, blank=True)
 
     def __str__(self):
