@@ -33,8 +33,8 @@
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
-        <a class="item" data-tab="Track records">
-            Track records
+        <a class="item" data-tab="Achievement">
+            Achievement
         </a>
 
     </div>
@@ -190,8 +190,8 @@
                                 <thead>
                                     <td> Serial No. </td>
                                     <td> Faculty Name </td>
+                                    <td>Email  </td>
                                     <td> Research Interest </td>
-                                    <td> Email </td>
                                     <!-- <td> title </td> -->
                                     {% comment %} <td> sex </td>
                                     <td> date_of_birth </td>
@@ -202,12 +202,30 @@
                                     <td> github </td> {% endcomment %}
 
                                 </thead>
+                                {% for fcu in faculty.me_f %}
+                                <tr>
+                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
+                                    <td>{{ fcu.user.email }}</td>
+                                    {% comment %} <td>{{ fcu.title }}</td> 
+                                    <td>{{ fcu.sex }}</td>
+                                    <td>{{ fcu.date_of_birth }}</td>
+                                    <td>{{ fcu.address }}</td>
+                                    <td>{{ fcu.phone_no }}</td>
+                                    {% comment %} <td>{{ fcu.user_type }}</td>
+                                    <td>{{ fcu.department.name }}</td>
+                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                                    {% endwith %}
+                                </tr>
 
+                                {% endfor %}
                                 {% for fcu in fac_list.me_f %}
                                 <tr>
                                     {% with "/eis/profile/"|add:fcu.user.username as link %}
                                     <td>{{ forloop.counter }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.id }}</a></td>
+                                    <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
+                                    <td>{{ fcu.user.email }}</td>
                                     {% comment %} <td>{{ fcu.title }}</td> 
                                     <td>{{ fcu.sex }}</td>
                                     <td>{{ fcu.date_of_birth }}</td>
@@ -439,7 +457,7 @@
             </div>
         </div>
     </div>
-    <div class="ui tab" data-tab="Track records">
+    <div class="ui tab" data-tab="Achievement">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">

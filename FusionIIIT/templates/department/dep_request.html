@@ -51,7 +51,29 @@
                         Request Status
                         <i class="right floated chevron right icon"></i>
                     </a>
-
+                    <a class="item" data-tab="CSE" id="CSE_Dep">
+                        CSE Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+    
+                    <a class="item" data-tab="ECE" id="ECE_Dep">
+                        ECE Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+    
+                    <a class="item" data-tab="ME" id="ME_Dep">
+                        ME Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+    
+                    <a class="item" data-tab="SM" id="SM_Dep">
+                        SM Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="active item" data-tab="DES" id="DESIGN_Dep">
+                        DESIGN Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     
                     
                 </div>
@@ -67,7 +89,7 @@
             {% comment %}
                 The central-rail segment starts here!
             {% endcomment %}
-            <div class="eight wide column">
+            <div class="eleven wide column">
 
                 {% comment %}Make announcement{% endcomment %}
                 <div class="ui active tab segment" data-tab="first">
@@ -97,6 +119,40 @@
                 <div class="ui tab segment" data-tab="third">
                     {% block request_status %}
                         {% include "department/request_status.html" %} 
+                    {% endblock %}
+                </div>
+                <div class="ui tab segment" data-tab="CSE">
+                    {% block CSE_Dep %}
+                        {% include "department/cse_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}CSE Department!{% endcomment %}
+    
+                {% comment %}ECE Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="ECE">
+                    {% block ECE_Dep %}
+                        {% include "department/ece_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}ECE Department!{% endcomment %}
+    
+                {% comment %}ME Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="ME">
+                    {% block ME_Dep %}
+                        {% include "department/me_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}ME Department!{% endcomment %}
+    
+                {% comment %}SM Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="SM">
+                    {% block SM_Dep %}
+                        {% include "department/sm_dep.html" %}
+                    {% endblock %}
+                </div>
+                <div class="ui tab segment" data-tab="DES">
+                    {% block DESIGN_Dep %}
+                        {% include "department/DESIGN_dep.html" %}
                     {% endblock %}
                 </div>
                 {% comment %}status of request!{% endcomment %}
