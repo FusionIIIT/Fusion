@@ -534,14 +534,15 @@ def add_bill_base_amount(request):
 
 
 def add_mess_committee(request, roll_number):
-    mess = Messinfo.objects.get(student_id__id=roll_number)
+    studentHere = Student.objects.get(id=roll_number)
+    mess = Messinfo.objects.get(student_id_id=studentHere)
     if mess.mess_option == 'mess1':
-        designation = Designation.objects.get(name='mess_committee_mess1')
+        designation = Designation.objects.get(name='mess_committee')
     else:
         designation = Designation.objects.get(name='mess_committee_mess2')
     # designation = Designation.objects.get(name='mess_committee')
     # add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
-    check_obj=HoldsDesignation.objects.select_related().filter(Q(user__username=roll_number) &
+    check_obj=HoldsDesignation.objects.select_related().filter(Q(user__username=studentHere) &
                                                 (Q(designation__name__contains='mess_committee')
                                                  | Q(designation__name__contains='mess_convener')))
     if check_obj:

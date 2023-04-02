@@ -81,20 +81,30 @@ def mess(request):
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         monthly_bill=monthly_bill[::-1]
-       
+
+        tot_am=0
         if len(payments)>0:
             tot_am=payments[0].amount_paid
-            for i in range(0,len(monthly_bill)):
-                if(monthly_bill[i].paid):
-                    monthly_bill[i].due_amount=0;
-                elif monthly_bill[i].total_bill+tot_am<0:
-                    monthly_bill[i].due_amount=(monthly_bill[i].total_bill)
-                else:
-                    monthly_bill[i].due_amount=(-tot_am)
-                tot_am+=monthly_bill[i].total_bill
-            amount_due=-payments[0].amount_paid
-        else :
-            amount_due=0
+        else:
+            tot_am=0
+            for x in monthly_bill:
+                tot_am=tot_am+x.total_bill
+            Payments.objects.create(student_id=student,amount_paid=(-tot_am))
+            payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
+
+            
+            
+
+        for i in range(0,len(monthly_bill)):
+            if(monthly_bill[i].paid):
+                monthly_bill[i].due_amount=0;
+            elif monthly_bill[i].total_bill+tot_am<0:
+                monthly_bill[i].due_amount=(monthly_bill[i].total_bill)
+            else:
+                monthly_bill[i].due_amount=(-tot_am)
+            tot_am+=monthly_bill[i].total_bill
+        amount_due=-payments[0].amount_paid
+        
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
         else:
@@ -106,6 +116,7 @@ def mess(request):
         # sprequest = Special_request.objects.filter(status='1')
         count = 0
         #variable y stores the menu items
+
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
             y = Menu.objects.filter(mess_option=mess_optn.mess_option)
@@ -149,10 +160,9 @@ def mess(request):
         except:
             mess_optn={'mess_option':'no-mess'}
             y = Menu.objects.filter(mess_option="mess1")
-            bill=[]
 
         for d in desig:
-            if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_convener_mess1':
+            if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener':
                 newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess1').order_by('-app_date')
                 # newmenu = Menu_change_request.objects.all()
                 meeting = Mess_meeting.objects.all()
@@ -284,8 +294,8 @@ def mess(request):
                     'programme': programme,
                     'meeting': meeting,
                     'minutes': minutes,
-                    'sprequest': sprequest,
                     'splrequest': splrequest,
+                    'sprequest': sprequest,
                     'sprequest_past': sprequest_past,
                     'menuchangerequest':menuchangerequest,  
                     'count1': count1,
@@ -381,32 +391,32 @@ def mess(request):
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
       
-
-
-        
+        sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
+        sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
+               
         context = {
-                   'bill_base': current_bill,
-                   'today': today_g.date(),
-                   'tomorrow': tomorrow_g.date(),
-                   'members': members_mess,
-                   'menu': y,
-                   'newmenu': newmenu,
-                   'vaca_all': vaca_all,
-                   'info': extrainfo,
-                   'leave': leave,
-                   'leave_past': leave_past,
-                   'current_date': current_date,
-                   'mess_reg': mess_reg,
-                   'desig': desig,
+            'bill_base': current_bill,
+            'today': today_g.date(),
+            'tomorrow': tomorrow_g.date(),
+            'members': members_mess,
+            'menu': y,
+            'newmenu': newmenu,
+            'vaca_all': vaca_all,
+            'info': extrainfo,
+            'leave': leave,
+            'leave_past': leave_past,
+            'current_date': current_date,
+            'mess_reg': mess_reg,
+            'desig': desig,
             'meeting': meeting,
             'minutes': minutes,
+            'sprequest': sprequest,
+            'sprequest_past': sprequest_past,
+            'count1': count1,
+            'count2': count2, 'count3': count3, 'feed': feed,
+            'count4': count4, 'form': form, 'count5': count5,
+            'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
 
-
-             'count1': count1,
-             'count2': count2, 'count3': count3, 'feed': feed,
-             'count4': count4, 'form': form, 'count5': count5,
-             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
-            
         }
         return render(request, "messModule/mess.html", context)
 
@@ -965,6 +975,7 @@ def menu_change_request(request):
     return JsonResponse(data)
 
 
+@csrf_exempt
 def submit_mess_committee(request):
     """
     This function is to add the new mess committee
@@ -976,9 +987,9 @@ def submit_mess_committee(request):
         current_user - get user from request
         user_details - extract details and designation of the user from the database
     """
-    roll_number = request.POST['rollnumber']
+    roll_number = request.POST.get('roll_number')
     data = add_mess_committee(request, roll_number)
-    return JsonResponse(data)
+    return HttpResponseRedirect("/mess")
 
 
 def remove_mess_committee(request):
@@ -996,10 +1007,10 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-    if data_m[0] == 'mess_committee_mess1':
-        designation = Designation.objects.get(name='mess_committee_mess1')
-    elif data_m[0] == 'mess_convener_mess1':
-        designation = Designation.objects.get(name='mess_convener_mess1')
+    if data_m[0] == 'mess_committee':
+        designation = Designation.objects.get(name='mess_committee')
+    elif data_m[0] == 'mess_convener':
+        designation = Designation.objects.get(name='mess_convener')
     elif data_m[0] == 'mess_committee_mess2':
         designation = Designation.objects.get(name='mess_committee_mess2')
     else:
@@ -1080,9 +1091,9 @@ def select_mess_convener(request):
     data_m = member_id.split("-")
     roll_number = data_m[1]
 
-    if data_m[0] == 'mess_committee_mess1':
-        designation = Designation.objects.get(name='mess_committee_mess1')
-        new_designation = Designation.objects.get(name='mess_convener_mess1')
+    if data_m[0] == 'mess_committee':
+        designation = Designation.objects.get(name='mess_committee')
+        new_designation = Designation.objects.get(name='mess_convener')
         # One mess can have only one mess convener
         existing_check = HoldsDesignation.objects.select_related().filter(designation=new_designation)
         if existing_check.count():
