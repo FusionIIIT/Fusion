@@ -987,7 +987,7 @@ def submit_mess_committee(request):
         current_user - get user from request
         user_details - extract details and designation of the user from the database
     """
-    roll_number = request.POST.get('roll_number')
+    roll_number = str(request.POST.get('roll_number')).upper()
     data = add_mess_committee(request, roll_number)
     return HttpResponseRedirect("/mess")
 
@@ -1246,15 +1246,15 @@ def searchAddOrRemoveStudent(request):
         submitType=request.GET.get('type')
         msg=""
         if submitType=='searchStudent':
-            studentId=(request.GET.get('roll_number'))
+            studentId=str((request.GET.get('roll_number'))).upper()
             try:    
                 mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
                 msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
             except:
                 msg=str(studentId)+" is not registered for Mess" 
         elif submitType=='addStudent1' or submitType=='addStudent2':
-            messNo=request.GET.get('messNo')
-            studentId=request.GET.get('roll_number')
+            messNo=request.GET.get('messNo')  
+            studentId = str((request.GET.get('roll_number'))).upper()
             try:
                 mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
                 msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
@@ -1267,7 +1267,7 @@ def searchAddOrRemoveStudent(request):
                 except:
                     msg="unable to find this student in database."
         elif submitType=='removeStudent':
-            studentId=request.GET.get('roll_number')
+            studentId = str((request.GET.get('roll_number'))).upper()
             try:
                 studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
                 data=Messinfo.objects.get(student_id=studentId)

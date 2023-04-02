@@ -535,32 +535,36 @@ def add_bill_base_amount(request):
 
 def add_mess_committee(request, roll_number):
     studentHere = Student.objects.get(id=roll_number)
-    mess = Messinfo.objects.get(student_id_id=studentHere)
-    if mess.mess_option == 'mess1':
-        designation = Designation.objects.get(name='mess_committee')
-    else:
-        designation = Designation.objects.get(name='mess_committee_mess2')
-    # designation = Designation.objects.get(name='mess_committee')
-    # add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
-    check_obj=HoldsDesignation.objects.select_related().filter(Q(user__username=studentHere) &
+    try:
+        mess = Messinfo.objects.get(student_id_id=studentHere)
+        if mess.mess_option == 'mess1':
+            designation = Designation.objects.get(name='mess_committee')
+        else:
+            designation = Designation.objects.get(name='mess_committee_mess2')
+        check_obj=HoldsDesignation.objects.select_related().filter(Q(user__username=studentHere) &
                                                 (Q(designation__name__contains='mess_committee')
                                                  | Q(designation__name__contains='mess_convener')))
-    if check_obj:
-        data = {
-            'status': 2,
-            'message': roll_number + " is already a part of mess committee"
-        }
+        if check_obj:
+            data = {
+                'status': 2,
+                'message': roll_number + " is already a part of mess committee"
+            }
+            return data
+        else:
+            add_user = User.objects.get(username=roll_number)
+            designation_object = HoldsDesignation(user=add_user, working=add_user, designation=designation)
+            designation_object.save()
+            central_mess_notif(request.user, add_user, 'added_committee', '')
+            data = {
+                'status': 1,
+                'message': roll_number + " is added to Mess Committee"
+            }
         return data
-    else:
-        add_user = User.objects.get(username=roll_number)
-        designation_object = HoldsDesignation(user=add_user, working=add_user, designation=designation)
-        designation_object.save()
-        central_mess_notif(request.user, add_user, 'added_committee', '')
+    except:
         data = {
-            'status': 1,
-            'message': roll_number + " is added to Mess Committee"
+            'status': 0,
+            'message': roll_number + " is not registered for any Mess."
         }
-        return data
 
 
 def generate_bill():
