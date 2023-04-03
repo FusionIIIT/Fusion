@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='bill',
             name='bill_date',
-            field=models.DateField(blank=True, default=django.utils.timezone.now),
+            field=models.DateField(blank=True, default=django.utils.timezone.now, blank = True),
         ),
         migrations.DeleteModel(
             name='MealRecord',
@@ -33,22 +33,6 @@ class Migration(migrations.Migration):
                 ('persons', models.IntegerField(default=0)),
                 ('booking', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='visitor_hostel.bookingdetail')),
                 ('visitor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='visitor_hostel.visitordetail')),
-            ],
-        ),
-        migrations.DeleteModel(
-            name='Bill',
-        ),
-        migrations.CreateModel(
-            name='Bill',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('meal_bill', models.IntegerField(default=0)),
-                ('room_bill', models.IntegerField(default=0)),
-                ('payment_status', models.BooleanField(default=False)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='visitor_hostel.bookingdetail')),
-                ('caretaker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('room', models.ManyToManyField(to='visitor_hostel.RoomDetail')),
-                ('bill_date', models.DateField(default=django.utils.timezone.now, blank=True))
             ],
         ),
     ]
