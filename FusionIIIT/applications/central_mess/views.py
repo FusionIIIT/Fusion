@@ -175,29 +175,21 @@ def mess(request):
                 menu_data = Menu.objects.all()
                 # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
                 for f in feed:
-                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
+                    if f.feedback_type == 'Maintenance' :
                         count1 += 1
 
-                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Food' :
                         count2 += 1
 
-                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Cleanliness' :
                         count3 += 1
 
-                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Others' :
                         count4 += 1
-                for f in feed2:
-                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess2':
-                        count5 += 1
-
-                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess2':
-                        count6 += 1
-
-                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess2':
-                        count7 += 1
-
-                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
-                        count8 += 1
+                count5=0
+                count6=0
+                count7=0
+                count8=0
 
                 context = {
                     'menu': menu_data,
@@ -249,30 +241,22 @@ def mess(request):
                 
                 # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
                 menu_data = Menu.objects.all()
-                for f in feed2:
-                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
+                count5=0
+                count6=0
+                count7=0
+                count8=0
+                for f in feed:
+                    if f.feedback_type == 'Maintenance' :
                         count1 += 1
 
-                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Food' :
                         count2 += 1
 
-                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Cleanliness' :
                         count3 += 1
 
-                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess1':
+                    elif f.feedback_type == 'Others' :
                         count4 += 1
-                for f in feed:
-                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess2':
-                        count5 += 1
-
-                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess2':
-                        count6 += 1
-
-                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess2':
-                        count7 += 1
-
-                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
-                        count8 += 1
 
                 context = {
                     'menu': menu_data,
