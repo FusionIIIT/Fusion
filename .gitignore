@@ -73,9 +73,6 @@ node_modules/
 FusionIIIT/static/
 package-lock.json
 
-# Disallow migration files
-**/migrations/*
-!**/migrations/__init__.py
 
 fusion_new.sql
 
