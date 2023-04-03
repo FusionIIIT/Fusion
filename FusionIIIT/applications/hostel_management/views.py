@@ -327,16 +327,32 @@ def edit_student_room(request):
       students - stores students related to 'batch'.
     """
     if request.method == "POST":
-        roll_no = request.POST["roll_no"]
-        hall_room_no=request.POST["hall_room_no"]
-        index=hall_room_no.find('-')
-        room_no = hall_room_no[index+1:]
-        hall_no = hall_room_no[:index]
-        student = Student.objects.get(id=roll_no)
-        remove_from_room(student)
-        add_to_room(student, new_room=room_no, new_hall=hall_no)
-        messages.success(request, 'Student room changed successfully.')
+        if 'interchange' in request.POST:
+            roll_no_1 = request.POST["roll_no_1"]
+            roll_no_2 = request.POST["roll_no_2"]
+            student1 = Student.objects.get(id=roll_no_1)
+            room_no_student1 = student1.room_no
+            hall_id_student1= student1.hall_id
+            student2 = Student.objects.get(id=roll_no_2)
+            room_no_student2 = student2.room_no
+            hall_id_student2= student2.hall_id
+            remove_from_room(student1)
+            remove_from_room(student2)
+            add_to_room(student1,room_no_student2,hall_id_student2)
+            add_to_room(student2,room_no_student1,hall_id_student1)
+            messages.success(request, 'Student room interchange successful.')
+        else:
+            roll_no = request.POST["roll_no_1"]
+            hall_room_no=request.POST["hall_room_no"]
+            index=hall_room_no.find('-')
+            room_no = hall_room_no[index+1:]
+            hall_id = hall_room_no[:index]
+            student = Student.objects.get(id=roll_no)
+            remove_from_room(student)
+            add_to_room(student, new_room=room_no, new_hall=hall_id)
+            messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
 
 def edit_attendance(request):
     """
@@ -353,7 +369,7 @@ def edit_attendance(request):
         roll_no = request.POST["roll_no"]
         
         student = Student.objects.get(id=roll_no)
-        hall = Hall.objects.get(hall_id='hall'+str(student.hall_no))
+        hall = Hall.objects.get(hall_id=student.hall_id)
         date = datetime.datetime.today().strftime('%Y-%m-%d')
 
         if HostelStudentAttendence.objects.filter(student_id=student,date=date).exists() == True:
