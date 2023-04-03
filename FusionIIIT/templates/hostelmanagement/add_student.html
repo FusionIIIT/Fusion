@@ -34,7 +34,7 @@
               <div class="column">
                 <div class="six wide field" id="studentRoomNo">
                   <label>Room no. (Student 1)</label>
-                  <select class="ui search fluid dropdown" name="hall_room_no" required>
+                  <select class="ui search fluid dropdown" name="hall_room_no">
                     <option value="">Select</option>
                     {% for room in room_avail%}
                       <option value="{{room.hall}}-{{room.block_no}}-{{room.room_no}}">{{room.hall.hall_id}}-{{room.block_no}}-{{room.room_no}}</option>
@@ -43,7 +43,7 @@
                 </div>
                 <div class="six wide field" id="studentRollNumber2" style ="display:none">
                   <label>Roll no. (Student 2)</label>
-                  <select class="ui search fluid dropdown" name="roll_no_2" required>
+                  <select class="ui search fluid dropdown" name="roll_no_2">
                     <option value="">Select</option>
                     {% for i, students in halls_student.items %}
                       {% for st in students %}
@@ -73,10 +73,14 @@
         if(this.checked){
             $('#studentRollNumber2').show();
             $('#studentRoomNo').hide();
+            $('#studentRollNumber2 select').prop("required",true);
+            $('#studentRoomNo select').prop("required",false);
           } else {
             $('#studentRollNumber2').hide();
             $('#studentRoomNo').show();
+            $('#studentRoomNo select').prop("required",true);
+            $('#studentRollNumber2 select').prop("required",false);
         }
     });
-    </script>
+  </script>
     
