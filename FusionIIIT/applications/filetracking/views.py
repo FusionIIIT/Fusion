@@ -14,7 +14,56 @@ from .utils import *
 
 
 @login_required(login_url = "/accounts/login/")
+###
+
+def errorCheck(request):
+    return render(request, 'filetracking/contactUs.html')
+    
+####
+
+def user_check(request):
+    """
+      This function is used to check if the user is a student or not
+    Its return type is bool
+    @param:
+        request - contains metadata about the requested page
+        
+    @Variables:
+        current_user - get user from request
+        user_details - extract details of the user from the database
+        desig_id - check for designation
+        student - designation for a student
+        final_user - final designation of the request(our user)
+
+    
+          """
+    try:
+         current_user = get_object_or_404(User, username=request.user.username)
+  
+    #extra info details , user id used as main id
+         user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
+    
+         des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+         print(str(des.designation))
+         if str(des.designation) == "student":
+            return True
+         else:
+            return False
+         
+    except Exception as e:
+        return False
+
+    
+ ###################################   
+
+
 def filetracking(request):
+
+    if user_check(request):
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')
+    
+
+
     """
         The function is used to create files by current user(employee).
         It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
@@ -134,7 +183,10 @@ def filetracking(request):
 
 
 @login_required(login_url = "/accounts/login")
+
 def drafts(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     """
         The function is used to get the designation of the user and renders it on draft template.
 
@@ -146,6 +198,8 @@ def drafts(request):
                 
                 context - Holds data needed to make necessary changes in the template.
     """
+    
+    ###
     designation = get_designation(request.user)
     context = {
         'designation': designation,
@@ -155,6 +209,8 @@ def drafts(request):
 
 @login_required(login_url = "/accounts/login")
 def fileview(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """
     This function is used to veiw all all created files by the user ordered by upload date.it collects all the created files from File object.
@@ -204,6 +260,8 @@ def fileview(request,id):
 
 @login_required(login_url = "/accounts/login")
 def fileview1(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """
          The function is used to get all the files sent by user(employee) to other employees
@@ -236,6 +294,8 @@ def fileview1(request,id):
 
 @login_required(login_url = "/accounts/login")
 def fileview2(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """
     The function is used to fetch the files received by the user form other employees. 
@@ -267,6 +327,8 @@ def fileview2(request,id):
 
 @login_required(login_url = "/accounts/login")
 def outward(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     """ 
     This function fetches the different designations of the user and renders it on outward template 
      @param:
@@ -286,6 +348,8 @@ def outward(request):
 
 @login_required(login_url = "/accounts/login")
 def inward(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     """
      This function fetches the different designations of the user and renders it on inward template 
 
@@ -306,6 +370,8 @@ def inward(request):
 
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """
      The function is used to confirm the deletion of a file.
@@ -327,6 +393,8 @@ def confirmdelete(request,id):
 
 @login_required(login_url = "/accounts/login")
 def forward(request, id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     """
             The function is used to forward files received by user(employee) from other
             employees which are filtered from Tracking(table) objects by current user
@@ -427,6 +495,8 @@ def forward(request, id):
 
 @login_required(login_url = "/accounts/login")
 def archive_design(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
@@ -441,6 +511,8 @@ def archive_design(request):
 
 @login_required(login_url = "/accounts/login")
 def archive(request , id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(is_read=True).order_by('-upload_date')
 
@@ -470,6 +542,8 @@ def archive(request , id):
 
 @login_required(login_url = "/accounts/login")
 def archive_finish(request, id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     file1 = get_object_or_404(File, id=id) ##file = get_object_or_404(File, ref_id=id)
     track = Tracking.objects.filter(file_id=file1)
     
@@ -482,6 +556,8 @@ def archive_finish(request, id):
 
 @login_required(login_url = "/accounts/login")
 def finish_design(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
@@ -493,6 +569,8 @@ def finish_design(request):
 
 @login_required(login_url = "/accounts/login")
 def finish_fileview(request, id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     out = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
     'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id__uploader=request.user.extrainfo, is_read=False).order_by('-forward_date')
@@ -515,6 +593,8 @@ def finish_fileview(request, id):
 
 @login_required(login_url = "/accounts/login")
 def finish(request, id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     file1 = get_object_or_404(File, id=id) ##file = get_object_or_404(File, ref_id=id)
     track = Tracking.objects.filter(file_id=file1)
     
@@ -537,6 +617,8 @@ def finish(request, id):
 
 
 def AjaxDropdown1(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
     """
     This function returns the designation of receiver  on the forward or compose file template.
 
@@ -560,6 +642,8 @@ def AjaxDropdown1(request):
 
 
 def AjaxDropdown(request):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """
     This function returns the usernames of receiver  on the forward or compose file template.
@@ -589,6 +673,8 @@ def test(request):
 
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """ 
      The function is used the delete of a file and it returns to the drafts page. 
@@ -606,6 +692,8 @@ def delete(request,id):
 
 
 def forward_inward(request,id):
+    if user_check(request):##
+        return render(request, 'filetracking/fileTrackingNotAllowed.html')##
 
     """ This function is used forward the files which are available in the inbox of the user .
 

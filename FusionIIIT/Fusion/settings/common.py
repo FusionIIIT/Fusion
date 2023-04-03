@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'applications.health_center',
     'applications.online_cms',
     'applications.ps1',
+    'applications.ps2',
     'applications.programme_curriculum',
     'applications.placement_cell',
     'applications.recruitment',
@@ -170,7 +171,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '..', 'templates/'),],
+        'DIRS': [os.path.join(BASE_DIR, '..', 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -254,7 +255,7 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
@@ -282,3 +283,4 @@ YOUTUBE_DATA_API_KEY = 'api_key'
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOW_PASS_RESET = True

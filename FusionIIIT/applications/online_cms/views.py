@@ -43,6 +43,10 @@ def viewcourses(request):
         print(register)
         # serializer=OCMSStudentSerializer(register,many=True)
         
+        courses = []  #courses in which student is registerd
+        print(register)
+        # serializer=OCMSStudentSerializer(register,many=True)
+        
         for reg in register:   #info of the courses
             course={}
             course['data']=reg.curr_id
@@ -173,8 +177,7 @@ def course(request, course_code):
 
         #         videos.append(video_data)
             # print(videos)
-        
-        slides = CourseSlide.objects.select_related().filter(course_id=course)
+        slides = CourseDocuments.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
@@ -301,18 +304,7 @@ def course(request, course_code):
         #         'title': res['snippet']['title'],
         #     }
 
-        #     videos.append(video_data)
-        # if request.method == 'POST':
-        #     form = UploadSlideForm(request.POST, request.FILES)
-        #     if form.is_valid():
-        #         tempform=form.save(commit=False)
-        #         tempform.course_id=course
-        #         tempform.save()
-        videos=[]
-        # slides1=None
-        # assignment1=None
-        slides1=CourseSlide.objects.select_related().filter(course_id=course)
-        # slides
+            # videos.append(video_data)
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         marks = []

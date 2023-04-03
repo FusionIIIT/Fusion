@@ -5,7 +5,7 @@ from django.shortcuts import render, reverse
 
 from django.contrib import messages
 
-from applications.globals.models import HoldsDesignation, Designation
+from applications.globals.models import HoldsDesignation, Designation,ExtraInfo
 
 from .models import Bank, Company, Payments, Paymentscheme, Receipts
 
@@ -16,7 +16,8 @@ from .render import Render
 from datetime import datetime
 
 import calendar
-
+import openpyxl
+from openpyxl import load_workbook
 from django.contrib.auth.decorators import login_required
 from Fusion.settings.common import LOGIN_URL, LOGIN_REDIRECT_URL
 
@@ -96,7 +97,11 @@ def financeModule(request):
             context = {
                 'b': b
             }
-            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
+            return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context) 
+        if (str(z.designation) == 'student'):
+            flag = 1
+           
+            return HttpResponse("You are not authorised to visit this page!!")
     if(flag == 0):
         return render(request, "financeAndAccountsModule/employee.html", context)
 
@@ -145,7 +150,8 @@ def previewing(request):
             income = int(pay) + int(gr_pay) + int(da) + int(ta) + \
                 int(hra) + int(fpa) + int(special_allow)
             net_payment = (income - gr_reduction)
-
+            
+            
             a = Paymentscheme(month=month, year=year, pf=pf, name=name, designation=designation, pay=pay, gr_pay=gr_pay, da=da, ta=ta, hra=hra, fpa=fpa, special_allow=special_allow, nps=nps, gpf=gpf,
                               income_tax=income_tax, p_tax=p_tax, gslis=gslis, gis=gis, license_fee=license_fee, electricity_charges=electricity_charges, others=others, gr_reduction=gr_reduction, net_payment=net_payment)
             a.save()
@@ -356,7 +362,7 @@ def previous(request):
 
             if(str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.get('selectmonth')
-                b = request.POST.get('selectyear')
+                b = request.POST.get('selectyear')  
 
                 c = Paymentscheme.objects.filter(
                     month=a, year=b, runpayroll=True)
@@ -850,16 +856,64 @@ def printSalary(request):
       Basic details of an employee's salary including basic pay, ta, da, hra, nps etc.
 
     """
-
+    user=request.user
     k = HoldsDesignation.objects.select_related().filter(
         working=request.user, designation=Designation.objects.get(name='adminstrator'))
 
     month = request.POST.get("month")
     year = request.POST.get("year")
-
+    runpayroll=True
     c = Paymentscheme.objects.filter(month=month, year=year)
     context = {
         'c': c,
     }
 
     return Render.render('financeAndAccountsModule/payroll_content4.html', context)
+
+
+@login_required(login_url=LOGIN_URL)
+def previewing_file(request):
+    if request.method == 'POST':
+       
+            # Load the Excel file
+      workbook = load_workbook(request.FILES['file'])
+      worksheet = workbook.active
+        # Loop through each row in the worksheet and create a new model instance
+      for row in worksheet.iter_rows(min_row=2, values_only=True):
+            month=row[0]
+            year=row[1]
+            pf=row[2]
+            name=row[3]
+            designation=row[4]
+            pay=row[5]
+            gr_pay=row[6] 
+            da=row[7]
+            ta =row[8]
+            hra=row[9]
+            fpa=row[10]
+            special_allow=row[11]
+            nps=row[12]
+            gpf=row[13]
+            income_tax=row[14]
+            p_tax=row[15]
+            gslis=row[16]
+            gis=row[17]
+            license_fee=row[18]
+            electricity_charges =row[19]
+            others=row[20]
+            gr_reduction = int(row[12])+int(row[13])+int(row[14])+int(row[15])+int(row[16])+ int(row[17])+int(row[18])+int(row[19])+int(row[20])
+            income=int(row[5])+int(row[6])+int(row[7])+int(row[8]) + int(row[9])+int(row[10])+int(row[11])
+            net_payment =int(income) -int(gr_reduction) 
+          
+            
+            a = Paymentscheme(month=month, year=year, pf=pf, name=name, designation=designation, pay=pay, gr_pay=gr_pay, da=da, ta=ta, hra=hra, fpa=fpa, special_allow=special_allow, nps=nps, gpf=gpf,
+                              income_tax=income_tax, p_tax=p_tax, gslis=gslis, gis=gis, license_fee=license_fee, electricity_charges=electricity_charges, others=others, gr_reduction=gr_reduction, net_payment=net_payment)
+        
+            a.save()
+         
+            
+            
+         
+    return render(request, "financeAndAccountsModule/financeAndAccountsModuleds.html")
+  
+  
