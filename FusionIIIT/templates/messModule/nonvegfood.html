@@ -1,3 +1,4 @@
+<!--
 {% extends 'globals/base.html'%}
 {% load static %}
 {% block body %}
@@ -76,9 +77,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
-                                            <!-- <div class="extra info">
+                                             {% comment %} <div class="extra info">
                                                 The order will be placed for tomorrow !
-                                            </div> -->
+                                            </div>  {% endcomment %}
                                         </div>
                                     </form>
                                 </div>
@@ -108,9 +109,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
-                                            <!-- <div class="extra info">
+                                            {% comment %}  <div class="extra info">
                                                 The order will be placed for tomorrow !
-                                            </div> -->
+                                            </div>  {% endcomment %}
                                         </div>
                                     </form>
                                 </div>
@@ -141,9 +142,9 @@
                                             <button type="submit" id="submit" class="ui primary button right floated">
                                                 Place Order
                                             </button>
-                                            <!-- <div class="extra info">
+                                            {% comment %} <!-- <div class="extra info">
                                                 The order will be placed for tomorrow !
-                                            </div> -->
+                                            </div>  {% endcomment %}
                                         </div>
                                     </form>
                                 </div>
@@ -240,6 +241,7 @@
             <br>
             <div class="ui divider"></div>
         </div>
-    </div>
-{% endblock %}
-{% endblock %}
+    </div> 
+    {% endblock %}
+    {% endblock %}
+    -->
