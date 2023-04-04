@@ -23,6 +23,7 @@ from notification.views import scholarship_portal_notif
 from .validations import MCM_list, MCM_schema, gold_list, gold_schema, silver_list, silver_schema, proficiency_list,proficiency_schema
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from .helpers import getBatch
 # Create your views here.
 
 
@@ -98,13 +99,11 @@ def convener_view(request):
             )
             
             # It updates the student Notification table on the spacs head sending the mcm invitation
-            if batch == 'all':
+            if batch.lower() == 'all':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
-                recipient = Student.objects.filter(programme=programme).filter(query)
+                recipient = Student.objects.filter(programme=programme).filter(batch__in=active_batches)
             else:
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
-            
+                recipient = Student.objects.filter(programme=programme, batch=batch)
             # Notification starts
             convenor = request.user
             for student in recipient:
@@ -1012,7 +1011,6 @@ def sendConvenerRenderRequest(request, additionalParams={}):
     source = Constants.FATHER_OCC_CHOICE
     time = Constants.TIME
     release = Release.objects.all()
-    notification = Notification.objects.select_related('student_id','release_id').all()
     spi = Spi.objects.all()
     context.update({ 'source': source, 'time': time, 'ch': ch, 'spi': spi, 'release': release})
     context.update(additionalParams)
@@ -1039,24 +1037,25 @@ def sendStudentRenderRequest(request, additionalParams={}):
     update_con_flag = False
     x_notif_mcm_flag = False
     x_notif_con_flag = False
+    student_batch = getBatch(request.user.extrainfo.student)
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
-            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_mcm_flag = True
                 if no_of_mcm_filled > 0:
                     update_mcm_flag = True
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_con_flag = True
                 if no_of_con_filled > 0:
                     update_con_flag = True
         else:
-            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
                 except:
                     pass
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
@@ -1100,8 +1099,13 @@ def getCommonParams(request):
     awards = Award_and_scholarship.objects.all()
     con = Designation.objects.get(name='spacsconvenor')
     assis = Designation.objects.get(name='spacsassistant')
-    hd = HoldsDesignation.objects.get(designation=con)
-    hd1 = HoldsDesignation.objects.get(designation=assis)
+    hd = None
+    hd1 = None
+    try:
+        hd=HoldsDesignation.objects.get(designation=con)
+        hd1=HoldsDesignation.objects.get(designation=assis)
+    except:
+       print('spcacsconvenor or spcacsassistant')
     year_range = range(2013, datetime.datetime.now().year + 1)
     active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
     last_clicked = ''

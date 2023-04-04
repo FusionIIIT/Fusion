@@ -7,7 +7,7 @@
         <div class="menu">
         {% for hall in all_hall %}
             <a class="{% if hall.hall_id == current_hall %}item active{% else %}item{% endif %}" data-tab={{hall.hall_id}}>
-                Hall {{hall.hall_id.4}}
+                {{hall.hall_id}}
             </a>
         {% endfor %}
         </div>
