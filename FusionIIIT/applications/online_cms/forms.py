@@ -125,8 +125,3 @@ class UploadSlideForm(forms.Form):
 
     # title = forms.CharField(max_length=50)
     file = forms.FileField()
-
-
-class AssignmentMarks(forms.Form):
-    marks=forms.IntegerField()
-    feedback=forms.CharField(max_length=255)
