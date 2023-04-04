@@ -2,7 +2,7 @@ from django.contrib import admin
 
 
 
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet, otherExpense)
 
 admin.site.register(ExpenditureType)
 admin.site.register(Expenditure)
