@@ -1,7 +1,7 @@
 
 <!--HTML file for user to view the history of the Resolved complaints that were took care by him-->
 {% load static %}
-{% block complainthistory %}
+{% block complainthistory_caretaker.html %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -100,7 +100,7 @@
                     </td>
                     
                     <td>
-                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
                    
 

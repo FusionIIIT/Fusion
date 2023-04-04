@@ -1,0 +1,73 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+<!--<h1>HELLO WORLD !!!</h1>
+<table>
+    <tr>
+        <th>name</th>
+        <th>quantity</th>
+        <th>unit price</th>
+        <th>more</th>
+    </tr>
+    {% for it in tab %}
+    <tr>
+        <th>{{it.name}}</th>
+        <th>{{it.quantity}}</th>
+        <th>{{it.unit}}</th>
+        <th>{{it.more}}</th>
+    </tr>
+    {% endfor %}
+</table>
+-->
+     <div class="ui active tab" style="padding-left: 2.5%; padding-right: 2.5%;" data-tab="pendingcomplaints">
+        <div class="ui vertical segment" style="padding-left: 2.5%; padding-right: 2.5%; overflow-y: auto";>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="  padding-top: 1%; margin: auto; width: 800px;">
+             <thead style="background-color: rgba(54,47,75,255); color: #ffffff;">
+                <tr>
+                    <td> <b> S No. </b> </td>
+                    <td> <b> Name </b> </td>
+                    <td class="three wide column"> <b> Quantity </b> </td>
+                    <td> <b>Currently in </b> </td>
+                    <!--
+                        <td class="two wide column">
+                            
+                            <b> Details </b>
+                        </td>
+                        
+                        
+                        <td class="two large column">
+                            <b> Worker <br> Name </b>
+                        </td>
+                        
+                    -->                     
+                </tr>
+            </thead>
+                {% for i in tab %}
+                <tbody>
+                    <tr style="background-color: #ffffff;">
+                        <td> {{ i.id }} </td>
+                        <td>
+                            <h4 class="ui image header">
+                                <!--<img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">-->
+                                <div class="content">
+                                    {{ i.name }}
+                                </div>
+                            </h4>
+                        </td>
+                        <td> {{ i.quantity }} </td>
+                        <td> {{ i.currentlyin }} </td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+            <div class="ui buttons right floated"> 
+                <a href="./add/"><button class="large ui blue toggle right floated button" style="background-color: rgba(54,47,75,255); border-radius: 100%; margin-right: 200px; margin-bottom: 200px; width:60px; height: 60px;" value="save" name="submit">+</button></a> </div>             
+            </div>
+        </div>
+    
+{% endblock %}

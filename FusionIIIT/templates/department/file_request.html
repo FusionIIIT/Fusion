@@ -10,7 +10,7 @@
     </div> {% endcomment %}
 
     {% comment %} <div class="ui active tab" data-tab="first"> {% endcomment %}
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="border:none;">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" action="">
                 {% csrf_token %}
                 <div class="ui header">
@@ -77,16 +77,11 @@
                       <input type="file" id="file" name="upload_request" accept=".pdf, .jpg, .jpeg, .png" >
                 </div> {% endcomment %}
 
-                <br>
-
-                <button class="ui large primary button right floated" onclick="request()">
-                    Submit
-                </button>
-
-                <br>
-                <br>
-
             </form>
+            <br>
+            <button class="ui large primary button right floated " style="margin-right: 24px;" onclick="request()">
+                Submit
+            </button>
 
             {% comment %} <br> {% endcomment %}
             {% comment %} <div class="ui divider"></div> {% endcomment %}
