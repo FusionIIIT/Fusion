@@ -1,0 +1,64 @@
+{% load static %} {% block uploadPaymentDue %}
+
+<div class="ui pointing secondary menu">
+  <a class="active item" data-tab="upload_amount">Upload Due Amount </a>
+</div>
+
+<div class="ui tab active" data-tab="upload_amount">
+  <div class="ui vertical segment">
+    <div class="ui form">
+      <form
+        method="POST"
+        id="#form32"
+        action="/mess/uploadpayment"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <div class="field">
+          <input
+            type="file"
+            title="Upload excel file"
+            name="excel_file"
+            accept=".xlsx,.xls"
+            style="max-width: 15rem; margin-bottom: 1rem"
+            required
+          />
+          <br />
+        </div>
+        <div class="field">
+          <button
+            class="ui primary fluid button"
+            style="max-width: 15rem"
+            type="submit"
+            name="excelUpload"
+          >
+            <i class="upload icon"></i>
+            Add Fee Amount
+          </button>
+          <ul>
+            <li>
+              The single excel sheet should only contain two columns with each row representing student roll number 
+              and amount due. columnA should consists of rollnumber and column2 should consists of the amount.
+            </li>
+            <li>File should be in .xlsx or .xls format.</li>
+            <li>The negative due amount represents that the student paid fee in advance.</li>
+            <li>If some data of perticular should already present then that data will overlap with the current one.</li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<br />
+
+{% block javascript %}
+<script
+  type="text/javascript"
+  src="{% static 'globals/js/jquery.min.js' %}"
+></script>
+
+<script type="text/javascript">
+
+</script>
+{% endblock %} {% endblock %}

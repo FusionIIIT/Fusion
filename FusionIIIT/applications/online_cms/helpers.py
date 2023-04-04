@@ -5,12 +5,25 @@ from django.conf import settings
 
 
 def semester(roll):
-    month = datetime.now().month
-    sem = 0
-    if month >= 8 and month <= 12:
-        sem = 1
-    semester = (datetime.now().year-int(roll))*2+sem
-    return semester
+    if not roll.isnumeric():
+        s=''
+        s+='2'
+        s+='0'
+        s+=roll[0]
+        s+=roll[1]
+        month = datetime.now().month
+        sem = 0
+        if month >= 8 and month <= 12:
+            sem = 1
+        semester = (datetime.now().year-int(s))*2+sem
+        return semester
+    else:
+        month = datetime.now().month
+        sem = 0
+        if month >= 8 and month <= 12:
+            sem = 1
+        semester = (datetime.now().year-int(roll))*2+sem
+        return semester
 
 #storing media files like images, videos and assignments 
 def create_thumbnail(course_code,course, row, name, ext, attach_str, thumb_time, thumb_size):

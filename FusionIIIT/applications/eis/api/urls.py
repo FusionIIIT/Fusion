@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^profile/(?P<username>\w+)/', views.profile, name='profile-api'),
     # current user profile
     url(r'^profile/', views.profile, name='profile-api'),
+    url(r'^getUser/', views.getUser, name="user-api"),
 ]

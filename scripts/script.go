@@ -1,4 +1,5 @@
-// go run script.go -dir ~/branches -b os-2 -og ~/branches/main -rem origin
+// go run script.go -dir ~/branches -b "ac-2 os-2" -og ~/branches/main -rem origin
+// go run script.go -dir ~/branches -b "ac-2 os-2" -og ~/branches/main -rem origin -db ~/fusiondb_07feb23.sql
 
 package main
 
@@ -7,10 +8,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 )
@@ -21,10 +24,11 @@ type Ports struct {
 }
 
 var (
-	dirPath    = flag.String("dir", "~", "path of directory in which all branches are present")
-	branch     = flag.String("b", "", "branch which needs to be synced")
-	ogPath     = flag.String("og", "", "path of directory to be copied")
-	remoteName = flag.String("rem", "origin", "git remote name where branch is present")
+	dirPath     = flag.String("dir", "~", "path of directory in which all branches are present")
+	branchNames = flag.String("b", "", "branches which needs to be synced")
+	ogPath      = flag.String("og", "", "path of directory to be copied")
+	remoteName  = flag.String("rem", "origin", "git remote name where branch is present")
+	db_dumpPath = flag.String("db", "", "path of dump file that is to be imported")
 )
 
 var branchPorts = map[string]Ports{
@@ -50,53 +54,88 @@ var branchPorts = map[string]Ports{
 	"sa-4":  {App: 8018, Db: 5468},
 	"hr":    {App: 8020, Db: 5469},
 	"rspc":  {App: 8021, Db: 5470},
+	"ps-1":  {App: 8022, Db: 5471},
+	"ps-2":  {App: 8023, Db: 5472},
 }
 
 func main() {
 	flag.Parse()
 	log.SetFlags(log.Lshortfile)
+
 	if _, err := os.Stat(*ogPath); os.IsNotExist(err) {
 		log.Fatal("path of main directory not provided")
 	}
-	if len(*branch) == 0 {
+	if len(*branchNames) == 0 {
 		log.Fatal("no branch provided")
 	}
-	branchDir := filepath.Join(*dirPath, *branch)
-	if _, err := os.Stat(branchDir); os.IsNotExist(err) {
-		fmt.Println("Cloning ", branchDir)
-		err := CopyDirectory(*ogPath, branchDir)
-		if err != nil {
-			log.Fatal(err)
+
+	branches := strings.Split((*branchNames), " ")
+	for _, branch := range branches {
+		branchDir := filepath.Join(*dirPath, branch)
+
+		// If branch directory does not exists, we will make a copy from the reference directory
+		// NOTE: we are not cloning from github because it will take a long time
+		if _, err := os.Stat(branchDir); os.IsNotExist(err) {
+			fmt.Println("Cloning ", branchDir)
+			err := CopyDirectory(*ogPath, branchDir)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-	}
 
-	fmt.Printf("Fetching branch %s from %s...\n", *branch, *remoteName)
-	cmdRun(fmt.Sprintf("git -C %s fetch %s %s", branchDir, *remoteName, *branch), true)
-	cmdRun(fmt.Sprintf("git -C %s stash", branchDir), true)
+		fmt.Printf("Fetching branch %s from %s...\n", branch, *remoteName)
+		cmdRun(fmt.Sprintf("git -C %s fetch %s %s", branchDir, *remoteName, branch), true)
+		cmdRun(fmt.Sprintf("git -C %s restore %s", branchDir, branchDir), true)
 
-	if !strings.Contains(cmdRun(fmt.Sprintf("git -C %s branch --show-current", branchDir), false), *branch) {
-		fmt.Println(*branch, "branch not found, pulling from", *remoteName, "...")
-		cmdRun(fmt.Sprintf("git -C %s switch -c %s %s/%s", branchDir, *branch, *remoteName, *branch), true)
+		// If the does not branch exists, then we switch to that branch
+		// otherwise we will just merge the changes
+		if !strings.Contains(cmdRun(fmt.Sprintf("git -C %s branch --show-current", branchDir), false), branch) {
+			fmt.Println(branch, "branch not found, pulling from", *remoteName, "...")
+			cmdRun(fmt.Sprintf("git -C %s switch -c %s %s/%s", branchDir, branch, *remoteName, branch), true)
+		} else {
+			fmt.Printf("Merging %s/%s to %s\n", *remoteName, branch, *remoteName)
+			cmdRun(fmt.Sprintf("git -C %s merge %s/%s", branchDir, *remoteName, branch), true)
+			cmdRun(fmt.Sprintf("docker-compose -f %s down || true", filepath.Join(branchDir, "docker-compose.yml")), true)
+		}
+
+		fmt.Printf("Making necessary changes... \n")
+		ReplaceAllInFile(
+			filepath.Join(branchDir, "docker-compose.yml"),
+			`5432:`,
+			fmt.Sprintf("%d:", branchPorts[branch].Db))
+		ReplaceAllInFile(
+			filepath.Join(branchDir, "docker-compose.yml"),
+			`8000:`,
+			fmt.Sprintf("%d:", branchPorts[branch].App))
+		ReplaceAllInFile(
+			filepath.Join(branchDir, "docker-compose.yml"),
+			`postgresql:`,
+			fmt.Sprintf("postgresql-%s", branch))
+
+		fmt.Printf("Building %s\n", branch)
+		cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
+		cmdRun(fmt.Sprintf("docker-compose -f %s up -d", filepath.Join(branchDir, "docker-compose.yml")), true)
+
+		if len(*db_dumpPath) > 0 {
+			fmt.Printf("Importing dump into %s_db_1\n", branch)
+			cmdRun(
+				fmt.Sprintf(
+					"docker exec -i %s_db_1 psql -U fusion_admin -d fusionlab < %s",
+					branch,
+					*db_dumpPath,
+				),
+				true)
+		}
+
 		cmdRun(
 			fmt.Sprintf(
-				"sed -i 's/5432:5432/%d:5432/' %s",
-				branchPorts[*branch].Db,
-				filepath.Join(branchDir, "docker-compose.yml")),
+				"docker exec -i %s_app_1 python FusionIIIT/manage.py migrate",
+				branch,
+			),
 			true)
-		cmdRun(
-			fmt.Sprintf(
-				"sed -i 's/8000:8000/%d:8000/' %s",
-				branchPorts[*branch].App,
-				filepath.Join(branchDir, "docker-compose.yml")),
-			true)
-	} else {
-		fmt.Printf("Merging %s/%s to %s\n", *remoteName, *branch, *remoteName)
-		cmdRun(fmt.Sprintf("git -C %s merge %s/%s", branchDir, *remoteName, *branch), true)
-	}
-	cmdRun(fmt.Sprintf("git -C %s stash pop || true", branchDir), true)
 
-	fmt.Printf("Building %s\n", *branch)
-	cmdRun(fmt.Sprintf("docker-compose -f %s build", filepath.Join(branchDir, "docker-compose.yml")), true)
+		fmt.Printf("%s app started at port %d\n", branch, branchPorts[branch].App)
+	}
 }
 
 func cmdRun(command string, shouldPrint bool) string {
@@ -107,7 +146,7 @@ func cmdRun(command string, shouldPrint bool) string {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		log.Fatal(command," failed!\n ",err)
+		log.Fatal(command, " failed!\n ", err)
 	}
 	outerr := stderr.String()
 	out := stdout.String()
@@ -115,6 +154,27 @@ func cmdRun(command string, shouldPrint bool) string {
 		fmt.Println(outerr, out)
 	}
 	return out
+}
+
+func ReplaceAllInFile(fileP, pattern, finalString string) error {
+	input, err := ioutil.ReadFile(fileP)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	re := regexp.MustCompile(pattern)
+
+	for i, line := range lines {
+		lines[i] = re.ReplaceAllString(line, finalString)
+	}
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(fileP, []byte(output), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
 }
 
 func CopyDirectory(scrDir, dest string) error {

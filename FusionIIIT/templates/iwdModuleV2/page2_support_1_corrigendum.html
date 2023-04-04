@@ -3,93 +3,136 @@
 
 
 {% block title %}
-    Academic
+Academic
 {% endblock %}
 
 
 {% block body %}
-    {% block navBar %}
-        {% include 'dashboard/navbar.html' %}
-    {% endblock %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
 
-    <div class="ui stackable doubling grid">
+<div class="ui stackable doubling grid">
 
-        {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
 
-        {% comment %}The left-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            {% comment %}The user image card starts here!{% endcomment %}
-            {% block usercard %}
-                {% include 'globals/usercard.html' %}
-            {% endblock %}
-            {% comment %}The user image card ends here!{% endcomment %}
+    {% comment %}The left-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
 
-            <div class="ui divider"></div>
+        <div class="ui divider"></div>
 
-            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+    <div class="eight wide column">
+
+
+
+
+
+        {% load static %}
+
+        <div class="ui header">
+            CORRIGENDUM:
         </div>
-        {% comment %}
-            The left-rail segment ends here!
-        {% endcomment %}
+        <form method="POST" class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" action="">
+            {%csrf_token %}
+            <div class="field">
+                <label> Dated:</label> <input type="date" placeholder="Select" id="issue_date" name="issueDate"><br>
+            </div>
+            <div class="field">
+                <label> Ref No: Our NIT No.</label>
+                <textarea id="nit_niq_no" class="ui textarea" rows="1" name="nitNiqNo" type="text"></textarea>
+            </div>
+            <div class="field">
+                <label> Name of work: </label><textarea id="name" class="ui textarea" rows="1" name="workName"
+                    type="text"></textarea>
+            </div>
+            <br>
+            This is for information to all: In reference to above work the crucial dates of tender
+            are being changed as under. The other terms & conditions of the tender shall remain
+            the same.
+            <br><br>
+            <div class="field">
+                <label>
+                    The last date & time of submission of bid:
+                </label>
+                <div class="fields">
+                    <!-- <div class="" -->
+                    <div class="eight wide field">
+                        <input type="date" placeholder="Select" id="last_date" name="lastDate">
+                    </div>
+                    <div class="eight wide field">
+                        <input type="time" style="height: 38.6px;" placeholder="Select" id="last_time" name="lastTime">
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>
+                    Date for opening of bid (envelop-1):
+                </label>
+                <div class="fields">
+                    <!-- <div class="" -->
+                    <div class="eight wide field">
+                        <input type="date" placeholder="Select" id="last_date" name="openDateEnv1">
+                    </div>
+                    <div class="eight wide field">
+                        <input type="time" style="height: 38.6px;" placeholder="Select" id="last_time" name="openTimeEnv1">
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>
+                    Date of opening of bid (envelop-2):
+                </label>
+                <div class="fields">
+                    <!-- <div class="" -->
+                    <div class="eight wide field">
+                        <input type="date" placeholder="Select" id="last_date" name="openDateEnv2">
+                    </div>
+                    <div class="eight wide field">
+                        <input type="time" style="height: 38.6px;" placeholder="Select" id="last_time" name="openTimeEnv2">
+                    </div>
+                </div>
+            </div>
 
-        {% comment %}
-            The central-rail segment starts here!
-        {% endcomment %}
-        <div class="eight wide column">
 
 
+            <div class="field">
+                <label><br></label>
 
+                <div>
+                    <input type="submit" name="Submit" value="Next" class="ui small right floated primary button" />
+                </div>
+                <a href="http://172.27.16.216/iwdModuleV2/addendumInput/">Next</a>
+            </div>
 
+        </form>
+        <br>
+        <br>
+    </div>
+    <br>
+    <div class="extra segment"></div>
 
-		{% load static %}
-
-<div class="ui header">
-    CORRIGENDUM:
 </div>
-<form method="POST" action="">{% csrf_token %}
-Dated: <input type="date" placeholder="Select" id="issue_date" name="issueDate" ><br><br>
+{% comment %}the doctor appointment tab ends here {% endcomment %}
 
-Ref No: Our NIT No.
-        <textarea id="nit_niq_no" class="ui textarea" rows="1" name="nitNiqNo" type="text" ></textarea>
 
-Name of work: <textarea id="name" class="ui textarea" rows="1" name="workName" type="text" ></textarea>
-<br>
-<br>
-This is for information to all: In reference to above work the crucial dates of tender
-are being changed as under. The other terms & conditions of the tender shall remain
-the same.
-<br><br>
-
-The last date & time of submission of bid:
-<div class="fields">
-    <!-- <div class="" -->
-                              <input type="date" placeholder="Select" id="last_date" name="lastDate">
-
-                              <input type="time" placeholder="Select" id="last_time" name="lastTime">
 
 </div>
-<br>
-
-Date for opening of bid (envelop-1):
-<div class="fields">
-    <!-- <div class="" -->
-                              <input type="date" placeholder="Select" id="last_date" name="openDateEnv1">
-
-                              <input type="time" placeholder="Select" id="last_time" name="openTimeEnv1">
-
-</div>
-<br>
-
-
-Date of opening of bid (envelop-2):
-<div class="fields">
-    <!-- <div class="" -->
-                              <input type="date" placeholder="Select" id="last_date" name="openDateEnv2">
-
-                              <input type="time" placeholder="Select" id="last_time" name="openTimeEnv2">
-
-</div>
+{% comment %}The central-rail segment ends here!{% endcomment %}
 <br>
 
 
@@ -100,7 +143,7 @@ Date of opening of bid (envelop-2):
                     <div >
                       <input type="submit" name="Submit" value="Next" class="ui small right floated primary button" />
                     </div>
-                    <a href="http://172.27.16.216/iwdModuleV2/addendumInput/">Next</a>
+                    <a class="ui small left floated primary button"  href="../../">Prev</a>
                 </div>
 
 </form>
@@ -110,35 +153,28 @@ Date of opening of bid (envelop-2):
         <br>
         <div class="extra segment"></div>
 
+{% comment %}The right-rail segment starts here!{% endcomment %}
+<div class="three wide column">
+    <div class="row">
+        {% comment %}
+        TODO: the right rail!
+        {% endcomment %}
     </div>
-    {% comment %}the doctor appointment tab ends here {% endcomment %}
+</div>
+{% comment %}The right-rail segment ends here!{% endcomment %}
 
+{% comment %}The right-margin segment!{% endcomment %}
+<div class="column"></div>
 
-
-				</div>
-        {% comment %}The central-rail segment ends here!{% endcomment %}
-
-        {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
-            </div>
-        </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
-
-        {% comment %}The right-margin segment!{% endcomment %}
-        <div class="column"></div>
-
-    </div>
-    {% comment %}The grid ends here!{% endcomment %}
+</div>
+{% comment %}The grid ends here!{% endcomment %}
 
 {% endblock %}
 
 {% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 </script>
 {% endblock %}
