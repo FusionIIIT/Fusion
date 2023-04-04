@@ -15,7 +15,7 @@ from django.core.files import File
 
 from django.db.models import Min,Max
 from applications.academic_information.models import Student
-
+ 
 
 
 fixed_attributes_list = ['Corpus Fund','Endowment Funds','Liabilities and Provisions','Fixed Assets','Tangible Assets','Intangible Assets','Capital Work-In-Progress','Investments','Loans and Deposits']
