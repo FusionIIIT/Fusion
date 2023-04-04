@@ -57,8 +57,6 @@ def addstock(request):
         if not head_of_asset:
             head_of_asset = stock_admin.first().department
 
-        
-        #make quantity no of entries in the database
         for i in range(int(quantity)):
             stock = StockEntry(name_of_particulars=name_of_particulars, inventory_no=inventory_no, rate=rate, amount=amount, supplier_name=supplier_name, bill_no=bill_no, buy_date=buy_date, issued_date=issued_date, head_of_asset=head_of_asset, section=section, floor=floor, receiver_name=receiver_name)
             stock.save()

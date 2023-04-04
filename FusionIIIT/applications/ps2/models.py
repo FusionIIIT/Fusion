@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from ..globals.models import User
+
 class StockAdmin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     department = models.CharField(max_length=255, blank=False)
@@ -21,4 +22,3 @@ class StockEntry(models.Model):
 
     class Meta:
         db_table = 'ps2_stocks'
-
