@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant'),
     url(r'^create_indent_multiple/$',views.create_indent_multiple, name='create_indent_multiple'),
     url(r'^drafts1/$', views.drafts_for_multiple_item, name='drafts_for_multiple_item'),
-    url(r'^draftview1/(?P<id>\d+)$', views.draftview_multiple_items_indent, name='draftview_multiple_items_indent')
+    url(r'^draftview1/(?P<id>\d+)$', views.draftview_multiple_items_indent, name='draftview_multiple_items_indent'),
+    url(r'^drafted_indent/(?P<id>\d+)/$', views.drafted_indent, name='drafted_indent')
 ]

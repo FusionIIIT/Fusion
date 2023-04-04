@@ -46,9 +46,7 @@ def create_indent_multiple(request):
                 budgetary_head=request.POST.get('budgetary_head')
                 expected_delivery=request.POST.get('expected_delivery')
                 sources_of_supply=request.POST.get('sources_of_supply')
-                head_approval=False
-                director_approval=False
-                financial_approval=False
+                approved=False
                 purchased =request.POST.get('purchased')
                 items= List of details of all the item
     """
@@ -802,6 +800,113 @@ def forwardindent(request, id):
 
     return render(request, 'ps1/forwardindent.html', context)
 
+
+
+# @login_required(login_url = "/accounts/login")
+# def drafted_indent(request,id):
+#     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+#     if  str(des.designation) == "student":
+#         return redirect('/dashboard')
+#     print(id)
+#     indent=IndentFile2.objects.select_related('file_info').get(file_info=id)
+#     items = Item.objects.filter(indent_file_id=id)
+#     print(items)
+#     file=indent.file_info
+#     track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+# 'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+#     extrainfo = ExtraInfo.objects.select_related('user','department').all()
+#     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+#     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+#     context = {
+#         'items':items,
+#         'designations':designations,
+#         'file': file,
+#         'track': track,
+#         'indent':indent,
+#     }
+# 	return render(request, 'ps1/createdindent.html', context)
+
+@login_required(login_url='/accounts/login')
+def drafted_indent(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+
+    if str(des.designation) == "student":
+        return redirect('/dashboard')
+    
+    indent = IndentFile2.objects.select_related('file_info').get(file_info=id)
+    indent_items = Item.objects.filter(indent_file_id=id)
+    print(indent_items)
+    file = indent.file_info
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    if request.method == "POST":
+            if 'finish' in request.POST:
+                file.complete_flag = True
+                file.save()
+            if 'send' in request.POST:
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+                sender = request.POST.get('sender')
+                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
+                receiver = request.POST.get('receiver')
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid destination')
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'ps1/createdindent.html', context)
+                receive = request.POST.get('recieve')
+                try:
+                    receive_design = Designation.objects.get(name=receive)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Designation')
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'ps1/createdindent.html', context)
+
+                # receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+
+
+            messages.success(request, 'Indent File sent successfully')
+
+    context = {
+        'items':indent_items,
+        'designations':designations,
+        'file':file,
+        'track': track,
+        'indent' : indent
+    }
+    return render(request,'ps1/draftedIndentDetails.html',context)
+
 @login_required(login_url = "/accounts/login")
 def createdindent(request, id):
     """
@@ -844,10 +949,8 @@ def createdindent(request, id):
             if 'send' in request.POST:
                 current_id = request.user.extrainfo
                 remarks = request.POST.get('remarks')
-
                 sender = request.POST.get('sender')
                 current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
                 receiver = request.POST.get('receiver')
                 try:
                     receiver_id = User.objects.get(username=receiver)
