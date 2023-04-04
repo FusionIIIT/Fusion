@@ -28,5 +28,10 @@ urlpatterns = [
     url(r'^create_indent_multiple/$',views.create_indent_multiple, name='create_indent_multiple'),
     url(r'^drafts1/$', views.drafts_for_multiple_item, name='drafts_for_multiple_item'),
     url(r'^draftview1/(?P<id>\d+)$', views.draftview_multiple_items_indent, name='draftview_multiple_items_indent'),
-    url(r'^drafted_indent/(?P<id>\d+)/$', views.drafted_indent, name='drafted_indent')
+    url(r'^drafted_indent/(?P<id>\d+)/$', views.drafted_indent, name='drafted_indent'),
+    url(r'^composed_indents_multiple/$', views.composed_indents_multiple, name='composed_indents_multiple'),
+    url(r'^filled_indent_list/(?P<id>\d+)$', views.filled_indent_list, name='filled_indent_list'),
+    url(r'^view_my_indent/(?P<id>\d+)/$', views.view_my_indent, name='view_my_indent'),
+    url(r'^confirmdeletemultiple/(?P<id>\d+)$', views.confirmdeletemultiple, name='confirmdeletemultiple'),
+    url(r'^delete_multiple/(?P<id>\d+)$',views.delete_multiple, name='delete_multiple'),
 ]

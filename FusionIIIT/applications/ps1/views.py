@@ -426,6 +426,31 @@ def composed_indents(request):
     }
     return render(request, 'ps1/composed_indents.html', context)
 
+@login_required(login_url = "/accounts/login")
+def composed_indents_multiple(request):
+    """
+        The function is used to get all the files created by user(employee).
+        It gets all files created by user by filtering file(table) object by user i.e, uploader.
+        It displays user and file details of a file(table) of filetracking(model) in the
+        template of 'Saved files' tab.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                draft - The File object filtered by uploader(user).
+                extrainfo - The Extrainfo object.
+                context - Holds data needed to make necessary changes in the template.
+    """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+          return redirect('/dashboard')
+    designation = HoldsDesignation.objects.filter(user=request.user)
+    context = {
+        'designation': designation,
+    }
+    return render(request, 'ps1/composed_indents2.html', context)
+
 
 
 @login_required(login_url = "/accounts/login")
@@ -506,6 +531,33 @@ def indentview(request,id):
         'designations': designations,
     }
     return render(request, 'ps1/indentview.html', context)
+
+@login_required(login_url = "/accounts/login")
+def filled_indent_list(request,id):
+    print("It is working")
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+
+    tracking_objects=Tracking.objects.all()
+    tracking_obj_ids=[obj.file_id for obj in tracking_objects]
+    draft_indent = IndentFile2.objects.filter(file_info__in=tracking_obj_ids)
+    draft=[indent.file_info.id for indent in draft_indent]
+    draft_files=File.objects.filter(id__in=draft).order_by('-upload_date')
+    indents=[file.indentfile2 for file in draft_files]
+    extrainfo = ExtraInfo.objects.all()
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    print("hello world")
+    
+    context = {
+        'indents' : indents,
+        'extrainfo': extrainfo,
+        'designations': designations,
+    }
+    return render(request, 'ps1/indentViewList.html', context)
 
 
 @login_required(login_url = "/accounts/login")
@@ -639,6 +691,17 @@ def confirmdelete(request,id):
         'j': file,
     }
     return render(request, 'ps1/confirmdelete.html',context)
+def confirmdeletemultiple(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    file = File.objects.get(pk = id)
+
+    context = {
+
+        'j': file,
+    }
+    return render(request, 'ps1/confirmdeletemultiple.html',context)
 
 @login_required(login_url = "/accounts/login")
 def forwardindent(request, id):
@@ -826,6 +889,32 @@ def forwardindent(request, id):
 #         'indent':indent,
 #     }
 # 	return render(request, 'ps1/createdindent.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def view_my_indent(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+
+    if str(des.designation) == "student":
+        return redirect('/dashboard')
+    
+    indent = IndentFile2.objects.select_related('file_info').get(file_info=id)
+    indent_items = Item.objects.filter(indent_file_id=id)
+    print(indent_items)
+    file = indent.file_info
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    context = {
+        'items':indent_items,
+        'designations':designations,
+        'file':file,
+        'track': track,
+        'indent' : indent
+    }
+    return render(request,'ps1/viewMyIndentFile.html',context)
+
 
 @login_required(login_url='/accounts/login')
 def drafted_indent(request,id):
@@ -1065,6 +1154,16 @@ def AjaxDropdown(request):
 def test(request):
     return HttpResponse('success')
 
+
+@login_required(login_url = "/accounts/login")
+def delete_multiple(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    file = File.objects.get(pk = id)
+    file.delete()
+    return redirect('/purchase-and-store/composed_indents_multiple/')
+    
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
@@ -1072,20 +1171,7 @@ def delete(request,id):
         return redirect('/dashboard')
     file = File.objects.get(pk = id)
     file.delete()
-
-    # Not required
-    #draft = File.objects.filter(uploader=request.user.extrainfo)
-    #extrainfo = ExtraInfo.objects.all()
-
-    #context = {
-     #   'draft': draft,
-      #  'extrainfo': extrainfo,
-    #}
-
-    #problem over here no need of render since it doesnot affect the url
-    #return render(request, 'filetracking/drafts.html', context)
-
-    return redirect('/ps1/composed_indents/')
+    return redirect('/purchase-and-store/composed_indents/')
 
 
 @login_required(login_url = "/accounts/login")
