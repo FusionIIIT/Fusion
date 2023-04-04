@@ -11,6 +11,13 @@
         <thead>
         <tr>
             <th style="width: 100px;">
+                Month
+            </th>
+
+            <th style="width: 160px;">
+                Year
+            </th>
+            <th style="width: 100px;">
                 PF
             </th>
 
@@ -102,6 +109,13 @@
         {% csrf_token %}
                 {% for info in c %}
                 <tr style="text-align: center;">
+                    <td>
+                        {{ info.month }}
+                    </td>
+
+                    <td>
+                        {{ info.year }}
+                    </td>
 
                     <td>
                         {{ info.pf }}

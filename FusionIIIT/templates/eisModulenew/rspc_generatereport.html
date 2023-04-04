@@ -7,6 +7,19 @@
                 <a class="ui top attached black label">
                     <span class="ui inverted header">Report</span>
                 </a>
+                <br>
+                <br>
+                <form id="search-user-form" method="post" action="{% url 'research_procedures:rspc_profile_faculty' %}">
+                  {% csrf_token %}
+                  <input type="text" name="data">
+                  <button type="submit" value="username">Search User Data</button>
+                </form>
+                <br><br>
+                <form id="citation-user-form" method="post" action="{% url 'research_procedures:generate_citation' %}">
+                  {% csrf_token %}
+                  <input type="text" name="data">
+                  <button type="submit" value="username">Generate Citation</button>
+                </form>
                 <br><br>
                 <form method="post" action="{% url 'eis:rspc_generate_report' %}"  target="_blank">
                     {% csrf_token %}
@@ -367,4 +380,5 @@
             </div>
         </div>
     </div>
+    
 {% endblock%}

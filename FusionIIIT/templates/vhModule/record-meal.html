@@ -18,11 +18,12 @@
                             </tr>
 
                             <tr>
-                                <th>Bed-Tea</th>
+                                <th>Morning-Tea</th>
                                 <th>Breakfast</th>
                                 <th>Lunch</th>
                                 <th>Eve Tea</th>
                                 <th>Dinner</th>
+                                
                             </tr>
                         </thead>
 
@@ -43,36 +44,36 @@
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="1" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="m_tea" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="2" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="breakfast" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="3" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="lunch" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="4" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="eve_tea" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="5" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0 value=0 name="dinner" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
@@ -81,7 +82,20 @@
                                     <td>
                                         <div class="field">
                                             <label></label>
-                                            <button class="ui primary right floated button bookameal-submit" id="btn{{value.id}}" data-pk="{{value.id}}">
+                                            <button class="ui primary right floated button" id="btn{{value.id}}" data-pk="{{value.id}}"
+                                            onclick="bookameal_submit(event); ll()">
+                                                <script type='text/javascript'>
+                                                ll = function () {
+                                                    document.getElementById("submit_inventory").disabled=true; 
+                                                    console.log("1111111111111111111");    
+                                                    setTimeout('jj()', 5000);
+                                                    }
+                                                
+                                                jj=function(){
+                                                    document.getElementById("submit_inventory").disabled=false; 
+                                                    console.log("00000000000"); 
+                                                }
+                                                </script>
                                                 Update
                                             </button>
                                         </div>

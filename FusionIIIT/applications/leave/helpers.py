@@ -9,11 +9,17 @@ from .models import LeaveMigration, LeaveRequest, LeavesCount
 def get_designation(user):
     desig = list(HoldsDesignation.objects.all().filter(working = user).values_list('designation'))
     b = [i for sub in desig for i in sub]
-    c=str(Designation.objects.get(id=b[0]))
-    for i in b:
-        if str(Designation.objects.get(id=i))=='Assistant Registrar':
-            c='Assistant Registrar'
-            break
+    try:
+        c=str(Designation.objects.get(id=b[0]))
+        for i in b:
+            obj = Designation.objects.get(id=i)
+            if str(obj)=='Assistant Registrar':
+                c='Assistant Registrar'
+            elif str(obj)== 'administrative':
+                c='administrative'
+    except:
+        c = 'administrative'
+
     print(c)
     return c
 
@@ -94,21 +100,24 @@ def get_leave_days(start, end, leave_type, start_half, end_half):
     # TODO: Remove this hard code and make it database dependent
     # Maybe add one field in leave type, which tells that this has to be taken from
     # academic calendar
-    if leave_name.lower()=='restricted':
-        count = get_special_leave_count(start, end, leave_name.lower())
-    elif leave_name.lower()=='vacation':
-        count = get_vacation_leave_count(start, end, leave_name.lower())
-    else:
-        while start <= end:
-            if not start.weekday() in [5, 6]:
-                count += 1.0
+    try:
+        if leave_name.lower()=='restricted':
+            count = get_special_leave_count(start, end, leave_name.lower())
+        elif leave_name.lower()=='vacation':
+            count = get_vacation_leave_count(start, end, leave_name.lower())
+        else:
+            while start <= end:
+                if not start.weekday() in [5, 6]:
+                    count += 1.0
 
-            start = start + datetime.timedelta(days=1)
+                start = start + datetime.timedelta(days=1)
 
-    if start_half and start.weekday() not in [5, 6]:
-        count -= 0.5
-    if end_half and end.weekday() not in [5, 6]:
-        count -= 0.5
+        if start_half and start.weekday() not in [5, 6]:
+            count -= 0.5
+        if end_half and end.weekday() not in [5, 6]:
+            count -= 0.5
+    except:
+        pass
 
     return count
 

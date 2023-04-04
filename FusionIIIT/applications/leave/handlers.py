@@ -275,8 +275,14 @@ def handle_student_leave_application(request):
             purpose=data.get('purpose'),
             extra_info=data.get('leave_info'),
         )
+        leave.save()
 
-        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+        try:
+            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+        except LeaveType.DoesNotExist:
+            leave_type = LeaveType()
+
+        leave_type.save()
 
         LeaveSegment.objects.create(
             leave=leave,
@@ -285,7 +291,9 @@ def handle_student_leave_application(request):
             start_date=data.get('start_date'),
             end_date=data.get('end_date')
         )
-        requested_from = request.user.leave_admins.authority.designees.first().user
+
+        requested_from = request.user
+
         LeaveRequest.objects.create(
             leave=leave,
             requested_from=requested_from
