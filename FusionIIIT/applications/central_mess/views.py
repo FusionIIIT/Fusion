@@ -1223,6 +1223,104 @@ def add_leave_manager(request):
         add_obj.save()
     return HttpResponseRedirect('/mess')
 
+def update_menu2(request):
+    if (request.method == "POST"):
+        mb = request.POST['MB2']
+        ml = request.POST['ML2']
+        md = request.POST['MD2']
+        sud = request.POST['SUD2']
+        sul = request.POST['SUL2']
+        sub = request.POST['SUB2']
+        sd = request.POST['SD2']
+        sl = request.POST['SL2']
+        sb = request.POST['SB2']
+        fd = request.POST['FD2']
+        fl = request.POST['FL2']
+        fb = request.POST['FB2']
+        thd = request.POST['THD2']
+        thl = request.POST['THL2']
+        thb = request.POST['THB2']
+        wd = request.POST['WD2']
+        wl = request.POST['WL2']
+        wb = request.POST['WB2']
+        td = request.POST['TD2']
+        tl = request.POST['TL2']
+        tb = request.POST['TB2']
+        
+        print("mb", mb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='MB').update(dish = mb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='ML').update(dish = ml)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='MD').update(dish = md)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='TB').update(dish = tb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='TL').update(dish = tl)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='TD').update(dish = td)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='WB').update(dish = wb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='WL').update(dish = wl)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='WD').update(dish = wd)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='THB').update(dish = thb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='THL').update(dish = thl)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='THD').update(dish = thd)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='FB').update(dish = fb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='FL').update(dish = fl)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='FD').update(dish = fd)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SB').update(dish = sb)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SL').update(dish = sl)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SD').update(dish = sd)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SUB').update(dish = sub)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SUL').update(dish = sul)
+        Menu.objects.filter(mess_option = 'mess2',meal_time='SUD').update(dish = sud)
+
+
+    return redirect('/mess')
+def update_menu1(request):
+    if (request.method == "POST"):
+        mb1 = request.POST['MB1']
+        ml1 = request.POST['ML1']
+        md1 = request.POST['MD1']
+        sud1 = request.POST['SUD1']
+        sul1 = request.POST['SUL1']
+        sub1 = request.POST['SUB1']
+        sd1 = request.POST['SD1']
+        sl1 = request.POST['SL1']
+        sb1 = request.POST['SB1']
+        fd1 = request.POST['FD1']
+        fl1 = request.POST['FL1']
+        fb1 = request.POST['FB1']
+        thd1 = request.POST['THD1']
+        thl1 = request.POST['THL1']
+        thb1 = request.POST['THB1']
+        wd1 = request.POST['WD1']
+        wl1 = request.POST['WL1']
+        wb1 = request.POST['WB1']
+        td1 = request.POST['TD1']
+        tl1 = request.POST['TL1']
+        tb1 = request.POST['TB1']
+        
+        print("mb", mb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='MB').update(dish = mb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='ML').update(dish = ml1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='MD').update(dish = md1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='TB').update(dish = tb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='TL').update(dish = tl1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='TD').update(dish = td1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='WB').update(dish = wb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='WL').update(dish = wl1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='WD').update(dish = wd1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='THB').update(dish = thb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='THL').update(dish = thl1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='THD').update(dish = thd1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='FB').update(dish = fb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='FL').update(dish = fl1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='FD').update(dish = fd1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SB').update(dish = sb1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SL').update(dish = sl1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SD').update(dish = sd1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SUB').update(dish = sub1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SUL').update(dish = sul1)
+        Menu.objects.filter(mess_option = 'mess1',meal_time='SUD').update(dish = sud1)
+
+    return redirect('/mess')
+
 @csrf_exempt
 def searchAddOrRemoveStudent(request):
    

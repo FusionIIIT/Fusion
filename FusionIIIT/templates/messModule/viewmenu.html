@@ -4,14 +4,14 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class=" ui active item" data-tab="" id="m1">
-            Menu : Mess2
+            Menu : Mess1
         </a>
         <a class=" ui item" data-tab="" id="m2">
-            Menu : Mess1
+            Menu : Mess2
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="" id="m1tab">
+    <div class="ui tab" data-tab="" id="m2tab">
         <div class="ui vertical segment">
             <table class="ui definition table" style="margin: auto;">
                 <thead>
@@ -356,7 +356,7 @@
         </div>
     </div>
 
-<div class="ui tab" data-tab="" id="m2tab">
+<div class="ui active tab" data-tab="" id="m1tab">
         <div class="ui vertical segment">
             <table class="ui definition table" style="margin: auto;">
                 <thead>
@@ -373,21 +373,21 @@
                 <tr>
                     
                     <td>Monday</td>
-                    {% for item in menu %}
-                        {% if item.mess_option == 'mess1' %}
-                            {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
-
-                                {% if item.meal_time == 'MB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'ML' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'MD' %}
-                                    <td>{{item.dish}}</td>
+                        {% for item in menu %}
+                            {% if item.mess_option == 'mess1' %}
+                                {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
+    
+                                    {% if item.meal_time == 'MB' %}
+                                        <td>{{item.dish}}</td>      
+                                    {% elif item.meal_time == 'ML' %}
+                                        <td>{{item.dish}}</td>
+                                    {% elif item.meal_time == 'MD' %}
+                                        <td>{{item.dish}}</td>
+                                    {% endif %}
+    
                                 {% endif %}
-
                             {% endif %}
-                        {% endif %}
-                    {% endfor %}
+                        {% endfor %}
 
                 </tr>
 
