@@ -91,10 +91,13 @@
                         </thead>
 
                         <tbody>
-                        {% for visitor in booking.visitor.all %}
+                        {% for visitor in booking.visitor.all|slice:"1:" %}
+
                         <tr>
                             <td>
+
                                 {{ visitor.visitor_name }}
+
                             </td>
 
                             <td>
@@ -111,47 +114,7 @@
                         </tbody>
                     </table>
 
-                    <h2>Room Details</h2>
-                    <div class="ui divider"></div>
-
-                    <table class="ui sortable very basic celled table">
-                        <thead>
-                        <tr>
-                            <th>
-                                Room Type
-                            </th>
-
-                            <th>
-                                Room No
-                            </th>
-                            <th>
-                                Floor
-                            </th>
-
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        {% for room in booking.rooms.all %}
-                        <tr>
-                            <td>
-
-                                {{ room.room_type }}
-                            </td>
-
-                            <td>
-                               {{ room.room_number }}
-                            </td>
-
-                            <td>
-                               {{ room.room_floor }}
-                            </td>
-                        </tr>
-
-                        {% endfor %}
-                        </tbody>
-                    </table>
-
+                    
                     <div class="three fields">
                         <div class="ten wide field"></div>
                         <div class="six wide field">

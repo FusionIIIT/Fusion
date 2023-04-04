@@ -894,6 +894,7 @@ function find_available_rooms ( available_rooms ) {
             $('#replace-this-div').html(data);
             console.log("winning");
             console.log(start_date);
+            console.log(end_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
