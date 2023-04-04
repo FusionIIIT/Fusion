@@ -401,9 +401,10 @@ function add_inventory_item(event) {
         url: '/visitorhostel/add-to-inventory/',
         data: jsondata,
         success: function(data) {
-            $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            alertModal('Great! Item added successfully');
         },
         error: function(xhr, data, err) {
             alertModal('Something missing! Please refill the form');
