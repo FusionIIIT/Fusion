@@ -65,7 +65,7 @@
                           <td>AA And AES</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div><a href="http://172.27.16.216/iwdModuleV2/AESView">i</a></div>
+                             <div><a href="{% url 'iwdModuleV2:AES View' %}">i</a></div>
                       </div>
 
 
@@ -111,7 +111,8 @@
 
                   </tbody>
               </table>
-              <a href="http://172.27.16.216/iwdModuleV2/page2View/">Next</a>
+              <a class="ui small right floated primary button"  href="{% url 'iwdModuleV2:Page 2 View'%}">Next</a>
+              {% if var %}<h1>{{var}}</h1>{% endif %}
           </div>
       </div>
   </div>

@@ -4,7 +4,18 @@
         <a class="active item" data-tab="changemenu">
             Request For Menu Change
         </a>
+
     </div>
+
+    <div class="ui two item menu">
+            <a class="ui active item" data-tab="" id="req_1">
+                Request
+            </a>
+            <a class="ui item" data-tab="" id="req_2">
+                Status
+            </a>
+    </div> 
+
     <div class="ui active tab" data-tab="changemenu" id="menu_change_div">
         <div class="ui vertical segment">
 
@@ -37,6 +48,7 @@
                                                 </option>
                                                 {% endfor %}
                                             </select>
+                                            <br>
                                             <br>
                                             <label>
                                                 Change To *
@@ -73,9 +85,114 @@
             </div>
         </div>
     </div>
+    <div class="ui tab" data-tab="" id="status_div">
+
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         <br>
+
+         <div class="content">
+            <div class="description">
+
+                <table class="ui very basic collapsing celled table sortable centered"
+                       style="padding-left: 2.5%;
+                              padding-right: 2.5%;
+                              padding-top: 1%;
+                              padding-bottom: 1.5%;
+                              margin: auto;">
+
+                    <thead>
+                    <tr>
+                        <th>
+                            Application Date
+                        </th>
+
+                        <th>
+                            Previous Dish
+                        </th>
+
+                        <th>
+                            Requested Dish
+                        </th>
+
+                        <th>
+                            Reason
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="menuchangerequest1">
+                    {% for item in menuchangerequest %}
+                    <tr>
+                        <td>
+                            {{item.app_date}}
+                        </td>
+
+                        <td>
+                            {{item.dish}}
+                        </td>
+                        
+                        <td>
+                            {{item.request}}
+                        </td>
+
+                        <td>
+                            {{item.reason}}
+                        </td>
+
+                        <td>
+                            {% if item.status == '2' %}
+                            <i class="large green checkmark icon"></i>
+                            {% elif item.status == '0' %}
+                            <i class="large red x icon"></i>
+                            {% elif item.status == '1' %}
+                            <i class="large orange warning icon"></i>
+
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                <br>
+            </div>
+         </div>
+    </div>
+    <br>
+
+    <div class="extra content">
+        <div class="" style="text-align: center;">
+            <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large red x icon"></i> : Declined
+        </div>
+    </div>
+
+    </div>
+
 {% block javascript %}
 <script>
-
+    $(document).ready(function() {
+        $('#req_1').on('click', function () {
+            $(this).addClass('active');
+            $('#req_2').removeClass('active');
+            $('#menu_change_div').show();
+            $('#status_div').hide();
+        });
+    });
+    $(document).ready(function() {
+        $('#req_2').on('click', function () {
+            $(this).addClass('active');
+            $('#req_1').removeClass('active');
+            $('#menu_change_div').hide();
+            $('#status_div').show();
+        });
+    });
 </script>
 {% endblock %}
 {% endblock %}

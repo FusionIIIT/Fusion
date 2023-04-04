@@ -1,8 +1,6 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from applications.gymkhana.api.views import Voting_Polls
-from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
-from applications.gymkhana.api.views import session_details
+from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form, New_Club, session_details, Voting_Polls
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -16,18 +14,20 @@ urlpatterns = [
     url(r'^club_approve/$', views.club_approve, name='club_approve'),
     url(r'^club_reject/$', views.club_reject, name='club_reject'),
     # This is post method which takes username and password to generates/return Token
-    url(r'^login/$', obtain_auth_token, name='login'),
+    url(r'^api/login/$', obtain_auth_token, name='login'),
     # api for "clubdetails" method="get" with TokenAuthentication
-    url(r'^clubdetails/$', Club_Details.as_view()),
+    url(r'^api/clubdetails/$', Club_Details.as_view()),
     # api for "clubname" method="get" with TokenAuthentication
-    url(r'^Fest_budget/$',Fest_Budget.as_view(),name='Fest_budget'),
+    url(r'^api/Fest_budget/$',Fest_Budget.as_view(),name='Fest_budget'),
     # api for "festbudget" method="get" with TokenAuthentication
-    url(r'^club_report/$',club_report.as_view()),
+    url(r'^api/club_report/$',club_report.as_view()),
     # api for "club_report" method="get" with TokenAuthentication
-    url(r'^registration_form/$',Registraion_form.as_view()),
+    url(r'^api/registration_form/$',Registraion_form.as_view()),
     # api for "registration_form" method="get" with TokenAuthentication
-    url(r'^voting_polls/$',Voting_Polls.as_view()),
+    url(r'^api/voting_polls/$',Voting_Polls.as_view()),
     # api for "voting_polls" method="get" with TokenAuthentication
+    url(r'^api/new_club/$',New_Club.as_view()),
+    # api for "New Club" method="get" with TokenAuthentication
 
 
 
