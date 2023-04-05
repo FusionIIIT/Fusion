@@ -1,7 +1,6 @@
 {%block service%}
 
 
-
 <div class="ui top attached tabular large menu">
     <a class="active item" data-tab="fifth_serv">E-Service Book</a>
     <!-- <a class="item" data-tab="fourth_serv">Appraisal form</a> -->
@@ -732,12 +731,22 @@
                             <tbody>
 
                                 <tr>
-                                    <td>ID</td>
+                                    <td>PF Number</td>
                                     <td>{{user.id}}</td>
                                 </tr>
                                 <tr>
                                     <td>Title</td>
                                     <td>{{user.extrainfo.title}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Designation</td>
+                                    <td>
+                                        {{designation.length}}
+                                    {% for item in designation %}
+                                        {{ item }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    </td>
+                                </tr>
                                 </tr>
                                 <tr>
                                     <td>Type</td>
@@ -750,7 +759,7 @@
 
                                 </tr>
                                 <tr>
-                                    <td>email</td>
+                                    <td>Email</td>
                                     <td>{{user.extrainfo.user.email}}</td>
 
                                 </tr>
@@ -761,12 +770,12 @@
 
                                 </tr>
                                 <tr>
-                                    <td>date_of_birth</td>
+                                    <td>Date of Birth</td>
                                     <td>{{user.extrainfo.date_of_birth}}</td>
 
                                 </tr>
                                 <tr>
-                                    <td>address</td>
+                                    <td>Address</td>
                                     <td>{{user.extrainfo.address}}</td>
 
                                 </tr>
@@ -778,11 +787,17 @@
                                 </tr>
 
                                 <tr>
-                                    <td>Date Of joining</td>
+                                    <td>Date of Joining</td>
                                     <td>{{user.faculty_about.doj}}</td>
                                 </tr>
+
                                 <tr>
-                                    <td>department</td>
+                                    <td>Date of Increment</td>
+                                    <!-- <td>{{user.faculty_about.doi}}</td> --> <!-- To ADD a field in Database -->
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Department/Section</td>
                                     <td>{{user.extrainfo.department}}</td>
                                 </tr>
 
@@ -870,21 +885,13 @@
             <!-- workassignemnt end -->
 
 
-            <!-- Lien -->
+            <!-- Lien & Deputations -->
             <div class="ui one cards" style="padding: 2px;">
-
-
                 <div class="ui blue card" id="noti">
                     <div class="content">
 
                         <table class="ui orange table">
                             <thead>
-                                {% if lienServiceBooks %}
-                                <th>Lien :-</th>
-                                {% elif not lienServiceBooks %}
-                                <th>No Entries :-</th>
-                                <!-- <h1>Awards</h1> -->
-                                {% endif%}
                                 <tr>
                                     <!-- <th>Sr.</th> -->
                                     <th>Start Date</th>
@@ -896,9 +903,10 @@
                                     <th>Designation</th>
 
                                 </tr>
+                            </thead>
                             <tbody>
 
-                                <h1>Lien :</h1>
+                                <h1>Lien / Deputations :</h1>
 
                                 <!-- {% if not lienServiceBooks %}
                                 <h1>No entry found</h1>
@@ -922,54 +930,6 @@
                                 </tr>
 
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-
-
-
-
-
-
-            </div>
-
-            <!-- Deputation -->
-            <div class="ui one cards" style="padding: 2px;">
-
-
-                <div class="ui blue card" id="noti">
-                    <div class="content">
-
-                        <table class="ui orange table">
-                            <thead>
-                                {% if deputationServiceBooks %}
-                                <th>Deputation :-</th>
-                                {% elif not deputationServiceBooks %}
-                                <th>No Entries :-</th>
-                                {% endif%}
-                                <tr>
-                                    <!-- <th>Sr.</th> -->
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Job Title</th>
-                                    <th>Organisation</th>
-                                    <th>Description</th>
-                                    <th>Salary Source</th>
-                                    <th>Designation</th>
-                                </tr>
-
-                            </thead>
-                            <tbody>
-
-                                <h1>Deputations :</h1>
-
-                                <!-- {% if not deputationServiceBooks %}
-                                No entry found
-                                {% endif%} -->
-
 
                                 {% for serviceBook in deputationServiceBooks%}
 
@@ -992,14 +952,6 @@
                         </table>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
             </div>
 
             <div class="ui one cards" style="padding: 2px;">
@@ -1008,12 +960,6 @@
 
                         <table class="ui orange table">
                             <thead>
-                                {% if awards %}
-                                <th>Awards :-</th>
-                                {% elif not awards %}
-                                <th>No Entries :-</th>
-                                {% endif%}
-                                
                                 <tr>
                                     <th>Sr.</th>
                                     <th>Name</th>
@@ -1052,77 +998,44 @@
                 </div>
             </div>
 
-
-            <!-- others -->
             <div class="ui one cards" style="padding: 2px;">
-
-
                 <div class="ui blue card" id="noti">
                     <div class="content">
 
                         <table class="ui orange table">
                             <thead>
-                                {% if otherServiceBooks %}
-                                <th>Others :-</th>
-                                {% elif not otherServiceBooks %}
-                                <th>No Entries :-</th>
-                                {% endif%}
+                                <h1>Leave Record</h1>
                                 <tr>
-                                    <!-- <th>Sr.</th> -->
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Job Title</th>
-                                    <th>Organisation</th>
-                                    <th>Description</th>
-                                    <th>Salary Source</th>
-                                    <th>Designation</th>
+                                    <th>Earned Leaves</th>
+                                    <th>{{leaves.earned_leaves}}</th>
                                 </tr>
+                                <tr>
+                                    <th>Medical Leaves</th>
+                                    <th>{{leaves.medical_leaves}}</th>
+                                </tr>
+                                <tr>
+                                    <th>Vactional Leaves</th>
+                                    <th>{{leaves.vacation_leaves}}</th>
+                                </tr>
+                                <tr>
+                                    <th>Special Casual Leaves</th>
+                                    <th>{{leaves.special_casual_leave}}</th>
+                                </tr>
+                                <tr>
+                                    <th>Duty Leaves</th>
+                                    <th>{{leaves.project_leave}}</th>
+                                </tr>
+                                <tr>
+                                    <th>Commuted Leaves</th>
+                                    <th>{{leaves.commuted_leaves}}</th>
+                                </tr>
+
 
                             </thead>
-                            <tbody>
-
-                                <h1>Others :</h1>
-
-                                <!-- {% if not otherServiceBooks %}
-                                <h1> No entry found</h1>
-                                {% endif%} -->
-
-
-                                {% for serviceBook in otherServiceBooks%}
-
-
-
-                                <tr>
-                                    <td>
-                                        {{forloop.counter }}.
-                                    </td>
-                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
-                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
-                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
-                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
-                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
-
-
-                                </tr>
-
-                                {% endfor %}
-                            </tbody>
                         </table>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
 
         </div>
 
