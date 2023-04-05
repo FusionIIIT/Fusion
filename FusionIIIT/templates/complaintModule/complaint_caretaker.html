@@ -70,7 +70,10 @@
                     Unresolved Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
-
+                <a class="item" data-tab="third">
+                    Lodge a Complaint
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -102,9 +105,13 @@
             </div>
             {% comment %}The ... ends here!{% endcomment %}
 
-            {% comment %}The ... starts here!{% endcomment %}
-
-            {% comment %}The ... ends here!{% endcomment %}
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block lodgecomplaint %}
+                    {%  include 'complaintModule/lodgecomplaint_user.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
