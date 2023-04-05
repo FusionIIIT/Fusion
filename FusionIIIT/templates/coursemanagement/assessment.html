@@ -11,11 +11,11 @@
     <h4 class="ui dividing header">{{course.course_name}}</h4>
 
     <div class="ui top attached tabular menu">
-      {% for assi in assignment1 %}
+      {% for assi in assignment %}
         <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
       {% endfor %}
     </div>
-    {% for assi in assignment1 %}
+    {% for assi in assignment %}
     <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
         <table class="ui very basic collapsing celled table">
             <thead>
@@ -43,35 +43,21 @@
                             </div>
                         </h4>
                     </td>
-                    
-                      <td>
-                        <div class="ui form" style="margin-bottom:10px">
-                        <form action="/ocms/{{sa.course_code}}/edit-assignment-marks" class="ui form" method="post">
-                          {%csrf_token%}
-                          <div class="field">
-                            {% comment %} <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}"> {% endcomment %}
-                            <input type="text" placeholder="Enter Marks"  name="marks"  id="assign{{sa.pk}}">
-                          </div>
+                    <td>
+                      <div class="ui form" style="margin-bottom:10px">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}">
                         </div>
-                        <div class="ui form">
-                          <div class="field">
-                            {% comment %} <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}"> {% endcomment %}
-                            <input type="text" placeholder="Enter Feedback"   name="feedback"  id="feedback{{sa.pk}}">
-                          </div>
+                      </div>
+                      <div class="ui form">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
                         </div>
-                          <div class="field">
-                            {{sa.pk}}
-                            <input hidden type="text" placeholder="Enter Feedback"   name="assignmentid"  id="feedback{{sa.pk}}" value={{sa.pk}}>
-                          </div>
-                          <input type="submit" class="ui primary button" value="Upload">
-  
-                        </form>
-                        {% comment %} <div class="ui form" style="margin-bottom:10px">
-                        </div> {% endcomment %}
-                        {% comment %} <div class="ui form">
-  
-                        </div> {% endcomment %}
-                      </td>
+                      </div>
+                    </td>
+                    <td>
+                      <a class="ui primary button" href="{{sa.upload_url}}">Download</a>
+                    </td>
                     <td >
                       {% if sa.score %}
                         <span id="score{{sa.pk}}">{{sa.score}}</span>
@@ -99,7 +85,7 @@
 
 <div class="ui tab segment" data-tab="exams" style="overflow:scroll;overflow-y:hidden">
   
-  {% comment %} <form class="ui large form" name="entermarks" id="entermarks" method="POST" action="/ocms/{{curriculum.course_code}}/edit_marks/"> 
+  <form class="ui large form" name="entermarks" id="entermarks" method="POST" action="/ocms/{{curriculum.course_code}}/edit_marks"> 
     
     {% csrf_token %}
   <div id="refresh_table">
@@ -138,7 +124,7 @@
   </div>
     <input type="submit" class="ui primary button" id="submit_marks" value="Upload">
     
-  </form> {% endcomment %}
+  </form>
 </div>
 {% endblock %}
 
