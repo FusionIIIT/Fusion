@@ -201,7 +201,8 @@ def mess(request):
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
-                    'feed': feed,
+                    'feed1': feed,
+                    'feed2':'',
                     'student': student,
                     # 'data': data,
                     'mess_reg': mess_reg,
@@ -240,7 +241,7 @@ def mess(request):
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
                 
                 # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
-                menu_data = Menu.objects.all()
+                menu_data = Menu.objects.all().order_by()
                 count5=0
                 count6=0
                 count7=0
@@ -268,7 +269,8 @@ def mess(request):
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
-                    'feed': feed,
+                    'feed2': feed,
+                    'feed1':'',
                     'student': student,
                     # 'data': data,
                     'mess_reg': mess_reg,
@@ -344,35 +346,33 @@ def mess(request):
         leave_past = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
-        
-
-        feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-fdate')
-        for f in feed:
-            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
+        feed1 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
+        feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
+                
+        for f in feed1:
+            if f.feedback_type == 'Maintenance' :
                 count1 += 1
 
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Food' :
                 count2 += 1
 
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Cleanliness' :
                 count3 += 1
 
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Others' :
                 count4 += 1
 
-        for f in feed:
-            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
+        for f in feed2:
+            if f.feedback_type == 'Maintenance':
                 count5 += 1
 
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Food':
                 count6 += 1
 
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Cleanliness':
                 count7 += 1
 
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Others':
                 count8 += 1
       
         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
@@ -397,7 +397,7 @@ def mess(request):
             'sprequest': sprequest,
             'sprequest_past': sprequest_past,
             'count1': count1,
-            'count2': count2, 'count3': count3, 'feed': feed,
+            'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
             'count4': count4, 'form': form, 'count5': count5,
             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
 
@@ -407,35 +407,34 @@ def mess(request):
     elif extrainfo.user_type == 'faculty':
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.select_related().all()
-        feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-fdate')
+        feed1 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
+        feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
         y = Menu.objects.all()
 
-        for f in feed:
-            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
+        for f in feed1:
+            if f.feedback_type == 'Maintenance' :
                 count1 += 1
 
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Food' :
                 count2 += 1
 
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Cleanliness' :
                 count3 += 1
 
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
+            elif f.feedback_type == 'Others' :
                 count4 += 1
 
-        for f in feed:
-            mess_opt = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
+        for f in feed2:
+            if f.feedback_type == 'Maintenance':
                 count5 += 1
 
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Food':
                 count6 += 1
 
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Cleanliness':
                 count7 += 1
 
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
+            elif f.feedback_type == 'Others':
                 count8 += 1
         context = {
              'info': extrainfo,
@@ -443,7 +442,7 @@ def mess(request):
              'meeting': meeting,
              'minutes': minutes,
              'count1': count1,
-             'count2': count2, 'count3': count3, 'feed': feed,
+             'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
              'count4': count4, 'form': form, 'count5': count5,
              'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
     

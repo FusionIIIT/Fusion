@@ -155,7 +155,9 @@ def add_menu_change_request(request, student):
     :return:
     """
     try:
-        dish = Menu.objects.get(dish=request.POST.get("dish"))
+
+        dishID =request.POST['dish'];
+        dish=Menu.objects.get(id=dishID)
         new_dish = request.POST.get("newdish")
         reason = request.POST.get("reason")
         # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
