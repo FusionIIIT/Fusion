@@ -60,21 +60,12 @@
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
 
-        {% if 'student' != request.user.extrainfo.user_type %}
-
-        {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-            <a class="item" href="/hr2/administrativeProfile">
-                View Administrative Profile
-                <i class="right floated chevron right icon"></i>
-            </a>
-        </div>
-        {% comment %}The Tab-Menu ends here!{% endcomment %}
-
-        {% endif %}
-
-        {% comment %}The Tab-Menu starts here!{% endcomment %}
-
+                {% if 'student' != request.user.extrainfo.user_type %}
+                    <a class="item" href="/hr2/administrativeProfile" style="display: flex; flex-wrap: nowrap; justify-content: space-between;">
+                        View Administrative Profile
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
 
         {% if request.user.extrainfo.user_type == 'faculty' %}
         {%for desig in designat%}

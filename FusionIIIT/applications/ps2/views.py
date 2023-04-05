@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
-from .models import StockEntry
-from ..globals.models import ExtraInfo, User, HoldsDesignation
+from .models import StockEntry, StockAdmin
+from ..globals.models import ExtraInfo, User
 
 # Create your views here.
 def ps2(request):
@@ -12,11 +12,15 @@ def ps2(request):
     if(extraInfo.user_type=="student"):
         return HttpResponseRedirect('/')
 
-    user_department = extraInfo.department.name
+    stock_admin = StockAdmin.objects.filter(user=current_user)
+    if not stock_admin:
+        return HttpResponseRedirect('/')
 
-    stocks = StockEntry.objects.all().filter(head_of_asset=user_department)
+    stock_admin_department =  stock_admin.first().department
 
-    if request.user.username == 'acadadmin':
+    stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department)
+
+    if current_user.username == 'acadadmin':
         stocks = StockEntry.objects.all()
     
     context = {
@@ -32,37 +36,38 @@ def addstock(request):
         return HttpResponseRedirect('/')
     
     if request.method == "POST":
-        stock_no = request.POST.get('stock_no')
         name_of_particulars = request.POST.get('name_of_particulars')
         inventory_no = request.POST.get('inventory_no')
-        quantity = request.POST.get('quantity')
         rate = request.POST.get('rate')
         amount = request.POST.get('amount')
+        quantity = request.POST.get('quantity')
         supplier_name = request.POST.get('supplier_name')
         bill_no = request.POST.get('bill_no')
         buy_date = request.POST.get('buy_date')
-        issued_date = request.POST.get('issued_date')
         head_of_asset = request.POST.get('head_of_asset')
+        issued_date = request.POST.get('issued_date') 
         section = request.POST.get('section')
         floor = request.POST.get('floor')
         receiver_name = request.POST.get('receiver_name')
-        
-        StockEntry.objects.create(
-            stock_no=stock_no,
-            name_of_particulars=name_of_particulars,
-            inventory_no=inventory_no,
-            quantity=quantity,
-            rate=rate,
-            amount=amount,
-            supplier_name=supplier_name,
-            bill_no=bill_no,
-            buy_date=buy_date,
-            issued_date=issued_date,
-            head_of_asset=head_of_asset,
-            section=section,
-            floor=floor,
-            receiver_name=receiver_name,
-        )
-        return HttpResponseRedirect('/purchase-and-store2/')
 
-    return render(request, "ps2/addstock.html")
+        stock_admin = StockAdmin.objects.filter(user=current_user)
+        if not stock_admin:
+            return HttpResponseRedirect('/')
+        
+        if not head_of_asset:
+            head_of_asset = stock_admin.first().department
+
+        for i in range(int(quantity)):
+            stock = StockEntry(name_of_particulars=name_of_particulars, inventory_no=inventory_no, rate=rate, amount=amount, supplier_name=supplier_name, bill_no=bill_no, buy_date=buy_date, issued_date=issued_date, head_of_asset=head_of_asset, section=section, floor=floor, receiver_name=receiver_name)
+            stock.save()
+
+        return HttpResponseRedirect('/purchase-and-store2/')
+    
+    context = {
+        'global_admin': False 
+    }
+
+    if current_user.username == 'acadadmin':
+        context['global_admin'] = True
+
+    return render(request, "ps2/addstock.html", context)
