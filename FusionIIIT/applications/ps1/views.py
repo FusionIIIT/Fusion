@@ -865,32 +865,6 @@ def forwardindent(request, id):
 
 
 
-# @login_required(login_url = "/accounts/login")
-# def drafted_indent(request,id):
-#     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-#     if  str(des.designation) == "student":
-#         return redirect('/dashboard')
-#     print(id)
-#     indent=IndentFile2.objects.select_related('file_info').get(file_info=id)
-#     items = Item.objects.filter(indent_file_id=id)
-#     print(items)
-#     file=indent.file_info
-#     track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
-# 'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
-#     extrainfo = ExtraInfo.objects.select_related('user','department').all()
-#     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
-#     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-
-#     context = {
-#         'items':items,
-#         'designations':designations,
-#         'file': file,
-#         'track': track,
-#         'indent':indent,
-#     }
-# 	return render(request, 'ps1/createdindent.html', context)
-
-
 @login_required(login_url='/accounts/login')
 def view_my_indent(request,id):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
