@@ -1,0 +1,28 @@
+{% load static %}
+{% block request_list %}
+<div class="ui secondary menu">
+    <div class="ui floating dropdown labeled icon button">
+    <i class="clipboard icon"></i>
+    <span class="text">Pending Requests</span>
+        <div class="menu">
+        {% for hall in all_hall %}
+            <a class="{% if hall.hall_id == 'vivekananda' %}item active{% else %}item{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
+                {{hall.hall_id}} requests
+            </a>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+{% for hall in all_hall %}
+    <div class="{% if hall.hall_id == 'vivekananda' %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}_guest_room_request>
+        <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+            {% block {{hall.hall_id}} %}
+                {% include 'hostelmanagement/request_list.html' with hall_id=hall.hall_id %}
+            {% endblock %}
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
