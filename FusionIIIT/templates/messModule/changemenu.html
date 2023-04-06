@@ -32,7 +32,6 @@
                                 {% if d.designation.name == 'mess_convener' or d.designation.name == 'mess_committee' %}
                             
                                 <form class="ui form" method="post" action="{% url 'mess:messmenusubmit'%}">
-                                    <!--<form class="ui form" method="post" >-->
                                         {% csrf_token %}
                                         <div class="ui row">
                                             <div>
@@ -205,8 +204,6 @@
                                                             {% elif item.meal_time == 'SUD' %}
                                                                 <div>Sunday -|- Dinner</div> -|- <div>{{item.dish}}</div>
                                                             {% endif %}
-                                                            <!-- <div>{{item.dish}}</div>
-                                                            <div>{{item.meal_time}}</div> -->
                                                         </option>
                                                         {% endif %}
                                                         {% endfor %}

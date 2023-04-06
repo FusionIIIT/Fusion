@@ -65,17 +65,10 @@ def mess(request):
     count6 = 0
     count7 = 0
     count8 = 0
-    # with open('/media/parasg3/Data1/College/Sem#6/Fusion/FusionIIIT/applications/central_mess/mess_students _data.csv', newline='') as csvfile:
-    #     reader = csv.reader(csvfile, delimiter=',')
-    #     next(reader) # skip the header row
-    #     for row in reader:
-    #         print(row[0])
-    #         # Messinfo.objects.create(student_id=row[0],mess_option=row[1])
     if extrainfo.user_type == 'student':
         student = Student.objects.select_related('id','id__user','id__department').get(id=extrainfo)
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         feedback_obj = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-fdate')
-        # data = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(student_id=student).order_by('-app_date')
         monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
@@ -109,13 +102,9 @@ def mess(request):
             programme = 1
         else:
             programme = 0
-        # newmenu = Menu_change_request.objects.all()
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
-        # feed = Feedback.objects.all()
-        # sprequest = Special_request.objects.filter(status='1')
         count = 0
-        #variable y stores the menu items
 
         try:
             mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
@@ -164,7 +153,6 @@ def mess(request):
         for d in desig:
             if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener':
                 newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess1').order_by('-app_date')
-                # newmenu = Menu_change_request.objects.all()
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.select_related().all()
                 feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
@@ -173,7 +161,6 @@ def mess(request):
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
                 menu_data = Menu.objects.all()
-                # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
                 for f in feed:
                     if f.feedback_type == 'Maintenance' :
                         count1 += 1
@@ -204,7 +191,6 @@ def mess(request):
                     'feed1': feed,
                     'feed2':'',
                     'student': student,
-                    # 'data': data,
                     'mess_reg': mess_reg,
                     'current_date': current_date,
                     'count': count,
@@ -230,7 +216,6 @@ def mess(request):
                 return render(request, "messModule/mess.html", context)
 
             if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
-                # newmenu = Menu_change_request.objects.all()
                 newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess2').order_by('-app_date')
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.select_related().all()
@@ -239,8 +224,6 @@ def mess(request):
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
-                
-                # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
                 menu_data = Menu.objects.all().order_by()
                 count5=0
                 count6=0
@@ -306,7 +289,6 @@ def mess(request):
                    'info': extrainfo,
                    'feedback': feedback_obj,
                    'student': student,
-                #    'data': data,
                    'mess_reg': mess_reg,
                    'current_date': current_date,
                    'count': count,
@@ -327,21 +309,11 @@ def mess(request):
 
     elif extrainfo.user_type == 'staff':
         current_bill = MessBillBase.objects.latest('timestamp')
-        
-        # NonVeg Data Not Needed
-        # nonveg_orders_today = Nonveg_data.objects.filter(order_date=today_g)\
-        #     .values('dish__dish','order_interval').annotate(total=Count('dish'))
-        # nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=tomorrow_g)\
-        #     .values('dish__dish','order_interval').annotate(total=Count('dish'))
-        
-        # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').all().order_by('-app_date')
         vaca_all = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-app_date')
-        # members_mess = HoldsDesignation.objects.filter(designation__name='mess_convener')
         members_mess = HoldsDesignation.objects.select_related().filter(Q(designation__name__contains='mess_convener')
                                                        | Q(designation__name__contains='mess_committee'))
         y = Menu.objects.all()
-        # x = Nonveg_menu.objects.all()
         leave = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
         leave_past = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
         meeting = Mess_meeting.objects.all()
@@ -483,31 +455,7 @@ def mess_info(request):
     return render(request, "messModule/messInfoForm.html", context)
 
 
-# @login_required
-# @transaction.atomic
-# @csrf_exempt
-# def place_order(request):
-#     """
-#     This function is to place non-veg food orders
 
-#     @param:
-#         request: contains metadata about the requested page
-    
-#     @variables:
-#         user: Current user
-#         order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
-#         extra_info: Extra information about the current user. From model ExtraInfo
-#         student: Student information about the current user
-#         student_mess: Mess choices of the student
-#         dish_request: Predefined dish available
-#     """
-#     user = request.user
-#     extra_info = ExtraInfo.objects.select_related().get(user=user)
-#     if extra_info.user_type == 'student':
-#         student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-#         student_mess = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
-#          add_nonveg_order(request, student)
-#         return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt
@@ -584,9 +532,9 @@ def submit_mess_menu(request):
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     designation = holds_designations
     student = Student.objects.select_related('id','id__user','id__department').get(id=extrainfo)
-    # globallyChange()
+
     context = {}
-    # A user may hold multiple designations
+
 
     data = add_menu_change_request(request,student)
     if data['status'] == 1:
@@ -628,7 +576,7 @@ def response_vacation_food(request, ap_id):
         holds_designations: designation of current user
     """
     user = request.user
-    # extra_info = ExtraInfo.objects.get(user=user)
+
     holds_designations = HoldsDesignation.objects.select_related().filter(user=user)
     designation = holds_designations
 
@@ -863,7 +811,6 @@ def update_cost(request):
         user - contains user details
     """
     user = request.user
-    # extrainfo = ExtraInfo.objects.get(user=user)
     data = add_bill_base_amount(request)
     return JsonResponse(data)
 
@@ -890,7 +837,6 @@ def generate_mess_bill(request):
     t1 = Thread(target=generate_bill, args=())
     t1.setDaemon(True)
     t1.start()
-    # int = generate_bill()
     data ={
         'status': 1
     }
@@ -1145,27 +1091,6 @@ def download_bill_mess(request):
         'bill': bill_object,
     }
     return render_to_pdf('messModule/billpdfexport.html', context)
-
-
-# def get_nonveg_order(request):
-#     """
-#     This function is to apply for non-veg order
-
-#     @param:
-#         request - contains metadata about the requested page 
-
-#     @variables:
-#         current_user - get user from request
-#         user_details - extract details of the user from the database
-#     """
-#     date_o = request.POST['order_date']
-#     nonveg_orders_tomorrow = Nonveg_data.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(order_date=date_o) \
-#         .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
-#     data = {
-#         'status': 1,
-#     }
-#     return JsonResponse(data)
-
 
 def add_leave_manager(request):
     """
