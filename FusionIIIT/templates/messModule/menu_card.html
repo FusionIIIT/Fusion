@@ -10,9 +10,9 @@
             Meeting information
         </a>
 
-        {% comment %} <a class="item" data-tab="sixteenth">
+        <a class="item" data-tab="sixteenth">
             Feedback Statistics
-        </a> {% endcomment %}
+        </a>
 
         <a class="item" data-tab="forteenth">
             View Feedback | Statistics
@@ -33,9 +33,9 @@
             </a>
 
             
-            {% comment %} <a class="item" data-tab="sixth">
+            <a class="item" data-tab="sixth">
                 Apply For Non-veg | Check History
-            </a> {% endcomment %}
+            </a>
 
             <!-- <a class="item" data-tab="ninth">
                 Meeting Information
@@ -63,7 +63,7 @@
 
 
         {% endif %}
-        {% if d.designation.name == 'mess_committee' or d.designation.name == 'mess_committee_mess2' %}
+        {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
             <a class="item" data-tab="eighth">
                 Change Menu
             </a>
@@ -87,7 +87,7 @@
 
 
         {% endif %}
-        {% if d.designation.name == 'mess_convener' or d.designation.name == 'mess_convener_mess2' %}
+        {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
             <a class="item" data-tab="forteenth">
                 View Feedback | Statistics
             </a>
@@ -100,6 +100,9 @@
                 Meeting Information
             </a>
 
+            <a class="item" data-tab="eleventh">
+                View Special Food Request
+            </a>
             <a class="item" data-tab="thirteenth">
                 View Menu
             </a>
@@ -124,16 +127,12 @@
             Respond to requests
         </a>
 
-        {% comment %} <a class="item" data-tab="twentytwo">
+        <a class="item" data-tab="twentytwo">
             Non-Veg Orders
-        </a> {% endcomment %}
+        </a>
 
         <a class="item" data-tab="nineteenth">
             Menu Requests
-        </a>
-        
-        <a class="item" data-tab="eleventh">
-            View Special Food Request
         </a>
 
         <a class="active item" data-tab="thirteenth">
@@ -145,12 +144,6 @@
         </a>
         <a class="item" data-tab="fifteenth">
             View Meeting Minutes
-        </a>
-        <a class="item" data-tab="twentythree">
-            Registered Students
-        </a>
-        <a class="item" data-tab="twentyfour">
-            Upload Due Amount
         </a>
     {% endif %}
 

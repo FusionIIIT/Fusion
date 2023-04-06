@@ -33,42 +33,28 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    {% if user in hall_caretaker or user in hall_warden%}
+                    {% if user in hall_caretaker or hall_warden%}
                     <a class="item" data-tab="second">
                         Staff's Schedule
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% endif %}
                     
+
                     <a class="item" data-tab="third">
                         Notice Board 
                         <i class="right floated chevron right icon"></i>
                     </a>
+
                     <a class="item" data-tab="fourth">
                         Student Attendance
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    {%if user not in hall_caretaker and user not in hall_warden%}
-                    <a class="item" data-tab="fifth">
-                        Book Guest Room
+                    {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
+                        Book Guest Room 
                         <i class="right floated chevron right icon"></i>
-                    </a>
-                    {% endif %}
-
-                    {%if user in hall_caretaker or user in hall_warden%}
-                    <a class="item" data-tab="sixth">
-                        Guest Room Requests
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    {% endif %}
-
-                    {%if user not in hall_caretaker and user not in hall_warden%}
-                    <a class="item" data-tab="seventh">
-                        Your Bookings
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    {% endif %}
+                    </a> {% endcomment %}
                 </div>
 
             </div>
@@ -82,7 +68,7 @@
                 {% endblock %}
             </div>
 
-            {% if user in hall_caretaker or user in hall_warden%}
+            {% if user in hall_caretaker or hall_warden%}
             <div class="ui tab segment" data-tab="second">
                 {% block staff_schedule %}
                     {% include 'hostelmanagement/staff_schedule.html'%}
@@ -102,29 +88,11 @@
                 {% endblock %}
             </div>
 
-            {% if user not in hall_caretaker and user not in hall_warden%}
-            <div class="ui tab segment" data-tab="fifth">
-                {% block book_guest_room %}
-                    {% include 'hostelmanagement/book_guest_room.html' %}
+            {% comment %} <div class="ui tab segment" data-tab="fourth">
+                {% block guest_room %}
+                    {% include 'hostelmanagement/guestroom_booking.html'%}
                 {% endblock %}
-            </div>
-            {% endif %}
-
-            {% if user in hall_caretaker or user in hall_warden %}
-            <div class="ui tab segment" data-tab="sixth">
-                {% block request_list %}
-                    {% include 'hostelmanagement/update_guest_room.html' %}
-                {% endblock %}
-            </div>
-            {% endif %}
-
-            {% if user not in hall_caretaker and user not in hall_warden%}
-            <div class="ui tab segment" data-tab="seventh">
-                {% block book_guest_room_status %}
-                    {% include 'hostelmanagement/book_guest_room_status.html' %}
-                {% endblock %}
-            </div>
-            {% endif %}
+            </div> {% endcomment %}
 
         </div>
 

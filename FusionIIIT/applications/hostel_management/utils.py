@@ -5,23 +5,14 @@ from django.http import HttpResponse
 from .models import *
 import re
    
-def get_staff_hall(hall_caretakers=None, hall_wardens=None, user=None):
+def get_caretaker_hall(hall_caretakers,user):
     """
-    This function returns the hall number corresponding to a caretaker or warden.
+    This function returns hall number corresponding to a caretaker.
     """
-    if not user:
-        return None
-    if hall_caretakers:
-        for caretaker in hall_caretakers:
-            if caretaker.staff.id.user == user:
-                return caretaker.hall
-    if hall_wardens:
-        for warden in hall_wardens:
-            if warden.faculty.id.user == user:
-                return warden.hall
-    return None
-
-
+    for caretaker in hall_caretakers:
+        if caretaker.staff.id.user==user:
+            return caretaker.hall
+            
 
 def remove_from_room(student):
     """Removes the student from his current room"""
@@ -30,7 +21,7 @@ def remove_from_room(student):
     room = re.findall('[0-9]+',str(student.room_no))
     room_num=str(room[0])
     block = str(student.room_no[0])
-    hall=Hall.objects.get(hall_id=student.hall_id)
+    hall=Hall.objects.get(hall_id="hall"+str(student.hall_no))
     Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=room_num)
     Room.room_occupied=Room.room_occupied-1
     Room.save()
@@ -44,9 +35,9 @@ def add_to_room(student, new_room, new_hall):
     block=str(new_room[0])
     room = re.findall('[0-9]+', new_room)
     student.room_no=str(block)+"-"+str(room[0])
-    student.hall_id = new_hall
+    student.hall_no = int(new_hall[-1])
     student.save()
-    hall=Hall.objects.get(hall_id=student.hall_id)
+    hall=Hall.objects.get(hall_id="hall"+str(student.hall_no))
     Room=HallRoom.objects.get(hall=hall,block_no=block,room_no=str(room[0]))
     Room.room_occupied=Room.room_occupied+1
     Room.save()

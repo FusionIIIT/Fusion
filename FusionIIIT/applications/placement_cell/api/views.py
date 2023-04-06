@@ -113,19 +113,6 @@ def publications(request):
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def placementrecord(request):
-    username=request.query_params.get("username")
-    if not username:
-        return Response({"messgae":"No Username Found"},status=status.HTTP_400_BAD_REQUEST)
-    
-    placementrecord=PlacementRecord.objects.filter(unique_id=username)
-    placementrecord_details=serializers.PlacementRecordSerializer(placementrecord,many=True).data
-    resp={
-        "placement_records":placementrecord_details
-    }
-    return Response(data=resp,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
 def references(request):
     username=request.query_params.get("username")
     if not username:
@@ -244,7 +231,6 @@ def companydetails(request):
         "companydetails":companydetails,
     }
     
-
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -261,7 +247,6 @@ def placementstatus(request):
 
 @api_view(['GET'])
 def placementrecord(request):
-    print(list(PlacementRecord().__dict__.keys())[1:-2])
     placementrecord=PlacementRecord.objects.all()
     placementrecord=serializers.PlacementRecordSerializer(placementrecord,many=True).data
     resp={

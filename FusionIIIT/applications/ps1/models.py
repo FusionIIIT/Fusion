@@ -36,7 +36,9 @@ class IndentFile2(models.Model):
     budgetary_head = models.CharField(max_length=250)
     expected_delivery = models.DateField(blank=False)
     sources_of_supply = models.CharField(max_length=250)
-    approved = models.BooleanField(default=False)
+    head_approval = models.BooleanField(default=False)
+    director_approval = models.BooleanField(default=False)
+    financial_approval = models.BooleanField(default=False)
     procured = models.BooleanField(default=False)
     description = models.CharField(max_length=250,blank=False,default="")
 

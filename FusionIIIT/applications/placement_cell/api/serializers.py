@@ -159,9 +159,3 @@ class PublicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
         fields = list(Publication().__dict__.keys())[1:]
-
-class PlacementRecordSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PlacementRecord
-        fields = list(PlacementRecord().__dict__.keys())[1:]

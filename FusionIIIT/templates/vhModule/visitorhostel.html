@@ -5,44 +5,16 @@
     Visitor Hostel
 {% endblock %}
 
-{% block css %}
-<style>
-    .vh_container {
-        display: grid;
-        grid-template-areas: 
-        "vh_user" "vh_main";
-        grid-template-columns: 1fr;
-        gap: 2rem;
-        padding: 0 2rem;
-    }
-    
-    .vh_user {
-        grid-area: vh_user;
-    }
-
-    .vh_main {
-        grid-area: vh_main;
-    }
-    
-    @media all and (min-width: 768px) {
-        .vh_container {
-            grid-template-areas: 
-            "vh_user vh_main";
-            grid-template-columns: 2fr 6fr;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
-    
 
-    <div class="vh_container">
+    <div class="ui stackable doubling grid">
 
-        <div class="vh_user">
+        <div class="column"></div>
+
+        <div class="three wide column">
 
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -66,7 +38,7 @@
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class="item" data-tab="third" id="roomstatus">
-                    Room Availability
+                    Get Details
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -80,14 +52,14 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="sixth">
-                    Account Statement
+                    Accounts
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                 <!-- <a class="item" data-tab="seventh" id="booking_bw_dates">
+                 <a class="item" data-tab="seventh" id="booking_bw_dates">
                     Bill Details
                     <i class="right floated chevron right icon"></i>
-                </a>  -->
+                </a> 
 
 
                 {% endif %}
@@ -99,7 +71,7 @@
             </div>
         </div>
 
-        <div class="vh_main">
+        <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
 
             <div class="ui active tab segment" data-tab="first">
@@ -154,6 +126,17 @@
 
 
         </div>
+
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+
+        <div class="column"></div>
+
     </div>
 {% include 'vhModule/alert.html' %}
 {% endblock %}

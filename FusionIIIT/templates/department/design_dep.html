@@ -32,8 +32,8 @@
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
-        <a class="item" data-tab="Achievement">
-            Achievement
+        <a class="item" data-tab="Track records">
+            Track records
         </a>
     </div>
     <div class="ui active tab" data-tab="about-us">
@@ -45,13 +45,13 @@
                             Our Mission :
                         </h3>
                         <p>
-                            The Mission of the Institute is to create a multidisciplinary academic environment to prepare and train manpower of excellence for nurturing and promoting knowledge-based activities and innovations in design, fabrication and manufacturing of products by bringing together a collaborative and mutually stimulating mix of different fields of science, engineering and arts. In doing so the Institute shall identify current and future agendas for scholarship, share knowledge and discoveries with the world community and actively cultivate individuals with the desire and capability to contribute to society.
+                            The mission of the Computer Engineering Department is to provide educational programs that would encourage students to read critically, reason analytically, communicate persuasively, apply professionally and prepare them to excel in the field of computing.
                         </p>
                         <h3>
                             Our Vision :
                         </h3>
                         <p>
-                            In planning for its future as well as for conducting its ongoing activities, the Institute seeks to act in a manner that is guided by a deep-rooted sense of shared values and aspirations. Built upon such a foundation, the Institute honours and rewards high performance in learning, teaching, scholarship, research and creative activities by encouraging intellectual curiosity and protecting the multiple expressions of academic freedom.
+                            The vision of the Computer Engineering Department is to recognize itself as renowned department in the field of technical education in Computer Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
                         </p>
                     </span>
                     <div class="ui divider"></div>
@@ -134,8 +134,6 @@
                                 <thead>
                                     <td> Serial No. </td>
                                     <td> Faculty Name </td>
-                                    <td> Email </td>
-                                    <td> Research Interest </td>
                                     <!-- <td> title </td> -->
                                     {% comment %} <td> sex </td>
                                     <td> date_of_birth </td>
@@ -146,30 +144,12 @@
                                     <td> github </td> {% endcomment %}
 
                                 </thead>
-                                {% for fcu in faculty.design_f %}
-                                    <tr>
-                                        {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                        <td>{{ fcu.id }}</td>
-                                        <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
-                                        <td>{{ fcu.user.email }}</td>
-                                        <!-- <td>{{ fcu.title }}</td> -->
-                                        {% comment %} <td>{{ fcu.sex }}</td>
-                                        <td>{{ fcu.date_of_birth }}</td>
-                                        <td>{{ fcu.address }}</td>
-                                        <td>{{ fcu.phone_no }}</td> {% endcomment %}
-                                        {% comment %} <td>{{ fcu.user_type }}</td>
-                                        <td>{{ fcu.department.name }}</td>
-                                        <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
-                                        {% endwith %}
-                                    </tr>
 
-                                {% endfor %}
                                 {% for fcu in fac_list.design_f %}
                                     <tr>
                                         {% with "/eis/profile/"|add:fcu.user.username as link %}
                                         <td>{{ fcu.id }}</td>
-                                        <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
-                                        <td>{{ fcu.user.email }}</td>
+                                        <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
                                         <!-- <td>{{ fcu.title }}</td> -->
                                         {% comment %} <td>{{ fcu.sex }}</td>
                                         <td>{{ fcu.date_of_birth }}</td>
@@ -398,7 +378,7 @@
             </div>
         </div>
     </div>
-    <div class="ui tab" data-tab="Achievement">
+    <div class="ui tab" data-tab="Track records">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
