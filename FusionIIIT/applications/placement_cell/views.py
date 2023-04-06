@@ -910,9 +910,7 @@ def student_records(request):
     '''
         function for searching the records of student
     '''
-    
-    profile = get_object_or_404(ExtraInfo, Q(user=request.user))
-    if profile.user_type=="staff":
+    if request.user.is_staff==True:
         user = request.user
         strecord_tab = 1
         no_pagination = 0
@@ -1217,8 +1215,7 @@ def student_records(request):
         }
 
         return render(request, 'placementModule/studentrecords.html', context)
-    else:
-        return redirect('/placement')
+    return redirect('/placement')
 
 
 @login_required
@@ -1848,7 +1845,7 @@ def placement_statistics(request):
 
     #working here to fetch all placement record
     all_records=PlacementRecord.objects.all()
-    # print("All records",all_records)
+    print(all_records)
 
 
 
@@ -1969,7 +1966,7 @@ def placement_statistics(request):
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT",name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
 
-            # print(p)
+            print(p)
 
 
             total_query = p.count()
@@ -2055,7 +2052,7 @@ def placement_statistics(request):
                         last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
             except Exception as e:
-                print("Exception",e)
+                print(e)
                 placementrecord = ''
 
             if placementrecord != '':
@@ -2111,10 +2108,10 @@ def placement_statistics(request):
                 stuname = ''
                 first_name = ''
                 last_name = ''
-            # if form.cleaned_data['ctc']:
-            #     ctc = form.cleaned_data['ctc']
-            # else:
-            ctc = 0
+            if form.cleaned_data['ctc']:
+                ctc = form.cleaned_data['ctc']
+            else:
+                ctc = 0
             if form.cleaned_data['cname']:
                 cname = form.cleaned_data['cname']
             else:
@@ -2128,7 +2125,7 @@ def placement_statistics(request):
                 pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
                                                           name__icontains=cname,
-                                                          year=year)),
+                                                          ctc__gte=ctc, year=year)),
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
@@ -2137,7 +2134,7 @@ def placement_statistics(request):
                                                               id__icontains=rollno))
                                                            )))))
                 p1 = PlacementRecord.objects.filter(
-                    Q(placement_type="PBI", name__icontains=stuname, year__icontains=year))
+                    Q(placement_type="PBI", name__icontains=stuname, ctc__icontains=ctc, year__icontains=year))
             """else:
                 pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",

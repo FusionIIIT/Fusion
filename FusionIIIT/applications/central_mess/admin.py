@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                     Nonveg_data, Nonveg_menu, Payments, Rebate,
+                     Payments, Rebate,
                      Special_request, Vacation_food,MessBillBase)
 
 # Register your models here.
@@ -56,14 +56,14 @@ class Monthly_billAdmin(admin.ModelAdmin):
         ('month', {'fields': ['month']}),
         ('year', {'fields': ['year']}),
         ('amount', {'fields': ['amount']}),
-        ('nonveg_total_bill', {'fields': ['nonveg_total_bill']}),
+        # ('nonveg_total_bill', {'fields': ['nonveg_total_bill']}),
         ('rebate_count', {'fields': ['rebate_count']}),
         ('rebate_amount', {'fields': ['rebate_amount']}),
         ('total_bill', {'fields': ['total_bill']}),
 
         ]
     list_display = ('student_id', 'month', 'year', 'amount',
-                    'nonveg_total_bill', 'rebate_count', 'rebate_amount', 'total_bill')
+                     'rebate_count', 'rebate_amount', 'total_bill')
 
 
 
@@ -71,11 +71,9 @@ class PaymentsAdmin(admin.ModelAdmin):
     model = Payments
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
-        ('sem', {'fields': ['sem']}),
-        ('year', {'fields': ['year']}),
         ('amount_paid', {'fields': ['amount_paid']}),
         ]
-    list_display = ('student_id', 'sem', 'year', 'amount_paid')
+    list_display = ('student_id', 'amount_paid')
 
 
 class RebateAdmin(admin.ModelAdmin):
@@ -106,26 +104,26 @@ class Vacation_foodAdmin(admin.ModelAdmin):
 
 
 
-class Nonveg_menuAdmin(admin.ModelAdmin):
-    model = Nonveg_menu
-    fieldsets = [
-        ('dish', {'fields': ['dish']}),
-        ('price', {'fields': ['price']}),
-        ('order_interval', {'fields': ['order_interval']}),
-        ]
-    list_display = ('dish', 'price', 'order_interval')
+# class Nonveg_menuAdmin(admin.ModelAdmin):
+#     model = Nonveg_menu
+#     fieldsets = [
+#         ('dish', {'fields': ['dish']}),
+#         ('price', {'fields': ['price']}),
+#         ('order_interval', {'fields': ['order_interval']}),
+#         ]
+#     list_display = ('dish', 'price', 'order_interval')
 
 
 
-class Nonveg_dataAdmin(admin.ModelAdmin):
-    model = Nonveg_data
-    fieldsets = [
-        ('student_id', {'fields': ['student_id']}),
-        ('order_date', {'fields': ['order_date']}),
-        ('dish', {'fields': ['dish']}),
-        ('order_interval', {'fields': ['order_interval']}),
-        ]
-    list_display = ('student_id', 'order_date', 'dish', 'order_interval')
+# class Nonveg_dataAdmin(admin.ModelAdmin):
+#     model = Nonveg_data
+#     fieldsets = [
+#         ('student_id', {'fields': ['student_id']}),
+#         ('order_date', {'fields': ['order_date']}),
+#         ('dish', {'fields': ['dish']}),
+#         ('order_interval', {'fields': ['order_interval']}),
+#         ]
+#     list_display = ('student_id', 'order_date', 'dish', 'order_interval')
 
 
 
@@ -194,8 +192,8 @@ admin.site.register(Payments, PaymentsAdmin),
 admin.site.register(Rebate, RebateAdmin),
 admin.site.register(Vacation_food, Vacation_foodAdmin),
 admin.site.register(Special_request, Special_requestAdmin),
-admin.site.register(Nonveg_menu, Nonveg_menuAdmin),
-admin.site.register(Nonveg_data, Nonveg_dataAdmin),
+# admin.site.register(Nonveg_menu, Nonveg_menuAdmin),
+# admin.site.register(Nonveg_data, Nonveg_dataAdmin),
 admin.site.register(Mess_meeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
 admin.site.register(MessBillBase,MessBillBaseAdmin),
