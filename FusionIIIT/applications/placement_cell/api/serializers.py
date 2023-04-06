@@ -1,10 +1,7 @@
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication, Skill,
-                                                PlacementStatus, NotifyStudent,Conference,PlacementRecord)
+from applications.placement_cell.models import *
 
 class ProjectSerializer(serializers.ModelSerializer):
 
@@ -36,6 +33,109 @@ class EducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
         fields = list(Education().__dict__.keys())[1:]
+
+class ReferenceSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Reference
+        fields=list(Reference().__dict__.keys())[1:]
+
+class CoauthorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Coauthor
+        fields=list(Coauthor().__dict__.keys())[1:]
+
+class PatentSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Patent
+        fields=list(Patent().__dict__.keys())[1:]
+
+class CoinventorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Coinventor
+        fields=list(Coinventor().__dict__.keys())[1:]
+
+class InterestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Interest
+        fields=list(Interest().__dict__.keys())[1:]
+
+class AchievementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Achievement
+        fields=list(Achievement().__dict__.keys())[1:]
+        
+class ExtracurricularSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Extracurricular
+        fields=list(Extracurricular().__dict__.keys())[1:]
+
+class MessageOfficerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MessageOfficer
+        fields=list(MessageOfficer().__dict__.keys())[1:]
+
+class NotifyStudentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = NotifyStudent
+        fields = list(NotifyStudent().__dict__.keys())[1:]
+
+class RoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Role
+        fields = list(Role().__dict__.keys())[1:]
+        
+class CompanyDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CompanyDetails
+        fields = list(CompanyDetails().__dict__.keys())[1:]
+
+class PlacementStatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementStatus
+        fields = list(PlacementStatus().__dict__.keys())[1:]
+
+class PlacementRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementRecord
+        fields = list(PlacementRecord().__dict__.keys())[1:]
+
+class StudentRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentRecord
+        fields = list(StudentRecord().__dict__.keys())[1:]
+
+class ChairmanVisitSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ChairmanVisit
+        fields = list(ChairmanVisit().__dict__.keys())[1:]
+
+class PlacementScheduleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementSchedule
+        fields = list(PlacementSchedule().__dict__.keys())[1:-1]
+
+class StudentPlacementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentPlacement
+        fields = list(StudentPlacement().__dict__.keys())[1:]
+
 class ExperienceSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -47,7 +147,7 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = list(Course().__dict__.keys())[1:]
-        
+
 class ConferenceSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -59,37 +159,6 @@ class PublicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
         fields = list(Publication().__dict__.keys())[1:]
-        
-class AchievementSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Achievement
-        fields = ('__all__')
-
-class PublicationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Publication
-        fields = ('__all__')
-
-class PatentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Patent
-        fields = ('__all__')
-
-class NotifyStudentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = NotifyStudent
-        fields = ('__all__')
-
-class PlacementStatusSerializer(serializers.ModelSerializer):
-    notify_id = NotifyStudentSerializer()
-
-    class Meta:
-        model = PlacementStatus
-        fields = ('notify_id', 'invitation', 'placed', 'timestamp', 'no_of_days')
 
 class PlacementRecordSerializer(serializers.ModelSerializer):
 
