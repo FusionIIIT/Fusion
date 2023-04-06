@@ -467,8 +467,9 @@
                     <thead>
                         <tr>
                             <th class="three wide column">Intender</th>
-                            <th class="three wide column">Booking From</th>
-                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Booking Date</th>
+                            <th class="three wide column">CheckIn</th>
+                            <th class="three wide column">CheckOut</th>
                             <th class="three wide column">Category</th>
                             <th class="three wide column">Status</th>
                         </tr>
@@ -478,7 +479,7 @@
                         {% for booking in complete_bookings %}
 
                         <tr>
-                            <td onclick="bookingDetailsModal('{{ booking.id }}')">
+                            <td onclick="bookingDetailsModal(`${ booking.id }`)">
                                 <h4 class="ui image header">
                                     <div class="content">
                                         {{ booking.intender.first_name }}&nbsp;{{booking.intender.last_name}}
@@ -488,8 +489,9 @@
                                     </div>
                                 </h4>
                             </td>
-                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.booking_from }}</td>
-                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.booking_to }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.booking_date }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.check_in }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.check_out }}</td>
                             <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.visitor_category }}</td>
                             <td>
                                 {% if booking.status == "Pending" %}
