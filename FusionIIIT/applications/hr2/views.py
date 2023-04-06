@@ -261,7 +261,6 @@ def administrative_profile(request, username=None):
     leaves = {}
     for leave in leaves_count:
         leaves[to_snake_case(leave.leave_type.name)] = int(leave.remaining_leaves)
-    print (leaves)
     lien_service_book = ForeignService.objects.filter(
         extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
     deputation_service_book = ForeignService.objects.filter(
