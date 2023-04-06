@@ -294,20 +294,21 @@ function request_booking (event) {
 
 // Meal Record
 
-function bookameal_submit(event){
+function bookameal_submit(event, htmlElement){
     console.log('hii')
     event.preventDefault();
-    var pk = $(this).attr('data-pk');
+    var pk = $(htmlElement).attr('data-pk');
+    var booking_id = $(htmlElement).attr('booking_id')
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
     console.log(pk);
     var jsondata = {
-            'pk' : $('input[name="id"]').val(),
-            'booking' : $('input[name="meal-booking-id"]').val(),
-        'm_tea': $('input[name="m_tea"]').val(),
-        'breakfast': $('input[name="breakfast"]').val(),
-        'lunch': $('input[name="lunch"]').val(),
-        'eve_tea': $('input[name="eve_tea"]').val(),
-        'dinner': $('input[name="dinner"]').val(),
+            'pk' : pk,
+            'booking' : booking_id,
+        'm_tea': $(`input[name="m_tea${booking_id}"]`).val(),
+        'breakfast': $(`input[name="breakfast${booking_id}"]`).val(),
+        'lunch': $(`input[name="lunch${booking_id}"]`).val(),
+        'eve_tea': $(`input[name="eve_tea${booking_id}"]`).val(),
+        'dinner': $(`input[name="dinner${booking_id}"]`).val(),
             
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
     }
@@ -318,6 +319,10 @@ function bookameal_submit(event){
         data: jsondata,
         success: function(data) {
             alertModal('Great! Meals recorded successfully');
+            setTimeout(function() {
+                location.reload();
+             }, 1500);
+            
         },
         error: function (data, err) {
             alertModal('Something missing! Please refill the form ');
@@ -362,7 +367,6 @@ function submit_inventory_form(id){
 // Adding more items to inventory
 
 // $('#add-more-items-inventory').click(function(event){
-
 //     $.ajax({
 //         type: 'POST',
 //         url: '/visitorhostel/add-to-inventory/',
@@ -385,6 +389,7 @@ function submit_inventory_form(id){
 
 // });
 
+
 function add_inventory_item(event) {
     event.preventDefault();
     jsondata = {
@@ -401,9 +406,13 @@ function add_inventory_item(event) {
         url: '/visitorhostel/add-to-inventory/',
         data: jsondata,
         success: function(data) {
-            $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            alertModal('Great! Item added successfully');
+            setTimeout(function() {
+                location.reload();
+             }, 1500);
         },
         error: function(xhr, data, err) {
             alertModal('Something missing! Please refill the form');
@@ -640,13 +649,21 @@ function forward_booking (id) {
     csrfmiddlewaretoken = $('input[name=csrf]').val();
     previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
-    rooms = $('input[name=alloted-rooms-'+id+']').val();
-
+    rooms = $('select[name=alloted-rooms-'+id+']').val();
+    rem = $('input[name=cancellation-remarks-' + id + ']').val();
+    console.log("TExt rem: ", rem);
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
     //     return;
     // }
+    console.log("Rooms: ", rooms);
+    remark = "";
+    for (x in rooms) {
+        remark += rooms[x] + " ";
+    }
+    remark += "can be alloted";
 
+    console.log("remarks: ", remark);
     if (modified_category == 0) {
         modified_category = previous_category;
     }
@@ -664,7 +681,8 @@ function forward_booking (id) {
             'csrfmiddlewaretoken': csrfmiddlewaretoken,
             'previous_category' : previous_category,
             'modified_category' : modified_category,
-            'rooms' : rooms,
+            'rooms': rooms,
+            'remark': remark,
         },
         success: function(data) {
             alertModal("This booking has been forwarded");
@@ -814,7 +832,7 @@ function submit_visitor_details (id) {
 
 // Check Out
 
-function check_out (id , mess_bill , room_bill) {
+function check_out(id, mess_bill, room_bill) {
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/check-out/',
