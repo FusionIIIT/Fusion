@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
 
 
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,studentExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -105,9 +105,9 @@ def main_page(request):
 
 	expenditure_history = Expenditure.objects.all().order_by("date_added")
 	expenditure_history = expenditure_history[::-1]
-	expense_history2 = otherExpense.objects.all().order_by("date_added")
-	expense_history2 = expense_history2[::-1]
-	expense_history= otherExpense.objects.filter(userid = request.user)
+	expense_history2 = studentExpense.objects.all().order_by("date_added")
+	# expense_history2 = expense_history2[::-1]
+	expense_history= studentExpense.objects.filter(userid = request.user)
 	fixed_attributes = FixedAttributes.objects.all()
 
 	add_income_source()
@@ -146,7 +146,7 @@ def main_page(request):
 				{
 					'income_sources':income_sources,
 					'income_history':income_history,
-					'expense_history2':expense_history2,
+					# 'expense_history2':expense_history2,
 					'expenditure_types':expenditure_types,
 					'expenditure_history':expenditure_history,
 					'fin_years':fin_years,
@@ -182,7 +182,6 @@ def main_page(request):
 						'inc_fin_years':inc_fin_years,
 						'exp_fin_years':exp_fin_years,
 					})
-
 
 
 
@@ -609,7 +608,7 @@ def otherExpense_view(request):
 		remarks = request.POST.get('remarks')
 		status ="Not approved"
 		print("--------------------",spent_on,name,amount)
-		new_e = otherExpense(
+		new_e = studentExpense(
 						spent_on = spent_on,
 						status=status,
 						name=name,
@@ -626,13 +625,13 @@ def otherExpense_view(request):
 def del_expense(request):
 	if(request.method == 'POST'):
 		ex_id = request.POST.get('id')
-		otherExpense.objects.get(id=ex_id).delete()
+		studentExpense.objects.get(id=ex_id).delete()
 
 	return redirect('/income-expenditure/requests')
 def decline(request):
 	if(request.method == 'POST'):
 		ex_id = request.POST.get('id')
-		obj = otherExpense.objects.get(id=ex_id)
+		obj = studentExpense.objects.get(id=ex_id)
 		obj.status  = "Declined"
 		obj.save()
 
@@ -640,7 +639,7 @@ def decline(request):
 def approve(request):
 	if(request.method == 'POST'):
 		ex_id = request.POST.get('id')
-		obj = otherExpense.objects.get(id=ex_id)
+		obj = studentExpense.objects.get(id=ex_id)
 		obj.status  = "Approved"
 		obj.save()
 
@@ -648,7 +647,7 @@ def approve(request):
 def stb(request):
 	if(request.method == 'POST'):
 		ex_id = request.POST.get('id')
-		obj = otherExpense.objects.get(id=ex_id)
+		obj = studentExpense.objects.get(id=ex_id)
 		obj.status  = "Transferred to Bank"
 		obj.save()
 
