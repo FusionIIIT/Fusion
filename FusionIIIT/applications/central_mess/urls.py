@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^messmenusubmit/', views.submit_mess_menu, name='messmenusubmit'),
     url(r'^regsubmit/', views.regsubmit, name='regsubmit'),
     url(r'^startmessregistration/', views.start_mess_registration, name='startmessregistration'),
+    url(r'^closemessregistration/', views.closeRegistration, name='closemessregistration'),
     url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),
     url(r'^menudownload1/', views.MenuPDF1.as_view(), name='MenuPDF1'),
     # url(r'^(?P<ap_id>[0-9]+)/response/', views.response, name='response'),

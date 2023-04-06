@@ -718,6 +718,12 @@ def start_mess_registration(request):
             data = add_mess_registration_time(request)
             return JsonResponse(data)
 
+@csrf_exempt
+def closeRegistration(request):
+    mess_reg = Mess_reg.objects.last()
+    yesterday = date.today() - timedelta(days=1)
+    Mess_reg.objects.filter(id=mess_reg.id).update(end_reg=yesterday)
+    return HttpResponseRedirect('/mess')
 
 @transaction.atomic
 @csrf_exempt

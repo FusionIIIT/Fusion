@@ -190,16 +190,15 @@ def handle_menu_change_response(request):
     ap_id = request.POST.get('idm')
     user = request.user
     stat = request.POST['status']
-    application = Menu_change_request.objects.get(pk=ap_id)
+    application = Menu_change_request.objects.get(id=ap_id)
     # student = application.student_id
     # receiver = User.objects.get(username=student)
     if stat == '2':
         application.status = 2
-        meal = application.dish
-        obj = Menu.objects.get(dish=meal.dish)
+        obj = Menu.objects.get(Q(meal_time=application.dish.meal_time) & Q(mess_option=application.dish.mess_option))
         obj.dish = application.request
         obj.save()
-        data = {
+        data = {    
             'status': '2',
         }
         # central_mess_notif(user, receiver, 'menu_change_accepted')
