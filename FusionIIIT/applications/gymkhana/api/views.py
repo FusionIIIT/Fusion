@@ -5,9 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.shortcuts import render
+from ..models import ExtraInfo, Student, Faculty
+from django.shortcuts import get_object_or_404, redirect, render
+import json
 from applications.gymkhana.models import Club_info,Club_member,Core_team,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
-from .serializers import Club_memberSerializer,Core_teamSerializer,Club_infoSerializer,Club_DetailsSerializer,Session_infoSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer
+from .serializers import Club_memberSerializer,Core_teamSerializer,Club_infoSerializer,Club_DetailsSerializer,Session_infoSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer, NewClubSerializer
 from django.contrib.auth.models import User
 
 def coordinator_club(request):
@@ -87,3 +89,13 @@ class Voting_Polls(APIView):
         votingpolls=Voting_polls.objects.all()
         serializer=Voting_pollSerializer(votingpolls, many=True)
         return Response(serializer.data)
+
+class New_Club(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        serializer = NewClubSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
