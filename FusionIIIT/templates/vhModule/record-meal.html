@@ -18,18 +18,18 @@
                             </tr>
 
                             <tr>
-                                <th>Bed-Tea</th>
+                                <th>Morning-Tea</th>
                                 <th>Breakfast</th>
                                 <th>Lunch</th>
                                 <th>Eve Tea</th>
                                 <th>Dinner</th>
+                                
                             </tr>
                         </thead>
 
                         <tbody>
                             {% for key, value in active_visitors.items %}
-
-                            <form id="form{{visitor.visitor.id}}">
+                            <div>
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">
@@ -43,51 +43,64 @@
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="1" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="m_tea{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="2" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="breakfast{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="3" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="lunch{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="4" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0  value=0 name="eve_tea{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" value="5" name="food{{value.id}}">
+                                        <div class="ui">
+                                            <input type="number" min=0 value=0 name="dinner{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
-                                    <input type="hidden" value="{{ value.id }}" name="id">
+                                    <input type="hidden" value='{{value.id}}' name="pkid">
                                     <input type="hidden" value="{{ key }}" name="meal-booking-id">
                                     <td>
                                         <div class="field">
                                             <label></label>
-                                            <button class="ui primary right floated button bookameal-submit" id="btn{{value.id}}" data-pk="{{value.id}}">
+                                            <button class="ui primary right floated button" booking_id="{{key}}" data-pk="{{value.id}}"
+                                            onclick="bookameal_submit(event, this); ll()">
+                                                <script type='text/javascript'>
+                                                ll = function () {
+                                                    document.getElementById("submit_inventory").disabled=true; 
+                                                    console.log("1111111111111111111");    
+                                                    setTimeout('jj()', 5000);
+                                                    }
+                                                
+                                                jj=function(){
+                                                    document.getElementById("submit_inventory").disabled=false; 
+                                                    console.log("00000000000"); 
+                                                }
+                                                </script>
                                                 Update
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            </form>
+                            </div>
                             {% endfor %}
                         </tbody>
                     </table>
