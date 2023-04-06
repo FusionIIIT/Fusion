@@ -22,8 +22,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
+from rest_framework.authtoken.views import obtain_auth_token
+
 
 urlpatterns = [
+    url(r'^api-token-auth/', obtain_auth_token, name='api_token_auth'),
     url(r'^', include('applications.globals.urls')),
     url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),
@@ -51,6 +54,7 @@ urlpatterns = [
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^purchase-and-store/', include('applications.ps1.urls')),
+    url(r'^purchase-and-store2/', include('applications.ps2.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),

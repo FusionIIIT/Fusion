@@ -38,16 +38,31 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Food' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Food' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -68,16 +83,31 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess </th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Cleanliness' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{ item.student_id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{ item.student_id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Cleanliness' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -98,16 +128,32 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
+
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Maintenance' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Maintenance' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -117,7 +163,7 @@
             <br>
             <br>
         </div>
-    </div>
+    </div> 
     <div class="ui tab" data-tab="" id="fd_41">
         <div class="ui vertical segment">
 
@@ -128,16 +174,32 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
+
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1%}
                     {% if item.feedback_type == 'Others' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Others' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -152,12 +214,35 @@
 
     <div class="ui tab" id="fs_tab">
         <div class="ui two item menu">
-        <a class="active item" data-tab="" id="fs_1">
-            Mess 1
-        </a>
-        <a class=" item" data-tab="" id="fs_2">
-            Mess 2
-        </a>
+        {% for d in desig %}
+            {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
+                <a class="active item" data-tab="" id="fs_1">
+                    Mess 1
+                </a>
+                <a class=" item" data-tab="" id="fs_2">
+                    Mess 2
+                </a>
+            {% elif info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+                <a class="active item" data-tab="" id="fs_1">
+                    Mess 1
+                </a>
+                <a class=" item" data-tab="" id="fs_2">
+                    Mess 2
+                </a>
+            {% elif info.user_type == 'student' %}
+                {%if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener'%}
+                <div style="padding-top: 20px;">
+                        Mess 1
+                </div>
+                {%elif d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2'%}
+                    <div style="margin-top: 0.75rem;">
+                        <h1 style="font-size: medium;">Mess - 2</h1>
+                    </div>
+                 {% else %}
+                <div></div>
+                {%endif%}
+            {% endif %}  
+        {% endfor %}
 
     </div>
         <div class="ui active tab" data-tab="" id="fs_11">

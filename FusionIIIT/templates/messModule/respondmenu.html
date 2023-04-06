@@ -35,7 +35,7 @@
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-1" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -57,7 +57,7 @@
                         </button>
                     </div>
                 </td>
-                <hr>
+           
             </tr>
 
             {% endif %}
@@ -81,7 +81,7 @@
                     <p style="text-align: center; "><strong>Accepted</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-1" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -91,7 +91,7 @@
                     <br>
 
                 </div>
-                <hr>
+                
 
             {% endif %}
         {% if list.status == '0' %}
@@ -100,7 +100,7 @@
                     <p style="text-align: center; "><strong>Rejected</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-1" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -110,7 +110,7 @@
                     <br>
 
                 </div>
-                <hr>
+                
 
             {% endif %}
       {% endfor %}

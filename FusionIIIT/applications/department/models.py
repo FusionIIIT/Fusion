@@ -29,3 +29,13 @@ class Announcements(models.Model):
     upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=" ")
     def __str__(self):
         return str(self.maker_id.user.username)
+
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+    about = models.TextField()
+    facility = models.TextField()
+    achievement = models.TextField()
+
+    def __str__(self):
+        return str(self.name)
+    

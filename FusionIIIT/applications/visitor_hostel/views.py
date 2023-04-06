@@ -84,6 +84,7 @@ def visitorhostel(request):
 
         complete_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
             check_out__lt=datetime.datetime.today(), intender=user).order_by('booking_from').reverse()
+
         canceled_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
             status="Canceled", intender=user).order_by('booking_from')
         rejected_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
@@ -102,7 +103,6 @@ def visitorhostel(request):
             status="CancelRequested", booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         dashboard_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(status="Pending") | Q(
             status="Forward") | Q(status="Confirmed"), booking_to__gte=datetime.datetime.today()).order_by('booking_from')
-        print(dashboard_bookings)
         visitors = {}
         rooms = {}
 
@@ -125,6 +125,7 @@ def visitorhostel(request):
 
         complete_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(status="Canceled") | Q(
             status="Complete"), check_out__lt=datetime.datetime.today()).select_related().order_by('booking_from').reverse()
+
         canceled_bookings = BookingDetail.objects.filter(status="Canceled").select_related(
             'intender', 'caretaker').order_by('booking_from')
         cancel_booking_requested = BookingDetail.objects.select_related('intender', 'caretaker').filter(
@@ -728,7 +729,6 @@ def record_meal(request):
             dinner = request.POST.get("dinner")
 
             person = 1
-            print("bid: ", id)
             
             try:
                 meal = MealRecord.objects.select_related('booking__intender', 'booking__caretaker', 'visitor').get(
@@ -973,6 +973,7 @@ def forward_booking(request):
         print(rooms)
         BookingDetail.objects.select_related('intender', 'caretaker').filter(
             id=booking_id).update(status="Forward", remark=remark)
+
         booking = BookingDetail.objects.select_related(
             'intender', 'caretaker').get(id=booking_id)
         bd = BookingDetail.objects.select_related(

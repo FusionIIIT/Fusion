@@ -65,7 +65,8 @@
                           <td>Extension of time</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div ><a href="http://172.27.16.216/iwdModuleV2/extensionFormView">i</a></div>
+                             
+                              <div ><a href="{% url 'iwdModuleV2:Extension Form'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -76,7 +77,8 @@
                       </tr>
                   </tbody>
               </table>
-              <a href="http://172.27.16.216/iwdModuleV2/">Next</a>
+              <a class="ui small left floated primary button"  href="{% url 'iwdModuleV2:Page 2 View'%}">Prev</a>
+              <a class="ui small right floated primary button"  href="../">Back To Home</a>
           </div>
       </div>
   </div>
