@@ -64,6 +64,12 @@ class Constants:
         ('Management Science', 'Management Science'),
     )
 
+    HALL_NAMES = (
+        ('saraswati', 'saraswati'),
+        ('vivekananda', 'vivekananda'),
+        ('aryabhatta', 'aryabhatta'),
+        ('vashishtha', 'vashishtha'),
+    )  
 
 class Student(models.Model):
     '''
@@ -96,6 +102,7 @@ class Student(models.Model):
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=0)
+    hall_id = models.CharField(max_length=255,null=True,blank=True, choices=Constants.HALL_NAMES)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
     curr_semester_no = models.IntegerField(default=1)
