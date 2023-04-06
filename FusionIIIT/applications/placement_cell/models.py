@@ -337,6 +337,7 @@ class PlacementRecord(models.Model):
     year = models.IntegerField(default=0)
     test_score = models.IntegerField(default=0, null=True, blank=True)
     test_type = models.CharField(max_length=30, default='', null=True, blank=True)
+    unique_id=models.ForeignKey(Student, on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.year)
