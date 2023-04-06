@@ -93,14 +93,14 @@ def compounder_view(request):
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
             doctors=Doctor.objects.filter(active=True).order_by('id')
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            # doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
              
 
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors, 'doct': doct,
+                           'appointments_today': appointments_today, 'doctors': doctors,
                            'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
@@ -150,14 +150,14 @@ def student_view(request):
             Counter.objects.create(count=0,fine=0)
             count=Counter.objects.get()
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            # doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
             
 
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule, 'users': users,'doct': doct, 'curr_date': datetime.now().date()})
+                           'prescription': prescription, 'schedule': schedule, 'users': users, 'curr_date': datetime.now().date()})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
