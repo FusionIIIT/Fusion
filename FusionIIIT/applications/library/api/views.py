@@ -143,8 +143,6 @@ def book_search(request):
     eventvalid = soupb.find(id="__EVENTVALIDATION")['value']
     prevpage = soupb.find(id="__PREVIOUSPAGE")['value']
     formfields = {}
-    print(bookname, 'bookname')
-    print(authorname, 'authorname')
     if bookname:
         formfields = {'__VIEWSTATE': viewstate,
                         "__VIEWSTATEGENERATOR": viewgen,
