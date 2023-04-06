@@ -18,6 +18,7 @@ urlpatterns = [
     #Student Room
     path('edit_student/',views.edit_student_room,name="edit_student_room"),
     path('edit_student_rooms_sheet/', views.edit_student_rooms_sheet, name="edit_student_rooms_sheet"),
+    path('insert_rooms/',views.insert_rooms,name="insert_rooms"),
 
     #Guest Room
     path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
