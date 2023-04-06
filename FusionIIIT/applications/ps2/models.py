@@ -22,11 +22,11 @@ class StockEntry(models.Model):
         db_table = 'ps2_stocks'
 
 class TransferEntry(models.Model):
-    stock_no = models.IntegerField(blank=False)
+    stock_no = models.IntegerField(StockEntry, on_delete=models.CASCADE)
     inventory_no = models.CharField(max_length=50, blank=False)
     current_user = models.OneToOneField(User, on_delete=models.CASCADE)
     transfer_user = models.OneToOneField(User, on_delete=models.CASCADE)
-    remark = models.BooleanField()
+    remark = models.BooleanField(default=False)
     date_time = models.DateTimeField()
 
     class Meta:
