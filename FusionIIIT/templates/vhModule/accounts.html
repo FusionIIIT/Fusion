@@ -29,7 +29,7 @@
                             <th class="three wide column">Heads</th>
                             <th class="three wide column">Amount</th>
                             <th class="three wide column">Bill Id</th>
-                            <th class="three wide column">Bill Date</th>
+                            <!-- <th class="three wide column">Bill Date</th> -->
                         </tr>
                     </thead>
 
@@ -45,7 +45,7 @@
                             </td>
                             <td>+&#x20B9;{{ value.total_bill }}</td>
                             <td>{{ key }}</td>
-                            <td>{{ value.bill_date }}</td>
+                            <!-- <td>{{ value.bill_date }}</td> -->
                         </tr>
                         {% endfor %}
 
@@ -59,6 +59,7 @@
                                 </h4>
                             </td>
                             <td>-&#x20B9;{{ bill.cost }}</td>
+                            <td>{{bill.pk}}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -92,7 +93,7 @@
                                     </div>
                                 </h4>
                             </td>
-                            <td>{{ bill.bill_number }}</td>
+                            <td>{{ bill.pk }}</td>
                             <td>&#x20B9;{{ bill.cost }}</td>
                         </tr>
                         {% endfor %}
