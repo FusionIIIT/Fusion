@@ -15,7 +15,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='bill',
             name='bill_date',
-            field=models.DateField(blank=True, default=django.utils.timezone.now),
+
+
+            field=models.DateField(blank=True, default=django.utils.timezone.now, blank = True),
+
         ),
         migrations.DeleteModel(
             name='MealRecord',
