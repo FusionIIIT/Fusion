@@ -82,6 +82,13 @@
 
                 {% if current_date < mess_reg.end_reg %}
                     <strong>Registration ongoing till {{ mess_reg.end_reg }}</strong>
+                    <form method="post" action="{% url 'mess:closemessregistration' %}">                           
+                        <div class="field">
+                            <button class="ui primary button right floated" type="submit" name="submit">
+                                Close
+                            </button>
+                        </div>
+                    </form>
                 {% else %}
                     {#            <form method="post" action="{% url 'mess:startmessregistration' %}">#}
                     <form method="post">

@@ -411,7 +411,7 @@ class SendInvite(forms.Form):
     """
     company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
     rollno = forms.IntegerField(label="rollno", widget=forms.NumberInput(attrs={'min': 0}), required=False)
-    programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
+    programme = forms.ChoiceField(choices = (((),"-----"),)+Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px",
                                                                                 'onchange': "changeDeptForSend()",
                                                                                 'id': "id_programme_send"}))
