@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'courses/',views.courses,name="courses-api"),
     url(r'conference/',views.conference,name="conference-api"),
     url(r'publications/',views.publications,name="publications-api"),
+    url(r'placementrecord',views.placementrecord,name="placement-record-api")
 ]

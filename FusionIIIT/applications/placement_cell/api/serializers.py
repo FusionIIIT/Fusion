@@ -4,7 +4,7 @@ from rest_framework import serializers
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill,
-                                                PlacementStatus, NotifyStudent,Conference)
+                                                PlacementStatus, NotifyStudent,Conference,PlacementRecord)
 
 class ProjectSerializer(serializers.ModelSerializer):
 
@@ -90,3 +90,9 @@ class PlacementStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlacementStatus
         fields = ('notify_id', 'invitation', 'placed', 'timestamp', 'no_of_days')
+
+class PlacementRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementRecord
+        fields = list(PlacementRecord().__dict__.keys())[1:]
