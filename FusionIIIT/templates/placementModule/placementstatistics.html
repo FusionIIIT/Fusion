@@ -329,13 +329,13 @@
 
                                       <tr style="border:1px solid black;">
                                         <th style="border:1px solid black;width:35% ">Roll No.</th>
-                                        <th style="border:1px solid black;width:45%">Name</th>
+                                        <th style="border:1px solid black;width:45%">Company Name</th>
                                         <th style="border:1px solid black;">CTC</th>
                                       </tr>
                                         {% for rec in placement_search_record %}
 
                                         <tr style="border:1px solid black; width:10rem;">
-                                          <td style="border:1px solid black;text-align: center; ">{{ rec.id }}</td>
+                                          <td style="border:1px solid black;text-align: center; ">{{ rec.unique_id }}</td>
                                           <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
                                           <td style="border:1px solid black;text-align: center; ">{{ rec.ctc }}</td>
                                         </tr>

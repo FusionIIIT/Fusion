@@ -333,6 +333,7 @@ class PlacementRecord(models.Model):
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     name = models.CharField(max_length=100, default='')
+    branch = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(decimal_places=2, max_digits=5, default=0)
     year = models.IntegerField(default=0)
     test_score = models.IntegerField(default=0, null=True, blank=True)
