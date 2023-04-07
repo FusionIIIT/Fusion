@@ -34,4 +34,10 @@ urlpatterns = [
     url(r'^view_my_indent/(?P<id>\d+)/$', views.view_my_indent, name='view_my_indent'),
     url(r'^confirmdeletemultiple/(?P<id>\d+)$', views.confirmdeletemultiple, name='confirmdeletemultiple'),
     url(r'^delete_multiple/(?P<id>\d+)$',views.delete_multiple, name='delete_multiple'),
+    url(r'^inwardIndentMultiple/$', views.inward_multiple, name='inward_multiple'),
+    url(r'^inbox_indent_list/(?P<id>\d+)$', views.inboxlist, name='inbox_indent_list'),
+    url(r'^inward_indent_details/(?P<id>\d+)/$', views.inward_indent_details, name='inward_indent_details'),
+    url(r'^reject_indent/(?P<id>\d+)/$', views.reject_indent, name='reject_indent'),
+    url(r'^item_purchase/(?P<id>\d+)/$', views.item_purchase, name='item_purchase'),
+
 ]
