@@ -45,6 +45,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    {% comment %} {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="about">
+                        {{departments.SM.about|safe}}
+                    </div> {% endcomment %}
                     <span>
                         <h3>
                             Our Mission :
@@ -368,6 +394,41 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <span>
+                        <h1> Achievements</h1>
+                        <ol>
+                            <li>
+                                <p>
+                                    PDPM IIITDMJ Student Team has won the International Chess
+                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
+                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
+                                    2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Varun Chaudhary working
+                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
+                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
+                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
+                                    04-07Jan,2020
+                                </p>
+                            </li>
+                        </ol>
+                    </span>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
@@ -377,6 +438,19 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <a class="active item" href="./All_Students/{{411}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            2018 SM
+                        </button>
+                    </a>
+                    <a class="active item" href="./All_Students/{{4111}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block; margin-left:5px">
+                            2019 SM
+                        </button>
+                    </a>
+                    <br>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
