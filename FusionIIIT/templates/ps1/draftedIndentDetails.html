@@ -41,11 +41,11 @@
                                     <div class="two fields">
                                       <div class="field">
                                         <label style="font-size: medium;">Indent Title</label>
-                                        <input type="text" style="color:black;font-size: medium; border: none;padding-left: 0" disabled  value={{ indent.title }}>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.title }}</p>
                                       </div>
                                       <div class="field">
                                         <label style="font-size: medium;">budgetary head</label>
-                                        <input type="text" style="color:black;font-size: medium; border: none;padding-left: 0" disabled  value={{ indent.budgetary_head }}>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.budgetary_head }}</p>
                                       </div>
                                     </div>
 
@@ -55,11 +55,11 @@
                                         <div class="two fields">
                                           <div class="field">
                                             <label style="font-size: medium;">Indent expected delivery</label>
-                                            <input style="color:black;font-size: medium; border: none;padding-left: 0" disabled  value={{ indent.expected_delivery }}>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.expected_delivery }}</p>
                                           </div>
                                           <div class="field">
                                             <label style="font-size: medium;">sources of supply</label>
-                                            <input type="text" style="color:black;font-size: medium; border: none;padding-left: 0" disabled  value={{ indent.sources_of_supply }}>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.sources_of_supply }}</p>
                                           </div>
                                         </div>
                                     </div>
@@ -82,13 +82,10 @@
                                         {% for j in items %}
                                             <tr>
                                                  <td>{{j.item_name}}</td>
-                                                 <td>{{j.quantiy}}</td>
+                                                 <td>{{j.quantity}}</td>
                                                  <td>{{j.estimated_cost}}</td>
                                                  <td>{{j.indent_type}}</td>
-                                                 <td><div class="ui black button" onclick="showModal('{{ j.item_name }}','{{ j.quantiy }}','{{ j.present_stock }}','{{ j.estimated_cost }}','{{ j.purpose }}','{{ j.specification }}','{{ j.indent_type }}','{{ j.nature }}','{{ j.indigenous }}','{{ j.replaced }}','{{ j.purchased }}')">View</div></td>
-
-
-                                                
+                                                 <td><div class="ui black button" onclick="showModal('{{ j.item_name }}','{{ j.quantity }}','{{ j.present_stock }}','{{ j.estimated_cost }}','{{ j.purpose }}','{{ j.specification }}','{{ j.indent_type }}','{{ j.nature }}','{{ j.indigenous }}','{{ j.replaced }}','{{ j.purchased }}','{{ j.upload_file }}')">View</div></td>
 
                                               </tr>
                                         {% endfor %}
@@ -182,20 +179,6 @@
                         </div>
                                 <br>
 
-
-
-
-                                <!--<div class="field">
-                                    <label>Forward To:
-                                        <select required class="ui fluid search selection dropdown" name="receiver">
-                                            <option selected hidden>Select</option>
-                                            {% for holdsdesignations in holdsdesignations %}
-                                            <option value="{{holdsdesignations.user.id}}">{{holdsdesignations}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </label>
-                                </div>-->
-
                                 <div class="field">
                                     <label for="file">Attach Files: </label>
                                     <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
@@ -233,30 +216,6 @@
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
 
                                 <div class="item">
-<!--                                    <div class="ui comments">-->
-<!--                                        <div class="comment">-->
-
-<!--                                            <div class="content">-->
-<!--                                    <a class="paperclip icon">-->
-<!--                                                     {% if file.upload_file %}-->
-<!--                                                     <a href="/media/{{file.upload_file}}" class="header" target="_"><u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>-->
-<!--                                                     </a>-->
-<!--                                                     {% else %}-->
-<!--                                                     <span class="meta">No Attachment</span>-->
-<!--                                                     {% endif %}-->
-<!--                                    </a>-->
-
-<!--                                    <div class="right floated content">-->
-<!--                                                     <a class="author">{{file.uploader.user}}-->
-<!--                                                         <a class="metadata">-->
-<!--                                                            <span class="date">{{file.upload_date}}</span>-->
-<!--                                                         </a>-->
-<!--                                                     </a>-->
-<!--                                    </div>-->
-<!--                                                </div>-->
-
-<!--                                        </div>-->
-<!--                                    </div>-->
 
                                     {% for t in track %}
                                     <div class="ui comments">
@@ -331,7 +290,7 @@
         });
     </script>
     <script type="text/javascript">
-    const showModal=(item_name,quantiy,present_stock,estimated_cost,purpose ,specification,indent_type,nature,indigenous,replaced,purchased )=>{
+    const showModal=(item_name,quantity,present_stock,estimated_cost,purpose ,specification,indent_type,nature,indigenous,replaced,purchased,upload_file )=>{
         document.getElementById('item-modal-container').innerHTML=``
                                                             // $('.ui.modal').modal('show');
         document.getElementById('item-modal-container').innerHTML = `<div class="ui modal">
@@ -344,7 +303,7 @@
                <tbody>
                 <tr>
                     <td><b>Name : </b> <p>${item_name}</p></td>
-                    <td><b>Quantity : </b> <p>${quantiy}</p></td>
+                    <td><b>Quantity : </b> <p>${quantity}</p></td>
                     <td><b>Estimated Cost : </b> <p>${estimated_cost}</p></td>
                 </tr>
                 <tr>
@@ -356,7 +315,20 @@
                     <td><b>Type : </b><p>${indent_type}</p></td>
                     <td><b>Nature of Item : </b><p>${nature===true?"Consumable":"Non-Consumable"}</p></td>
                     <td><b>indigenous : </b><p>${indigenous===true?"Yes":"No"}</p></td>
+                    
+                </tr>
+                <tr>
                     <td><b>replaced : </b><p>${replaced===true?"Yes":"No"}</p></td>
+                    <td><b>Uploaded File : </b>
+                        <a class="paperclip icon">
+                            ${
+                                upload_file ? `<a href="/media/${upload_file}" class="header" target="_">
+                                    <u class="meta" style="color: #1B1C1D">${upload_file}</u>
+                                </a>`:`<span class="meta">No Attachment</span>`
+                            }
+                                
+                        </a>
+                    </td>
 
                 </tr>
 

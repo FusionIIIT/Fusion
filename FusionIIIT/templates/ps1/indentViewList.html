@@ -35,10 +35,18 @@
                  <td><a href="{% url 'ps1:view_my_indent' indent.file_info.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
-                 {% if indent.approved == False%}
-                 <td> <button class="ui red button">
-                     Pending
-                 </button></td>
+                 {% if indent.rejected == True %}
+                    <td><button class="ui red button">
+                        Rejected
+                    </button></td>
+                 {% elif indent.procured == True %}
+                     <td> <button class="ui green button">
+                         Purchased
+                     </button></td>
+                 {% elif indent.approved == False%}
+                    <td><button class="ui blue button">
+                        Pending
+                    </button></td>
                  {% elif indent.approved == True %}
                  <td> <button class="ui yellow button">
                      Approved

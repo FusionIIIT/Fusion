@@ -22,7 +22,7 @@
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
         </div>
 
-            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            <div class="ui large form" >
 
             {% csrf_token %}
 
@@ -34,38 +34,37 @@
 
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
                                 <div class="ui form">
-
                                 <h3 style="text-decoration: underline;"> Status : </h3>
                                 {% if indent.rejected == True %}
-                                    <button class="ui red button">
+                                    <td><button class="ui red button">
                                         Rejected
-                                    </button>
+                                    </button></td>
                                 {% elif indent.procured == True %}
-                                    <button class="ui green button">
+                                    <td><button class="ui green button">
                                         Purchased
-                                    </button> 
-                                {% elif indent.approved == False %}
-                                    <button class="ui blue button">
+                                    </button></td>
+                                {% elif indent.approved == False%}
+                                    <td><button class="ui blue button">
                                         Pending
-                                    </button>
+                                    </button></td>
                                 {% elif indent.approved == True %}
-                                    <button class="ui yellow button">
+                                    <td><button class="ui yellow button">
                                          Approved
-                                    </button>
+                                    </button></td>
                                 
-                                {% endif %}                                 
-                                <h3 class="ui header" style="text-decoration:underline;margin-bottom:20px ;">Indent Details</h3>
+                                {% endif %} 
+                                  <h3 class="ui header" style="text-decoration:underline;margin-bottom:20px ;">Indent Details</h3>
                                   <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';font-size: 17px;">{{file.description}}</pre>
                                   <div class="field">
                                    
                                     <div class="two fields">
                                       <div class="field">
                                         <label style="font-size: medium;">Indent Title</label>
-                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.title }}</p>
+                                         <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.title }}</p>
                                       </div>
                                       <div class="field">
                                         <label style="font-size: medium;">budgetary head</label>
-                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.budgetary_head }}</p>
+                                         <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.budgetary_head }}</p>
                                       </div>
                                     </div>
 
@@ -79,7 +78,7 @@
                                           </div>
                                           <div class="field">
                                             <label style="font-size: medium;">sources of supply</label>
-                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.sources_of_supply }}</p>
+                                             <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.sources_of_supply }}</p>
                                           </div>
                                         </div>
                                     </div>
@@ -92,10 +91,15 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>quantity</th>
+                                            {% if indent.approved == False %}
                                             <th>est. cost</th>
                                             <th>indent_type</th>
-                                            <th>View</th>
+                                            {% endif %}
                                             
+                                            <th>View</th>
+                                            {% if indent.approved == True %}
+                                            <th>Purchase Status</th>
+                                            {% endif %}
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -103,9 +107,23 @@
                                             <tr>
                                                  <td>{{j.item_name}}</td>
                                                  <td>{{j.quantity}}</td>
+                                                 {% if indent.approved == False %}
                                                  <td>{{j.estimated_cost}}</td>
                                                  <td>{{j.indent_type}}</td>
+                                                 {% endif %}
                                                  <td><div class="ui black button" onclick="showModal('{{ j.item_name }}','{{ j.quantity }}','{{ j.present_stock }}','{{ j.estimated_cost }}','{{ j.purpose }}','{{ j.specification }}','{{ j.indent_type }}','{{ j.nature }}','{{ j.indigenous }}','{{ j.replaced }}','{{ j.purchased }}','{{ j.upload_file }}')">View</div></td>
+                                                 {% if indent.approved == True %}
+                                                 <td>
+                                                    {% if j.purchased == False %}
+                                                    <button class="ui orange button" style="padding-left:7px;padding-right: 7px;" onclick="itemPurchase('{{ j.item_id }}')" >Make purchased</button>
+                                                    {% else %}
+                                                    <button class="ui green button" style="padding-left:7px;padding-right: 7px;" >Purchased</button>
+                                                    {% endif %}
+
+                                                    
+                                                     
+                                                 </td>
+                                                 {% endif %}
 
 
                                                 
@@ -115,6 +133,7 @@
                                         </tbody>
 
                                     </table>
+
 
 
                                     <br>
@@ -147,20 +166,123 @@
                                         </div>
                                     </div>
                                     {% endfor %}
- 
 
                                     <div class="ui divider"></div>
 
-
                                 </div>
+
+                                <br>
+                                {% if indent.approved == False and indent.rejected == False %}
+                                <form method="POST" enctype="multipart/form-data" id="form2" onsubmit="return confirm('Do you really want to reject this indent?');">
+                                {% csrf_token %}
+                                <button type="submit" name="reject" class="ui large right floated red button" style = "float: right;" >
+                                    Reject<i class="ui close icon right floated"></i>
+                                </button>
+                                </form>
+
+                                <br>
+                                <br>
+                                {% endif %}
+
+                                {% if indent.rejected == False %}
+                                <form method="POST" enctype="multipart/form-data" id="form1" onsubmit="return confirm('Do you really want to submit the form ?');">
+                                    {% csrf_token %}
+                                    <div class="field">
+                                        <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                                    </div>
+
+                                    <br>
+
+                                    <br>
+
+                                    <div class="field">
+                                        <label>Send as:*
+                                            <select required class="ui fluid search selection dropdown" name="sender" required>
+                                                <option selected hidden>Select</option>
+
+                                                {% for designations in designations %}
+                                                <option value="{{designations.id}}">{{designations}}</option>
+                                                {% endfor %}
+
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <br>
+                                    <br>
+
+                                    <div class="field">
+                                        <label>Forward To:*
+
+                                                <input type ="search" id="input_search" list = "input_list" name = "receiver" required>
+                                                <datalist  id="input_list">
+
+                                                </datalist>
+                                           
+                                        </label>
+                                    </div>
+
+                                    <div class="field">
+                                        <label>Receiver Designation:*
+                                            <input type ="search" id="input_search1" list = "input_list1" name = "recieve" required>
+                                                <datalist  id="input_list1">
+
+                                                </datalist>
+
+
+                                           
+                                        </label>
+                                    </div>
+                                    <br>
+
+                                    <div class="field">
+                                        <label for="file">Attach Files: </label>
+                                        <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                                    </div>
+                                    <br>
+                                    <div>
+                                        {% if indent.approved == False %}
+                                        <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
+                                                    Forward<i class="ui forward icon right floated"></i>
+                                        </button>
+
+
+                                        <button type="submit" name="approve" class="ui large right floated green button" style = "float: right;">
+                                                    Approve<i class="ui check icon right floated"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% if indent.approved == True and indent.procured == False %}
+
+                                            {% if indent_items_length == purchaged_items_length %}
+                                             <button type="submit" name="procure" class="ui large right floated green button" style = "float: right;" >
+                                                        Procure <i class="ui check icon right floated"></i>
+                                            </button>
+                                            {% else %}
+                                            <button type="submit" class="ui large right floated green button" style = "float: right;" disabled>
+                                                        Procure <i class="ui check icon right floated"></i>
+                                            </button>
+                                            <p style="font-size:12px;color:red;">When all items will be purchased then only this button will be enabled</p>
+                                            {% endif %}
+
+                                        {% endif %}
+
+
+                                        
+
+                                    </div>
+                                </form>
+                                
+                                {% endif %}
+
+
 
                             </div>
                         </div>
                     </div>
 
-                    <br>           
+                         
 
-            </form>
+            </div>
 
             <br>
     </div>
@@ -252,8 +374,33 @@
         });
     </script>
     <script type="text/javascript">
+
+    const itemPurchase = (item_id)=>{
+        console.log(item_id)
+        if(window.confirm("Are you sure this item has been purchased")){
+            $.ajax({
+                type: 'POST',
+                url: `/purchase-and-store/item_purchase/${item_id}/`,
+                data: {
+                    'csrfmiddlewaretoken': '{{csrf_token}}',
+                    
+                },
+                processData: false,
+                contentType: false,
+                success: function(response){
+                    console.log('coming-----------------------');
+                    console.log(response)
+                    location.reload()
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+
+        }
+
+    }
     const showModal=(item_name,quantity,present_stock,estimated_cost,purpose ,specification,indent_type,nature,indigenous,replaced,purchased,upload_file )=>{
-        console.log(upload_file)
         document.getElementById('item-modal-container').innerHTML=``
                                                             // $('.ui.modal').modal('show');
         document.getElementById('item-modal-container').innerHTML = `<div class="ui modal">
@@ -342,4 +489,3 @@
 
 
 {% endblock %}
-
