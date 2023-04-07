@@ -281,6 +281,8 @@ class Calendar(models.Model):
     '''
     from_date = models.DateField()
     to_date = models.DateField()
+    start_time = models.TimeField(default='20:00')
+    end_time = models.TimeField(default='20:00')
     description = models.CharField(max_length=40)
 
     class Meta:
