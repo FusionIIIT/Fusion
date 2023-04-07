@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.urls import path
 
 from . import views
 
@@ -12,7 +13,8 @@ urlpatterns = [
     url(r'^All_Students/(?P<bid>[0-9]+)/$', views.all_students,name='all_students'),
     url(r'^approved/$', views.approved, name='approved'),
     url(r'^deny/$', views.deny, name='deny'),
-
+    # url(r'^editDepartmentDetail/(?P<department_name>)$', views.edit_department, name='edit_department'),
+    path('editDepartmentDetail/<str:department_name>/<str:field>', views.edit_department,name='edit_department'),
     #api routes
     url(r'^fetchAnnouncements/$', views.AnnouncementAPI.as_view(http_method_names=['get']), name='fetchAnnouncements'),
     url(r'^addNewAnnouncement/$', views.AnnouncementAPI.as_view(http_method_names=['post']), name='addNewAnnouncement'),
