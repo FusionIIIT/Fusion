@@ -37,7 +37,7 @@
                 <div class="ui huge fluid vertical pointing menu"
                     style="max-width: 320px;">
 
-                    <a class="active item" data-tab="first" id="announcement">
+                    {% comment %} <a class="active item" data-tab="first" id="announcement">
                         Make Announcement
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -45,9 +45,9 @@
                     <a class="item" data-tab="second" id="br_ann">
                         Browse Announcement
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> {% endcomment %}
 
-                    <a class="item" data-tab="third" id="request_status">
+                    <a class="active item" data-tab="third" id="request_status">
                         Request Status
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -70,7 +70,7 @@
                         SM Department
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="active item" data-tab="DES" id="DESIGN_Dep">
+                    <a class="item" data-tab="DES" id="DESIGN_Dep">
                         DESIGN Department
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -92,7 +92,7 @@
             <div class="eleven wide column">
 
                 {% comment %}Make announcement{% endcomment %}
-                <div class="ui active tab segment" data-tab="first">
+                {% comment %} <div class="ui active tab segment" data-tab="first">
                     {% block make_announcement %}
                         {% if user_designation == "faculty" %}
                                 {% include "department/make_announcements_fac.html" %}
@@ -100,11 +100,11 @@
                                 {% include "department/make_announcements_staff.html" %}
                         {% endif %}
                     {% endblock %}
-                </div>
+                </div> {% endcomment %}
                 {% comment %}Make announcement{% endcomment %}
 
                 {% comment %}See announcement{% endcomment %}
-                <div class="ui tab segment" data-tab="second">
+                {% comment %} <div class="ui tab segment" data-tab="second">
                     {% block browse_announcement %}
                         {% if user_designation == "faculty" %}
                             {% include "department/browse_announcements.html" %}
@@ -112,11 +112,11 @@
                             {% include "department/browse_announcements_staff.html" %}
                         {% endif %}
                     {% endblock %}
-                </div>
+                </div> {% endcomment %}
                 {% comment %}See announcement{% endcomment %}
             
                 {% comment %}status of request!{% endcomment %}
-                <div class="ui tab segment" data-tab="third">
+                <div class="ui active tab segment" data-tab="third">
                     {% block request_status %}
                         {% include "department/request_status.html" %} 
                     {% endblock %}
