@@ -39,6 +39,7 @@ class IndentFile2(models.Model):
     approved = models.BooleanField(default=False)
     procured = models.BooleanField(default=False)
     description = models.CharField(max_length=250,blank=False,default="")
+    rejected = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'IndentFile2'
@@ -46,12 +47,9 @@ class IndentFile2(models.Model):
 
 class Item(models.Model):
     item_id = models.AutoField(primary_key=True)
-    indent_file_id = models.ForeignKey(
-        IndentFile2, on_delete=models.CASCADE, null=True, blank=False)
-    file_info = models.OneToOneField(
-        File, on_delete=models.CASCADE)
+    indent_file_id = models.ForeignKey(IndentFile2, on_delete=models.CASCADE, null=True, blank=False)
     item_name = models.CharField(max_length=250, blank=False)
-    quantiy = models.IntegerField(blank=False)
+    quantity = models.IntegerField(blank=False)
     present_stock = models.IntegerField(blank=False)
     estimated_cost = models.IntegerField(null=True, blank=False)
     purpose = models.CharField(max_length=250, blank=False)
@@ -61,6 +59,7 @@ class Item(models.Model):
     indigenous = models.BooleanField(default=False)
     replaced = models.BooleanField(default=False)
     purchased = models.BooleanField(default=False)
+    upload_file = models.FileField(blank=True)
 
     class Meta:
         db_table = 'Item'
