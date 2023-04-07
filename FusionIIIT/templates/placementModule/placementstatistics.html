@@ -524,12 +524,12 @@
                                     <table style="border:1px solid black; width:100%;">
                                         <tr style="border:1px solid black;">
                                             <th style="border:1px solid black;width:35% ">Roll No.</th>
-                                            <th style="border:1px solid black;width:45%">Name</th>
+                                            <th style="border:1px solid black;width:45%">Company Name</th>
                                             <th style="border:1px solid black;">CTC</th>
                                         </tr>
                                         {% for rec in pbi_search_record %}
                                         <tr style="border:1px solid black; width:10rem;">
-                                            <td style="border:1px solid black;text-align: center; ">{{ rec.id }}</td>
+                                            <td style="border:1px solid black;text-align: center; ">{{ rec.unique_id }}</td>
                                             <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
                                             <td style="border:1px solid black;text-align: center; ">{{ rec.ctc }}</td>
                                         </tr>
@@ -718,34 +718,18 @@
                                 <center>
                                     {% if higher_search_record != " " %}
                                     <table style="border:1px solid black; width:100%;">
-                                        <tr style="border:1px solid black;">
-                                            <th style="border:1px solid black; ">Placement Type</th>
-                                            <th style="border:1px solid black;">Name</th>
-                                            <th style="border:1px solid black;">CTC</th>
-                                            <th style="border:1px solid black;">Year</th>
-                                            <th style="border:1px solid black;">Test Score</th>
-                                            <th style="border:1px solid black;">Test Type</th>
-                                        </tr>
-                                        {% for rec in higher_search_record %}
-
-                                        <tr style="border:1px solid black; width:10rem;">
-                                            <td style="border:1px solid black; ">{{ rec.placement_type }}</td>
-                                            <td style="border:1px solid black;">{{ rec.name }}</td>
-                                            <td style="border:1px solid black;">{{ rec.ctc }}</td>
-                                            <td style="border:1px solid black;">{{ rec.year }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
-                                            <td>
-                                            <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
-                                              {% csrf_token %}
-                                              <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
-                                                  <i class="delete red icon"></i>
-                                              </button>
-                                            </form>
-                                          </td>
-                                        </tr>
-
-                                        {% endfor %}
+                                      <tr style="border:1px solid black;">
+                                        <th style="border:1px solid black;width:35% ">Roll No.</th>
+                                        <th style="border:1px solid black;width:45%">Name</th>
+                                        <th style="border:1px solid black;">Year</th>
+                                      </tr>
+                                      {% for rec in higher_search_record %}
+                                      <tr style="border:1px solid black; width:10rem;">
+                                          <td style="border:1px solid black;text-align: center; ">{{ rec.unique_id }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
+                                          <td style="border:1px solid black;text-align: center; ">{{ rec.year }}</td>
+                                      </tr>
+                                      {% endfor %}
                                     </table>
                                     {% else %}
                                     <h2>No Data Found.</h2>
