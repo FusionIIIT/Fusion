@@ -24,7 +24,7 @@ here!{% endcomment %}
           <label>Role </label>
           <!--  <input placeholder="Published" type="text"> -->
           <div class="ui fluid search selection dropdown">
-            <input type="hidden" id="event_role" name="event_role" />
+            <input type="hidden" id="event_role" name="event_role" required/>
             <i class="dropdown icon"></i>
             <div class="default text">Role</div>
             <div class="menu">
@@ -42,6 +42,7 @@ here!{% endcomment %}
             type="text"
             id="sponsoring_agency"
             name="sponsoring_agency"
+            required
           />
         </div>
       </div>
@@ -59,6 +60,7 @@ here!{% endcomment %}
                 placeholder="Start"
                 id="event_start_date"
                 name="event_start_date"
+                required
               />
             </div>
           </div>
@@ -74,6 +76,7 @@ here!{% endcomment %}
                 placeholder="End"
                 id="event_end_date"
                 name="event_end_date"
+                required
               />
             </div>
           </div>
@@ -89,6 +92,7 @@ here!{% endcomment %}
               type="text"
               id="event_venue"
               name="event_venue"
+              required
             />
           </div>
         </div>
@@ -96,7 +100,7 @@ here!{% endcomment %}
         <div class="four wide field">
           <label>Event Type</label>
           <div class="ui fluid search selection dropdown">
-            <input type="hidden" id="event_type" name="event_type" />
+            <input type="hidden" id="event_type" name="event_type" required/>
             <i class="dropdown icon"></i>
             <div class="default text">Event Type</div>
             <div class="menu">
@@ -134,6 +138,7 @@ here!{% endcomment %}
             id="myDIV"
             name="myDIV"
             style="display: none"
+            
           />
         </div>
       </div>
@@ -147,6 +152,7 @@ here!{% endcomment %}
               type="text"
               id="event_name"
               name="event_name"
+              required
             />
           </div>
         </div>

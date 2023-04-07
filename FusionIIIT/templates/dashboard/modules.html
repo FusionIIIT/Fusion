@@ -206,6 +206,19 @@
                     </div>
                 </a>
             </span>
+            {% if 'student' != request.user.extrainfo.user_type %}
+            <span class="moduleSpan">
+                <a class="ui large label" href="/hr2/administrativeProfile">
+                    <div>
+                        <i class="ui briefcase icon big"></i>
+                    </div>
+
+                    <div class="ui small header tcenter">
+                        Admin Profile
+                    </div>
+                </a>
+            </span>
+            {% endif %}
         </div>
         {% comment %}
             <a class="ui bottom attached blue label">

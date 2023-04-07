@@ -279,7 +279,7 @@ def profile(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type != 'faculty':
         return redirect('/')
-    pf = extra_info.id
+    pf = user.id
 
     form = ConfrenceForm()
 
@@ -321,7 +321,7 @@ def profile(request, username=None):
     a1 = HoldsDesignation.objects.select_related('user','working','designation').filter(working = user)
     flag_rspc = 0
     for i in a1:
-        if(str(i.designation)=='Dean (RSPC)'):
+        if(str(i.designation)=='dean_rspc'):
             flag_rspc = 1
 
     # done edit
@@ -367,9 +367,15 @@ def profile(request, username=None):
 # Dean RSPC Profile
 
 def rspc_profile(request):
-    user = get_object_or_404(faculty_about, user=request.user)
-    pf = user.user
+    # user = get_object_or_404(faculty_about, user=request.user)
+    # pf = user.user
 
+    user = get_object_or_404(User, username= request.user)
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    if extra_info.user_type != 'faculty':
+        return redirect('/')
+    pf = extra_info.id
+    
     form = ConfrenceForm()
 
     journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
@@ -395,12 +401,12 @@ def rspc_profile(request):
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
 
-    pers = get_object_or_404(faculty_about, user = request.user)
-    design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
+    # pers = get_object_or_404(faculty_about, user = request.user)
+    # design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
 
     desig=[]
-    for i in design:
-        desig.append(str(i.designation))
+    # for i in design:
+    #     desig.append(str(i.designation))
     context = {'user': user,
                'desig':desig,
                'pf':pf,
@@ -423,7 +429,7 @@ def rspc_profile(request):
                'keynotes':keynotes,
                'events':events,
                'year_range':y,
-               'pers':pers
+            #    'pers':pers
                }
     return render(request, 'eisModulenew/rspc_profile.html', context)
 
@@ -2569,7 +2575,6 @@ def generate_report(request):
     return render_to_pdf('eisModulenew/generatereportshow.html', context)
 
 
-# report for dean rspc
 
 
 def rspc_generate_report(request):
@@ -2949,16 +2954,8 @@ def rspc_generate_report(request):
     else:
         events=""
         events_req = "0"
-
-    pers = get_object_or_404(faculty_about, user = request.user)
-    design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
-
-    desig=[]
-    for i in design:
-        desig.append(str(i.designation))
     context = {'user': user,
                'pf':pf,
-               'desig':desig,
                'journal':journal,
                'journal_req':journal_req,
                'conference': conference,
