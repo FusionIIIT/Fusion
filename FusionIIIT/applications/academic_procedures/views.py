@@ -298,9 +298,9 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            semester_no = obj.curr_semester_no+1
-            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
-            user_sem = semester_no
+            user_sem = obj.curr_semester_no
+            # user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = user_sem+1)
             
         except Exception as e:
             user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
@@ -1245,7 +1245,9 @@ def get_pre_registration_eligibility(current_date, current_time, user_sem, year)
     '''
     try:
         # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
-        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {year}").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem+1} {year}").first()
+        if pre_registration_date==None:
+            pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
         prd_start_time =  pre_registration_date.start_time
@@ -1439,30 +1441,46 @@ def allot_courses(request):
             profiles=request.FILES['allotedCourses']
             batch_id=request.POST['batch']
             sem_no=int(request.POST['semester'])
-
             batch=Batch.objects.get(id=batch_id)
             sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
-
-            excel = xlrd.open_workbook(file_contents=profiles.read())
+            year = int(str(batch)[-1:-5:-1][::-1])
+            excel = xlrd.open_workbook(profiles.name,file_contents=profiles.read())
             sheet=excel.sheet_by_index(0)
             final_registrations=[]
+            registrations = []
+            course_registrations = []
             for i in range(1,sheet.nrows):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
-                course_slot_name = sheet.cell_value(i,1)
+                course_slot_name = str(sheet.cell_value(i,1).strip())
                 course_code = sheet.cell_value(i,2)
-                course_name = sheet.cell_value(i,3)
+                course_code = str(course_code.strip())
+                course_name = str(sheet.cell_value(i,3))
+                course_name = course_name.strip()
                 user=User.objects.get(username=roll_no)
                 user_info = ExtraInfo.objects.get(user=user)
                 student = Student.objects.get(id=user_info)
-                course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
-                course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
-                #print(">>>>>",roll_no,course_slot_name,course_code,course_name)
-                final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
-                                                    course_id=course,semester_id=sem_id)
+                course = Courses.objects.get(code=course_code)                
+                curriculum_id = Curriculum.objects.get(course_code=str(course_code))
+                # final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot_name,
+                #                                     course_id=course,semester_id=sem_id)
+                final_registration=FinalRegistration(student_id=student,course_id=course,semester_id=sem_id)            
                 final_registrations.append(final_registration)
+                register = Register(curr_id = curriculum_id,year = year,student_id = student,semester = sem_no)
+                registrations.append(register)
+                semester_id = Semester.objects.get(semester_no=sem_no, curriculum=batch.curriculum)
+                id = course_registration.objects.aggregate(Max('id'))['id__max']
+                course_register = course_registration(id=id+1,student_id = student,working_year=year,semester_id = semester_id,course_id = course)
+                course_registrations.append(course_register)
+                
 
             try:
                 FinalRegistration.objects.bulk_create(final_registrations)
+                try:
+                    Register.objects.bulk_create(registrations)
+                    course_registration.objects.bulk_create(course_registrations)
+                    
+                except:
+                    print("Registered is already")
                 messages.success(request, 'Successfully uploaded!')
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
