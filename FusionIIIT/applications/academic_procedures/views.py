@@ -38,6 +38,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
+from datetime import datetime
 
 
 
@@ -315,8 +316,10 @@ def academic_procedures_student(request):
         branchchange_flag=False
         if user_sem==2 and des_flag==False and ug_flag==True:
             branchchange_flag=True
-
-        pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
+            
+        now = datetime.now()
+        current_time = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, current_time.time(),user_sem, year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         pre_registration_flag = False
@@ -1220,7 +1223,7 @@ def phd_details(request):
 def get_student_register(id):
     return Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = id)
 
-def get_pre_registration_eligibility(current_date, user_sem, year):
+def get_pre_registration_eligibility(current_date, current_time, user_sem, year):
     '''
         This function is used to extract the elgibility of pre-registration for a given semester
         for a given year from the Calendar table.
@@ -1242,13 +1245,21 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
     '''
     try:
         # pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
-        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {user_sem} {year}").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {year}").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
-        if current_date>=prd_start_date and current_date<=prd_end_date:
-            return True, None
-        if current_date<prd_start_date:
-            return False, prd_start_date
+        prd_start_time =  pre_registration_date.start_time
+        prd_end_time =  pre_registration_date.end_time
+        if current_date==prd_start_date and current_time>=prd_start_time:
+                return True, None
+        elif current_date>prd_start_date and current_date<prd_end_date:
+                return True, None
+        elif current_date==prd_end_date and current_time<=prd_end_time:
+             return True, None
+            
+        # elif current_date<prd_start_date or current_date>prd_end_date:
+        elif current_date<prd_start_date:
+            return False, str(prd_start_date)+" " + str(prd_start_time)
         else :
             return False, None
     except Exception as e:

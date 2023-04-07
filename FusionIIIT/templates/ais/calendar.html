@@ -7,6 +7,8 @@
       <th>Description</th>
       <th>Start Date</th>
       <th>End Date</th>
+      <th>Start Time</th>
+      <th>End Time</th>
       <th></th>
     </tr>
   </thead>
@@ -16,6 +18,9 @@
     <td>{{ i.description }}</td><input type="hidden" name="desc" value="{{ i.description }}">
     <td>{{ i.from_date }}</td>
     <td>{{ i.to_date }}</td>
+    <td>{{ i.start_time}}</td>
+    <td>{{ i.end_time }}</td>
+
     <td><button class="ui button red icon" id="{{ forloop.counter }}"><i class="edit icon"></i></button>
       <div class="ui modal {{forloop.counter}}">
         <i class="close icon"></i>
@@ -43,6 +48,22 @@
                 <div class="ui input left icon">
                   <i class="calendar icon"></i>
                   <input type="date" placeholder="To Date" id="toe_date_{{forloop.counter}}" name="to_date" value="{{i.to_date|date:"Y-m-d"}}">
+                </div>
+              </div>
+
+              <div class="ui calendar" id="start">
+                <label>Start Time:</label><br>
+                <div class="ui input left icon">
+                  <i class="calendar icon"></i>
+                  <input type="time" placeholder="start" id="start_{{forloop.counter}}" name="start" value="{{i.start|time:"hh:mm:ss"}}">
+                </div>
+              </div>
+
+              <div class="ui calendar" id="end">
+                <label>End Time:</label><br>
+                <div class="ui input left icon">
+                  <i class="calendar icon"></i>
+                  <input type="time" placeholder="end" id="end_{{forloop.counter}}" name="end" value="{{i.end|time:"hh:mm:ss"}}">
                 </div>
               </div>
               <hr>
@@ -121,6 +142,21 @@
           <div class="ui input left icon">
             <i class="calendar icon"></i>
             <input type="date" placeholder="To Date" id="to_date" name="to_date">
+          </div>
+        </div>
+        <div class="ui calendar" id="start">
+          <label>Start Time:</label><br>
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input type="time" placeholder="start" id="start_time" name="start">
+          </div>
+        </div><br>
+
+        <div class="ui calendar" id="end">
+          <label>End Time:</label><br>
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input type="time" placeholder="end" id="end_time" name="end">
           </div>
         </div>
         <hr>
