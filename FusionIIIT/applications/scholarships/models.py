@@ -60,6 +60,19 @@ class Constants:
     MOTHER_OCC_CHOICES = (("EMPLOYED", "EMPLOYED"), ("HOUSE_WIFE", "HOUSE_WIFE"))
     HOUSE_TYPE_CHOICES = (("RENTED", "RENTED"), ("OWNED", "OWNED"))
 
+    PROGRAMME_CHOICES = (
+        ('B', 'UNDER_GRAD'),
+        ('P', 'POST_GRAD_PHD'),
+        ('M', 'POST_GRAD_MASTER')
+    )
+
+    DISCIPLINE_CHOICES = (
+        ('C', 'CSE'),
+        ('E', 'ECE'),
+        ('M', 'ME'),
+        ('D', 'DES')
+    )
+
 
 class Award_and_scholarship(models.Model):
     award_name = models.CharField(max_length=100, default="")
