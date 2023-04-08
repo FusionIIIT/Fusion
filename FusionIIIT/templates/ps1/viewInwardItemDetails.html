@@ -207,32 +207,40 @@
                                             </select>
                                         </label>
                                     </div>
-
                                     <br>
                                     <br>
+                                   <div class="field">
+                                        <label
+                                          >Forward To*:
+                                          <select
+                                            required
+                                            class="ui fluid search selection dropdown"
+                                            id="select_user"
+                                            name='receiver'
+                                            onchange="changeUserHandler()"
+                                          >
+                                            <option selected hidden>Select</option>
 
-                                    <div class="field">
-                                        <label>Forward To:*
-
-                                                <input type ="search" id="input_search" list = "input_list" name = "receiver" required>
-                                                <datalist  id="input_list">
-
-                                                </datalist>
-                                           
+                                            {% for user in users %}
+                                            <option value="{{ user.username }}">{{ user.username }}</option>
+                                            {% endfor %}
+                                          </select>
                                         </label>
-                                    </div>
-
-                                    <div class="field">
-                                        <label>Receiver Designation:*
-                                            <input type ="search" id="input_search1" list = "input_list1" name = "recieve" required>
-                                                <datalist  id="input_list1">
-
-                                                </datalist>
-
-
+                                      </div>
+                                      <div class="field">
+                                        <label
+                                          >Receiver Designation*:
+                                          <select
+                                            required
+                                            class="ui fluid search selection dropdown"
+                                            id="select_reciever_design"
+                                            name='recieve'
                                            
+                                          >
+                                          </select>
                                         </label>
-                                    </div>
+                                   </div>
+
                                     <br>
 
                                     <div class="field">
@@ -289,9 +297,10 @@
 
     <div class="ui tab" data-tab="attachments">
 
-        <div class="ui two item menu">
+        <div class="ui three item menu">
             <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+            <a class='item' target="_blank" href="/media/{{ file.upload_file }}" ><b style="text-decoration:underline;color: blue;">UPLOADED FILE</b></a>
         </div>
 
         <div class="ui fluid card">
@@ -339,6 +348,44 @@
     </div>
 
 
+    <script type="text/javascript">
+        
+      const changeUserHandler = ()=>{
+        console.log("working")
+        value = document.getElementById('select_user').value;
+        console.log(value)
+        const formData = new FormData();
+        formData.append('value',value)
+        $.ajax({
+              type: "POST",
+              url: `/purchase-and-store/get_designations/`,
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (response) {
+                console.log("coming-----------------------");
+
+                
+                console.log(JSON.parse(response.designations));
+                all_designations = JSON.parse(response.designations);
+                $("#select_reciever_design").html("");
+                for (var i = 0; i < all_designations.length; i++) {
+                  $("#select_reciever_design").append(
+                    '<option value="' +
+                      all_designations[i].fields.name +
+                      '">' +
+                      all_designations[i].fields.name +
+                      "</option>"
+                  );
+            }
+            
+              },
+              error: function (rs, e) {
+                console.log("error-------");
+              },
+          });
+      }
+    </script>
     <script type="text/javascript">
         $('#input_search1').keyup(function(){
 

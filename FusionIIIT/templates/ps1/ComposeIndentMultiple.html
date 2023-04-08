@@ -118,34 +118,35 @@
       <div class="field">
         <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
       </div>
-
-      <div class="field">
+       <div class="field">
         <label
           >Forward To:
+          <select
+            required
+            class="ui fluid search selection dropdown"
+            id="select_user"
+            name='receiver'
+            onchange="changeUserHandler()"
+          >
+            <option selected hidden>Select</option>
 
-          <input
-            type="search"
-            id="input_search"
-            list="input_list"
-            name="receiver"
-          />
-          <datalist id="input_list"> </datalist>
-                     
+            {% for user in users %}
+            <option value="{{ user.username }}">{{ user.username }}</option>
+            {% endfor %}
+          </select>
         </label>
       </div>
-
       <div class="field">
         <label
           >Receiver Designation:
-          <input
-            type="search"
-            id="input_search1"
-            list="input_list1"
-            name="reciever_designation"
-          />
-          <datalist id="input_list1"> </datalist>
-
-                     
+          <select
+            required
+            class="ui fluid search selection dropdown"
+            id="select_reciever_design"
+            name='reciever_designation'
+           
+          >
+          </select>
         </label>
       </div>
 
@@ -316,6 +317,43 @@
 {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 <script type="text/javascript">
+
+  const changeUserHandler = ()=>{
+    console.log("working")
+    value = document.getElementById('select_user').value;
+    console.log(value)
+    const formData = new FormData();
+    formData.append('value',value)
+    $.ajax({
+          type: "POST",
+          url: `/purchase-and-store/get_designations/`,
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            console.log("coming-----------------------");
+
+            
+            console.log(JSON.parse(response.designations));
+            all_designations = JSON.parse(response.designations);
+            $("#select_reciever_design").html("");
+            for (var i = 0; i < all_designations.length; i++) {
+              $("#select_reciever_design").append(
+                '<option value="' +
+                  all_designations[i].fields.name +
+                  '">' +
+                  all_designations[i].fields.name +
+                  "</option>"
+              );
+        }
+        
+          },
+          error: function (rs, e) {
+            console.log("error-------");
+          },
+      });
+  }
+  // document.getElementById('select_user').addEventListener("change",changeUserHandler)
   const addmoreHandler = () => {
     $(".ui.modal").modal({ blurring: true }).modal("show");
   };
