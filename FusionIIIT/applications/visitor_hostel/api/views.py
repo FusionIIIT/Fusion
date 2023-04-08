@@ -254,11 +254,7 @@ def visitorhostel(request):
     inventory = serializers.InventorySerializer(inventory, many=True).data
     
     inventory_bill = serializers.InventoryBillSerializer(inventory_bill, many=True).data
-    # active_visitors
-    
-    # intenders = serializers.UserSerializer(intenders, many=True).data
-    # visitors
-    # rooms
+
     
     previous_visitors = serializers.VisitorDetailSerializer(previous_visitors, many=True).data
     
@@ -282,21 +278,14 @@ def visitorhostel(request):
                    'dashboard_bookings' : dashboard_bookings,
 
                    'bills': bills,
-                   # 'all_rooms_status' : all_rooms_status,
                    'available_rooms': available_rooms,
                    'forwarded_rooms': forwarded_rooms,
-                   # 'booked_rooms' : booked_rooms,
-                   # 'under_maintainence_rooms' : under_maintainence_rooms,
-                   # 'occupied_rooms' : occupied_rooms,
                    'inventory': inventory,
                    'inventory_bill': inventory_bill,
                    'active_visitors': active_visitors,
-                #    'intenders': intenders,
                    'user': user,
                    'visitors': visitors,
                    'rooms' : rooms,
-                   # 'num_rooms' : list(range(1, booking.number_of_rooms_alloted+1)),
-                   # 'num_rooms' :list(range(1, booking.number_of_rooms_alloted+1)),
                    'previous_visitors': previous_visitors,
                    'completed_booking_bills': completed_booking_bills,
                    'current_balance': current_balance,
@@ -370,13 +359,6 @@ def request_booking(request):
         category = request.POST.get('category')
         person_count = request.POST.get('number-of-people')
         bookingObject = []
-        #if person_count and (int(person_count)<20):
-         #   person_count = person_count
-
-        #else:
-          #  flag = 1    # for error
-
-        #     person_count = 1
         purpose_of_visit = request.POST.get('purpose-of-visit')
         booking_from = request.POST.get('booking_from')
         booking_to = request.POST.get('booking_to')
@@ -386,11 +368,6 @@ def request_booking(request):
         bill_to_be_settled_by = request.POST.get('bill_settlement')
         number_of_rooms = request.POST.get('number-of-rooms')
         caretaker = 'shailesh'
-
-     #   if (int(person_count)<int(number_of_rooms)):
-      #      flag=1
-
-      #  if flag ==0:
 
         print(len(HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")))
         care_taker = (HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker"))
@@ -410,19 +387,7 @@ def request_booking(request):
                                                      number_of_rooms=number_of_rooms,
                                                      bill_to_be_settled_by=bill_to_be_settled_by) 
         bookingObject.save()
-        # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
-        # print (bookingObject)
-        # print("Hello")
-#        {% if messages %}
-#   {% for message in messages %}
-#     <div class="alert alert-dismissible alert-success">
-#       <button type="button" class="close" data-dismiss="alert">
-#       ×
-#       </button>
-#       <strong>{{message}}<strong>
-#     </div>
-#  {% endfor %}
-# {% endif %}
+        
 
         # in case of any attachment
 
@@ -467,15 +432,6 @@ def request_booking(request):
         bookingObject.visitor.add(visitor)
         bookingObject.save()
 
-        # except:
-        #print("exception occured")
-            # return HttpResponse('/visitorhostel/')
-
-        # for sending notification of booking request to caretaker
-
-        #caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhCaretaker")
-        #visitors_hostel_notif(request.user, care_taker.user, 'booking_request')
-
         return Response(status=status.HTTP_201_CREATED, data={"message":"Request submitted successfully"})
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -514,11 +470,6 @@ def update_booking(request):
         booking.purpose = purpose_of_visit
         booking.save()
 
-        # BookingDetail.objects.filter(id=booking_id).update(person_count=person_count,
-        #                                                     purpose=purpose_of_visit,
-        #                                                     booking_from=booking_from,
-        #                                                     booking_to=booking_to,
-        #                                                     number_of_rooms=number_of_rooms)
         booking = BookingDetail.objects.select_related('intender','caretaker').get(id=booking_id)
         c_bookings = BookingDetail.objects.select_related('intender','caretaker').filter(Q(status="Forward"),  booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         forwarded_rooms = {}
@@ -699,31 +650,6 @@ def check_out(request):
             Bill.objects.create(booking=booking, meal_bill=int(meal_bill), room_bill=int(
                 room_bill), caretaker=user, payment_status=True)
 
-            # for visitors in visitor_info:
-
-            # meal=Meal.objects.all().filter(visitor=v_id).distinct()
-            # print(meal)
-            # for m in meal:
-            # mess_bill1=0
-            # if m.morning_tea==True:
-            #     mess_bill1=mess_bill1+ m.persons*10
-            #     print(mess_bill1)
-            # if m.eve_tea==True:
-            #     mess_bill1=mess_bill1+m.persons*10
-            # if m.breakfast==True:
-            #     mess_bill1=mess_bill1+m.persons*50
-            # if m.lunch==True:
-            #     mess_bill1=mess_bill1+m.persons*100
-            # if m.dinner==True:
-            #     mess_bill1=mess_bill1+m.persons*100
-            #
-            # if mess_bill1==m.persons*270:
-            #     mess_bill=mess_bill+225*m.persons
-            # else:
-            #         mess_bill=mess_bill + mess_bill1
-
-            # RoomStatus.objects.filter(book_room=book_room[0]).update(status="Available",book_room='')
-
             return Response(status=status.HTTP_200_OK)
         
         else:
@@ -810,36 +736,6 @@ def record_meal(request):
 
 # generate bill records between date range
 
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([TokenAuthentication])
-# def bill_generation(request):
-#     user = get_object_or_404(User, username=request.user.username)
-#     c = ExtraInfo.objects.all().filter(user=user)
-
-#     if user:
-#         if request.method == 'POST':
-#             v_id = request.POST.getlist('visitor')[0]
-
-#             meal_bill = request.POST.getlist('mess_bill')[0]
-#             room_bill = request.POST.getlist('room_bill')[0]
-#             status = request.POST.getlist('status')[0]
-#             if status == "True":
-#                 st = True
-#             else:
-#                 st = False
-
-#             user = get_object_or_404(User, username=request.user.username)
-#             c = ExtraInfo.objects.select_related('department').filter(user=user)
-#             visitor = Visitor.objects.filter(visitor_phone=v_id)
-#             visitor = visitor[0]
-#             visitor_bill = Visitor_bill.objects.create(
-#                 visitor=visitor, caretaker=user, meal_bill=meal_bill, room_bill=room_bill, payment_status=st)
-#             messages.success(request, 'guest check out successfully')
-#             return HttpResponseRedirect('/visitorhostel/')
-
-#         else:
-#             return HttpResponseRedirect('/visitorhostel/')
 
 # get available rooms list between date range
 
@@ -872,9 +768,7 @@ def add_to_inventory(request):
         quantity = (request.POST.get('quantity'))
         cost = request.POST.get('cost')
         consumable = request.POST.get('consumable')
-        # if(Inventory.objects.get(item_name = item_name)):
-        #     Inventory.objects.filter(item_name=item_name).update(quantity=quantity,consumable=consumable)
-        # else:
+
         Inventory.objects.create(
             item_name=item_name, quantity=quantity, consumable=consumable)
 
@@ -972,8 +866,6 @@ def forward_booking(request):
 
         dashboard_bookings = BookingDetail.objects.select_related('intender','caretaker').filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed") | Q(status = 'Rejected'), booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
 
-        # return render(request, "vhModule/visitorhostel.html",
-        #           {'dashboard_bookings' : dashboard_bookings})
         incharge_name = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhIncharge")[1]
 
         # notify incharge about forwarded booking
