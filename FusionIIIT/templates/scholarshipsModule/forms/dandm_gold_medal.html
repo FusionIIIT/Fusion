@@ -1,0 +1,246 @@
+<div class="ui tab" id="dandm">
+    <div class="ui active tab" data-tab="dandm">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="award" name="award" value="D&M Proficiency Gold Medal">
+                {% if request.user.extrainfo.student.programme == 'B.Tech' or request.user.extrainfo.student.programme == 'B.Des' %}
+                <div class="two fields">
+                    <div class="field">
+                        <label>Project Type</label>
+                        <div class="ui large input">
+                            <input placeholder="Project" type="text" name="project_type" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Project Grades</label>
+                        <div class="ui large input">
+                            <input placeholder="Grades" type="text" name="project_grades">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Brief description of project</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="brief_description_project"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Cross Disciplinary Content</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="cross_disciplinary_content"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Publication related to project applied</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="prjoect_publication"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Patentn/IPR related to project applied</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="project_patent_ipr"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Prototype available</label>
+                    <div class="ui large input">
+                        <input placeholder="Prototype" type="text" name="prototype">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Name of team members (separate different names by commas (,) )</label>
+                    <div class="ui large input">
+                        <input type="text" name="members_name" placeholder="names">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>CPI of team members (separate different cpi by commas (,) )</label>
+                    <div class="ui large input">
+                        <input placeholder="cpi" type="text" name="members_cpi">
+                    </div>
+                </div>
+                {% endif %}
+                <h3>Research Related Activity</h3>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>SCI</label>
+                        <div class="ui large input">
+                            <input placeholder="sci" type="text" name="sci">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>SCI Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="sci_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>ESCI (Emerging Science Citation Index)</label>
+                        <div class="ui large input">
+                            <input placeholder="esci" type="text" name="esci">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>ESCI Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="esci_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>SCIE (Science Citiation Index Expanded)</label>
+                        <div class="ui large input">
+                            <input placeholder="scie" type="text" name="scie">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>SCIE Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="scie_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IJ (Indian Journal)</label>
+                        <div class="ui large input">
+                            <input placeholder="ij" type="text" name="ij">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>IJ Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="ij_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IC (Indian Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="ic" type="text" name="ic">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>IC Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="ic_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>NC (National Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="nc" type="text" name="nc">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>NC Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="nc_doc">
+                        </div>
+                    </div>
+                </div>
+                <h3>Other Professional Activities</h3>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Workshop</label>
+                        <div class="ui large input">
+                            <input placeholder="workshop" type="text" name="workshop">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Workshop Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="workshop_doc">
+                        </div>
+                    </div>
+                </div>
+                <h3>Project Evalutaion</h3>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Prototype/ Software Development/ experimental work of significance/ Patent</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="project_prototype"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="project_prototype_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Utility/ Usefulness</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="project_utility"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="project_utility_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Cross Disciplinary Content</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="project_cross_disciplinary"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="project_cross_disciplinary_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.extrainfo.student.programme == 'B.Tech' or request.user.extrainfo.student.programme == 'B.Des' %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Sports & Cultural Activities Participation</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="project_sports"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="project_sports_doc">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="field">
+                    <a class="right floated item">
+                        <label><br></label>
+                        <button type="submit" name="Submit_DM" class="ui primary large right floated button">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+                <!-- <div class="field"> -->
+                <!--     <label>Brief Description:</label> -->
+                <!--     <p>This includes the following. <br/> -->
+                <!--         (a) Give the details of the list of papers you have studied for doing the project.<br/> -->
+                <!--         (b) Whether any publication, conference proceeding, conference paper presentation etc? If -->
+                <!--         yes, give proper details<br/> -->
+                <!--         (c) If some experimental setup, show the estimated cost:<br/> -->
+                <!--         (d) If some theoretical model development, discuss in brief:<br/> -->
+                <!--         (e) If some simulation results, what software/s did you use? <br/><br/> -->
+                <!--     </p> -->
+                <!-- </div> -->
+            </form>
+        </div>
+    </div>
+</div>

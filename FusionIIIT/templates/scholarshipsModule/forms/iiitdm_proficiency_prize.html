@@ -1,0 +1,325 @@
+<div class="ui tab" id="proficiency">
+    <div class="ui active tab" data-tab="proficiency">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="award" name="award" value="IIITDM Proficiency Prize">
+                    {% if request.user.extrainfo.student.programme == 'B.Tech' and request.user.extrainfo.student.specialization == 'CSE' %}
+                <h3>Project Title</h3>
+                <div class="field">
+                    <label>Write (a) Project objectives and (b) deliverables</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_objectives" placeholder="objectives" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Project mentor(s)</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_mentor" placeholder="mentors" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Project outcome</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_outcome" placeholder="outcome" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>If the outcome is a research article or a patent, give complete details of the publication</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_publication" placeholder="publication" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>How is your project beneficial to the society?</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_benefits" placeholder="benefits" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>If your project has enhanced the existing knowledge or it has improved and existing project, justify how.</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_justification" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Upload your project report. You can also upload, demo video and any other relevant documents (pdf, image, video, audio)</label>
+                    <div class="ui large input">
+                        <input type="file" name="project_report" required>
+                    </div>
+                </div>
+
+                {% else %}
+                <h3>Research Related Activity</h3>
+                {% if request.user.extrainfo.student.programme != 'B.Tech' and request.user.extrainfo.student.programme != 'B.Des' and request.user.extrainfo.student.specialization == 'ME' %}
+                <div class="field">
+                    <label>The title of the project for which proficiency medal is claimed</label>
+                    <div class="ui large input">
+                        <input type="text" name="project_title" placeholder="title" >
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Brief abstract of the project</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="project_brief"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>IPR (patent)/ Design Reg/ Copyright, etc - FILED</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="project_ipr"></textarea>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        {% if request.user.extrainfo.student.programme != 'B.Tech' and request.user.extrainfo.student.programme != 'B.Des'   %}
+                        <label>SCI/ SSCI/ AHCI/ SCIE/ ESIE/ SCOPLEX/ IEE/ Others</label>
+                        {% else %}
+                        <label>SCI/ SSCI/ AHCI </label>
+                        {% endif %}
+                        <div class="ui large input">
+                            <input placeholder="sci" type="text" name="sci">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Upload Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="sci_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>ESCI (Emerging Science Citation Index)</label>
+                        <div class="ui large input">
+                            <input placeholder="esci" type="text" name="esci">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>ESCI Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="esci_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>SCIE (Science Citiation Index Expanded)</label>
+                        <div class="ui large input">
+                            <input placeholder="scie" type="text" name="scie">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>SCIE Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="scie_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IJ (Indian Journal)</label>
+                        <div class="ui large input">
+                            <input placeholder="ij" type="text" name="ij">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>IJ Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="ij_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.extrainfo.student.programme != 'B.Tech' and request.user.extrainfo.student.programme != 'B.Des'   %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IC (Indian Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="ic" type="text" name="ic">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>IC Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="ic_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>NC (National Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="nc" type="text" name="nc">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>NC Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="nc_doc">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Indian/National Conference</label>
+                        <div class="ui large input">
+                            <input placeholder="ic/nc" type="text" name="ic_nc">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Indian/National Conference Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="ic_nc_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>International Conference</label>
+                        <div class="ui large input">
+                            <input placeholder="international conference" type="text" name="international_conference">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>International Conference Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="internation_conference_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if  request.user.extrainfo.student.specialization == 'ECE' %}
+                <div class="field">
+                    <label>Grade in the Project/thesis</label>
+                    <div class="ui large input">
+                        <input placeholder="grade" type="text" name="project_grade">
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+                {% if  request.user.extrainfo.student.programme != 'B.Tech' and request.user.extrainfo.student.programme != 'B.Des' and request.user.extrainfo.student.specialization == "ME"  %}
+                <div class="field">
+                    <label>Patent Status (Filled, Published, Granted) with detail description</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="patent_status"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Interdisciplinary Criteria - % if Interdisciplinary content in the project work</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="interdisciplinary_criteria"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Awards received in conference/ Workshops etc. from any reputed university</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="awards_recieved"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Current Placement status</label>
+                    <div class="ui large input">
+                        <textarea rows="5" name="placement_status"></textarea>
+                    </div>
+                </div>
+                {% endif %}
+
+                <h3>Other Professional Activities</h3>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Workshop</label>
+                        <div class="ui large input">
+                            <input placeholder="workshop" type="text" name="workshop">
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Workshop Document</label>
+                        <div class="ui large input">
+                            <input type="file" name="workshop_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.extrainfo.student.programme != 'B.Tech' and request.user.extrainfo.student.programme != 'B.Des' %}
+                <h3>Thesis Evalutaion</h3>
+                {% endif %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Prototype/ Software Development/ experimental work of significance/ Patent</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="thesis_prototype"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="thesis_prototype_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Utility/ Usefulness</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="thesis_utility"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="thesis_utility_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Core Area content & Quality</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="thesis_core_area"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="thesis_core_area_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.extrainfo.student.programme == 'B.Tech' or request.user.extrainfo.student.programme == 'B.Des' %}
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details regarding Technology Transfer/ Deployability of work done, etc</label>
+                        <div class="ui large input">
+                            <textarea rows="3" name="work_details"></textarea>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Document in support of left field</label>
+                        <div class="ui large input">
+                            <input type="file" name="work_details_doc">
+                        </div>
+                    </div>
+                </div>
+                {% if  request.user.extrainfo.student.specialization == 'ECE' %}
+                <div class="field">
+                    <label>Please submit a brief write up mentioning the objective, novelty/ original contribution, proposed solution and its practical application of the project work. (minimum 1 - maximum 3 pages)</label>
+                    <div class="ui large input">
+                        <input type="file" name="project_write_up">
+                    </div>
+                </div>
+                {% endif %}
+
+                {% endif %}
+                {% endif %}
+                <div class="field">
+                    <a class="right floated item">
+                        <label><br></label>
+                        <button type="submit" name="Submit_Proficiency" class="ui primary large right floated button">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

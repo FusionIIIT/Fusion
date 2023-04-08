@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import (Award_and_scholarship, Director_gold, Director_silver,
-                     Mcm, Notional_prize, Previous_winner, DM_Proficiency_gold, IIITDM_Proficiency
+                     Mcm, Notional_prize, Previous_winner, DM_Proficiency_gold, IIITDM_Proficiency,
                      Release,Notification,Application)
 
 admin.site.register(Mcm),
