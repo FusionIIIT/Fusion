@@ -39,5 +39,6 @@ urlpatterns = [
     url(r'^inward_indent_details/(?P<id>\d+)/$', views.inward_indent_details, name='inward_indent_details'),
     url(r'^reject_indent/(?P<id>\d+)/$', views.reject_indent, name='reject_indent'),
     url(r'^item_purchase/(?P<id>\d+)/$', views.item_purchase, name='item_purchase'),
+    url(r'^get_designations/$', views.get_designations,name='get_designations')
 
 ]
