@@ -38,16 +38,31 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Food' %}
                 <tr>
                     <td>{{item.fdate}}</td>
                     <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Food' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -68,16 +83,31 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess </th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Cleanliness' %}
                 <tr>
                     <td>{{item.fdate}}</td>
                     <td>{{ item.student_id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Cleanliness' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -98,16 +128,32 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
+
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1 %}
                     {% if item.feedback_type == 'Maintenance' %}
                 <tr>
                     <td>{{item.fdate}}</td>
                     <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Maintenance' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}
@@ -128,16 +174,32 @@
                     <th>Student ID</th>
                     <th>Feedback Type</th>
                     <th>Description</th>
+                    <th>Mess</th>
+
                 </tr>
                 </thead>
                 <tbody>
-                    {% for item in feed %}
+                    {% for item in feed1%}
                     {% if item.feedback_type == 'Others' %}
                 <tr>
                     <td>{{item.fdate}}</td>
                     <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
+                    <td>Mess1</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for item in feed2%}
+                    {% if item.feedback_type == 'Others' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"8" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                    <td>Mess2</td>
                 </tr>
                     {% endif %}
                     {% endfor %}

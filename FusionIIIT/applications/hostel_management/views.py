@@ -13,7 +13,7 @@ from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
-from .forms import GuestRoomBookingForm, HostelNoticeBoardForm
+from .forms import HostelNoticeBoardForm
 import re
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -353,7 +353,23 @@ def edit_student_room(request):
             messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+def insert_rooms(request):
+    if request.method == "POST":
+        sheet = request.FILES["upload_rooms_in_database"]
+        excel = xlrd.open_workbook(file_contents=sheet.read())
+        all_rows = excel.sheets()[0]
+        for i, row in enumerate(all_rows):
+            if not i: continue
+            print(row)
+            room_no, block_no, room_cap, room_occupied, hall_id = int(row[0].value), str(row[1].value), int(row[2].value), int(row[3].value), int(row[4].value)
+            existing_room = HallRoom.objects.filter(room_no=room_no, hall_id=hall_id, block_no=block_no)
+            if existing_room: continue
+            room = HallRoom(room_cap=room_cap, room_no=room_no, block_no=block_no, room_occupied=room_occupied, hall_id=hall_id)
+            room.save()
+        messages.success(request, 'Rooms added to database.')
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+    
 def edit_attendance(request):
     """
     This function is used to edit the attendance of a student.

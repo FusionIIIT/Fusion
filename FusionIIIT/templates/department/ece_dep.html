@@ -118,63 +118,26 @@
                     <span>
 
                         <div class="ui vertical segment" >
-
-                            {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> Serial No. </td>
-                                    <td> Faculty Name </td>
-                                    <td> Email </td>
-                                    <td> Research Interest </td>
-                                    <!-- <td> title </td> -->
-                                    {% comment %} <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
-                                    {% comment %} <td> user_type </td>
-                                    <td> department </td>
-                                    <td> github </td> {% endcomment %}
-
-                                </thead>
-                                {% for fcu in faculty.ece_f %}
-                                    <tr>
-                                        {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                        <td>{{ forloop.counter }}</td>
-                                        <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
-                                        <td>{{ fcu.user.email }}</td>
-                                        <!-- <td>{{ fcu.title }}</td> -->
-                                        {% comment %} <td>{{ fcu.sex }}</td>
-                                        <td>{{ fcu.date_of_birth }}</td>
-                                        <td>{{ fcu.address }}</td>
-                                        <td>{{ fcu.phone_no }}</td> {% endcomment %}
-                                        {% comment %} <td>{{ fcu.user_type }}</td>
-                                        <td>{{ fcu.department.name }}</td>
-                                        <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
-                                        {% endwith %}
-                                    </tr>
-
-                                {% endfor %}
-                                {% for fcu in fac_list.ece_f %}
-                                <tr>
-                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.title }}{{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
-                                    <td>{{ fcu.user.email }}</td>
-                                    {% comment %}<!-- <td>{{ fcu.title }}</td> -->
-                                    <td>{{ fcu.sex }}</td>
-                                    <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
-                                    <td>{{ fcu.phone_no }}</td>
-                                     <td>{{ fcu.user_type }}</td>
-                                    <td>{{ fcu.department.name }}</td>
-                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                            {% if fac_list.ece_f %}
+                            <div class="fac-container">
+                                {% for faculty in fac_list.ece_f %}
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Electronics & Communications Engineering</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
+                                    </div>
+                                    {% with "/eis/profile/"|add:faculty.user.username as link %}
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
                                     {% endwith %}
-                                </tr>
-
+                                </div>
                                 {% endfor %}
-
-                            </table>
-
+                            </div>
+                            {% else %}
+                            No Data Found.
+                            {% endif %}
                         </div>
                     </span>
                     <div class="ui divider"></div>

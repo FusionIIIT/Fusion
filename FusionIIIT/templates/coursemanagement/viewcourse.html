@@ -74,7 +74,7 @@
             
         </div>
 
-        <div class="eleven wide column" >
+        <div class="ten wide column" >
             <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
                 <style>
                     #pdf_modal iframe {
@@ -187,16 +187,10 @@
                         font-size: 30px;
                         background-color: #fff;
                     }
-                    {% comment %} .tabfont{
-                      font-size:2rem !important;
-                    } {% endcomment %}
-                    {% comment %} .tabs{
-                      font-size:2rem !important;
-                    } {% endcomment %}
 
                     /*timer css ends*/
                 </style>
-                <div class="ui pointing secondary menu ">
+                <div class="ui pointing secondary menu">
                   <a class="item tabs" data-num="1" data-tab="quiz">
                     Quiz
                  </a>
@@ -318,7 +312,7 @@
                                 <td>{{forloop.counter}}</td>
                                 <td>{{assi.assignment_name}}</td>
                                 <td>{{assi.submit_date}}</td>
-                                <td> <a href="{{assi.doc.url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                                <td> <a href="{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
                                   </td>
                             </tr>
                             {% endfor %}
@@ -358,7 +352,7 @@
                               <div class="column">
                                 <button class="ui primary button" style="mae">
                                   {{slide.document_url}}
-                                 <a id='visualize' href="{{slide.doc.url}}"style="color:white;">{{slide.document_name}}</a>
+                                 <a id='visualize' href="{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
 
                                </button>
 

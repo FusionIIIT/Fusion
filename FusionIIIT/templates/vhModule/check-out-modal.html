@@ -91,7 +91,7 @@
                         </thead>
 
                         <tbody>
-                        {% for visitor in booking.visitor.all %}
+                        {% for visitor in booking.visitor.all|slice:"1:" %}
                         <tr>
                             <td>
                                 {{ visitor.visitor_name }}

@@ -14,7 +14,7 @@ def content_file_name(instance, filename):
     file_path = 'online_cms/{course_id}/doc/{fileName}.{ext}'.format(
          course_id=course_code, fileName=instance.document_name, ext=ext) 
     return file_path
-# the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
+#the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseSlide(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
@@ -29,7 +29,7 @@ class CourseDocuments(models.Model):
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
-    document_url = models.CharField(max_length=100, null=True,blank=True)
+    document_url = models.CharField(max_length=500, null=True,blank=True)
     # media = models.FileField(upload_to=content_file_name, null=True, blank=True)
 
     def __str__(self):
@@ -187,37 +187,11 @@ class CourseAssignment(models.Model):
         return '{} - {} - {}'.format(self.pk, self.course_id, self.assignment_name)
 
 #details of the solution uploaded by the student
-def assignment_submit_name(instance, filename):
-    name, ext = filename.split('.')
-    # obj=Curriculum.objects.get(course_id=instance.course_id)
-    course_code=instance.course_code
-    assignmentName=instance.assignment_id.assignment_name
-    file_path = 'online_cms/{course_id}/assi/{assignmentName}/{fileName}.{ext}'.format(
-         course_id=course_code,assignmentName=assignmentName, fileName=name, ext=ext) 
-    return file_path
-# class StudentAssignment(models.Model):
-#     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-#     assignment_id = models.ForeignKey(CourseAssignment, on_delete=models.CASCADE)
-#     upload_time = models.DateTimeField(auto_now=True)
-#     # upload_url = models.TextField(max_length=200)
-#     doc = models.FileField(upload_to=assignment_submit_name, null=True, blank=True)
-#     score = models.IntegerField(null=True)        #score is submitted by faculty 
-#     feedback = models.CharField(max_length=100, null=True)  #feedback by the faculty for the solution of the assignment submitted
-#     assign_name = models.CharField(max_length=100) 
-
-#     def __str__(self):
-#         return '{} - {} - {} - {} - {}'.format(
-#                 self.pk, self.student_id,
-#                 self.assignment_id, self.score,
-#                 self.feedback)
-
-class StudentAssignment1(models.Model):
+class StudentAssignment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    assignment_id = models.ForeignKey(CourseAssignment, on_delete=models.CASCADE)
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
-    # upload_url = models.TextField(max_length=200)
-    course_code=models.CharField(max_length=100)
-    doc = models.FileField(upload_to=assignment_submit_name, null=True, blank=True)
+    upload_url = models.TextField(max_length=200)
     score = models.IntegerField(null=True)        #score is submitted by faculty 
     feedback = models.CharField(max_length=100, null=True)  #feedback by the faculty for the solution of the assignment submitted
     assign_name = models.CharField(max_length=100) 
