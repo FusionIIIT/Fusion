@@ -14,11 +14,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='placementrecord',
-            name='branch',
-            field=models.CharField(default='', max_length=100),
-        ),
-        migrations.AddField(
-            model_name='placementrecord',
             name='unique_id',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='academic_information.student'),
         ),
