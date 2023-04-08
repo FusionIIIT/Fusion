@@ -17,9 +17,10 @@
 
     <div class="ui active tab" data-tab="notesheet">
 
-        <div class="ui two item menu">
+        <div class="ui three item menu">
             <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+            <a class='item' target="_blank" href="/media/{{ file.upload_file }}" ><b style="text-decoration:underline;color: blue;">UPLOADED FILE</b></a>
         </div>
 
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
@@ -31,77 +32,70 @@
                             <center><span class="ui header"><b>Subject-  {{file.subject}}</b></span></center>
                             <div class="ui divider"></div>
 
+
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                                <div class="ui form">
+                                  <h3 class="ui header" style="text-decoration:underline;margin-bottom:20px ;">Indent Details</h3>
+                                  <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';font-size: 17px;">{{file.description}}</pre>
+                                  <div class="field">
+                                   
+                                    <div class="two fields">
+                                      <div class="field">
+                                        <label style="font-size: medium;">Indent Title</label>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.title }}</p>
+                                      </div>
+                                      <div class="field">
+                                        <label style="font-size: medium;">budgetary head</label>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.budgetary_head }}</p>
+                                      </div>
+                                    </div>
+
+                                  </div>
+                                    <div class="field">
+                                   
+                                        <div class="two fields">
+                                          <div class="field">
+                                            <label style="font-size: medium;">Indent expected delivery</label>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.expected_delivery }}</p>
+                                          </div>
+                                          <div class="field">
+                                            <label style="font-size: medium;">sources of supply</label>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.sources_of_supply }}</p>
+                                          </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="item">
+                                    <h3 style="text-decoration: underline;">Items Details : </h3>
+                                    <table class="ui very celled sortable table scroll">
+                                        <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>quantity</th>
+                                            <th>est. cost</th>
+                                            <th>indent_type</th>
+                                            <th>View</th>
+                                            
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for j in items %}
+                                            <tr>
+                                                 <td>{{j.item_name}}</td>
+                                                 <td>{{j.quantity}}</td>
+                                                 <td>{{j.estimated_cost}}</td>
+                                                 <td>{{j.indent_type}}</td>
+                                                 <td><div class="ui black button" onclick="showModal('{{ j.item_name }}','{{ j.quantity }}','{{ j.present_stock }}','{{ j.estimated_cost }}','{{ j.purpose }}','{{ j.specification }}','{{ j.indent_type }}','{{ j.nature }}','{{ j.indigenous }}','{{ j.replaced }}','{{ j.purchased }}','{{ j.upload_file }}')">View</div></td>
 
-                                    <div class="description">
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Name:</b> {{indent.item_name}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Quantity:</b> {{indent.quantity}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Present Stock:</b> {{indent.present_stock}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Estimated Cost:</b> {{indent.estimated_cost}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purpose:</b> {{indent.purpose}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Specification:</b> {{indent.specification}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Type:</b> {{indent.indent_type}}</pre>
-                                        
-                                        {% if indent.nature == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Consumable</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Non Consumable</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.indigenous == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.replaced == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Budgetary Head:</b> {{indent.budgetary_head}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Expected Delivery:</b> {{indent.expected_delivery}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Sources of Supply:</b> {{indent.sources_of_supply}}</pre>
-                                        
-                                        {% if indent.head_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> Yes</pre>
-                                        {% else %}
-                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> No</pre>
-                                        {% endif %}
+                                              </tr>
+                                        {% endfor %}
+                                        </tbody>
 
-                                        {% if indent.director_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> No</pre>
-                                        {% endif %}
+                                    </table>
 
-                                        {% if indent.financial_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> No</pre>
-                                        {% endif %}
 
-                                        {% if indent.purchased == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> No</pre>
-                                        {% endif %}
 
-                                        <div class="ui divider"></div>
-                                    </div>
 
                                     {% for t in track %}
                                     <div class="ui comments">
@@ -147,7 +141,7 @@
                                 <br>
 
                                 <div class="field">
-                                    <label>Send as:
+                                    <label>Send as*:
                                         <select required class="ui fluid search selection dropdown" name="sender">
                                             <option selected hidden>Select</option>
 
@@ -158,45 +152,40 @@
                                         </select>
                                     </label>
                                 </div>
+                               <div class="field">
+                                    <label
+                                      >Forward To*:
+                                      <select
+                                        required
+                                        class="ui fluid search selection dropdown"
+                                        id="select_user"
+                                        name='receiver'
+                                        onchange="changeUserHandler()"
+                                      >
+                                        <option selected hidden>Select</option>
+
+                                        {% for user in users %}
+                                        <option value="{{ user.username }}">{{ user.username }}</option>
+                                        {% endfor %}
+                                      </select>
+                                    </label>
+                                  </div>
+                                  <div class="field">
+                                    <label
+                                      >Receiver Designation*:
+                                      <select
+                                        required
+                                        class="ui fluid search selection dropdown"
+                                        id="select_reciever_design"
+                                        name='recieve'
+                                       
+                                      >
+                                      </select>
+                                    </label>
+                               </div>
 
                                 <br>
-                                <br>
-                                   <div class="field">
-                                        <label
-                                          >Forward To:
-                                          <select
-                                            required
-                                            class="ui fluid search selection dropdown"
-                                            id="select_user"
-                                            name='receiver'
-                                            onchange="changeUserHandler()"
-                                          >
-                                            <option selected hidden>Select</option>
 
-                                            {% for user in users %}
-                                            <option value="{{ user.username }}">{{ user.username }}</option>
-                                            {% endfor %}
-                                          </select>
-                                        </label>
-                                      </div>
-                                      <div class="field">
-                                        <label
-                                          >Receiver Designation:
-                                          <select
-                                            required
-                                            class="ui fluid search selection dropdown"
-                                            id="select_reciever_design"
-                                            name='recieve'
-                                           
-                                          >
-                                          </select>
-                                        </label>
-                                    </div>
-
-
-
-
-                                <br>
                                 <div class="field">
                                     <label for="file">Attach Files: </label>
                                     <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
@@ -206,7 +195,6 @@
                         </div>
                     </div>
 
-                    <br>     
 
                 <br>
 
@@ -235,6 +223,7 @@
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
 
                                 <div class="item">
+
                                     {% for t in track %}
                                     <div class="ui comments">
                                         <div class="comment">
@@ -269,45 +258,42 @@
                             </div>
                         </div>
         </div>
+        <div id="item-modal-container"></div>
     </div>
 
-
     <script type="text/javascript">
-        const changeUserHandler = ()=>{
-        console.log("working")
-        value = document.getElementById('select_user').value;
-        console.log(value)
-        const formData = new FormData();
-        formData.append('value',value)
-        $.ajax({
-              type: "POST",
-              url: `/purchase-and-store/get_designations/`,
-              data: formData,
-              processData: false,
-              contentType: false,
-              success: function (response) {
-                console.log("coming-----------------------");
-
+          const changeUserHandler = ()=>{
+            console.log("working")
+            value = document.getElementById('select_user').value;
+            const formData = new FormData();
+            formData.append('value',value)
+            $.ajax({
+                  type: "POST",
+                  url: `/purchase-and-store/get_designations/`,
+                  data: formData,
+                  processData: false,
+                  contentType: false,
+                  success: function (response) {
+                    console.log("coming-----------------------");
+                    console.log(JSON.parse(response.designations));
+                    all_designations = JSON.parse(response.designations);
+                    $("#select_reciever_design").html("");
+                    for (var i = 0; i < all_designations.length; i++) {
+                      $("#select_reciever_design").append(
+                        '<option value="' +
+                          all_designations[i].fields.name +
+                          '">' +
+                          all_designations[i].fields.name +
+                          "</option>"
+                      );
+                }
                 
-                console.log(JSON.parse(response.designations));
-                all_designations = JSON.parse(response.designations);
-                $("#select_reciever_design").html("");
-                for (var i = 0; i < all_designations.length; i++) {
-                  $("#select_reciever_design").append(
-                    '<option value="' +
-                      all_designations[i].fields.name +
-                      '">' +
-                      all_designations[i].fields.name +
-                      "</option>"
-                  );
-            }
-            
-              },
-              error: function (rs, e) {
-                console.log("error-------");
-              },
-          });
-      }
+                  },
+                  error: function (rs, e) {
+                    console.log("error-------");
+                  },
+              });
+  }
     </script>
     <script type="text/javascript">
         $('#input_search1').keyup(function(){
@@ -342,6 +328,58 @@
             });
             console.log("dsfagdfdshadf");
         });
+    </script>
+    <script type="text/javascript">
+    const showModal=(item_name,quantity,present_stock,estimated_cost,purpose ,specification,indent_type,nature,indigenous,replaced,purchased,upload_file )=>{
+        document.getElementById('item-modal-container').innerHTML=``
+                                                            // $('.ui.modal').modal('show');
+        document.getElementById('item-modal-container').innerHTML = `<div class="ui modal">
+          <div class="header">
+            Description of ${item_name}
+          </div>
+          <div class="content">
+            <h3>Item related details</h3>
+            <table class="ui very basic celled sortable table scroll" style="font-size:17px">
+               <tbody>
+                <tr>
+                    <td><b>Name : </b> <p>${item_name}</p></td>
+                    <td><b>Quantity : </b> <p>${quantity}</p></td>
+                    <td><b>Estimated Cost : </b> <p>${estimated_cost}</p></td>
+                </tr>
+                <tr>
+                    <td><b>Present stock : </b><p>${present_stock}</p></td>
+                    <td><b>Purpose :</b> <p>${purpose}<p></td>
+                    <td><b>Specification : </b> <p>${specification}</p></td>
+                </tr>
+                <tr>
+                    <td><b>Type : </b><p>${indent_type}</p></td>
+                    <td><b>Nature of Item : </b><p>${nature===true?"Consumable":"Non-Consumable"}</p></td>
+                    <td><b>indigenous : </b><p>${indigenous===true?"Yes":"No"}</p></td>
+                    
+                </tr>
+                <tr>
+                    <td><b>replaced : </b><p>${replaced===true?"Yes":"No"}</p></td>
+                    <td><b>Uploaded File : </b>
+                        <a class="paperclip icon">
+                            ${
+                                upload_file ? `<a href="/media/${upload_file}" class="header" target="_">
+                                    <u class="meta" style="color: #1B1C1D">${upload_file}</u>
+                                </a>`:`<span class="meta">No Attachment</span>`
+                            }
+                                
+                        </a>
+                    </td>
+
+                </tr>
+
+               </tbody>
+            </table>
+            <hr>
+            <p>These are the details related to the indent item</p>
+          </div>
+        </div>`
+        $('.ui.modal').modal('show');
+    }
     </script>
 
 
