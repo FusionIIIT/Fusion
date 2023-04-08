@@ -1,0 +1,29 @@
+{% block insert_room %}
+
+<h3 align="center"> Insert Rooms in Database Form </h3><br><br>
+
+<form action="{% url 'hostelmanagement:insert_rooms' %}" method ="POST" enctype="multipart/form-data">
+   
+   <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        <div class="field">
+            <h4 class="ui blue header">Note : Provide the data in Excel Sheet(xls not xlsx) in following format:</h4>
+            Room No | Block No | Room Cap | Room Occupied | Hall Id
+        </div>
+            
+       <div class="field">
+        <label for="file">Upload File (.xls)</label>
+           <input type='file' name= "upload_rooms_in_database" accept=".xls" required> 
+
+           <button class="ui primary button right floated" type="submit">
+               Submit
+           </button>
+       </div>
+   </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+{% endblock %}
