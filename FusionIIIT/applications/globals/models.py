@@ -162,10 +162,6 @@ class ExtraInfo(models.Model):
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
     date_modified = models.DateTimeField('date_updated', blank=True, null=True)
     u_type = models.CharField(max_length=20, choices=Constants.USER_TYPES)
-    rem_medical_leave = models.IntegerField(default=15)
-    rem_casual_leave = models.IntegerField(default=15)
-    rem_special_leave = models.IntegerField(default=15)
-    rem_vacational_leave = models.IntegerField(default=15)
 
     @property
     def age(self):

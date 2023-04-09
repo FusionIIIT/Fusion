@@ -1,3 +1,4 @@
+import datetime
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -13,7 +14,7 @@ from .forms import (AcademicReplacementForm, AdminReplacementForm,
 from .helpers import (create_migrations, deduct_leave_balance, deduct_leave_balance_student, get_leave_days,
                       get_pending_leave_requests, restore_leave_balance, get_designation)
 from .models import (Leave, LeaveRequest, LeaveSegment,
-                     LeaveType, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
+                     LeaveType, LeavesCount, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
 from applications.globals.models import HoldsDesignation
 from notification.views import leave_module_notif
 from django.utils import timezone
@@ -424,6 +425,35 @@ def handle_student_leave_application(request):
         )
 
         count = (data.get('end_date') -data.get('start_date')).days + 1
+
+        taken_medical_leaves = 0
+        taken_special_leaves = 0
+        taken_casual_leaves = 0
+        taken_vacational_leaves = 0
+
+        if leave_type.name.lower() == 'medical':
+            taken_medical_leaves = count
+        elif leave_type.name.lower() == 'casual':
+            taken_casual_leaves = count
+        elif leave_type.name.lower() == 'vacational':
+            taken_vacational_leaves = count
+        else:
+            taken_special_leaves = count
+
+        try:
+            lc = LeavesCount.objects.get(user=request.user, year=datetime.date.today().year)
+            lc.medical += taken_medical_leaves
+            lc.casual += taken_casual_leaves
+            lc.special += taken_special_leaves
+            lc.vacational += taken_vacational_leaves
+        except:
+            LeavesCount.objects.create(
+                user = request.user,
+                medical = taken_medical_leaves,
+                special = taken_special_leaves,
+                casual = taken_casual_leaves,
+                vacational = taken_vacational_leaves
+            )
 
         dep_id = request.user.extrainfo.department_id
         hod_id = ExtraInfo.objects.get(department_id=dep_id, user_type="hod").user_id
