@@ -10,13 +10,12 @@ from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
                     StudentApplicationFormUG, StudentApplicationFormPG, AcademicReplacementFormOffline, AdminReplacementFormOffline,
                     BaseLeaveFormSetOffline, EmployeeCommonFormOffline, LeaveSegmentFormOffline )
-from .helpers import (create_migrations, deduct_leave_balance,
+from .helpers import (create_migrations, deduct_leave_balance, deduct_leave_balance_student, get_leave_days,
                       get_pending_leave_requests, restore_leave_balance, get_designation)
 from .models import (Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
 from applications.globals.models import HoldsDesignation
 from notification.views import leave_module_notif
-import datetime
 from django.utils import timezone
 from applications.globals.models import (ExtraInfo)
 
@@ -283,10 +282,7 @@ def handle_student_leave_application(request):
         )
         leave.save()
 
-        try:
-            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
-        except LeaveType.DoesNotExist:
-            leave_type = LeaveType()
+        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
 
         leave_type.save()
 
@@ -298,6 +294,8 @@ def handle_student_leave_application(request):
             end_date=data.get('end_date')
         )
 
+        count = (data.get('end_date') -data.get('start_date')).days + 1
+
         dep_id = request.user.extrainfo.department_id
         hod_id = ExtraInfo.objects.get(department_id=dep_id, user_type="hod").user_id
 
@@ -307,7 +305,7 @@ def handle_student_leave_application(request):
             leave=leave,
             requested_from=hod
         )
-        deduct_leave_balance(leave,False)
+        deduct_leave_balance_student(leave_type, count, request.user)
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect('leave:leave')
 
