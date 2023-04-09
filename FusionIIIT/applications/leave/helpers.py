@@ -3,6 +3,8 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q
 from applications.globals.models import HoldsDesignation, Designation
+from applications.globals.models import (ExtraInfo)
+
 
 from .models import LeaveMigration, LeaveRequest, LeavesCount
 
@@ -357,6 +359,20 @@ def deduct_leave_balance(leave,check):
                 count.save()
         except:
             pass
+
+def deduct_leave_balance_student(leave, count, user):
+    data = ExtraInfo.objects.get(user=user)
+
+    if leave.name.lower() == 'medical':
+            data.rem_medical_leave -= count
+    elif leave.name.lower() == 'casual':
+        data.rem_casual_leave -= count
+    elif leave.name.lower() == 'vacational':
+        data.rem_vacational_leave -= count
+    else:
+        data.rem_special_leave -= count
+        
+    data.save()
 
 
 def get_pending_leave_requests(user):
