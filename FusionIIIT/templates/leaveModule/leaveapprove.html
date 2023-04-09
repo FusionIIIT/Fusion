@@ -46,29 +46,8 @@
                         {% endfor %}
 
                     </ul>
-                {% else %}
-                    <b> Student's Application </b>
                 {% endif %}
                 <br>
-                <b> Leave Balance (After Deduction of Pending Leaves): </b> <br><br>
-                <table border=1 style="text-align: center; width: 100%;">
-                    <thead>
-                        <th> Leave Type </th>
-                        <th> Remaining Leaves </th>
-                    </thead>
-                    <tbody>
-                        {% for lv_bal in req.leave.get_current_leave_balance %}
-                            <!--{% if lv_bal.leave_type.name != 'Station' %}-->
-                                <tr>
-                                    <td> {{ lv_bal.leave_type.name }} </td>
-                                    <td> {{ lv_bal.remaining_leaves }} </td>
-                                </tr>
-                            <!--{% endif %}-->
-
-                        {% endfor %}
-
-                    </tbody>
-                </table>
             </div>
             <div class="actions">
                 <div class="ui green positive button">
