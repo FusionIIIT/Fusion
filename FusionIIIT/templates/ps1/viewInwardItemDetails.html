@@ -17,9 +17,10 @@
 
     <div class="ui active tab" data-tab="notesheet">
 
-        <div class="ui two item menu">
+        <div class="ui three item menu">
             <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+            <a class='item' target="_blank" href="/media/{{ file.upload_file }}" ><b style="text-decoration:underline;color: blue;">UPLOADED FILE</b></a>
         </div>
 
             <div class="ui large form" >
