@@ -279,7 +279,7 @@ def profile(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type != 'faculty':
         return redirect('/')
-    pf = extra_info.id
+    pf = user.id
 
     form = ConfrenceForm()
 

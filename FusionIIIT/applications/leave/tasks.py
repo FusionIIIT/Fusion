@@ -11,6 +11,17 @@ from .models import LeaveMigration
 @celery.task()
 @transaction.atomic
 def execute_leave_migrations():
+    """
+    Function definition: execute_leave_migrations()
+
+    Parameter list: None
+
+    Short description: 
+        
+        This function executes leave migrations by updating the working status of the replacee and replacer users in the corresponding Designation model instances.
+        
+    Results generated: None
+    """
     today = timezone.now().date()
     # today = timezone.now()
     migrations = LeaveMigration.objects.filter(Q(on_date__lte=today)).order_by('on_date')

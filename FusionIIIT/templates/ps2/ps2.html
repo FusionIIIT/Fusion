@@ -61,7 +61,6 @@ Stock Tracking
                         <th>Stock No</th>
                         <th>Name of particulars</th>
                         <th>Inventory No</th>
-                        <th>Quantity</th>
                         <th>Rate</th>
                         <th>Amount</th>
                         <th>Supplier Name</th>
@@ -77,10 +76,9 @@ Stock Tracking
                 <tbody>
                     {% for item in stocks %}
                     <tr>
-                        <td>{{ item.stock_no }}</td>
+                        <td>{{ item.id }}</td>
                         <td>{{ item.name_of_particulars }}</td>
                         <td>{{ item.inventory_no }}</td>
-                        <td>{{ item.quantity }}</td>
                         <td>{{ item.rate }}</td>
                         <td>{{ item.amount }}</td>
                         <td>{{ item.supplier_name }}</td>
