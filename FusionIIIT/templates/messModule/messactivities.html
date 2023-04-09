@@ -34,7 +34,7 @@
                         <td>
                             {% for items in members %}
                                 {% if items.designation.name == "mess_committee" or items.designation.name == "mess_convener" %}
-                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
+                                    <p> {{ items.user|truncatechars:10 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
                                         {% if items.designation.name == "mess_convener" %}
                                             (Mess Convener)
                                         {% endif %}
@@ -46,7 +46,7 @@
                             {% for items in members %}
 
                                 {% if items.designation.name == "mess_committee_mess2" or items.designation.name == "mess_convener_mess2" %}
-                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
+                                    <p> {{ items.user|truncatechars:10 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
                                         {% if items.designation.name == "mess_convener_mess2" %}
                                             (Mess Convener)
                                         {% endif %}
