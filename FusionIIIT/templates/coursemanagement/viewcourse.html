@@ -312,7 +312,7 @@
                                 <td>{{forloop.counter}}</td>
                                 <td>{{assi.assignment_name}}</td>
                                 <td>{{assi.submit_date}}</td>
-                                <td> <a href="{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                                <td> <a href="{{assi.doc.url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
                                   </td>
                             </tr>
                             {% endfor %}
@@ -352,7 +352,7 @@
                               <div class="column">
                                 <button class="ui primary button" style="mae">
                                   {{slide.document_url}}
-                                 <a id='visualize' href="{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
+                                 <a id='visualize' href="{{slide.doc.url}}"style="color:white;">{{slide.document_name}}</a>
 
                                </button>
 

@@ -25,6 +25,8 @@ from .forms import *
 # from .helpers import create_thumbnail, semester
 from .models import *
 from .helpers import create_thumbnail, semester
+from django.shortcuts import HttpResponseRedirect
+from django.urls import reverse
 
 
 @login_required
@@ -174,12 +176,12 @@ def course(request, course_code):
         #         videos.append(video_data)
             # print(videos)
         
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
-        assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
         for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi, student_id=student)
             student_assignment.append(sa)
         '''
         marks to store the marks of quizes of student
@@ -309,16 +311,17 @@ def course(request, course_code):
         #         tempform.course_id=course
         #         tempform.save()
         videos=[]
-        slides1=CourseSlide.objects.select_related().filter(course_id=course)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        slides1 = CourseSlide.objects.select_related().filter(course_id=course)
+        slides=None
         quiz = Quiz.objects.select_related().filter(course_id=course)
         marks = []
         quizs = []
         assignment = Assignment.objects.select_related().filter(course_id=course)
         assignment1 = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
-        for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
+        for assi in assignment1:
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi)
+            # print("hii",sa)
             student_assignment.append(sa)
         for q in quiz:
             qs = QuizResult.objects.select_related().filter(quiz_id=q)
@@ -370,28 +373,24 @@ def upload_assignment(request, course_code):
             doc = request.FILES.get('img')    #the images in the assignment
             assi_name = request.POST.get('assignment_topic')
             name = request.POST.get('name')
-            assign = Assignment.objects.get(pk=assi_name)
+            assign = CourseAssignment.objects.get(pk=assi_name)
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
         filename = name
-        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/"  #storing the media files
-        full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
-        url = settings.MEDIA_URL + filename
-        if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
-        fs = FileSystemStorage(full_path, url)
-        fs.save(name + file_extenstion, doc)  #saving the media files
-        uploaded_file_url = full_path+ "/" + name + file_extenstion
+        
         # to save the solution of assignment the database
-        sa = StudentAssignment(
-         student_id=student,
-         assignment_id=assign,
-         upload_url=uploaded_file_url,
-         assign_name=name+file_extenstion
+        StudentAssignment1.objects.create(
+            student_id=student,
+            doc=doc,
+            assignment_id=assign,
+            course_code=course_code,
+            assign_name=name+file_extenstion
+            # upload_time=datetime.datetime.now(),
+            # description=description,
+            # document_name=name,
+            # doc=doc
         )
-        sa.save()
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -479,12 +478,12 @@ def delete(request, course_code):
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
-        stu_assi = StudentAssignment.objects.select_related().get(pk=pk)
+        stu_assi = StudentAssignment1.objects.select_related().get(pk=pk)
         path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
-        lec_assi = Assignment.objects.select_related().get(pk=pk)
+        lec_assi = CourseAssignment.objects.select_related().get(pk=pk)
         path = lec_assi.assignment_url
         lec_assi.delete()
     cmd = "rm "+path
@@ -670,16 +669,7 @@ def add_assignment(request, course_code):                 #from faculty side
         except:
             return HttpResponse("Please Enter The Form Properly")
         filename = name
-        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
-        print(full_path)
-        url = settings.MEDIA_URL + filename
-        if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
-        fs = FileSystemStorage(full_path, url)
-        fs.save(filename+file_extenstion, assi)
-        uploaded_file_url = full_path + filename + file_extenstion
-        print(uploaded_file_url)
+        
         CourseAssignment.objects.create(
             course_id=course,
             submit_date=request.POST.get('myDate'),
@@ -697,6 +687,23 @@ def add_assignment(request, course_code):                 #from faculty side
     else:
         return HttpResponse("not found")
 
+@login_required
+def edit_assignment_marks(request,*args, **kwargs):
+    if request.method=='POST':
+        print("hiii")
+        form=AssignmentMarks(request.POST)
+        if form.is_valid():
+            sa=StudentAssignment1.objects.get(pk=int(request.POST['assignmentid'][0]))
+            # print()
+            sa.score=form.cleaned_data['marks']
+            sa.feedback=form.cleaned_data['feedback']
+            sa.save()
+            # print(sa.course_code)
+            course_code = sa.course_code
+            # url = reverse('course', args=[course_code])
+            return HttpResponse("Marks Updated!")
+            # return redirect(course,course_code='CS416e')
+    return HttpResponse("Error Occured!")
 
 @login_required
 def edit_bank(request, course_code, qb_code):
