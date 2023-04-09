@@ -1230,10 +1230,6 @@ def add_new_profile (request):
                 user_type='student',
                 department=department,
                 u_type=u_type,
-                rem_special_leave = 15,
-                rem_medical_leave = 15,
-                rem_casual_leave = 15,
-                rem_vacational_leave = 15,
             )
 
             sem=1
