@@ -248,16 +248,16 @@ def deduct_leave_balance(leave,check):
             pass
 
 def deduct_leave_balance_student(leave, count, user):
-    data = ExtraInfo.objects.get(user=user)
+    data = LeavesCount.objects.get(user=user, year=datetime.date.today().year)
 
     if leave.name.lower() == 'medical':
-            data.rem_medical_leave -= count
+            data.medical += count
     elif leave.name.lower() == 'casual':
-        data.rem_casual_leave -= count
+        data.casual += count
     elif leave.name.lower() == 'vacational':
-        data.rem_vacational_leave -= count
+        data.vacational += count
     else:
-        data.rem_special_leave -= count
+        data.special += count
         
     data.save()
 
