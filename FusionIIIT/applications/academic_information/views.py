@@ -30,7 +30,8 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 from applications.academic_procedures.views import acad_proced_global_context
 from applications.programme_curriculum.models import Batch
-
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 
 
 @login_required
@@ -613,7 +614,11 @@ def add_timetable(request):
     acadTtForm = AcademicTimetableForm()
     if request.method == 'POST' and request.FILES:
         acadTtForm = AcademicTimetableForm(request.POST, request.FILES)
-        if acadTtForm.is_valid():
+        file = request.FILES['time_table']
+        full_path2 = settings.BASE_DIR+'\\..'+'\\applications'+'\\globals'+settings.STATIC_URL+'academic_procedures'
+        fs = FileSystemStorage(location=full_path2)
+        if acadTtForm.is_valid():   
+             fs.save(file.name, file)
              acadTtForm.save()
         return render(request, "ais/ais.html", context)
     else:
