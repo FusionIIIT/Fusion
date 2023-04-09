@@ -32,8 +32,8 @@ class Constants:
 
 #@python_2_unicode_compatible
 class LeaveType(models.Model):
-    name = models.CharField(max_length=40, null=False, default='casual')
-    max_in_year = models.IntegerField(default=2)
+    name = models.CharField(max_length=40, null=False, default='medical')
+    max_in_year = models.IntegerField(default=15)
     requires_proof = models.BooleanField(default=False)
     authority_forwardable = models.BooleanField(default=False)
     for_faculty = models.BooleanField(default=True)
@@ -47,7 +47,6 @@ class LeaveType(models.Model):
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
-
 
 class LeavesCount(models.Model):
     user = models.ForeignKey(User, related_name='leave_balance', on_delete=models.CASCADE)

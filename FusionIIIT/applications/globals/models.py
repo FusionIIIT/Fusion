@@ -20,6 +20,13 @@ class Constants:
         ('faculty', 'faculty')
     )
 
+    USER_TYPES = (
+        ('ug', 'ug'),
+        ('pg', 'pg'),
+        ('faculty', 'faculty'),
+        ('staff', 'staff')
+    )
+
     RATING_CHOICES = (
         (1, 1),
         (2, 2),
@@ -134,7 +141,7 @@ class ExtraInfo(models.Model):
         department(DepartmentInfo) - to link a user to a department from DepartmentInfo table
         profile_picture(ImageField) - profile photo of the user
         about_me(text) - to store extra information of the user
-
+        u_type(text) - to store programme code
     '''
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -154,6 +161,11 @@ class ExtraInfo(models.Model):
         null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
     date_modified = models.DateTimeField('date_updated', blank=True, null=True)
+    u_type = models.CharField(max_length=20, choices=Constants.USER_TYPES)
+    rem_medical_leave = models.IntegerField(default=15)
+    rem_casual_leave = models.IntegerField(default=15)
+    rem_special_leave = models.IntegerField(default=15)
+    rem_vacational_leave = models.IntegerField(default=15)
 
     @property
     def age(self):

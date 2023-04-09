@@ -5,31 +5,104 @@ from django.forms import ValidationError as VE
 from django.forms.formsets import BaseFormSet
 from django.utils import timezone
 
-from .models import LeavesCount, LeaveSegment, LeaveType, LeaveSegmentOffline
+from .models import LeavesCount, LeaveSegment, LeaveType
+from applications.globals.models import (ExtraInfo)
 
 from .helpers import get_leave_days, get_special_leave_count, get_user_choices, get_vacation_leave_count
 
-class StudentApplicationForm(forms.Form):
+class StudentApplicationFormUG(forms.Form):
 
-    STUDENT_LEAVE_CHOICES = (
-        ('Casual', 'Casual'),
-        ('Medical', 'Medical')
+    STUDENT_LEAVE_CHOICES_UG = (
+        ('Medical', 'Medical'),
+        ('Special', 'Special')
     )
 
-    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES)
+    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES_UG, required=True, initial='Medical')
     start_date = forms.DateField(label='From')
     end_date = forms.DateField(label='To')
     purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
-    address = forms.CharField(label='Address')
+    address = forms.CharField(label='Address', widget=forms.TextInput)
     document = forms.FileField(label='Related Document', required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
     def __init__(self, *args, **kwargs):
         if 'user' in kwargs:
             self.user = kwargs.pop('user')
-        super(StudentApplicationForm, self).__init__(*args, **kwargs)
+        super(StudentApplicationFormUG, self).__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        super(StudentApplicationForm, self).clean(*args, **kwargs)
+        super(StudentApplicationFormUG, self).clean(*args, **kwargs)
+        data = self.cleaned_data
+        errors = dict()
+
+
+        today = timezone.now().date()
+        if data.get('start_date') < today:
+            errors['start_date'] = ['Past Dates are not allowed']
+        if data.get('end_date') < today:
+            errors['end_date'] = ['Past Dates are not allowed']
+
+        try:
+            fileS = data.get('document').size
+            if int(fileS) > 2048000:
+                errors['document'] = ['Documents must not be greater than 2Mb']
+        except:
+            pass
+
+        lt = LeaveType.objects.get(name=data.get('leave_type'))
+
+        if lt.requires_proof and not data.get('document'):
+            errors['document'] = [f'{lt.name} Leave requires document proof']
+
+        try:
+            if data.get('start_date') > data.get('end_date'):
+                if 'start_date' in errors:
+                    errors['start_date'].append('Start Date must be less than End Date')
+                else:
+                    errors['start_date'] = ['Start Date must be less than End Date']
+        except:
+            pass
+
+        count = get_leave_days(data.get('start_date'), data.get('end_date'), lt, False, False)
+
+        remaining_leaves = 0
+
+        if lt.name.lower() == 'medical':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_medical_leave
+        elif lt.name.lower() == 'casual':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_casual_leave
+        elif lt.name.lower() == 'vacational':
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_vacational_leave
+        else:
+            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_special_leave
+
+        
+        if remaining_leaves < count:
+            errors['leave_type'] = f'You have only {remaining_leaves} {lt.name} leaves remaining.'
+
+        raise VE(errors)
+
+class StudentApplicationFormPG(forms.Form):
+
+    STUDENT_LEAVE_CHOICES_PG = (
+        ('Medical', 'Medical'),
+        ('Casual', 'Casual'),
+        ('Vacational', 'Vacational'),
+    )
+
+    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES_PG, required=True, initial='Medical')
+    start_date = forms.DateField(label='From')
+    end_date = forms.DateField(label='To')
+    purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
+    address = forms.CharField(label='Address', widget=forms.TextInput)
+    document = forms.FileField(label='Related Document', required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
+    def __init__(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        super(StudentApplicationFormPG, self).__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super(StudentApplicationFormPG, self).clean(*args, **kwargs)
         data = self.cleaned_data
         errors = dict()
 
@@ -88,7 +161,6 @@ class StudentApplicationForm(forms.Form):
             pass
 
         raise VE(errors)
-
 
 class EmployeeCommonForm(forms.Form):
 

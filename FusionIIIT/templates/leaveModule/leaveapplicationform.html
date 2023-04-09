@@ -77,6 +77,23 @@
             border-bottom:2px solid gray;
             
         }
+
+        .form-container, .form-container button {
+            font-size: large !important ;
+            padding: 10px;
+        }
+        .calendar {
+            width: 100%;
+            display: flex;
+            padding-bottom: 12px;
+            padding-top: 12px;
+        }
+        .date{
+            width: 90%;
+        }
+        .fields {
+            width: 100%;
+        }
         
     </style>
     
@@ -268,10 +285,7 @@
                     </div>
 
                     <div id="leave_form">
-                        
-
                         {% for form in leave_form_set %}
-                            
                             <div id="{{ form.prefix }}-row" class="leave-form-container" style="padding-top:10px;">
                                 <div class="required field">
                                     <label for="id_{{ form.prefix }}-leave_type">Leave Type</label>
@@ -437,20 +451,30 @@
                     </div>
 
                 {% else %}
-                    <div class="two fields" style="align-left: 10px;">
-                        <div class="field">
+                <div class="student">
+                    <div class="calendar">
+                        <div class="date">
                             {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date' %}
                         </div>
-
-                        <div class="field">
+    
+                        <div class="date">
                             {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date' %}
                         </div>
                     </div>
-                    {% render_field form.leave_type %}
-                    {% render_field form.document %}
-                    {% render_field form.address %}
-                    {% render_field form.purpose %}
-                    <button type="submit" class="ui primary button"> Submit </button>
+                    <div class="fields">
+                        {% render_field form.leave_type %}
+                    </div>
+                    <div class="fields">
+                        {% render_field form.document %}
+                    </div>
+                    <div class="fields">
+                        {% render_field form.address %}
+                    </div>
+                    <div class="fields">
+                        {% render_field form.purpose %}
+                    </div>            
+                </div>
+                <button type="submit" class="ui primary button"> Submit </button>
                 {% endif %}
 
             </form>
