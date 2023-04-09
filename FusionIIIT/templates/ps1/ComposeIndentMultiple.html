@@ -58,6 +58,10 @@
         </label>
       </div>
       <div class="field">
+          <label for="file">Attach Files: </label>
+          <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+       </div>
+      <div class="field">
         <label>Expected Delivery</label>
         <input type="date" id="start" name="expected_delivery" />
       </div>
@@ -114,34 +118,35 @@
       <div class="field">
         <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
       </div>
-
-      <div class="field">
+       <div class="field">
         <label
           >Forward To:
+          <select
+            required
+            class="ui fluid search selection dropdown"
+            id="select_user"
+            name='receiver'
+            onchange="changeUserHandler()"
+          >
+            <option selected hidden>Select</option>
 
-          <input
-            type="search"
-            id="input_search"
-            list="input_list"
-            name="receiver"
-          />
-          <datalist id="input_list"> </datalist>
-                     
+            {% for user in users %}
+            <option value="{{ user.username }}">{{ user.username }}</option>
+            {% endfor %}
+          </select>
         </label>
       </div>
-
       <div class="field">
         <label
           >Receiver Designation:
-          <input
-            type="search"
-            id="input_search1"
-            list="input_list1"
-            name="reciever_designation"
-          />
-          <datalist id="input_list1"> </datalist>
-
-                     
+          <select
+            required
+            class="ui fluid search selection dropdown"
+            id="select_reciever_design"
+            name='reciever_designation'
+           
+          >
+          </select>
         </label>
       </div>
 
@@ -228,10 +233,15 @@
                   <option value="Fixture">Fixture</option>
                 </select>
               </div>
-              <div class="field">
-                <label>Expected Delivery</label>
-                <input type="date" id="start" name="expected_delivery" />
-              </div>
+              <div class="left floated item">
+                <label for="file">Attach File ( PDF, JPEG, PNG, JPG )</label>
+                <input
+                  type="file"
+                  id="file"
+                  name="myfile"
+                  accept=".pdf, .jpg, .jpeg, .png"
+              />
+             </div>
             </div>
           </div>
           {% comment %}
@@ -283,31 +293,6 @@
             </div>
           </div>
 
-          <div class="left floated item">
-            <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
-            <input
-              type="file"
-              id="file"
-              name="myfile"
-              accept=".pdf, .jpg, .jpeg, .png"
-            />
-          </div>
-          <div class="field">
-            <label
-              >Create as:
-              <select
-                required
-                class="ui fluid search selection dropdown"
-                name="design"
-              >
-                <option selected hidden>Select</option>
-
-                {% for designations in designations %}
-                <option value="{{designations.id}}">{{designations}}</option>
-                {% endfor %}
-              </select>
-            </label>
-          </div>
 
           <div class="action">
             <button
@@ -332,6 +317,43 @@
 {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 <script type="text/javascript">
+
+  const changeUserHandler = ()=>{
+    console.log("working")
+    value = document.getElementById('select_user').value;
+    console.log(value)
+    const formData = new FormData();
+    formData.append('value',value)
+    $.ajax({
+          type: "POST",
+          url: `/purchase-and-store/get_designations/`,
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            console.log("coming-----------------------");
+
+            
+            console.log(JSON.parse(response.designations));
+            all_designations = JSON.parse(response.designations);
+            $("#select_reciever_design").html("");
+            for (var i = 0; i < all_designations.length; i++) {
+              $("#select_reciever_design").append(
+                '<option value="' +
+                  all_designations[i].fields.name +
+                  '">' +
+                  all_designations[i].fields.name +
+                  "</option>"
+              );
+        }
+        
+          },
+          error: function (rs, e) {
+            console.log("error-------");
+          },
+      });
+  }
+  // document.getElementById('select_user').addEventListener("change",changeUserHandler)
   const addmoreHandler = () => {
     $(".ui.modal").modal({ blurring: true }).modal("show");
   };
@@ -353,7 +375,7 @@
       item_files.push(formFields?.myfile?.files[0])
       Items.push({
         item_name: formFields?.item_name?.value,
-        quantiy: formFields?.quantity?.value,
+        quantity: formFields?.quantity?.value,
         present_stock: formFields?.present_stock?.value,
         estimated_cost: formFields?.estimated_cost?.value,
         purpose: formFields?.purpose?.value,
@@ -408,7 +430,7 @@
   
 
   document.getElementById('multiple_indent_form').addEventListener('submit',function (event){
-    event.preventDefault();
+    // event.preventDefault();
     try{
       const form = event.target;
       const formFields = form.elements;
@@ -423,6 +445,7 @@
       formData.append("reciever_designation",formFields?.reciever_designation?.value)
       formData.append("items", JSON.stringify(Items));
       formData.append('desc',formFields?.desc?.value)
+      formData.append('myfile',formFields?.myfile?.files[0])
       for(let i = 0;i<item_files.length;i++){
         const tmp = `item_file${i}`;
         formData.append(tmp,item_files[i])
@@ -437,6 +460,7 @@
             console.log("coming-----------------------");
             result = JSON.parse(response.data);
             console.log(result);
+            window.location.reload()
           },
           error: function (rs, e) {
             console.log("error-------");
