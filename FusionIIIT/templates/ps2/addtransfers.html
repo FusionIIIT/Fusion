@@ -77,59 +77,15 @@ Stock Tracking
                     {% csrf_token %}
 
                     <div class="field">
-                        <label>Name of particulars *</label>
-                        <textarea rows="1" name="name_of_particulars" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Inventory No *</label>
-                        <textarea rows="1" name="inventory_no" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Quantity *</label>
-                        <textarea rows="1" name="quantity" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Rate *</label>
-                        <textarea rows="1" name="rate" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Amount *</label>
-                        <textarea rows="1" name="amount" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Supplier Name *</label>
-                        <textarea rows="1" name="supplier_name" required></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label>Bill No *</label>
-                        <input type="number" name="bill_no" required>
-                    </div>
-
-                    <div class="left floated item field">
-                        <label>Buy Date *</label>
-                        <input type="date" required name="buy_date">
+                        <label>ID of product *</label>
+                        <textarea rows="1" name="id" required></textarea>
                     </div>
 
                     <br>
 
-                    <div class="left floated item field">
-                        <label>Issued Date *</label>
-                        <input type="date" required name="issued_date">
-                    </div>
-
-                    <br>
-
-                    <!-- show this only when global_admin is true -->
-                    {% if global_admin %}
                     <div class="field">
-                        <label>Head of asset *</label>
-                        <select name="head_of_asset">
+                        <label>To Department *</label>
+                        <select name="to_department">
                             <option value="CSE">CSE</option>
                             <option value="ECE">ECE</option>
                             <option value="ME">ME</option>
@@ -140,21 +96,17 @@ Stock Tracking
                             <option value="GAD">GAD</option>
                         </select>
                     </div>
-                    {% endif %}
+
+                    <br>
 
                     <div class="field">
-                        <label>Section *</label>
-                        <textarea rows="1" name="section" required></textarea>
+                        <label>To Location *</label>
+                        <input type="number" name="To_location" required>
                     </div>
 
                     <div class="field">
-                        <label>Floor No *</label>
-                        <input type="number" name="floor" required>
-                    </div>
-
-                    <div class="field">
-                        <label>Receiver Name *</label>
-                        <textarea rows="1" name="receiver_name" required></textarea>
+                        <label>Remark *</label>
+                        <input type="text" name="Remark" required>
                     </div>
 
                     <div>
@@ -162,12 +114,10 @@ Stock Tracking
 
                             <button type="submit" name="send" class="ui large right floated primary button"
                                 style="float: right;">
-                                Add<i class="ui send icon right floated"></i>
+                                SEND<i class="ui send icon right floated"></i>
                             </button>
                         </a>
                     </div>
-
-
 
                 </form>
 
