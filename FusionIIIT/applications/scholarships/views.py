@@ -1038,6 +1038,7 @@ def sendStudentRenderRequest(request, additionalParams={}):
     x_notif_mcm_flag = False
     x_notif_con_flag = False
     student_batch = getBatch(request.user.extrainfo.student)
+    print("student details",request.user.extrainfo.student)
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
             if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
@@ -1078,6 +1079,7 @@ def sendStudentRenderRequest(request, additionalParams={}):
                     'source': source, 'show_mcm_flag': show_mcm_flag, 'show_convocation_flag': show_convocation_flag,
                     'update_mcm_flag': update_mcm_flag, 'update_con_flag': update_con_flag, 'mother_occ': mother_occ,'x': x})
     context.update(additionalParams)
+    print("context",request.user)
     return render(request, 'scholarshipsModule/scholarships_student.html',context)
 
 def sendStaffRenderRequest(request, additionalParams={}):

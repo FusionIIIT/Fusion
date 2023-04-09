@@ -1,6 +1,64 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
+{% block css %}
+    <link href="https://cd.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css"
+        rel="stylesheet" type="text/css" />
+    <style>
+    .dashboard-container{
+        display:flex;
+        flex-wrap:wrap;
+        flex-direction:row;
+        margin: 0px 2vw;
+        justify-content: center;
+        align-items: center;
+        flex-shrink:1;
+    }
+
+    .main-container{
+        width:80vw;
+        margin: 1.5vh 0;
+    }
+    .card-container{
+        width:30vw;
+        height:auto;
+        margin: 1.5vh 30vw;
+    }
+    .notification-container{
+        display: flex;
+        width:80vw;
+        flex-direction:row;
+        flex-wrap:wrap;
+        justify-content:center;
+        margin: 1.5vh 0;
+    }
+
+    @media only screen and (min-width:800px){
+        .main-container{
+            width:60vw;
+            margin: 5vh 2vw;
+        }
+        .card-container{
+            width:25vw;
+            margin: 5vh 0;
+        }
+    }
+    @media only screen and (min-width:1200px){
+        .dashboard-container{
+            justify-content: space-between;
+        }
+        .card-container{
+            width: 20vw;
+        }
+        .main-container{
+            width: 50vw;
+        }
+        .notification-container{
+            width:20vw;
+        }
+    }
+    </style>
+{% endblock %}
 
 {% block title %}
     Awards & Scholarship
@@ -13,15 +71,15 @@
     {% endblock %}
 
     {% comment %}The grid starts here!{% endcomment %}
-    <div class="ui stackable doubling grid">
+    <div class="dashboard-container">
 
         {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
+    <!-- <div class="column"></div> -->
 
         {% comment %}
             The left-rail segment starts here!
         {% endcomment %}
-        <div class="three wide column">
+        <div class="card-container">
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
@@ -81,7 +139,7 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
-        <div class="eight wide column">
+        <div class="main-container">
             {% comment %}The Details start here!{% endcomment %}
             <!--<div class="ui tab segment" data-tab="first">
                 {% block winners %}
@@ -131,7 +189,7 @@
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
+        <div class="notification-container">
                 <div class="row">
 
                     {% if messages %}
@@ -232,7 +290,7 @@
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-margin segment!{% endcomment %}
-        <div class="column"></div>
+        <!-- <div class="column"></div> -->
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
