@@ -136,18 +136,37 @@ class StudentApplicationFormPG(forms.Form):
 
         count = get_leave_days(data.get('start_date'), data.get('end_date'), lt, False, False)
 
-        remaining_leaves = 0
+        taken_leaves = 0
 
-        if lt.name.lower() == 'medical':
-            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_medical_leave
-        elif lt.name.lower() == 'casual':
-            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_casual_leave
-        elif lt.name.lower() == 'vacational':
-            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_vacational_leave
-        else:
-            remaining_leaves = ExtraInfo.objects.get(user=self.user).rem_special_leave
+        try:
+            if lt.name.lower() == 'medical':
+                taken_leaves = LeavesCount.objects.get(user=self.user).medical
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'casual':
+                taken_leaves = LeavesCount.objects.get(user=self.user).casual
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'vacational':
+                taken_leaves = LeavesCount.objects.get(user=self.user).vacational
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'special':
+                taken_leaves = LeavesCount.objects.get(user=self.user).special
+        except:
+            pass
 
         
+        max_leaves = lt.max_in_year
+
+        remaining_leaves = max_leaves - taken_leaves
+
         if remaining_leaves < count:
             errors['leave_type'] = f'You have only {remaining_leaves} {lt.name} leaves remaining.'
 
@@ -437,11 +456,14 @@ class BaseLeaveFormSet(BaseFormSet):
             except:
                 raise VE('Some error occured, please contact admin.')
 
-        for key, value in mapping.items():
-            tp = leave_counts.get(leave_type=key)
-            if tp.remaining_leaves < value:
-                raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
-                         f'Leaves remaining and you have filled {value}.')
+        try:
+            for key, value in mapping.items():
+                tp = leave_counts.get(leave_type=key)
+                if tp.remaining_leaves < value:
+                    raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
+                             f'Leaves remaining and you have filled {value}.')
+        except:
+            pass
 
 
 class BaseAcadFormSet(BaseFormSet):
