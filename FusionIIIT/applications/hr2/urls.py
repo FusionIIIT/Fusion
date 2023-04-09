@@ -1,5 +1,4 @@
-from django.conf.urls import url
-
+from django.conf.urls import url,include
 from . import views
 
 app_name = 'hr2'
@@ -17,5 +16,5 @@ urlpatterns = [
     url(r'^administrativeProfile/$', views.administrative_profile,
         name='administrativeProfile'),
     url(r'^addnew/$', views.add_new_user, name='addnew'),
-
-]
+    url(r'^api/',include('applications.hr2.api.urls')),
+] 
