@@ -523,8 +523,6 @@ def indentview(request,id):
 
 @login_required(login_url = "/accounts/login")
 def filled_indent_list(request,id):
-    print("It is working")
-
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
         return redirect('/dashboard')
@@ -536,15 +534,11 @@ def filled_indent_list(request,id):
     draft_files=File.objects.filter(id__in=draft).order_by('-upload_date')
     indents=[file.indentfile2 for file in draft_files]
     extrainfo = ExtraInfo.objects.all()
-    abcd = HoldsDesignation.objects.get(pk=id)
-    s = str(abcd).split(" - ")
-    designations = s[1]
-    print("hello world")
-    
     context = {
+        'username':str(request.user),
         'indents' : indents,
         'extrainfo': extrainfo,
-        'designations': designations,
+        'designation': int(id),
     }
     return render(request, 'ps1/indentViewList.html', context)
 

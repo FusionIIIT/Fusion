@@ -14,7 +14,7 @@
 <div class="field">
                     <label>Select designation:
                              {% for designation in designation %}
-                             <td> <a href="{% url 'ps1:filled_indent_list' designation.id %}"><button class="ui primary button">
+                             <td> <a href="{% url 'ps1:filled_indent_list' designation.designation_id %}"><button class="ui primary button">
                                  {{designation}}
                              </button></a></td>
                             {% endfor %}
