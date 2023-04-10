@@ -26,9 +26,6 @@
             Announcements
         </a>
         {% endif %}
-        {% comment %} <a class="item" data-tab="Request">
-            Requests
-        </a> {% endcomment %}
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
@@ -167,7 +164,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -205,8 +201,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                         
                     </span>
@@ -231,7 +225,6 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{1111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         PhD Design Students
                                     </button>
@@ -247,13 +240,11 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{11111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year Design
                                     </button>
                                 </a>
                                 <a class="item" href="./All_Students/{{111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year Design
                                     </button>
@@ -270,28 +261,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{1}}">
-                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         First Year Design
                                     </button>
                                 </a>
-                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{11}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year Design
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year Design
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{1111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year Design
                                     </button>
@@ -335,7 +320,7 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                        <div class="ui divider"></div>
                                     </div>
                                 </div>
                             </div>
@@ -350,14 +335,14 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+                                        <div class="ui divider"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>
@@ -366,7 +351,42 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <span>
+                        <h1> Achievements</h1>
+                        <ol>
+                            <li>
+                                <p>
+                                    PDPM IIITDMJ Student Team has won the International Chess
+                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
+                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
+                                    2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Varun Chaudhary working
+                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
+                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
+                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
+                                    04-07Jan,2020
+                                </p>
+                            </li>
+                        </ol>
+                    </span>
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>
@@ -375,6 +395,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <a class="active item" href="./All_Students/{{1111}}">
+                        <button style="border: solid; float: left; display: block; margin-right:5px">
+                            2018 Batch
+                        </button>
+                    </a>
+                    <a class="active item" href="./All_Students/{{111}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2019 Batch
+                        </button>
+                    </a>
+                    <br>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
