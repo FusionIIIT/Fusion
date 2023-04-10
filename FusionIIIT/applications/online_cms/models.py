@@ -188,7 +188,6 @@ class CourseAssignment(models.Model):
 
 def assignment_submit_name(instance, filename):
     name, ext = filename.split('.')
-    # obj=Curriculum.objects.get(course_id=instance.course_id)
     course_code=instance.course_code
     assignmentName=instance.assignment_id.assignment_name
     file_path = 'online_cms/{course_id}/assi/{assignmentName}/{fileName}.{ext}'.format(
