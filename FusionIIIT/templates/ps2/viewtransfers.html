@@ -62,16 +62,7 @@ Stock Tracking
     The left-rail segment ends here!
     {% endcomment %}
 
-    <div class="eight wide field" style="display: inline;">
-        <form method="GET">
-            <select name="dep">
-                {% for i in department %}
-                <option value="{{i}}">{{i}}</option>
-                {% endfor %}
-            </select>
-            <button class="ui large primary button right floated" name="submit" type="submit">Filter</button>
-        </form>
-    </div>
+
 
 
     <div class="ten wide column">
@@ -80,37 +71,26 @@ Stock Tracking
             <table class="ui celled table">
                 <thead>
                     <tr>
-                        <th>Stock No</th>
-                        <th>Name of particulars</th>
-                        <th>Inventory No</th>
-                        <th>Rate</th>
-                        <th>Amount</th>
-                        <th>Supplier Name</th>
-                        <th>Bill No</th>
-                        <th>Buy Date</th>
-                        <th>Issued Date</th>
-                        <th>Head of Asset</th>
-                        <th>Section</th>
-                        <th>Floor Number</th>
-                        <th>Receiver Name</th>
+
+                        <th> Item_id </th>
+                        <th> From_department</th>
+                        <th> From_location</th>
+                        <th> To_department </th>
+                        <th> To_location </th>
+                        <th> Date </th>
+                        <th> Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in stocks %}
                     <tr>
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.name_of_particulars }}</td>
-                        <td>{{ item.inventory_no }}</td>
-                        <td>{{ item.rate }}</td>
-                        <td>{{ item.amount }}</td>
-                        <td>{{ item.supplier_name }}</td>
-                        <td>{{ item.bill_no }}</td>
-                        <td>{{ item.buy_date }}</td>
-                        <td>{{ item.issued_date }}</td>
-                        <td>{{ item.head_of_asset }}</td>
-                        <td>{{ item.section }}</td>
-                        <td>{{ item.floor }}</td>
-                        <td>{{ item.receiver_name }}</td>
+                        <td>{{ item.Item_id }}</td>
+                        <td>{{ item.From_department }}</td>
+                        <td>{{ item.From_location }}</td>
+                        <td>{{ item.To_department }}</td>
+                        <td>{{ item.To_location }}</td>
+                        <td>{{ item.Date }}</td>
+                        <td>{{ item.Remarks }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
