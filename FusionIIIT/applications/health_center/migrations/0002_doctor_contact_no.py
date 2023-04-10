@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='doctor',
             name='contact_no',
-            field=models.CharField(default=0, max_length=10, validators=[django.core.validators.MinLengthValidator(10)]),
+            field=models.CharField(default='0000000000', max_length=10, validators=[django.core.validators.MinLengthValidator(10)]),
         ),
     ]
