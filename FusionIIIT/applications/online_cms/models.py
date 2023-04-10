@@ -186,21 +186,7 @@ class CourseAssignment(models.Model):
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.course_id, self.assignment_name)
 
-# #details of the solution uploaded by the student
-# class StudentAssignment(models.Model):
-#     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-#     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
-#     upload_time = models.DateTimeField(auto_now=True)
-#     upload_url = models.TextField(max_length=200)
-#     score = models.IntegerField(null=True)        #score is submitted by faculty 
-#     feedback = models.CharField(max_length=100, null=True)  #feedback by the faculty for the solution of the assignment submitted
-#     assign_name = models.CharField(max_length=100) 
 
-#     def __str__(self):
-#         return '{} - {} - {} - {} - {}'.format(
-#                 self.pk, self.student_id,
-#                 self.assignment_id, self.score,
-#                 self.feedback)
 def assignment_submit_name(instance, filename):
     name, ext = filename.split('.')
     # obj=Curriculum.objects.get(course_id=instance.course_id)

@@ -416,6 +416,24 @@
               {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
             </div>
         </div>
+        <div class="three wide column">
+          <div class="row">
+
+              {% if messages %}
+              <div class="field">
+              <div class="ui positive message">
+                <i class="close icon"></i>
+                  <div class="header">
+                      {% for message in messages %}
+                      {{ message }}
+                      {% endfor %}
+                  </div>
+              </div>
+              </div>
+              {% endif %}
+
+          </div>
+      </div>
 
     </div>
 

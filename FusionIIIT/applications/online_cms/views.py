@@ -14,6 +14,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.contrib import messages
 
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
                                                       Student,Student_attendance)
@@ -386,10 +387,7 @@ def upload_assignment(request, course_code):
             assignment_id=assign,
             course_code=course_code,
             assign_name=name+file_extenstion
-            # upload_time=datetime.datetime.now(),
-            # description=description,
-            # document_name=name,
-            # doc=doc
+            
         )
         return HttpResponse("Upload successful.")
     else:
@@ -434,13 +432,7 @@ def add_document(request, course_code):
             document_name=name,
             doc=doc
         )
-        # CourseDocuments.objects.create(
-        #     course_id=course,
-        #     upload_time=datetime.datetime.now(),
-        #     description=description,
-        #     document_url=uploaded_file_url,
-        #     document_name=name+file_extenstion
-        # )
+        
         return HttpResponse("Upload successful.")
     else:
         
@@ -606,8 +598,7 @@ def ajax_new(request, course_code):
         roll = student.id.id[:4]
         #course = Course.objects.get(course_id=course_code, sem=semester(roll))
         curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
-        #print(curriculum_details[0].course_id)
-        #print(Curriculum.objects.values_list('curriculum_id'))
+        
         course =  curriculum_details[0].course_id
     else:
 
@@ -676,13 +667,7 @@ def add_assignment(request, course_code):                 #from faculty side
             doc=assi,
             assignment_name=name
         )
-        # assign = Assignment(
-        #     course_id=course,
-        #     submit_date=request.POST.get('myDate'),
-        #     assignment_url=uploaded_file_url,
-        #     assignment_name=name
-        # )
-        # assign.save()
+        
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -701,7 +686,8 @@ def edit_assignment_marks(request,*args, **kwargs):
             # print(sa.course_code)
             course_code = sa.course_code
             # url = reverse('course', args=[course_code])
-            return HttpResponse("Marks Updated!")
+            messages.success(request, 'Marks updated successfullt')
+            return HttpResponseRedirect('/ocms/'+course_code)
             # return redirect(course,course_code='CS416e')
     return HttpResponse("Error Occured!")
 
