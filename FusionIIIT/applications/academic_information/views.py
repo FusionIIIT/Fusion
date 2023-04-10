@@ -30,7 +30,8 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 from applications.academic_procedures.views import acad_proced_global_context
 from applications.programme_curriculum.models import Batch
-
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 
 
 @login_required
@@ -613,7 +614,11 @@ def add_timetable(request):
     acadTtForm = AcademicTimetableForm()
     if request.method == 'POST' and request.FILES:
         acadTtForm = AcademicTimetableForm(request.POST, request.FILES)
-        if acadTtForm.is_valid():
+        file = request.FILES['time_table']
+        full_path2 = settings.BASE_DIR+'\\..'+'\\applications'+'\\globals'+settings.STATIC_URL+'academic_procedures'
+        fs = FileSystemStorage(location=full_path2)
+        if acadTtForm.is_valid():   
+             fs.save(file.name, file)
              acadTtForm.save()
         return render(request, "ais/ais.html", context)
     else:
@@ -725,21 +730,35 @@ def add_calendar(request):
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
             desc = request.POST.getlist('description')[0]
+            start = request.POST.getlist('start')
+            end = request.POST.getlist('end')
             from_date = from_date[0].split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
             to_date = to_date[0].split('-')
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
+            if start[0]:
+                start = start[0]+':00'
+            else:
+                start = '00:00:00'
+            if end[0]:
+                end =  end[0]+':00'
+            else:
+                end = '00:00:00'
         except Exception as e:
             from_date=""
             to_date=""
             desc=""
+            start = '00:00:00'
+            end = '00:00:00'
             pass
         c = Calendar(
             from_date=from_date,
             to_date=to_date,
-            description=desc)
+            description=desc,
+            start_time=start,
+            end_time=end)
         c.save()
         HttpResponse("Calendar Added")
 
@@ -774,6 +793,8 @@ def update_calendar(request):
         try:
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
+            start = request.POST.getlist('start')
+            end = request.POST.getlist('end')
             desc = request.POST.getlist('description')[0]
             prev_desc = request.POST.getlist('prev_desc')[0]
             from_date = from_date[0].split('-')
@@ -782,15 +803,27 @@ def update_calendar(request):
             to_date = to_date[0].split('-')
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
+            if start[0]:
+                start = start[0]+':00'
+            else:
+                start = '00:00:00'
+            if end[0]:
+                end =  end[0]+':00'
+            else:
+                end = '00:00:00'
             get_calendar_details = Calendar.objects.all().filter(description=prev_desc).first()
             get_calendar_details.description = desc
             get_calendar_details.from_date = from_date
             get_calendar_details.to_date = to_date
+            get_calendar_details.start_time = start
+            get_calendar_details.end_time = end
             get_calendar_details.save()
         except Exception as e:
             from_date=""
             to_date=""
             desc=""
+            start = "00:00:00"
+            end = "00:00:00"
         return render(request, "ais/ais.html", context)
     return render(request, "ais/ais.html", context)
 

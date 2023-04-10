@@ -29,8 +29,7 @@
 
                         <tbody>
                             {% for key, value in active_visitors.items %}
-
-                            <form id="form{{visitor.visitor.id}}">
+                            <div>
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">
@@ -45,45 +44,46 @@
 
                                     <td>
                                         <div class="ui">
-                                            <input type="number" min=0  value=0 name="m_tea" style="width: 100%;">
+                                            <input type="number" min=0  value=0 name="m_tea{{key}}" style="width: 100%;">
+
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui">
-                                            <input type="number" min=0  value=0 name="breakfast" style="width: 100%;">
+                                            <input type="number" min=0  value=0 name="breakfast{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui">
-                                            <input type="number" min=0  value=0 name="lunch" style="width: 100%;">
+                                            <input type="number" min=0  value=0 name="lunch{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui">
-                                            <input type="number" min=0  value=0 name="eve_tea" style="width: 100%;">
+                                            <input type="number" min=0  value=0 name="eve_tea{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui">
-                                            <input type="number" min=0 value=0 name="dinner" style="width: 100%;">
+                                            <input type="number" min=0 value=0 name="dinner{{key}}" style="width: 100%;">
                                             <label></label>
                                         </div>
                                     </td>
-                                    <input type="hidden" value="{{ value.id }}" name="id">
+                                    <input type="hidden" value='{{value.id}}' name="pkid">
                                     <input type="hidden" value="{{ key }}" name="meal-booking-id">
                                     <td>
                                         <div class="field">
                                             <label></label>
-                                            <button class="ui primary right floated button" id="btn{{value.id}}" data-pk="{{value.id}}"
-                                            onclick="bookameal_submit(event); ll()">
+                                            <button class="ui primary right floated button" booking_id="{{key}}" data-pk="{{value.id}}"
+                                            onclick="bookameal_submit(event, this); ll()">
                                                 <script type='text/javascript'>
                                                 ll = function () {
                                                     document.getElementById("submit_inventory").disabled=true; 
@@ -101,7 +101,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                            </form>
+                            </div>
                             {% endfor %}
                         </tbody>
                     </table>
