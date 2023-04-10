@@ -27,6 +27,44 @@ class IndentFile(models.Model):
     class Meta:
         db_table = 'IndentFile'
 
+
+class IndentFile2(models.Model):
+
+    file_info = models.OneToOneField(
+        File, on_delete=models.CASCADE, primary_key=True)
+    title=models.CharField(max_length=250,blank=False,default="")
+    budgetary_head = models.CharField(max_length=250)
+    expected_delivery = models.DateField(blank=False)
+    sources_of_supply = models.CharField(max_length=250)
+    approved = models.BooleanField(default=False)
+    procured = models.BooleanField(default=False)
+    description = models.CharField(max_length=250,blank=False,default="")
+    rejected = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'IndentFile2'
+
+
+class Item(models.Model):
+    item_id = models.AutoField(primary_key=True)
+    indent_file_id = models.ForeignKey(IndentFile2, on_delete=models.CASCADE, null=True, blank=False)
+    item_name = models.CharField(max_length=250, blank=False)
+    quantity = models.IntegerField(blank=False)
+    present_stock = models.IntegerField(blank=False)
+    estimated_cost = models.IntegerField(null=True, blank=False)
+    purpose = models.CharField(max_length=250, blank=False)
+    specification = models.CharField(max_length=250)
+    indent_type = models.CharField(max_length=250)
+    nature = models.BooleanField(default=False)
+    indigenous = models.BooleanField(default=False)
+    replaced = models.BooleanField(default=False)
+    purchased = models.BooleanField(default=False)
+    upload_file = models.FileField(blank=True)
+
+    class Meta:
+        db_table = 'Item'
+
+
 class StockEntry(models.Model):
 
     item_id=models.OneToOneField(IndentFile, on_delete=models.CASCADE,primary_key=True)

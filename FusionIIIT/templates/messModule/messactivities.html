@@ -33,9 +33,9 @@
                     <tr>
                         <td>
                             {% for items in members %}
-                                {% if items.designation.name == "mess_committee_mess1" or items.designation.name == "mess_convener_mess1" %}
+                                {% if items.designation.name == "mess_committee" or items.designation.name == "mess_convener" %}
                                     <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
-                                        {% if items.designation.name == "mess_convener_mess1" %}
+                                        {% if items.designation.name == "mess_convener" %}
                                             (Mess Convener)
                                         {% endif %}
                                     </p>
@@ -82,6 +82,13 @@
 
                 {% if current_date < mess_reg.end_reg %}
                     <strong>Registration ongoing till {{ mess_reg.end_reg }}</strong>
+                    <form method="post" action="{% url 'mess:closemessregistration' %}">                           
+                        <div class="field">
+                            <button class="ui primary button right floated" type="submit" name="submit">
+                                Close
+                            </button>
+                        </div>
+                    </form>
                 {% else %}
                     {#            <form method="post" action="{% url 'mess:startmessregistration' %}">#}
                     <form method="post">
@@ -214,14 +221,14 @@
             <div class="header">Add To Mess Committee</div>
             <div class="ui vertical segment">
                 <div class="ui form">
-                    <form method="POST">
+                    <form method="POST" action="/mess/addmesscommittee">
                         {% csrf_token %}
                         <div class="field">
                             <label>Roll Number*</label>
-                            <input type="number" placeholder="Student Roll Number Here" id="roll_number">
+                            <input type="text" placeholder="Student Roll Number Here" name="roll_number">
                         </div>
                         <div class="field">
-                            <button class="ui primary fluid button" onclick="addMess()"> Add</button>
+                            <button class="ui primary fluid button" type="submit"> Add</button>
                         </div>
                     </form>
                 </div>
@@ -267,7 +274,7 @@
                             <label>Select Member*</label>
                             <select class="ui search fluid dropdown" name="member" id="member_id2">
                                 {% for item1 in members %}
-                                    {% if item1.designation.name == 'mess_committee_mess1' or item1.designation.name == 'mess_committee_mess2' %}
+                                    {% if item1.designation.name == 'mess_committee' or item1.designation.name == 'mess_committee_mess2' %}
                                         <option value='{{ item1.designation }}-{{ item1.user }}' id='{{ item1.pk }}'>
                                             {{ item1.user.first_name }} {{ item1.user.last_name }} : {{ item1.user }}
                                             - {{ item1.designation }}

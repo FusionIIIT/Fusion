@@ -6,7 +6,7 @@ beautifulsoup4==4.9.3
 billiard==3.6.3.0
 Brotli==1.0.9
 bs4==0.0.1
-celery==5.2.3
+celery==5.0.5
 certifi==2020.12.5
 cffi==1.14.4
 chardet==4.0.0
@@ -49,7 +49,7 @@ Pillow==8.1.0
 prompt-toolkit==3.0.10
 psycopg2-binary==2.8.6
 pycparser==2.20
-PyJWT==2.0.1
+PyJWT==2.6.0
 PyPDF2==1.26.0
 pyrsistent==0.17.3
 python-bidi==0.4.2

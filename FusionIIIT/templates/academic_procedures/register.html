@@ -151,23 +151,27 @@
                     <td class="credit_values">{{course_slot.courses.all.0.credit}} </td>
                     <td>
                         {% if course_slot.type == "Professional Core" %}
-                        <select class="ui dropdown" required="True" name="course_priority-{{course_slot.id}}">
-                            {% for course in course_slot.courses.all %}
-                            <option value='{{1}}-{{course.id}}' class="Prechoices" data-value2="{{course.credit}}"
-                                selected>
-                                {{course.code}}-{{ course.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <div style="margin-top: 20px;margin-bottom:20px;">
+                            <select class="" required="True" name="course_priority-{{course_slot.id}}">
+                                {% for course in course_slot.courses.all %}
+                                <option value='{{1}}-{{course.id}}' class="Prechoices" data-value2="{{course.credit}}"
+                                    selected>
+                                    {{course.code}}-{{ course.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         {% else %}
                         {% for course_choice in course_slot.courses.all %}
-                        <select class="ui dropdown" required="True" name="course_priority-{{course_slot.id}}">
-                            <option value="NULL">Choice {{forloop.counter}}</option>
-                            {% for course in course_slot.courses.all %}
-                            <option value='{{forloop.parentloop.counter}}-{{course.id}}' class="Prechoices"
+                        <div style="margin-top: 20px;margin-bottom:20px;">
+                            <select class="ui dropdown" required="True" name="course_priority-{{course_slot.id}}">
+                                <option value="NULL">Choice {{forloop.counter}}</option>
+                                {% for course in course_slot.courses.all %}
+                                <option value='{{forloop.parentloop.counter}}-{{course.id}}' class="Prechoices"
                                 data-value2="{{course.credit}}">
                                 {{course.code}}-{{ course.name }}</option>
-                            {% endfor %}
-                        </select>
+                                {% endfor %}
+                            </select>
+                        </div>
                         {% endfor %}
                         {% endif %}
                     </td>
@@ -193,9 +197,15 @@
 
     {% endif %}
     {% else %}
+    {% if prd_start_date%}
+    <B>
+        <CENTER> Pre Registration will start on {{prd_start_date}}.
+    </B></CENTER>
+    {% else %}
     <B>
         <CENTER> Pre Registration date hasn't come yet
     </B></CENTER>
+    {% endif %}
     {% endif %}
     {% else %}
     <CENTER>

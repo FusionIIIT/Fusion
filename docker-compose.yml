@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:13-alpine
+    restart: always
+    volumes:
+      - /private/var/lib/postgresql:/var/lib/postgresql/data
+    environment:
+      - PGDATA=/var/lib/postgresql/data/some_name/
+      - POSTGRES_DB=fusionlab
+      - POSTGRES_USER=fusion_admin
+      - POSTGRES_PASSWORD=hello123
+    ports:
+      - "5432:5432"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - .:/home/app
+    ports:
+      - 8000:8000
+    command: /bin/bash docker-entrypoint.sh
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db

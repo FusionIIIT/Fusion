@@ -3,10 +3,12 @@ import json
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
 from django.utils import timezone
 from PIL import Image
 
@@ -34,6 +36,20 @@ def index(request):
     else:
         return render(request, "globals/index1.html", context)
 
+# Reset all passwords to 'user@123' in DEV environment
+def reset_all_pass(request):
+    if settings.ALLOW_PASS_RESET:
+        UserMod = get_user_model()
+        arr = UserMod.objects.all()
+        for e in arr:
+            print(e.username)
+            u = User.objects.get(username=e.username)
+            u.set_password('user@123')
+            u.save()
+        context = {"done": len(arr)}
+        return HttpResponse(json.dumps(context), "application/json")
+    else:
+        return HttpResponseNotFound("Not allowed")
 
 
 @login_required(login_url=LOGIN_URL)

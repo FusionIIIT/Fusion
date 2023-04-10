@@ -10,10 +10,10 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
-from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers
+from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers,SectionIncharge
 from . import serializers
 
-
+ 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -23,7 +23,7 @@ def complaint_details_api(request,detailcomp_id1):
     if complaint_detail.worker_id is None:
         worker_detail_serialized = {}
     else :
-        worker_detail = worker_detail.objects.get(id=complaint_detail.worker_id)
+        worker_detail = Workers.objects.get(id=complaint_detail.worker_id.id)
         worker_detail_serialized = serializers.WorkersSerializers(instance=worker_detail).data
     complainer = User.objects.get(username=complaint_detail.complainer.user.username)
     complainer_serialized = serializers.UserSerializers(instance=complainer).data
@@ -104,8 +104,8 @@ def worker_api(request):
         user = get_object_or_404(User ,username=request.user.username)
         user = ExtraInfo.objects.all().filter(user = user).first()
         try :
-            caretaker = Caretaker.objects.get(staff_id=user)
-        except Caretaker.DoesNotExist:
+            SecIncharge = SectionIncharge.objects.get(staff_id=user)
+        except SectionIncharge.DoesNotExist:
             return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.WorkersSerializers(data=request.data)
         if serializer.is_valid():
@@ -120,8 +120,8 @@ def edit_worker_api(request,w_id):
     user = get_object_or_404(User ,username=request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
     try :
-        caretaker = Caretaker.objects.get(staff_id=user)
-    except Caretaker.DoesNotExist:
+        SecIncharge = SectionIncharge.objects.get(staff_id=user)
+    except SectionIncharge.DoesNotExist:
         return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
         worker = Workers.objects.get(id = w_id) 
@@ -154,7 +154,7 @@ def caretaker_api(request):
         user = get_object_or_404(User ,username=request.user.username)
         user = ExtraInfo.objects.all().filter(user = user).first()
         try :
-            supervisor = Supervisor.objects.get(staff_id=user)
+            supervisor = Supervisor.objects.get(sup_id=user)
         except Supervisor.DoesNotExist:
             return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.CaretakerSerializers(data=request.data)
@@ -170,7 +170,7 @@ def edit_caretaker_api(request,c_id):
     user = get_object_or_404(User ,username=request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
     try :
-        supervisor = Supervisor.objects.get(staff_id=user)
+        supervisor = Supervisor.objects.get(sup_id=user)
     except Supervisor.DoesNotExist:
         return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
@@ -182,6 +182,56 @@ def edit_caretaker_api(request,c_id):
         return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
     elif request.method == 'PUT':
         serializer = serializers.CaretakerSerializers(caretaker,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def secincharge_api(request):
+
+    if request.method == 'GET':
+        secincharge = SectionIncharge.objects.all()
+        secincharges = serializers.SectionInchargeSerializers(secincharge,many=True).data
+        resp = {
+            'secincharges' : secincharges,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        user = get_object_or_404(User ,username=request.user.username)
+        user = ExtraInfo.objects.all().filter(user = user).first()
+        try :
+            supervisor = Supervisor.objects.get(sup_id=user)
+        except Supervisor.DoesNotExist:
+            return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        serializer = serializers.SectionInchargeSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_secincharge_api(request,c_id):
+    user = get_object_or_404(User ,username=request.user.username)
+    user = ExtraInfo.objects.all().filter(user = user).first()
+    try :
+        supervisor = Supervisor.objects.get(sup_id=user)
+    except Supervisor.DoesNotExist:
+        return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+    try: 
+        secincharge = SectionIncharge.objects.get(id = c_id) 
+    except SectionIncharge.DoesNotExist: 
+        return Response({'message': 'The Section Incharge does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        secincharge.delete()
+        return Response({'message': 'Section Incharge deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.SectionInchargeSerializers(secincharge,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -220,10 +270,10 @@ def edit_supervisor_api(request,s_id):
     try: 
         supervisor = Supervisor.objects.get(id = s_id) 
     except Supervisor.DoesNotExist: 
-        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'The Supervisor does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'DELETE':
         supervisor.delete()
-        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'Supervisor deleted'},status=status.HTTP_404_NOT_FOUND)
     elif request.method == 'PUT':
         serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
         if serializer.is_valid():

@@ -25,17 +25,22 @@ class Paymentscheme(models.Model):
     others = models.IntegerField()
     gr_reduction = models.IntegerField(default=0)
     net_payment = models.IntegerField(default=0)
-    senior_verify = models.BooleanField(default = False)
-    ass_registrar_verify = models.BooleanField(default = False)
-    ass_registrar_aud_verify = models.BooleanField(default = False)
-    registrar_director_verify = models.BooleanField(default = False)
-    runpayroll = models.BooleanField(default = False)
-    view = models.BooleanField(default = True)
+    senior_verify = models.BooleanField(default=False)
+    ass_registrar_verify = models.BooleanField(default=False)
+    ass_registrar_aud_verify = models.BooleanField(default=False)
+    registrar_director_verify = models.BooleanField(default=False)
+    runpayroll = models.BooleanField(default=False)
+    view = models.BooleanField(default=True)
+   
 
     class Meta:
-       constraints = [
-            models.UniqueConstraint(fields=['month', 'year', 'pf'], name='Unique Contraint 1')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['month', 'year', 'pf'], name='Unique Contraint 1')
         ]
+       
+    def __str__(self):
+		   return str(self.name)
 
 
 class Receipts(models.Model):

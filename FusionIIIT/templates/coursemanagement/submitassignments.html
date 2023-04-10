@@ -188,12 +188,12 @@
 
             <tbody>
 
-                {% for assi in assignment %}
+                {% for assi in assignment1 %}
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td>{{assi.assignment_name}}</td>
                     <td>{{assi.submit_date}}</td>
-                    <td> <a href="/{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                    <td> <a href="{{assi.doc.url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
                     </td>
                     <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{assi.pk}}" id="dustbin_lecassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
 
