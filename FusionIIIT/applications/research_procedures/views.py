@@ -158,7 +158,7 @@ def research_group_create(request):
 @login_required
 def project_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     research_project = ResearchProject()
     research_project.user = request.user
@@ -200,7 +200,7 @@ def project_insert(request):
 @login_required
 def consult_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     consultancy_project = ConsultancyProject()
     consultancy_project.user = request.user
     consultancy_project.pf_no = pf
@@ -231,7 +231,7 @@ def consult_insert(request):
 
 def transfer_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     tech_transfer = TechTransfer()
     tech_transfer.pf_no = pf
@@ -446,7 +446,7 @@ def render_to_pdf(template_src, context_dict):
 
 def rspc_generate_report(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     start = request.POST.get('syear')
     star_date = start+'-01-01'
     end = request.POST.get('lyear')
