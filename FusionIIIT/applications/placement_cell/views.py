@@ -543,7 +543,7 @@ def invitation_status(request):
     mnpbi_tab = 0
     mnplacement_post = 0
     mnpbi_post = 0
-    invitation_status_tab = 1
+    invitation_status_tab = 0
     placementstatus_placement = []
     placementstatus_pbi = []
     mnplacement_tab = 1

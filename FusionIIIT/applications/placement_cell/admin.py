@@ -74,7 +74,7 @@ class PlacementStatusAdmin(admin.ModelAdmin):
 
 
 class PlacementRecordAdmin(admin.ModelAdmin):
-    list_display = ('placement_type', 'name', 'ctc', 'year', 'test_score', 'test_type')
+    list_display = ('placement_type', 'name', 'ctc', 'year', 'test_score', 'test_type',"branch","unique_id")
 
 
 class StudentRecordAdmin(admin.ModelAdmin):
