@@ -42,19 +42,7 @@ class Migration(migrations.Migration):
                 ('income_source', models.CharField(max_length=100)),
             ],
         ),
-        migrations.CreateModel(
-            name='otherExpense',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('spent_on', models.CharField(max_length=100)),
-                ('status', models.CharField(max_length=20)),
-                ('name', models.CharField(max_length=30)),
-                ('userid', models.CharField(max_length=10)),
-                ('amount', models.IntegerField()),
-                ('date_added', models.DateField()),
-                ('remarks', models.CharField(blank=True, max_length=100)),
-            ],
-        ),
+       
         migrations.CreateModel(
             name='Income',
             fields=[
