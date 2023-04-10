@@ -186,8 +186,11 @@ The tab menu starts here!
                                                 <form method='POST'>
                                                     {% csrf_token %}
                                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                                    {% comment %}
+                                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form" onclick="handleClick({{silver}})">Files</button>
                                                     </a>
+                                                    {% endcomment %}
+                                                    <div onclick="handleClick()" style="height:20px;width:40px;border:2px">test</div>
                                                 </form>
                                             <td>
                                                 <form method='POST'>
@@ -279,7 +282,13 @@ The tab menu starts here!
 </div>
 
 
-<script>function sortTable(n) {
+<script>
+function handleClick(){
+    var silvers = "{{silver}}"
+    console.log("here")
+    console.log(silvers)
+}
+function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
     table = document.getElementById("mcm_show");
     switching = true;
@@ -330,6 +339,7 @@ The tab menu starts here!
             }
         }
     }
+}
 </script>
 <script>function sortTable1(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
@@ -382,6 +392,7 @@ The tab menu starts here!
             }
         }
     }
+}
 </script>
 
 <script>function sortTable2(n) {
@@ -435,6 +446,7 @@ The tab menu starts here!
             }
         }
     }
+}
 </script>
 <script>function sortTable3(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
@@ -487,6 +499,7 @@ The tab menu starts here!
             }
         }
     }
+}
 </script>
 
 
