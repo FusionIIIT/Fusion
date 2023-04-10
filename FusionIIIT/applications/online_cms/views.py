@@ -174,8 +174,6 @@ def course(request, course_code):
         #             'title': res['snippet']['title'],
         #         }
 
-        #         videos.append(video_data)
-            # print(videos)
         
         slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
