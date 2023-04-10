@@ -320,7 +320,6 @@ def course(request, course_code):
         student_assignment = []
         for assi in assignment1:
             sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi)
-            # print("hii",sa)
             student_assignment.append(sa)
         for q in quiz:
             qs = QuizResult.objects.select_related().filter(quiz_id=q)
