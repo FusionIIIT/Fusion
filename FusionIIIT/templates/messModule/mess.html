@@ -33,7 +33,7 @@ Central Mess
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu"
-             style="max-width: 320px;">
+             style="max-width: 320px;margin-bottom: 1rem">
             {% block menucard %}
                 {% include 'messModule/menu_card.html' %}
             {% endblock %}
@@ -52,7 +52,7 @@ Central Mess
     {% endcomment %}
     <div class="eight wide column">
         {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment" data-tab="first">
+        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="first">
             {% block feedback %}
             {% include 'messModule/feedback.html' %}
             {% endblock %}
@@ -60,7 +60,7 @@ Central Mess
         {% comment %}The ... end here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="second">
+        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="second">
             {% block leaveRequest %}
             {% include 'messModule/applications.html' %}
             {% endblock %}
@@ -77,15 +77,15 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="sixth">
+        {% comment %} <div class="ui tab segment" data-tab="sixth">
             {% block nonvegfood %}
             {% include 'messModule/nonvegfood.html' %}
             {% endblock %}
-        </div>
+        </div> {% endcomment %}
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="seventh">
+        <div class="ui tab segment" data-tab="seventh" style="min-width:45rem;">
             {% block respondtoleave %}
             {% include 'messModule/respondtorequests.html' %}
             {% endblock %}
@@ -162,11 +162,26 @@ Central Mess
             {% include 'messModule/respondmenu.html' %}
             {% endblock %}
         </div>
-
-
-        <div class="ui tab segment" data-tab="twentytwo">
+        
+        
+        {% comment %} <div class="ui tab segment" data-tab="twentytwo">
             {% block nonvegorders %}
             {% include 'messModule/nonvegorder.html' %}
+            {% endblock %}
+        </div> {% endcomment %}
+        <div class="ui tab segment" data-tab="twentythree">
+            {% block registeredstudent %}
+            {% include 'messModule/registered_student.html' %}
+            {% endblock %}
+        </div>
+        <div class="ui tab segment" data-tab="twentyfour">
+            {% block uploadPaymentDue %}
+            {% include 'messModule/uploadPaymentDue.html' %}
+            {% endblock %}
+        </div>
+        <div class="ui tab segment" data-tab="twentyfive">
+            {% block updatemenu %}
+            {% include 'messModule/updatemenu.html' %}
             {% endblock %}
         </div>
 
@@ -284,5 +299,5 @@ Central Mess
             }
         });
 
-</script>
+</script>   
 {% endblock %}

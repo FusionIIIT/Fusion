@@ -17,17 +17,27 @@
         <a class="item" data-tab="faculty">
             Faculty
         </a>
-
+        
         <a class="item" data-tab="students">
             Students
         </a>
-
+        {% if user.extrainfo.department.name == "ECE" %}
         <a class="item" data-tab="announcement">
             Announcements
         </a>
+        {% endif %}
 
+        {% comment %} <a class="item" data-tab="Request">
         <a class="item" data-tab="Request">
+
             Requests
+        </a> {% endcomment %}
+
+        <a class="item" data-tab="Alumni">
+            Alumni
+        </a>
+        <a class="item" data-tab="Achievement">
+            Achievement
         </a>
 
     </div>
@@ -108,43 +118,26 @@
                     <span>
 
                         <div class="ui vertical segment" >
-
-                            {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> id </td>
-                                    <td> faculty name </td>
-                                    <!-- <td> title </td> -->
-                                    <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
-                                    {% comment %} <td> user_type </td>
-                                    <td> department </td>
-                                    <td> github </td> {% endcomment %}
-
-                                </thead>
-
-                                {% for fcu in fac_list.ece_f %}
-                                <tr>
-                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                    <td>{{ fcu.id }}</td>
-                                    <td><a href = {{ link }}>{{fcu.title}} {{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
-                                    <!-- <td>{{ fcu.title }}</td> -->
-                                    <td>{{ fcu.sex }}</td>
-                                    <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
-                                    <td>{{ fcu.phone_no }}</td>
-                                    {% comment %} <td>{{ fcu.user_type }}</td>
-                                    <td>{{ fcu.department.name }}</td>
-                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                            {% if fac_list.ece_f %}
+                            <div class="fac-container">
+                                {% for faculty in fac_list.ece_f %}
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Electronics & Communications Engineering</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
+                                    </div>
+                                    {% with "/eis/profile/"|add:faculty.user.username as link %}
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
                                     {% endwith %}
-                                </tr>
-
+                                </div>
                                 {% endfor %}
-
-                            </table>
-
+                            </div>
+                            {% else %}
+                            No Data Found.
+                            {% endif %}
                         </div>
                     </span>
                     <div class="ui divider"></div>
@@ -155,6 +148,7 @@
     
      {% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
+        {% if user.extrainfo.department.name == "ECE" %}
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
@@ -208,6 +202,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
     
      {% comment %} tabs content students {% endcomment %}
@@ -242,13 +237,13 @@
                                 <a class="active item" href="./All_Students/{{21111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
-                                        M.Tech First Year
+                                        First Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{211111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        M.Tech Second Year
+                                        Second Year ECE
                                     </button>
                                 </a>
                                 <br>     
@@ -267,26 +262,26 @@
                                 <a class="active item" href="./All_Students/{{2}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        B.Tech First Year
+                                        First Year ECE
                                     </button>
                                 </a>
                                 {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{21}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        B.Tech Second Year
+                                        Second Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{211}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        B.Tech Third Year
+                                        Third Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{2111}}">
                                     <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
-                                        B.Tech Final Year
+                                        Final Year ECE
                                     </button>
                                 </a>
                                 <br>
@@ -349,6 +344,24 @@
                         </div>
 
                     </span>
+                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="Achievement">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="Alumni">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>

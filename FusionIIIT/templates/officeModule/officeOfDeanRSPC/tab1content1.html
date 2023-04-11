@@ -12,7 +12,7 @@
 
             <div class="six wide field">
                 <label>Sponsoring Agency / Client</label>
-                <input value="" class="ui large input" name="sponsored_agency">
+                <input value="" class="ui large input" name="sponsored_agency" required>
             </div>
             
             <div class="four wide field">
@@ -34,7 +34,7 @@
 
             <div class="six wide field">
                 <label>Is there any Agreement(MoU)</label>
-                <select class="ui search fluid dropdown" name="agreement">
+                <select class="ui search fluid dropdown" name="agreement" required>
                     <option value="-">Select</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -59,12 +59,12 @@
 
             <div class="four wide field">
                 <label>CO_PI</label>
-                <input class="ui large input" placeholder="Co PI name if any" name="copi_name">
+                <input class="ui large input" placeholder="Co PI name if any" name="copi_name" >
             </div>
 
             <div class="four wide field">
                 <label>Project Operated By</label>
-                <select class="ui search fluid dropdown" name="project_operated">
+                <select class="ui search fluid dropdown" name="project_operated" required>
                     <option value="Only By PI">Only By PI</option>
                     <option value="PI and Co_pi">PI and Co_pi</option>
                     
@@ -75,12 +75,12 @@
 
         <div class="field">
             <label>Attachments</label>
-            <input class="ui input" type="file" name='p_register'>
+            <input class="ui input" type="file" name='p_register' required>
         </div>
 
         <div class="field">
             <label>Details and Description</label>
-            <textarea rows="2" name="remarks"></textarea>
+            <textarea rows="2" name="remarks"></textarea required>
         </div>
 
         <!--<div class="two fields">

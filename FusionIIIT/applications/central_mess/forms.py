@@ -13,4 +13,5 @@ class MessInfoForm(forms.Form, ):
         ('mess1', 'Veg Mess'),
         ('mess2', 'Non Veg Mess'),
         ]
-    mess_option = forms.CharField(label='Mess Option', widget=forms.Select(choices=MESS_CHOICES))
+    mess_option = forms.CharField(label='Mess Option', widget=forms.Select(
+        choices=MESS_CHOICES, attrs={'style': 'border-radius:1rem;padding:7px;'}))

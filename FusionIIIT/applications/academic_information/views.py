@@ -725,21 +725,35 @@ def add_calendar(request):
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
             desc = request.POST.getlist('description')[0]
+            start = request.POST.getlist('start')
+            end = request.POST.getlist('end')
             from_date = from_date[0].split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
             to_date = to_date[0].split('-')
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
+            if start[0]:
+                start = start[0]+':00'
+            else:
+                start = '00:00:00'
+            if end[0]:
+                end =  end[0]+':00'
+            else:
+                end = '00:00:00'
         except Exception as e:
             from_date=""
             to_date=""
             desc=""
+            start = '00:00:00'
+            end = '00:00:00'
             pass
         c = Calendar(
             from_date=from_date,
             to_date=to_date,
-            description=desc)
+            description=desc,
+            start_time=start,
+            end_time=end)
         c.save()
         HttpResponse("Calendar Added")
 
@@ -774,6 +788,8 @@ def update_calendar(request):
         try:
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
+            start = request.POST.getlist('start')
+            end = request.POST.getlist('end')
             desc = request.POST.getlist('description')[0]
             prev_desc = request.POST.getlist('prev_desc')[0]
             from_date = from_date[0].split('-')
@@ -782,15 +798,27 @@ def update_calendar(request):
             to_date = to_date[0].split('-')
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
+            if start[0]:
+                start = start[0]+':00'
+            else:
+                start = '00:00:00'
+            if end[0]:
+                end =  end[0]+':00'
+            else:
+                end = '00:00:00'
             get_calendar_details = Calendar.objects.all().filter(description=prev_desc).first()
             get_calendar_details.description = desc
             get_calendar_details.from_date = from_date
             get_calendar_details.to_date = to_date
+            get_calendar_details.start_time = start
+            get_calendar_details.end_time = end
             get_calendar_details.save()
         except Exception as e:
             from_date=""
             to_date=""
             desc=""
+            start = "00:00:00"
+            end = "00:00:00"
         return render(request, "ais/ais.html", context)
     return render(request, "ais/ais.html", context)
 
@@ -1169,9 +1197,9 @@ def add_new_profile (request):
     }
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['profiles']
-        excel = xlrd.open_workbook(file_contents=profiles.read())
+        excel = xlrd.open_workbook(profiles.name,file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(sheet.nrows):
+        for i in range(1,sheet.nrows):
             roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
@@ -1191,7 +1219,7 @@ def add_new_profile (request):
             category=""
             phone_no=0
             address=""
-            dept=str(sheet.cell(i,12).value)
+            dept=str(sheet.cell(i,11).value)
             specialization=str(sheet.cell(i,12).value)
             hall_no=None
 
@@ -1209,7 +1237,6 @@ def add_new_profile (request):
             batch_year=request.POST['Batch']
 
             batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
-
             user = User.objects.create_user(
                 username=roll_no,
                 password='hello123',
@@ -1217,6 +1244,7 @@ def add_new_profile (request):
                 last_name=last_name,
                 email=email,
             )
+            
 
             einfo = ExtraInfo.objects.create(
                 id=roll_no,
@@ -1253,6 +1281,11 @@ def add_new_profile (request):
                 working=user,
                 designation=desig,
             )
+            
+            user.save()
+            einfo.save()
+            stud_data.save()
+            hold_des.save()
 
             sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
             course_slots = CourseSlot.objects.all().filter(semester = sem_id)

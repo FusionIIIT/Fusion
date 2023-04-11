@@ -1,0 +1,85 @@
+.fac-container {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+    /* 16px */
+}
+
+@media only screen and (min-width: 550px) {
+    .fac-container {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        /* 16px */
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .fac-container {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        /* 16px */
+    }
+}
+
+@media only screen and (min-width: 1300px) {
+    .fac-container {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        /* 16px */
+    }
+}
+
+.fac-card {
+    border-radius: 0.25rem;
+    background-color: rgb(255, 255, 255);
+    text-align: center;
+    padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+    margin: 0.5rem;
+    box-shadow: 0px 0px 5px 2px rgb(195, 193, 193);
+}
+
+.fac-image {
+    width: 12rem;
+    height: 12rem;
+    border-radius: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin: auto;
+
+}
+
+.fac-content {
+    margin: 1.5rem 0rem;
+}
+
+.fac-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.fac-department {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: gray;
+}
+
+.fac-email {
+    color: rgb(56, 56, 179);
+}
+
+.fac-btn {
+    margin-bottom: 1.1rem;
+    padding: 0.3rem 1rem;
+    color: rgb(22, 22, 180);
+    border: 0.1rem solid blue;
+    border-radius: 0.3rem;
+}
+
+.fac-btn:hover {
+    background-color: rgb(22, 22, 180);
+    color: white;
+}

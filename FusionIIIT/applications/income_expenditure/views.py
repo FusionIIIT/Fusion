@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, request
 
 
-from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet,otherExpense)
+from .models import (ExpenditureType, Expenditure, IncomeSource, Income, FixedAttributes, BalanceSheet, otherExpense)
 import django. utils. timezone as timezone
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -175,12 +175,17 @@ def main_page(request):
 					request,
 					'../templates/incomeExpenditure/iebt.html',
 					{
-						'fin_years':fin_years,
-						'min_date':min_date,
-						'expense_history':expense_history,
-						'max1_date':max_date,
-						'inc_fin_years':inc_fin_years,
-						'exp_fin_years':exp_fin_years,
+						'income_sources':income_sources,
+					'income_history':income_history,
+					'expense_history2':expense_history2,
+					'expenditure_types':expenditure_types,
+					'expenditure_history':expenditure_history,
+					'fin_years':fin_years,
+					'fixedDetails':fixed_attributes,
+					'min_date':min_date,
+					'max1_date':max_date, 
+					'inc_fin_years':inc_fin_years,
+					'exp_fin_years':exp_fin_years,
 					})
 
 
