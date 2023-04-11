@@ -13,7 +13,7 @@ from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
-from .forms import HostelNoticeBoardForm
+from .forms import GuestRoomBookingForm, HostelNoticeBoardForm
 import re
 from django.http import HttpResponse
 from django.template.loader import get_template
