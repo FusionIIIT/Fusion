@@ -144,7 +144,7 @@
               $('#inputdate1').attr('min', maxDate);
             });
           </script>
-          <p id="dte"></p>
+          <!-- <p id="dte"></p> -->
         </div>
         <div class="field">
           <label>To</label>
@@ -163,21 +163,21 @@
               $('#inputdate2').attr('min', maxDate);
             });
           </script>
-          <p id="dte"></p>
+          <!-- <p id="dte"></p> -->
         </div>
       </div>
       <div class="field">
         <label>Reason</label>
         <div class="ui fluid input">
           <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
-          <p id="reas"></p>
+          <!-- <p id="reas"></p> -->
         </div>
       </div>
 
       <div class="field">
         <label><br></label>
         <div >
-          <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
+          <input type="button" id="amb_submit" name="amb_submit"  value="Submit" class="ui large right floated primary button" />
           </div>
       </div>
     </form>
@@ -190,12 +190,12 @@
 
       $('#amb_submit').click(function(e)
       {
-        var startDate = document.getElementById('start_date').value;
-        var endDate = document.getElementById('end_date').value;
+        var startDate = document.getElementById('inputdate1').value;
+        var endDate = document.getElementById('inputdate2').value;
         var start = new Date(startDate);
         var end=new Date(endDate);
         var today = new Date(new Date().setHours(0, 0, 0, 0));
-
+        console.log("Was here:::")
 
         $('#stdt').html('');
         $('#endt').html('');
@@ -216,23 +216,21 @@
           $('#reas').html('*Please fill out the details!');
           document.getElementById("reason").focus();
         }
-
+        
         else{
+          console.log("Requesting ambulance...");
           $.ajax({
             type:'post',
             url:'/healthcenter/student/',
             data: {
               csrfmiddlewaretoken: '{{ csrf_token }}',
-              start_date:$("#start_date").val(),
-              end_date:$("#end_date").val(),
+              start_date:$("#inputdate1").val(),
+              end_date:$("#inputdate2").val(),
               reason:$("#reason").val(),
               amb_submit:$("#amb_submit").val()
             },
             success: function(data){
               alert("Ambulance requested.");
-              document.getElementById("start_date").value="";
-              document.getElementById("end_date").value="";
-              document.getElementById("reason").value="";
               window.location.reload();
 
               $('#reas').html('');
