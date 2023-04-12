@@ -57,6 +57,9 @@ Complaint
                 <a class="active item" data-tab="feedback">
                     Assign Worker
                 </a>
+                <a class="item" data-tab="redirect">
+                    Redirect
+                </a>
             </div>
 
             <div class="ui active tab large" data-tab="feedback">
@@ -107,7 +110,12 @@ Complaint
                                         <td> : {{ detail.specific_location }}</td>
                                     </tr>
                                 </div>
-
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Complaint Detail</td>
+                                        <td> : {{ detail.details }}</td>
+                                    </tr>
+                                </div>
                                 <div class="eight wide field">
                                     <tr>
                                         <td>Status</td>
@@ -195,16 +203,10 @@ Complaint
                             </table>
                             <div class="eight wide field">
 
-                                {% if detail.status != 0 %}
-
-                                <H3>You have assigned a worker. First, remove the worker from this complaint then
-                                    <span style="color: red;">declined</span> this complaint.
-                                    .</H3>
-                                {% else %}
                                 <label>Choose particular section incharge from a drop down box :</label>
                                 <select name="assign_secincharge">
-                                    {% if total_secincharges_in_area %}
-                                    {% for i in total_secincharges_in_area %}
+                                    {% if total_secincharge %}
+                                    {% for i in total_secincharge %}
                                     <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.work_type }}</option>
                                     {% endfor %}
                                     {% else %}
@@ -218,12 +220,11 @@ Complaint
                                     </button>
                                 </a>
 
-                                {% if total_secincharges_in_area %}
+                                {% if total_secincharge %}
                                 <button class="ui large primary button right floated" type="submit" name="submit"
                                         value="redirect" onclick="redirectsubmit()">
                                     Submit
                                 </button>
-                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>

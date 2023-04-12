@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('globals', '0004_auto_20230313_1733'),
+        ('globals', '0004_auto_20230327_1101'),
         ('globals', '0006_auto_20230404_1139'),
     ]
 
