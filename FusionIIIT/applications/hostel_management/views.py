@@ -440,18 +440,20 @@ def request_guest_room(request):
 @login_required
 def update_guest_room(request):
     if request.method == "POST":
-        approve = request.POST['accept_request'] if 'accept_request' in request.POST else None
-        reject = request.POST['reject_request'] if 'reject_request' in request.POST else None 
-        status = request.POST['status'] if 'status' in request.POST else None
-        guest_room_request = GuestRoomBooking.objects.get(pk=(approve if approve else reject))
-        if approve:
+        if 'accept_request' in request.POST:
+            status = request.POST['status']
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['accept_request'])
             guest_room_request.status = status
             guest_room_request.guest_room_id = request.POST['guest_room_id']
             guest_room_request.save()
-        if reject:
+            messages.success(request, "Request accepted successfully!")
+        elif 'reject_request' in request.POST:
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['reject_request'])
             guest_room_request.delete()
-        messages.success(request, "Changes made successfully!")
-        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+            messages.success(request, "Request rejected successfully!")
+        else:
+            messages.error(request, "Invalid request!")
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 
