@@ -9,13 +9,13 @@ urlpatterns = [
     url(r'^$', views.check, name='complaint'),
   #  url(r'^login/$', views.login1, name='complaint'),
     url(r'^user/$', views.user),
-    url(r'^user/caretakerfb/$' , views.caretaker_feedback),
+    # url(r'^user/caretakerfb/$' , views.caretaker_feedback),
     url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
     url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail,name='detail'),
    # url(r'^user/check_complaint/$', views.save_comp),   
     
     # caretaker
-    url(r'^caretaker/$', views.caretaker, name='caretaker'),
+    # url(r'^caretaker/$', views.caretaker, name='caretaker'),
     url(r'^caretaker/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_care),
     url(r'^caretaker/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
     url(r'^caretaker/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail),
@@ -35,7 +35,7 @@ urlpatterns = [
     # supervisor
     url(r'^supervisor/$', views.supervisor),
     url(r'^supervisor/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_super),
-    url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/$', views.caretaker_id_know_more),
+    # url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/$', views.caretaker_id_know_more),
     url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/complaint_reassign_super/(?P<iid>[0-9]+)/$', views.complaint_reassign_super, name = 'complaint_reassign_super'),
     url(r'^supervisor/detail3/(?P<detailcomp_id1>[0-9]+)/$', views.detail3, name = 'detail3'),  
     
