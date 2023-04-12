@@ -40,7 +40,17 @@ Stock Tracking
             </a>
 
             <a href="/purchase-and-store2/addstock" class="item">
-                Add stocks
+                Add Stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers" class="item">
+                Transfers Details
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers_form" class="item">
+                Transfers Forms
                 <i class="right floated chevron right icon"></i>
             </a>
 
@@ -52,6 +62,18 @@ Stock Tracking
     The left-rail segment ends here!
     {% endcomment %}
 
+    <div class="eight wide field" style="display: inline;">
+        <form method="GET">
+            <select name="dep">
+                {% for i in department %}
+                <option value="{{i}}">{{i}}</option>
+                {% endfor %}
+            </select>
+            <button class="ui large primary button right floated" name="submit" type="submit">Filter</button>
+        </form>
+    </div>
+
+
     <div class="ten wide column">
         <!-- inventory table -->
         <div style="overflow-x: auto;">
@@ -61,7 +83,6 @@ Stock Tracking
                         <th>Stock No</th>
                         <th>Name of particulars</th>
                         <th>Inventory No</th>
-                        <th>Quantity</th>
                         <th>Rate</th>
                         <th>Amount</th>
                         <th>Supplier Name</th>
@@ -77,10 +98,9 @@ Stock Tracking
                 <tbody>
                     {% for item in stocks %}
                     <tr>
-                        <td>{{ item.stock_no }}</td>
+                        <td>{{ item.id }}</td>
                         <td>{{ item.name_of_particulars }}</td>
                         <td>{{ item.inventory_no }}</td>
-                        <td>{{ item.quantity }}</td>
                         <td>{{ item.rate }}</td>
                         <td>{{ item.amount }}</td>
                         <td>{{ item.supplier_name }}</td>

@@ -12,9 +12,11 @@ from applications.establishment.models import *
 from applications.establishment.views import *
 from applications.eis.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
+from applications.leave.models import LeavesCount
 from html import escape
 from io import BytesIO
 import re
+import datetime
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
@@ -112,7 +114,7 @@ def service_book(request):
         extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
     appraisal_form = EmpAppraisalForm.objects.filter(
         extra_info=extra_info).order_by('-year')
-    pf = extra_info.id
+    pf = user.id
     workAssignemnt = WorkAssignemnt.objects.filter(
         extra_info_id=pf).order_by('-start_date')
 
@@ -241,6 +243,11 @@ def edit_employee_servicebook(request, id):
 
     return render(request, template, context)
 
+def to_snake_case(string):
+    string = re.sub(r'\W+', '_', string)
+    string = string.lower()
+    return string
+
 
 def administrative_profile(request, username=None):
     user = get_object_or_404(
@@ -248,8 +255,12 @@ def administrative_profile(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type != 'faculty' and extra_info.user_type != 'staff':
         return redirect('/')
-    pf = extra_info.id
+    pf = user.id
 
+    leaves_count = LeavesCount.objects.filter(user_id = request.user.id, year = datetime.date.today().year)
+    leaves = {}
+    for leave in leaves_count:
+        leaves[to_snake_case(leave.leave_type.name)] = int(leave.remaining_leaves)
     lien_service_book = ForeignService.objects.filter(
         extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
     deputation_service_book = ForeignService.objects.filter(
@@ -278,12 +289,19 @@ def administrative_profile(request, username=None):
                      'appraisal': True, 'leave': False})
     workAssignemnt = WorkAssignemnt.objects.filter(
         extra_info_id=pf).order_by('-start_date')
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+
+    designation=[]
+    for i in design:
+        designation.append(str(i.designation))
 
     context = {'user': user,
                'pf': pf,
                'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
                'extrainfo': extra_info,
-               'workAssignment': workAssignemnt
+               'workAssignment': workAssignemnt,
+               'designation': designation,
+               'leaves': leaves
                }
 
     context.update(response)

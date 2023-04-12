@@ -74,7 +74,7 @@
             
         </div>
 
-        <div class="eleven wide column" >
+        <div class="ten wide column" >
             <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
                 <style>
                     #pdf_modal iframe {
@@ -187,16 +187,10 @@
                         font-size: 30px;
                         background-color: #fff;
                     }
-                    {% comment %} .tabfont{
-                      font-size:2rem !important;
-                    } {% endcomment %}
-                    {% comment %} .tabs{
-                      font-size:2rem !important;
-                    } {% endcomment %}
 
                     /*timer css ends*/
                 </style>
-                <div class="ui pointing secondary menu ">
+                <div class="ui pointing secondary menu">
                   <a class="item tabs" data-num="1" data-tab="quiz">
                     Quiz
                  </a>
@@ -422,6 +416,24 @@
               {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
             </div>
         </div>
+        <div class="three wide column">
+          <div class="row">
+
+              {% if messages %}
+              <div class="field">
+              <div class="ui positive message">
+                <i class="close icon"></i>
+                  <div class="header">
+                      {% for message in messages %}
+                      {{ message }}
+                      {% endfor %}
+                  </div>
+              </div>
+              </div>
+              {% endif %}
+
+          </div>
+      </div>
 
     </div>
 

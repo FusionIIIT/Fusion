@@ -2,6 +2,8 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from datetime import time
+from django import forms
 
 from applications.academic_information.models import Student
 
@@ -92,7 +94,7 @@ class Project(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.unique_id.id, self.project_name)
+        return '{} - {}'.format(self.unique_id, self.project_name)
 
 
 class Skill(models.Model):
@@ -331,10 +333,12 @@ class PlacementRecord(models.Model):
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     name = models.CharField(max_length=100, default='')
+    branch = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(decimal_places=2, max_digits=5, default=0)
     year = models.IntegerField(default=0)
     test_score = models.IntegerField(default=0, null=True, blank=True)
     test_type = models.CharField(max_length=30, default='', null=True, blank=True)
+    unique_id=models.ForeignKey(Student, on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.year)

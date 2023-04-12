@@ -43,15 +43,14 @@
                             </div>
                         </h4>
                     </td>
-                    
-                      <td>
-                        <div class="ui form" style="margin-bottom:10px">
-                        <form action="/ocms/{{sa.course_code}}/edit-assignment-marks" class="ui form" method="post">
-                          {%csrf_token%}
-                          <div class="field">
-                            {% comment %} <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}"> {% endcomment %}
-                            <input type="text" placeholder="Enter Marks"  name="marks"  id="assign{{sa.pk}}">
-                          </div>
+                    <td>
+                      <div class="ui form" style="margin-bottom:10px">
+                      <form action="/ocms/{{sa.course_code}}/edit-assignment-marks" class="ui form" method="post">
+                        {%csrf_token%}
+                        <div class="field">
+                          {% comment %} <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}"> {% endcomment %}
+                          <input type="text" placeholder="Enter Marks"  name="marks"  id="assign{{sa.pk}}">
+                        </div>
                         </div>
                         <div class="ui form">
                           <div class="field">
@@ -59,19 +58,18 @@
                             <input type="text" placeholder="Enter Feedback"   name="feedback"  id="feedback{{sa.pk}}">
                           </div>
                         </div>
-                          <div class="field">
-                            {{sa.pk}}
-                            <input hidden type="text" placeholder="Enter Feedback"   name="assignmentid"  id="feedback{{sa.pk}}" value={{sa.pk}}>
-                          </div>
-                          <input type="submit" class="ui primary button" value="Upload">
-  
-                        </form>
-                        {% comment %} <div class="ui form" style="margin-bottom:10px">
-                        </div> {% endcomment %}
-                        {% comment %} <div class="ui form">
-  
-                        </div> {% endcomment %}
-                      </td>
+                        <div class="field">
+                          <input hidden type="text" placeholder="Enter Feedback"   name="assignmentid"  id="feedback{{sa.pk}}" value={{sa.pk}}>
+                        </div>
+                        <input type="submit" class="ui primary button" value="Upload">
+
+                      </form>
+                      {% comment %} <div class="ui form" style="margin-bottom:10px">
+                      </div> {% endcomment %}
+                      {% comment %} <div class="ui form">
+
+                      </div> {% endcomment %}
+                    </td>
                     <td >
                       {% if sa.score %}
                         <span id="score{{sa.pk}}">{{sa.score}}</span>
@@ -99,46 +97,7 @@
 
 <div class="ui tab segment" data-tab="exams" style="overflow:scroll;overflow-y:hidden">
   
-  {% comment %} <form class="ui large form" name="entermarks" id="entermarks" method="POST" action="/ocms/{{curriculum.course_code}}/edit_marks/"> 
-    
-    {% csrf_token %}
-  <div id="refresh_table">
-    <select name="examtype" id = "examtype" style="width: 100px" >
-      <option selected="selected" disabled="disabled">Select Exam</option>
-      <option value = "Quiz 1">Quiz 1</option>
-      <option value = "Quiz 2">Quiz 2</option>
-      <option value = "Mid Sem">Mid Sem</option>
-      <option value = "End Sem">End sem</option>
-    </select>
-    
-    <table class="ui very basic collapsing celled table" >
-      <thead>
-        <tr>
-          <th>Students</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for x in registered_students %}
-          <tr>
-            <td>
-              <div class="content">
-                <p style="text-align:center">{{x.student_id}}</p>
-              </div>
-            </td>
-            <td>
-              
-              <input type="number" name="enteredmarks" id="enteredmarks{{x.r_id}}" required="true">
-
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-    <input type="submit" class="ui primary button" id="submit_marks" value="Upload">
-    
-  </form> {% endcomment %}
+ 
 </div>
 {% endblock %}
 

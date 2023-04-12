@@ -62,7 +62,6 @@
     {% if assignment1|length  %}
       <div class="ui top attached tabular menu">
         {% for assi in assignment1 %}
-
           <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{assi.assignment_name}}</a>
         {% endfor %}
       </div>

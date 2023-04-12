@@ -27,7 +27,7 @@ def profile(request, username=None):
     if extra_info['user_type'] != 'faculty':
         return Response(data={'message':'Not faculty'}, status=status.HTTP_400_BAD_REQUEST)
 
-    pf = extra_info['id']
+    pf = user['id']
     journal = serializers.EmpResearchPapersSerializer(emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year'),many=True).data
     conference = serializers.EmpResearchPapersSerializer(emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year'),many=True).data
     books = serializers.EmpPublishedBooksSerializer(emp_published_books.objects.filter(pf_no=pf).order_by('-pyear'),many=True).data
@@ -108,7 +108,7 @@ def getUser(request):
     if extra_info['user_type'] != 'faculty':
         return Response(data={'message':'Not faculty'}, status=status.HTTP_400_BAD_REQUEST)
 
-    pf = extra_info['id']
+    pf = user['id']
     journal = serializers.EmpResearchPapersSerializer(emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year'),many=True).data
     conference = serializers.EmpResearchPapersSerializer(emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year'),many=True).data
     books = serializers.EmpPublishedBooksSerializer(emp_published_books.objects.filter(pf_no=pf).order_by('-pyear'),many=True).data

@@ -55,7 +55,7 @@
               <tr>
                 <td style="font-weight:bold;color:black;">Doctor</td>
                 
-                {% for d in doct %}
+                {% for d in doctors %}
                 {{count.doctor_count}}
                 <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
                 {% endfor %}
@@ -101,7 +101,7 @@
                     <tr>
                       <td style="font-weight:bold;color:black;">Doctor</td>
                       
-                      {% for d in doct %}
+                      {% for d in doctors %}
                       {{count.doctor_count}}
                       <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
                       {% endfor %}
@@ -111,6 +111,12 @@
                       {% for d in doctors %}
                       {{count.doctor_count}}
                       <td style="word-wrap:break-word;">{{d.specialization}}</td>
+                      {% endfor %}
+                    </tr>
+                    <tr>
+                      <td>Emergency Contact No.</td>
+                      {% for d in doctors %}
+                        <td style="word-wrap:break-word;"> {{d.contact_no}} </td>
                       {% endfor %}
                     </tr>
                       {% for p,day in days %}

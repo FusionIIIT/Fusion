@@ -2,12 +2,12 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'globals/css/demo.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" />
-{% comment %} <script>
+<script>
     (function(e, t, n) {
         var r = e.querySelectorAll("html")[0];
         r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2")
     })(document, window, 0);
-</script> {% endcomment %}
+</script>
 {% if Lecturer == 0 %}
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="uploadassignment">
@@ -88,19 +88,15 @@
 
             {% for assi in assignment %}
               {% for sa in student_assignment %}
-                {% comment %} {{sa.}} {% endcomment %}
                 {% if sa.0.assignment_id.pk == assi.pk %}
-                    {% comment %} <h1>{{sa.0.assignment_id.pk}}</h1>
-                    <h2>{{sa.assignment_id.pk}}</h2>
-                    <h3>{{assi.pk}}</h3> {% endcomment %}
                   {% for s in sa %}
-                    {% comment %} {% if request.user.username == s.student_id.id.user.username %} {% endcomment %}
+                    {% if request.user.username == s.student_id.id.user.username %}
                 <tr>
-                  {% comment %} <td></td> {% endcomment %}
+                  <td></td>
                   <td>{{assi.assignment_name}}</td>
                   <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{s.pk}}" id="dustbin_stuassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a> </td>
                 </tr>
-                    {% comment %} {% endif %} {% endcomment %}
+                    {% endif %}
                   {% endfor %}
                 {% endif %}
             {% endfor %}

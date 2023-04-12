@@ -14,6 +14,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.contrib import messages
 
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
                                                       Student,Student_attendance)
@@ -41,10 +42,6 @@ def viewcourses(request):
         student = Student.objects.select_related('id').get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
         register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
-        courses = []  #courses in which student is registerd
-        print(register)
-        # serializer=OCMSStudentSerializer(register,many=True)
-        
         courses = []  #courses in which student is registerd
         print(register)
         # serializer=OCMSStudentSerializer(register,many=True)
@@ -177,8 +174,7 @@ def course(request, course_code):
         #             'title': res['snippet']['title'],
         #         }
 
-        #         videos.append(video_data)
-            # print(videos)
+        
         slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = CourseAssignment.objects.select_related().filter(course_id=course)
@@ -269,7 +265,7 @@ def course(request, course_code):
         # playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
         # videos_url = "https://www.googleapis.com/youtube/v3/videos"
 
-        videos_list = []
+        # videos_list = []
         # channel_params = {
         #     'part': 'contentDetails',
         #     # 'forUsername': 'TechGuyWeb',
@@ -299,14 +295,21 @@ def course(request, course_code):
 
         # v = requests.get(videos_url, params=videos_params)
         # results2 = v.json()['items']
-        videos = []
+        # videos = []
         # for res in results2:
         #     video_data = {
         #         'id': res['id'],
         #         'title': res['snippet']['title'],
         #     }
 
-            # videos.append(video_data)
+        #     videos.append(video_data)
+        # if request.method == 'POST':
+        #     form = UploadSlideForm(request.POST, request.FILES)
+        #     if form.is_valid():
+        #         tempform=form.save(commit=False)
+        #         tempform.course_id=course
+        #         tempform.save()
+        videos=[]
         slides1 = CourseSlide.objects.select_related().filter(course_id=course)
         slides=None
         quiz = Quiz.objects.select_related().filter(course_id=course)
@@ -317,7 +320,6 @@ def course(request, course_code):
         student_assignment = []
         for assi in assignment1:
             sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi)
-            print("hii",sa)
             student_assignment.append(sa)
         for q in quiz:
             qs = QuizResult.objects.select_related().filter(quiz_id=q)
@@ -374,15 +376,7 @@ def upload_assignment(request, course_code):
         except:
             return HttpResponse("Please fill each and every field correctly!")
         filename = name
-        # full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/"  #storing the media files
-        # full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
-        # url = settings.MEDIA_URL + filename
-        # if not os.path.isdir(full_path):
-        #     cmd = "mkdir " + full_path
-        #     subprocess.call(cmd, shell=True)
-        # fs = FileSystemStorage(full_path, url)
-        # fs.save(name + file_extenstion, doc)  #saving the media files
-        # uploaded_file_url = full_path+ "/" + name + file_extenstion
+        
         # to save the solution of assignment the database
         StudentAssignment1.objects.create(
             student_id=student,
@@ -390,20 +384,8 @@ def upload_assignment(request, course_code):
             assignment_id=assign,
             course_code=course_code,
             assign_name=name+file_extenstion
-            # upload_time=datetime.datetime.now(),
-            # description=description,
-            # document_name=name,
-            # doc=doc
+            
         )
-        # sa = StudentAssignment(
-        #  student_id=student,
-        #  assignment_id=assign,
-        #  upload_url=uploaded_file_url,
-        #  assign_name=name+file_extenstion
-        # )
-        # sa.save()
-        
-
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -447,13 +429,7 @@ def add_document(request, course_code):
             document_name=name,
             doc=doc
         )
-        # CourseDocuments.objects.create(
-        #     course_id=course,
-        #     upload_time=datetime.datetime.now(),
-        #     description=description,
-        #     document_url=uploaded_file_url,
-        #     document_name=name+file_extenstion
-        # )
+        
         return HttpResponse("Upload successful.")
     else:
         
@@ -486,7 +462,7 @@ def delete(request, course_code):
         video.delete()
     #to delete slides/documents
     elif data_type == 'slide':
-        slide = CourseSlide.objects.select_related().get(pk=pk, course_id=course)
+        slide = CourseDocuments.objects.select_related().get(pk=pk, course_id=course)
         path = slide.document_url
         slide.delete()
     #to delete the submitted assignment
@@ -619,8 +595,7 @@ def ajax_new(request, course_code):
         roll = student.id.id[:4]
         #course = Course.objects.get(course_id=course_code, sem=semester(roll))
         curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
-        #print(curriculum_details[0].course_id)
-        #print(Curriculum.objects.values_list('curriculum_id'))
+        
         course =  curriculum_details[0].course_id
     else:
 
@@ -682,29 +657,14 @@ def add_assignment(request, course_code):                 #from faculty side
         except:
             return HttpResponse("Please Enter The Form Properly")
         filename = name
-        # full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
-        # print(full_path)
-        # url = settings.MEDIA_URL + filename
-        # if not os.path.isdir(full_path):
-        #     cmd = "mkdir " + full_path
-        #     subprocess.call(cmd, shell=True)
-        # fs = FileSystemStorage(full_path, url)
-        # fs.save(filename+file_extenstion, assi)
-        # uploaded_file_url = full_path + filename + file_extenstion
-        # print(uploaded_file_url)
+        
         CourseAssignment.objects.create(
             course_id=course,
             submit_date=request.POST.get('myDate'),
             doc=assi,
             assignment_name=name
         )
-        # assign = Assignment(
-        #     course_id=course,
-        #     submit_date=request.POST.get('myDate'),
-        #     assignment_url=uploaded_file_url,
-        #     assignment_name=name
-        # )
-        # assign.save()
+        
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -723,10 +683,10 @@ def edit_assignment_marks(request,*args, **kwargs):
             # print(sa.course_code)
             course_code = sa.course_code
             # url = reverse('course', args=[course_code])
-            return HttpResponse("Marks Updated!")
+            messages.success(request, 'Marks updated successfullt')
+            return HttpResponseRedirect('/ocms/'+course_code)
             # return redirect(course,course_code='CS416e')
     return HttpResponse("Error Occured!")
-
 
 @login_required
 def edit_bank(request, course_code, qb_code):
