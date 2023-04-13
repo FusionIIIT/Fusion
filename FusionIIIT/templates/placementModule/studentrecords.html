@@ -169,7 +169,7 @@
                     Send Invitation
                 </a>
 
-                <a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="invitation_status">
+                <a class="{% if not invitation_status_tab %}active item{% else %} item{% endif %}" data-tab="invitation_status">
                     Invitation Status
                 </a>
             </div>
@@ -558,7 +558,7 @@
                   </div>
 
                   <div id="AllDept" class="field">
-                    <div id = "B.TechSend" class="dept field">
+                    <div id = "B.TechSend" class="dept field" style="display: none;">
                       {{ form13.dep_btech.errors }}
                         <label>
                             Department
@@ -566,7 +566,7 @@
                         {{ form13.dep_btech }}
                     </div>
 
-                   <div id = "B.DesSend" class="dept field">
+                   <div id = "B.DesSend" class="dept field" style="display: none;">
                       {{ form13.dep_bdes.errors }}
                         <label>
                             Department
@@ -574,7 +574,7 @@
                         {{ form13.dep_bdes }}
                     </div>
 
-                    <div id = "M.TechSend" class="dept field">
+                    <div id = "M.TechSend" class="dept field" style="display: none;">
                       {{ form13.dep_mtech.errors }}
                         <label>
                             Department
@@ -582,7 +582,7 @@
                         {{ form13.dep_mtech }}
                     </div>
 
-                    <div id = "M.DesSend" class="dept field">
+                    <div id = "M.DesSend" class="dept field" style="display: none;">
                       {{ form13.dep_mdes.errors }}
                         <label>
                             Department
@@ -590,7 +590,7 @@
                         {{ form13.dep_mdes }}
                     </div>
 
-                    <div id = "PhDSend" class="dept field">
+                    <div id = "PhDSend" class="dept field" style="display: none;">
                       {{ form13.dep_phd.errors }}
                         <label>
                             Department

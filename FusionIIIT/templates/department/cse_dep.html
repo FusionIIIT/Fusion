@@ -30,10 +30,6 @@
             Announcements
         </a>
         {% endif %}
-        {% comment %} <a class="item" data-tab="Request">
-        <a class="item" data-tab="Request">
-            Requests
-        </a> {% endcomment %}
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
@@ -180,7 +176,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -218,7 +213,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                         
@@ -244,7 +238,6 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{1111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         PhD CSE Students
                                     </button>
@@ -260,13 +253,11 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{11111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year CSE
                                     </button>
                                 </a>
                                 <a class="item" href="./All_Students/{{111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
@@ -283,28 +274,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{1}}">
-                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         First Year CSE
                                     </button>
                                 </a>
-                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{11}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year CSE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{1111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year CSE
                                     </button>
@@ -414,6 +399,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <a class="active item" href="./All_Students/{{1111}}">
+                        <button style="border: solid; float: left; display: block; margin-right:5px">
+                            2018 Batch
+                        </button>
+                    </a>
+                    <a class="active item" href="./All_Students/{{111}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2019 Batch
+                        </button>
+                    </a>
+                    <br>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>

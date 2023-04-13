@@ -26,7 +26,7 @@
         </thead>
         <tbody>
         {% for indent in indents %}
-          {% ifequal designations indent.file_info.designation|stringformat:'s' %}
+          {% if indent.file_info.uploader_id == username and indent.file_info.designation_id == designation %}
              <tr>
                  <td>{{indent.file_info.uploader.user}} - {{indent.file_info.designation}}</td>
                  <td>{{request.user.extrainfo.department.name}}-{{indent.file_info.upload_date.year}}-{{indent.file_info.upload_date.month}}-#{{indent.file_info.id}}</td>
@@ -57,7 +57,7 @@
                  </button></td>
                  {% endif %}
               </tr>
-          {% endifequal %}
+          {% endif %}
         {% endfor %}
         </tbody>
 

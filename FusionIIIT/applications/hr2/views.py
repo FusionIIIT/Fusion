@@ -114,7 +114,7 @@ def service_book(request):
         extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
     appraisal_form = EmpAppraisalForm.objects.filter(
         extra_info=extra_info).order_by('-year')
-    pf = extra_info.id
+    pf = user.id
     workAssignemnt = WorkAssignemnt.objects.filter(
         extra_info_id=pf).order_by('-start_date')
 
@@ -255,7 +255,7 @@ def administrative_profile(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type != 'faculty' and extra_info.user_type != 'staff':
         return redirect('/')
-    pf = extra_info.id
+    pf = user.id
 
     leaves_count = LeavesCount.objects.filter(user_id = request.user.id, year = datetime.date.today().year)
     leaves = {}
