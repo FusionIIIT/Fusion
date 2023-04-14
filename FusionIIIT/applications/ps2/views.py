@@ -1,9 +1,11 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.shortcuts import redirect
 import datetime as dd
 
+from django.template.loader import get_template
+from .utils import render_to_pdf
 from .models import StockEntry, StockAdmin ,TransferEntry
 from ..globals.models import ExtraInfo, User
 
@@ -20,19 +22,18 @@ def ps2(request):
     if not stock_admin:
         return HttpResponseRedirect('/')
 
-    stock_admin_department =[]
-    stock_admin_department.append(stock_admin.first().department)
+    stock_admin_department = stock_admin.first().department
 
-    stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department)
+    stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department).order_by('id').values()  
 
     if current_user.username == 'acadadmin':
         if sel:
             if sel != 'Global': 
-                stocks = StockEntry.objects.all().filter(head_of_asset=sel)
+                stocks = StockEntry.objects.all().filter(head_of_asset=sel).order_by('id').values()
             else :
-                stocks = StockEntry.objects.all()
+                stocks = StockEntry.objects.all().order_by('id').values()
         else :
-            stocks = StockEntry.objects.all()
+            stocks = StockEntry.objects.all().order_by('id').values()
 
 
         stock_admin = StockAdmin.objects.all()
@@ -41,15 +42,17 @@ def ps2(request):
             stock_ad.add(i.department)      
         
         context = {
+            'user' : 'acadadmin',
             'stocks': stocks,
             'department': stock_ad,
-        }            
+        }     
         return render(request, "ps2/ps2.html", context)
     
     else :
         context = {
-        'stocks': stocks,
-        'department': stock_admin_department,    
+            'user' : current_user.username,
+            'stocks': stocks,
+            'department': stock_admin_department,    
         }
         return render(request, "ps2/ps2.html", context)
 
@@ -108,30 +111,23 @@ def viewtransfers(request):
     if not stock_admin:
         return HttpResponseRedirect('/')
 
-    stock_admin_department =[]
-    stock_admin_department.append(stock_admin.first().department)
-
-    stocks = TransferEntry.objects.all().filter(From_department=stock_admin_department,To_department=stock_admin_department)
+    stock_admin_department = stock_admin.first().department
 
     if current_user.username == 'acadadmin':
-        stocks = TransferEntry.objects.all()
-        stock_admin = set()   
-
-        for i in stock_admin:
-            stock_admin.add(i.department)      
-        
+        stocks = TransferEntry.objects.all().order_by('date').values()
         context = {
             'stocks': stocks,
-            'department': stock_admin,
+            'department': stock_admin_department,
         }               
         return render(request, "ps2/viewtransfers.html", context)
     
     else :
+        stocks = TransferEntry.objects.all().filter(from_department=stock_admin_department) | TransferEntry.objects.all().filter(to_department=stock_admin_department).order_by('date').values()
         context = {
         'stocks': stocks,
         'department': stock_admin_department,    
         }
-    return render(request, "ps2/viewtransfers.html", context)
+        return render(request, "ps2/viewtransfers.html", context)
 
 def addtransfers(request):
 
@@ -144,22 +140,79 @@ def addtransfers(request):
         id = request.POST.get('id')
         to_department = request.POST.get('to_department')
         to_location = request.POST.get('to_location')
-        Remark = request.POST.get('Remark')
-        # if not stock_admin:
-        #     return HttpResponseRedirect('/')
-
+        r = request.POST.get('remark')
+          
         item = StockEntry.objects.all().filter(id=id)
+        if to_department != item.first().head_of_asset:        
+            stocks = TransferEntry(item_id=id, from_department=item.first().head_of_asset, from_location=item.first().floor, to_department=to_department, to_location=to_location, date=dd.date.today(), remark=r)
+            stocks.save()
 
-        stocks = TransferEntry(Item_id=id, From_department=item.first().head_of_asset, From_location=item.first().floor, To_department=to_department, To_location=to_location, Date=dd.date.today(), Remark=Remark)
-        stocks.save()
-
-        stock_admin = StockEntry.objects.get(id=id)
-        stock_admin.head_of_asset = to_department
-        stock_admin.floor = to_location
-        stock_admin.save()
-
-
-        return redirect('ps2:viewtransfers')
+            stock_admin = StockEntry.objects.get(id=id)
+            stock_admin.head_of_asset = to_department
+            stock_admin.floor = to_location
+            stock_admin.save()
+            return redirect('ps2:viewtransfers')
 
     context = {}
     return render(request, "ps2/addtransfers.html", context)
+
+def report(request):
+    sel = request.GET.get("dep")
+    
+    current_user = get_object_or_404(User, username=request.user.username)
+    extraInfo = ExtraInfo.objects.get(user=current_user)
+    if(extraInfo.user_type=="student"):
+        return HttpResponseRedirect('/')
+
+    stock_admin = StockAdmin.objects.filter(user=current_user)
+    if not stock_admin:
+        return HttpResponseRedirect('/')
+
+    stock_admin_department = stock_admin.first().department
+
+    stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department).order_by('id').values()  
+
+    if current_user.username == 'acadadmin':
+        if sel:
+            if sel != 'Global': 
+                stocks = StockEntry.objects.all().filter(head_of_asset=sel).order_by('id').values()
+            else :
+                stocks = StockEntry.objects.all().order_by('id').values()
+        else :
+            stocks = StockEntry.objects.all().order_by('id').values()
+
+
+        stock_admin = StockAdmin.objects.all()
+        stock_ad = set()
+        for i in stock_admin:
+            stock_ad.add(i.department)      
+        
+        context = {
+            'user' : 'acadadmin',
+            'stocks': stocks,
+            'department': stock_ad,
+        }     
+
+        pdf = render_to_pdf('ps2/pdf.html',context)
+        if pdf:
+            reponse = HttpResponse(pdf,content_type='application/pdf')
+            filename = "Invoice_%s.pdf" %("12341231")
+            content = "inline; filename='%s'"%(filename)
+            reponse['Content-Dispostion'] = content
+            return reponse
+    
+    else :
+        context = {
+            'user' : current_user.username,
+            'stocks': stocks,
+            'department': stock_admin_department,    
+        }
+
+        pdf = render_to_pdf('ps2/pdf.html',context)
+        if pdf:
+            reponse = HttpResponse(pdf,content_type='application/pdf')
+            filename = "Invoice_%s.pdf" %("12341231")
+            content = "inline; filename='%s'"%(filename)
+            reponse['Content-Dispostion'] = content
+            return reponse
+
