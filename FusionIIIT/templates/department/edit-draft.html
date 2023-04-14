@@ -1,8 +1,7 @@
-{% comment %}The tab menu starts here!{% endcomment %}
-<div class="ui active tab" data-tab="dep">
-    <div class="ui vertical segment">
-        <!-- fill the form details -->
-        <form class="writing ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" id="myForm">
+<tr id="df-{{stu.id}}" style="display: none;">
+    <td colspan="7" rowspan="2">
+        <form class="writing ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
+            enctype="multipart/form-data" id="draft-form-{{stu.id}}">
             {% csrf_token %}
             <div class="equal width fields">
 
@@ -112,20 +111,107 @@
                 <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
                 <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png">
             </div>
-            
+
         </form>
         <br>
-        <button class="ui large primary button right floated" id="btn-publish" onclick="announce(event)">
+        <button class="ui large primary button right floated" id="btn-publish-dft-{{stu.id}}" data-id="{{stu.id}}"
+            onclick="announce_dft(event)">
             Publish
         </button>
-        <button class="ui large button right floated" id="btn-draft" onclick="draft(event)">
+        <button class="ui large button right floated" id="btn-draft-dft-{{stu.id}}" data-id="{{stu.id}}"
+            onclick="draft_dft(event)">
             Draft
         </button>
-        
+    </td>
+</tr>
+<script>
+    function edit_draft() {
+        var id = "df-" + "{{stu.id}}";
+        var form_ = document.getElementById(id);
 
-        <br>
-        <br>
-        <br>
-        <div class="ui divider"></div>
-    </div>
-</div>
+        form_.style.display = "table-row";
+        var ff = $('#draft-form-{{stu.id}}')
+        ff.form('set values', {
+            programme: '{{ stu.programme }}',
+            batch: '{{ stu.batch }}',
+            department: 'ALL',
+            announcement: '{{ stu.message }}',
+        });
+        //   document.getElementById('make-announcement-form').style.display = "block";
+
+    }
+
+    function announce_dft(event) {
+        // console.log(document.getElementById("btn-publish-dft").getAttribute("data-id"));
+        event.preventDefault();
+        var id = document.getElementById("btn-publish-dft-{{stu.id}}").getAttribute("data-id")
+        var $form = $('#draft-form-{{stu.id}}'),
+            allFields = $form.form('get values');
+        var upload_announcement = $('#draft-form-{{stu.id}} input[name="upload_announcement"]')[0].files[0];
+        //console.log(allFields);
+
+        let btn = document.getElementById("btn-publish-dft-{{stu.id}}");
+        btn.classList.add("loading");
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('message', allFields['announcement']);
+        formData.append('batch', allFields['batch']);
+        formData.append('programme', allFields['programme']);
+        formData.append('upload_announcement', upload_announcement);
+        formData.append('department', allFields['department']);
+        formData.append('is_draft', "false");
+        // console.log(allFields['batch']);
+        // console.log("success");
+        $.ajax({
+            type: 'POST',
+            url: '/dep/edit_draft/',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data, err) {
+                alert('Some error occured!!');
+
+            }
+        });
+    };
+
+    function draft_dft(event) {
+        // console.log(document.getElementById("btn-publish-dft").getAttribute("data-id"));
+        event.preventDefault();
+        var id = document.getElementById("btn-publish-dft-{{stu.id}}").getAttribute("data-id")
+        var $form = $('#draft-form-{{stu.id}}'),
+            allFields = $form.form('get values');
+        var upload_announcement = $('input[name="upload_announcement"]')[0].files[0];
+        // console.log(allFields);
+
+        let btn = document.getElementById("btn-draft-dft-{{stu.id}}");
+        btn.classList.add("loading");
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('message', allFields['announcement']);
+        formData.append('batch', allFields['batch']);
+        formData.append('programme', allFields['programme']);
+        formData.append('upload_announcement', upload_announcement);
+        formData.append('department', allFields['department']);
+        formData.append('is_draft', "true");
+        // console.log(allFields['batch']);
+        // console.log("success");
+        $.ajax({
+            type: 'POST',
+            url: '/dep/edit_draft/',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data, err) {
+                alert('Some error occured!!');
+
+            }
+        });
+    };
+</script>

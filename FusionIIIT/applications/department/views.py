@@ -157,11 +157,11 @@ def browse_announcements():
         context - Dictionary for storing all above data
 
     """
-    cse_ann = Announcements.objects.filter(department="CSE")
-    ece_ann = Announcements.objects.filter(department="ECE")
-    me_ann = Announcements.objects.filter(department="ME")
-    sm_ann = Announcements.objects.filter(department="SM")
-    all_ann = Announcements.objects.filter(department="ALL")
+    cse_ann = Announcements.objects.filter(department="CSE" , is_draft = False)
+    ece_ann = Announcements.objects.filter(department="ECE", is_draft = False)
+    me_ann = Announcements.objects.filter(department="ME", is_draft = False)
+    sm_ann = Announcements.objects.filter(department="SM", is_draft = False)
+    all_ann = Announcements.objects.filter(department="ALL", is_draft = False)
 
     context = {
         "cse" : cse_ann,
@@ -169,6 +169,30 @@ def browse_announcements():
         "me" : me_ann,
         "sm" : sm_ann,
         "all" : all_ann
+    }
+
+    return context
+
+def browse_announcement_drafts(department):
+    """
+    This function is used to browse Announcements Department-Wise
+    made by different faculties and admin.
+
+    @variables:
+        cse_ann - Stores CSE Department Announcements
+        ece_ann - Stores ECE Department Announcements
+        me_ann - Stores ME Department Announcements
+        sm_ann - Stores SM Department Announcements
+        all_ann - Stores Announcements intended for all Departments
+        context - Dictionary for storing all above data
+
+    """
+    dep_drafts = Announcements.objects.filter(department=department , is_draft = True)
+    all_drafts = Announcements.objects.filter(department="ALL", is_draft = True)
+
+    context = {
+        "dep_drafts" : dep_drafts,
+        "all_drafts" : all_drafts,
     }
 
     return context
@@ -297,6 +321,8 @@ def faculty_view(request):
         message = request.POST.get('message', '')
         upload_announcement = request.FILES.get('upload_announcement')
         department_ = request.POST.get('department')
+        is_draft = request.POST.get('is_draft')
+        print(type(is_draft) , "  " , is_draft , "\n")
         ann_date = date.today()
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
         getstudents = ExtraInfo.objects.select_related('user')
@@ -308,14 +334,18 @@ def faculty_view(request):
                                     message=message,
                                     upload_announcement=upload_announcement,
                                     department = department_,
+                                    is_draft = True if is_draft == "true" else False,
                                     ann_date=ann_date)
+        print("created this: \n\n",obj1.is_draft , "\n\n")
         # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
+    drafts = browse_announcement_drafts(request.user.extrainfo.department.name)
     context_f = faculty()
     departments = department()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
+                                                            "drafts":drafts,
                                                             "fac_list" : context_f,
                                                             "departments":departments,
                                                             "request_to":requests_received
@@ -724,6 +754,44 @@ def deny(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
+
+def delete_draft(request, id):
+    obj = get_object_or_404(Announcements , id=id)
+    obj.delete()
+    return redirect('/dep/')
+
+
+def edit_draft(request):
+    # print('done')
+    if request.method == 'POST':
+        id = request.POST.get('id', '')
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('message', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        department_ = request.POST.get('department')
+        is_draft = request.POST.get('is_draft')
+        ann_date = date.today()
+
+        # print("id:" , id)
+        # print("batch:" , batch)
+        # print("programme:" , programme)
+        # print("message:" , message)
+        # print("department_:" , department_)
+        # print("is_draft:" , is_draft)
+        obj = Announcements.objects.get(id = id)
+        obj.batch=batch
+        obj.programme=programme
+        obj.message=message
+        obj.upload_announcement=upload_announcement
+        obj.department = department_
+        obj.is_draft = True if is_draft == "true" else False
+        obj.ann_date=ann_date
+
+        obj.save()
+        # department_notif(usrnm, recipients , message)
+    return redirect('/dep/')
+
 
 def edit_department(request, department_name , field):
     if request.method == "POST":

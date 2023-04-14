@@ -16,12 +16,15 @@ function announce(event) {
         return;
     }
     else {
+        let btn =document.getElementById("btn-publish");
+        btn.classList.add("loading");
         var formData = new FormData();
         formData.append('message', message);
         formData.append('batch', batch);
         formData.append('programme', programme);
         formData.append('upload_announcement', upload_announcement);
         formData.append('department', department);
+        formData.append('is_draft', "false");
         $.ajax({
             type: 'POST',
             url: '.',
@@ -29,13 +32,8 @@ function announce(event) {
             contentType: false,
             processData: false,
             success: function (data) {
-
-                alert("Announcement successfully made!!");
-                setTimeout(function () {
-                    window.location.reload();
-                }, 1500);
-
-
+                // btn.classList.remove("loading");
+                window.location.reload();
             },
             error: function (data, err) {
                 alert('Some error occured!!');
@@ -44,6 +42,63 @@ function announce(event) {
         });
     }
 };
+function draft(event) {
+    event.preventDefault();
+    var message = $('input[name="announcement"]').val();
+    var batch = $('input[name="batch"]').val();
+    var programme = $('input[name="programme"]').val();
+    var department = $('input[name="department"]').val();
+    var upload_announcement = $('input[name="upload_announcement"]')[0].files[0];
+    if (message == "" || batch == "" || programme == "" || department == "") {
+        alert("Fill required fields!!");
+        return;
+    }
+    else {
+        let btn =document.getElementById("btn-draft");
+        btn.classList.add("loading");
+        var formData = new FormData();
+        formData.append('message', message);
+        formData.append('batch', batch);
+        formData.append('programme', programme);
+        formData.append('upload_announcement', upload_announcement);
+        formData.append('department', department);
+        formData.append('is_draft', "true");
+        $.ajax({
+            type: 'POST',
+            url: '.',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data, err) {
+                alert('Some error occured!!');
+
+            }
+        });
+    }
+};
+
+document.getElementById("show_drafts").addEventListener("click", function (event) {
+    event.preventDefault();
+    let pbsh = document.getElementById("published");
+    let drft = document.getElementById("drafts");
+    let pbsh_status = pbsh.getAttribute("data-status");
+    if (pbsh_status == "hidden") {
+        pbsh.setAttribute("data-status", "visible");
+        pbsh.style.display = "block";
+        drft.style.display = "none";
+        this.innerHTML = "See Drafts";
+        
+    }
+    else {
+        pbsh.setAttribute("data-status", "hidden");
+        pbsh.style.display = "none";
+        drft.style.display = "block";
+        this.innerHTML = "See Published";
+    }
+});
 
 document.getElementById("show_announcement_form").addEventListener("click", function (event) {
     event.preventDefault();
@@ -57,9 +112,25 @@ document.getElementById("show_announcement_form").addEventListener("click", func
     else {
         form.setAttribute("data-status", "hidden");
         form.style.display = "none";
-        this.innerHTML = "Add Announce";
+        this.innerHTML = "New Announcement";
     }
 });
+
+// function edit_draft(self)
+// {
+//     var ff = $('#draft-form')
+//     ff.form('set values', {
+//         programme     : 'B.tech',
+//         batch   : 'All',
+//         department   : 'ALL',
+//         announcement : 'jlukic',
+//   });
+//   var  $form = $('#draft-form'),
+//   allFields = $form.form('get values');
+//   console.log(allFields);
+// //   document.getElementById('make-announcement-form').style.display = "block";
+
+// }
 
 function edit_about(self) {
     let form = document.getElementById("edit-about-form");

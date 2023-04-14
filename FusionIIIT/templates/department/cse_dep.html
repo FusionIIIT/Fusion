@@ -159,10 +159,11 @@
         <div class="ui vertical segment">
             
             {% if user_designation == "faculty" %}
-                <button class="ui button green " id="show_announcement_form" >Add Announcement</button>
+                <button class="ui button green " id="show_announcement_form" >New Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% include "department/make_announcements_fac.html" %}
+                    {% include "department/make_announcements_fac.html" %}
                 </div>
+                <button class="ui button green " id="show_drafts" >See Drafts</button>
             {% elif user_designation == "staff" %}
                 <button class="ui button green " >Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
@@ -174,8 +175,7 @@
                 <div class="description">
                     <span>
 
-                        <div class="ui vertical segment" data-tab="Year-1">
-
+                        <div class="ui vertical segment" data-tab="Year-1" id="published">
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -213,7 +213,66 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
+                        </div>
+                        <div class="ui vertical segment" data-tab="Year-1" id="drafts"  style="display:none;"   >
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+                                    <th>Action</th>
+
+                                </thead>
+
+                                {% for stu in drafts.dep_drafts %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        <td>
+                                            {% if stu.upload_announcement %}
+                                                <a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="ui large buttons">
+                                            <a class="ui negative button" href="/dep/delete_draft/{{stu.id}}/"><i class="trash icon" style="visibility: visible;"></i></a>
+                                            <div class="or"></div>
+                                            <button class="ui positive button" onclick="edit_draft(this)" data-id="{{stu.id}}"><i class="edit icon" style="visibility: visible;"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% include 'department/edit-draft.html' %}
+                                {% endfor %}
+                                {% for stu in drafts.all_drafts %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        <td>
+                                            {% if stu.upload_announcement %}
+                                                <a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="ui large buttons">
+                                            <a class="ui negative button" href="/dep/delete_draft/{{stu.id}}/"><i class="trash icon" style="visibility: visible;"></i></a>
+                                            <div class="or"></div>
+                                            <button class="ui positive button" onclick="edit_draft(id)" id="edit-{{stu.id}}"><i class="edit icon" style="visibility: visible;"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% include 'department/edit-draft.html' %}
+                                {% endfor %}
+                                
+                            </table>
                         </div>
                         
                     </span>
@@ -237,7 +296,7 @@
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="item" href="./All_Students/{{1111111}}">
+                                <a class="item" href="/dep/All_Students/{{1111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         PhD CSE Students
                                     </button>
@@ -252,12 +311,12 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="item" href="./All_Students/{{11111}}">
+                                <a class="item" href="/dep/All_Students/{{11111}}">
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year CSE
                                     </button>
                                 </a>
-                                <a class="item" href="./All_Students/{{111111}}">
+                                <a class="item" href="/dep/All_Students/{{111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
@@ -274,22 +333,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{1}}">
+                                <a class="active item" href="/dep/All_Students/{{1}}">
                                     <button style="border: solid; float: left; display: block;">
                                         First Year CSE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{11}}">
+                                <a class="active item" href="/dep/All_Students/{{11}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{111}}">
+                                <a class="active item" href="/dep/All_Students/{{111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year CSE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{1111}}">
+                                <a class="active item" href="/dep/All_Students/{{1111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year CSE
                                     </button>
@@ -399,12 +458,12 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <a class="active item" href="./All_Students/{{1111}}">
+                    <a class="active item" href="/dep/All_Students/{{1111}}">
                         <button style="border: solid; float: left; display: block; margin-right:5px">
                             2018 Batch
                         </button>
                     </a>
-                    <a class="active item" href="./All_Students/{{111}}">
+                    <a class="active item" href="/dep/All_Students/{{111}}">
                         <button style="border: solid; float: left; display: block;">
                             2019 Batch
                         </button>

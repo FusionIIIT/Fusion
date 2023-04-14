@@ -27,6 +27,8 @@ class Announcements(models.Model):
     department = models.CharField(max_length=40,default="ALL")
     programme = models.CharField(max_length=10)
     upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=" ")
+    is_draft = models.BooleanField(default=True)  # New field for draft status
+    
     def __str__(self):
         return str(self.maker_id.user.username)
 
