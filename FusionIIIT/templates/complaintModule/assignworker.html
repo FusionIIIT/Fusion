@@ -57,6 +57,9 @@ Complaint
                 <a class="active item" data-tab="feedback">
                     Assign Worker
                 </a>
+                <a class="item" data-tab="redirect">
+                    Redirect
+                </a>
             </div>
 
             <div class="ui active tab large" data-tab="feedback">
@@ -107,7 +110,12 @@ Complaint
                                         <td> : {{ detail.specific_location }}</td>
                                     </tr>
                                 </div>
-
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Complaint Detail</td>
+                                        <td> : {{ detail.details }}</td>
+                                    </tr>
+                                </div>
                                 <div class="eight wide field">
                                     <tr>
                                         <td>Status</td>
@@ -158,10 +166,75 @@ Complaint
 
             </div>
 
+<!-- redirect complaint -->
+            <div class="ui tab large" data-tab="redirect">
+                <div class="ui vertical segment" style="padding:40px">
+                    <h4>If you think that this complaint does not belong to you .</br>
+                        You a can pass this complaint to required section incharge .</h4>
+                    <form method="post" action=".">
+                        {% csrf_token %}
+                        <div class="ui header">
 
+                            <div>Complaint ID :{{ detail.complainer }}</div>
+                            <div>Complainer :{{ detail.complainer.user.first_name }}
+                                {{detail.complainer.user.last_name}}
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <table>
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Complaint Type</td>
+                                        <td>: {{ detail.complaint_type }}</td>
+                                    </tr>
+                                </div>
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Location</td>
+                                        <td>: {{ detail.location }}</td>
+                                    </tr>
+                                </div>
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Specific Location</td>
+                                        <td>: {{ detail.specific_location }}</td>
+                                    </tr>
+                                </div>
+                            </table>
+                            <div class="eight wide field">
 
+                                <label>Choose particular section incharge from a drop down box :</label>
+                                <select name="assign_secincharge">
+                                    {% if total_secincharge %}
+                                    {% for i in total_secincharge %}
+                                    <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.work_type }}</option>
+                                    {% endfor %}
+                                    {% else %}
+                                    <option ></option>
+                                    {% endif %}
+                                </select>
+                                <br><br>
+                                <a href="javascript:history.go(-1)">
+                                    <button class="ui large primary button right floated" type="button" name="back">
+                                        Back
+                                    </button>
+                                </a>
+
+                                {% if total_secincharge %}
+                                <button class="ui large primary button right floated" type="submit" name="submit"
+                                        value="redirect" onclick="redirectsubmit()">
+                                    Submit
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% comment %}The ... end here!{% endcomment %}
+        
         </div>
-
 
         {% comment %}The central-rail segment ends here!{% endcomment %}
 

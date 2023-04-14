@@ -7,12 +7,12 @@ app_name = 'complaint'
 urlpatterns = [
 
     url(r'^$', views.check, name='complaint'),
-  #  url(r'^login/$', views.login1, name='complaint'),
+    url(r'^login/$', views.login1, name='complaint'),
     url(r'^user/$', views.user),
     url(r'^user/caretakerfb/$' , views.caretaker_feedback),
     url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
     url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail,name='detail'),
-   # url(r'^user/check_complaint/$', views.save_comp),   
+    url(r'^user/check_complaint/$', views.save_comp),   
     
     # caretaker
     url(r'^caretaker/$', views.caretaker, name='caretaker'),
@@ -23,7 +23,8 @@ urlpatterns = [
     url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
  
     # secincharge
-    url(r'^secincharge/$', views.section_incharge, name='department_head'),
+    url(r'^secincharge/$', views.section_incharge, name='secincharge'),
+    url(r'^secincharge/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_care),
     url(r'^secincharge/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<cid>[0-9]+)/discharge_worker/$', views.discharge_worker,name='discharge_worker'),
     url(r'^secincharge/worker_id_know_more/(?P<work_id>[0-9]+)/$', views.worker_id_know_more, name='come_back_to_this'),
     url(r'^secincharge/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign, name='complaint_reassign'),
