@@ -1,0 +1,23 @@
+{% load static %}
+
+{% block content %}
+<h1>Past Bonafide Application Status</h1>
+    <table class="ui very basic celled sortable table" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+                <th>ID</th>
+                <th>Purpose</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bonafide in bonafides %}
+            <tr>
+                <td>{{ bonafide.id }}</td>
+                <td>{{ bonafide.purpose }}</td>
+                <td>{{ bonafide.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

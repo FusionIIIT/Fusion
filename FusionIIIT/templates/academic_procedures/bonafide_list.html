@@ -1,0 +1,14 @@
+{% load static %}
+{% block content %}
+{% for bonafide in bonafides %}
+  <div>
+    <p>{{ bonafide.id }}. {{ bonafide.purpose }} ({{ bonafide.roll_no }})</p>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="bonafide_id" value="{{ bonafide.id }}">
+      <input type="checkbox" name="check_value" {% if bonafide.check %}checked{% endif %}>
+      <button type="submit"class="ui primary button "style=" margin-left: 1%;padding: 10px 10px;">Update</button>
+    </form>
+  </div>
+{% endfor %}
+{% endblock %}

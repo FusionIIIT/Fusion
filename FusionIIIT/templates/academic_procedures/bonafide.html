@@ -1,14 +1,7 @@
 {% load static %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="complaint">
-            Bonafide
-        </a>
-    </div>
-
-    <div class="ui active tab" data-tab="complaint">
-        <div class="ui vertical segment">
+            <h1>Download Bonafide Request Form</h1>
+            <br>
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/bonafide_pdf/ ">
                 {%csrf_token%}
                 <div class="ui header">
@@ -43,10 +36,6 @@
 
             </form>
 
-            <br>
-            <div class="ui divider"></div>
-        </div>
-    </div>
 
     <script type="text/javascript">
         function checkPurpose(val){

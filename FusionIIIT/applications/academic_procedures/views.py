@@ -34,7 +34,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status,NewDue,DueType)
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status,NewDue,DueType,NewBonafide)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
@@ -191,6 +191,19 @@ def account(request):
     assistant_account_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True)
     assistant_pen_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(acad_approval = True).filter(account_approval = False)
     assistant_account_length = len(assistant_account_list.filter(acad_approval = True).filter(account_approval = False))
+
+    bonafides = NewBonafide.objects.all()
+    
+    if request.method == "POST":
+        bonafide_id = request.POST.get("bonafide_id")
+        new_check_value = request.POST.get("check_value")
+        bonafide = NewBonafide.objects.get(id=bonafide_id)
+        if new_check_value == "on":
+            bonafide.check = True
+        else:
+            bonafide.check = False
+        bonafide.save()
+
     return render(request,
                         '../templates/ais/account.html' ,
                         {
@@ -198,7 +211,24 @@ def account(request):
                             'assistant_account_list' : assistant_account_list ,
                             'assistant_pen_list' : assistant_pen_list,
                             'account_flag' : account_status,
+                            'bonafides': bonafides,
                         })
+
+@login_required(login_url='/accounts/login')
+def create_bonafide(request):
+    if request.method == "POST":
+        purpose = request.POST.get("purpose")
+        roll_no = request.user.username
+        new_bonafide = NewBonafide.objects.create(purpose=purpose, roll_no=roll_no)
+        data = {
+            'id': new_bonafide.id,
+            'purpose': new_bonafide.purpose,
+            'roll_no': new_bonafide.roll_no,
+            'check': new_bonafide.check,
+        }
+        return JsonResponse(data)
+    return render(request, "../templates/academic_procedures/apply_bonafide.html")
+
 @login_required(login_url='/accounts/login')
 def search_roll(request):
     if request.method == 'GET':
@@ -533,6 +563,16 @@ def academic_procedures_student(request):
                 objb = BranchChange()
                 objb.branches=request.POST['branches']
                 objb.save()
+        
+        bonafides = NewBonafide.objects.filter(roll_no=request.user.username)
+        bonafide_data = []
+        for bonafide in bonafides:
+            bonafide_data.append({
+                'id': bonafide.id,
+                'purpose': bonafide.purpose,
+                'roll_no': bonafide.roll_no,
+                'status': 'Cleared' if bonafide.check else 'Uncleared'
+            })
 
         dues = NewDue.objects.filter(roll_no=request.user.username)
         all_clear = all(due.check1 and due.check2 for due in dues)
@@ -597,6 +637,7 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
+                           'bonafides': bonafide_data,
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,

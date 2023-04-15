@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^$', views.academic_procedures_redirect, name='redirect'),
     url(r'^edit_due/', views.edit_due, name='edit_due'),
     url(r'^mark_dues_paid/', views.mark_dues_paid, name='mark_dues_paid'),
+    url(r'^create_bonafide/', views.create_bonafide, name='create_bonafide'),
     url(r'^main/', views.academic_procedures, name='procedures'),
     url(r'^register/', views.register, name='register'),
     url(r'^pre_registration/', views.pre_registration, name='pre_register'),

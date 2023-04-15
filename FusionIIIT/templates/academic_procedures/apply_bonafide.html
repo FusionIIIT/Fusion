@@ -1,0 +1,29 @@
+{% load static %}
+
+{% block content %}
+<h1>Apply for Bonafide</h1>
+<br>
+<form id="create-bonafide-form" method="post">
+  {% csrf_token %}
+  <div>
+      <label for="purpose"style="width: fit-content;"><strong><u>Purpose :</u></strong></label>
+      <input type="text" name="purpose" id="purpose"> 
+      <button type="submit"class="ui primary button "style=" margin-left: 1%;padding: 10px 10px;">Submit</button>
+  </div>
+ 
+</form>
+<!-- {%  include 'academic_procedures/bonafide_status.html' %} -->
+<script>
+  const form = document.getElementById("create-bonafide-form");
+  form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const response = await fetch("{% url 'procedures:create_bonafide' %}", {
+          method: "POST",
+          body: formData
+      });
+      const data = await response.json();
+      console.log(data);
+  });
+</script>
+{% endblock %}

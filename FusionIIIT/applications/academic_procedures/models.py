@@ -311,6 +311,15 @@ class MarkSubmissionCheck(models.Model):
     class Meta:
         db_table = 'MarkSubmissionCheck'
 
+class NewBonafide(models.Model):
+    purpose = models.CharField(max_length=255)
+    roll_no = models.CharField(max_length=50)
+    id = models.AutoField(primary_key=True)
+    check = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'new_bonafide'
+
 class DueType(models.Model):
     due_id = models.AutoField(primary_key=True)
     due_name = models.CharField(max_length=255)
@@ -372,14 +381,12 @@ class MessDue(models.Model):
 
 class Bonafide(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    student_name = models.CharField(max_length=50)
-    purpose = models.CharField(max_length=100)
+    student_name = models.CharField(max_length=100)
+    purpose = models.CharField(max_length=255)
     academic_year = models.CharField(max_length=15)
     enrolled_course = models.CharField(max_length=10)
     complaint_date = models.DateTimeField(default=timezone.now)
 
-    class Meta:
-        db_table = 'Bonafide'
 
 class AssistantshipClaim(models.Model):
     Month_Choices = [
