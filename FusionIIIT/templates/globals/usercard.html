@@ -32,7 +32,7 @@
                         {{ user.extrainfo.student.programme }}
                         {{ user.extrainfo.student.batch }}
                         <br/>
-                        Sem - {{ user.extrainfo.student.curr_semester_no }}
+                        Sem - {{ user_sem }}
                     {% endif %}
                 </div>
             {% else %}
@@ -52,7 +52,7 @@
                         {{ request.user.extrainfo.student.programme }}
                         {{ request.user.extrainfo.student.batch }}
                         <br/>
-                        Sem - {{ request.user.extrainfo.student.curr_semester_no }}
+                        Sem - {{ user_sem }}
                     {% endif %}
                 </div>
                 

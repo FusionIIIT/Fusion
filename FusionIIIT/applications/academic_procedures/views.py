@@ -298,8 +298,7 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            user_sem = obj.curr_semester_no
-            # user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+            user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
             next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = user_sem+1)
             
         except Exception as e:
@@ -473,6 +472,7 @@ def academic_procedures_student(request):
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
+                           'user_sem': user_sem,
                            # 'calendar': calendar,
                             'currently_registered': currently_registered_course,
                             'pre_registered_course' : pre_registered_courses,
