@@ -374,7 +374,6 @@ def compounder_view_handler(request):
         data = {'thresh': thresh}
         return JsonResponse(data)
 
-
 def student_view_handler(request):
     if 'amb_submit' in request.POST:
         user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
@@ -422,6 +421,37 @@ def student_view_handler(request):
                 healthcare_center_notif(request.user, cmp.user, 'appoint_req')
 
         return JsonResponse(data)
+    elif 'appointment' in request.POST:
+        print("WE ARE IN")
+        user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
+        doctor_id = request.POST.get('doctor')
+        
+        date = request.POST.get('date')
+        from_time = request.POST.get('from_time')
+        to_time = request.POST.get('to_time')
+        from_time_obj = datetime.time(datetime.strptime(from_time, '%H:%M'))
+        to_time_obj = datetime.time(datetime.strptime(to_time, '%H:%M'))
+        
+        description = request.POST.get('description')
+        doctor = Doctor.objects.get(id=doctor_id)
+        day_on_date_in_integer = datetime.strptime(date, '%Y-%m-%d').weekday()
+        schedule = Schedule.objects.filter(doctor_id=doctor, day=day_on_date_in_integer, from_time__lte=from_time_obj, to_time__gte=to_time_obj).first()
+        
+        if(schedule != None):
+            Appointment.objects.create(
+                user_id=user_id,
+                doctor_id=doctor,
+                description=description,
+                schedule=schedule,
+                date=date
+            )
+            data = {'status': 1}
+            healthcare_center_notif(request.user, request.user, 'appoint')
+            return JsonResponse(data)
+        else:
+            data = {'status': 0, 'message': 'Doctor is not available on this date & time. Please refer the Doctor\'s Schedule.'}
+            return JsonResponse(data)
+        
     elif 'doctor' in request.POST:
         doctor_id = request.POST.get('doctor')
         days = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
