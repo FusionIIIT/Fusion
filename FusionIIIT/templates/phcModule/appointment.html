@@ -5,7 +5,6 @@
   <a class="active item" data-tab="doctorappointment">
     Doctor Apppointment
   </a>
-
   <a class="item" data-tab="ambulancerequest">
     Ambulance Request
   </a>
@@ -15,7 +14,6 @@
 <div class="ui active tab" data-tab="doctorappointment">
   <div class="ui vertical segment">
     <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-
       <div class="field">
         <label>Doctor</label>
         <select id="doc" class="ui search fluid" name="doctor_id" required="true">
@@ -28,8 +26,6 @@
       <div class="field">
         <label>Date of Appointment</label>
         <!-- on selection of doctor few days should be displayed -->
-
-
         <input type="date" placeholder="Select" id="date" name="date">
         <p id="dte"></p>
         <label>From Time</label>
@@ -38,12 +34,7 @@
         <label>To Time</label>
         <input type="time" placeholder="Select" id="to_time" name="to_time">
         <p id="to_time"></p>
-
-
-
-
       </div>
-
 
       <div class="field">
         <label>Issues/Symptoms</label>
@@ -64,9 +55,6 @@
     </form>
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
     <script type="text/javascript">
-
-
-
       function trimfield(str) {
         return str.replace(/^\s+|\s+$/g, '');
       }
@@ -80,10 +68,7 @@
         if (trimfield(document.getElementById("description").value) == '') {
           $('#desc').html('*Please fill out the Description!');
           document.getElementById("description").focus();
-        }
-
-
-        else {
+        } else {
           $.ajax({
             type: 'post',
             url: '/healthcenter/student/',
@@ -112,7 +97,6 @@
               $('#desc').html('');
               window.location.reload();
               $('#app_dte').html('');
-
             }
           });
         }
@@ -149,8 +133,7 @@
     if (trimfield(document.getElementById("description").value) == '') {
       $('#desc').html('*Please fill out the Description!');
       document.getElementById("description").focus();
-    }
-    else {
+    } else {
       $.ajax({
         type: 'post',
         url: '/healthcenter/student/',
@@ -258,13 +241,14 @@
         var end = new Date(endDate);
         var today = new Date(new Date().setHours(0, 0, 0, 0));
 
-
         $('#stdt').html('');
         $('#endt').html('');
+
         if (+start < +today) {
           $('#stdt').html('You cannot enter a date before today!.');
           return false;
         }
+
         if (endDate != "") {
           if (+end < +start) {
             $('#endt').html('You cannot enter a date before start date!.');
@@ -275,9 +259,7 @@
         if (trimfield(document.getElementById("reason").value) == '') {
           $('#reas').html('*Please fill out the details!');
           document.getElementById("reason").focus();
-        }
-
-        else {
+        } else {
           $.ajax({
             type: 'post',
             url: '/healthcenter/student/',
@@ -303,6 +285,7 @@
           });
         }
       });
+
     </script>
     <br>
     <br>
