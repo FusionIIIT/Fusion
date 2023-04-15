@@ -144,7 +144,6 @@
               $('#inputdate1').attr('min', maxDate);
             });
           </script>
-          <!-- <p id="dte"></p> -->
         </div>
         <div class="field">
           <label>To</label>
@@ -163,14 +162,12 @@
               $('#inputdate2').attr('min', maxDate);
             });
           </script>
-          <!-- <p id="dte"></p> -->
         </div>
       </div>
       <div class="field">
         <label>Reason</label>
         <div class="ui fluid input">
           <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
-          <!-- <p id="reas"></p> -->
         </div>
       </div>
 
@@ -195,7 +192,6 @@
         var start = new Date(startDate);
         var end=new Date(endDate);
         var today = new Date(new Date().setHours(0, 0, 0, 0));
-        console.log("Was here:::")
 
         $('#stdt').html('');
         $('#endt').html('');
@@ -218,7 +214,6 @@
         }
         
         else{
-          console.log("Requesting ambulance...");
           $.ajax({
             type:'post',
             url:'/healthcenter/student/',

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ambulance_request',
             name='reason',
-            field=models.CharField(max_length=500),
+            field=models.CharField(max_length=255),
         ),
     ]
