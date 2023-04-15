@@ -3,8 +3,6 @@
 {% block SM_Dep %}
 
     <h1><center> Welcome to SM Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -17,7 +15,7 @@
         <a class="item" data-tab="faculty">
             Faculty
         </a>
-
+ 
         <a class="item" data-tab="students">
             Students
         </a>
@@ -36,12 +34,11 @@
     </div>
 
 
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Our Mission :
                         </h3>
@@ -67,19 +64,43 @@
                             create higher quality products at lower prices, improve productivity, increase energy
                             efficiency, and sustain safer plants. 
                         </p>
-                    </span>
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_aboutSM(this)">Edit</button>
+                        <div id="edit-about-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutSM">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_aboutSM(this)">Edit</button>
+                        <div id="edit-about-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutSM">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="aboutSM">
+                        {{departments.SM.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Central Library :
                         </h3>
@@ -108,15 +129,38 @@
                                 </p>
                             </li>
                         </ol>
-                    </span>
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facilitySM(this)">Edit</button>
+                        <div id="edit-facility-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilitySM">{{departments.SM.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facilitySM(this)">Edit</button>
+                        <div id="edit-facility-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilitySM">{{departments.SM.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facilitySM">
+                        {{departments.SM.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-   {% comment %} tabs content faculty {% endcomment %}
-   {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -151,7 +195,7 @@
             </div>
         </div>
     </div>
-     {% comment %} tabs contains Announcement_List {% endcomment %}
+     
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "SM" %}
         <div class="ui vertical segment">
@@ -197,7 +241,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                             <button style="border: solid; float: left; display: block;" >
                                 Browse Announcement
@@ -210,15 +253,11 @@
         </div>
         {% endif %}
     </div>
-
-
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
@@ -320,7 +359,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -335,14 +373,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -351,7 +387,7 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h1> Achievements</h1>
                         <ol>
                             <li>
@@ -385,8 +421,33 @@
                                 </p>
                             </li>
                         </ol>
-                    </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievementSM(this)">Edit</button>
+                        <div id="edit-achievement-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementSM">{{departments.SM.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievementSM(this)">Edit</button>
+                        <div id="edit-achievement-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementSM">{{departments.SM.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievementSM">
+                        {{departments.SM.achievement|safe}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -406,7 +467,6 @@
                         </button>
                     </a>
                     <br>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>

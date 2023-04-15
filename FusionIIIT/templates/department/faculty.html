@@ -9,11 +9,6 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %} 
-	
-{% comment %} {% block CSE_faculty_List  %} {% endcomment %}
-
-
-    {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complaint">
              {{ department }} faculty List
@@ -21,7 +16,6 @@
     </div>
 
     <div class="ui active tab" data-tab="complaint">
-        {% comment %} <div class=""> {% endcomment %}
            
 		   {% if fac_list %}
           <table class="ui very basic collapsing celled sortable table"
@@ -64,11 +58,8 @@
 
             
             <div class="ui divider"></div>
-        {% comment %} </div> {% endcomment %}
+        
     </div>
-
-
-{% comment %} {% endblock %} {% endcomment %}
 
 {% include 'department/alert.html' %}
 {% endblock %}

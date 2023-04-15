@@ -24,8 +24,6 @@
 
         </a>
     </div>
-
-    {% comment %} <div class="ui active tab" data-tab="complaint"> {% endcomment %}
         <div class="ui vertical segment">
            
 		   {% if student_list %}
@@ -64,23 +62,6 @@
             
 
         </table>
-            {% comment %} <div style="border: block; float: center; display: block;">
-            	<span>
-                	{% if student_list.has_previous %}
-                		<a href="?page={{student_list.previous_page_number}}">Previous <</a>
-                	{% endif %}
-	
-                	<span>{{student_list.number}}</span>
-	
-                	{% if student_list.has_next %}
-                		<a href="?page={{student_list.next_page_number}}">> Next</a>
-                	{% endif %}
-            	</span>
-            </div>
-
-      {% else %}
-        <p>No Students Records. Table Not Created.</p> {% endcomment %}
-
         <div class="pagination">
               <span class="step-links">
                   {% if student_list.has_previous %}
@@ -112,11 +93,7 @@
 
             
             <div class="ui divider"></div>
-        {% comment %} </div> {% endcomment %}
     </div>
-
-
-{% comment %} {% endblock %} {% endcomment %}
 
 {% include 'department/alert.html' %}
 {% endblock %}
