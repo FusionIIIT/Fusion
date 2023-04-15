@@ -3,9 +3,15 @@ from django.http import HttpResponseRedirect,HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.shortcuts import redirect
 import datetime as dd
+from html import escape
 
 from django.template.loader import get_template
 from .utils import render_to_pdf
+
+from io import BytesIO
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+
 from .models import StockEntry, StockAdmin ,TransferEntry
 from ..globals.models import ExtraInfo, User
 
@@ -156,6 +162,15 @@ def addtransfers(request):
     context = {}
     return render(request, "ps2/addtransfers.html", context)
 
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
+
 def report(request):
     sel = request.GET.get("dep")
     
@@ -169,50 +184,34 @@ def report(request):
         return HttpResponseRedirect('/')
 
     stock_admin_department = stock_admin.first().department
-
-    stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department).order_by('id').values()  
+ 
 
     if current_user.username == 'acadadmin':
-        if sel:
-            if sel != 'Global': 
-                stocks = StockEntry.objects.all().filter(head_of_asset=sel).order_by('id').values()
-            else :
-                stocks = StockEntry.objects.all().order_by('id').values()
-        else :
-            stocks = StockEntry.objects.all().order_by('id').values()
-
-
         stock_admin = StockAdmin.objects.all()
         stock_ad = set()
         for i in stock_admin:
             stock_ad.add(i.department)      
         
+        if sel:
+            if sel != 'Global':
+                context = {
+                    'user' : 'acadadmin',
+                    'stocks': StockEntry.objects.all().filter(head_of_asset=sel).order_by('id').values(),
+                    'department': stock_ad,
+                }  
+                return render_to_pdf('ps2/pdf.html',context)
         context = {
             'user' : 'acadadmin',
-            'stocks': stocks,
+            'stocks': StockEntry.objects.all().order_by('id').values(),
             'department': stock_ad,
-        }     
-
-        pdf = render_to_pdf('ps2/pdf.html',context)
-        if pdf:
-            reponse = HttpResponse(pdf,content_type='application/pdf')
-            filename = "Invoice_%s.pdf" %("12341231")
-            content = "inline; filename='%s'"%(filename)
-            reponse['Content-Dispostion'] = content
-            return reponse
+        }   
+        return render_to_pdf('ps2/pdf.html',context)  
     
     else :
+        stocks = StockEntry.objects.all().filter(head_of_asset=stock_admin_department).order_by('id').values() 
         context = {
             'user' : current_user.username,
             'stocks': stocks,
             'department': stock_admin_department,    
-        }
-
-        pdf = render_to_pdf('ps2/pdf.html',context)
-        if pdf:
-            reponse = HttpResponse(pdf,content_type='application/pdf')
-            filename = "Invoice_%s.pdf" %("12341231")
-            content = "inline; filename='%s'"%(filename)
-            reponse['Content-Dispostion'] = content
-            return reponse
-
+        }    
+        return render_to_pdf('ps2/pdf.html', context)
