@@ -5,31 +5,32 @@ from django.forms import ValidationError as VE
 from django.forms.formsets import BaseFormSet
 from django.utils import timezone
 
-from .models import LeavesCount, LeaveSegment, LeaveType, LeaveSegmentOffline
+from .models import LeavesCount, LeaveSegment, LeaveType
+from applications.globals.models import (ExtraInfo)
 
 from .helpers import get_leave_days, get_special_leave_count, get_user_choices, get_vacation_leave_count
 
-class StudentApplicationForm(forms.Form):
+class StudentApplicationFormUG(forms.Form):
 
-    STUDENT_LEAVE_CHOICES = (
-        ('Casual', 'Casual'),
-        ('Medical', 'Medical')
+    STUDENT_LEAVE_CHOICES_UG = (
+        ('Medical', 'Medical'),
+        ('Special', 'Special')
     )
 
-    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES)
+    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES_UG, required=True, initial='Medical')
     start_date = forms.DateField(label='From')
     end_date = forms.DateField(label='To')
     purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
-    address = forms.CharField(label='Address')
+    address = forms.CharField(label='Address', widget=forms.TextInput)
     document = forms.FileField(label='Related Document', required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
     def __init__(self, *args, **kwargs):
         if 'user' in kwargs:
             self.user = kwargs.pop('user')
-        super(StudentApplicationForm, self).__init__(*args, **kwargs)
+        super(StudentApplicationFormUG, self).__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        super(StudentApplicationForm, self).clean(*args, **kwargs)
+        super(StudentApplicationFormUG, self).clean(*args, **kwargs)
         data = self.cleaned_data
         errors = dict()
 
@@ -47,12 +48,7 @@ class StudentApplicationForm(forms.Form):
         except:
             pass
 
-
-        lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
-
-        # if lt is None, use default
-        if lt is None:
-            lt = LeaveType()
+        lt = LeaveType.objects.get(name=data.get('leave_type'))
 
         if lt.requires_proof and not data.get('document'):
             errors['document'] = [f'{lt.name} Leave requires document proof']
@@ -66,29 +62,133 @@ class StudentApplicationForm(forms.Form):
         except:
             pass
 
-        try:
-            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
-        except LeaveType.DoesNotExist:
-            leave_type = LeaveType()
+        count = get_leave_days(data.get('start_date'), data.get('end_date'), lt, False, False)
 
-        count = get_leave_days(data.get('start_date'), data.get('end_date'),
-                               leave_type, False, False)
+        taken_leaves = 0
 
         try:
-            remaining_leaves = LeavesCount.objects.get(user=self.user, leave_type=leave_type) \
-                                              .remaining_leaves
-        except LeavesCount.DoesNotExist:
-            remaining_leaves = LeavesCount().remaining_leaves              
-
-        try:
-            if remaining_leaves < count:
-                errors['leave_type'] = f'You have only {remaining_leaves} {leave_type.name} leaves' \
-                                        ' remaining.'
+            if lt.name.lower() == 'medical':
+                taken_leaves = LeavesCount.objects.get(user=self.user).medical
         except:
             pass
 
+        try:
+            if lt.name.lower() == 'casual':
+                taken_leaves = LeavesCount.objects.get(user=self.user).casual
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'vacational':
+                taken_leaves = LeavesCount.objects.get(user=self.user).vacational
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'special':
+                taken_leaves = LeavesCount.objects.get(user=self.user).special
+        except:
+            pass
+
+        max_leaves = lt.max_in_year
+
+        remaining_leaves = max_leaves - taken_leaves
+        
+        if remaining_leaves < count:
+            errors['leave_type'] = f'You have only {remaining_leaves} {lt.name} leaves remaining.'
+
         raise VE(errors)
 
+class StudentApplicationFormPG(forms.Form):
+
+    STUDENT_LEAVE_CHOICES_PG = (
+        ('Medical', 'Medical'),
+        ('Casual', 'Casual'),
+        ('Vacational', 'Vacational'),
+    )
+
+    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES_PG, required=True, initial='Medical')
+    start_date = forms.DateField(label='From')
+    end_date = forms.DateField(label='To')
+    purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
+    address = forms.CharField(label='Address', widget=forms.TextInput)
+    document = forms.FileField(label='Related Document', required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
+    def __init__(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        super(StudentApplicationFormPG, self).__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super(StudentApplicationFormPG, self).clean(*args, **kwargs)
+        data = self.cleaned_data
+        errors = dict()
+
+
+        today = timezone.now().date()
+        if data.get('start_date') < today:
+            errors['start_date'] = ['Past Dates are not allowed']
+        if data.get('end_date') < today:
+            errors['end_date'] = ['Past Dates are not allowed']
+
+        try:
+            fileS = data.get('document').size
+            if int(fileS) > 2048000:
+                errors['document'] = ['Documents must not be greater than 2Mb']
+        except:
+            pass
+
+        lt = LeaveType.objects.get(name=data.get('leave_type'))
+
+        if lt.requires_proof and not data.get('document'):
+            errors['document'] = [f'{lt.name} Leave requires document proof']
+
+        try:
+            if data.get('start_date') > data.get('end_date'):
+                if 'start_date' in errors:
+                    errors['start_date'].append('Start Date must be less than End Date')
+                else:
+                    errors['start_date'] = ['Start Date must be less than End Date']
+        except:
+            pass
+
+        count = get_leave_days(data.get('start_date'), data.get('end_date'), lt, False, False)
+
+        taken_leaves = 0
+
+        try:
+            if lt.name.lower() == 'medical':
+                taken_leaves = LeavesCount.objects.get(user=self.user).medical
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'casual':
+                taken_leaves = LeavesCount.objects.get(user=self.user).casual
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'vacational':
+                taken_leaves = LeavesCount.objects.get(user=self.user).vacational
+        except:
+            pass
+
+        try:
+            if lt.name.lower() == 'special':
+                taken_leaves = LeavesCount.objects.get(user=self.user).special
+        except:
+            pass
+
+        
+        max_leaves = lt.max_in_year
+
+        remaining_leaves = max_leaves - taken_leaves
+
+        if remaining_leaves < count:
+            errors['leave_type'] = f'You have only {remaining_leaves} {lt.name} leaves remaining.'
+
+        raise VE(errors)
 
 class EmployeeCommonForm(forms.Form):
 
@@ -374,11 +474,14 @@ class BaseLeaveFormSet(BaseFormSet):
             except:
                 raise VE('Some error occured, please contact admin.')
 
-        for key, value in mapping.items():
-            tp = leave_counts.get(leave_type=key)
-            if tp.remaining_leaves < value:
-                raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
-                         f'Leaves remaining and you have filled {value}.')
+        try:
+            for key, value in mapping.items():
+                tp = leave_counts.get(leave_type=key)
+                if tp.remaining_leaves < value:
+                    raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
+                             f'Leaves remaining and you have filled {value}.')
+        except:
+            pass
 
 
 class BaseAcadFormSet(BaseFormSet):

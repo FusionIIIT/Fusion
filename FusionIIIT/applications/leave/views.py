@@ -36,7 +36,7 @@ def leave(request):
 
         return response
 
-    if user_type == 'faculty':
+    if user_type == 'faculty' or user_type == 'hod':
         response = send_faculty_leave_form(request)
     elif user_type == 'staff':
         response = send_staff_leave_form(request)
@@ -54,7 +54,7 @@ def leavemanager(request):
     #user_designation = str(user_designation).split(' - ')
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
-    c=False
+    c=True
     for i in b:
         if str(Designation.objects.get(id=i))=='Assistant Registrar':
             c=True
@@ -75,14 +75,9 @@ def leavemanager(request):
     form2 = AcademicReplacementFormOffline()
     form3 = AdminReplacementFormOffline()
     form4 = EmployeeCommonFormOffline()
-
+atul@iiitdmj.ac.in
     return render(request, 'leaveModule/test.html', {'leave':form1,
         'acad':form2,'admin':form3,'common':form4})"""
-    
-    
-
-    
-
     
 
 @login_required(login_url='/accounts/login')

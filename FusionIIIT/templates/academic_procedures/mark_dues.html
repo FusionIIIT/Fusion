@@ -1,0 +1,16 @@
+{% load static %}
+{% block content %}
+    <h1>Mark Dues Paid</h1>
+    <br>
+    <form method="post" action="{% url 'procedures:mark_dues_paid' %}">
+        {% csrf_token %}
+        <label for="roll_no"><strong><u>Enter Roll No:</u></strong></label>
+        <input type="text" id="roll_no" name="roll_no" placeholder="Enter Roll No"required>
+        <button type="submit"class="ui primary button "style=" margin-left: 1%;padding: 10px 10px;">Mark Dues Paid</button>
+    </form>
+
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
+{% endblock %}
