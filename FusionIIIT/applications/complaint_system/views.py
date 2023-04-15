@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from applications.globals.models import User , ExtraInfo, HoldsDesignation
+from applications.globals.models import User , ExtraInfo, HoldsDesignation, Designation
 
 from notifications.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers, SectionIncharge
@@ -900,16 +900,55 @@ def supervisor(request):
     current_user = get_object_or_404(User, username=request.user.username)
     
     y = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+    all_staff = ExtraInfo.objects.all().select_related('user','department').filter(user_type='staff')
+    total_staff = []
+    for i in all_staff:
+        if not SectionIncharge.objects.filter(staff_id=i.id).exists():
+            total_staff.append(i)
+        
     if request.method == 'POST' :
+        print("post method called")
         try:
             y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
             a = Supervisor.objects.select_related('sup_id','sup_id__user','sup_id__department').get(sup_id=y)
         except Exception as e:
             a = None
             y = None
+        caretaker_new = request.POST.get('caretaker_new','')
+        caretaker_prev = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.area).first()
+        caretaker_new_user = ExtraInfo.objects.get(id=caretaker_new).user
+        if a.area == "hall-1":
+          dsgn ="hall1caretaker"
+        elif a.area =="hall-3":
+          dsgn ="hall3caretaker"
+        elif a.area =="hall-4":
+          dsgn ="hall4caretaker"
+        elif a.area =="CC1":
+          dsgn ="cc1convener"
+        elif a.area =="CC2":
+          dsgn ="CC2convener"
+        elif a.area == "core_lab":
+          dsgn = "corelabcaretaker"
+        elif a.area =="LHTC":
+          dsgn ="lhtccaretaker"
+        elif a.area =="NR2":
+          dsgn ="nr2caretaker"
+        elif a.area =="Maa Saraswati Hostel":
+          dsgn ="mshcaretaker"
+        elif a.area =="Nagarjun Hostel":
+          dsgn ="nhcaretaker"
+        elif a.area =="Panini Hostel":
+          dsgn ="phcaretaker"
+        else:
+          dsgn = "rewacaretaker"
+        dsgn = Designation.objects.get(name = dsgn)
+        
+        HoldsDesignation.objects.select_for_update().filter(designation = dsgn).\
+                update(user=caretaker_new_user, working=caretaker_new_user)
+        Caretaker.objects.select_for_update().filter(id=caretaker_prev.id).\
+                update(staff_id=caretaker_new)
         all_caretaker = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
-        # ExtraInfo.objects.get(id=sup_id)
         all_complaint = []
         numtemp = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__secincharge_id__staff_id','worker_id__secincharge_id__staff_id__user','worker_id__secincharge_id__staff_id__department').filter(location =  area).filter(status = 0).count()
         num = int(numtemp/2+0.5)
@@ -926,7 +965,7 @@ def supervisor(request):
                     overduecomplaint.append(i)
 
         return render(request, "complaintModule/supervisor1.html",
-                    {'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
+                    {'total_staff': total_staff, 'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
                    'overduecomplaint': overduecomplaint, 'area': area,'num':num})
     else:
         print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
@@ -958,7 +997,7 @@ def supervisor(request):
                     overduecomplaint.append(i)
 
         return render(request, "complaintModule/supervisor1.html",
-                    {'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
+                    {'total_staff': total_staff, 'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
                    'overduecomplaint': overduecomplaint, 'area': area, 'num' : num})
 
 @login_required
