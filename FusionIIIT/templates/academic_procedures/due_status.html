@@ -1,0 +1,43 @@
+{% load static %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <table class="ui very basic celled sortable table" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+            <th>Due Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for due in dues %}
+            {% if due.roll_no == request.user.username %}
+              <tr>
+                <td>{{ due.due_type }}</td>
+                {% if due.check1 and due.check2 %}
+                  <td>Clear</td>
+                {% else %}
+                  <td>Unclear</td>
+                {% endif %}
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if all_clear %}
+      <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/dues_pdf/ ">
+        {%csrf_token%}
+            <br><br>
+            <button class="ui large primary button right floated">
+                Click Here to get No Dues
+            </button>
+        </form>
+        {% else %}
+        <button class="ui large primary button right floated">
+            Your No Dues are not cleared yet.
+        </button>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

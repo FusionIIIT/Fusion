@@ -158,7 +158,7 @@
                 </div>
             </div>
             
-            <div class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
+            <d  iv class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
                 <div class="ui pointing secondary menu">
                     <a class=" active item" data-tab="miscellaneous_2" >
                         Check Dues
@@ -175,39 +175,7 @@
                     
                 </div>
                 <div class="ui active tab segment " data-tab="miscellaneous_2" >
-                    <div class="ui pointing secondary menu">
-                        <div class="active item" data-tab="messdue">
-                            Mess Due History
-                        </div>
-                        <div class="item" data-tab="librarydue">
-                            Library Due History
-                        </div>
-                        <div class="item" data-tab="hosteldue">
-                            Hostel Due History
-                        </div>
-                        <div class="item" data-tab="Placementdue">
-                            Placement Cell Due History
-                        </div>
-                        <div class="item" data-tab="overall">
-                            Overall
-                        </div>
-    
-                    </div>
-                    <div class="ui active tab segment" data-tab="messdue">
-                        {%  include 'academic_procedures/messduehistory.html' %}
-                    </div>
-                    <div class="ui tab segment" data-tab="librarydue">
-                        nothing library
-                    </div>
-                    <div class="ui tab segment" data-tab="hosteldue">
-                        nothing hostel
-                    </div>
-                    <div class="ui tab segment" data-tab="Placementdue">
-                        nothing placement
-                    </div>
-                    <div class="ui tab segment" data-tab="overall">
-                        {%  include 'academic_procedures/dues.html' %}
-                    </div>
+                    {%  include 'academic_procedures/due_status.html' %}
                 </div>
                 
 

@@ -34,7 +34,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status,NewDue,DueType)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
@@ -199,7 +199,74 @@ def account(request):
                             'assistant_pen_list' : assistant_pen_list,
                             'account_flag' : account_status,
                         })
+@login_required(login_url='/accounts/login')
+def search_roll(request):
+    if request.method == 'GET':
+        roll_no = request.GET.get('roll_no')
+        if roll_no:
+            dues = NewDue.objects.filter(roll_no=roll_no).select_related('due_type')
+            data = []
+            for due in dues:
+                data.append({
+                    'due_type': due.due_type.due_name,
+                    'check1': due.check1,
+                    'check2': due.check2,
+                })
+            return JsonResponse({'status': 'success', 'data': data})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Roll number is required.'})
 
+def edit_due(request):
+    getname = {}
+    if request.method == 'GET':
+        roll_no = request.GET.get('roll_no')
+        if roll_no:
+            dues = NewDue.objects.filter(roll_no=roll_no).select_related('due_type')
+            return render(request, '../templates/academic_procedures/edit_due.html', {'data': dues, 'roll_no': roll_no})
+        else:
+            return search_roll(request)
+    elif request.method == 'POST':
+        roll_no = request.POST.get('roll_no')
+        dues = NewDue.objects.filter(roll_no=roll_no)
+        
+        for due in dues:
+            due_type_obj = DueType.objects.filter(due_id=due.due_type_id)
+            getname[due.due_type_id]=due_type_obj[0].due_name
+            check1 = request.POST.get(f'check1_{due.due_type_id}')
+            check2 = request.POST.get(f'check2_{due.due_type_id}')
+            if check1 == 'on':
+                due.check1 = True
+            else:
+                due.check1 = False
+            if check2 == 'on':
+                due.check2 = True
+            else:
+                due.check2 = False
+            due.save()
+        dues = NewDue.objects.filter(roll_no=roll_no).select_related('due_type')
+        return render(request, '../templates/academic_procedures/edit_due.html', {'data': dues, 'roll_no': roll_no,'hash': getname,})
+    
+@login_required(login_url='/accounts/login')
+def mark_dues_paid(request):
+    if request.method == 'POST':
+        roll_no = request.POST.get('roll_no')
+        due_types = DueType.objects.all()
+        new_dues = []
+        for due_type in due_types:
+            record = NewDue.objects.filter(roll_no=roll_no, due_type_id=due_type.due_id).first()
+            if record:
+                record.check1 = True
+                record.check2 = True
+                record.save()
+            else:
+                new_due = NewDue(roll_no=roll_no, check1=True, check2=True, due_type=due_type)
+                new_dues.append(new_due)
+                
+        NewDue.objects.bulk_create(new_dues)
+        messages.success(request, "Successfully Registered.")
+        return render(request, '../templates/academic_procedures/mark_dues.html', {'message' : 'Successful'})
+    else:
+        return render(request, '../templates/academic_procedures/mark_dues.html')
 
 @login_required(login_url='/accounts/login')
 def academic_procedures_student(request):
@@ -467,6 +534,9 @@ def academic_procedures_student(request):
                 objb.branches=request.POST['branches']
                 objb.save()
 
+        dues = NewDue.objects.filter(roll_no=request.user.username)
+        all_clear = all(due.check1 and due.check2 for due in dues)
+
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -530,6 +600,8 @@ def academic_procedures_student(request):
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
+                           'dues': dues, 
+                           'all_clear': all_clear,
                            }
                 )
 

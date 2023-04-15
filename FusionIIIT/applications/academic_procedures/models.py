@@ -311,6 +311,21 @@ class MarkSubmissionCheck(models.Model):
     class Meta:
         db_table = 'MarkSubmissionCheck'
 
+class DueType(models.Model):
+    due_id = models.AutoField(primary_key=True)
+    due_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.due_name
+    
+class NewDue(models.Model):
+    due_type = models.ForeignKey(DueType, on_delete=models.CASCADE)
+    roll_no = models.CharField(max_length=50)
+    check1 = models.BooleanField(default=False)
+    check2 = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('due_type', 'roll_no')
 
 class Dues(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
