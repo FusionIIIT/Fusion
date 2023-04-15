@@ -67,7 +67,7 @@
                         <td>
                             <div class="field" style="display: none" id=select-{{item.id}}>
                                 <div class="ui input">
-                                    <input name="quantity" type="number" min="0" placeholder={{item.quantity}}
+                                    <input name="quantity" type="number" min="0" placeholder={{item.quantity}} oninput="validity.valid||(value='0');"
                                         onchange='submit_inventory_form("{{ item.id}}")' id="input-{{item.id}}">
                                 </div>
                             </div>

@@ -28,6 +28,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
 from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
+from applications.academic_procedures.views import get_user_semester
 
 def index(request):
     context = {}
@@ -723,6 +724,42 @@ def dashboard(request):
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
     design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+    try:
+        user_details = ExtraInfo.objects.select_related('user','department').get(id = request.user)
+        des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+
+        if str(des.designation) == "student":
+            obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
+
+            if obj.programme.upper() == "PHD" :
+                ug_flag = False
+                masters_flag = False
+                phd_flag = True
+
+            elif obj.programme.upper() == "M.DES" :
+                ug_flag = False
+                masters_flag = True
+                phd_flag = False
+
+            elif obj.programme.upper() == "B.DES" :
+                ug_flag = True
+                masters_flag = False
+                phd_flag = False
+
+            elif obj.programme.upper() == "M.TECH" :
+                ug_flag = False
+                masters_flag = True
+                phd_flag = False
+
+            elif obj.programme.upper() == "B.TECH" :
+                ug_flag = True
+                masters_flag = False
+                phd_flag = False
+                
+            else :
+                return HttpResponse("Student has no record")
+    except:
+        pass
 
     designation=[]
     for i in design:
@@ -750,6 +787,8 @@ def dashboard(request):
         context.update(response)
         return render(request, "dashboard/dashboard.html", context)
     else:
+        user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+        context['user_sem'] = user_sem
         return render(request, "dashboard/dashboard.html", context)
 
 
