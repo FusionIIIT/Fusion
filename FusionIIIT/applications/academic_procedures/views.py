@@ -340,7 +340,7 @@ def academic_procedures_student(request):
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
-        currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+        currently_registered_course = get_currently_registered_course(obj,user_sem)
 
         current_credits = get_current_credits(currently_registered_course)
 
