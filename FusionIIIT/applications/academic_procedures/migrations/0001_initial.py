@@ -402,4 +402,50 @@ class Migration(migrations.Migration):
                 'unique_together': {('curr_id', 'student_id')},
             },
         ),
+        migrations.CreateModel(
+            name='DueType',
+            fields=[
+                ('due_id', models.AutoField(primary_key=True, serialize=False)),
+                ('due_name', models.CharField(max_length=255)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='NewDue',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('roll_no', models.CharField(max_length=50)),
+                ('check1', models.BooleanField(default=False)),
+                ('check2', models.BooleanField(default=False)),
+                ('due_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_procedures.duetype')),
+            ],
+            options={
+                'unique_together': {('due_type', 'roll_no')},
+            },
+        ),
+        migrations.CreateModel(
+            name='NewBonafide',
+            fields=[
+                ('purpose', models.CharField(max_length=255)),
+                ('roll_no', models.CharField(max_length=50)),
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('check', models.BooleanField(default=False)),
+            ],
+            options={
+                'db_table': 'new_bonafide',
+            },
+        ),
+        migrations.AlterField(
+            model_name='bonafide',
+            name='purpose',
+            field=models.CharField(max_length=255),
+        ),
+        migrations.AlterField(
+            model_name='bonafide',
+            name='student_name',
+            field=models.CharField(max_length=100),
+        ),
+        migrations.AlterModelTable(
+            name='bonafide',
+            table=None,
+        ),
     ]
