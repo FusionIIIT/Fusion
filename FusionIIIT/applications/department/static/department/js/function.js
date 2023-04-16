@@ -61,9 +61,9 @@ document.getElementById("show_announcement_form").addEventListener("click", func
     }
 });
 
-function edit_about(self) {
-    let form = document.getElementById("edit-about-form");
-    let about = document.getElementById("about");
+function edit_aboutCSE(self) {
+    let form = document.getElementById("edit-about-formCSE");
+    let about = document.getElementById("aboutCSE");
     let status = form.getAttribute("data-status");
     if (status == "hidden") {
         about.style.display = "none";
@@ -80,9 +80,9 @@ function edit_about(self) {
         self.innerHTML = "Edit";
     }
 }
-function edit_facility(self) {
-    let form = document.getElementById("edit-facility-form");
-    let facility = document.getElementById("facility");
+function edit_facilityCSE(self) {
+    let form = document.getElementById("edit-facility-formCSE");
+    let facility = document.getElementById("facilityCSE");
     let status = form.getAttribute("data-status");
     if (status == "hidden") {
         facility.style.display = "none";
@@ -99,9 +99,238 @@ function edit_facility(self) {
         self.innerHTML = "Edit";
     }
 }
-function edit_achievement(self) {
-    let form = document.getElementById("edit-achievement-form");
-    let achievement = document.getElementById("achievement");
+function edit_achievementCSE(self) {
+    let form = document.getElementById("edit-achievement-formCSE");
+    let achievement = document.getElementById("achievementCSE");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        achievement.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        achievement.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_aboutECE(self) {
+    let form = document.getElementById("edit-about-formECE");
+    let about = document.getElementById("aboutECE");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        about.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        about.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_facilityECE(self) {
+    let form = document.getElementById("edit-facility-formECE");
+    let facility = document.getElementById("facilityECE");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        facility.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        facility.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_achievementECE(self) {
+    let form = document.getElementById("edit-achievement-formECE");
+    let achievement = document.getElementById("achievementECE");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        achievement.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        achievement.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_aboutME(self) {
+    let form = document.getElementById("edit-about-formME");
+    let about = document.getElementById("aboutME");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        about.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        about.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_facilityME(self) {
+    let form = document.getElementById("edit-facility-formME");
+    let facility = document.getElementById("facilityME");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        facility.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        facility.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_achievementME(self) {
+    let form = document.getElementById("edit-achievement-formME");
+    let achievement = document.getElementById("achievementME");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        achievement.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        achievement.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+
+function edit_aboutSM(self) {
+    let form = document.getElementById("edit-about-formSM");
+    let about = document.getElementById("aboutSM");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        about.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        about.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_facilitySM(self) {
+    let form = document.getElementById("edit-facility-formSM");
+    let facility = document.getElementById("facilitySM");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        facility.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        facility.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_achievementSM(self) {
+    let form = document.getElementById("edit-achievement-formSM");
+    let achievement = document.getElementById("achievementSM");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        achievement.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        achievement.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_aboutDESIGN(self) {
+    let form = document.getElementById("edit-about-formDESIGN");
+    let about = document.getElementById("aboutDESIGN");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        about.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        about.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_facilityDESIGN(self) {
+    let form = document.getElementById("edit-facility-formDESIGN");
+    let facility = document.getElementById("facilityDESIGN");
+    let status = form.getAttribute("data-status");
+    if (status == "hidden") {
+        facility.style.display = "none";
+        form.setAttribute("data-status", "visible");
+        form.style.display = "block";
+        console.log(form);
+        self.innerHTML = "Done";
+    }
+    else {
+        facility.style.display = "block";
+        form.setAttribute("data-status", "hidden");
+        form.style.display = "none";
+        console.log(form);
+        self.innerHTML = "Edit";
+    }
+}
+function edit_achievementDESIGN(self) {
+    let form = document.getElementById("edit-achievement-formDESIGN");
+    let achievement = document.getElementById("achievementDESIGN");
     let status = form.getAttribute("data-status");
     if (status == "hidden") {
         achievement.style.display = "none";
