@@ -27,17 +27,11 @@
         </a>
         {% endif %}
 
-        {% comment %} <a class="item" data-tab="Request">
-        <a class="item" data-tab="Request">
-
-            Requests
-        </a> {% endcomment %}
-
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
-        <a class="item" data-tab="Track records">
-            Track records
+        <a class="item" data-tab="Achievement">
+            Achievement
         </a>
 
     </div>
@@ -118,45 +112,26 @@
                     <span>
 
                         <div class="ui vertical segment" >
-
-                            {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> Serial No. </td>
-                                    <td> Faculty Name </td>
-                                    <td> Research Interest </td>
-                                    <td> Email </td>
-                                    <!-- <td> title </td> -->
-                                    {% comment %} <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
-                                    {% comment %} <td> user_type </td>
-                                    <td> department </td>
-                                    <td> github </td> {% endcomment %}
-
-                                </thead>
-
-                                {% for fcu in fac_list.ece_f %}
-                                <tr>
-                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><a href = {{ link }}>{{ fcu.id }}</a></td>
-                                    {% comment %}<!-- <td>{{ fcu.title }}</td> -->
-                                    <td>{{ fcu.sex }}</td>
-                                    <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
-                                    <td>{{ fcu.phone_no }}</td>
-                                     <td>{{ fcu.user_type }}</td>
-                                    <td>{{ fcu.department.name }}</td>
-                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                            {% if fac_list.ece_f %}
+                            <div class="fac-container">
+                                {% for faculty in fac_list.ece_f %}
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Electronics & Communications Engineering</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
+                                    </div>
+                                    {% with "/eis/profile/"|add:faculty.user.username as link %}
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
                                     {% endwith %}
-                                </tr>
-
+                                </div>
                                 {% endfor %}
-
-                            </table>
-
+                            </div>
+                            {% else %}
+                            No Data Found.
+                            {% endif %}
                         </div>
                     </span>
                     <div class="ui divider"></div>
@@ -174,7 +149,6 @@
                     <span>
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -212,8 +186,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                         
                     </span>
@@ -238,7 +210,6 @@
                             </div>
                             <div class="content">
                                 <a class="active item" href="./All_Students/{{2111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         PhD ECE Students
                                     </button>
@@ -254,13 +225,11 @@
                             </div>
                             <div class="content">
                                 <a class="active item" href="./All_Students/{{21111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{211111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ECE
                                     </button>
@@ -277,28 +246,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{2}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         First Year ECE
                                     </button>
                                 </a>
-                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{21}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{211}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year ECE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{2111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year ECE
                                     </button>
@@ -368,10 +331,45 @@
             </div>
         </div>
     </div>
-    <div class="ui tab" data-tab="Track records">
+    <div class="ui tab" data-tab="Achievement">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <span>
+                        <h1> Achievements</h1>
+                        <ol>
+                            <li>
+                                <p>
+                                    PDPM IIITDMJ Student Team has won the International Chess
+                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
+                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
+                                    2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Ph.D. student Mr. Varun Chaudhary working
+                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
+                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
+                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
+                                    04-07Jan,2020
+                                </p>
+                            </li>
+                        </ol>
+                    </span>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
@@ -381,7 +379,18 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <a class="active item" href="./All_Students/{{211}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2018 ECE
+                        </button>
+                    </a>
+                    <a class="active item" href="./All_Students/{{2111}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2019 ECE
+                        </button>
+                    </a>
+                    <br>
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>

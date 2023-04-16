@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 
 from applications.globals.models import ExtraInfo
 
@@ -23,10 +24,12 @@ class Constants:
     )
 
 class Doctor(models.Model):
-    doctor_name = models.IntegerField(choices=Constants.NAME_OF_DOCTOR)
+    # doctor_name = models.IntegerField(choices=Constants.NAME_OF_DOCTOR)
+    doctor_name = models.CharField(max_length=200)
     doctor_phone = models.CharField(max_length=10)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    contact_no = models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
 
     def __str__(self):
         return self.doctor_name

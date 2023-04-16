@@ -1,5 +1,9 @@
 {% load static %}
 
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/faculty-card.css' %}">
+{% endblock css %}
+
 {% block CSE_Dep %}
 
     <h1><center> Welcome to CSE Department </center></h1>
@@ -26,21 +30,11 @@
             Announcements
         </a>
         {% endif %}
-        {% comment %} <a class="item" data-tab="Request">
-        <a class="item" data-tab="Request">
-            Requests
-        </a> {% endcomment %}
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
-        <a class="item" data-tab="Track records">
-            Track records
-        </a>
-        <a class="item" data-tab="Alumni">
-            Alumni
-        </a>
-        <a class="item" data-tab="Track records">
-            Track records
+        <a class="item" data-tab="Achievement">
+            Achievement
         </a>
 
     </div>
@@ -48,20 +42,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Our Mission :
-                        </h3>
-                        <p>
-                            The mission of the Computer Engineering Department is to provide educational programs that would encourage students to read critically, reason analytically, communicate persuasively, apply professionally and prepare them to excel in the field of computing.
-                        </p>
-                        <h3>
-                            Our Vision :
-                        </h3>
-                        <p>
-                            The vision of the Computer Engineering Department is to recognize itself as renowned department in the field of technical education in Computer Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
-                        </p>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "CSE" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
+                        <div id="edit-about-form" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="about">
+                        {{departments.CSE.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
@@ -73,51 +79,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Central Library :
-                        </h3>
-                        <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
-                        <h3>
-                            Lab Infrastructure :
-                        </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Advanced Manufacturing Laboratory :</b> This Laboratory contains Rapid Prototyping Machine, CNC Controlled Abrasive Waterjet Machine, CNC Milling Center, CNC Turning Center, Dynamometer, Electro Chemical Machining System, Injection Moulding Machine etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biometric Laboratory :</b> This Laboratory contains S Series, H Series, W Series cameras and p6 p520(Tower Model), p6 p520:8203 Model servers Made by IBM etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Digital Signal Processing and Image Processing Laboratory :</b> This Laboratory contains DSP Starter SPARTAN-3 kit (DSK), TMS 320C6713 DSK with CCS (Code Composer Studio), Image Daughter Kit with CCD Cameras, Bloom with DSP, Matrox Imaging Library, Matrox Morphis, Frame Graber Card, Color CCD Camera for online Processing etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Infrared Imaging Laboratory :</b> This Laboratory contains Radiometeric calibration, Extender rings, NDT Base Module, Central computing unit with TFT display, Software Modules for Lockin, Transient-and Pulse Measurement, Module Pulse- and Transient- Thermography, Source for Vibro- Thermography etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Materials Research Laboratory :</b> This Laboratory contains three important instruments for material characterization which are X-Ray Diffractometer (XRD), Scanning Electron Microscope (SEM) and Atomic Force Microscope (AFM) including SPM, MFM etc.
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
+                        <div id="edit-facility-form" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "CSE" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
+                        <div id="edit-facility-form" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facility">
+                        {{departments.CSE.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
@@ -137,44 +124,27 @@
 
                         <div class="ui vertical segment" >
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> Serial No. </td>
-                                    <td> Faculty Name </td>
-                                    <td> Research Interest </td>
-                                    <td> Email </td>
-                                    <!-- <td> title </td> -->
-                                    {% comment %} <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
-                                    {% comment %} <td> user_type </td>
-                                    <td> department </td>
-                                    <td> github </td> {% endcomment %}
-
-                                </thead>
-
-                                {% for fcu in fac_list.cse_f %}
-                                    <tr>
-                                        {% with "/eis/profile/"|add:fcu.user.username as link %}
-                                        <td>{{ forloop.counter }}</td>
-                                        <td><a href = {{ link }}>{{ fcu.id }}</a></td>
-                                        <!-- <td>{{ fcu.title }}</td> -->
-                                        {% comment %} <td>{{ fcu.sex }}</td>
-                                        <td>{{ fcu.date_of_birth }}</td>
-                                        <td>{{ fcu.address }}</td>
-                                        <td>{{ fcu.phone_no }}</td>
-                                        {% comment %} <td>{{ fcu.user_type }}</td>
-                                        <td>{{ fcu.department.name }}</td>
-                                        <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
-                                        {% endwith %}
-                                    </tr>
+                            {% if fac_list.cse_f %}
+                            <div class="fac-container">
+                                {% for faculty in fac_list.cse_f %}
+                                <div class="fac-card">
+                                    <div class="fac-image" style="background-image: url('{% static 'globals/img/zlatan.jpg' %}');"></div>
+                                    <div class="fac-content">
+                                        <div class="fac-name">{{ faculty.title }}{{ faculty.user.first_name}} {{ faculty.user.last_name}}</div>
+                                        <div class="fac-department">Computer Science & Engineering</div>
+                                        <a class="fac-email" href="mailto:{{ faculty.user.email }}">{{ faculty.user.email }}</a>
+                                        <div class="fac-reserch">Research Interests</div>
+                                    </div>
+                                    {% with "/eis/profile/"|add:faculty.user.username as link %}
+                                    <a href="{{ link }}" class="fac-btn"><i class="user icon"></i>Profile</a>
+                                    {% endwith %}
+                                </div>
 
                                 {% endfor %}
-
-                            </table>
-
+                            </div>
+                            {% else %}
+                            No Data Found.
+                            {% endif %}
                         </div>
                     </span>
                     <div class="ui divider"></div>
@@ -187,14 +157,26 @@
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "CSE" %}
         <div class="ui vertical segment">
+            
+            {% if user_designation == "faculty" %}
+                <button class="ui button green " id="show_announcement_form" >Add Announcement</button>
+                <div id="make-announcement-form" style="display:none;" data-status="hidden">
+                {% include "department/make_announcements_fac.html" %}
+                </div>
+            {% elif user_designation == "staff" %}
+                <button class="ui button green " >Add Announcement</button>
+                <div id="make-announcement-form" style="display:none;" data-status="hidden">
+                {% include "department/make_announcements_staff.html" %}
+                </div>
+            {% endif %}
+            
             <div class="content">
                 <div class="description">
                     <span>
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
                                     <th>Announcement By</th>
@@ -208,7 +190,7 @@
                                 {% for stu in announcements.cse %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -220,7 +202,7 @@
                                 {% for stu in announcements.all %}
                                     <tr>
                                         <td>{{ stu.ann_date.date }}</td>
-                                        <td>{{ stu.maker_id.user }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -231,7 +213,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                         
@@ -257,7 +238,6 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{1111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         PhD CSE Students
                                     </button>
@@ -273,13 +253,11 @@
                             </div>
                             <div class="content">
                                 <a class="item" href="./All_Students/{{11111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year CSE
                                     </button>
                                 </a>
                                 <a class="item" href="./All_Students/{{111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
@@ -296,28 +274,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{1}}">
-                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         First Year CSE
                                     </button>
                                 </a>
-                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
                                 <a class="active item" href="./All_Students/{{11}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year CSE
                                     </button>
                                 </a>
                                 <a class="active item" href="./All_Students/{{1111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year CSE
                                     </button>
@@ -388,10 +360,36 @@
             </div>
         </div>
     </div>
-    <div class="ui tab" data-tab="Track records">
+    <div class="ui tab" data-tab="Achievement">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
+                        <div id="edit-achievement-form" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "CSE" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
+                        <div id="edit-achievement-form" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievement">
+                        {{departments.CSE.achievement|safe}}
+                    </div>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
@@ -401,6 +399,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
+                    <a class="active item" href="./All_Students/{{1111}}">
+                        <button style="border: solid; float: left; display: block; margin-right:5px">
+                            2018 Batch
+                        </button>
+                    </a>
+                    <a class="active item" href="./All_Students/{{111}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2019 Batch
+                        </button>
+                    </a>
+                    <br>
                     {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>

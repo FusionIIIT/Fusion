@@ -1,0 +1,140 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Stock Tracking
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %} The left-margin segment! {% endcomment %}
+    <div class="column"></div>
+
+    {% comment %} The left-rail segment starts here! {% endcomment %}
+
+    <div class="three wide column">
+        {% comment %} The user image card starts here! {% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a href="/purchase-and-store2/" class="item">
+                Current Stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/addstock" class="item">
+                Add stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers" class="item">
+                Transfers Details
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers_form" class="item">
+                Transfers Forms
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    <div class="ten wide column">
+        <div class="ui pointing secondary menu">
+            <h3>
+                <a class="active item" data-tab="addstock">
+                    Add new stock
+                </a>
+            </h3>
+        </div>
+        {% comment %}the form section starts here {% endcomment %}
+        <div class="ui active tab" data-tab="addstock">
+            <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                        padding-right: 3.5%;">
+
+                <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+                    {% csrf_token %}
+
+                    <div class="field">
+                        <label>ID of product *</label>
+                        <textarea rows="1" name="id" required></textarea>
+                    </div>
+
+                    <br>
+
+                    <div class="field">
+                        <label>To Department *</label>
+                        <select name="to_department">
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="ME">ME</option>
+                            <option value="Accounts">Accounts</option>
+                            <option value="Establishment">Establishment</option>
+                            <option value="NS">NS</option>
+                            <option value="Placement_Cell">Placement Cell</option>
+                            <option value="GAD">GAD</option>
+                        </select>
+                    </div>
+
+                    <br>
+
+                    <div class="field">
+                        <label>To Location *</label>
+                        <input type="number" name="To_location" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Remark *</label>
+                        <input type="text" name="Remark" required>
+                    </div>
+
+                    <div>
+                        <a class="right floated item">
+
+                            <button type="submit" name="send" class="ui large right floated primary button"
+                                style="float: right;">
+                                SEND<i class="ui send icon right floated"></i>
+                            </button>
+                        </a>
+                    </div>
+
+                </form>
+
+                <br>
+
+            </div>
+
+            <br>
+            <div class="extra content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

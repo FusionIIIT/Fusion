@@ -339,17 +339,23 @@
                                                           margin: auto;">
                 <thead>
                 <tr>
+
                     <th>
                         Date
                     </th>
-                
+                    
                     <th class="three wide">
                         Doctor
                     </th>
 
                     <th>
-                      Description
-                    </th>               
+                        Description
+                    </th>
+                    
+                    <th>
+                        Prescription
+                    </th>
+
                 </tr>
                 </thead>
 
@@ -359,7 +365,7 @@
                     <td style="white-space:nowrap;">
                         {{appointment.date}}
                     </td>
-                    
+
                     <td>
                         {{appointment.doctor_id}}
                     </td>
@@ -367,6 +373,11 @@
                     <td>
                         {{appointment.description}}
                     </td>
+
+                    <td>
+                        {{appointment.prescription_on_appointment}}
+                    </td>
+
                    
 					<td>
                         <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />
@@ -379,7 +390,7 @@
     </div>
 	
 	<script type="text/javascript">
-            function rm(id){
+        function rm(id){
            
 			var dis = this;
             var d = window.confirm('Are you sure, you want to delete the appointment?');
@@ -404,7 +415,7 @@
 
             
       }
-      </script>
+    </script>
 	
     <div class="ui tab" data-tab="complainthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">

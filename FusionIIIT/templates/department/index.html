@@ -1,6 +1,6 @@
 {% extends 'globals/base.html' %}
 {% load static %}
-
+ 
 
 {% block title %}
     Department
@@ -80,7 +80,6 @@
             {% comment %}CSE Department!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block CSE_Dep %}
-                    {{ user_designation }}
                     {% include "department/cse_dep.html" %}
                 {% endblock %}
             </div>

@@ -45,9 +45,6 @@
                                 <div class="item" data-value="garbage" >
                                     Garbage
                                 </div>
-                                <div class="item" data-value="dustbin" >
-                                    Dustbin
-                                </div>
                                 <div class="item" data-value="internet" >
                                     Internet
                                 </div>
@@ -117,13 +114,15 @@
                 <div class="field">
                     <label>Specific Location<sup><i class="small red asterisk icon"></i></sup></label>
                     <div class="ui large input">
-                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required>
+                        <!-- <input placeholder="Room Number, Floor , Block etc." name="specific_location" required> -->
+                        <textarea placeholder="Room Number, Floor , Block etc." name="specific_location" required rows="2" cols="20" wrap="hard"></textarea>
+
                     </div>
                 </div>
 
                 <div class="field">
                     <label>Complaint Details<sup><i class="small red asterisk icon"></i></sup></label>
-                    <input placeholder="What is your Complaint?" name="details" required></textarea>
+                    <textarea placeholder="What is your Complaint?" name="details" required rows="2" cols="20" wrap="hard"></textarea>
                 </div>
 
                 <div class = "field">
