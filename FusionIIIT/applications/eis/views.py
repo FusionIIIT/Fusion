@@ -1367,6 +1367,9 @@ def consult_insert(request):
 
 def patent_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
+    if(int(request.POST.get('earnings')) < 0):
+        message = "Earnings cannot be less than 0"
+        return redirect('/profile/?page6=1', {message : message})
     pf = request.user.id
 
     if (request.POST.get('patent_id')==None or request.POST.get('patent_id')==""):
@@ -1382,7 +1385,8 @@ def patent_insert(request):
     eis.status = request.POST.get('status')
     eis.a_month = request.POST.get('month')
     eis.save()
-    return redirect('/profile/?page6=1')
+    message = "New Patent created successfully"
+    return redirect('/profile/?page6=1' ,{message:message})
 
 def transfer_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
