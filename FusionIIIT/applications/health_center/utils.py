@@ -364,15 +364,30 @@ def compounder_view_handler(request):
         healthcare_center_notif(request.user, user.user, 'presc')
         data = {'status': status}
         return JsonResponse(data)
+    
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
         Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').filter(pk=presc_id).delete()
         data = {'status': 1}
         return JsonResponse(data)
+    
     elif 'medicine' in request.POST:
         med_id = request.POST.get('medicine')
         thresh = Stock.objects.get(id=med_id).threshold
         data = {'thresh': thresh}
+        return JsonResponse(data)
+    
+    elif 'add_hospital' in request.POST:
+        hospital_name=request.POST.get('hospital_name')
+        hospital_address=request.POST.get('hospital_address')
+        hospital_phone=request.POST.get('hospital_phone')
+        print(hospital_name,hospital_address,hospital_phone)
+        Hospital.objects.create(
+        hospital_name=hospital_name,
+        hospital_address=hospital_address,
+        hospital_phone=hospital_phone,
+        )
+        data={'status':1, 'hospital_name':hospital_name, 'hospital_address':hospital_address, 'hospital_phone':hospital_phone}
         return JsonResponse(data)
 
 def student_view_handler(request):

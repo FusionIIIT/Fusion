@@ -26,10 +26,9 @@ class Constants:
 class Doctor(models.Model):
     # doctor_name = models.IntegerField(choices=Constants.NAME_OF_DOCTOR)
     doctor_name = models.CharField(max_length=200)
-    doctor_phone = models.CharField(max_length=10)
+    doctor_phone = models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
-    contact_no = models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
 
     def __str__(self):
         return self.doctor_name
@@ -64,7 +63,8 @@ class Medicine(models.Model):
 
 class Hospital(models.Model):
     hospital_name=models.CharField(max_length=100)
-    phone=models.CharField(max_length=10)
+    hospital_address=models.CharField(max_length=255, default="")
+    hospital_phone=models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
     def __str__(self):
         return self.hospital_name
 
