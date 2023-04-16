@@ -38,6 +38,20 @@ def complaint_reassign(request,wid,iid):
             complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert',complainer_details.id,student,message)
             return HttpResponseRedirect(url)
         
+        elif type == 'redirect':
+            assign_secincharge = request.POST.get('assign_secincharge', '')
+            c = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(id=assign_secincharge)
+            c1 = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(id=iid)
+            remark = 'Redirect complaint from ' + c1.work_type
+            StudentComplain.objects.select_for_update().filter(id=iid).\
+                update(complaint_type=c.work_type, remarks=remark)
+            url = '/complaint/secincharge/worker_id_know_more/'+wid;
+            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__secincharge_id__staff_id','worker_id__secincharge_id__staff_id__user','worker_id__secincharge_id__staff_id__department').get(id=iid)
+            student=0
+            message = "Your complaint has been redirected to another secincharge"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
+            return HttpResponseRedirect(url)
+        
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
         a = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
@@ -46,7 +60,7 @@ def complaint_reassign(request,wid,iid):
         try:
             detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__secincharge_id__staff_id','worker_id__secincharge_id__staff_id__user','worker_id__secincharge_id__staff_id__department').filter(id=iid).first()
             total_secincharge = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').all()
-            total_secincharges_in_area = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(work_type=b)
+            print(total_secincharge)
             worker = []
             workertemp = []
             flag = ''
@@ -68,7 +82,7 @@ def complaint_reassign(request,wid,iid):
             return HttpResponse("<H1>Not a valid complaint </H1>")
         return render(request, "complaintModule/reassignworker.html",
                       {'detail': detail, 'worker': worker, 'flag':
-                          flag, 'total_secincharge': total_secincharge,'a':a, 'wid':wid, 'total_secincharges_in_area':total_secincharges_in_area})
+                          flag, 'total_secincharge': total_secincharge,'a':a, 'wid':wid})
 
 
 
@@ -118,6 +132,19 @@ def assign_worker(request, comp_id1):
             complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student,message)
             return HttpResponseRedirect('/complaint/secincharge/')
         
+        elif type == 'redirect':
+            assign_secincharge = request.POST.get('assign_secincharge','')
+            c = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(id=assign_secincharge)
+            c1 = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=comp_id)
+            remark = 'Redirect complaint from ' + c1.work_type
+            StudentComplain.objects.select_for_update().filter(id=comp_id1).\
+                update(complaint_type=c.work_type, remarks=remark)
+            complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__secincharge_id__staff_id','worker_id__secincharge_id__staff_id__user','worker_id__secincharge_id__staff_id__department').get(id=comp_id1)
+            student=0
+            message = "Your Complaint has been redirected to another secincharge"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
+            return HttpResponseRedirect('/complaint/secincharge/')
+
     else:
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
         a = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=y)
@@ -126,7 +153,6 @@ def assign_worker(request, comp_id1):
         try:
             detail = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__secincharge_id__staff_id','worker_id__secincharge_id__staff_id__user','worker_id__secincharge_id__staff_id__department').filter(id=comp_id1).first()
             total_secincharge = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').all()
-            total_secincharges_in_area = SectionIncharge.objects.select_related('staff_id','staff_id__user','staff_id__department').filter(work_type=b and id!=a.id)
             workertemp = []
             worker = []
             flag = ''
@@ -148,7 +174,7 @@ def assign_worker(request, comp_id1):
             return HttpResponse("<H1>Not a valid complaint </H1>")
         return render(request, "complaintModule/assignworker.html",
                       {'detail': detail, 'worker': worker, 'flag':
-                          flag, 'total_secincharge': total_secincharge,'a':a, 'total_secincharges_in_area':total_secincharges_in_area})
+                          flag, 'total_secincharge': total_secincharge,'a':a})
 
 
 #for SectionIncharge
@@ -256,7 +282,10 @@ def check(request):
             else:
                 return HttpResponseRedirect('/complaint/secincharge/')
         elif b.user_type == 'faculty':
-            return HttpResponseRedirect('/complaint/supervisor/')
+            if Supervisor.objects.all().filter(sup_id=b).count() == 0: 
+                return HttpResponseRedirect('/complaint/user/')
+            else:
+                return HttpResponseRedirect('/complaint/supervisor/')
         else:
             return HttpResponse("<h1>wrong user credentials</h1>")
     else:

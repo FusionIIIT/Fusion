@@ -33,14 +33,14 @@
                             <div class="field">
                                 <label>Quantity</label>
                                 <div class="ui input large">
-                                    <input placeholder="Quantity" name="quantity_add" type="number">
+                                    <input placeholder="Quantity" name="quantity_add" type="number" min="0" oninput="validity.valid||(value='');">
                                 </div>
                             </div>
 
                             <div class="field">
                                 <label>Cost</label>
                                 <div class="ui input large">
-                                    <input placeholder="Amount" name="cost" type="number">
+                                    <input placeholder="Amount" name="cost" type="number" min="0" oninput="validity.valid||(value='');">
                                 </div>
                             </div>
 
