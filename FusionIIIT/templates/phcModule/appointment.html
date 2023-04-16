@@ -107,61 +107,6 @@
     <br>
     <br>
   </div>
-</div>
-
-<div class="field">
-  <label><br></label>
-
-  <div>
-    <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
-  </div>
-
-</div>
-</form>
-<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-<script type="text/javascript">
-  function trimfield(str) {
-    return str.replace(/^\s+|\s+$/g, '');
-  }
-  $('#appo').on('click', function (e) {
-    e.preventDefault();
-
-    var tod = new Date(new Date().setHours(0, 0, 0, 0));
-    var today = new Date(new Date());
-    var now = today.getHours();
-
-    if (trimfield(document.getElementById("description").value) == '') {
-      $('#desc').html('*Please fill out the Description!');
-      document.getElementById("description").focus();
-    } else {
-      $.ajax({
-        type: 'post',
-        url: '/healthcenter/student/',
-        data: {
-          csrfmiddlewaretoken: '{{ csrf_token }}',
-          doctor: $("#doc").val(),
-          date: $("#date").val(),
-          description: $("#description").val(),
-          appointment: $("#appo").val(),
-        },
-        success: function (data) {
-          var dte = new Date(data.dt);
-          dte.setHours(0, 0, 0, 0);
-          alert("Appointment requested.Check history for the status of appointment. ")
-          document.getElementById("doc").value = ""
-          document.getElementById("date").value = ""
-          document.getElementById("description").value = " "
-          $('#desc').html('');
-          window.location.reload();
-          $('#app_dte').html('');
-        }
-      });
-    }
-  });
-</script>
-<br>
-<br>
-</div>
 <br>
 <div class="extra segment"></div>
 </div>
@@ -170,8 +115,8 @@
 {% comment %}the ambulance appointment tab starts here {% endcomment %}
 <div class="ui tab" data-tab="ambulancerequest">
   <div class="ui vertical segment">
-    <form m class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token
-      %}
+    <form m class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+      {% csrf_token %}
       <div class="two fields">
         <div class="field">
           <label>From</label>
@@ -190,7 +135,6 @@
               $('#inputdate1').attr('min', maxDate);
             });
           </script>
-          <p id="dte"></p>
         </div>
         <div class="field">
           <label>To</label>
@@ -209,14 +153,12 @@
               $('#inputdate2').attr('min', maxDate);
             });
           </script>
-          <p id="dte"></p>
         </div>
       </div>
       <div class="field">
         <label>Reason</label>
         <div class="ui fluid input">
           <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
-          <p id="reas"></p>
         </div>
       </div>
 
@@ -234,9 +176,10 @@
         return str.replace(/^\s+|\s+$/g, '');
       }
 
-      $('#amb_submit').click(function (e) {
-        var startDate = document.getElementById('start_date').value;
-        var endDate = document.getElementById('end_date').value;
+      $('#amb_submit').click(function(e)
+      {
+        var startDate = document.getElementById('inputdate1').value;
+        var endDate = document.getElementById('inputdate2').value;
         var start = new Date(startDate);
         var end = new Date(endDate);
         var today = new Date(new Date().setHours(0, 0, 0, 0));
@@ -265,16 +208,13 @@
             url: '/healthcenter/student/',
             data: {
               csrfmiddlewaretoken: '{{ csrf_token }}',
-              start_date: $("#start_date").val(),
-              end_date: $("#end_date").val(),
-              reason: $("#reason").val(),
-              amb_submit: $("#amb_submit").val()
+              start_date:$("#inputdate1").val(),
+              end_date:$("#inputdate2").val(),
+              reason:$("#reason").val(),
+              amb_submit:$("#amb_submit").val()
             },
             success: function (data) {
               alert("Ambulance requested.");
-              document.getElementById("start_date").value = "";
-              document.getElementById("end_date").value = "";
-              document.getElementById("reason").value = "";
               window.location.reload();
 
               $('#reas').html('');

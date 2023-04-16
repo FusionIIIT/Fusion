@@ -158,7 +158,7 @@ class Ambulance_request(models.Model):
     date_request = models.DateTimeField()
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    reason = models.CharField(max_length=50)
+    reason = models.CharField(max_length=255)
 
 class Hospital_admit(models.Model):
     user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
