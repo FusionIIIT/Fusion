@@ -4,6 +4,7 @@ from applications.gymkhana.api.views import Voting_Polls
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
 from applications.gymkhana.api.views import session_details
 from . import views
+from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = 'gymkhana'
@@ -32,7 +33,8 @@ urlpatterns = [
 
 
     url(r'^clubname/$', clubname.as_view()),
-    url(r'^$', views.gymkhana, name='gymkhana'),
+    url(r'^$', views.gymkhana_redirect, name='gymkhana-redirect'),
+    path(r'tabs/<str:sub_tab>/', views.gymkhana, name='gymkhana'),
     url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
     url(r'^form_avail/$', views.form_avail, name='form_avail'),
     url(r'^registration_form/$', views.registration_form, name='registration_form'),
@@ -64,7 +66,6 @@ urlpatterns = [
     url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
     url(r'^club_membership/$', views.club_membership, name='membership'),
     url(r'^(?P<poll_id>\d+)/$', views.vote, name='vote'),
-    url(r'^$', views.gymkhana, name='gymkhana'),
 
     #data recieving
     url(r'^form_avail/$', views.form_avail, name='form_avail'),
