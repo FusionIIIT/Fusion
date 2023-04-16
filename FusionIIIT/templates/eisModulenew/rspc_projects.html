@@ -2,6 +2,9 @@
 
 {% block projects %}
     {% comment %}The tab menu starts here!{% endcomment %}
+    {% if message %}
+    <h4>{{message}}</h4>
+    {% endif %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="research projects">
             Research Projects

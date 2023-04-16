@@ -259,7 +259,7 @@ def rspc_profile(request):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type == 'student':
         return redirect('/')
-    pf = user.id
+    pf = extra_info.id
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
     flag_rspc = False
     for designation in designations:
@@ -335,7 +335,7 @@ def rspc_profile_faculty(request):
     extra_info_faculty = get_object_or_404(ExtraInfo, user=user_faculty)
     if extra_info_faculty.user_type == 'student':
         return redirect('/')
-    pf = user.id
+    pf = extra_info.id
     pf_faculty = extra_info_faculty.id
     print(pf_faculty)
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
@@ -410,7 +410,7 @@ def generate_citation(request):
     extra_info_faculty = get_object_or_404(ExtraInfo, user=user_faculty)
     if extra_info_faculty.user_type == 'student':
         return redirect('/')
-    pf = user.id
+    pf = extra_info.id
     pf_faculty = extra_info_faculty.id
     print(pf_faculty)
     designations = HoldsDesignation.objects.filter(user_id=extra_info.user.id)
@@ -446,7 +446,7 @@ def render_to_pdf(template_src, context_dict):
 
 def rspc_generate_report(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = request.user.id
+    pf = user.id
     start = request.POST.get('syear')
     star_date = start+'-01-01'
     end = request.POST.get('lyear')
