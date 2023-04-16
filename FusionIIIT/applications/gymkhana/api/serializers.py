@@ -68,3 +68,8 @@ class Voting_pollSerializer(serializers.ModelSerializer):
     class Meta:
         model=Voting_polls
         fields=['title','pub_date','exp_date','created_by','groups']
+
+class NewClubSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Club_info
+        fields='__all__'
