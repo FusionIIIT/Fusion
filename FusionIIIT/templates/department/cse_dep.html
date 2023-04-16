@@ -7,8 +7,6 @@
 {% block CSE_Dep %}
 
     <h1><center> Welcome to CSE Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -43,29 +41,29 @@
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
-                        <div id="edit-about-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_aboutCSE(this)">Edit</button>
+                        <div id="edit-about-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "about"%}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_aboutCSE">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
-                        <div id="edit-about-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_aboutCSE(this)">Edit</button>
+                        <div id="edit-about-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_aboutCSE">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="about">
+                    <div id="aboutCSE">
                         {{departments.CSE.about|safe}}
                     </div>
                     <div class="ui divider"></div>
@@ -73,36 +71,34 @@
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
-                        <div id="edit-facility-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_facilityCSE(this)">Edit</button>
+                        <div id="edit-facility-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "facility" %}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_facilityCSE">{{departments.CSE.facility}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
-                        <div id="edit-facility-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_facilityCSE(this)">Edit</button>
+                        <div id="edit-facility-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_facilityCSE">{{departments.CSE.facility}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="facility">
+                    <div id="facilityCSE">
                         {{departments.CSE.facility|safe}}
                     </div>
                     <div class="ui divider"></div>
@@ -110,12 +106,6 @@
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
-
-
-
-    {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -152,8 +142,6 @@
             </div>
         </div>
     </div>
-
-{% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "CSE" %}
         <div class="ui vertical segment">
@@ -282,14 +270,11 @@
         </div>
         {% endif %}
     </div>
-    
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
@@ -392,7 +377,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -407,14 +391,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -424,32 +406,31 @@
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
-                        <div id="edit-achievement-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_achievementCSE(this)">Edit</button>
+                        <div id="edit-achievement-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "achievement" %}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_achievementCSE">{{departments.CSE.achievement}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
-                        <div id="edit-achievement-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_achievementCSE(this)">Edit</button>
+                        <div id="edit-achievement-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_achievementCSE">{{departments.CSE.achievement}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="achievement">
+                    <div id="achievementCSE">
                         {{departments.CSE.achievement|safe}}
                     </div>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -469,7 +450,6 @@
                         </button>
                     </a>
                     <br>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>

@@ -3,8 +3,6 @@
 {% block ECE_Dep %}
 
     <h1><center> Welcome to ECE Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -36,13 +34,11 @@
 
     </div>
 
-
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Our Mission :
                         </h3>
@@ -55,19 +51,43 @@
                         <p>
                             The vision of ECE department is to become pioneer in higher learning and research and to produce creative solution to societal needs. To provide excellence in education, research and public service. To provide quality education and to make the students entrepreneur and employable.
                         </p>
-                    </span>
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_aboutECE(this)">Edit</button>
+                        <div id="edit-about-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutECE">{{departments.ECE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_aboutECE(this)">Edit</button>
+                        <div id="edit-about-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutECE">{{departments.ECE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="aboutECE">
+                        {{departments.ECE.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h3>
                             Central Library :
                         </h3>
@@ -96,15 +116,38 @@
                                 </p>
                             </li>
                         </ol>
-                    </span>
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facilityECE(this)">Edit</button>
+                        <div id="edit-facility-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityECE">{{departments.ECE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facilityECE(this)">Edit</button>
+                        <div id="edit-facility-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityECE">{{departments.ECE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facilityECE">
+                        {{departments.ECE.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
-   {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -139,8 +182,6 @@
             </div>
         </div>
     </div>
-    
-     {% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "ECE" %}
         <div class="ui vertical segment">
@@ -195,14 +236,11 @@
         </div>
         {% endif %}
     </div>
-    
-     {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
@@ -304,7 +342,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -319,14 +356,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -335,7 +370,7 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
+                    {% comment %} <span>
                         <h1> Achievements</h1>
                         <ol>
                             <li>
@@ -369,8 +404,33 @@
                                 </p>
                             </li>
                         </ol>
-                    </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    </span> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievementECE(this)">Edit</button>
+                        <div id="edit-achievement-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementECE">{{departments.ECE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievementECE(this)">Edit</button>
+                        <div id="edit-achievement-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementECE">{{departments.ECE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievementECE">
+                        {{departments.ECE.achievement|safe}}
+                    </div>
                 </div>
             </div>
         </div>
