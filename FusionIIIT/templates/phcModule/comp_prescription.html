@@ -22,17 +22,27 @@
             <form class="ui form" method="POST">{% csrf_token %}
                 <p id="usr"></p>
 
+                <div class="two fields">
                   <div class="field">
                       <label>Patient</label>
-                      <select class="ui search fluid" id="user" name="user" required="true">
+                      <select class="ui search fluid dropdown" id="user" name="user" required="true">
                         <option value="" disabled selected>--SELECT--</option>
                         {% for a in appointments_today %}
                         <option value="{{a.id}}">{{a.user_id.id}}-{{a.user_id.user}}</option>
                         {% endfor %}
                       </select>
+                  </div>
 
-                   </div>
-
+                  <div class="field">
+                    <label>Doctor</label>
+                    <select class="ui search fluid dropdown" name="doctor" id="doctor" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+                      {% for doctor in doctors %}
+                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
 
                 <div class="field">
                     <label>Detail of Disease</label>
@@ -120,6 +130,7 @@
                   $('#medicine').click(function(e){
                                                         $("#sched tr").remove();
                                                         var user = document.getElementById('user').value;
+                                                        var doctor = document.getElementById('doctor').value;
                                                         var quantity = document.getElementById('quantity').value;
                                                         var medicine = document.getElementById('medicine_id').value;
                                                         var days = document.getElementById('days').value;
@@ -135,6 +146,7 @@
                                                           data: {
                                                           csrfmiddlewaretoken: '{{ csrf_token }}',
                                                           user:$("#user").val(),
+                                                          doctor:$("#doctor").val(),
                                                           quantity:$("#quantity").val(),
                                                           medicine_name:$("#medicine_id").val(),
                                                           days:$("#days").val(),
@@ -142,7 +154,7 @@
                                                         },
                                                           success: function(data){
 
-                                                              alert("added medicine");
+                                                              alert("Added Medicine!");
                                                               document.getElementById("quantity").value="";
                                                               document.getElementById("medicine_id").value="";
                                                               document.getElementById("days").value="";
@@ -185,7 +197,7 @@
                                                     },
                                                       success: function(data){
                                                         if (data.status == 1 ){
-                                                          alert("prescribed medicine");
+                                                          alert("Prescription Added!");
                                                           document.getElementById("details").value="";
                                                           document.getElementById("tests").value="";
                                                           $('#sched').empty();
@@ -210,13 +222,14 @@
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-            <form class="ui form" method="POST">{% csrf_token %}
+            <form class="ui form" method="POST">
+              {% csrf_token %}
                 <p id="usr_b"></p>
                 <div class="two fields">
                   <div class="field">
                       <label>Patient</label>
                       <div class="ui fluid large input">
-                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="number">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
                       </div>
                    </div>
 
@@ -338,7 +351,7 @@
                                                           times:$("#times_b").val()
                                                         },
                                                           success: function(data){
-                                                              alert("added medicine");
+                                                              alert("Added Medicine!");
                                                               document.getElementById("quantity_b").value="";
                                                               document.getElementById("medicine_id_b").value="";
                                                               document.getElementById("days_b").value="";
@@ -381,7 +394,7 @@
                                                     },
                                                       success: function(data){
                                                         if (data.status == 1){
-                                                          alert("prescribed medicine");
+                                                          alert("Prescription Added!");
                                                           document.getElementById("doctor_b").value="";
                                                           document.getElementById("details_b").value="";
                                                           document.getElementById("tests_b").value="";

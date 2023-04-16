@@ -253,8 +253,8 @@ def compounder_view_handler(request):
             test=tests,
             appointment=appointment
         )
-        query = Medicine.objects.select_related('patient','patient__user','patient__department').objects.filter(patient=user)
-        prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').objects.all().last()
+        query = Medicine.objects.select_related('patient','patient__user','patient__department').filter(patient=user)
+        prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().last()
         for medicine in query:
             medicine_id = medicine.medicine_id
             quantity = medicine.quantity
@@ -296,6 +296,7 @@ def compounder_view_handler(request):
         healthcare_center_notif(request.user, user.user, 'presc')
         data = {'status': status, 'stock': stock}
         return JsonResponse(data)
+    
     elif 'prescribe_b' in request.POST:
         user_id = request.POST.get('user')
         user = ExtraInfo.objects.select_related('user','department').get(id=user_id)

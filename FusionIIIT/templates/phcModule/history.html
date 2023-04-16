@@ -351,11 +351,6 @@
                     <th>
                         Description
                     </th>
-                    
-                    <th>
-                        Prescription
-                    </th>
-
                 </tr>
                 </thead>
 
@@ -373,11 +368,6 @@
                     <td>
                         {{appointment.description}}
                     </td>
-
-                    <td>
-                        {{appointment.prescription_on_appointment}}
-                    </td>
-
                    
 					<td>
                         <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />

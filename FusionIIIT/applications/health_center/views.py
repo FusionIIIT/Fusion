@@ -145,13 +145,6 @@ def student_view(request):
             doctors=Doctor.objects.filter(active=True)
             count=Counter.objects.all()
 
-            # Snippet to add prescription for an appointment
-            for pres in prescription:
-                for appointment in appointments:
-                    if pres.appointment.pk == appointment.pk:
-                        appointment['prescription_on_appointment'] = pres
-                        break
-
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)

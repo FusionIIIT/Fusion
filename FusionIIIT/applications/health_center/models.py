@@ -60,7 +60,7 @@ class Medicine(models.Model):
     times = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.medicine_id
+        return self.medicine_id.medicine_name
 
 class Hospital(models.Model):
     hospital_name=models.CharField(max_length=100)
