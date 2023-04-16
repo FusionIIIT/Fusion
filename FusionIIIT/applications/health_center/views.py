@@ -80,8 +80,8 @@ def compounder_view(request):
             stocks = Stock.objects.all()
             days = Constants.DAYS_OF_WEEK
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
-            expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
-            live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
+            expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(), returned=False).order_by('expiry_date')
+            live_meds=Expiry.objects.select_related('medicine_id').filter(expiry_date__gte=datetime.now(), returned=False).order_by('quantity')
             count=Counter.objects.all()
             presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().order_by('-date')
             medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
@@ -95,6 +95,7 @@ def compounder_view(request):
 
             # doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
              
+            print(live_meds.values())
 
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
