@@ -145,9 +145,6 @@ def student_view(request):
             doctors=Doctor.objects.filter(active=True)
             count=Counter.objects.all()
 
-            print("SCHEDULE::::::::::::::::::::::::::::\n", schedule.values())
-            print("DOCTORS::::::::::::::::::::::::::::\n", doctors.values())
-
             # Snippet to add prescription for an appointment
             for pres in prescription:
                 for appointment in appointments:
