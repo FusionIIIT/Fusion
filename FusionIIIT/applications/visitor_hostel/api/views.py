@@ -501,7 +501,7 @@ def confirm_booking(request):
 
         # rooms list
         rooms = request.POST.getlist('rooms[]')
-        #print(rooms)
+
         bd = BookingDetail.objects.select_related('intender','caretaker').get(id=booking_id)
         bd.status = 'Confirmed'
         bd.category = category
@@ -825,9 +825,8 @@ def bill_between_dates(request):
             room_total = room_total + i.room_bill
             individual_total.append(i.meal_bill + i.room_bill)
         total_bill = meal_total + room_total
-        # zip(bill_range_bw_dates, individual_total)
+
         response = {
-                # 'booking_bw_dates': bill_range_bw_dates, 
                 'booking_bw_dates_length': bill_range_bw_dates, 
                 'meal_total' : meal_total, 
                 'room_total' :room_total,
@@ -880,8 +879,6 @@ def bill_range(date1,date2):
 
     bookings = BookingDetail.objects.select_related('intender','caretaker').filter(Q(booking_from__lte=date1, booking_to__gte=date1) | Q(booking_from__gte=date1,
                                                                                                                       booking_to__lte=date2) | Q(booking_from__lte=date2, booking_to__gte=date2) | Q(booking_from__lte=date1, booking_to__gte=date1) | Q(booking_from__gte=date1, booking_to__lte=date2) | Q(booking_from__lte=date2, booking_to__gte=date2))
-    # bill_details = Bill.objects.filter(Q(booking__booking_from__lte=date1, booking__booking_to__gte=date1, booking__status="Confirmed") | Q(booking__booking_from__gte=date1,
-    #                                                                                                                   booking__booking_to__lte=date2, booking__status="Confirmed") | Q(booking__booking_from__lte=date2, booking__booking_to__gte=date2, status="Confirmed") | Q(booking_from__lte=date1, booking__booking_to__gte=date1, status="CheckedIn") | Q(booking__booking_from__gte=date1, booking__booking_to__lte=date2, booking__status="CheckedIn") | Q(booking__booking_from__lte=date2, booking__booking_to__gte=date2, booking__status="CheckedIn"))
     bookings_bw_dates = []
     booking_ids = []
     for booking_id in bookings:
