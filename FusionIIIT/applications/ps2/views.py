@@ -128,7 +128,7 @@ def viewtransfers(request):
         return render(request, "ps2/viewtransfers.html", context)
     
     else :
-        stocks = TransferEntry.objects.all().filter(From_department=stock_admin_department) | TransferEntry.objects.all().filter(To_department=stock_admin_department).order_by('date').values()
+        stocks = TransferEntry.objects.all().filter(From_department=stock_admin_department) | TransferEntry.objects.all().filter(To_department=stock_admin_department).order_by('Date').values()
         context = {
         'stocks': stocks,
         'department': stock_admin_department,    
