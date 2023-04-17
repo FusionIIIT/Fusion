@@ -137,18 +137,15 @@
             department: 'ALL',
             announcement: '{{ stu.message }}',
         });
-        //   document.getElementById('make-announcement-form').style.display = "block";
 
     }
 
     function announce_dft(event) {
-        // console.log(document.getElementById("btn-publish-dft").getAttribute("data-id"));
         event.preventDefault();
         var id = document.getElementById("btn-publish-dft-{{stu.id}}").getAttribute("data-id")
         var $form = $('#draft-form-{{stu.id}}'),
             allFields = $form.form('get values');
         var upload_announcement = $('#draft-form-{{stu.id}} input[name="upload_announcement"]')[0].files[0];
-        //console.log(allFields);
 
         let btn = document.getElementById("btn-publish-dft-{{stu.id}}");
         btn.classList.add("loading");
@@ -160,8 +157,6 @@
         formData.append('upload_announcement', upload_announcement);
         formData.append('department', allFields['department']);
         formData.append('is_draft', "false");
-        // console.log(allFields['batch']);
-        // console.log("success");
         $.ajax({
             type: 'POST',
             url: '/dep/edit_draft/',
@@ -179,13 +174,11 @@
     };
 
     function draft_dft(event) {
-        // console.log(document.getElementById("btn-publish-dft").getAttribute("data-id"));
         event.preventDefault();
         var id = document.getElementById("btn-publish-dft-{{stu.id}}").getAttribute("data-id")
         var $form = $('#draft-form-{{stu.id}}'),
             allFields = $form.form('get values');
         var upload_announcement = $('input[name="upload_announcement"]')[0].files[0];
-        // console.log(allFields);
 
         let btn = document.getElementById("btn-draft-dft-{{stu.id}}");
         btn.classList.add("loading");
@@ -197,8 +190,6 @@
         formData.append('upload_announcement', upload_announcement);
         formData.append('department', allFields['department']);
         formData.append('is_draft', "true");
-        // console.log(allFields['batch']);
-        // console.log("success");
         $.ajax({
             type: 'POST',
             url: '/dep/edit_draft/',

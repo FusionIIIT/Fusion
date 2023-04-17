@@ -35,20 +35,6 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    {% comment %} <span>
-                        <h3>
-                            Our Mission :
-                        </h3>
-                        <p>
-                            The Mission of the Institute is to create a multidisciplinary academic environment to prepare and train manpower of excellence for nurturing and promoting knowledge-based activities and innovations in design, fabrication and manufacturing of products by bringing together a collaborative and mutually stimulating mix of different fields of science, engineering and arts. In doing so the Institute shall identify current and future agendas for scholarship, share knowledge and discoveries with the world community and actively cultivate individuals with the desire and capability to contribute to society.
-                        </p>
-                        <h3>
-                            Our Vision :
-                        </h3>
-                        <p>
-                            In planning for its future as well as for conducting its ongoing activities, the Institute seeks to act in a manner that is guided by a deep-rooted sense of shared values and aspirations. Built upon such a foundation, the Institute honours and rewards high performance in learning, teaching, scholarship, research and creative activities by encouraging intellectual curiosity and protecting the multiple expressions of academic freedom.
-                        </p>
-                    </span> {% endcomment %}
                     {% if user_designation == "faculty" %}
                         <button class="ui button green " onclick="edit_aboutDESIGN(this)">Edit</button>
                         <div id="edit-about-formDESIGN" style="display:none;" data-status="hidden" >
@@ -110,51 +96,6 @@
                     <div id="facilityDESIGN">
                         {{departments.DESIGN.facility|safe}}
                     </div>
-                    {% comment %} <span>
-                        <h3>
-                            Central Library :
-                        </h3>
-                        <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
-                        <h3>
-                            Lab Infrastructure :
-                        </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Advanced Manufacturing Laboratory :</b> This Laboratory contains Rapid Prototyping Machine, CNC Controlled Abrasive Waterjet Machine, CNC Milling Center, CNC Turning Center, Dynamometer, Electro Chemical Machining System, Injection Moulding Machine etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biometric Laboratory :</b> This Laboratory contains S Series, H Series, W Series cameras and p6 p520(Tower Model), p6 p520:8203 Model servers Made by IBM etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Digital Signal Processing and Image Processing Laboratory :</b> This Laboratory contains DSP Starter SPARTAN-3 kit (DSK), TMS 320C6713 DSK with CCS (Code Composer Studio), Image Daughter Kit with CCD Cameras, Bloom with DSP, Matrox Imaging Library, Matrox Morphis, Frame Graber Card, Color CCD Camera for online Processing etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Infrared Imaging Laboratory :</b> This Laboratory contains Radiometeric calibration, Extender rings, NDT Base Module, Central computing unit with TFT display, Software Modules for Lockin, Transient-and Pulse Measurement, Module Pulse- and Transient- Thermography, Source for Vibro- Thermography etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Materials Research Laboratory :</b> This Laboratory contains three important instruments for material characterization which are X-Ray Diffractometer (XRD), Scanning Electron Microscope (SEM) and Atomic Force Microscope (AFM) including SPM, MFM etc.
-                                </p>
-                            </li>
-                        </ol>
-                    </span> {% endcomment %}
                     <div class="ui divider"></div>
                 </div>
             </div>
@@ -388,41 +329,6 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    {% comment %} <span>
-                        <h1> Achievements</h1>
-                        <ol>
-                            <li>
-                                <p>
-                                    PDPM IIITDMJ Student Team has won the International Chess
-                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
-                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
-                                    2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Varun Chaudhary working
-                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
-                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
-                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
-                                    04-07Jan,2020
-                                </p>
-                            </li>
-                        </ol>
-                    </span> {% endcomment %}
                     {% if user_designation == "faculty" %}
                         <button class="ui button green " onclick="edit_achievementDESIGN(this)">Edit</button>
                         <div id="edit-achievement-formDESIGN" style="display:none;" data-status="hidden" >

@@ -244,7 +244,6 @@ def dep_main(request):
         context_f - Stores data returned by faculty()
 
     """
-    # elif(str(user.extrainfo.user_type)=="faculty"):
     user = request.user
     if user.extrainfo.user_type=="faculty":
         return HttpResponseRedirect("facView")
@@ -322,7 +321,7 @@ def faculty_view(request):
         upload_announcement = request.FILES.get('upload_announcement')
         department_ = request.POST.get('department')
         is_draft = request.POST.get('is_draft')
-        print(type(is_draft) , "  " , is_draft , "\n")
+
         ann_date = date.today()
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
         getstudents = ExtraInfo.objects.select_related('user')
@@ -336,8 +335,6 @@ def faculty_view(request):
                                     department = department_,
                                     is_draft = True if is_draft == "true" else False,
                                     ann_date=ann_date)
-        print("created this: \n\n",obj1.is_draft , "\n\n")
-        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     drafts = browse_announcement_drafts(request.user.extrainfo.department.name)
@@ -388,7 +385,6 @@ def staff_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     context_f = faculty()
@@ -762,7 +758,6 @@ def delete_draft(request, id):
 
 
 def edit_draft(request):
-    # print('done')
     if request.method == 'POST':
         id = request.POST.get('id', '')
         batch = request.POST.get('batch', '')
@@ -773,12 +768,6 @@ def edit_draft(request):
         is_draft = request.POST.get('is_draft')
         ann_date = date.today()
 
-        # print("id:" , id)
-        # print("batch:" , batch)
-        # print("programme:" , programme)
-        # print("message:" , message)
-        # print("department_:" , department_)
-        # print("is_draft:" , is_draft)
         obj = Announcements.objects.get(id = id)
         obj.batch=batch
         obj.programme=programme
@@ -789,7 +778,6 @@ def edit_draft(request):
         obj.ann_date=ann_date
 
         obj.save()
-        # department_notif(usrnm, recipients , message)
     return redirect('/dep/')
 
 
