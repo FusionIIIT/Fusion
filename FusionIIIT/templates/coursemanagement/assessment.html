@@ -71,6 +71,11 @@
                       </div> {% endcomment %}
                     </td>
                     <td >
+                      <button class="ui primary button" style="mae">
+                      <a  href="{{sa.doc.url }}"style="color:white;">{{sa.assign_name}}</a>
+                    </button>
+                    </td>
+                    <td >
                       {% if sa.score %}
                         <span id="score{{sa.pk}}">{{sa.score}}</span>
                       {% else %}
