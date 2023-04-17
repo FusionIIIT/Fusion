@@ -411,17 +411,7 @@ def add_document(request, course_code):
         except:
             return HttpResponse("Please fill each and every field correctly!")
         #for storing the media files properly
-        filename = name
-        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/doc/"
-        url = settings.MEDIA_URL + filename + file_extenstion
-        if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
-        fs = FileSystemStorage(full_path, url)
-        fs.save(filename + file_extenstion, doc)
-        uploaded_file_url = full_path + filename + file_extenstion
-        #save the info/details in the database
-        print(settings.MEDIA_ROOT)
+        
         CourseSlide.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
