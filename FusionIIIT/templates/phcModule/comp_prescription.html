@@ -4,13 +4,16 @@
     {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="prescribe_app">
-            Prescribe with Appointment
+          Prescribe with Appointment
         </a>
         <a class="item" data-tab="prescribe">
-            Prescribe without Appointment
+          Prescribe without Appointment
         </a>
         <a class="item" data-tab="hospitaladmit">
-            Hospital Admission
+          Hospital Admission
+        </a>
+        <a class="item" data-tab="addhospital">
+          Add Hospital
         </a>
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
@@ -22,17 +25,27 @@
             <form class="ui form" method="POST">{% csrf_token %}
                 <p id="usr"></p>
 
+                <div class="two fields">
                   <div class="field">
                       <label>Patient</label>
-                      <select class="ui search fluid" id="user" name="user" required="true">
+                      <select class="ui search fluid dropdown" id="user" name="user" required="true">
                         <option value="" disabled selected>--SELECT--</option>
                         {% for a in appointments_today %}
                         <option value="{{a.id}}">{{a.user_id.id}}-{{a.user_id.user}}</option>
                         {% endfor %}
                       </select>
+                  </div>
 
-                   </div>
-
+                  <div class="field">
+                    <label>Doctor</label>
+                    <select class="ui search fluid dropdown" name="doctor" id="doctor" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+                      {% for doctor in doctors %}
+                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
 
                 <div class="field">
                     <label>Detail of Disease</label>
@@ -120,6 +133,7 @@
                   $('#medicine').click(function(e){
                                                         $("#sched tr").remove();
                                                         var user = document.getElementById('user').value;
+                                                        var doctor = document.getElementById('doctor').value;
                                                         var quantity = document.getElementById('quantity').value;
                                                         var medicine = document.getElementById('medicine_id').value;
                                                         var days = document.getElementById('days').value;
@@ -135,6 +149,7 @@
                                                           data: {
                                                           csrfmiddlewaretoken: '{{ csrf_token }}',
                                                           user:$("#user").val(),
+                                                          doctor:$("#doctor").val(),
                                                           quantity:$("#quantity").val(),
                                                           medicine_name:$("#medicine_id").val(),
                                                           days:$("#days").val(),
@@ -142,7 +157,7 @@
                                                         },
                                                           success: function(data){
 
-                                                              alert("added medicine");
+                                                              alert("Added Medicine!");
                                                               document.getElementById("quantity").value="";
                                                               document.getElementById("medicine_id").value="";
                                                               document.getElementById("days").value="";
@@ -185,7 +200,7 @@
                                                     },
                                                       success: function(data){
                                                         if (data.status == 1 ){
-                                                          alert("prescribed medicine");
+                                                          alert("Prescription Added!");
                                                           document.getElementById("details").value="";
                                                           document.getElementById("tests").value="";
                                                           $('#sched').empty();
@@ -210,13 +225,14 @@
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-            <form class="ui form" method="POST">{% csrf_token %}
+            <form class="ui form" method="POST">
+              {% csrf_token %}
                 <p id="usr_b"></p>
                 <div class="two fields">
                   <div class="field">
                       <label>Patient</label>
                       <div class="ui fluid large input">
-                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="number">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
                       </div>
                    </div>
 
@@ -338,7 +354,7 @@
                                                           times:$("#times_b").val()
                                                         },
                                                           success: function(data){
-                                                              alert("added medicine");
+                                                              alert("Added Medicine!");
                                                               document.getElementById("quantity_b").value="";
                                                               document.getElementById("medicine_id_b").value="";
                                                               document.getElementById("days_b").value="";
@@ -381,7 +397,7 @@
                                                     },
                                                       success: function(data){
                                                         if (data.status == 1){
-                                                          alert("prescribed medicine");
+                                                          alert("Prescription Added!");
                                                           document.getElementById("doctor_b").value="";
                                                           document.getElementById("details_b").value="";
                                                           document.getElementById("tests_b").value="";
@@ -524,11 +540,97 @@
                                             });
                                           });
 
-</script>
+      </script>
       <br>
       <br>
   </div>
 </div>
+
+{% comment %}the add hospital tab starts here {% endcomment %}
+<div class="ui tab" data-tab="addhospital">
+  <p id="hosp_add" style="width: 100%; text-align: center;"></p>
+      <div class="ui vertical segment">
+          <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% csrf_token %}
+            
+            <div class="field">
+              <label>Hospital Name</label>
+              <div class="ui fluid large input">
+                  <input placeholder="Hospital Name" id="new_hospital_name" name="new_hospital_name" type="text">
+              </div>
+            </div>
+
+            <div class="field">
+                <label>Address</label>
+                <div class="ui fluid large input">
+                    <input placeholder="Hospital Address" id="hospital_address" name="hospital_address" type="text">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Phone Number</label>
+                <div class="ui fluid large input">
+                    <input placeholder="Phone Number" id="hospital_phone" name="hospital_phone" type="number">
+                </div>
+            </div>
+
+            <div class="field">
+              <label><br></label>
+              <div >
+                <input type="button" id="add_hospital" name="add_hospital" value="Submit" class="ui large right floated primary button" />
+              </div>
+             </div>
+          </form>
+          <script type="text/javascript">
+            $('#add_hospital').click(function (e) {
+                $('#hosp_add').html('');
+                console.log(document.querySelector('#new_hospital_name'))
+                var new_hospital_name = document.getElementById('new_hospital_name').value; 
+                var hospital_address = document.getElementById('hospital_address').value;
+                var hospital_phone = document.getElementById('hospital_phone').value;
+                if (new_hospital_name == "" || hospital_address == "") {
+                  $('#hosp_add').html('Enter valid details');
+                  console.log("Hospital Name: ", hospital_name, "Length: ", hospital_name.length);
+                  console.log("Hospital Address: ", hospital_address, "Length: ", hospital_address.length);
+                  return false;
+                }
+                if (hospital_phone.toString().length != 10) {
+                  $('#hosp_add').html('Enter valid phone number');
+                  return false;
+                }
+                if (hospital_address.length > 255) {
+                  $('hosp_add').html('Enter a shorter address!');
+                  return false;
+                }
+
+                $.ajax({
+                  type: 'POST',
+                  url: '/healthcenter/compounder/',
+                  data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    hospital_name: $("#new_hospital_name").val(),
+                    hospital_address: $("#hospital_address").val(),
+                    hospital_phone: $("#hospital_phone").val(),
+                    add_hospital: $('#add_hospital').val()
+                  },
+                  success: function (data) {
+                    alert("Added Hospital!");
+
+                    document.getElementById("new_hospital_name").value = "";
+                    document.getElementById("hospital_address").value = "";
+                    document.getElementById("hospital_phone").value = "";
+                    window.location.reload();
+                  }
+                });
+              });
+
+          </script>
+          <br>
+          <br>
+      </div>  
+</div>
+{% comment %}the add doctor tab ends here {% endcomment %}
+
   <br>
   <div class="extra segment"></div>
 

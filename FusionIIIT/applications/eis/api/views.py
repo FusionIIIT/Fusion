@@ -20,6 +20,7 @@ User = get_user_model()
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
+@authentication_classes([TokenAuthentication])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
     user_detail = serializers.UserSerializer(user).data

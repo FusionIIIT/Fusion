@@ -3,21 +3,52 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="manage_caretakers">
-            VIEW CARETAKERS
+        <a class="active item" data-tab="add">
+            ADD CARETAKER
         </a>
-        <!-- <a class="item" data-tab="caretaker_profile">
-            CARETAKERS
-        </a> -->
+        <a class="item" data-tab="manage_caretakers">
+            VIEW CARETAKER
+        </a>
     </div>
 
-   
+    <div class="ui active tab" data-tab="add">
+        <div class="ui vertical segment">
+           
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="post" action=".">
+                {% csrf_token %}
+                
+                        <div class="ui header">
+                            Choose a particular staff from the drop down box as caretaker:
+                        </div>
+                        <br>
+                        <select name="caretaker_new">
+                            {% if total_staff %}
+                            {% for i in total_staff %}
+                            <option value="{{ i.id }}">{{ i.id }}-{{ i.user.username }}</option>
+                            {% endfor %}
+                            {% else %}
+                            <option ></option>
+                            {% endif %}
+                        </select>
+                        <br><br>
+                        <a href="javascript:history.go(-1)">
+                            <button class="ui large primary button right floated" type="button" name="back">
+                                Back
+                            </button>
+                        </a>
 
+                        {% if total_staff %}
+                        <button class="ui large primary button right floated" type="submit" name="submit"
+                                value="redirect" onclick="redirectsubmit()">
+                            Submit
+                        </button>
+                        {% endif %}
+            </form>
+            <br>
+        </div>
+    </div>
 
-
-
-
-    <div class="ui active tab" data-tab="manage_caretakers">
+    <div class="ui tab" data-tab="manage_caretakers">
         <div class="ui vertical segment">
                 <div class="ui header">
                     Click on the particular Caretaker You Want to inspect
@@ -49,23 +80,16 @@
                 </div>
                 </div><br><br>
             {%endfor%}
-      
-
-
-
-
-            <div class="ui divider"></div>
+            
         </div>
     </div>
+
 </div>
-
-
-
   
 {% endblock %}
 
 {% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 {% endblock %}
