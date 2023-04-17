@@ -4,7 +4,6 @@
 
     <h1><center> Welcome to ME Department </center></h1>
 
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -36,143 +35,76 @@
     </div>
 
 
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Our Mission :
-                        </h3>
-                        <p>
-                            The primary focus of our pedagogy is to impart technical know-how to students, promote their problem solving and innovation skills and make them abreast with new technologies. The department offers a wide spectrum of optional courses to the students to pursue their interest. The course contents are periodically updated to keep them inline with the global developments. Undergraduate students are encouraged for hands-on-training, in the form of course projects and participate in various sponsored research projects.
-                        </p>
-                        <h3>
-                            Our Vision :
-                        </h3>
-                        <p>
-                            The vision of the mechanical Engineering Department is to recognize itself as renowned department in the field of Research and technical education in Mechanical Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
-                        </p>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_aboutME(this)">Edit</button>
+                        <div id="edit-about-formME" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ME" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutME">{{departments.ME.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_aboutME(this)">Edit</button>
+                        <div id="edit-about-formME" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ME/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutME">{{departments.ME.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="aboutME">
+                        {{departments.ME.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Central Library :
-                        </h3>
-                        <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
-                        <h3>
-                            Lab Infrastructure :
-                        </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Health Monitoring, Measurement and Instrumentation Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Kinematics and Dynamics Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>PG Research Lab :</b>
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Fluid Mechaniccs Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Automobile Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>IT Workshop/Computational Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Material Characterization Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Machine Dynamics and Vibrations Lab :</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Mechatronics Lab:</b> 
-                              </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Robotics Lab:</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biomedical Engineering and Technology Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>CFD Lab :</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Dieless Manufacturing Center:</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Manufacturing Innovation Center:</b> 
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facilityME(this)">Edit</button>
+                        <div id="edit-facility-formME" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ME" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityME">{{departments.ME.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facilityME(this)">Edit</button>
+                        <div id="edit-facility-formME" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ME/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityME">{{departments.ME.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facilityME">
+                        {{departments.ME.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
-    {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -208,7 +140,6 @@
         </div>
     </div>
 
-    {% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "ME" %}
         <div class="ui vertical segment">
@@ -254,7 +185,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                         
                     </span>
@@ -265,20 +195,18 @@
         {% endif %}
     </div>
 
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{3111111}}">
+                                <a class="active item" href="/dep/All_Students/{{3111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         PhD ME Students
                                     </button>
@@ -293,12 +221,12 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{31111}}">
+                                <a class="active item" href="/dep/All_Students/{{31111}}">
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year ME
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{311111}}">
+                                <a class="active item" href="/dep/All_Students/{{311111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ME
                                     </button>
@@ -314,22 +242,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{3}}">
+                                <a class="active item" href="/dep/All_Students/{{3}}">
                                     <button style="border: solid; float: left; display: block;">
                                         First Year ME
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{31}}">
+                                <a class="active item" href="/dep/All_Students/{{31}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ME
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{311}}">
+                                <a class="active item" href="/dep/All_Students/{{311}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year ME
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{3111}}">
+                                <a class="active item" href="/dep/All_Students/{{3111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year ME
                                     </button>
@@ -373,7 +301,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -388,14 +315,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -404,42 +329,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h1> Achievements</h1>
-                        <ol>
-                            <li>
-                                <p>
-                                    PDPM IIITDMJ Student Team has won the International Chess
-                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
-                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
-                                    2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Varun Chaudhary working
-                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
-                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
-                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
-                                    04-07Jan,2020
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievementME(this)">Edit</button>
+                        <div id="edit-achievement-formME" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ME" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementME">{{departments.ME.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievementME(this)">Edit</button>
+                        <div id="edit-achievement-formME" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ME/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementME">{{departments.ME.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievementME">
+                        {{departments.ME.achievement|safe}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -448,18 +363,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <a class="active item" href="./All_Students/{{311}}">
+                    <a class="active item" href="/dep/All_Students/{{311}}">
                         <button style="border: solid; float: left; display: block;">
                             2018 ME
                         </button>
                     </a>
-                    <a class="active item" href="./All_Students/{{3111}}">
+                    <a class="active item" href="/dep/All_Students/{{3111}}">
                         <button style="border: solid; float: left; display: block;">
                             2019 ME
                         </button>
                     </a>
                     <br>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>

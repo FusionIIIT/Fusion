@@ -3,8 +3,6 @@
 {% block SM_Dep %}
 
     <h1><center> Welcome to SM Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -17,7 +15,7 @@
         <a class="item" data-tab="faculty">
             Faculty
         </a>
-
+ 
         <a class="item" data-tab="students">
             Students
         </a>
@@ -36,87 +34,76 @@
     </div>
 
 
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Our Mission :
-                        </h3>
-                        <p>
-                            The programme is designed to provide various tools and techniques associated with IoT,
-                            IIoT, Information and Computing Technology (ICT) and System Engineering, with special
-                            focus on additive manufacturing (AM) or 3D printing and near net shape manufacturing
-                            processes.
-                        </p>
-                        <h3>
-                            Our Vision :
-                        </h3>
-                        <p>
-                            This programme focuses on some of the disruptive innovations that the last decade has been
-                            witnessed to, namely, Internet of Things (IoT), Robotics, Additive Manufacturing (3D
-                            Printing), Industrial Automation, Artificial Intelligence, Machine Learning, etc. These
-                            technologies have a huge potential to shape the future of mankind.
-                            Smart manufacturing, being an important aspect of the Industrial Internet of Things (IIoT) is
-                            the next industrial revolution. Smart manufacturing integrates data and information from
-                            multiple open and vendor applications and products to form new solutions. It can be applied
-                            to a single machine line, an entire factory or across a network of manufacturers, suppliers and
-                            customers. This new area of innovation will optimize the entire manufacturing industry to
-                            create higher quality products at lower prices, improve productivity, increase energy
-                            efficiency, and sustain safer plants. 
-                        </p>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_aboutSM(this)">Edit</button>
+                        <div id="edit-about-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutSM">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_aboutSM(this)">Edit</button>
+                        <div id="edit-about-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutSM">{{departments.SM.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="aboutSM">
+                        {{departments.SM.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Central Library :
-                        </h3>
-                        <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <h3>
-                            Lab Infrastructure :
-                        </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Circuits and Innovation Lab :</b>This laboratory is dedicated to circuits designing, is intended to serve its facilities as one of the teaching labs and also to facilitate teaching projects and research projects. These projects and teaching work include the experimental and innovative study in the field of analog and digital circuits, microcontrollers and its applications.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Basic Electronics lab :</b> This Laboratory is dedicated to the concepts and implementation of basic circuits designing. It serves its facilities as one of the teaching labs and also to facilitate course projects
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>RF&Applied Electromagnetics :</b> This Laboratory acts as a research lab to researchscholars,research associatives. Main research areas of lab include understanding of high frequency devices ,Antenna theory concepts and design fields.
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facilitySM(this)">Edit</button>
+                        <div id="edit-facility-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilitySM">{{departments.SM.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facilitySM(this)">Edit</button>
+                        <div id="edit-facility-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilitySM">{{departments.SM.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facilitySM">
+                        {{departments.SM.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-   {% comment %} tabs content faculty {% endcomment %}
-   {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -151,7 +138,7 @@
             </div>
         </div>
     </div>
-     {% comment %} tabs contains Announcement_List {% endcomment %}
+     
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "SM" %}
         <div class="ui vertical segment">
@@ -197,7 +184,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
                         </div>
                             <button style="border: solid; float: left; display: block;" >
                                 Browse Announcement
@@ -210,22 +196,18 @@
         </div>
         {% endif %}
     </div>
-
-
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{4111111}}">
+                                <a class="active item" href="/dep/All_Students/{{4111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         PhD SM Students
                                     </button>
@@ -240,12 +222,12 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{41111}}">
+                                <a class="active item" href="/dep/All_Students/{{41111}}">
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year SM
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{411111}}">
+                                <a class="active item" href="/dep/All_Students/{{411111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year SM
                                     </button>
@@ -261,22 +243,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{4}}">
+                                <a class="active item" href="/dep/All_Students/{{4}}">
                                     <button style="border: solid; float: left; display: block;">
                                         First Year SM
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{41}}">
+                                <a class="active item" href="/dep/All_Students/{{41}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year SM
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{411}}">
+                                <a class="active item" href="/dep/All_Students/{{411}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year SM
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{4111}}">
+                                <a class="active item" href="/dep/All_Students/{{4111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year SM
                                     </button>
@@ -320,7 +302,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -335,14 +316,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -351,42 +330,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h1> Achievements</h1>
-                        <ol>
-                            <li>
-                                <p>
-                                    PDPM IIITDMJ Student Team has won the International Chess
-                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
-                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
-                                    2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Varun Chaudhary working
-                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
-                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
-                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
-                                    04-07Jan,2020
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievementSM(this)">Edit</button>
+                        <div id="edit-achievement-formSM" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "SM" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementSM">{{departments.SM.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievementSM(this)">Edit</button>
+                        <div id="edit-achievement-formSM" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/SM/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementSM">{{departments.SM.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievementSM">
+                        {{departments.SM.achievement|safe}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -395,18 +364,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <a class="active item" href="./All_Students/{{411}}">
+                    <a class="active item" href="/dep/All_Students/{{411}}">
                         <button style="border: solid; float: left; display: block;">
                             2018 SM
                         </button>
                     </a>
-                    <a class="active item" href="./All_Students/{{4111}}">
+                    <a class="active item" href="/dep/All_Students/{{4111}}">
                         <button style="border: solid; float: left; display: block; margin-left:5px">
                             2019 SM
                         </button>
                     </a>
                     <br>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>

@@ -3,8 +3,6 @@
 {% block ECE_Dep %}
 
     <h1><center> Welcome to ECE Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -36,75 +34,76 @@
 
     </div>
 
-
-    {% comment %} active tab content {% endcomment %}
     <div class="ui active tab" data-tab="about-us">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Our Mission :
-                        </h3>
-                        <p>
-                            The discipline of Electronics and Communication Engineering (ECE) has a perfect combination of teaching and research activities pertaining to field of Electronics and Communication. Since its inception the main objective of discipline is to impart quality education, hands-on training and research in the frontier areas of Electronics & Communication Engineering with broad focus on IT enabled design and manufacturing.
-                        </p>
-                        <h3>
-                            Our Vision :
-                        </h3>
-                        <p>
-                            The vision of ECE department is to become pioneer in higher learning and research and to produce creative solution to societal needs. To provide excellence in education, research and public service. To provide quality education and to make the students entrepreneur and employable.
-                        </p>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_aboutECE(this)">Edit</button>
+                        <div id="edit-about-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "about"%}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutECE">{{departments.ECE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_aboutECE(this)">Edit</button>
+                        <div id="edit-about-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_aboutECE">{{departments.ECE.about}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="aboutECE">
+                        {{departments.ECE.about|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h3>
-                            Central Library :
-                        </h3>
-                        <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <h3>
-                            Lab Infrastructure :
-                        </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Circuits and Innovation Lab :</b>This laboratory is dedicated to circuits designing, is intended to serve its facilities as one of the teaching labs and also to facilitate teaching projects and research projects. These projects and teaching work include the experimental and innovative study in the field of analog and digital circuits, microcontrollers and its applications.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Basic Electronics lab :</b> This Laboratory is dedicated to the concepts and implementation of basic circuits designing. It serves its facilities as one of the teaching labs and also to facilitate course projects
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>RF&Applied Electromagnetics :</b> This Laboratory acts as a research lab to researchscholars,research associatives. Main research areas of lab include understanding of high frequency devices ,Antenna theory concepts and design fields.
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_facilityECE(this)">Edit</button>
+                        <div id="edit-facility-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "facility" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityECE">{{departments.ECE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_facilityECE(this)">Edit</button>
+                        <div id="edit-facility-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_facilityECE">{{departments.ECE.facility}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="facilityECE">
+                        {{departments.ECE.facility|safe}}
+                    </div>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
-   {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -139,8 +138,6 @@
             </div>
         </div>
     </div>
-    
-     {% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "ECE" %}
         <div class="ui vertical segment">
@@ -195,21 +192,18 @@
         </div>
         {% endif %}
     </div>
-    
-     {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{2111111}}">
+                                <a class="active item" href="/dep/All_Students/{{2111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         PhD ECE Students
                                     </button>
@@ -224,12 +218,12 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{21111}}">
+                                <a class="active item" href="/dep/All_Students/{{21111}}">
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year ECE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{211111}}">
+                                <a class="active item" href="/dep/All_Students/{{211111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ECE
                                     </button>
@@ -246,22 +240,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                <a class="active item" href="./All_Students/{{2}}">
+                                <a class="active item" href="/dep/All_Students/{{2}}">
                                     <button style="border: solid; float: left; display: block;">
                                         First Year ECE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{21}}">
+                                <a class="active item" href="/dep/All_Students/{{21}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year ECE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{211}}">
+                                <a class="active item" href="/dep/All_Students/{{211}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year ECE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{2111}}">
+                                <a class="active item" href="/dep/All_Students/{{2111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year ECE
                                     </button>
@@ -304,7 +298,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -319,14 +312,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -335,42 +326,32 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <span>
-                        <h1> Achievements</h1>
-                        <ol>
-                            <li>
-                                <p>
-                                    PDPM IIITDMJ Student Team has won the International Chess
-                                    Competition, out of 160 teams participated, organized by Collegiate Chess League 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Ravi Yadav working under the guidance of Dr. Ravi Panwar
-                                    awarded with "Swachhta Saarthi Fellowship" under the Waste to Wealth Mission of the Government of India,
-                                    2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Ph.D. student Mr. Varun Chaudhary working
-                                    under the guidance of Dr. Ravi Panwar won the MP Young Scientist Award with the First Position and was
-                                    rewarded with a cash prize of Rs. 25,000 /-, 2021
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    Abhishek Patel student of M.Tech ECE won Silver Medal in Men's Single Fairway Competition in All India
-                                    Inter-University Woodball Championship 2019-2020 held at Chandigarh University, Chandigarh from
-                                    04-07Jan,2020
-                                </p>
-                            </li>
-                        </ol>
-                    </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    {% if user_designation == "faculty" %}
+                        <button class="ui button green " onclick="edit_achievementECE(this)">Edit</button>
+                        <div id="edit-achievement-formECE" style="display:none;" data-status="hidden" >
+                            <form class="ui form" action="{% url 'dep:edit_department' "ECE" "achievement" %}" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementECE">{{departments.ECE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% elif user_designation == "staff" %}
+                        <button class="ui button green " onclick="edit_achievementECE(this)">Edit</button>
+                        <div id="edit-achievement-formECE" style="display:none;" data-status="hidden">
+                            <form class="ui form" action="/dep/editDepartmentDetail/ECE/" method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                  <textarea rows="20" name="dep_content" id="dep_achievementECE">{{departments.ECE.achievement}}</textarea>
+                                </div>
+                                <button type="submit" class="ui primary button">Save</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div id="achievementECE">
+                        {{departments.ECE.achievement|safe}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -379,12 +360,12 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    <a class="active item" href="./All_Students/{{211}}">
+                    <a class="active item" href="/dep/All_Students/{{211}}">
                         <button style="border: solid; float: left; display: block;">
                             2018 ECE
                         </button>
                     </a>
-                    <a class="active item" href="./All_Students/{{2111}}">
+                    <a class="active item" href="/dep/All_Students/{{2111}}">
                         <button style="border: solid; float: left; display: block;">
                             2019 ECE
                         </button>
