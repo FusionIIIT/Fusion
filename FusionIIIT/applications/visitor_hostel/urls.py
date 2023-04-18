@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include 
 
 from . import views
 
@@ -28,4 +28,7 @@ urlpatterns = [
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),
     url(r'^booking-details/', views.booking_details, name = 'booking_details'),
     url(r'^forward-booking/', views.forward_booking, name = 'forward_booking'),
+
+    # include API routes
+    url(r'^api/',include('applications.visitor_hostel.api.urls'))
 ]
