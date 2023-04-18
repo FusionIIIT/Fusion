@@ -1,6 +1,6 @@
 {% block book_guest_room_status %}
     {% for user_request in user_guest_room_requests %} 
-    {% if user_request.departure_date|date:'d-m-Y' > now|date:'d-m-Y' and user_request.status != "Rejected" %}
+    {% if user_request.departure_date > now|date:'Y-m-d' and user_request.status != "Rejected" %}
     <div class="ui secondary segment">
         <div class="ui segment">
             <div class="ui container">
