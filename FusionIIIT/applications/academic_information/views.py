@@ -1194,6 +1194,7 @@ def add_new_profile (request):
             dept=str(sheet.cell(i,12).value)
             specialization=str(sheet.cell(i,12).value)
             hall_no=None
+            u_type=sheet.cell(i, 13).value
 
             department=DepartmentInfo.objects.all().filter(name=dept).first()
 
@@ -1228,6 +1229,7 @@ def add_new_profile (request):
                 phone_no=phone_no,
                 user_type='student',
                 department=department,
+                u_type=u_type,
             )
 
             sem=1

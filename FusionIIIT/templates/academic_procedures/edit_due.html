@@ -1,0 +1,44 @@
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+  <h1>Edit Due</h1>
+  <br>
+  <form method="GET" action="{% url 'procedures:edit_due' %}">
+    <div class="form-group">
+      <label for="roll_no"style="width: fit-content;"><strong><u>Roll No:</u></strong></label>
+      <input type="text" class="form-control" id="roll_no" name="roll_no" placeholder="Enter Roll No" value="{{ roll_no }}">
+      <button type="submit" class="ui primary button "style=" margin-left: 1%;padding: 10px 10px;">Search</button>
+    </div>
+    
+  </form>
+  
+  {% if data %}
+  <form method="POST" action="{% url 'procedures:edit_due' %}">
+    {% csrf_token %}
+    <input type="hidden" name="roll_no" value="{{ roll_no }}">
+    <table class="ui very basic celled sortable table" style="width: 100%">
+      <thead>
+        <tr style="background-color: #f1f1f1">
+          <th >Due Name</th>
+          <th >Check 1</th>
+          <th >Check 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for due in data %}
+        <tr>
+          <td >{{due.due_type}}</td>
+          <td ><input type="checkbox" name="check1_{{ due.due_type_id }}" {% if due.check1 %}checked{% endif %}></td>
+          <td ><input type="checkbox" name="check2_{{ due.due_type_id }}" {% if due.check2 %}checked{% endif %}></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="ui primary button "style=" margin-left: 1%;padding: 10px 10px;">Update</button>
+  </form>
+  {% endif %}
+  
+</div>
+{% endblock %}
