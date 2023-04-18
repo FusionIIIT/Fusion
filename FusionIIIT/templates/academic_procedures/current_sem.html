@@ -83,7 +83,7 @@
           <tr>
             <td><center>{{ forloop.counter }} .</center></td>
             <td><center>
-              <a href="{% url 'programme_curriculum:view_a_course' items.1.id %}">{{ items.1.code }}</a>
+              <a href= '/ocms/{{items.1.code}}'>{{ items.1.code }}</a>
             </td>
             <td>
                 {{ items.1.name}}

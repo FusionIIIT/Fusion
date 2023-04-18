@@ -599,7 +599,10 @@ def registration_form(request):
 
 	# return redirect('/gymkhana/')
 
-def retrun_content(request, roll, name, desig , club__ ):
+def gymkhana_redirect(request):
+	return redirect('/gymkhana/tabs/clubs-details')
+
+def retrun_content(request, roll, name, desig , club__ , sub_tab ):
 	"""
 	retrun_content
 	This view returns all data regarding the parameters that sent through function
@@ -715,6 +718,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 			'status': status,
 		}
 		content.update(content1)
+	content["sub_tab"] = sub_tab;
 	return content
 
 @login_required
@@ -751,7 +755,7 @@ def getVenue(request):
 	return HttpResponse(content)
 
 @login_required
-def gymkhana(request):
+def gymkhana(request,sub_tab):
 	"""
 		gymkhana
 		This view gives us the complete information regarding various clubs and it
@@ -783,7 +787,7 @@ def gymkhana(request):
 		lines =str("")
 		Types = lines.split(" ")
 	club__ = coordinator_club(request)
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ , sub_tab))
 
 @login_required
 def club_membership(request):
@@ -1871,5 +1875,3 @@ def forward(request, id):
 
 	return render(request, 'filetracking/forward.html', context)
 
-
- 

@@ -236,17 +236,17 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px">
-                <a class="item" data-tab="voting_polls">
+                <a class="{% if sub_tab == 'voting-polls' %}active{% endif %} item" href="/gymkhana/tabs/voting-polls" >
                     Voting Polls
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% if "student" in Curr_desig %}
-                    <a class="item" data-tab="first">
+                    <a class="{% if sub_tab == 'apply-for-club' %}active {% endif %}item" href="/gymkhana/tabs/apply-for-club">
                         Apply
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
-                <a class="active item" data-tab="twelth">
+                <a class="{% if sub_tab == 'clubs-details' %}active {% endif %}item" href="/gymkhana/tabs/clubs-details">
                     View Club Details
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -287,43 +287,43 @@
                     {% endif %}
 {% endif %} -->
                 {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
-                    <a class="item" data-tab="fourth">
+                    <a class="{% if sub_tab == 'fest-budget' %}active {% endif %}item" href="/gymkhana/tabs/fest-budget">
                         Fest Budget
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="eleventh">
+                    <a class="{% if sub_tab == 'submit-event-report' %}active {% endif %}item" href="/gymkhana/tabs/submit-event-report">
                         Submit Event Report
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
-                <a class="item" data-tab="third">
+                <a class="{% if sub_tab == 'member-records' %}active {% endif %}item" href="/gymkhana/tabs/member-records">
                     Member Records
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% if "Dean_s" in Curr_desig %}
-                    <a class="item" data-tab="seventh">
+                    <a class="{% if sub_tab == 'approval-request' %}active {% endif %}item" href="/gymkhana/tabs/approval-request">
                         Approval Requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="tenth">
+                    <a class="{% if sub_tab == 'chagne-co-coco' %}active {% endif %}item" href="/gymkhana/tabs/chagne-co-coco">
                         Change Co and Co-Co
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
                 {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                    <a class=" item" data-tab="fifth">
+                    <a class="{% if sub_tab == 'new-session' %}active {% endif %}item" href="/gymkhana/tabs/new-session">
                         New Session
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class=" item" data-tab="fourteenth">
+                    <a class="{% if sub_tab == 'new-event' %}active {% endif %}item" href="/gymkhana/tabs/new-event">
                         New Event
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="sixth">
+                    <a class="{% if sub_tab == 'member-request' %}active {% endif %}item" href="/gymkhana/tabs/member-request">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="eighth">
+                    <a class="{% if sub_tab == 'update-activity-calender' %}active {% endif %}item" href="/gymkhana/tabs/update-activity-calender">
                         Update Activity Calender
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -335,27 +335,27 @@
                         Club Budget
                         <i class="right floated chevron right icon"></i>
 </a> -->
-                    <a class="item" data-tab="last">
+                    <a class="{% if sub_tab == 'submitted-requests' %}active {% endif %}item" href="/gymkhana/tabs/submitted-requests">
                         Submitted requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" href="/filetracking">
+                    <a class="{% if sub_tab == 'submit-event-report' %}active {% endif %}item" href="/filetracking">
                         Submit Event report To Convener
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
                 {% if "Convener" in Curr_desig  %}
-                    <a class="item" href="/filetracking">
+                    <a class="{% if sub_tab == 'submit-event-report-counsellor' %}active {% endif %}item" href="/filetracking">
                         Submit Event Report To counsellor
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" href="/filetracking">
+                    <a class="{% if sub_tab == 'submit-event-report-co-coco' %}active {% endif %}item" href="/filetracking">
                         Event Report To Co/Co-coordinator-(Back)
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
                 {% if "Counsellor" in Curr_desig  %}
-                    <a class="item" href="/filetracking">
+                    <a class="{% if sub_tab == 'submit-event-report-dean' %}active {% endif %}item" href="/filetracking">
                         Submit Event Report To Dean
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -375,19 +375,19 @@
         </div>
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui tab segment" data-tab="voting_polls">
+            <div class="ui {% if sub_tab == 'voting-polls' %}active {% endif %} tab segment" data-tab="voting_polls">
                 {% block voting_polls %}
                     {% include 'gymkhanaModule/voting_polls.html' %}
                 {% endblock %}
             </div>
             {% if "student" in Curr_desig %}
-                <div class="ui tab segment" data-tab="first">
+                <div class="ui {% if sub_tab == 'apply-for-club' %}active {% endif %} tab segment" data-tab="first">
                     {% block applyform %}
                         {% include 'gymkhanaModule/applyform.html' %}
                     {% endblock %}
                 </div>
             {% endif %}
-            <div class="ui active tab segment" data-tab="twelth">
+            <div class="ui {% if sub_tab == 'clubs-details' %}active {% endif %} tab segment" data-tab="twelth">
                 {% block view_budget %}
                     {% include 'gymkhanaModule/club_details.html' %}
                 {% endblock %}
@@ -407,36 +407,36 @@
                 </div>
             {% endif %}
             {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
-                <div class="ui tab segment" data-tab="fourth">
+                <div class="ui {% if sub_tab == 'fest-budget' %}active {% endif %} tab segment" data-tab="fourth">
                     {% block festbudget %}
                         {% include 'gymkhanaModule/festbudget.html' %}
                     {% endblock %}
                 </div>
-                <div class="ui tab segment" data-tab="eleventh">
+                <div class="ui {% if sub_tab == 'submit-event-report' %}active {% endif %} tab segment" data-tab="eleventh">
                     {% block eventReport %}
                         {% include 'gymkhanaModule/eventReport.html' %}
                     {% endblock %}
                 </div>
             {% endif %}
-            <div class="ui tab segment" data-tab="third">
+            <div class="ui {% if sub_tab == 'member-records' %}active {% endif %} tab segment" data-tab="third">
                 {% block memberrecords %}
                     {% include 'gymkhanaModule/memberrecords.html' %}
                 {% endblock %}
             </div>
             {% if "Dean_s" in Curr_desig %}
-                <div class="ui tab segment" data-tab="seventh">
+                <div class="ui {% if sub_tab == 'approval-request' %}active {% endif %} tab segment" data-tab="seventh">
                     {% block approvalrequests %}
                         {% include 'gymkhanaModule/approvalrequests.html' %}
                     {% endblock %}
                 </div>
-                <div class="ui tab segment" data-tab="tenth">
+                <div class="ui {% if sub_tab == 'chagne-co-coco' %}active {% endif %} tab segment" data-tab="tenth">
                     {% block change_head %}
                         {% include 'gymkhanaModule/change_head.html' %}
                     {% endblock %}
                 </div>
             {% endif %}
             {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                <div class="ui tab segment" data-tab="fifth">
+                <div class="ui {% if sub_tab == 'new-session' %}active {% endif %} tab segment" data-tab="fifth">
                     {% block newsession %}
                         {% include 'gymkhanaModule/newsession.html' %}
                     {% endblock %}
@@ -446,12 +446,12 @@
                         {% include 'gymkhanaModule/newevent.html' %}
                     {% endblock %}
                 </div>
-                <div class="ui tab segment" data-tab="sixth">
+                <div class="ui {% if sub_tab == 'member-request' %}active {% endif %} tab segment" data-tab="sixth">
                     {% block memberrequests %}
                         {% include 'gymkhanaModule/memberrequests.html' %}
                     {% endblock %}
                 </div>
-                <div class="ui tab segment" data-tab="eighth">
+                <div class="ui {% if sub_tab == 'update-activity-calender' %}active {% endif %} tab segment" data-tab="eighth">
                     {% block activityCalender %}
                         {% include 'gymkhanaModule/activityCalender.html' %}
                     {% endblock %}
@@ -466,7 +466,7 @@
                         {% include 'gymkhanaModule/clubbudget.html' %}
                     {% endblock %}
                 </div>
-                <div class="ui tab segment" data-tab="last">
+                <div class="ui {% if sub_tab == 'submitted-requests' %}active {% endif %} tab segment" data-tab="last">
                     {% block pendingrequest %}
                         {% include 'gymkhanaModule/pending_request.html' %}
                     {% endblock %}

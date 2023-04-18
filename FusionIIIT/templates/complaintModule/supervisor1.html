@@ -36,7 +36,7 @@
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    View Caretaker
+                    Manage Caretaker
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="second">
@@ -50,13 +50,11 @@
                 <a class="item" data-tab="fourth">
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
+                </a>         
+                <a class="item" data-tab="fifth" onclick="redirectToUrl('/complaint/user/')">
+                    Lodge Complaint 
+                    <i class="right floated chevron right icon"></i>
                 </a>
-
-               
-
-             
-
-
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -86,7 +84,7 @@
             </div>
             {% comment %}The ... end here!{% endcomment %}
             {% comment %}The ... start here!{% endcomment %}
-            <div class="ui  tab segment" data-tab="third">
+            <div class="ui tab segment" data-tab="third">
                 {% block unresolvedsuper %}
                     {%  include 'complaintModule/unresolved_super.html' %}
                 {%  endblock %}
@@ -98,9 +96,6 @@
                 {%  endblock %}
             </div>
             {% comment %}The ... end here!{% endcomment %}
-
-           
-
            
             {% comment %}The ... starts here!{% endcomment %}
 
@@ -131,4 +126,9 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script>
+        function redirectToUrl(url) {
+            window.location.href = url;
+          }
+    </script>
 {% endblock %}

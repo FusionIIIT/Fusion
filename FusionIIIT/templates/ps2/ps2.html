@@ -62,21 +62,24 @@ Stock Tracking
     The left-rail segment ends here!
     {% endcomment %}
 
-    <div class="eight wide field" style="display: inline;">
-        <form method="GET">
-            <select name="dep">
-                {% for i in department %}
-                <option value="{{i}}">{{i}}</option>
-                {% endfor %}
-            </select>
-            <button class="ui large primary button right floated" name="submit" type="submit">Filter</button>
-        </form>
-    </div>
-
 
     <div class="ten wide column">
+    
         <!-- inventory table -->
-        <div style="overflow-x: auto;">
+        {% if user == 'acadadmin' %}
+            <div style="overflow-x: auto;">
+                <form method="GET" style="margin-bottom: 0px; margin: 0px;">
+                <div class="eight wide field">
+                    <select name="dep" class="ui selection dropdown">
+                        {% for i in department %}
+                        <option value="{{i}}">{{i}}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="ui large primary button right floated" name="submit" type="submit">Sort</button>
+                </form>
+            </div>
+            <br><br>
+        {% endif %}
             <table class="ui celled table">
                 <thead>
                     <tr>
@@ -115,8 +118,10 @@ Stock Tracking
                     {% endfor %}
                 </tbody>
             </table>
+            <a href="/purchase-and-store2/report"><button class="ui large primary button right floated" name="Generate">Generate PDF</button></a>
         </div>
     </div>
+    
 
     {% endblock %}
 </div>

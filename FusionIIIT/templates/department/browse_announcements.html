@@ -3,8 +3,6 @@
 {% block browse_announcement %}
 
     <h1><center> View Department-wise Announcements </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="all">
             All
@@ -36,7 +34,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -62,7 +59,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             <br><div class="ui divider"></div><br>
                         </div>
                         
@@ -72,7 +68,6 @@
         </div>
     </div>
 
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="cse">
         <div class="ui vertical segment">
             <div class="content">
@@ -81,7 +76,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -107,7 +101,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             <br><div class="ui divider"></div><br>
                         </div>
                         
@@ -116,8 +109,6 @@
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
     <div class="ui tab" data-tab="ece">
         <div class="ui vertical segment">
             <div class="content">
@@ -126,7 +117,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -152,7 +142,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             <br><div class="ui divider"></div><br>
                         </div>
                         
@@ -162,7 +151,6 @@
         </div>
     </div>
 
-{% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="me">
         <div class="ui vertical segment">
             <div class="content">
@@ -171,7 +159,6 @@
 
                         <div class="ui vertical segment" data-tab="Year-1">
 
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -197,7 +184,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             <br><div class="ui divider"></div><br>
                         </div>
                         
@@ -206,8 +192,6 @@
             </div>
         </div>
     </div>
-    
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="sm">
         <div class="ui vertical segment">
             <div class="content">
@@ -215,8 +199,6 @@
                     <span>
 
                         <div class="ui vertical segment" data-tab="Year-1">
-
-                            {% comment %} {% if ann_list %} {% endcomment %}
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -242,7 +224,6 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
                             <br><div class="ui divider"></div><br>
                         </div>
                         

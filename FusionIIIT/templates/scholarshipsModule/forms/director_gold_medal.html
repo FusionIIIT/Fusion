@@ -1,0 +1,395 @@
+<div class="ui tab" id="gold">
+    <div class="ui active tab" data-tab="goldmedal">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="award" name="award" value="Director's Gold Medal">
+
+                    {% if request.user.extrainfo.student.programme == 'B.Tech' or request.user.extrainfo.student.programme == 'B.Des' %}
+                <div>
+                    <h3>Details of Scholarship/Financial Assistance/Loan etc.</h3>
+                    <p>Details of Scholarship/Financial Assistance/Loan etc., received from any source during last four years if you are receipt of any reputed national level scholarship (e.g. KVPY, NTSE, others), please specify categorically with proof. (Do not include Institute Assistance ship)</p>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <input type="text" placeholder="details" name="scholarship_detail">
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of Scholarship</label>
+                        <input type="file" name="scholarship_detail_doc">
+                    </div>
+                </div>
+
+                <div>
+                    <h3>Participation in Various Activities from</h3>
+                    <p>(i) If need to be please add extra sheet. Each extra sheet should be given carefully marked at the top centre of the page with item No. and Name; and duly signed at the right bottom of the page. </p>
+                    <p>(ii) carefully mention seperately the activities done in IIITDM Jabalpur and activities done outside IIITDMJ in each case.  </p>
+                </div>
+
+                <div> 
+                    <h3>(A) Academic Achievements</h3>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <input type="text" placeholder="details" name="academic_detail">
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of Academic Achievement</label>
+                        <input type="file" name="academic_detail_doc">
+                    </div>
+                </div>
+
+                <div> 
+                    <h3>Science and Technological related Achievements</h3>
+                    <p>(B) Science and Technological related Achievements</p>
+                    <p>Technical Events outside IIITDMJ (IIITs, IITs, and NITs)</p>
+
+                    <pre>a.1st Prize     :10 Marks</pre>
+                    <pre>b.2nd Prize     :8  Marks</pre>
+                    <pre>c.3rd Prize     :6  Marks</pre>
+                    <pre>d.Participation :4  Marks</pre>
+                    <p>e. Events inside IIITDMJ and of lesser importane: For equivalent situations, half of the marks of the previous case (except for simple participation).</p>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <textarea rows="5" name="science_detail"></textarea>
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of S & T Achievement</label>
+                        <input type="file" name="science_detail_doc">
+                    </div>
+                </div>
+
+                <div> 
+                    <h3>Cultural related Achievements</h3>
+                    <p>(C) Cultural related Achievements</p>
+                    <p>Cultural Events outside IIITDMJ (IIITs, IITs, and NITs)</p>
+
+                    <pre>a.1st Prize     :10 Marks</pre>
+                    <pre>b.2nd Prize     :8  Marks</pre>
+                    <pre>c.3rd Prize     :6  Marks</pre>
+                    <pre>d.Participation :4  Marks</pre>
+                    <p>e. Events inside IIITDMJ and of lesser importane: For equivalent situations, half of the marks of the previous case (except for simple participation).</p>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <textarea rows="5" name="cultural_detail"></textarea>
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of Cultural Achievement</label>
+                        <input type="file" name="cultural_detail_doc">
+                    </div>
+                </div>
+
+                <div> 
+                    <h3>Games and Sports related Achievements</h3>
+                    <p>(E) Games and Sports related Achievements</p>
+                    <p>Games and Sports Events outside IIITDMJ (IIITs, IITs, and NITs)</p>
+
+                    <pre>a.1st Prize     :10 Marks</pre>
+                    <pre>b.2nd Prize     :8  Marks</pre>
+                    <pre>c.3rd Prize     :6  Marks</pre>
+                    <pre>d.Paritcipation :4  Marks</pre>
+                    <p>e. Events inside IIITDMJ and of lesser importane: For equivalent situations, half of the marks of the previous case (except for simple participation).</p>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <textarea rows="5" name="sports_detail"></textarea>
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of Games and Sprots Achievement</label>
+                        <input type="file" name="sports_detail_doc">
+                    </div>
+                </div>
+
+                <h3>Social and Other Services</h3>
+                <p>(F) Social Services (NSS, Jagriti, etc)</p>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Details</label>
+                        <textarea rows="5" name="social_detail"></textarea>
+                    </div>
+
+                    <div class="six wide field">
+                        <label>File Upload in Support of Social & Other Achievement</label>
+                        <input type="file" name="social_detail_doc">
+                    </div>
+                </div>
+
+                <div>
+                    <h3>(G) Corporate Service</h3>
+                    <p>Corporate Service: The service (s) rendered by the applicant in volunteering /smooth conduction of Institute events like Conferene , Workshops , etc. (other than student event)</p>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Details</label>
+                            <textarea rows="5" name="corporate_detail"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>File Upload in Support of Corporate Service</label>
+                            <input type="file" name="corporate_detail_doc">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>(H)Participation in HALL related activities</h3>
+
+                    <pre>Hall President           :8 Marks</pre>
+                    <pre>Hall Mess Secretary      :6  Marks</pre>
+                    <pre>Other Hall Secretaries   :5  Marks</pre>
+                    <pre>Member of HEC            :2  Marks</pre>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Details</label>
+                            <textarea rows="5" name="hall_detail"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>File Upload in Support of Hall related activities</label>
+                            <input type="file" name="hall_detail_doc">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>(I)Participation in Gymkhana related activities</h3>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Details</label>
+                            <textarea rows="5" name="gymkhana_detail"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>File Upload in Support of Gymkhana activities</label>
+                            <input type="file" name="gymkhana_detail_doc">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>(J)Participation in Institute related activities</h3>
+                    <pre>Institutional related activity*        :4 Marks</pre>
+                    <p>(*e.g. member of UGCS/SACS/Placement cell or any other Institute committee)</p>
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Details</label>
+                            <textarea rows="5" name="institute_detail"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>File Upload in Support of Institute related activities</label>
+                            <input type="file" name="institute_detail_doc">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>(k) Participation in Students Counselling Service:</h3>
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Details</label>
+                            <textarea rows="5" name="counselling_detail"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>File Upload in Support of Institute Counselling related Services</label>
+                            <input type="file" name="counselling_detail_doc">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div>
+                    <h3>Section 1</h3>
+                    <p>Academic</p>
+                </div>
+                <br></br>
+
+                <div>
+                    <h3>Publication</h3>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>SCI</label>
+                        <div class="ui large input">
+                            <input placeholder="SCI" name="sci" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>SCI - Upload Document</label>
+                        <input type="file" name="sci_doc">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>SCIE(Science Citiation Index Expanded)</label>
+                        <div class="ui large input">
+                            <input placeholder="SCIE" name="scie" type="text">
+                        </div>
+                    </div>
+
+
+                    <div class="field">
+                        <label>SCIE(Science Citiation Index Expanded)Upload Document</label>
+                        <input type="file" name="scie_doc">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IJ(Indian Journal)</label>
+                        <div class="ui large input">
+                            <input placeholder="IJ" name="ij" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>IJ(Indian Journal) Upload Document</label>
+                        <input type="file" name="ij_doc">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>IC(Indian Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="IC" name="ic" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>IC(Indian Conference)Upload Document</label>
+                        <input type="file" name="ic_doc">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>NC(National Conference)</label>
+                        <div class="ui large input">
+                            <input placeholder="NC" name="nc" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>NC(National Conference)Upload Document</label>
+                        <input type="file" name="nc_doc">
+                    </div>
+                </div>
+
+                <div>
+                    <h3>Other Professional Activities</h3>
+                    <p>Note: Please Write in number format only and upload document</p>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Workshop</label>
+                        <div class="ui large input">
+                            <input placeholder="WORKSHOP" name="workshop" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Workshop - Upload Document</label>
+                        <input type="file" name="workshop_doc">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="ten wide field">
+                        <label>Write on Novelty in the work(In 200 words)</label>
+                        <textarea rows="5" name="novelty"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label>Contribution to the Instutute administration(In 200 words)</label>
+                        <textarea rows="5" name="institute_contribution"></textarea>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>Any warning letter issued </label>
+                        <input type="file" name="warning_letter">
+                    </div>
+                    <div class="field">
+                        <label>Any Disciplinary action details</label>
+                        <input type="text" placeholder="details" name="disciplinary_details">
+                    </div>
+                </div>
+
+                <div>
+                    <h3>Section 2 </h3>
+                    <p>Extra Curriculum Activities</p>
+                    <p>Social Service + Student Counselling</p>
+                    <p>Eg. JAGRITI Blood Donation Counselling Volunteer etc</p>
+                </div>
+                <br> </br>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Jagriti - Upload Cetificate </label>
+                        <input type="file" name="jagriti_doc">
+                    </div>
+                    <div class="field">
+                        <label>Blood Donation - Upload Certificate </label>
+                        <input type="file" name="blood_donation_doc">
+                    </div>  
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>Counselling Volunteer - Upload Certificate</label>
+                        <input type="file" name="counselling_detail_doc">
+                    </div>
+                    <div class="field">
+                        <label>Others - upload Certificate (Upto 2)</label>
+                        <input type="file" name="extra_curricular_others_doc">
+                    </div>   
+                </div>
+
+                <div>
+                    <p>Student Gymkhana + Sports + Cultural + Technical Activities</p>
+                    <p>eg. Cricket, Badminton, Senate, any other sports etc.</p>
+                </div>
+                <div class="field">
+                    <div class="field">
+                        <label> upload Certificate  (Upto 7)</label>
+                        <input type="file" name="sports_detail_doc">
+                    </div>  
+                </div>
+                {% endif %}
+                <div class="field">
+                    <a class="right floated item">
+                        <label><br></label>
+                        <button type="submit" name="Submit_Gold" class="ui primary large right floated button">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

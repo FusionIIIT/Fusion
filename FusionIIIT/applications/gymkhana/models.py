@@ -89,8 +89,6 @@ class Club_info(models.Model):
     avail_budget = models.IntegerField(null=True, default=0)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')
-    # head_changed_on = models.DateField(default=datetime.date.today,blank=True)
-    # created_on = models.DateField(default=datetime.date.today,blank=True)
     def __str__(self):
         return str(self.club_name)
 
