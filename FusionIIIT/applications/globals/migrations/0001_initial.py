@@ -109,4 +109,71 @@ class Migration(migrations.Migration):
                 'unique_together': {('user', 'designation'), ('working', 'designation')},
             },
         ),
+        migrations.AddField(
+            model_name='extrainfo',
+            name='u_type',
+            field=models.CharField(choices=[('ug', 'ug'), ('pg', 'pg'), ('faculty', 'faculty'), ('staff', 'staff')], default='ug', max_length=20),
+            preserve_default=False,
+        ),
+        migrations.AlterField(
+            model_name='extrainfo',
+            name='user_status',
+            field=models.CharField(choices=[('NEW', 'NEW'), ('PRESENT', 'PRESENT')], default='PRESENT', max_length=50),
+        ),
+        migrations.AddField(
+            model_name='extrainfo',
+            name='rem_casual_leave',
+            field=models.IntegerField(default=15),
+        ),
+        migrations.AddField(
+            model_name='extrainfo',
+            name='rem_medical_leave',
+            field=models.IntegerField(default=15),
+        ),
+        migrations.AddField(
+            model_name='extrainfo',
+            name='rem_special_leave',
+            field=models.IntegerField(default=15),
+        ),
+        migrations.AddField(
+            model_name='extrainfo',
+            name='rem_vacational_leave',
+            field=models.IntegerField(default=15),
+        ),
+        migrations.AlterField(
+            model_name='extrainfo',
+            name='user_status',
+            field=models.CharField(choices=[('PRESENT', 'PRESENT'), ('NEW', 'NEW')], default='PRESENT', max_length=50),
+        ),
+        migrations.AlterField(
+            model_name='extrainfo',
+            name='user_status',
+            field=models.CharField(choices=[('NEW', 'NEW'), ('PRESENT', 'PRESENT')], default='PRESENT', max_length=50),
+        ),
+        migrations.RemoveField(
+            model_name='extrainfo',
+            name='rem_casual_leave',
+        ),
+        migrations.RemoveField(
+            model_name='extrainfo',
+            name='rem_medical_leave',
+        ),
+        migrations.RemoveField(
+            model_name='extrainfo',
+            name='rem_special_leave',
+        ),
+        migrations.RemoveField(
+            model_name='extrainfo',
+            name='rem_vacational_leave',
+        ),
+        migrations.AlterField(
+            model_name='extrainfo',
+            name='user_status',
+            field=models.CharField(choices=[('PRESENT', 'PRESENT'), ('NEW', 'NEW')], default='PRESENT', max_length=50),
+        ),
+        migrations.AlterField(
+            model_name='extrainfo',
+            name='user_status',
+            field=models.CharField(choices=[('NEW', 'NEW'), ('PRESENT', 'PRESENT')], default='PRESENT', max_length=50),
+        ),
     ]
