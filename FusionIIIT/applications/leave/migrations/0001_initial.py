@@ -166,4 +166,52 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='leave_admins', to=settings.AUTH_USER_MODEL)),
             ],
         ),
+        migrations.AlterField(
+            model_name='leavetype',
+            name='name',
+            field=models.CharField(default='casual', max_length=40),
+        ),
+        migrations.AlterField(
+            model_name='leavetype',
+            name='max_in_year',
+            field=models.IntegerField(default=15),
+        ),
+        migrations.AlterField(
+            model_name='leavetype',
+            name='name',
+            field=models.CharField(default='medical', max_length=40),
+        ),
+        migrations.RemoveField(
+            model_name='leavescount',
+            name='leave_type',
+        ),
+        migrations.RemoveField(
+            model_name='leavescount',
+            name='remaining_leaves',
+        ),
+        migrations.AddField(
+            model_name='leavescount',
+            name='casual',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='leavescount',
+            name='medical',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='leavescount',
+            name='special',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AddField(
+            model_name='leavescount',
+            name='vacational',
+            field=models.IntegerField(default=0),
+        ),
+        migrations.AlterField(
+            model_name='leavescount',
+            name='year',
+            field=models.IntegerField(default=2023),
+        ),
     ]
