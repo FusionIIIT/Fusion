@@ -56,7 +56,9 @@ def hostel_view(request, context={}):
     pending_guest_room_requests = {}
     for hall in all_hall:
         pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender__user')
-    
+    guest_rooms = {}
+    for hall in all_hall:
+        guest_rooms[hall.hall_id] = GuestRoom.objects.filter(hall=hall).select_related('hall')
     user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user.extrainfo).order_by("-arrival_date")
 
     Staff_obj = Staff.objects.all().select_related('id__user')
@@ -128,6 +130,7 @@ def hostel_view(request, context={}):
     'current_hall': current_hall,
     'hall_staffs': hall_staffs,
     'hall_notices': hall_notices,
+    'guest_rooms': guest_rooms,
     'pending_guest_room_requests': pending_guest_room_requests,
     'user_guest_room_requests': user_guest_room_requests,
     'attendance': halls_attendance,
@@ -445,6 +448,9 @@ def update_guest_room(request):
             guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['accept_request'])
             guest_room_request.status = status
             guest_room_request.guest_room_id = request.POST['guest_room_id']
+            room_booked = GuestRoom.objects.get(hall=guest_room_request.hall, room=request.POST['guest_room_id'])
+            room_booked.occupied_till = guest_room_request.departure_date
+            room_booked.save()
             guest_room_request.save()
             messages.success(request, "Request accepted successfully!")
         elif 'reject_request' in request.POST:

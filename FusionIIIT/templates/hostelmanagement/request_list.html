@@ -51,10 +51,13 @@
             <form method="post" action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
               {% csrf_token %}
               <div class="fields" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                <div class="field" style="flex: 2; margin-right: 1rem;">
-                  <label>Room Number</label>
-                  <input type="text" name="guest_room_id" >
-                </div>
+                <label>Room</label>
+                <select class="ui dropdown" name="guest_room_id">
+                  <option value="" selected disabled>Select Room</option>
+                  {% for room in guest_rooms|get_hall_no:hall_id %}
+                  <option value="{{room.room}}" >{{room.room}}</option>
+                  {% endfor %}
+                </select>
                 <div class="field" style="flex: 1; margin-right: 1rem;">
                   <label>Status</label>
                   <select class="ui dropdown" name="status" onchange="updateButton(this)" required>
