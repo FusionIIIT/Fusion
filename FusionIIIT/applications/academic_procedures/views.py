@@ -1789,7 +1789,6 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
 
 def get_branch_courses(roll_no, user_sem, branch):
     roll = str(roll_no)
-    print(roll)
     year = 2020
     if roll[:4].isnumeric():
         year = int(roll[:4])
