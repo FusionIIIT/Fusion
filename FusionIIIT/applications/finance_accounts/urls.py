@@ -21,4 +21,13 @@ urlpatterns = [
     url(r'^printSalary', views.printSalary, name='Salary'),
     url(r'^previewing_file/', views.previewing_file, name='previewing_file'),
 
+
+     #########################################api
+
+    url(r'^paymentschemeApi/$', views.PaymentschemeApi.as_view(http_method_names=['post']), name="paymentschemeApi"),
+    url(r'^reciptsApi/$', views.ReceiptsApi.as_view(http_method_names=['post']), name="reciptsApi"),
+    url(r'^paymentsApi/$', views.PaymentsApi.as_view(http_method_names=['post']), name="paymentsApi"),
+    url(r'^bankApi/$', views.BankApi.as_view(http_method_names=['post']), name="bankApi"),
+    url(r'^companyApi/$', views.CompanyApi.as_view(http_method_names=['post']), name="companyApi"),
+
 ]

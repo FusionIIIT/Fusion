@@ -1,3 +1,15 @@
+from rest_framework.views import APIView
+
+import json
+
+from django.http import JsonResponse
+
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework import status
+
+
 
 from django.http import (Http404, HttpResponse, HttpResponseNotFound,
                          HttpResponseRedirect)
@@ -917,3 +929,252 @@ def previewing_file(request):
     return render(request, "financeAndAccountsModule/financeAndAccountsModuleds.html")
   
   
+
+
+
+  #########################################################
+#########################################################
+#########################################################
+#########################################################
+#########################################################
+#API 
+
+
+
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+class PaymentschemeApi(APIView):
+    def get(self, request):
+        Paymentscheme_obj = Paymentscheme.objects.all();
+        serialized_obj = PaymentschemeSerializer(serialized_obj, many=True)
+        return Response({'status':200, 'payload':serialized_obj.data})
+
+    def post(self, request):
+        request_body = json.loads(request.body)
+        month = request_body.get('month')
+        year = request_body.get('year')
+        pf = request_body.get('pf')
+        name = request_body.get('name')
+        designation =request_body.get('designation')
+        pay = request_body.get('pay')
+        gr_pay = request_body.get('gr_pay')
+        da = request_body.get('da')
+        ta = request_body.get('ta')
+        hra = request_body.get('hra')
+        fpa = request_body.get('fpa')
+        special_allow = request_body.get('special_allow')
+        nps = request_body.get('nps')
+        gpf = request_body.get('gpf')
+        income_tax = request_body.get('income_tax')
+        p_tax = request_body.get('p_tax')
+        gslis = request_body.get('gslis')
+        gis = request_body.get('gis')
+        license_fee = request_body.get('license_fee')
+        electricity_charges = request_body.get('electricity_charges')
+        others = request_body.get('others')
+        gr_reduction = request_body.get('gr_reduction')
+        net_payment = request_body.get('net_payment')
+        senior_verify = request_body.get('senior_verify')
+        ass_registrar_verify = request_body.get('ass_registrar_verify')
+        ass_registrar_aud_verify = request_body.get('ass_registrar_aud_verify')
+        registrar_director_verify = request_body.get('registrar_director_verify')
+        runpayroll = request_body.get('runpayroll')
+        view = request_body.get('view')
+
+        query = Paymentscheme.objects.all()
+        if month:
+            query = query.filter(month=month)
+        if year:
+            query = query.filter(year=year)
+        if pf:
+            query = query.filter(pf=pf)
+        if name:
+            query = query.filter(name=name)
+        if designation:
+            query = query.filter(designation=designation)
+        if pay:
+            query = query.filter(pay=pay)
+        if gr_pay:
+            query = query.filter(gr_pay=gr_pay)
+        if da:
+            query = query.filter(da=da)
+        if ta:
+            query = query.filter(ta=ta)
+        if hra:
+            query = query.filter(hra=hra)
+        if fpa:
+            query = query.filter(fpa=fpa)
+        if special_allow:
+            query = query.filter(special_allow=special_allow)
+        if nps:
+            query = query.filter(nps=nps)
+        if gpf:
+            query = query.filter(gpf=gpf)
+        if income_tax:
+            query = query.filter(income_tax=income_tax)
+        if p_tax:
+            query = query.filter(p_tax=p_tax)
+        if gslis:
+            query = query.filter(gslis=gslis)
+        if gis:
+            query = query.filter(gis=gis)
+        if  license_fee:
+            query = query.filter( license_fee= license_fee)
+        if electricity_charges:
+            query = query.filter(electricity_charges=electricity_charges)
+        if others:
+            query = query.filter(others=others)
+        if gr_reduction:
+            query = query.filter(gr_reduction=gr_reduction)
+        if net_payment:
+            query = query.filter(net_payment=net_payment)
+        if senior_verify:
+            query = query.filter(senior_verify=senior_verify)
+        if ass_registrar_verify:
+            query = query.filter(ass_registrar_verify=ass_registrar_verify)
+        if ass_registrar_aud_verify:
+            query = query.filter(ass_registrar_aud_verify=ass_registrar_aud_verify)
+        if registrar_director_verify:
+            query = query.filter(registrar_director_verify=registrar_director_verify)
+        if runpayroll:
+            query = query.filter( runpayroll= runpayroll)
+        if view:
+            query = query.filter(view=view)
+       
+        results = list(query.values())
+        return JsonResponse({'results': results})
+
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+class ReceiptsApi(APIView):
+    def get(self, request):
+        receipts_obj = Receipts.objects.all();
+        serialized_obj = ReceiptsSerializer(receipts_obj, many=True)
+        return Response({'status':200, 'payload':serialized_obj.data})
+    def post(self, request):
+        request_body = json.loads(request.body)
+        receipt_id = request_body.get('receipt_id')
+        transaction_id = request_body.get('transaction_id')
+        to_whom = request_body.get('to_whom')
+        from_whom = request_body.get('from_whom')
+        purpose = request_body.get('purpose')
+        date = request_body.get('date')
+
+        query = Receipts.objects.all()
+        if receipt_id:
+            query = query.filter(receipt_id=receipt_id)
+        if transaction_id:
+            query = query.filter(TransactionId=transaction_id)
+        if to_whom:
+            query = query.filter(ToWhom__icontains=to_whom)
+        if from_whom:
+            query = query.filter(FromWhom__icontains=from_whom)
+        if purpose:
+            query = query.filter(Purpose__icontains=purpose)
+        if date:
+            query = query.filter(Date=date)
+
+        results = list(query.values())
+        return JsonResponse({'results': results})
+
+
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+class PaymentsApi(APIView):
+    def get(self, request):
+        receipts_obj = Receipts.objects.all();
+        serialized_obj = ReceiptsSerializer(receipts_obj, many=True)
+        return Response({'status':200, 'payload':serialized_obj.data})
+
+    def post(self, request):
+        request_body = json.loads(request.body)
+        paymentID= request_body.get('payment_id')
+        transaction_id = request_body.get('TransactionId')
+        to_whom = request_body.get('ToWhom')
+        from_whom = request_body.get('FromWhom')
+        purpose = request_body.get('Purpose')
+        date = request_body.get('Date')
+
+        query = Payments.objects.all()
+        if paymentID:
+            query = query.filter(payment_id=paymentID)
+        if transaction_id:
+            query = query.filter(TransactionId=transaction_id)
+        if to_whom:
+            query = query.filter(ToWhom__icontains=to_whom)
+        if from_whom:
+            query = query.filter(FromWhom__icontains=from_whom)
+        if purpose:
+            query = query.filter(Purpose__icontains=purpose)
+        if date:
+            query = query.filter(Date=date)
+        
+        results = list(query.values())
+        return JsonResponse({'results': results})
+
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+class BankApi(APIView):
+    def get(self, request):
+        receipts_obj = Receipts.objects.all();
+        serialized_obj = ReceiptsSerializer(receipts_obj, many=True)
+        return Response({'status':200, 'payload':serialized_obj.data})
+
+    def post(self, request):
+        request_body = json.loads(request.body)
+        bank_id= request_body.get('bank_id')
+        Account_no = request_body.get('Account_no')
+        Bank_Name = request_body.get('Bank_Name')
+        IFSC_Code = request_body.get('IFSC_Code')
+        Branch_Name = request_body.get('Branch_Name')
+
+        query = Bank.objects.all()
+        if bank_id:
+            query = query.filter(bank_id=bank_id)
+        if Account_no:
+            query = query.filter(Account_no=Account_no)
+        if Bank_Name:
+            query = query.filter(Bank_Name=Bank_Name)
+        if IFSC_Code:
+            query = query.filter(IFSC_Code=IFSC_Code)
+        if Branch_Name:
+            query = query.filter(Branch_Name=Branch_Name)
+
+        bank_data = list(query.values())
+        return JsonResponse({'banks': bank_data})
+
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+class CompanyApi(APIView):
+    def get(self, request):
+        Company_obj = Company.objects.all();
+        Company_obj = CompanySerializer(Company_obj, many=True)
+        return Response({'status':200, 'payload':serialized_obj.data})
+
+    def post(self, request):
+        request_body = json.loads(request.body)
+        company_id= request_body.get('company_id')
+        Company_Name = request_body.get('Company_Name')
+        Start_Date = request_body.get('Start_Date')
+        End_Date = request_body.get('End_Date')
+        Description = request_body.get('Description')
+        Status = request_body.get('Status')
+
+        companies = Company.objects.all()
+        if company_id:
+            companies = companies.filter(company_id=company_id)
+        if Company_Name:
+            companies = companies.filter(company_name=Company_Name)
+        if Start_Date:
+            companies = companies.filter(Start_Date=Start_Date)
+        if End_Date:
+            companies = companies.filter(End_date=End_Date)
+        if Description:
+            companies = companies.filter(Description=Description)
+        if Status:
+            companies = companies.filter(Status=Status)
+        
+        results = list(companies.values())
+        return JsonResponse({'results': results})
+
+
