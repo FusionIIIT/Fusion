@@ -382,7 +382,6 @@ function submit_inventory_form(id){
 // Adding more items to inventory
 
 // $('#add-more-items-inventory').click(function(event){
-
 //     $.ajax({
 //         type: 'POST',
 //         url: '/visitorhostel/add-to-inventory/',
@@ -404,6 +403,7 @@ function submit_inventory_form(id){
 //     });
 
 // });
+
 
 function add_inventory_item(event) {
     event.preventDefault();

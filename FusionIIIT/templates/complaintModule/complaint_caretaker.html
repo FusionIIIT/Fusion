@@ -61,22 +61,13 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
-                    Manage Workers
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="second">
+                <a class="item" data-tab="first">
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="third">
+                <a class="item" data-tab="second">
                     Unresolved Complaints
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="fourth">
-                    Overdue Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -94,16 +85,9 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="seven wide column">
-            {% comment %}The ... start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
-                {% block lodgecomplaint %}
-                    {%  include 'complaintModule/add_workers.html' %}
-                {%  endblock %}
-            </div>
-            {% comment %}The ... end here!{% endcomment %}
 
             {% comment %}The ... starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
+            <div class="ui active tab segment" data-tab="first">
                 {% block complainthistory %}
                     {%  include 'complaintModule/complainthistory_caretaker.html' %}
                 {%  endblock %}
@@ -111,14 +95,9 @@
             {% comment %}The ... ends here!{% endcomment %}
 
             {% comment %}The ... starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="third">
+            <div class="ui tab segment" data-tab="second">
                 {% block resolvecomplaint %}
-                    {%  include 'complaintModule/resolvecomplaint.html' %}
-                {%  endblock %}
-            </div>
-            <div class="ui tab segment" data-tab="fourth">
-                {% block overduecomplaint %}
-                    {%  include 'complaintModule/overduecomplaint.html' %}
+                    {%  include 'complaintModule/resolvecomplaint_caretaker.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... ends here!{% endcomment %}

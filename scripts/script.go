@@ -54,6 +54,8 @@ var branchPorts = map[string]Ports{
 	"sa-4":  {App: 8018, Db: 5468},
 	"hr":    {App: 8020, Db: 5469},
 	"rspc":  {App: 8021, Db: 5470},
+	"ps-1":  {App: 8022, Db: 5471},
+	"ps-2":  {App: 8023, Db: 5472},
 }
 
 func main() {
@@ -115,7 +117,7 @@ func main() {
 		cmdRun(fmt.Sprintf("docker-compose -f %s up -d", filepath.Join(branchDir, "docker-compose.yml")), true)
 
 		if len(*db_dumpPath) > 0 {
-		    fmt.Printf("Importing dump into %s_db_1\n", branch)
+			fmt.Printf("Importing dump into %s_db_1\n", branch)
 			cmdRun(
 				fmt.Sprintf(
 					"docker exec -i %s_db_1 psql -U fusion_admin -d fusionlab < %s",
@@ -124,6 +126,13 @@ func main() {
 				),
 				true)
 		}
+
+		cmdRun(
+			fmt.Sprintf(
+				"docker exec -i %s_app_1 python FusionIIIT/manage.py migrate",
+				branch,
+			),
+			true)
 
 		fmt.Printf("%s app started at port %d\n", branch, branchPorts[branch].App)
 	}
@@ -276,4 +285,3 @@ func CopySymLink(source, dest string) error {
 	}
 	return os.Symlink(link, dest)
 }
-

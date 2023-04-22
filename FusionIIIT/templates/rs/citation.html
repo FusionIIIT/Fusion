@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Citation PDF</title>
+</head>
+
+<body>
+    <h1>Citation PDF</h1>
+    <!-- <p>{{ citation }}</p> -->
+    {% for project in projects %}
+    
+        <p style="font-style: italic; color: rgb(32, 80, 83);">{{project.pf_no}}, {{project.ptype}}, {{project.pi}}, {{project.co_pi}}, {{project.title}}</p>
+        <p style="font-style: italic; color: rgb(32, 80, 83);">{{project.funding_agency}}, {{project.status}}</p><br>
+    {% endfor %}
+</body>
+
+</html>

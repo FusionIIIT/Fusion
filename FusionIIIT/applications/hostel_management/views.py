@@ -13,14 +13,14 @@ from datetime import time, datetime, date
 from time import mktime, time,localtime
 from .models import *
 import xlrd
-from .forms import HostelNoticeBoardForm
+from .forms import GuestRoomBookingForm, HostelNoticeBoardForm
 import re
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.views.generic import View
 from django.db.models import Q
 from django.contrib import messages
-from .utils import render_to_pdf, save_worker_report_sheet,get_caretaker_hall
+from .utils import render_to_pdf, save_worker_report_sheet,get_staff_hall
 from .utils import add_to_room, remove_from_room
 
 @login_required
@@ -43,7 +43,7 @@ def hostel_view(request, context={}):
     all_hall = Hall.objects.all()
     halls_student = {}
     for hall in all_hall:
-        halls_student[hall.hall_id] = Student.objects.filter(hall_no=int(hall.hall_id[4])).select_related('id__user')
+        halls_student[hall.hall_id] = Student.objects.filter(hall_id=hall.hall_id).select_related('id__user')
 
     hall_staffs = {}
     for hall in all_hall:
@@ -53,25 +53,34 @@ def hostel_view(request, context={}):
     hall_notices = {}
     for hall in all_hall:
         hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(hall=hall).select_related('hall','posted_by__user')
+    pending_guest_room_requests = {}
+    for hall in all_hall:
+        pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender__user')
+    
+    user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user.extrainfo).order_by("-arrival_date")
 
     Staff_obj = Staff.objects.all().select_related('id__user')
-    hall1 = Hall.objects.get(hall_id='hall1')
-    hall3=Hall.objects.get(hall_id='hall3')
-    hall4=Hall.objects.get(hall_id='hall4')
-    hall1_staff = StaffSchedule.objects.filter(hall=hall1)
-    hall3_staff = StaffSchedule.objects.filter(hall=hall3)
-    hall4_staff = StaffSchedule.objects.filter(hall=hall4)
+    vashishtha = Hall.objects.get(hall_id='vashishtha')
+    aryabhatta = Hall.objects.get(hall_id='aryabhatta')
+    vivekananda = Hall.objects.get(hall_id='vivekananda')
+    vashishtha_staff = StaffSchedule.objects.filter(hall=vashishtha)
+    aryabhatta_staff = StaffSchedule.objects.filter(hall=aryabhatta)
+    vivekananda_staff = StaffSchedule.objects.filter(hall=vivekananda)
+    saraswati = Hall.objects.get(hall_id='saraswati')
+    saraswati_staff = StaffSchedule.objects.filter(hall=saraswati)
     hall_caretakers = HallCaretaker.objects.all().select_related()
     hall_wardens = HallWarden.objects.all().select_related()
 
     hall_student=""
     current_hall=""
     get_avail_room=[]
-    get_hall=get_caretaker_hall(hall_caretakers,request.user) 
+
+    get_hall = get_staff_hall(hall_caretakers, hall_wardens, request.user)
     if get_hall:
-        get_hall_num=re.findall('[0-9]+',str(get_hall.hall_id))
-        hall_student=Student.objects.filter(hall_no=int(str(get_hall_num[0]))).select_related('id__user')
-        current_hall='hall'+str(get_hall_num[0])
+        get_hall_name = get_hall.hall_id
+        hall_student = Student.objects.filter(hall_id=get_hall_name).select_related('id__user')
+        current_hall = get_hall_name
+
     
     for hall in all_hall:
         total_rooms=HallRoom.objects.filter(hall=hall)
@@ -103,25 +112,27 @@ def hostel_view(request, context={}):
 
 
     context = {
-        
-        'all_hall': all_hall,
-        'all_notice': all_notice,
-        'staff':Staff_obj,
-        'hall1_staff' : hall1_staff,
-        'hall3_staff' : hall3_staff,
-        'hall4_staff' : hall4_staff,
-        'hall_caretaker' : hall_caretaker_user,
-        'hall_warden' : hall_warden_user,
-        'room_avail' : get_avail_room,
-        'hall_student':hall_student,
-        'worker_report': worker_report,
-        'halls_student': halls_student,
-        'current_hall' : current_hall,
-        'hall_staffs': hall_staffs,
-        'hall_notices': hall_notices,
-        'attendance': halls_attendance,
-        **context
-    }
+    'all_hall': all_hall,
+    'all_notice': all_notice,
+    'staff': Staff_obj,
+    'vashishtha_staff': vashishtha_staff,
+    'aryabhatta_staff': aryabhatta_staff,
+    'vivekananda_staff': vivekananda_staff,
+    'saraswati_staff': saraswati_staff,
+    'hall_caretaker': hall_caretaker_user,
+    'hall_warden': hall_warden_user,
+    'room_avail': get_avail_room,
+    'hall_student': hall_student,
+    'worker_report': worker_report,
+    'halls_student': halls_student,
+    'current_hall': current_hall,
+    'hall_staffs': hall_staffs,
+    'hall_notices': hall_notices,
+    'pending_guest_room_requests': pending_guest_room_requests,
+    'user_guest_room_requests': user_guest_room_requests,
+    'attendance': halls_attendance,
+    **context
+}
 
     return render(request, 'hostelmanagement/hostel.html', context)
 
@@ -162,7 +173,7 @@ def staff_edit_schedule(request):
         except:
             hall_caretakers = HallCaretaker.objects.all()
             get_hall=""
-            get_hall=get_caretaker_hall(hall_caretakers,request.user)
+            get_hall=get_staff_hall(hall_caretakers=hall_caretakers,user = request.user)
             StaffSchedule(hall=get_hall,staff_id=staff,day=day,staff_type=staff_type,start_time=start_time,end_time=end_time).save()
             messages.success(request, 'Staff schedule created successfully.')
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
@@ -253,17 +264,19 @@ def edit_student_rooms_sheet(request):
             hall_no = row[1].value
             if row[0].ctype == 2:
                 roll_no = str(int(roll_no))
-            if row[1].ctype == 2:
-                hall_no = str(int(hall_no))
 
             room_no = row[2].value
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)
             is_valid = True
             student = Student.objects.filter(id=roll_no.strip())
-            hall = Hall.objects.filter(hall_id="hall"+hall_no[0])
+            hall = Hall.objects.filter(hall_id=hall_no)
+            print("Hello----------------------->",room_no);
+            
             if student and hall.exists():
                 Room = HallRoom.objects.filter(hall=hall[0],block_no=block,room_no=str(room[0]))
+                for r in Room:
+                    print("room details------------------------>",r.hall,r.block_no,r.room_no,r.room_occupied,r.room_cap)
                 if Room.exists() and Room[0].room_occupied < Room[0].room_cap:
                     continue
                 else:
@@ -288,7 +301,7 @@ def edit_student_rooms_sheet(request):
                 roll_no = str(int(roll_no))
             
 
-            hall_no = str(int(row[1].value))
+            hall_no = row[1].value
             room_no = row[2].value
             block=str(room_no[0])
             room = re.findall('[0-9]+', room_no)
@@ -314,16 +327,32 @@ def edit_student_room(request):
       students - stores students related to 'batch'.
     """
     if request.method == "POST":
-        roll_no = request.POST["roll_no"]
-        hall_room_no=request.POST["hall_room_no"]
-        index=hall_room_no.find('-')
-        room_no = hall_room_no[index+1:]
-        hall_no = hall_room_no[:index]
-        student = Student.objects.get(id=roll_no)
-        remove_from_room(student)
-        add_to_room(student, new_room=room_no, new_hall=hall_no)
-        messages.success(request, 'Student room changed successfully.')
+        if 'interchange' in request.POST:
+            roll_no_1 = request.POST["roll_no_1"]
+            roll_no_2 = request.POST["roll_no_2"]
+            student1 = Student.objects.get(id=roll_no_1)
+            room_no_student1 = student1.room_no
+            hall_id_student1= student1.hall_id
+            student2 = Student.objects.get(id=roll_no_2)
+            room_no_student2 = student2.room_no
+            hall_id_student2= student2.hall_id
+            remove_from_room(student1)
+            remove_from_room(student2)
+            add_to_room(student1,room_no_student2,hall_id_student2)
+            add_to_room(student2,room_no_student1,hall_id_student1)
+            messages.success(request, 'Student room interchange successful.')
+        else:
+            roll_no = request.POST["roll_no_1"]
+            hall_room_no=request.POST["hall_room_no"]
+            index=hall_room_no.find('-')
+            room_no = hall_room_no[index+1:]
+            hall_id = hall_room_no[:index]
+            student = Student.objects.get(id=roll_no)
+            remove_from_room(student)
+            add_to_room(student, new_room=room_no, new_hall=hall_id)
+            messages.success(request, 'Student room changed successfully.')
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
 
 def edit_attendance(request):
     """
@@ -340,7 +369,7 @@ def edit_attendance(request):
         roll_no = request.POST["roll_no"]
         
         student = Student.objects.get(id=roll_no)
-        hall = Hall.objects.get(hall_id='hall'+str(student.hall_no))
+        hall = Hall.objects.get(hall_id=student.hall_id)
         date = datetime.datetime.today().strftime('%Y-%m-%d')
 
         if HostelStudentAttendence.objects.filter(student_id=student,date=date).exists() == True:
@@ -355,8 +384,72 @@ def edit_attendance(request):
 
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+@login_required
+def request_guest_room(request):
+    """
+    This function is used by the student to book a guest room.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    """
+    print("Inside book guest room")
+    if request.method == "POST":
+        form = GuestRoomBookingForm(request.POST)
+
+        if form.is_valid():
+            print("Iside valid")
+            hall = form.cleaned_data['hall']
+            guest_name = form.cleaned_data['guest_name']
+            guest_phone = form.cleaned_data['guest_phone']
+            guest_email = form.cleaned_data['guest_email']
+            guest_address = form.cleaned_data['guest_address']
+            rooms_required = form.cleaned_data['rooms_required']
+            total_guest = form.cleaned_data['total_guest']
+            purpose = form.cleaned_data['purpose']
+            arrival_date = form.cleaned_data['arrival_date']
+            arrival_time = form.cleaned_data['arrival_time']
+            departure_date = form.cleaned_data['departure_date']
+            departure_time = form.cleaned_data['departure_time']
+            nationality = form.cleaned_data['nationality']
+
+            newBooking = GuestRoomBooking.objects.create(hall=hall, intender=request.user.extrainfo, guest_name=guest_name, guest_address=guest_address,
+                                                        guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
+                                                        arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality= nationality)
+            newBooking.save()
+            messages.success(request,"Room booked successfuly")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        else:
+            messages.error(request, "Something went wrong")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+@login_required
+def update_guest_room(request):
+    if request.method == "POST":
+        approve = request.POST['accept_request'] if 'accept_request' in request.POST else None
+        reject = request.POST['reject_request'] if 'reject_request' in request.POST else None 
+        status = request.POST['status'] if 'status' in request.POST else None
+        guest_room_request = GuestRoomBooking.objects.get(pk=(approve if approve else reject))
+        if approve:
+            guest_room_request.status = status
+            guest_room_request.guest_room_id = request.POST['guest_room_id']
+            guest_room_request.save()
+        if reject:
+            guest_room_request.delete()
+        messages.success(request, "Changes made successfully!")
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
+
+       
+@login_required
+def allot_hostel_room(request):
+    if request.method == "POST":
+        body = request.body
+        student = body.get('student')
+        hall_no = body.get('hall_no')
+        room_no = body.get('room_no')
+        alot_student = Student.objects.get(id=student.id)
+        alot_student.hall_no = hall_no
+        alot_student.room_no = room_no
 
 @login_required
 def generate_worker_report(request):
@@ -413,7 +506,7 @@ class GeneratePDF(View):
 
         hall_caretakers = HallCaretaker.objects.all()
         get_hall=""
-        get_hall=get_caretaker_hall(hall_caretakers,request.user)
+        get_hall=get_staff_hall(hall_caretakers = hall_caretakers,user = request.user)
         print(get_hall)
         if months < current_month:
             worker_report = WorkerReport.objects.filter(hall=get_hall, month__gte=current_month-months, year=current_year)

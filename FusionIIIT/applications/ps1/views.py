@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from applications.filetracking.models import File, Tracking
-from applications.ps1.models import IndentFile,StockEntry
+from applications.ps1.models import IndentFile,StockEntry,IndentFile2,Item
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -11,6 +11,168 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+
+
+@login_required(login_url = "/accounts/login/")
+def create_indent_multiple(request):
+    """
+        The function is used to create indents by faculty.
+        It adds the indent datails to the IndentFile2 table and Item details to Item table
+        for tracking the indent we are using filetracking module 
+        @param:
+                request - trivial.
+        @variables:
+                uploader - Employee who creates file.
+                subject - Title of the file.
+                description - Description of the file.
+                upload_file - Attachment uploaded while creating file.
+                file - The file object.
+                extrainfo - The Extrainfo object.
+                holdsdesignations - The HoldsDesignation object.
+                context - Holds data needed to make necessary changes in the template.
+                item_name- Name of the item to be procured
+                quantity - Qunat of the item to be procured
+                present_stock=request.POST.get('present_stock')
+                estimated_cost=request.POST.get('estimated_cost')
+                purpose=request.POST.get('purpose')
+                specification=request.POST.get('specification')
+                indent_type=request.POST.get('indent_type')
+                nature=request.POST.get('nature')
+                indigenous=request.POST.get('indigenous')
+                replaced =request.POST.get('replaced')
+                budgetary_head=request.POST.get('budgetary_head')
+                expected_delivery=request.POST.get('expected_delivery')
+                sources_of_supply=request.POST.get('sources_of_supply')
+                head_approval=False
+                director_approval=False
+                financial_approval=False
+                purchased =request.POST.get('purchased')
+                items= List of details of all the item
+    """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    if request.user.extrainfo.id == '132':
+        return redirect("/purchase-and-store/entry/")   
+    if request.method == 'POST':
+        try:
+            uploader = request.user.extrainfo
+            upload_file = request.FILES.get('myfile')
+            design = request.POST.get('design')
+            designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
+            description=request.POST.get('desc')
+            subject=request.POST.get('title')
+            budgetary_head = request.POST.get('budgetary_head')
+            sources_of_supply = request.POST.get('sources_of_supply')
+            expected_delivery = request.POST.get('expected_delivery')
+            # information related to reciever
+            remarks = request.POST.get('remarks')
+            receiver = request.POST.get('receiver')
+            reciever_designation = request.POST.get('reciever_designation')
+            # items related information
+            item_list = json.loads(request.POST.get('items')) # this will contain the list of all the item details
+
+            # First we will create the file for IndentFile table
+            file=File.objects.create(
+                uploader=uploader,
+                description=description,
+                subject=subject,
+                designation=designation,
+                upload_file=upload_file
+            )
+
+            # Now we will create Indent Table and add to file
+
+            created_indent_file = IndentFile2.objects.create(
+                file_info = file,
+                title = subject,
+                budgetary_head = budgetary_head,
+                expected_delivery = expected_delivery,
+                sources_of_supply = sources_of_supply,
+                description = description
+            )
+            for i in range(len(item_list)) :
+                # upload_file = temp[i]['file']
+                item_name = item_list[i]["item_name"]
+                quantiy = item_list[i]["quantiy"]
+                present_stock = item_list[i]["present_stock"]
+                estimated_cost = item_list[i]["estimated_cost"]
+                purpose = item_list[i]["purpose"]
+                specification = item_list[i]["specification"]
+                indent_type = item_list[i]["indent_type"]
+                nature =item_list[i]["nature"]
+                indigenous = item_list[i]["indigenous"]
+                replaced = item_list[i]["replaced"]
+                item_file = request.FILES.get(f"item_file{i}")
+                file_item=File.objects.create(
+                    uploader=uploader,
+                    description=purpose,
+                    subject=item_name,
+                    designation=designation,
+                    upload_file=item_file
+                )
+                Item.objects.create(
+                    indent_file_id = created_indent_file,
+                    file_info = file_item,
+                    item_name = item_name,
+                    quantiy = quantiy,
+                    present_stock = present_stock,
+                    estimated_cost = estimated_cost,
+                    purpose = purpose ,
+                    specification = specification,
+                    indent_type = indent_type,
+                    nature = nature,
+                    indigenous = indigenous,
+                    replaced = replaced,
+                )
+            
+            if  (receiver is not None) and (reciever_designation is not None):
+                    current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=design)
+                    try:
+                        receiver_id = User.objects.get(username=receiver)
+                    except Exception as e:
+                        messages.error(request, 'Enter a valid Username')
+                        return redirect('/filetracking/')
+                    try:
+                        receive_design = Designation.objects.get(name=reciever_designation)
+                    except Exception as e:
+                        messages.error(request, 'Enter a valid Designation')
+                        return redirect('/ps1/')
+
+                    Tracking.objects.create(
+                        file_id=file,
+                        current_id=uploader,
+                        current_design=current_design,
+                        receive_design=receive_design,
+                        receiver_id=receiver_id,
+                        remarks=remarks,
+                        upload_file=upload_file,
+                    )
+                    office_module_notif(request.user, receiver_id)
+                    messages.success(request,'Indent Filed Successfully!')
+        finally:
+            message = 'File Already taken'            
+
+    file = File.objects.select_related('uploader__user','uploader__department','designation').all()
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+
+    context = {
+        'file': file,
+        'extrainfo': extrainfo,
+        'holdsdesignations': holdsdesignations,
+        'designations': designations,
+    }
+    return render(request, 'ps1/ComposeIndentMultiple.html', context)
+            
+
+       
+
+
 
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
@@ -255,6 +417,9 @@ def composed_indents(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+          return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         # 'draft': draft,
@@ -262,6 +427,29 @@ def composed_indents(request):
         'designation': designation,
     }
     return render(request, 'ps1/composed_indents.html', context)
+
+
+
+@login_required(login_url = "/accounts/login")
+def drafts_for_multiple_item(request):
+    """
+        The function is used to get all the designations hold by the user.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                context - Holds data needed to make necessary changes in the template.
+    """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    designation = HoldsDesignation.objects.filter(user=request.user)
+    context = {
+        'designation': designation,
+    }
+    return render(request, 'ps1/drafts1.html', context)
+
 
 def drafts(request):
     """
@@ -285,6 +473,9 @@ def drafts(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         # 'draft': draft,
@@ -296,6 +487,9 @@ def drafts(request):
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
 
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     tracking_objects=Tracking.objects.all()
     tracking_obj_ids=[obj.file_id for obj in tracking_objects]
@@ -315,8 +509,56 @@ def indentview(request,id):
     }
     return render(request, 'ps1/indentview.html', context)
 
+
+@login_required(login_url = "/accounts/login")
+def draftview_multiple_items_indent(request,id):
+    """
+        The function is used to get all the files created by user(employee).
+        It gets all files created by user by filtering file(table) object by user i.e, uploader.
+        It displays user and file details of a file(table) of filetracking(model) in the
+        template of 'Saved files (new)' tab for indentfile with multiple items.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                draft - The File object filtered by uploader(user).
+                extrainfo - The Extrainfo object.
+                context - Holds data needed to make necessary changes in the template.
+    """
+
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+
+    indents= IndentFile2.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
+    indent_ids=[indent.file_info for indent in indents]
+    filed_indents=Tracking.objects.filter(file_id__in=indent_ids)
+    filed_indent_ids=[indent.file_id for indent in filed_indents]
+    draft = list(set(indent_ids) - set(filed_indent_ids))
+    draft_indent=IndentFile2.objects.filter(file_info__in=draft).values("file_info")
+    draft_files=File.objects.filter(id__in=draft_indent).order_by('-upload_date')
+    extrainfo = ExtraInfo.objects.all()
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    
+    context = {
+        'draft':draft_files,
+        'extrainfo': extrainfo,
+        'designations': designations,
+    }
+    return render(request, 'ps1/draftview1.html', context)
+
+
+
 @login_required(login_url = "/accounts/login")
 def draftview(request,id):
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
     indent_ids=[indent.file_info for indent in indents]
@@ -341,7 +583,9 @@ def draftview(request,id):
 def indentview2(request,id):
 
 
-
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     indent_files = IndentFile.objects.all().values('file_info')
     print(indent_files)
     in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
@@ -372,6 +616,9 @@ def inward(request):
                     in_file - The Tracking object filtered by receiver_id i.e, present working user.
                     context - Holds data needed to make necessary changes in the template.
     """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     in_file=Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
 
@@ -384,6 +631,9 @@ def inward(request):
     return render(request, 'ps1/inwardIndent.html', context)
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     file = File.objects.get(pk = id)
 
     context = {
@@ -419,6 +669,9 @@ def forwardindent(request, id):
     # start = timer()
     
     # end = timer()
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     indent=IndentFile.objects.select_related('file_info').get(file_info=id)
     file=indent.file_info
     # start = timer()
@@ -567,6 +820,9 @@ def createdindent(request, id):
                     holdsdesignations = HoldsDesignation objects.
                     context - Holds data needed to make necessary changes in the template.
     """
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     # start = timer()
     
     # end = timer()
@@ -658,7 +914,9 @@ def createdindent(request, id):
 
 
 def AjaxDropdown1(request):
-    print('brefore post')
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     if request.method == 'POST':
         value = request.POST.get('value')
         # print(value)
@@ -676,7 +934,7 @@ def AjaxDropdown1(request):
 
 
 def AjaxDropdown(request):
-    print('asdasdasdasdasdasdasdas---------------\n\n')
+    # print('asdasdasdasdasdasdasdas---------------\n\n')
     # Name = ['student','co-ordinator','co co-ordinator']
     # design = Designation.objects.filter(~Q(name__in=(Name)))
     # hold = HoldsDesignation.objects.filter(Q(designation__in=(design)))
@@ -685,6 +943,9 @@ def AjaxDropdown(request):
 
     # for h in hold:
     #     arr.append(ExtraInfo.objects.filter(user=h.user))
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     if request.method == 'POST':
         value = request.POST.get('value')
@@ -703,6 +964,9 @@ def test(request):
 
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     file = File.objects.get(pk = id)
     file.delete()
 
@@ -722,12 +986,12 @@ def delete(request,id):
 
 
 @login_required(login_url = "/accounts/login")
-
 def Stock_Entry(request):
-    
-    
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
+    else :
         if request.method=='GET' :
-            
             return HttpResponseRedirect('../stock_view')
         
         if request.method =="POST":
@@ -768,6 +1032,9 @@ def Stock_Entry(request):
 def stock_edit(request): 
     # stocks=StockEntry.objects.get(pk=id)
     # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
    
 
     if request.method =="POST":
@@ -791,6 +1058,9 @@ def stock_edit(request):
     #    return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
         
 def stock_update(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     if request.method =="POST":
         if 'save' in request.POST:
             id=request.POST.get('id')
@@ -815,6 +1085,10 @@ def stock_update(request):
 #     return render(request,'ps1/stock_view.html',{'StockEntry':sto})
 # @login_required(login_url = "/accounts/login")
 def stock_view(request):
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     
     sto=StockEntry.objects.all()
     if sto:
@@ -826,8 +1100,12 @@ def stock_view(request):
             print()   
         
     return render(request,'ps1/stock_view.html',{'sto':sto})
+
 @login_required(login_url = "/accounts/login")    
 def stock_delete(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     
     if request.method=='POST':
         
@@ -841,6 +1119,9 @@ def stock_delete(request):
     return HttpResponseRedirect('../stock_view')   
 @login_required(login_url = "/accounts/login")   
 def entry(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
 
     if request.method=='POST':
         id=request.POST.get('id')
@@ -855,9 +1136,12 @@ def entry(request):
     return render(request,'ps1/entry.html',{'ent':ent})
     
 def dealing_assistant(request):
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    if  str(des.designation) == "student":
+        return redirect('/dashboard')
     print(request.user.extrainfo.id)
     print(type(request.user.extrainfo.id))
     if request.user.extrainfo.id=='132' :
-        return redirect('/ps1/entry/')   
+        return redirect('/purchase-and-store/entry/')   
     else:
-        return redirect('/ps1')       
+        return redirect('/purchase-and-store')       

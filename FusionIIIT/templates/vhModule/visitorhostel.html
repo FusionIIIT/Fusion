@@ -5,16 +5,44 @@
     Visitor Hostel
 {% endblock %}
 
+{% block css %}
+<style>
+    .vh_container {
+        display: grid;
+        grid-template-areas: 
+        "vh_user" "vh_main";
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 2rem;
+    }
+    
+    .vh_user {
+        grid-area: vh_user;
+    }
+
+    .vh_main {
+        grid-area: vh_main;
+    }
+    
+    @media all and (min-width: 768px) {
+        .vh_container {
+            grid-template-areas: 
+            "vh_user vh_main";
+            grid-template-columns: 2fr 6fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
+    
 
-    <div class="ui stackable doubling grid">
+    <div class="vh_container">
 
-        <div class="column"></div>
-
-        <div class="three wide column">
+        <div class="vh_user">
 
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -71,7 +99,7 @@
             </div>
         </div>
 
-        <div class="eight wide column">
+        <div class="vh_main">
             {% comment %}The Details start here!{% endcomment %}
 
             <div class="ui active tab segment" data-tab="first">
@@ -126,17 +154,6 @@
 
 
         </div>
-
-        <div class="three wide column">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
-            </div>
-        </div>
-
-        <div class="column"></div>
-
     </div>
 {% include 'vhModule/alert.html' %}
 {% endblock %}
