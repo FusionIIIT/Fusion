@@ -294,40 +294,50 @@ function request_booking (event) {
 
 // Meal Record
 
-function bookameal_submit(event, htmlElement){
+function bookameal_submit(event, htmlElement) {
     console.log('hii')
     event.preventDefault();
     var pk = $(htmlElement).attr('data-pk');
     var booking_id = $(htmlElement).attr('booking_id')
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
-    console.log(pk);
-    var jsondata = {
+    m_tea = $(`input[name="m_tea${booking_id}"]`).val()
+    breakfast = $(`input[name="breakfast${booking_id}"]`).val()
+    lunch = $(`input[name="lunch${booking_id}"]`).val()
+    eve_tea = $(`input[name="eve_tea${booking_id}"]`).val()
+    dinner = $(`input[name="dinner${booking_id}"]`).val()
+    if (m_tea < 0 || breakfast < 0 || lunch < 0 || eve_tea < 0 || dinner < 0) {
+        alertModal('Meal record cannot be negative');
+    }
+    else {
+        console.log(pk);
+        var jsondata = {
             'pk' : pk,
             'booking' : booking_id,
-        'm_tea': $(`input[name="m_tea${booking_id}"]`).val(),
-        'breakfast': $(`input[name="breakfast${booking_id}"]`).val(),
-        'lunch': $(`input[name="lunch${booking_id}"]`).val(),
-        'eve_tea': $(`input[name="eve_tea${booking_id}"]`).val(),
-        'dinner': $(`input[name="dinner${booking_id}"]`).val(),
+            'm_tea': $(`input[name="m_tea${booking_id}"]`).val(),
+            'breakfast': $(`input[name="breakfast${booking_id}"]`).val(),
+            'lunch': $(`input[name="lunch${booking_id}"]`).val(),
+            'eve_tea': $(`input[name="eve_tea${booking_id}"]`).val(),
+            'dinner': $(`input[name="dinner${booking_id}"]`).val(),
             
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
     }
-    console.log(jsondata)
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/record-meal/',
-        data: jsondata,
-        success: function(data) {
-            alertModal('Great! Meals recorded successfully');
-            setTimeout(function() {
-                location.reload();
-             }, 1500);
-            
-        },
-        error: function (data, err) {
-            alertModal('Something missing! Please refill the form ');
-        }
-    });
+        console.log(jsondata)
+        $.ajax({
+            type: 'POST',
+            url: '/visitorhostel/record-meal/',
+            data: jsondata,
+            success: function(data) {
+                alertModal('Great! Meals recorded successfully');
+                setTimeout(function() {
+                    location.reload();
+                 }, 1500);
+             
+            },
+            error: function (data, err) {
+                alertModal('Something missing! Please refill the form ');
+            }
+        });
+    }
 };
 
 // Update Inventory
@@ -343,25 +353,30 @@ function update_inventory_form(id){
 function submit_inventory_form(id){
     id = id;
     quantity = $('#input-'.concat(id))[0].value;
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/update-inventory/',
-        data: {
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-            'id' : id,
-            'quantity' : quantity,
-        },
-        success: function(data) {
-            $('#show-'.concat(id))[0].innerHTML = quantity;
-            console.log(room_status);
-            $('#show-'.concat(id)).fadeToggle();
-            $('#select-'.concat(id)).fadeToggle();
-            $('#submit-'.concat(id)).fadeToggle();
-        },
-        error: function(data, err) {
-            alertModal('Something missing! Please refill the form');
-        }
-    });
+    if (quantity < 0) {
+        alertModal('Quantity cannot be negative! Please refill the form');
+    }
+    else {
+        $.ajax({
+            type: 'POST',
+            url: '/visitorhostel/update-inventory/',
+            data: {
+                'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+                'id' : id,
+                'quantity' : quantity,
+            },
+            success: function(data) {
+                $('#show-'.concat(id))[0].innerHTML = quantity;
+                console.log(room_status);
+                $('#show-'.concat(id)).fadeToggle();
+                $('#select-'.concat(id)).fadeToggle();
+                $('#submit-'.concat(id)).fadeToggle();
+            },
+            error: function(data, err) {
+                alertModal('Something missing! Please refill the form');
+            }
+        });
+    }
 };
 
 // Adding more items to inventory
@@ -392,59 +407,68 @@ function submit_inventory_form(id){
 
 function add_inventory_item(event) {
     event.preventDefault();
-    jsondata = {
-        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-        'item_name' : $('input[name="item_name"]').val(),
-        'quantity' : $('input[name="quantity_add"]').val(),
-        'cost' : $('input[name="cost"]').val(),
-        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
-        'bill_number' : $('input[name="bill_number"]').val()
+    quantity = $('input[name="quantity_add"]').val()
+    if (quantity < 0) {
+        alertModal('Quantity cannot be negative! Please refill the form');
     }
-    console.log(jsondata)
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/add-to-inventory/',
-        data: jsondata,
-        success: function(data) {
-            // $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
-            // $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
-            // $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
-            alertModal('Great! Item added successfully');
-            setTimeout(function() {
-                location.reload();
-             }, 1500);
-        },
-        error: function(xhr, data, err) {
-            alertModal('Something missing! Please refill the form');
+    else{
+        jsondata = {
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+            'item_name' : $('input[name="item_name"]').val(),
+            'quantity' : quantity,
+            'cost' : $('input[name="cost"]').val(),
+            'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+            'bill_number' : $('input[name="bill_number"]').val()
         }
-
-    });
+        console.log(jsondata)
+        $.ajax({
+            type: 'POST',
+            url: '/visitorhostel/add-to-inventory/',
+            data: jsondata,
+            success: function(data) {
+                alertModal('Great! Item added successfully');
+                setTimeout(function() {
+                    location.reload();
+                 }, 1500);
+            },
+            error: function(xhr, data, err) {
+                alertModal('Something missing! Please refill the form');
+            }
+    
+        });
+    }
 }
 $('.add-item-form-submit').click(function(event){
     event.preventDefault();
-    jsondata = {
-        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-        'item_name' : $('input[name="item_name"]').val(),
-        'quantity' : $('input[name="quantity_add"]').val(),
-        'cost' : $('input[name="cost"]').val(),
-        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
-        'bill_number' : $('input[name="bill_number"]').val()
+    quantity = $('input[name="quantity_add"]').val()
+    if (quantity < 0) {
+        alertModal('Quantity cannot be negative! Please refill the form');
     }
-    console.log(jsondata)
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/add-to-inventory/',
-        data: jsondata,
-        success: function(data) {
-            $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
-        },
-        error: function(xhr, data, err) {
-            alertModal('Something missing! Please refill the form');
+    else {
+        jsondata = {
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+            'item_name' : $('input[name="item_name"]').val(),
+            'quantity' : quantity,
+            'cost' : $('input[name="cost"]').val(),
+            'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+            'bill_number' : $('input[name="bill_number"]').val()
         }
-
-    });
+        console.log(jsondata)
+        $.ajax({
+            type: 'POST',
+            url: '/visitorhostel/add-to-inventory/',
+            data: jsondata,
+            success: function(data) {
+                $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+                $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+                $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            },
+            error: function(xhr, data, err) {
+                alertModal('Something missing! Please refill the form');
+            }
+    
+        });
+    }
 
 });
 
@@ -521,7 +545,7 @@ function confirm_booking (id) {
 function reject_booking (id) {
 
     remarks = $('input[name=cancellation-remarks-'+id+']').val();
-    if (remarks == '') {
+    if (!remarks) {
         alertModal("Please fill in why you want to reject this booking in remarks.");
         return;
     }
@@ -650,26 +674,23 @@ function forward_booking (id) {
     previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
-    rem = $('input[name=cancellation-remarks-' + id + ']').val();
-    console.log("TExt rem: ", rem);
+    numberOfRoomsRequired = $('input[name=number-of-rooms-'+id+']').val();
+    remark = $('input[name=cancellation-remarks-' + id + ']').val();
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
     //     return;
     // }
-    console.log("Rooms: ", rooms);
-    remark = "";
-    for (x in rooms) {
-        remark += rooms[x] + " ";
-    }
-    remark += "can be alloted";
-
-    console.log("remarks: ", remark);
     if (modified_category == 0) {
         modified_category = previous_category;
     }
 
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
+        return;
+    }
+    console.log("rooms req:", numberOfRoomsRequired, rooms.length);
+    if (rooms.length > numberOfRoomsRequired) {
+        alertModal("Number of rooms cannot be more than number of rooms required!");
         return;
     }
 

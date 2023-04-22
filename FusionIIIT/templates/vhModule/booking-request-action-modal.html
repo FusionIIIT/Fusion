@@ -213,11 +213,11 @@
 
         
             
-        {% if user_designation == 'VhIncharge'  %}
+        {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
         <div class="field">
             <label>Remarks (required*)</label>
             <div class="ui fluid input">
-                <input type="text" value="{{booking.remark}}" name="cancellation-remarks-{{ booking.id }}" required="" readonly>
+                <input type="text" value="" name="cancellation-remarks-{{ booking.id }}">
             </div>
         </div>
         {% endif  %}
@@ -230,6 +230,9 @@
             <label></label>
             <div class="ui large green button right floated" id="farward-booking" onclick="forward_booking('{{ booking.id }}')">
                 Forward
+            </div>
+            <div class="ui large red button right floated" id="reject-booking" onclick="reject_booking('{{ booking.id }}')">
+                Reject
             </div>
             
             <!-- <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
