@@ -731,6 +731,17 @@
 
 
                 <tbody>
+                    {% for book in books %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ book.title }}</td>
+                        <td>{{ book.authors }}</td>
+                        <td>{{ book.p_type}}</td>
+                        <td>{{ book.pyear}}</td>
+                        <td>{{ book.publisher}}</td>
+                    </tr>
+                    {% endfor %}
 
                     
                 </tbody>

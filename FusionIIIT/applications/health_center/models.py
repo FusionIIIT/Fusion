@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 
 from applications.globals.models import ExtraInfo
 
@@ -25,7 +26,7 @@ class Constants:
 class Doctor(models.Model):
     # doctor_name = models.IntegerField(choices=Constants.NAME_OF_DOCTOR)
     doctor_name = models.CharField(max_length=200)
-    doctor_phone = models.CharField(max_length=10)
+    doctor_phone = models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
@@ -58,11 +59,12 @@ class Medicine(models.Model):
     times = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.medicine_id
+        return self.medicine_id.medicine_name
 
 class Hospital(models.Model):
     hospital_name=models.CharField(max_length=100)
-    phone=models.CharField(max_length=10)
+    hospital_address=models.CharField(max_length=255, default="")
+    hospital_phone=models.CharField(max_length=10, validators=[MinLengthValidator(10)], default="0000000000")
     def __str__(self):
         return self.hospital_name
 
@@ -156,7 +158,7 @@ class Ambulance_request(models.Model):
     date_request = models.DateTimeField()
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    reason = models.CharField(max_length=50)
+    reason = models.CharField(max_length=255)
 
 class Hospital_admit(models.Model):
     user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)

@@ -1,0 +1,307 @@
+<div class="ui tab" id="silver">
+    <div class="ui active tab" data-tab="silvermedal">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="award" name="award" value="Director's Silver Medal">
+                <div class="ui large input">
+                    <div class="sixteen wide field">
+                        <label>Select Type of director silver medal</label>
+
+                        <select class="ui fluid search large dropdown" name="type" id="type" onchange="javascript_:show_silver(this.options[this.selectedIndex].label)">
+                            <option selected hidden default>Select</option>
+                            <option value= "Games and Sports" label="sports">Games and Sports</option>
+                            <option value= "Cultural" label="cultural">Cultural</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="sports" style="display:none">
+                    <div> 
+                        <h3>Inter Collegiate Participation (Other that Inter IIIT)</h3>
+                        <h4>Individual event</h4>
+                    </div>
+                    <div class="field">
+                        <div class="field">
+                            <label>Individual Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="sports_inter_college_individual">
+                        </div>
+                    </div>
+
+                    <div> 
+                        <h4>Team Event</h4>
+                    </div>
+
+                    <div class="field">
+                        <div class="field">
+                            <label>Team Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="sports_inter_college_team">
+                        </div>
+                    </div>
+                    <div> 
+                        <h3>GUSTO Participation</h3>
+                        <h4>Individual + Team</h4>
+                    </div>
+                    <div class="field">
+                        <div class="field">
+                            <label>Individual Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="gusto_individual">
+                        </div>
+                    </div>
+                    {% comment %} Team -- {% endcomment %}
+
+                    <div class="field">
+                        <div class="field">
+                            <label>Team Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="gusto_team">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Sports Club Management </h3>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field ">
+                            <label>Coordinator</label>
+                            <div class="ui large input">
+                                <input placeholder="Coordinator" name="sports_club_coordinator" type="text">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate</label>
+                            <input type="file" name="sports_club_coordinator_doc">
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field ">
+                            <label>Co-Coordinator</label>
+                            <div class="ui large input">
+                                <input placeholder="Co-Coordinator" name="sports_club_co_coordinator" type="text">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate</label>
+                            <input type="file" name="sports_club_co_coordinator_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Sprots Event Management </h3>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Member Core Team</label>
+                            <input type="text" placeholder="member name" name="sports_event_member_team">
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate</label>
+                            <input type="file" name="sports_event_member_team_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Participation in Inter IIITDMJ Sports</h3>
+                        <h4>Individual & Team</h4>
+                    </div>
+
+                    <div class="field">
+                        <div class="field">
+                            <label>Individual Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="sports_inter_iiit_individual">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field">
+                            <label>Team Event Upload Supporting Certificate (Upto 5):</label>
+                            <input type="file" name="sports_inter_iiit_team">
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Any other accomplishment in games & sports during the course of enrollment at the institute</label>
+                            <textarea rows="5" name="sports_accomplishments"></textarea>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate or one page summary of all accomplishments in the relevant field</label>
+                            <input type="file" name="sports_accomplishments_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Declaration of No Conflict</h3>
+                    </div>
+                </div>
+                <div id="cultural" style="display:none">
+                    <div>
+                        <h3>Inter Collegiate Participation (Other that Inter IIIT)</h3>
+                    </div>
+                    <br></br>
+
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Toatal Numbers of Certificate attached (in numbers)</label>
+                            <div class="ui large input">
+                                <input placeholder="Number of Certificate" name="cultural_inter_college_certificate" type="number">
+                            </div>
+                        </div>
+
+                        <div class="eight wide field">
+                            <label> Upload Certificate- Inter Collegiate Participation(Other that Inter IIIT) </label>
+                            <input type="file" name="cultural_inter_college_certificate_doc">
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                    <div class="six wide field">
+                        <label>Team event</label>
+                        <div class="ui large input">
+                            <input placeholder="team event name" name="cultural_inter_college_team_event" type="text">
+                        </div>
+                    </div>
+
+                    <div class="six wide field">
+                        <label>Toatal Numbers of Certificate attached</label>
+                        <div class="ui large input">
+                            <input placeholder="numbers" name="cultural_inter_college_team_certificate" type="number">
+                        </div>
+                    </div>
+
+                    <div class="six wide field">
+                        <label> Upload Certificate - Team Event </label>
+                        <input type="file" name="cultural_inter_college_team_certificate_doc">
+                    </div>
+                </div>
+
+                    <div>
+                        <h3>TARANG/INVICTA Participation</h3>
+                        <h4>Individual + Team </h4>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Toatal Numbers of Certificate attached (in numbers)</label>
+                            <div class="ui large input">
+                                <input placeholder="numbers" name="cultural_fest_certificate" type="number">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label> Upload Certificate - TARANG/INVICTA Participation </label>
+                            <input type="file" name="cultural_fest_certificate_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Cultural Club Management</h3>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field ">
+                            <label>Coordinator</label>
+                            <div class="ui large input">
+                                <input placeholder="Coordinator Name" name="cultural_club_coordinator" type="text">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate</label>
+                            <input type="file" name="cultural_club_coordinator_doc">
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field ">
+                            <label>Co-Coordinator</label>
+                            <div class="ui large input">
+                                <input placeholder="Co-Coordinator Name" name="cultural_club_co_coordinator" type="text">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate</label>
+                            <input type="file" name="cultural_club_co_coordinator_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Cultural Event Management</h3>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Member Core Team </label>
+                            <input placeholder="Member Name" name="cultural_event_member_team" type="text">
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Upload Supporting Certificate </label>
+                            <input type="file" name="cultural_event_member_team_doc">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Participation in Inter IIITDMJ Cultural Event</h3>
+                        <h4>Individual + Team</h4>
+                    </div> 
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Toatal Numbers of Certificate attached (in numbers)</label>
+                            <div class="ui large input">
+                                <input placeholder="numbers" name="cultural_inter_iiit_individual" type="number">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label> Individual Event Upload Document </label>
+                            <input type="file" name="cultural_inter_iiit_individual_doc">
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Toatal Numbers of Certificate attached (in numbers)</label>
+                            <div class="ui large input">
+                                <input placeholder="numbers" name="cultural_inter_iiit_team" type="number">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label> Team Event Upload Document </label>
+                            <input type="file" name="cultural_inter_iiit_team_doc">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <a class="right floated item">
+                        <label><br></label>
+                        <button type="submit" name="Submit_Silver" class="ui primary large right floated button">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+function show_silver(val){
+    if(val == "sports"){
+        sports.style.display = "inline";
+        cultural.style.display = "none";
+    }
+    if(val == "cultural"){
+        sports.style.display = "none";
+        cultural.style.display = "inline";
+    }
+}
+</script>

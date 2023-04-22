@@ -1,0 +1,258 @@
+<div class="content">
+    <div class="description">
+        <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="award" name="award" value="Merit-cum-Means Scholarship">
+            <div class="three fields">
+                <div class="six wide field ">
+                    <label>Category</label>
+                    <div class="ui large input">
+                        <input value="{{request.user.extrainfo.student.category}}" name="category" type="text" readonly>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Hall No.</label>
+                    <div class="ui large input">
+                        <input value="{{request.user.extrainfo.student.hall_no}}" name="hall_no" type="text" readonly>
+                    </div>
+                </div>
+
+                <div class="four wide field">
+                    <label>Room no</label>
+                    <div class="ui large input">
+                        <input value="{{request.user.extrainfo.student.hall_no}}" name="room_no" type="number" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Father's Name/Guardian's</label>
+                    <div class="ui large input">
+                        <input placeholder="Fathers Name" type="text" value="{{request.user.extrainfo.student.father_name}}" >
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Father Occupation</label>
+                    <select class="ui fluid search large dropdown" name="father_occ" required>
+                        <option value="">Select</option>
+                        {% for p,v in source %}
+                        <option value="{{p}}">{{v}}</option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Mother's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Mother's Name" type="text" value="{{request.user.extrainfo.student.mother_name}}">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Mother Occupation</label>
+                    <select class="ui fluid search large dropdown" name="mother_occ" required>
+                        <option  value="">Select</option>
+                        {% for p,v in mother_occ %}
+                        <option value="{{p}}">{{v}}</option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="eight wide field">
+                    <label>Father's Occupation Description</label>
+                    <div class="ui large input">
+                        <input placeholder="Father's Occupation Description" type="text" name="father_occ_desc" required>
+                    </div>
+                </div>
+                <div class="eight wide field">
+                    <label>Mother's Occupation Description</label>
+                    <div class="ui large input">
+                        <input placeholder="Mother's Occupation Description" type="text" name="mother_occ_desc" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Brother's name</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother's Name" name="brother_name" type="text" required pattern="[A-Za-z]*">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Brother's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother occupation" name="brother_occupation" type="text" required>
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Sister's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's Name"  name="sister_name" type="text" required pattern="[A-Za-z]*">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Sister's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's occupation" name="sister_occupation" type="text" required>
+                    </div>
+                </div>
+            </div>
+            <div class="three fields">
+                <div class=" field">
+                    <label>Father's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder=" Income" name="father_income" type="number" required min="0">
+                    </div>
+                </div>
+                <div class=" field">
+                    <label>Mother's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" name="mother_income" type="number" required min="0">
+                    </div>
+                </div>
+
+                <div class=" field">
+                    <label>Other sources Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" name="other_income" type="number" min="0">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label># of Four Wheeler</label>
+                    <div class="ui large input">
+                        <input placeholder="Number of 4 Wheelers" type="number" name="four_wheeler" required>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Four Wheeler Description</label>
+                    <div class="ui large input">
+                        <input placeholder="Description" type="text" name="four_wheeler_desc" required>
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label># of Two Wheeler</label>
+                    <div class="ui large input">
+                        <input placeholder="Number of 2 Wheelers" type="number" name="two_wheeler" required>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Two Wheeler Description</label>
+                    <div class="ui large input">
+                        <input placeholder="Description" type="text" name="two_wheeler_desc" required>
+                    </div>
+                </div>
+            </div>
+            <div class="three fields">
+                <div class=" field">
+                    <label>House Type</label>
+                    <div class="ui fluid search selection large dropdown">
+                        <input name="house" type="hidden" required>
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text" data-value="">Select</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="rented">
+                                Rented
+                            </div>
+                            <div class="item" data-value="owned">
+                                Owned
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class=" field">
+                    <label>Plot Area</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" type="number" name="plot_area" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Constructed Area</label>
+                    <div class="ui large input">
+                        <input placeholder="Other Source's Income" type="number" name="constructed_area" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Fees 10th</label>
+                    <div class="ui large input">
+                        <input placeholder="Fees 10th" type="number" name="school_fee" required>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Name of the School</label>
+                    <div class="ui large input">
+                        <input placeholder="School Name" type="text" name="school_name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Fees 12th Standard</label>
+                    <div class="ui large input">
+                        <input placeholder="Fees 12th Standard" type="number" name="college_fee" required>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Name of the College</label>
+                    <div class="ui large input">
+                        <input placeholder="College Name" type="text" name="college_name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="six wide field ">
+                    <label>Amount of Educational Bank Loan</label>
+                    <div class="ui large input">
+                        <input placeholder="Amount" type="number" name="loan_amount" required>
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Bank Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Bank Name" type="text" name="bank_name" required>
+                    </div>
+                </div>
+            </div>
+            <div class=" two fields">
+
+                <div class=" field">
+                    <label>Required Attachments (upload ZIP only)</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" type="file" name="income_certificate" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <a class="right floated item">
+                        <label><br></label>
+                        <button class="ui primary large right floated button" name="Submit_MCM">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+            </div>
+            <div><br/><br/></div>
+        </form>
+
+    </div>
+</div>
+

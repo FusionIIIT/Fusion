@@ -59,13 +59,13 @@
       {% endif %}
   {% else %}
     <h4>Results</h4>
-    {% if assignment|length  %}
+    {% if assignment1|length  %}
       <div class="ui top attached tabular menu">
-        {% for assi in assignment %}
+        {% for assi in assignment1 %}
           <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{assi.assignment_name}}</a>
         {% endfor %}
       </div>
-      {% for assi in assignment %}
+      {% for assi in assignment1 %}
       <div class="ui {% if forloop.counter is 1 %}active {% endif %} bottom attached tab segment performance" id="result{{forloop.counter}}" data-tab="{{forloop.counter}}">
           <table class="ui very basic collapsing celled table">
               <thead>

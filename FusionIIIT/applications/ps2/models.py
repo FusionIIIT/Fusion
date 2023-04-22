@@ -22,3 +22,15 @@ class StockEntry(models.Model):
 
     class Meta:
         db_table = 'ps2_stocks'
+
+class TransferEntry(models.Model):
+    Item_id = models.IntegerField(blank=False)
+    From_department = models.CharField(max_length=50, blank=False)
+    From_location = models.IntegerField(blank=True, null=True)
+    To_department = models.CharField(max_length=50, blank=False)
+    To_location = models.IntegerField(blank=True, null=True)
+    Date = models.DateTimeField(blank=False)
+    Remark = models.CharField(max_length=200, blank=False)
+
+    class Meta:
+        db_table = 'ps2_transfer'

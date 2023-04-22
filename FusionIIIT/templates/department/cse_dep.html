@@ -7,8 +7,6 @@
 {% block CSE_Dep %}
 
     <h1><center> Welcome to CSE Department </center></h1>
-
-    {% comment %} tabs ui {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="about-us">
             About Us
@@ -30,10 +28,6 @@
             Announcements
         </a>
         {% endif %}
-        {% comment %} <a class="item" data-tab="Request">
-        <a class="item" data-tab="Request">
-            Requests
-        </a> {% endcomment %}
         <a class="item" data-tab="Alumni">
             Alumni
         </a>
@@ -47,29 +41,29 @@
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
-                        <div id="edit-about-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_aboutCSE(this)">Edit</button>
+                        <div id="edit-about-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "about"%}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_aboutCSE">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_about(this)">Edit</button>
-                        <div id="edit-about-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_aboutCSE(this)">Edit</button>
+                        <div id="edit-about-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_about">{{departments.CSE.about}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_aboutCSE">{{departments.CSE.about}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="about">
+                    <div id="aboutCSE">
                         {{departments.CSE.about|safe}}
                     </div>
                     <div class="ui divider"></div>
@@ -77,36 +71,34 @@
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content facilities {% endcomment %}
     <div class="ui tab" data-tab="facilities">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
-                        <div id="edit-facility-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_facilityCSE(this)">Edit</button>
+                        <div id="edit-facility-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "facility" %}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_facilityCSE">{{departments.CSE.facility}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_facility(this)">Edit</button>
-                        <div id="edit-facility-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_facilityCSE(this)">Edit</button>
+                        <div id="edit-facility-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_facility">{{departments.CSE.facility}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_facilityCSE">{{departments.CSE.facility}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="facility">
+                    <div id="facilityCSE">
                         {{departments.CSE.facility|safe}}
                     </div>
                     <div class="ui divider"></div>
@@ -114,12 +106,6 @@
             </div>
         </div>
     </div>
-
-    {% comment %} tabs content faculty {% endcomment %}
-
-
-
-    {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
         <div class="ui vertical segment">
             <div class="content">
@@ -156,17 +142,16 @@
             </div>
         </div>
     </div>
-
-{% comment %} tabs contains Announcement_List {% endcomment %}
     <div class="ui tab" data-tab="announcement">
         {% if user.extrainfo.department.name == "CSE" %}
         <div class="ui vertical segment">
             
             {% if user_designation == "faculty" %}
-                <button class="ui button green " id="show_announcement_form" >Add Announcement</button>
+                <button class="ui button green " id="show_announcement_form" >New Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
-                {% include "department/make_announcements_fac.html" %}
+                    {% include "department/make_announcements_fac.html" %}
                 </div>
+                <button class="ui button green " id="show_drafts" >See Drafts</button>
             {% elif user_designation == "staff" %}
                 <button class="ui button green " >Add Announcement</button>
                 <div id="make-announcement-form" style="display:none;" data-status="hidden">
@@ -178,9 +163,7 @@
                 <div class="description">
                     <span>
 
-                        <div class="ui vertical segment" data-tab="Year-1">
-
-                            {% comment %} {% if ann_list %} {% endcomment %}
+                        <div class="ui vertical segment" data-tab="Year-1" id="published">
                             <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
                                 <thead>
                                     <th>Announcement Date</th>
@@ -218,8 +201,66 @@
                                 {% endfor %}
 
                             </table>
-                            {% comment %} {% endif %} {% endcomment %}
-                            {% comment %} <br><div class="ui divider"></div><br> {% endcomment %}
+                        </div>
+                        <div class="ui vertical segment" data-tab="Year-1" id="drafts"  style="display:none;"   >
+                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; margin: auto;">
+                                <thead>
+                                    <th>Announcement Date</th>
+                                    <th>Announcement By</th>
+                                    <th>Programme</th>
+                                    <th>Batch &nbsp</th>
+                                    <th>Message</th>
+                                    <th>File</th>
+                                    <th>Action</th>
+
+                                </thead>
+
+                                {% for stu in drafts.dep_drafts %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        <td>
+                                            {% if stu.upload_announcement %}
+                                                <a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="ui large buttons">
+                                            <a class="ui negative button" href="/dep/delete_draft/{{stu.id}}/"><i class="trash icon" style="visibility: visible;"></i></a>
+                                            <div class="or"></div>
+                                            <button class="ui positive button" onclick="edit_draft(this)" data-id="{{stu.id}}"><i class="edit icon" style="visibility: visible;"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% include 'department/edit-draft.html' %}
+                                {% endfor %}
+                                {% for stu in drafts.all_drafts %}
+                                    <tr>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user.first_name}} {{ stu.maker_id.user.last_name}}</td>
+                                        <td>{{ stu.programme }}</td>
+                                        <td>{{ stu.batch }}</td>
+                                        <td>{{ stu.message }}</td>
+                                        <td>
+                                            {% if stu.upload_announcement %}
+                                                <a target="_blank" href="/media/{{ stu.upload_announcement }}"><i class="large attach black icon"></i></a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="ui large buttons">
+                                            <a class="ui negative button" href="/dep/delete_draft/{{stu.id}}/"><i class="trash icon" style="visibility: visible;"></i></a>
+                                            <div class="or"></div>
+                                            <button class="ui positive button" onclick="edit_draft(id)" id="edit-{{stu.id}}"><i class="edit icon" style="visibility: visible;"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% include 'department/edit-draft.html' %}
+                                {% endfor %}
+                                
+                            </table>
                         </div>
                         
                     </span>
@@ -229,22 +270,18 @@
         </div>
         {% endif %}
     </div>
-    
-    {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        {% comment %}Get student Data{% endcomment %}
                         <div class="ui styled accordion">
                             <div class="title">
                                 <i class="dropdown icon"></i>
                                 PhD Students
                             </div>
                             <div class="content">
-                                <a class="item" href="./All_Students/{{1111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="item" href="/dep/All_Students/{{1111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         PhD CSE Students
                                     </button>
@@ -259,14 +296,12 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                <a class="item" href="./All_Students/{{11111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="item" href="/dep/All_Students/{{11111}}">
                                     <button style="border: solid; float: left; display: block;" >
                                         First Year CSE
                                     </button>
                                 </a>
-                                <a class="item" href="./All_Students/{{111111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="item" href="/dep/All_Students/{{111111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
@@ -283,28 +318,22 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
-                                <a class="active item" href="./All_Students/{{1}}">
-                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="active item" href="/dep/All_Students/{{1}}">
                                     <button style="border: solid; float: left; display: block;">
                                         First Year CSE
                                     </button>
                                 </a>
-                                {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
-                                <a class="active item" href="./All_Students/{{11}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="active item" href="/dep/All_Students/{{11}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Second Year CSE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="active item" href="/dep/All_Students/{{111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Third Year CSE
                                     </button>
                                 </a>
-                                <a class="active item" href="./All_Students/{{1111}}">
-                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <a class="active item" href="/dep/All_Students/{{1111}}">
                                     <button style="border: solid; float: left; display: block;">
                                         Final Year CSE
                                     </button>
@@ -348,7 +377,6 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -363,14 +391,12 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -380,32 +406,31 @@
             <div class="content">
                 <div class="description">
                     {% if user_designation == "faculty" %}
-                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
-                        <div id="edit-achievement-form" style="display:none;" data-status="hidden" >
+                        <button class="ui button green " onclick="edit_achievementCSE(this)">Edit</button>
+                        <div id="edit-achievement-formCSE" style="display:none;" data-status="hidden" >
                             <form class="ui form" action="{% url 'dep:edit_department' "CSE" "achievement" %}" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_achievementCSE">{{departments.CSE.achievement}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% elif user_designation == "staff" %}
-                        <button class="ui button green " onclick="edit_achievement(this)">Edit</button>
-                        <div id="edit-achievement-form" style="display:none;" data-status="hidden">
+                        <button class="ui button green " onclick="edit_achievementCSE(this)">Edit</button>
+                        <div id="edit-achievement-formCSE" style="display:none;" data-status="hidden">
                             <form class="ui form" action="/dep/editDepartmentDetail/CSE/" method="post">
                                 {% csrf_token %}
                                 <div class="field">
-                                  <textarea rows="20" name="dep_content" id="dep_achievement">{{departments.CSE.achievement}}</textarea>
+                                  <textarea rows="20" name="dep_content" id="dep_achievementCSE">{{departments.CSE.achievement}}</textarea>
                                 </div>
                                 <button type="submit" class="ui primary button">Save</button>
                             </form>
                         </div>
                     {% endif %}
-                    <div id="achievement">
+                    <div id="achievementCSE">
                         {{departments.CSE.achievement|safe}}
                     </div>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -414,7 +439,17 @@
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <a class="active item" href="/dep/All_Students/{{1111}}">
+                        <button style="border: solid; float: left; display: block; margin-right:5px">
+                            2018 Batch
+                        </button>
+                    </a>
+                    <a class="active item" href="/dep/All_Students/{{111}}">
+                        <button style="border: solid; float: left; display: block;">
+                            2019 Batch
+                        </button>
+                    </a>
+                    <br>
                 </div>
             </div>
         </div>
