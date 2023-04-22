@@ -1,15 +1,18 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
+
 {% block title %}
-Adding Stock
+Stock Tracking
 {% endblock %}
+
 
 {% block body %}
 {% block navBar %}
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
 
+{% comment %}The grid starts here!{% endcomment %}
 <div class="ui stackable doubling grid">
 
     {% comment %} The left-margin segment! {% endcomment %}
@@ -36,6 +39,16 @@ Adding Stock
 
             <a href="/purchase-and-store2/addstock" class="item">
                 Add stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers" class="item">
+                Transfers Details
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers_form" class="item">
+                Transfers Forms
                 <i class="right floated chevron right icon"></i>
             </a>
 

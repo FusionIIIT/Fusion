@@ -17,7 +17,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from applications.eis.models import (faculty_about, emp_research_projects)
 
 from notification.views import department_notif
-from .models import SpecialRequest, Announcements
+from .models import SpecialRequest, Announcements , Department
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -157,11 +157,11 @@ def browse_announcements():
         context - Dictionary for storing all above data
 
     """
-    cse_ann = Announcements.objects.filter(department="CSE")
-    ece_ann = Announcements.objects.filter(department="ECE")
-    me_ann = Announcements.objects.filter(department="ME")
-    sm_ann = Announcements.objects.filter(department="SM")
-    all_ann = Announcements.objects.filter(department="ALL")
+    cse_ann = Announcements.objects.filter(department="CSE" , is_draft = False)
+    ece_ann = Announcements.objects.filter(department="ECE", is_draft = False)
+    me_ann = Announcements.objects.filter(department="ME", is_draft = False)
+    sm_ann = Announcements.objects.filter(department="SM", is_draft = False)
+    all_ann = Announcements.objects.filter(department="ALL", is_draft = False)
 
     context = {
         "cse" : cse_ann,
@@ -169,6 +169,30 @@ def browse_announcements():
         "me" : me_ann,
         "sm" : sm_ann,
         "all" : all_ann
+    }
+
+    return context
+
+def browse_announcement_drafts(department):
+    """
+    This function is used to browse Announcements Department-Wise
+    made by different faculties and admin.
+
+    @variables:
+        cse_ann - Stores CSE Department Announcements
+        ece_ann - Stores ECE Department Announcements
+        me_ann - Stores ME Department Announcements
+        sm_ann - Stores SM Department Announcements
+        all_ann - Stores Announcements intended for all Departments
+        context - Dictionary for storing all above data
+
+    """
+    dep_drafts = Announcements.objects.filter(department=department , is_draft = True)
+    all_drafts = Announcements.objects.filter(department="ALL", is_draft = True)
+
+    context = {
+        "dep_drafts" : dep_drafts,
+        "all_drafts" : all_drafts,
     }
 
     return context
@@ -195,6 +219,15 @@ def get_to_request(username):
     req = SpecialRequest.objects.filter(request_receiver=username)
     return req
 
+def department():
+    department = Department.objects.all()
+
+    context = {}
+
+    for dep in department:
+        context[dep.name] = dep
+    return context
+
 @login_required(login_url='/accounts/login')
 def dep_main(request):
     """
@@ -212,54 +245,55 @@ def dep_main(request):
 
     """
     user = request.user
-    usrnm = get_object_or_404(User, username=request.user.username)
-    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
-    ann_maker_id = user_info.id
-    user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-
-    requests_made = get_make_request(user_info)
-    
-    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
-    student = request.user.holds_designations.filter(designation__name='student').exists()
-    staff = request.user.holds_designations.filter(designation__name='staff').exists()
-    
-    context = browse_announcements()
-    context_f = faculty()
-    user_designation = ""
-    
-    if fac_view:
-        user_designation = "faculty"
-    elif student:
-        user_designation = "student"
-    else:
-        user_designation = "staff"
-
-    if request.method == 'POST':
-        request_type = request.POST.get('request_type', '')
-        request_to = request.POST.get('request_to', '')
-        request_details = request.POST.get('request_details', '')
-        request_date = date.today()
-        
-        if request_type and request_to and request_details:
-            obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
-                                                        request_date=request_date,
-                                                        brief=request_type,
-                                                        request_details=request_details,
-                                                        status="Pending",
-                                                        remarks="--",
-                                                        request_receiver=request_to
-                                                        )
-    
-    if user_designation == "student":
-        return render(request,"department/index.html", {"announcements":context,
-                                                        "fac_list" : context_f,
-                                                        "requests_made" : requests_made
-                                                    })
-    # elif(str(user.extrainfo.user_type)=="faculty"):
-    elif user_designation=="faculty":
+    if user.extrainfo.user_type=="faculty":
         return HttpResponseRedirect("facView")
-    elif user_designation=="staff":
+    elif user.extrainfo.user_type =="staff":
         return HttpResponseRedirect("staffView")
+    elif user.extrainfo.user_type == "student":
+        usrnm = get_object_or_404(User, username=request.user.username)
+        user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+        ann_maker_id = user_info.id
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+
+        requests_made = get_make_request(user_info)
+        
+        fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
+        student = request.user.holds_designations.filter(designation__name='student').exists()
+        staff = request.user.holds_designations.filter(designation__name='staff').exists()
+        
+        context = browse_announcements()
+        context_f = faculty()
+        departments = department()
+        user_designation = ""
+        
+        if fac_view:
+            user_designation = "faculty"
+        elif student:
+            user_designation = "student"
+        else:
+            user_designation = "staff"
+
+        if request.method == 'POST':
+            request_type = request.POST.get('request_type', '')
+            request_to = request.POST.get('request_to', '')
+            request_details = request.POST.get('request_details', '')
+            request_date = date.today()
+            
+            if request_type and request_to and request_details:
+                obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
+                                                            request_date=request_date,
+                                                            brief=request_type,
+                                                            request_details=request_details,
+                                                            status="Pending",
+                                                            remarks="--",
+                                                            request_receiver=request_to
+                                                            )
+        
+        return render(request,"department/index.html", {"announcements":context,
+                                                            "fac_list" : context_f,
+                                                            "requests_made" : requests_made,
+                                                            "departments":departments
+                                                        })
 
 def faculty_view(request):
     """
@@ -283,9 +317,11 @@ def faculty_view(request):
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
         programme = request.POST.get('programme', '')
-        message = request.POST.get('announcement', '')
+        message = request.POST.get('message', '')
         upload_announcement = request.FILES.get('upload_announcement')
-        department = request.POST.get('department')
+        department_ = request.POST.get('department')
+        is_draft = request.POST.get('is_draft')
+
         ann_date = date.today()
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
         getstudents = ExtraInfo.objects.select_related('user')
@@ -296,13 +332,19 @@ def faculty_view(request):
                                     programme=programme,
                                     message=message,
                                     upload_announcement=upload_announcement,
-                                    department = department,
+                                    department = department_,
+                                    is_draft = True if is_draft == "true" else False,
                                     ann_date=ann_date)
-        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
+    drafts = browse_announcement_drafts(request.user.extrainfo.department.name)
+    context_f = faculty()
+    departments = department()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
+                                                            "drafts":drafts,
+                                                            "fac_list" : context_f,
+                                                            "departments":departments,
                                                             "request_to":requests_received
                                                         })
 
@@ -343,11 +385,12 @@ def staff_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        # department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
+    context_f = faculty()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
+                                                            "fac_list" : context_f,
                                                             "request_to":requests_received
                                                         })
 
@@ -707,5 +750,51 @@ def deny(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
+
+def delete_draft(request, id):
+    obj = get_object_or_404(Announcements , id=id)
+    obj.delete()
+    return redirect('/dep/')
+
+
+def edit_draft(request):
+    if request.method == 'POST':
+        id = request.POST.get('id', '')
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('message', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        department_ = request.POST.get('department')
+        is_draft = request.POST.get('is_draft')
+        ann_date = date.today()
+
+        obj = Announcements.objects.get(id = id)
+        obj.batch=batch
+        obj.programme=programme
+        obj.message=message
+        obj.upload_announcement=upload_announcement
+        obj.department = department_
+        obj.is_draft = True if is_draft == "true" else False
+        obj.ann_date=ann_date
+
+        obj.save()
+    return redirect('/dep/')
+
+
+def edit_department(request, department_name , field):
+    if request.method == "POST":
+        content = request.POST.get('dep_content')
+        if field == "about":
+            Department.objects.filter(name=department_name).update(about=content)
+        elif field == "facility":
+            Department.objects.filter(name=department_name).update(facility=content)
+        elif field == "achievement":
+            Department.objects.filter(name=department_name).update(achievement=content)
+
+
+        return redirect('/dep/')
+
+
+        
 
 

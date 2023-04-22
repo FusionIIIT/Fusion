@@ -15,8 +15,9 @@ urlpatterns = [
     url(r'^messmenusubmit/', views.submit_mess_menu, name='messmenusubmit'),
     url(r'^regsubmit/', views.regsubmit, name='regsubmit'),
     url(r'^startmessregistration/', views.start_mess_registration, name='startmessregistration'),
+    url(r'^closemessregistration/', views.closeRegistration, name='closemessregistration'),
     url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),
-    url(r'^menudownload1/', views.MenuPDF.as_view(), name='MenuPDF1'),
+    url(r'^menudownload1/', views.MenuPDF1.as_view(), name='MenuPDF1'),
     # url(r'^(?P<ap_id>[0-9]+)/response/', views.response, name='response'),
     url(r'^response', views.menu_change_response, name='response'),
     url(r'^(?P<ap_id>[0-9]+)/responsevacationfood/', views.response_vacation_food, name='responsevacationfood'),
@@ -36,9 +37,12 @@ urlpatterns = [
     url(r'^selectmessconvener', views.select_mess_convener, name='selectmessconvener'),
     url(r'^billdownload', views.download_bill_mess, name='billdownload'),
     url("info-form", views.mess_info, name="info"),
-    url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
-    url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment'),
+    url(r'^updatemenuu', views.update_menu1, name='update_menu1'),
+    url(r'^updatemenu', views.update_menu2, name='update_menu2'),
+
     url(r'^api', include('applications.central_mess.api.urls')),
     
+    url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
+    url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
 
 ]

@@ -3,19 +3,25 @@
 {% block sidetabmenu %}
 {% comment %}The Tab-Menu starts here!{% endcomment %}
 <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-  <a class="item" href="{% url 'establishment:ltc' %}">
-    LTC
-    <i class="right floated chevron right icon"></i>
+  <a class="item" href="{% url 'hr2:administrativeProfile' %}">
+      E-Service Book
+      <i class="right floated chevron right icon"></i>
   </a>
-  {% if request.user.extrainfo.user_type == 'faculty' or director %}
   <a class="item" href="{% url 'establishment:cpda' %}">
-    CPDA
-    <i class="right floated chevron right icon"></i>
+      CPDA
+      <i class="right floated chevron right icon"></i>
   </a>
-  {% endif %}
-  <a class="item active" href="{% url 'establishment:appraisal' %}">
-    Appraisal
-    <i class="right floated chevron right icon"></i>
+  <a class="item" href="{% url 'establishment:ltc' %}">
+      LTC
+      <i class="right floated chevron right icon"></i>
+  </a>
+  <a class="active item" data-tab="ttenth" href="{% url 'establishment:appraisal' %}">
+      Appraisal
+      <i class="right floated chevron right icon"></i>
+  </a>
+  <a class="item" href="/leave/">
+      Leave
+      <i class="right floated chevron right icon"></i>
   </a>
 </div>
 {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -111,7 +117,6 @@
 
                 <!-- CSS Style for HTML Table -->
                 <style>
-                	* { font: 17px Calibri; }
                     table { width: 70%; }
                     table, th, td { border: solid 1px #DDD;
                         border-collapse: collapse; padding: 2px 3px; text-align: center;

@@ -1,42 +1,15 @@
 {% load static %}
 
-{% block css %}
-    <style>
-        .moduleAllContainer {
-            display: flex !important;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            padding: 1rem !important;
-        }
-
-        .moduleSpan {
-            margin: 0.25rem;
-            padding: 0.25rem;
-            width: 10rem;
-        }
-
-        .moduleSpan > a {
-            display: flex !important;
-            flex-direction: column;
-            align-items: center;
-            height: 9rem;
-            justify-content: space-evenly;
-        }
-
-        .tcenter {
-            text-align: center;
-        }
-    </style>
-{% endblock %}
-
-{% comment %} The Modules start here! {% endcomment %}
 {% block modules %}
-    <div class="ui fluid card moduleAllContainer">
-        <a class="ui top attached black label">
-            <span class="ui inverted header" style="padding-left: 2rem;">Modules</span>
-            <i class="setting icon right floated"></i>
-            <i class="chevron up icon right floated" id="toggleIcon" onclick="toggleContent()"></i>
-        </a>
+{% comment %}The Modules start here!{% endcomment %}
+<div class="stackable doubling ui internally celled grid">
+    <div class="column">
+        <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px; max-width: 18vw;">
+            <a class="ui top attached black label">
+                <span class="ui inverted header">Modules</span>
+                <i class="setting icon right floated"></i>
+                <i class="chevron up icon right floated" id="toggleIcon" onclick="toggleContent()"></i>
+            </a>
 
         <div class="content modulesContent" style="padding-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: center">
             {% if request.user.extrainfo.user_type == 'student' or request.user.extrainfo.user_type == 'faculty' %}
@@ -101,6 +74,7 @@
                     <div>
                         <i class="ui first aid icon big"></i>
                     </div>
+                    {% comment %}A single modules row ends here!{% endcomment %}
 
                     <div class="ui small header tcenter">
                         Healthcare Center
@@ -130,8 +104,12 @@
                         <i class="ui student icon big"></i>
                     </div>
 
-                    <div class="ui small header tcenter">
-                        Scholarship Portal
+                                    <div class="row">
+                                        <span class="ui sub header centered">Visitor's Hostel</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </a>
             </span>
@@ -171,6 +149,7 @@
                     <div>
                         <i class="ui line industry icon big"></i>
                     </div>
+                    {% comment %}A single modules row ends here!{% endcomment %}
 
                     <div class="ui small header tcenter">
                         Estate Management
@@ -213,6 +192,14 @@
                     <div>
                         <i class="ui edit outline icon big"></i>
                     </div>
+                    {% comment %}A single modules row ends here!{% endcomment %}
+                    <div class="row">
+                        <div class="column">
+                            <a class="ui large label" href="/academic-procedures">
+                                <div class="ui centered grid">
+                                    <div class="row">
+                                        <i class="ui university icon big"></i>
+                                    </div>
 
                     <div class="ui small header tcenter">
                         Counselling Cell
@@ -239,7 +226,9 @@
             <a class="ui bottom attached blue label">
                 <i class="right arrow icon right floated"></i>
             </a>
-        {% endcomment %}
+            {% endcomment %}
+        </div>
     </div>
-{% endblock %}
+</div>
 {% comment %}The Modules End here!{% endcomment %}
+{% endblock %}

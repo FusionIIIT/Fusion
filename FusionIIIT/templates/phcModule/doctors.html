@@ -57,7 +57,7 @@
         <tr>
           <td style="font-weight:bold;color:black;">Doctor</td>
           
-          {% for d in doct %}
+          {% for d in doctors %}
           {{count.doctor_count}}
           <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
           {% endfor %}
@@ -88,7 +88,7 @@
 
     {% comment %}the add doctor tab starts here {% endcomment %}
     <div class="ui tab" data-tab="adddoctor">
-      <p id="doc_add"></p>
+      <p id="doc_add" style="width: 100%; text-align: center;"></p>
         <div class="ui vertical segment">
             <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
               <div class="field">
@@ -124,8 +124,12 @@
                                                     var new_doctor = document.getElementById('new_doctor').value;
                                                     var specialization = document.getElementById('specialization').value;
                                                     var phone = document.getElementById('phone').value;
-                                                    if ( new_medicine==""||phone==""||specialization=="") {
+                                                    if (new_medicine=="" || phone=="" || specialization=="") {
                                                         $('#doc_add').html('Enter valid details');
+                                                        return false;
+                                                    }
+                                                    if(phone.toString().length != 10){
+                                                        $('#doc_add').html('Enter valid phone number');
                                                         return false;
                                                     }
 
@@ -140,7 +144,7 @@
                                                       add_doctor:$('#add_doctor').val()
                                                     },
                                                       success: function(data){
-                                                      alert("added doctor");
+                                                      alert("Added Doctor!");
 
                                             {% comment %}          $('#phc_docs').find('tbody');
 $('#phc_docs tbody').append("<tr><td>" + data.doctor + "</td><td>" + data.specialization + "</td><td>"  + data.phone + "</td></tr>");

@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from xhtml2pdf import pisa
-
+from django.contrib import messages
 from applications.eis import admin
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from django.http.response import JsonResponse
@@ -279,7 +279,7 @@ def profile(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     if extra_info.user_type != 'faculty':
         return redirect('/')
-    pf = extra_info.id
+    pf = user.id
 
     form = ConfrenceForm()
 
@@ -582,7 +582,7 @@ def emp_visitsDelete(request, pk, sr, mark):
 # Views for inserting fields in EIS
 def pg_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('pg_id')==None or request.POST.get('pg_id')==""):
         eis = emp_mtechphd_thesis()
@@ -602,7 +602,7 @@ def pg_insert(request):
 
 def phd_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('phd_id')==None or request.POST.get('phd_id')==""):
         eis = emp_mtechphd_thesis()
@@ -623,7 +623,7 @@ def phd_insert(request):
 
 def fvisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('fvisit_id')==None or request.POST.get('fvisit_id')==""):
         eis = emp_visits()
@@ -649,7 +649,7 @@ def fvisit_insert(request):
 
 def ivisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('ivisit_id')==None or request.POST.get('ivisit_id')==""):
         eis = emp_visits()
@@ -677,7 +677,7 @@ def ivisit_insert(request):
 #Function to save journal of employee
 def journal_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    eis = emp_research_papers.objects.create(pf_no = user.id)
+    eis = emp_research_papers.objects.create(pf_no = request.user.id)
     eis.rtype = 'Journal'
     eis.authors = request.POST.get('authors')
     eis.title_paper = request.POST.get('title')
@@ -878,7 +878,7 @@ def editindianvisit(request):
 
 def conference_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     eis = emp_research_papers()
     eis.user = request.user
     eis.pf_no = pf
@@ -1034,7 +1034,7 @@ def editconference(request):
 
 def book_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     eis = emp_published_books()
     eis.user = request.user
     eis.pf_no = pf
@@ -1061,7 +1061,7 @@ def editbooks(request):
 
 def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     eis = emp_confrence_organised()
     eis.user = request.user
     eis.pf_no = pf
@@ -1133,7 +1133,7 @@ def editconsym(request):
 
 def event_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('event_id')==None or request.POST.get('event_id')==""):
         eis = emp_event_organized()
@@ -1193,7 +1193,7 @@ def editevent(request):
 
 def award_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('ach_id')==None or request.POST.get('ach_id')==""):
         eis = emp_achievement()
@@ -1215,7 +1215,7 @@ def award_insert(request):
 
 def talk_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('lec_id')==None or request.POST.get('lec_id')==""):
         eis = emp_expert_lectures()
@@ -1239,7 +1239,7 @@ def talk_insert(request):
 
 def chaired_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('ses_id')==None or request.POST.get('ses_id')==""):
         eis = emp_session_chair()
@@ -1264,7 +1264,7 @@ def chaired_insert(request):
 
 def keynote_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('keyid')==None or request.POST.get('keyid')==""):
         eis = emp_keynote_address()
@@ -1289,7 +1289,7 @@ def keynote_insert(request):
 
 def project_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('project_id')==None or request.POST.get('project_id')==""):
         eis = emp_research_projects()
@@ -1333,7 +1333,7 @@ def project_insert(request):
 def consult_insert(request):
     print("=======================")
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     print(">>>>>>>.",user,type(user))
     print(">>>>>>>",request.user,type(request.user))
     if (request.POST.get('consultancy_id')==None or request.POST.get('consultancy_id')==""):
@@ -1367,7 +1367,10 @@ def consult_insert(request):
 
 def patent_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    if(int(request.POST.get('earnings')) < 0):
+        messages.error(request, 'Earnings cannot be negative')
+        return HttpResponseRedirect('/profile')
+    pf = request.user.id
 
     if (request.POST.get('patent_id')==None or request.POST.get('patent_id')==""):
         eis = emp_patents()
@@ -1382,11 +1385,12 @@ def patent_insert(request):
     eis.status = request.POST.get('status')
     eis.a_month = request.POST.get('month')
     eis.save()
-    return redirect('/profile/?page6=1')
+    messages.success(request, 'New patent created')
+    return HttpResponseRedirect('/profile')
 
 def transfer_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
 
     if (request.POST.get('tech_id')==None or request.POST.get('tech_id')==""):
         eis = emp_techtransfer()
@@ -2151,7 +2155,7 @@ def render_to_pdf(template_src, context_dict):
 
 def generate_report(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     start = request.POST.get('syear')
     star_date = start+'-01-01'
     end = request.POST.get('lyear')
@@ -2579,7 +2583,7 @@ def generate_report(request):
 
 def rspc_generate_report(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
+    pf = request.user.id
     start = request.POST.get('syear')
     star_date = start+'-01-01'
     end = request.POST.get('lyear')

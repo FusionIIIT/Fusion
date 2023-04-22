@@ -70,6 +70,8 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_bank/(?P<qb_code>[0-9]+)$',
         views.edit_bank, name='edit_bank'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/attendance$', views.submit_attendance,
-        name='submit_attendance'),] 
+        name='submit_attendance'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit-assignment-marks$', views.edit_assignment_marks,
+        name='assignment_marks'),    ]  
     
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
