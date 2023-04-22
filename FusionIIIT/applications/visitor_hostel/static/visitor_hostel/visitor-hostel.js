@@ -677,7 +677,7 @@ function forward_booking (id) {
     previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
-    numberOfRoomsRequired = $('select[name=number-of-rooms-'+id+']').val();
+    numberOfRoomsRequired = $('input[name=number-of-rooms-'+id+']').val();
     remark = $('input[name=cancellation-remarks-' + id + ']').val();
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
@@ -691,6 +691,7 @@ function forward_booking (id) {
         alertModal("Please fill the rooms to confirm booking.");
         return;
     }
+    console.log("rooms req:", numberOfRoomsRequired, rooms.length);
     if (rooms.length > numberOfRoomsRequired) {
         alertModal("Number of rooms cannot be more than number of rooms required!");
         return;
