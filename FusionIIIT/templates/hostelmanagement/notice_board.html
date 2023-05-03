@@ -14,11 +14,12 @@
                         More
                     </div>
 
-                
                 <div class="content">
                     <h3 style="color:grey;">Description</h3>
                     <h4 class="transition hidden" style="color:black;">{{notice.description}}</h4>
+                    {% if notice.content %}
                     <h4 class="ui dividing header"><a href="..\media\{{notice.content}}">Content Link</a></h4>
+                    {% endif %}
                 </div>
                 
             </div>

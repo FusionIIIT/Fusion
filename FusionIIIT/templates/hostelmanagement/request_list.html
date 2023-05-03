@@ -51,13 +51,16 @@
             <form method="post" action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
               {% csrf_token %}
               <div class="fields" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                <div class="field" style="flex: 2; margin-right: 1rem;">
-                  <label>Room Number</label>
-                  <input type="text" name="guest_room_id" required>
-                </div>
+                <label>Room</label>
+                <select class="ui dropdown" name="guest_room_id">
+                  <option value="" selected disabled>Select Room</option>
+                  {% for room in guest_rooms|get_hall_no:hall_id %}
+                  <option value="{{room.room}}" >{{room.room}}</option>
+                  {% endfor %}
+                </select>
                 <div class="field" style="flex: 1; margin-right: 1rem;">
                   <label>Status</label>
-                  <select class="ui dropdown" name="status" required>
+                  <select class="ui dropdown" name="status" onchange="updateButton(this)" required>
                     <option value="" selected disabled>Status</option>
                     <option value="Accepted">Accepted</option>
                     <option value="Rejected">Rejected</option>
@@ -66,10 +69,10 @@
                 </div>
               </div>
               <div class="field" style="text-align: right">
-                <button class="ui mini green basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" style = "margin-right: 1rem;margin-top: 1rem;" onclick="return confirm('Are you sure you want to SUBMIT this request?');">Submit</button>
+                <button class="ui mini green basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" id="submit-btn" style = "margin-right: 1rem;margin-top: 1rem;" onclick="return confirm('Are you sure you want to SUBMIT this request?');">Submit</button>
               </div>
             </form>
-            
+
             {% endifequal %}
           {% endif %}
         </div>
@@ -78,3 +81,18 @@
     </div>
   {% endfor %}
 {% endblock %}
+            
+<script>
+  function updateButton(selectElem) {
+    var submitBtn = document.getElementById('submit-btn');
+    if (selectElem.value == 'Rejected') {
+      submitBtn.innerHTML = 'Reject';
+      submitBtn.setAttribute('name', 'reject_request');
+    } else {
+      submitBtn.innerHTML = 'Submit';
+      submitBtn.setAttribute('name', 'accept_request');
+    }
+  }
+</script>
+
+

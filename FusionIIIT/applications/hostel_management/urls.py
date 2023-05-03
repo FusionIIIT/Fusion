@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'hostelmanagement'
@@ -33,4 +33,7 @@ urlpatterns = [
     #Worker Report
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
+
+    #API endpoints
+    path('api/', include('applications.hostel_management.api.urls'))
 ]

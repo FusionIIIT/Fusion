@@ -100,6 +100,23 @@ class HallAdmin(models.Model):
     def __str__(self):
         return str(self.hall) + 'admin ' + '(' + str(self.faculty) + ')'
 
+class GuestRoom(models.Model):
+    """
+    'hall' foreign key: the hostel to which the room belongs
+    'room' guest room number
+    'vacant' boolean value to determine if the room is vacant
+    'occupied_till', date field that tells the next time the room will be vacant, null if 'vacant' == True
+    """
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room = models.CharField(max_length=255)
+    occupied_till = models.DateField(null=True, blank=True)
+    vacant = models.BooleanField(default=True)
+    @property
+    def _vacant(self) -> bool:
+        if self.occupied_till and self.occupied_till > timezone.now():
+            self.vacant = False
+        self.vacant = True
+
 class GuestRoomBooking(models.Model):
     """
     Records information related to booking of guest rooms in various Hall of Residences.

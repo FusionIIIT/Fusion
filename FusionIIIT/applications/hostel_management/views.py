@@ -56,7 +56,9 @@ def hostel_view(request, context={}):
     pending_guest_room_requests = {}
     for hall in all_hall:
         pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender__user')
-    
+    guest_rooms = {}
+    for hall in all_hall:
+        guest_rooms[hall.hall_id] = GuestRoom.objects.filter(hall=hall).select_related('hall')
     user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user.extrainfo).order_by("-arrival_date")
 
     Staff_obj = Staff.objects.all().select_related('id__user')
@@ -128,6 +130,7 @@ def hostel_view(request, context={}):
     'current_hall': current_hall,
     'hall_staffs': hall_staffs,
     'hall_notices': hall_notices,
+    'guest_rooms': guest_rooms,
     'pending_guest_room_requests': pending_guest_room_requests,
     'user_guest_room_requests': user_guest_room_requests,
     'attendance': halls_attendance,
@@ -440,18 +443,23 @@ def request_guest_room(request):
 @login_required
 def update_guest_room(request):
     if request.method == "POST":
-        approve = request.POST['accept_request'] if 'accept_request' in request.POST else None
-        reject = request.POST['reject_request'] if 'reject_request' in request.POST else None 
-        status = request.POST['status'] if 'status' in request.POST else None
-        guest_room_request = GuestRoomBooking.objects.get(pk=(approve if approve else reject))
-        if approve:
+        if 'accept_request' in request.POST:
+            status = request.POST['status']
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['accept_request'])
             guest_room_request.status = status
             guest_room_request.guest_room_id = request.POST['guest_room_id']
+            room_booked = GuestRoom.objects.get(hall=guest_room_request.hall, room=request.POST['guest_room_id'])
+            room_booked.occupied_till = guest_room_request.departure_date
+            room_booked.save()
             guest_room_request.save()
-        if reject:
+            messages.success(request, "Request accepted successfully!")
+        elif 'reject_request' in request.POST:
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['reject_request'])
             guest_room_request.delete()
-        messages.success(request, "Changes made successfully!")
-        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+            messages.success(request, "Request rejected successfully!")
+        else:
+            messages.error(request, "Invalid request!")
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 
