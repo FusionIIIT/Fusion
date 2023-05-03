@@ -196,7 +196,7 @@ def academic_procedures_student(request):
 
         current_sem_branch_courses = get_branch_courses(current_user, user_sem, user_branch)
 
-        pre_registration_date_flag = get_pre_registration_eligibility(current_date)
+        pre_registration_date_flag = get_pre_registration_eligibility(current_date, user_sem, acad_year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
 
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)

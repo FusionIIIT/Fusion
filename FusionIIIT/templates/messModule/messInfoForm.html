@@ -1,9 +1,37 @@
 {% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Central Mess
+{% endblock %}
+
 
 {% block body %}
-<form action="{% url 'mess:info' %}" method="post">
+    {% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    <div class="ui stackable doubling grid">
+
+      {% comment %}The left-margin segment!{% endcomment %}
+      <div class="column"></div>
+  
+      {% comment %}
+      The left-rail segment starts here!
+      {% endcomment %}
+      <div class="three wide column">
+  
+          {% comment %}The user image card starts here!{% endcomment %}
+          {% block usercard %}
+          {% include 'globals/usercard.html' %}
+          {% endblock %}
+          {% comment %}The user image card ends here!{% endcomment %}
+  
+      </div>
+<form action="{% url 'mess:info' %}" method="post" style='margin:0 auto;'>
+  <h1>Mess registration</h1>
   {% csrf_token %}
   {{ form }}
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <button type="submit" class="btn btn-primary ui positive button" style='border-radius:1rem'>Submit</button>
 </form>
 {% endblock %}

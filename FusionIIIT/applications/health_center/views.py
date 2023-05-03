@@ -80,8 +80,8 @@ def compounder_view(request):
             stocks = Stock.objects.all()
             days = Constants.DAYS_OF_WEEK
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
-            expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
-            live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
+            expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(), returned=False).order_by('expiry_date')
+            live_meds=Expiry.objects.select_related('medicine_id').filter(expiry_date__gte=datetime.now(), returned=False).order_by('quantity')
             count=Counter.objects.all()
             presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().order_by('-date')
             medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
@@ -93,14 +93,15 @@ def compounder_view(request):
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
             doctors=Doctor.objects.filter(active=True).order_by('id')
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            # doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
              
+            print(live_meds.values())
 
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors, 'doct': doct,
+                           'appointments_today': appointments_today, 'doctors': doctors,
                            'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
@@ -150,14 +151,14 @@ def student_view(request):
             Counter.objects.create(count=0,fine=0)
             count=Counter.objects.get()
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            # doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
             
 
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule, 'users': users,'doct': doct, 'curr_date': datetime.now().date()})
+                           'prescription': prescription, 'schedule': schedule, 'users': users, 'curr_date': datetime.now().date()})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 

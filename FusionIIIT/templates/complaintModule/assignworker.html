@@ -1,4 +1,4 @@
-<!--HTML file for caretaker to assign worker to a paricular complaint-->
+<!--HTML file for secincharge to assign worker to a paricular complaint-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -110,7 +110,12 @@ Complaint
                                         <td> : {{ detail.specific_location }}</td>
                                     </tr>
                                 </div>
-
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Complaint Detail</td>
+                                        <td> : {{ detail.details }}</td>
+                                    </tr>
+                                </div>
                                 <div class="eight wide field">
                                     <tr>
                                         <td>Status</td>
@@ -165,7 +170,7 @@ Complaint
             <div class="ui tab large" data-tab="redirect">
                 <div class="ui vertical segment" style="padding:40px">
                     <h4>If you think that this complaint does not belong to you .</br>
-                        You a can pass this complaint to required caretaker .</h4>
+                        You a can pass this complaint to required section incharge .</h4>
                     <form method="post" action=".">
                         {% csrf_token %}
                         <div class="ui header">
@@ -198,17 +203,11 @@ Complaint
                             </table>
                             <div class="eight wide field">
 
-                                {% if detail.status != 0 %}
-
-                                <H3>You have assigned a worker. First, remove the worker from this complaint then
-                                    <span style="color: red;">declined</span> this complaint.
-                                    .</H3>
-                                {% else %}
-                                <label>Choose particular caretaker from a drop down box :</label>
-                                <select name="assign_caretaker">
-                                    {% if total_caretakers_in_area %}
-                                    {% for i in total_caretakers_in_area %}
-                                    <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
+                                <label>Choose particular section incharge from a drop down box :</label>
+                                <select name="assign_secincharge">
+                                    {% if total_secincharge %}
+                                    {% for i in total_secincharge %}
+                                    <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.work_type }}</option>
                                     {% endfor %}
                                     {% else %}
                                     <option ></option>
@@ -221,12 +220,11 @@ Complaint
                                     </button>
                                 </a>
 
-                                {% if total_caretakers_in_area %}
+                                {% if total_secincharge %}
                                 <button class="ui large primary button right floated" type="submit" name="submit"
                                         value="redirect" onclick="redirectsubmit()">
                                     Submit
                                 </button>
-                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -235,10 +233,8 @@ Complaint
             </div>
 
             {% comment %}The ... end here!{% endcomment %}
-
-
+        
         </div>
-
 
         {% comment %}The central-rail segment ends here!{% endcomment %}
 

@@ -24,7 +24,7 @@
             </div>
             <br>
             
-            {% if user in hall_caretaker or hall_warden %}
+            {% if user in hall_caretaker or user in hall_warden %}
                 {% ifequal current_hall notice.hall.hall_id %}
                     <form method="post"  action="{% url 'hostelmanagement:delete_notice' %}" class="ui form" role="form">
                         {% csrf_token %}

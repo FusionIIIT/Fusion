@@ -1,0 +1,134 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Stock Tracking
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a href="/purchase-and-store2/" class="item">
+                Current Stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/addstock" class="item">
+                Add Stocks
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers" class="item">
+                Transfers Details
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a href="/purchase-and-store2/transfers_form" class="item">
+                Transfers Forms
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+    <div class="ten wide column">
+    
+        <!-- inventory table -->
+        {% if user == 'acadadmin' %}
+            <div style="overflow-x: auto;">
+                <form method="GET" style="margin-bottom: 0px; margin: 0px;">
+                <div class="eight wide field">
+                    <select name="dep" class="ui selection dropdown">
+                        {% for i in department %}
+                        <option value="{{i}}">{{i}}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="ui large primary button right floated" name="submit" type="submit">Sort</button>
+                </form>
+            </div>
+            <br><br>
+        {% endif %}
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>Stock No</th>
+                        <th>Name of particulars</th>
+                        <th>Inventory No</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                        <th>Supplier Name</th>
+                        <th>Bill No</th>
+                        <th>Buy Date</th>
+                        <th>Issued Date</th>
+                        <th>Head of Asset</th>
+                        <th>Section</th>
+                        <th>Floor Number</th>
+                        <th>Receiver Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stocks %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name_of_particulars }}</td>
+                        <td>{{ item.inventory_no }}</td>
+                        <td>{{ item.rate }}</td>
+                        <td>{{ item.amount }}</td>
+                        <td>{{ item.supplier_name }}</td>
+                        <td>{{ item.bill_no }}</td>
+                        <td>{{ item.buy_date }}</td>
+                        <td>{{ item.issued_date }}</td>
+                        <td>{{ item.head_of_asset }}</td>
+                        <td>{{ item.section }}</td>
+                        <td>{{ item.floor }}</td>
+                        <td>{{ item.receiver_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="/purchase-and-store2/report"><button class="ui large primary button right floated" name="Generate">Generate PDF</button></a>
+        </div>
+    </div>
+    
+
+    {% endblock %}
+</div>
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

@@ -19,7 +19,7 @@
           View Stock
         </a>
         <a class="item" data-tab="thresholdstock">
-          Required Medicine
+          Threshold/Required
         </a>
     </div>
 
@@ -435,41 +435,83 @@
     
         {% comment %}the threshold stock tab starts here {% endcomment %}
         <div  class="ui tab" data-tab="thresholdstock">
-            <div id="med_print" class="ui vertical segment" >
-                <button type="button"  id="pr_med" name="PDF" value="PDF" class="ui primary button right floated">
-                    <!-- Download -->
-                    <i class="ui download icon right floated"></i>
-                </button>
+            
+                <h3 style="width: 100%; text-align: center;">Stock Threshold</h3>
+                <table id="threshold" class="ui very basic collapsing celled large fluid sortable table"
+                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                    <thead>
+                    <tr>
+                        <th class="three wide">
+                            Medicine
+                        </th>
 
-                <script>
-    $('#pr_med').click(function(e){
-        var sTable = document.getElementById('med_print').innerHTML;
+                        <th class="three wide" >
+                            Quantity
+                        </th>
+                        <th class="three wide" >
+                            Threshold
+                        </th>
 
-        var style = "<style>";
-        style = style + "table {width: 100%;font: 17px Calibri;}";
-        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
-        style = style + "padding: 2px 3px;text-align: center;}";
-        style = style + "</style>";
+                    </tr>
+                    </thead>
 
-        // CREATE A WINDOW OBJECT.
-        var win = window.open('', '', 'height=700,width=700');
+                    <tbody id="med_stock">
+                    {% for stock in stocks %}
+                    
+                    <tr>
 
-        win.document.write('<html><head>');
-        win.document.write('<title >Required Medicines</title>');   // <title> FOR PDF HEADER.
-        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
-        win.document.write('</head>');
-        win.document.write('<body>');
-        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
-        win.document.write('</body></html>');
+                        <td>
+                        {{stock.medicine_name}}
+                        </td>
 
-        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+                        <td>
+                            {{stock.quantity}}
+                        </td>
+                        <td>
+                            {{stock.threshold}}
+                        </td>
+                    </tr>
+                    
+                    {% endfor %}
+                    </tbody>
+                </table>
 
-        win.print();    // PRINT THE CONTENTS.
-    });
 
-</script>
-
-
+                <h3 style="width: 100%; text-align: center;">Required Stock</h3>
+                <div id="med_print" class="ui vertical segment" >
+                    <button type="button"  id="pr_med" name="PDF" value="PDF" class="ui primary button right floated">
+                        <!-- Download -->
+                        <i class="ui download icon right floated"></i>
+                    </button>
+    
+                    <script>
+        $('#pr_med').click(function(e){
+            var sTable = document.getElementById('med_print').innerHTML;
+    
+            var style = "<style>";
+            style = style + "table {width: 100%;font: 17px Calibri;}";
+            style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+            style = style + "padding: 2px 3px;text-align: center;}";
+            style = style + "</style>";
+    
+            // CREATE A WINDOW OBJECT.
+            var win = window.open('', '', 'height=700,width=700');
+    
+            win.document.write('<html><head>');
+            win.document.write('<title >Required Medicines</title>');   // <title> FOR PDF HEADER.
+            win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+            win.document.write('</head>');
+            win.document.write('<body>');
+            win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+            win.document.write('</body></html>');
+    
+            win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+    
+            win.print();    // PRINT THE CONTENTS.
+        });
+    
+    </script>
+</div>
                 <table id="tblmeds" class="ui very basic collapsing celled large fluid sortable table"
                        style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                     <thead>
@@ -507,8 +549,7 @@
                     {% endif %}
                     {% endfor %}
                     </tbody>
-                </table>
-            </div>
+                </table> 
         </div>
         {% comment %}the view inventory tab ends here {% endcomment %}
 

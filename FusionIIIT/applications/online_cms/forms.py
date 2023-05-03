@@ -1,10 +1,13 @@
+# from django import forms
 import datetime
 from datetime import time, timedelta
 #import information from the models 
 from django import forms
 # from .models import StoreMarks
 from applications.academic_information.models import Student_attendance
+from django.forms import ModelForm
 
+from .models import *
 #the types of exam whose marks can be stored from edit marks in assessment, related to StoreMarks table in models
 EXAM_TYPES= [
     ('quiz1', 'Quiz 1'),
@@ -113,3 +116,16 @@ class MarksForm(forms.Form):
         examtype = self.cleaned_data.get("exam_type")
         enteredmarks = self.cleaned_data.get("entered_marks")
         return self.cleaned_data
+
+
+class UploadSlideForm(forms.Form):
+    class Meta:
+        model=CourseDocuments
+        fields=['couse_id','doc']
+
+    # title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
+class AssignmentMarks(forms.Form):
+    marks=forms.IntegerField()
+    feedback=forms.CharField(max_length=255)

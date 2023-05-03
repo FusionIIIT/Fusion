@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include 
 
 from . import views
 
@@ -12,9 +12,9 @@ urlpatterns = [
     url(r'^get-booking-form/', views.get_booking_form, name='get_booking_form'),
     url(r'^request-booking/' , views.request_booking , name ='request_booking'),
     url(r'^confirm-booking/' , views.confirm_booking , name ='confirm_booking'),
-    url(r'^cancel-booking/', views.cancel_booking, name = 'cancel_booking'),
-    url(r'^cancel-booking-request/', views.cancel_booking_request, name = 'cancel_booking_request'),
-    url(r'^reject-booking/', views.reject_booking, name = 'reject_booking'),
+    url(r'^cancel-booking/', views.cancel_booking, name='cancel_booking'),
+    url(r'^cancel-booking-request/', views.cancel_booking_request,name='cancel_booking_request'),
+    url(r'^reject-booking/', views.reject_booking, name='reject_booking'),
     url(r'^check-in/', views.check_in, name = 'check_in'),
     url(r'^check-out/', views.check_out, name = 'check_out'),
     url(r'^record-meal/', views.record_meal, name = 'record_meal'),
@@ -28,5 +28,7 @@ urlpatterns = [
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),
     url(r'^booking-details/', views.booking_details, name = 'booking_details'),
     url(r'^forward-booking/', views.forward_booking, name = 'forward_booking'),
+
+    # include API routes
+    url(r'^api/',include('applications.visitor_hostel.api.urls'))
 ]
- 

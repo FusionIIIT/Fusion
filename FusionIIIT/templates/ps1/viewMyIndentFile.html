@@ -1,0 +1,346 @@
+{% extends 'ps1/ps1.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notesheet">
+            Note Sheet
+        </a>
+
+        <a class="item" data-tab="attachments">
+            Attachments
+        </a>
+
+
+    </div>
+
+    <div class="ui active tab" data-tab="notesheet">
+
+        <div class="ui three item menu">
+            <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+            <a class='item' target="_blank" href="/media/{{ file.upload_file }}" ><b style="text-decoration:underline;color: blue;">UPLOADED FILE</b></a>
+        </div>
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+
+            {% csrf_token %}
+
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <center><span class="ui header"><b>Subject-  {{file.subject}}</b></span></center>
+                            <div class="ui divider"></div>
+
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                                <div class="ui form">
+
+                                <h3 style="text-decoration: underline;"> Status : </h3>
+                                {% if indent.rejected == True %}
+                                    <button class="ui red button">
+                                        Rejected
+                                    </button>
+                                {% elif indent.procured == True %}
+                                    <button class="ui green button">
+                                        Purchased
+                                    </button> 
+                                {% elif indent.approved == False %}
+                                    <button class="ui blue button">
+                                        Pending
+                                    </button>
+                                {% elif indent.approved == True %}
+                                    <button class="ui yellow button">
+                                         Approved
+                                    </button>
+                                
+                                {% endif %}                                 
+                                <h3 class="ui header" style="text-decoration:underline;margin-bottom:20px ;">Indent Details</h3>
+                                  <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';font-size: 17px;">{{file.description}}</pre>
+                                  <div class="field">
+                                   
+                                    <div class="two fields">
+                                      <div class="field">
+                                        <label style="font-size: medium;">Indent Title</label>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.title }}</p>
+                                      </div>
+                                      <div class="field">
+                                        <label style="font-size: medium;">budgetary head</label>
+                                        <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.budgetary_head }}</p>
+                                      </div>
+                                    </div>
+
+                                  </div>
+                                    <div class="field">
+                                   
+                                        <div class="two fields">
+                                          <div class="field">
+                                            <label style="font-size: medium;">Indent expected delivery</label>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.expected_delivery }}</p>
+                                          </div>
+                                          <div class="field">
+                                            <label style="font-size: medium;">sources of supply</label>
+                                            <p style="color:gray;font-size: medium; border: none;padding-left: 0" >{{ indent.sources_of_supply }}</p>
+                                          </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="item">
+                                    <h3 style="text-decoration: underline;">Items Details : </h3>
+                                    <table class="ui very celled sortable table scroll">
+                                        <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>quantity</th>
+                                            <th>est. cost</th>
+                                            <th>indent_type</th>
+                                            <th>View</th>
+                                            
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for j in items %}
+                                            <tr>
+                                                 <td>{{j.item_name}}</td>
+                                                 <td>{{j.quantity}}</td>
+                                                 <td>{{j.estimated_cost}}</td>
+                                                 <td>{{j.indent_type}}</td>
+                                                 <td><div class="ui black button" onclick="showModal('{{ j.item_name }}','{{ j.quantity }}','{{ j.present_stock }}','{{ j.estimated_cost }}','{{ j.purpose }}','{{ j.specification }}','{{ j.indent_type }}','{{ j.nature }}','{{ j.indigenous }}','{{ j.replaced }}','{{ j.purchased }}','{{ j.upload_file }}')">View</div></td>
+
+
+                                                
+
+                                              </tr>
+                                        {% endfor %}
+                                        </tbody>
+
+                                    </table>
+
+
+                                    <br>
+                                    <h3 style="text-decoration: underline;"> Tracking Detais </h3>
+                                    {% for t in track %}
+                                    <div class="ui comments">
+                                        <div class="comment">
+                                             <div class="content">
+                                                 <a class="author">{{t.current_design}}
+                                                     <a class="metadata">
+                                                         <span class="date">{{t.forward_date}}</span>
+                                                     </a>
+                                                 </a>
+
+                                                 <div class="right floated" style="font-color: black;">
+                                                     <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
+                                                 </div>
+
+                                                 <div class="text">
+                                                     <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                                        {% if t.remarks %}
+                                                            {{t.remarks}}
+                                                        {% else %}
+                                                            <span class="meta">No Remarks</span>
+                                                        {% endif %}
+
+                                                     </pre>
+                                                 </div>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+ 
+
+                                    <div class="ui divider"></div>
+
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>           
+
+            </form>
+
+            <br>
+    </div>
+
+    <div class="ui tab" data-tab="attachments">
+
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+
+        <div class="ui fluid card">
+                        <div class="content">
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+
+                                <div class="item">
+
+                                    {% for t in track %}
+                                    <div class="ui comments">
+                                        <div class="comment">
+
+                                            <div class="content">
+                                                 <a class="paperclip icon">
+                                                     {% if t.upload_file %}
+                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                                     </a>
+                                                     {% else %}
+                                                     <span class="meta">No Attachment</span>
+                                                     {% endif %}
+                                                 </a>
+
+                                                 <div class="right floated content">
+                                                     <a class="author">{{t.current_design}}
+                                                         <a class="metadata">
+                                                            <span class="date">{{t.forward_date}}</span>
+                                                         </a>
+                                                     </a>
+                                                 </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                    <div class="ui divider"></div>
+
+                                </div>
+                            </div>
+                        </div>
+        </div>
+        <div id="item-modal-container"></div>
+    </div>
+
+
+    <script type="text/javascript">
+        $('#input_search1').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for(var i=0;i<all_designations.length;i++){
+                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+    <script type="text/javascript">
+    const showModal=(item_name,quantity,present_stock,estimated_cost,purpose ,specification,indent_type,nature,indigenous,replaced,purchased,upload_file )=>{
+        console.log(upload_file)
+        document.getElementById('item-modal-container').innerHTML=``
+                                                            // $('.ui.modal').modal('show');
+        document.getElementById('item-modal-container').innerHTML = `<div class="ui modal">
+          <div class="header">
+            Description of ${item_name}
+          </div>
+          <div class="content">
+            <h3>Item related details</h3>
+            <table class="ui very basic celled sortable table scroll" style="font-size:17px">
+               <tbody>
+                <tr>
+                    <td><b>Name : </b> <p>${item_name}</p></td>
+                    <td><b>Quantity : </b> <p>${quantity}</p></td>
+                    <td><b>Estimated Cost : </b> <p>${estimated_cost}</p></td>
+                </tr>
+                <tr>
+                    <td><b>Present stock : </b><p>${present_stock}</p></td>
+                    <td><b>Purpose :</b> <p>${purpose}<p></td>
+                    <td><b>Specification : </b> <p>${specification}</p></td>
+                </tr>
+                <tr>
+                    <td><b>Type : </b><p>${indent_type}</p></td>
+                    <td><b>Nature of Item : </b><p>${nature===true?"Consumable":"Non-Consumable"}</p></td>
+                    <td><b>indigenous : </b><p>${indigenous===true?"Yes":"No"}</p></td>
+                </tr>
+                <tr>
+                    <td><b>replaced : </b><p>${replaced===true?"Yes":"No"}</p></td>
+                    <td><b>Uploaded File : </b>
+                        <a class="paperclip icon">
+                            ${
+                                upload_file ? `<a href="/media/${upload_file}" class="header" target="_">
+                                    <u class="meta" style="color: #1B1C1D">${upload_file}</u>
+                                </a>`:`<span class="meta">No Attachment</span>`
+                            }
+                                
+                        </a>
+                    </td>
+
+                </tr>
+
+               </tbody>
+            </table>
+            <hr>
+            <p>These are the details related to the indent item</p>
+          </div>
+        </div>`
+        $('.ui.modal').modal('show');
+    }
+    </script>
+
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+
+{% endblock %}
+

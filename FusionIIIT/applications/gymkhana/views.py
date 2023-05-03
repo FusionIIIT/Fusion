@@ -1,17 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
-from django.contrib import messages
 from django.shortcuts import *
 from applications.filetracking.models import  File, Tracking
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
@@ -603,7 +599,10 @@ def registration_form(request):
 
 	# return redirect('/gymkhana/')
 
-def retrun_content(request, roll, name, desig , club__ ):
+def gymkhana_redirect(request):
+	return redirect('/gymkhana/tabs/clubs-details')
+
+def retrun_content(request, roll, name, desig , club__ , sub_tab ):
 	"""
 	retrun_content
 	This view returns all data regarding the parameters that sent through function
@@ -662,9 +661,12 @@ def retrun_content(request, roll, name, desig , club__ ):
 			venue.append(room[0])
 	curr_club=[]
 	if 'student' in desig:
-		user_name = get_object_or_404(User, username = str(roll))
-		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
-		student = get_object_or_404(Student, id = extra)
+		try :
+			user_name = get_object_or_404(User, username = str(roll))
+			extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
+			student = get_object_or_404(Student, id = extra)
+		except :
+			curr_club = []
 	else :
 		curr_club = []
 
@@ -716,6 +718,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 			'status': status,
 		}
 		content.update(content1)
+	content["sub_tab"] = sub_tab;
 	return content
 
 @login_required
@@ -752,7 +755,7 @@ def getVenue(request):
 	return HttpResponse(content)
 
 @login_required
-def gymkhana(request):
+def gymkhana(request,sub_tab):
 	"""
 		gymkhana
 		This view gives us the complete information regarding various clubs and it
@@ -775,14 +778,16 @@ def gymkhana(request):
 	designation_data = [element for designation in designations for element in designation]
 	roll_ = []
 	for designation in designation_data :
-		name_ = get_object_or_404(Designation, id = designation)
-		# #    #    print name_
-		roll_.append(str(name_.name))
+		try:
+			name_ = get_object_or_404(Designation, id = designation)
+			roll_.append(str(name_.name))
+		except:
+			pass
 	for club_data in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
 		lines =str("")
 		Types = lines.split(" ")
 	club__ = coordinator_club(request)
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ , sub_tab))
 
 @login_required
 def club_membership(request):
@@ -1870,5 +1875,3 @@ def forward(request, id):
 
 	return render(request, 'filetracking/forward.html', context)
 
-
-	

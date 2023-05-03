@@ -2,6 +2,9 @@
 
 {% block projects %}
     {% comment %}The tab menu starts here!{% endcomment %}
+    {% if message %}
+    <h4>{{message}}</h4>
+    {% endif %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="research projects">
             Research Projects
@@ -42,13 +45,6 @@
         <table class="ui fixed sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
-                <th class="">PI/CO-PI</th>
-                <th class="">Title</th>
-                <th class="">Funding Agency</th>
-                <th class="">Other Details</th>
-                <th class="">Status</th>
-                <th class="">Action</th>-->
 
                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
                 <th class="" style="width: 15%;" >PI/CO-PI</th>
@@ -114,13 +110,7 @@
         <table class="ui fixed sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
-                <th class="">Consultant(s)</th>
-                <th class="">Title</th>
-                <th class="">Client</th>
-                <th class="">Financial Outlay</th>
-                <th class="">Period of Consultancy</th>
-                <th class="">Action</th>-->
+                
 
                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
                 <th class="" style="width: 15%;" >Consultant(s)</th>
@@ -166,13 +156,7 @@
         <table class="ui fixed sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
-                <th class="">Patent No.</th>
-                <th class="">Title</th>
-                <th class="">Status</th>
-                <th class="">Year</th>
-                <th class="">Earning(in Rs.)</th>
-                <th class="">Action</th>-->
+                
 
                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
                 <th class="" style="width: 15%;" >Patent No.</th>
@@ -232,9 +216,7 @@
         <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
-                <th class="" colspan="4">Details</th>
-                <th class="">Action</th>-->
+             
                 <th class="sorted ascending">Sr.</th>
                 <th class="" colspan="4">Details</th>
                 <th class="">Action</th>

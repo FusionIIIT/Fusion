@@ -1079,7 +1079,7 @@ def generate_cpda_eligible_lists(request):
         for app in to_review_apps:
             app.reviewform = Review_Form(initial={'app_id': app.id})
 
-        pf_number=1234
+        pf_number=request.user.id
         if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
             pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
         
@@ -1163,12 +1163,12 @@ def generate_ltc_eligible_lists(request):
             availed_archived = (Ltc_availed.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
             to_avail_archived = (Ltc_to_avail.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
             depend_archived = (Dependent.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
-            pf_number=1234
+            pf_number=request.user.id
             if(emp_consultancy_projects.objects.filter(user=request.user).first() is not None):
                 pf_number = emp_consultancy_projects.objects.filter(user=request.user).first().pf_no
             form = Ltc_Form(initial={'pf_number':pf_number})
 
-        pf_number=1234
+        pf_number=request.user.id
         to_review_apps = (Ltc_application.objects
                         .filter(tracking_info__reviewer_id=request.user)
                         .filter(status='requested')

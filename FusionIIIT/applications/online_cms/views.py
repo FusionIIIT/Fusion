@@ -14,6 +14,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.contrib import messages
 
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
                                                       Student,Student_attendance)
@@ -25,6 +26,8 @@ from .forms import *
 # from .helpers import create_thumbnail, semester
 from .models import *
 from .helpers import create_thumbnail, semester
+from django.shortcuts import HttpResponseRedirect
+from django.urls import reverse
 
 
 @login_required
@@ -39,13 +42,21 @@ def viewcourses(request):
         student = Student.objects.select_related('id').get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
         register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))  #info of registered student
-        courses = collections.OrderedDict()   #courses in which student is registerd
+        courses = []  #courses in which student is registerd
+        print(register)
+        # serializer=OCMSStudentSerializer(register,many=True)
+        
         for reg in register:   #info of the courses
-            instructor = Curriculum_Instructor.objects.select_related().get(course_id=reg.course_id)
-            courses[reg] = instructor
+            course={}
+            course['data']=reg.curr_id
+            # course=reg.curr_id
+            course['instructor'] = Curriculum_Instructor.objects.select_related().get(curriculum_id=reg.curr_id)
+            courses.append(course)
+        # print(serializer.data)
+        # return Response(serializer.data)
+        # return Response({'status':200})
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
-
                        'extrainfo': extrainfo})
     else:   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
@@ -59,6 +70,7 @@ def viewcourses(request):
                       {'instructor': instructor,
                        'extrainfo': extrainfo,
                        'curriculum_list': curriculum_list})
+
 
 
 
@@ -81,93 +93,94 @@ def course(request, course_code):
         #course material uploaded by the instructor
         # videos = CourseVideo.objects.filter(course_id=course)
         videos = []
-        if request.method == 'POST':
-            search_url = "https://www.googleapis.com/youtube/v3/search"
-            video_url = "https://www.googleapis.com/youtube/v3/videos"
-            search_params = {
-                'part': 'snippet',
-                'q': request.POST['search'],
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'type': 'video',
-                'channelId': 'channel_id'
-            }
-            videos_ids = []
-            r = requests.get(search_url, params=search_params)
-            # print(r)
-            results = r.json()['items']
-            for result in results:
-                videos_ids.append(result['id']['videoId'])
+        # if request.method == 'POST':
+            # if(request)
+        # if request.method == 'POST':
+        #     search_url = "https://www.googleapis.com/youtube/v3/search"
+        #     video_url = "https://www.googleapis.com/youtube/v3/videos"
+        #     search_params = {
+        #         'part': 'snippet',
+        #         'q': request.POST['search'],
+        #         'key': settings.YOUTUBE_DATA_API_KEY,
+        #         'type': 'video',
+        #         'channelId': 'channel_id'
+        #     }
+        #     videos_ids = []
+        #     r = requests.get(search_url, params=search_params)
+        #     # print(r)
+        #     results = r.json()['items']
+        #     for result in results:
+        #         videos_ids.append(result['id']['videoId'])
 
-            video_params = {
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'part': 'snippet,contentDetails',
-                'id': ','.join(videos_ids),
-                'maxResults': 9
-            }
+        #     video_params = {
+        #         'key': settings.YOUTUBE_DATA_API_KEY,
+        #         'part': 'snippet,contentDetails',
+        #         'id': ','.join(videos_ids),
+        #         'maxResults': 9
+        #     }
 
-            p = requests.get(video_url, params=video_params)
-            results1 = p.json()['items']
+        #     p = requests.get(video_url, params=video_params)
+        #     results1 = p.json()['items']
 
-            for result in results1:
-                video_data = {
-                    'id': result['id'],
-                    # 'url': f'https://www.youtube.com/watch?v={result["id"]}',
-                    'title': result['snippet']['title'],
-                    # 'duration': int(parse_duration(result['contentDetails']['duration']).total_seconds() // 60),
-                    # 'thumbnails': result['snippet']['thumbnails']['high']['url']
-                }
+        #     for result in results1:
+        #         video_data = {
+        #             'id': result['id'],
+        #             # 'url': f'https://www.youtube.com/watch?v={result["id"]}',
+        #             'title': result['snippet']['title'],
+        #             # 'duration': int(parse_duration(result['contentDetails']['duration']).total_seconds() // 60),
+        #             # 'thumbnails': result['snippet']['thumbnails']['high']['url']
+        #         }
 
-                videos.append(video_data)
-        else:
-            channel_url = "https://www.googleapis.com/youtube/v3/channels"
-            playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-            videos_url = "https://www.googleapis.com/youtube/v3/videos"
+        #         videos.append(video_data)
+        # else:
+        #     channel_url = "https://www.googleapis.com/youtube/v3/channels"
+        #     playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
+        #     videos_url = "https://www.googleapis.com/youtube/v3/videos"
 
-            videos_list = []
-            channel_params = {
-                'part': 'contentDetails',
-                'id': 'channel_id',
-                'key': settings.YOUTUBE_DATA_API_KEY,
-            }
-            r = requests.get(channel_url, params=channel_params)
-            results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        #     videos_list = []
+        #     channel_params = {
+        #         'part': 'contentDetails',
+        #         'id': 'channel_id',
+        #         'key': settings.YOUTUBE_DATA_API_KEY,
+        #     }
+        #     r = requests.get(channel_url, params=channel_params)
+        #     results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
-            playlist_params = {
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'part': 'snippet',
-                'playlistId': results,
-                'maxResults': 5,
-            }
-            p = requests.get(playlist_url, params=playlist_params)
-            results1 = p.json()['items']
+        #     playlist_params = {
+        #         'key': settings.YOUTUBE_DATA_API_KEY,
+        #         'part': 'snippet',
+        #         'playlistId': results,
+        #         'maxResults': 5,
+        #     }
+        #     p = requests.get(playlist_url, params=playlist_params)
+        #     results1 = p.json()['items']
 
-            for result in results1:
-                # print(results)
-                videos_list.append(result['snippet']['resourceId']['videoId'])
+        #     for result in results1:
+        #         # print(results)
+        #         videos_list.append(result['snippet']['resourceId']['videoId'])
 
-            videos_params = {
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'part': 'snippet',
-                'id': ','.join(videos_list)
-            }
+        #     videos_params = {
+        #         'key': settings.YOUTUBE_DATA_API_KEY,
+        #         'part': 'snippet',
+        #         'id': ','.join(videos_list)
+        #     }
 
-            v = requests.get(videos_url, params=videos_params)
-            results2 = v.json()['items']
-            videos = []
-            for res in results2:
-                video_data = {
-                    'id': res['id'],
-                    'title': res['snippet']['title'],
-                }
+        #     v = requests.get(videos_url, params=videos_params)
+        #     results2 = v.json()['items']
+        #     videos = []
+        #     for res in results2:
+        #         video_data = {
+        #             'id': res['id'],
+        #             'title': res['snippet']['title'],
+        #         }
 
-                videos.append(video_data)
-            # print(videos)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        
+        slides = CourseSlide.objects.select_related().filter(course_id=course)
         quiz = Quiz.objects.select_related().filter(course_id=course)
-        assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
         for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi, student_id=student)
             student_assignment.append(sa)
         '''
         marks to store the marks of quizes of student
@@ -210,6 +223,7 @@ def course(request, course_code):
                        'curriculum': curriculum})
 
     else:
+
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -247,56 +261,65 @@ def course(request, course_code):
         lec = 1
 
         # videos = CourseVideo.objects.filter(course_id=course)
-        channel_url = "https://www.googleapis.com/youtube/v3/channels"
-        playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-        videos_url = "https://www.googleapis.com/youtube/v3/videos"
+        # channel_url = "https://www.googleapis.com/youtube/v3/channels"
+        # playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
+        # videos_url = "https://www.googleapis.com/youtube/v3/videos"
 
-        videos_list = []
-        channel_params = {
-            'part': 'contentDetails',
-            # 'forUsername': 'TechGuyWeb',
-            'id': 'UCdGQeihs84hyCssI2KuAPmA',
-            'key': settings.YOUTUBE_DATA_API_KEY,
-        }
-        r = requests.get(channel_url, params=channel_params)
-        results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        # videos_list = []
+        # channel_params = {
+        #     'part': 'contentDetails',
+        #     # 'forUsername': 'TechGuyWeb',
+        #     'id': 'UCdGQeihs84hyCssI2KuAPmA',
+        #     'key': settings.YOUTUBE_DATA_API_KEY,
+        # }
+        # r = requests.get(channel_url, params=channel_params)
+        # results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
-        playlist_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'playlistId': results,
-            'maxResults': 5,
-        }
-        p = requests.get(playlist_url, params=playlist_params)
-        results1 = p.json()['items']
+        # playlist_params = {
+        #     'key': settings.YOUTUBE_DATA_API_KEY,
+        #     'part': 'snippet',
+        #     'playlistId': results,
+        #     'maxResults': 5,
+        # }
+        # p = requests.get(playlist_url, params=playlist_params)
+        # results1 = p.json()['items']
 
-        for result in results1:
-            videos_list.append(result['snippet']['resourceId']['videoId'])
+        # for result in results1:
+        #     videos_list.append(result['snippet']['resourceId']['videoId'])
 
-        videos_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'id': ','.join(videos_list)
-        }
+        # videos_params = {
+        #     'key': settings.YOUTUBE_DATA_API_KEY,
+        #     'part': 'snippet',
+        #     'id': ','.join(videos_list)
+        # }
 
-        v = requests.get(videos_url, params=videos_params)
-        results2 = v.json()['items']
-        videos = []
-        for res in results2:
-            video_data = {
-                'id': res['id'],
-                'title': res['snippet']['title'],
-            }
+        # v = requests.get(videos_url, params=videos_params)
+        # results2 = v.json()['items']
+        # videos = []
+        # for res in results2:
+        #     video_data = {
+        #         'id': res['id'],
+        #         'title': res['snippet']['title'],
+        #     }
 
-            videos.append(video_data)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        #     videos.append(video_data)
+        # if request.method == 'POST':
+        #     form = UploadSlideForm(request.POST, request.FILES)
+        #     if form.is_valid():
+        #         tempform=form.save(commit=False)
+        #         tempform.course_id=course
+        #         tempform.save()
+        videos=[]
+        slides1 = CourseSlide.objects.select_related().filter(course_id=course)
+        slides=None
         quiz = Quiz.objects.select_related().filter(course_id=course)
         marks = []
         quizs = []
         assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment1 = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
-        for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
+        for assi in assignment1:
+            sa = StudentAssignment1.objects.select_related().filter(assignment_id=assi)
             student_assignment.append(sa)
         for q in quiz:
             qs = QuizResult.objects.select_related().filter(quiz_id=q)
@@ -326,13 +349,15 @@ def course(request, course_code):
                        'course': course,
                        'answers': answers,
                        'assignment': assignment,
+                       'assignment1': assignment1,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
                        'questionbank': qb,
                        'students': students,
                        'total_attendance' : total_attendance,
                        'present_attendance':present_attendance,
-                       'test_marks': test_marks
+                       'test_marks': test_marks,
+                       'slides1':slides1
                        })
 
 #when student uploads the assignment's solution
@@ -346,28 +371,21 @@ def upload_assignment(request, course_code):
             doc = request.FILES.get('img')    #the images in the assignment
             assi_name = request.POST.get('assignment_topic')
             name = request.POST.get('name')
-            assign = Assignment.objects.get(pk=assi_name)
+            assign = CourseAssignment.objects.get(pk=assi_name)
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
         filename = name
-        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/"  #storing the media files
-        full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
-        url = settings.MEDIA_URL + filename
-        if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
-        fs = FileSystemStorage(full_path, url)
-        fs.save(name + file_extenstion, doc)  #saving the media files
-        uploaded_file_url = full_path+ "/" + name + file_extenstion
+        
         # to save the solution of assignment the database
-        sa = StudentAssignment(
-         student_id=student,
-         assignment_id=assign,
-         upload_url=uploaded_file_url,
-         assign_name=name+file_extenstion
+        StudentAssignment1.objects.create(
+            student_id=student,
+            doc=doc,
+            assignment_id=assign,
+            course_code=course_code,
+            assign_name=name+file_extenstion
+            
         )
-        sa.save()
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
@@ -387,6 +405,8 @@ def add_document(request, course_code):
             description = request.POST.get('description')
             doc = request.FILES.get('img')
             name = request.POST.get('name')
+            # obj =CourseDocuments.objects.create(course_id=course,description=description,)
+            #  = request.FILES['img']
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
@@ -401,15 +421,18 @@ def add_document(request, course_code):
         fs.save(filename + file_extenstion, doc)
         uploaded_file_url = full_path + filename + file_extenstion
         #save the info/details in the database
-        CourseDocuments.objects.create(
+        print(settings.MEDIA_ROOT)
+        CourseSlide.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
             description=description,
-            document_url=uploaded_file_url,
-            document_name=name+file_extenstion
+            document_name=name,
+            doc=doc
         )
+        
         return HttpResponse("Upload successful.")
     else:
+        
         return HttpResponse("not found")
 
 #it is to delete things(assignment, slides, videos, ) from the dustin icon or delete buttons
@@ -444,12 +467,12 @@ def delete(request, course_code):
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
-        stu_assi = StudentAssignment.objects.select_related().get(pk=pk)
+        stu_assi = StudentAssignment1.objects.select_related().get(pk=pk)
         path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
-        lec_assi = Assignment.objects.select_related().get(pk=pk)
+        lec_assi = CourseAssignment.objects.select_related().get(pk=pk)
         path = lec_assi.assignment_url
         lec_assi.delete()
     cmd = "rm "+path
@@ -572,8 +595,7 @@ def ajax_new(request, course_code):
         roll = student.id.id[:4]
         #course = Course.objects.get(course_id=course_code, sem=semester(roll))
         curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
-        #print(curriculum_details[0].course_id)
-        #print(Curriculum.objects.values_list('curriculum_id'))
+        
         course =  curriculum_details[0].course_id
     else:
 
@@ -635,25 +657,36 @@ def add_assignment(request, course_code):                 #from faculty side
         except:
             return HttpResponse("Please Enter The Form Properly")
         filename = name
-        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
-        url = settings.MEDIA_URL + filename
-        if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
-        fs = FileSystemStorage(full_path, url)
-        fs.save(filename+file_extenstion, assi)
-        uploaded_file_url = full_path + filename + file_extenstion
-        assign = Assignment(
+        
+        CourseAssignment.objects.create(
             course_id=course,
             submit_date=request.POST.get('myDate'),
-            assignment_url=uploaded_file_url,
+            doc=assi,
             assignment_name=name
         )
-        assign.save()
+        
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("not found")
 
+@login_required
+def edit_assignment_marks(request,*args, **kwargs):
+    if request.method=='POST':
+        print("hiii")
+        form=AssignmentMarks(request.POST)
+        if form.is_valid():
+            sa=StudentAssignment1.objects.get(pk=int(request.POST['assignmentid'][0]))
+            # print()
+            sa.score=form.cleaned_data['marks']
+            sa.feedback=form.cleaned_data['feedback']
+            sa.save()
+            # print(sa.course_code)
+            course_code = sa.course_code
+            # url = reverse('course', args=[course_code])
+            messages.success(request, 'Marks updated successfullt')
+            return HttpResponseRedirect('/ocms/'+course_code)
+            # return redirect(course,course_code='CS416e')
+    return HttpResponse("Error Occured!")
 
 @login_required
 def edit_bank(request, course_code, qb_code):
