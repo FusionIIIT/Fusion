@@ -7,7 +7,7 @@ app_name = 'complaint'
 urlpatterns = [
 
     url(r'^$', views.check, name='complaint'),
-    url(r'^login/$', views.login1, name='complaint'),
+    url(r'^login/$', views.login1, name='complaint_login'),
     url(r'^user/$', views.user),
     url(r'^user/caretakerfb/$' , views.caretaker_feedback),
     url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
