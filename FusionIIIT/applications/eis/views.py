@@ -389,8 +389,6 @@ def rspc_profile(request):
     phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
     fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
     ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
-    for fvisit in fvisits:
-        fvisit.countryfull = countries[fvisit.country]
     consymps = emp_confrence_organised.objects.all().order_by('-start_date')
     awards = emp_achievement.objects.all().order_by('-a_year', '-a_month')
     talks = emp_expert_lectures.objects.all().order_by('-l_year', '-a_month')
