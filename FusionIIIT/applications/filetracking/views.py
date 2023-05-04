@@ -23,7 +23,7 @@ def check_user(request):
     context = {
         'designation': designation,
     }
-    print(context)
+    
 
 
 def get_forward_to(request):
@@ -55,7 +55,7 @@ def filetracking(request):
     if request.method == "GET":
         try:
             if 'reciever_submit' in request.POST:
-                print("get was calleed")
+                
                 rcv = request.POST.get('receiver')
 
         except IntegrityError:
@@ -93,20 +93,16 @@ def filetracking(request):
 
             if 'send' in request.POST:
                 uploader = request.user.extrainfo
-                print("***********************************************")
-                print(uploader)
+                
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-               # holdsdesignations = HoldsDesignation.get('user','working','designation').all()
-                print("***********************************************")
-                print(design)
+               
                 id = HoldsDesignation.objects.select_related('user','working','designation')
-                print(id)
+                
                 designation = 'xfs'
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
-                print("$$$$$$$$$")
-                print(designation)
+                
                 upload_file = request.FILES.get('myfile')
                 if(upload_file.size / 1000 > 10240):
                     messages.error(request,"File should not be greater than 10MB")
@@ -130,22 +126,22 @@ def filetracking(request):
                 current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
                 receiver = request.POST.get('receiver')
-                print(receiver)
+                
                 
                 try:
                     receiver_id = User.objects.get(username=receiver)
-                    print(receiver_id)
+                    
                 except Exception as e:
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
                 receive = request.POST.get('recieve')
-                print("receive is: ", receive)
+                
                 s =receive.split(" - ")
 
                 try:
 
                     receive_design = Designation.objects.get(name=s[1])
-                    print(receive_design)
+                    
 
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -175,7 +171,7 @@ def filetracking(request):
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = get_designation(request.user)
-    print(designations)
+    
    
     all_recievers = get_all_designation()
     context = {
@@ -555,7 +551,7 @@ def finish_fileview(request, id):
 
 @login_required(login_url = "/accounts/login")
 def finish(request, id):
-    file1 = get_object_or_404(File, id=id) ##file = get_object_or_404(File, ref_id=id)
+    file1 = get_object_or_404(File, id=id) 
     track = Tracking.objects.filter(file_id=file1)
     
 
@@ -667,13 +663,3 @@ def forward_inward(request,id):
     }
     return render(request, 'filetracking/forward.html', context)
 
-
-
-
-
-# todo_items = []
-# from fastapi import FastAPI
-# app = FastAPI()
-# @app.get("/health")
-# def health():
-#     return {"status": "ok"}
