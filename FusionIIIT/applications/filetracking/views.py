@@ -180,10 +180,6 @@ def filetracking(request):
         'holdsdesignations': holdsdesignations,
         'designations': designations,
         'all_recievers': all_recievers,
-        
-
-
-        
     }
     return render(request, 'filetracking/composefile.html', context)
 
