@@ -1,27 +1,27 @@
-name: Security check - Bandit
+name: Security check - Bandit  # Name of the GitHub Actions workflow
 
-on: push
+on: push  # Trigger the workflow on push events
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Executes the job on the latest version of Ubuntu
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
-    name: Python ${{ matrix.os }} 
+        os: [ubuntu-latest, macos-latest]  # Running matrix jobs on both Ubuntu and macOS
+    name: Python ${{ matrix.os }}  # Name the job based on the OS being used
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2  # Checks out your repository's code
 
-    - name: Security check - Bandit
-      uses: ioggstream/bandit-report-artifacts@v0.0.2
+    - name: Security check - Bandit  # Run Bandit security check
+      uses: ioggstream/bandit-report-artifacts@v0.0.2  # Using Bandit for security checks
       with:
-        project_path: .
-        ignore_failure: true
+        project_path: .  # Path to the project to scan
+        ignore_failure: true  # Continue the workflow even if Bandit reports issues
 
-    # This is optional
+    # This step is optional, it uploads the Bandit report as an artifact
     - name: Security check report artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: Security report
-        path: output/security_report.txt
+        name: Security report  # Name of the artifact
+        path: output/security_report.txt  # Path to the Bandit security report
