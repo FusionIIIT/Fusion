@@ -1,6 +1,6 @@
 name: "mypy check"  # Name of the GitHub Actions workflow
 
-on: [push]  # Trigger the workflow on push events
+on: [push, pull_request]  # Trigger the workflow
 
 jobs:
 
