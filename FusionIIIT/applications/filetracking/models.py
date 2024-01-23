@@ -16,6 +16,11 @@ class File(models.Model):
     is_read = models.BooleanField(default = False)
 
 
+    # additions for API
+    src_module = models.CharField(max_length=100, default='filetracking')
+    src_object_id = models.CharField(max_length=100,null=True) 
+    file_extra_JSON = JSONField(null=True)
+
     class Meta:
         db_table = 'File'
 
@@ -25,7 +30,7 @@ class File(models.Model):
 
 class Tracking(models.Model):
     """
-    This is File Tracing Table which contains the status of each indivisual file created by the user 
+    This is File Tracing Table which contains the status of each individual file created by the user 
     """
     file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=True)
     current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -40,6 +45,9 @@ class Tracking(models.Model):
     remarks = models.CharField(max_length=250, null=True, blank=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
+
+    # additions for API
+    tracking_extra_JSON = JSONField(null=True) 
 
     class Meta:
         db_table = 'Tracking'
