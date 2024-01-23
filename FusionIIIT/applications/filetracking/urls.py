@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
@@ -28,4 +28,8 @@ urlpatterns = [
     url(r'^finish_fileview/(?P<id>\d+)$', views.finish_fileview, name='finish_fileview'),
     url(r'^archive_design/$', views.archive_design, name='archive_design'),
     url(r'^archive_finish/(?P<id>\d+)/$', views.archive_finish, name='archive_finish'),
+
+    ## REST api urls
+    url(r'^api/', include(applications.filetracking.api.urls))
+
 ]
