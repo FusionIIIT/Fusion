@@ -19,7 +19,7 @@ class File(models.Model):
     # additions for API
     src_module = models.CharField(max_length=100, default='filetracking')
     src_object_id = models.CharField(max_length=100,null=True) 
-    file_extra_JSON = JSONField(null=True)
+    file_extra_JSON = models.JSONField(null=True)
 
     class Meta:
         db_table = 'File'
@@ -47,7 +47,7 @@ class Tracking(models.Model):
     is_read = models.BooleanField(default = False)
 
     # additions for API
-    tracking_extra_JSON = JSONField(null=True) 
+    tracking_extra_JSON = models.JSONField(null=True) 
 
     class Meta:
         db_table = 'Tracking'
