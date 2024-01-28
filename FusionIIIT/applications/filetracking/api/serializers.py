@@ -14,22 +14,6 @@ class TrackingSerializer(serializers.ModelSerializer):
         model = Tracking
         fields = '__all__'
 
-    def validate_upload_file(self, value):
-        print('wow')
-        if not value:
-            # handles empty file paths
-            value = None
-        else:
-            if isinstance(value, str):
-                with open(value, 'rb') as file:
-                    value = DjangoFile(file)
-
-            max_file_size = 10 * 1024 * 1024  # 10 MB
-            if value.size > max_file_size:
-                raise serializers.ValidationError(
-                    "File size exceeds the limit (10 MB).")
-        return value
-
 
 class FileHeaderSerializer(serializers.ModelSerializer):
     '''

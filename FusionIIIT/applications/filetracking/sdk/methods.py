@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
 from applications.filetracking.api.serializers import FileSerializer, FileHeaderSerializer, TrackingSerializer
+from django.core.exceptions import ValidationError
+from typing import Any
 
 
 def create_file(
@@ -109,14 +111,14 @@ def forward_file(
         receiver_designation: str,
         file_extra_JSON: dict,
         remarks: str = "",
-        attachment_path = "") -> int: 
+        file_attachment: Any = None) -> int: 
     '''
     This function forwards the file and inserts a new tracking history into the file tracking table
     Note that only the current owner(with appropriate designation) of the file has the ability to forward files
     '''
-    # HoldsDesignation and ExtraInfo object are used instead of Designation
-    # and User object because of the legacy code being shaped that way
-    # TODO: handle the file attachment logic for this code
+    # HoldsDesignation and ExtraInfo object are used instead 
+    # of Designation and User object because of the legacy code being that way
+
     current_owner = get_current_file_owner(file_id)
     current_owner_designation = get_current_file_owner_designation(file_id)
     current_owner_extra_info = ExtraInfo.objects.get(user=current_owner)
@@ -132,11 +134,16 @@ def forward_file(
         'receive_design': receiver_designation_obj.id,
         'tracking_extra_JSON': file_extra_JSON,
     }
+    if file_attachment is not None: 
+        tracking_data['upload_file'] = file_attachment
+
+
     tracking_entry = TrackingSerializer(data=tracking_data) 
     if tracking_entry.is_valid(): 
         tracking_entry.save()
-    else: 
-        print(tracking_entry.errors)
+        return tracking_entry.instance.id
+    else:
+        raise ValidationError('forward data is incomplete')
 
 
 
