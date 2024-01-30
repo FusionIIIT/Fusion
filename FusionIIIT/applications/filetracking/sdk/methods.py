@@ -1,4 +1,3 @@
-from hashlib import file_digest
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
@@ -19,47 +18,67 @@ def create_file(
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
-    uploader_obj = get_user_object_from_username(uploader)
-    uploader_designation_obj = Designation.objects.get(name=uploader_designation)
+
+    '''
+    create base file with params
+    create tracking with params
+    if both complete then return id of file
+    else raise error
+
+    also, delete file object if tracking isnt created
+    '''
+    uploader_user_obj = get_user_object_from_username(uploader)
+    uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
+    uploader_designation_obj = Designation.objects.get(
+        name=uploader_designation)
     receiver_obj = get_user_object_from_username(receiver)
-    receiver_designation_obj = Designation.objects.get(name=receiver_designation)
+    receiver_designation_obj = Designation.objects.get(
+        name=receiver_designation)
 
-    new_file_data = {
-        'uploader': uploader_obj,
-        'designation': uploader_designation_obj,
-        'src_module': src_module,
-        'src_object_id': src_object_id,
-        'file_extra_JSON': file_extra_JSON,
-    }
-    if attached_file is not None:
-        new_file_data['upload_file'] = attached_file
+    # new_file_data = {
+    #     'uploader': uploader_obj,
+    #     'designation': uploader_designation_obj,
+    #     'src_module': src_module,
+    #     'src_object_id': src_object_id,
+    #     'file_extra_JSON': file_extra_JSON,
+    # }
+    # if attached_file is not None:
+    #     new_file_data['upload_file'] = attached_file
 
-    new_file = FileSerializer(data=new_file_data)
-    if new_file.is_valid():
-        new_file.save()
-        return new_file.instance.id
+    # new_file = FileSerializer(data=new_file_data)
+    # if new_file.is_valid():
+    #     new_file.save()
+    #     return new_file.instance.id
+    # else:
+    #     print(new_file.errors)
+    #     # raise ValidationError('file data is incorrect')
+
+    new_file = File.objects.create(
+        uploader=uploader_extrainfo_obj,
+        designation=uploader_designation_obj,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        # upload_file=upload_file TESTING without file
+    )
+    uploader_holdsdesignation_obj = HoldsDesignation.objects.get(
+        user=uploader_user_obj, designation=uploader_designation_obj)
+
+    new_tracking = Tracking.objects.create(
+        file_id=new_file,
+        current_id=uploader_extrainfo_obj,
+        current_design=uploader_holdsdesignation_obj,
+        receiver_id=receiver_obj,
+        receive_design=receiver_designation_obj,
+        tracking_extra_JSON=file_extra_JSON,
+        remarks=f"File with id:{str(new_file.id)} created by {uploader} and sent to {receiver}"
+        # upload_file = None, dont add file for first tracking
+    )
+    if new_tracking is None:
+        new_file.delete()
+        raise ValidationError('Tracking model data is incorrect')
     else:
-        raise ValidationError('file data is incorrect')
-    
-    
-    # new_file = File.objects.create(
-    #     uploader=uploader,
-    #     designation=uploader_designation,
-    #     src_module=src_module,
-    #     src_object_id=src_object_id,
-    #     file_extra_JSON=file_extra_JSON,
-    #     # upload_file=upload_file TESTING without file
-    # )
-    # Tracking.objects.create(
-    #     file_id=new_file.id,
-    #     current_id=uploader,
-    #     current_design=uploader_designation,
-    #     receiver_id=receiver,
-    #     receive_design=receiver_designation,
-    #     tracking_extra_JSON=file_extra_JSON,
-    #     # upload_file = upload_file TESTING without file
-    # )
-    return new_file.id
+        return new_file.id
 
 
 def view_file(file_id: int) -> dict:
