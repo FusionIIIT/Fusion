@@ -111,12 +111,12 @@ def forward_file(
         receiver_designation: str,
         file_extra_JSON: dict,
         remarks: str = "",
-        file_attachment: Any = None) -> int: 
+        file_attachment: Any = None) -> int:
     '''
     This function forwards the file and inserts a new tracking history into the file tracking table
     Note that only the current owner(with appropriate designation) of the file has the ability to forward files
     '''
-    # HoldsDesignation and ExtraInfo object are used instead 
+    # HoldsDesignation and ExtraInfo object are used instead
     # of Designation and User object because of the legacy code being that way
 
     current_owner = get_current_file_owner(file_id)
@@ -125,7 +125,8 @@ def forward_file(
     current_owner_holds_designation = HoldsDesignation.objects.get(
         user=current_owner, designation=current_owner_designation)
     receiver_obj = User.objects.get(username=receiver)
-    receiver_designation_obj = Designation.objects.get(name=receiver_designation)
+    receiver_designation_obj = Designation.objects.get(
+        name=receiver_designation)
     tracking_data = {
         'file_id': file_id,
         'current_id': current_owner_extra_info.id,
@@ -134,17 +135,15 @@ def forward_file(
         'receive_design': receiver_designation_obj.id,
         'tracking_extra_JSON': file_extra_JSON,
     }
-    if file_attachment is not None: 
+    if file_attachment is not None:
         tracking_data['upload_file'] = file_attachment
 
-
-    tracking_entry = TrackingSerializer(data=tracking_data) 
-    if tracking_entry.is_valid(): 
+    tracking_entry = TrackingSerializer(data=tracking_data)
+    if tracking_entry.is_valid():
         tracking_entry.save()
         return tracking_entry.instance.id
     else:
         raise ValidationError('forward data is incomplete')
-
 
 
 def view_history(file_id: int) -> dict:
@@ -159,7 +158,7 @@ def get_designations(username: str) -> list:
     This function is used to return a list of all the designation names of a particular user
     '''
     user = User.objects.get(username=username)
-    designations_held = HoldsDesignation.objects.filter(user = user)
+    designations_held = HoldsDesignation.objects.filter(user=user)
     designation_name = [designation.name for designation in designations_held]
 
 
