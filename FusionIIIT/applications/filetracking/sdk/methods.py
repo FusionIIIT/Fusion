@@ -195,6 +195,7 @@ def forward_file(
         'receiver_id': receiver_obj.id,
         'receive_design': receiver_designation_obj.id,
         'tracking_extra_JSON': file_extra_JSON,
+        'remarks': remarks,
     }
     if file_attachment is not None:
         tracking_data['upload_file'] = file_attachment
@@ -211,6 +212,7 @@ def view_history(file_id: int) -> dict:
     '''
     This function is used to get the history of a particular file with the given file_id
     '''
+
     pass
 
 
@@ -232,3 +234,6 @@ def get_ExtraInfo_object_from_username(username: str) -> ExtraInfo:
     user = User.objects.get(username=username)
     extrainfo = ExtraInfo.objects.get(user=user)
     return extrainfo
+
+
+
