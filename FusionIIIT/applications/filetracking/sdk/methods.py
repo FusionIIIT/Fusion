@@ -8,10 +8,10 @@ from typing import Any
 
 
 def create_file(
-        uploader: ExtraInfo,
-        uploader_designation: Designation,
-        receiver: User,
-        receiver_designation: Designation,
+        uploader: str,
+        uploader_designation: str,
+        receiver: str,
+        receiver_designation: str,
         src_module: str,
         src_object_id: str,
         file_extra_JSON: dict,
@@ -19,14 +19,37 @@ def create_file(
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
-    new_file = File.objects.create(
-        uploader=uploader,
-        designation=uploader_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        # upload_file=upload_file TESTING without file
-    )
+    uploader_obj = get_user_object_from_username(uploader)
+    uploader_designation_obj = Designation.objects.get(name=uploader_designation)
+    receiver_obj = get_user_object_from_username(receiver)
+    receiver_designation_obj = Designation.objects.get(name=receiver_designation)
+
+    new_file_data = {
+        'uploader': uploader_obj,
+        'designation': uploader_designation_obj,
+        'src_module': src_module,
+        'src_object_id': src_object_id,
+        'file_extra_JSON': file_extra_JSON,
+    }
+    if attached_file is not None:
+        new_file_data['upload_file'] = attached_file
+
+    new_file = FileSerializer(data=new_file_data)
+    if new_file.is_valid():
+        new_file.save()
+        return new_file.instance.id
+    else:
+        raise ValidationError('file data is incorrect')
+    
+    
+    # new_file = File.objects.create(
+    #     uploader=uploader,
+    #     designation=uploader_designation,
+    #     src_module=src_module,
+    #     src_object_id=src_object_id,
+    #     file_extra_JSON=file_extra_JSON,
+    #     # upload_file=upload_file TESTING without file
+    # )
     # Tracking.objects.create(
     #     file_id=new_file.id,
     #     current_id=uploader,
