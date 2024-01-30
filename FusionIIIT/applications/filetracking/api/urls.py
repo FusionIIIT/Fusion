@@ -1,13 +1,22 @@
 from django.conf.urls import url
-from . import views  
+from .views import (
+    CreateFileView,
+    ViewFileView,
+    DeleteFileView,
+    ViewInboxView,
+    ViewOutboxView,
+    ViewHistoryView,
+    ForwardFileView,
+    GetDesignationsView,
+)
 
 urlpatterns = [
-    url(r'^file/$', views.create_file, name='create_file'),
-    url(r'^file/(?P<file_id>\d+)/$', views.view_file, name='view_file'),
-    url(r'^file/(?P<file_id>\d+)/$', views.delete_file, name='delete_file'),
-    url(r'^inbox/$', views.view_inbox, name='view_inbox'),
-    url(r'^outbox/$', views.view_outbox, name='view_outbox'),
-    url(r'^history/(?P<file_id>\d+)/$', views.view_history, name='view_history'),
-    url(r'^file/(?P<file_id>\d+)/$', views.forward_file, name='forward_file'),
-    url(r'^designations/(?P<username>\w+)/$', views.get_designations, name='get_designations'),
+    url(r'^file/$', CreateFileView.as_view(), name='create_file'),
+    url(r'^file/(?P<file_id>\d+)/$', ViewFileView.as_view(), name='view_file'),
+    url(r'^file/(?P<file_id>\d+)/$', DeleteFileView.as_view(), name='delete_file'),
+    url(r'^inbox/$', ViewInboxView.as_view(), name='view_inbox'),
+    url(r'^outbox/$', ViewOutboxView.as_view(), name='view_outbox'),
+    url(r'^history/(?P<file_id>\d+)/$', ViewHistoryView.as_view(), name='view_history'),
+    url(r'^file/(?P<file_id>\d+)/$', ForwardFileView.as_view(), name='forward_file'),
+    url(r'^designations/(?P<username>\w+)/$', GetDesignationsView.as_view(), name='get_designations'),
 ]

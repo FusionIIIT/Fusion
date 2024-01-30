@@ -15,7 +15,7 @@ def create_file(
         src_module: str,
         src_object_id: str,
         file_extra_JSON: dict,
-        upload_file) -> int:
+        attached_file: Any) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
