@@ -212,8 +212,11 @@ def view_history(file_id: int) -> dict:
     '''
     This function is used to get the history of a particular file with the given file_id
     '''
-
-    pass
+    Tracking_history = Tracking.objects.filter(
+        file_id=file_id).order_by('-receive_date')
+    Tracking_history_serialized = TrackingSerializer(
+        Tracking_history, many=True)
+    return Tracking_history_serialized.data
 
 
 def get_designations(username: str) -> list:
@@ -234,6 +237,3 @@ def get_ExtraInfo_object_from_username(username: str) -> ExtraInfo:
     user = User.objects.get(username=username)
     extrainfo = ExtraInfo.objects.get(user=user)
     return extrainfo
-
-
-
