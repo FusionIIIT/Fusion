@@ -1,3 +1,4 @@
+from hashlib import file_digest
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
@@ -14,10 +15,28 @@ def create_file(
         src_module: str,
         src_object_id: str,
         file_extra_JSON: dict,
-        attached_file_path) -> int:
+        upload_file) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
+    new_file = File.objects.create(
+        uploader=uploader,
+        designation=uploader_designation,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        # upload_file=upload_file TESTING without file
+    )
+    # Tracking.objects.create(
+    #     file_id=new_file.id,
+    #     current_id=uploader,
+    #     current_design=uploader_designation,
+    #     receiver_id=receiver,
+    #     receive_design=receiver_designation,
+    #     tracking_extra_JSON=file_extra_JSON,
+    #     # upload_file = upload_file TESTING without file
+    # )
+    return new_file.id
 
 
 def view_file(file_id: int) -> dict:
