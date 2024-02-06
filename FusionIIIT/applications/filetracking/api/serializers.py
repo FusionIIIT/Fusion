@@ -22,6 +22,7 @@ class FileHeaderSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = [
+            'id',
             'uploader',
             'designation',
             'subject',
