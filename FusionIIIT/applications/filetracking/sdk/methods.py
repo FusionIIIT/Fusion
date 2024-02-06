@@ -178,7 +178,11 @@ def archive_file(file_id: int) -> bool:
     '''
     This function is used to archive a file and returns true if the archiving was successful
     '''
-    return None
+    try:
+        File.objects.filter(id=file_id).update(is_read=True)
+        return True
+    except File.DoesNotExist:
+        return False
 
 
 def view_drafts(user: str, designation: str, src_module: str) -> dict:
