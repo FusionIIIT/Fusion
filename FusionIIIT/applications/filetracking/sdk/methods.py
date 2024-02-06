@@ -101,7 +101,11 @@ def view_inbox(user: str, designation: str, src_module: str) -> dict:
         file_id__src_module=src_module)
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
-    received_files_serialized = FileHeaderSerializer(received_files, many=True)
+    # remove duplicate file ids (from sending back and forth)
+    received_files_unique = uniqueList(received_files)
+
+    received_files_serialized = FileHeaderSerializer(
+        received_files_unique, many=True)
     return received_files_serialized.data
 
 
@@ -123,7 +127,10 @@ def view_outbox(username: str, designation: str, src_module: str) -> dict:
         file_id__src_module=src_module)
     sent_files = [tracking.file_id for tracking in sent_files_tracking]
 
-    sent_files_serialized = FileHeaderSerializer(sent_files, many=True)
+    # remove duplicate file ids (from sending back and forth)
+    sent_files_unique = uniqueList(sent_files)
+
+    sent_files_serialized = FileHeaderSerializer(sent_files_unique, many=True)
     return sent_files_serialized.data
 
 
@@ -272,3 +279,13 @@ def get_ExtraInfo_object_from_username(username: str) -> ExtraInfo:
     user = User.objects.get(username=username)
     extrainfo = ExtraInfo.objects.get(user=user)
     return extrainfo
+
+
+def uniqueList(l: list) -> list:
+    '''
+    This function is used to return a list with unique elements
+    O(n) time and space
+    '''
+    s = set(l)
+    unique_list = (list(s))
+    return unique_list
