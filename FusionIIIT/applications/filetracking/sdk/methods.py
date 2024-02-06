@@ -20,6 +20,7 @@ def create_file(
     '''
 
     '''
+    Functioning:
     create base file with params
     create tracking with params
     if both complete then return id of file
@@ -34,24 +35,6 @@ def create_file(
     receiver_obj = get_user_object_from_username(receiver)
     receiver_designation_obj = Designation.objects.get(
         name=receiver_designation)
-
-    # new_file_data = {
-    #     'uploader': uploader_obj,
-    #     'designation': uploader_designation_obj,
-    #     'src_module': src_module,
-    #     'src_object_id': src_object_id,
-    #     'file_extra_JSON': file_extra_JSON,
-    # }
-    # if attached_file is not None:
-    #     new_file_data['upload_file'] = attached_file
-
-    # new_file = FileSerializer(data=new_file_data)
-    # if new_file.is_valid():
-    #     new_file.save()
-    #     return new_file.instance.id
-    # else:
-    #     print(new_file.errors)
-    #     # raise ValidationError('file data is incorrect')
 
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
@@ -142,6 +125,58 @@ def view_outbox(username: str, designation: str, src_module: str) -> dict:
 
     sent_files_serialized = FileHeaderSerializer(sent_files, many=True)
     return sent_files_serialized.data
+
+
+# need: view_archived, archive_file, (can get details of archived files by view_file, etc)
+# view_drafts, create_draft, (delete_draft can be via delete_file),
+# (forward_draft can be via forward_file, but lets implement a send draft that follows our remark convention)
+
+def view_archived(user: str, designation: str, src_module: str) -> dict:
+    '''
+    This function is used to get all the files in the archive of a particular user and designation
+    Archived file mean those which the user has ever interacted with, and are now finished or archived (?)
+    '''
+    user_designation = Designation.objects.get(name=designation)
+    recipient_object = get_user_object_from_username(user)
+
+    return None
+
+
+def archive_file(file_id: int) -> bool:
+    '''
+    This function is used to archive a file and returns true if the archiving was successful
+    '''
+    return None
+
+
+def view_drafts(user: str, designation: str, src_module: str) -> dict:
+    '''
+    This function is used to get all the files in the drafts of a particular user and designation
+    '''
+    return None
+
+
+def create_draft(
+        uploader: str,
+        uploader_designation: str,
+        src_module: str,
+        src_object_id: str,
+        file_extra_JSON: dict,
+        attached_file: Any) -> int:
+    '''
+    This function is used to create a draft file object corresponding to any object of a module that needs to be tracked
+    It is similar to create_file but is not sent to anyone
+    Later this file can be sent to someone by forward_file or by send_draft by using draft file_id
+    '''
+    return None
+
+
+def send_draft(file_id: int, receiver: str, receiver_designation: str, remarks: str = "") -> int:
+    '''
+    This function is used to send a draft file and inserts a new tracking history into the file tracking table
+    Note that only the current owner(with appropriate designation) of the file has the ability to send drafts
+    '''
+    return None
 
 
 def get_current_file_owner(file_id: int) -> User:
