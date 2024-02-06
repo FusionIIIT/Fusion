@@ -361,9 +361,8 @@ def forward(request, id):
 
     if request.method == "POST":
         if 'finish' in request.POST:
-            file.complete_flag = True
+            file.is_read = True
             file.save()
-
         if 'send' in request.POST:
             current_id = request.user.extrainfo
             remarks = request.POST.get('remarks')
