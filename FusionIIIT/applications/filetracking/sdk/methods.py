@@ -141,15 +141,37 @@ def view_outbox(username: str, designation: str, src_module: str) -> dict:
 # view_drafts, create_draft, (delete_draft can be via delete_file),
 # (forward_draft can be via forward_file, but lets implement a send draft that follows our remark convention)
 
-def view_archived(user: str, designation: str, src_module: str) -> dict:
+def view_archived(username: str, designation: str, src_module: str) -> dict:
     '''
     This function is used to get all the files in the archive of a particular user and designation
-    Archived file mean those which the user has ever interacted with, and are now finished or archived (?)
+    Archived file mean those which the user has ever interacted with, and are now finished or archived
     '''
     user_designation = Designation.objects.get(name=designation)
-    recipient_object = get_user_object_from_username(user)
+    user_object = get_user_object_from_username(username)
+    received_archived_tracking = Tracking.objects.select_related('file_id').filter(
+        receiver_id=user_object,
+        receive_design=user_designation,
+        file_id__src_module=src_module,
+        file_id__is_read=True)
+    
+    user_HoldsDesignation_object = HoldsDesignation.objects.get(
+        user=user_object, designation=user_designation)
+    sender_ExtraInfo_object = get_ExtraInfo_object_from_username(username)
+    sent_archived_tracking = Tracking.objects.select_related('file_id').filter(
+        current_id=sender_ExtraInfo_object,
+        current_design=user_HoldsDesignation_object,
+        file_id__src_module=src_module,
+        file_id__is_read=True)
+    
+    archived_tracking = received_archived_tracking | sent_archived_tracking
+    archived_files = [tracking.file_id for tracking in archived_tracking]
 
-    return None
+    # remove duplicate file ids (from sending back and forth)
+    archived_files_unique = uniqueList(archived_files)
+
+    archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
+    return archived_files_serialized.data
+
 
 
 def archive_file(file_id: int) -> bool:
