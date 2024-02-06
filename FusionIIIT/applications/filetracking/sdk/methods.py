@@ -87,18 +87,20 @@ def delete_file(file_id: int) -> bool:
     except File.DoesNotExist:
         return False
 
+# inbox and outbox could be sorted based on most recent linked tracking entry
 
-def view_inbox(user: str, designation: str, src_module: str) -> dict:
+def view_inbox(username: str, designation: str, src_module: str) -> dict:
     '''
     This function is used to get all the files in the inbox of a particular user and designation
     '''
     # TODO: currently this does not return a value of sent by
     user_designation = Designation.objects.get(name=designation)
-    recipient_object = get_user_object_from_username(user)
+    recipient_object = get_user_object_from_username(username)
     received_files_tracking = Tracking.objects.select_related('file_id').filter(
         receiver_id=recipient_object,
         receive_design=user_designation,
-        file_id__src_module=src_module)
+        file_id__src_module=src_module,
+        file_id__is_read=False)
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -124,7 +126,8 @@ def view_outbox(username: str, designation: str, src_module: str) -> dict:
     sent_files_tracking = Tracking.objects.select_related('file_id').filter(
         current_id=sender_ExtraInfo_object,
         current_design=user_HoldsDesignation_object,
-        file_id__src_module=src_module)
+        file_id__src_module=src_module,
+        file_id__is_read=False)
     sent_files = [tracking.file_id for tracking in sent_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
