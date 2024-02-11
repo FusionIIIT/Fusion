@@ -18,6 +18,16 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+
+    - name: Get Python changed files  # Identifies changed Python files
+      id: changed-py-files
+      uses: tj-actions/changed-files@v23
+      with:
+        files: |
+          *.py
+          **/*.py
+          
     - name: Analysing the code with pylint
+      if: steps.changed-py-files.outputs.any_changed == 'true'
       run: |
-        pylint $(git ls-files '*.py')
+        pylint ${{ steps.changed-py-files.outputs.all_changed_files }}
