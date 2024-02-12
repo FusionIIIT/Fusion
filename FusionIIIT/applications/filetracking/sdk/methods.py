@@ -11,10 +11,10 @@ def create_file(
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
-        src_module: str,
-        src_object_id: str,
-        file_extra_JSON: dict,
-        attached_file: Any) -> int:
+        src_module: str = "filetracking",
+        src_object_id: str = "",
+        file_extra_JSON: dict = {},
+        attached_file: Any = None) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
@@ -189,10 +189,10 @@ def archive_file(file_id: int) -> bool:
 def create_draft(
         uploader: str,
         uploader_designation: str,
-        src_module: str,
-        src_object_id: str,
-        file_extra_JSON: dict,
-        attached_file: Any) -> int:
+        src_module: str = "filetracking",
+        src_object_id: str = "",
+        file_extra_JSON: dict = {},
+        attached_file: Any = None) -> int:
     '''
     This function is used to create a draft file object corresponding to any object of a module that needs to be tracked
     It is similar to create_file but is not sent to anyone
