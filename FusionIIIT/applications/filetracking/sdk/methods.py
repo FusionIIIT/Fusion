@@ -14,7 +14,7 @@ def create_file(
         src_module: str,
         src_object_id: str,
         file_extra_JSON: dict,
-        attached_file: Any) -> int:
+        attached_file: Any = None) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
@@ -42,8 +42,11 @@ def create_file(
         src_module=src_module,
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
-        # upload_file=upload_file TESTING without file
     )
+
+    if attached_file is not None: 
+        new_file.upload_file.save(attached_file.name, attached_file, save=True)
+
     uploader_holdsdesignation_obj = HoldsDesignation.objects.get(
         user=uploader_user_obj, designation=uploader_designation_obj)
 
@@ -89,11 +92,10 @@ def delete_file(file_id: int) -> bool:
 
 # inbox and outbox could be sorted based on most recent linked tracking entry
 
-def view_inbox(username: str, designation: str, src_module: str) -> dict:
+def view_inbox(username: str, designation: str, src_module: str) -> list:
     '''
     This function is used to get all the files in the inbox of a particular user and designation
     '''
-    # TODO: currently this does not return a value of sent by
     user_designation = Designation.objects.get(name=designation)
     recipient_object = get_user_object_from_username(username)
     received_files_tracking = Tracking.objects.select_related('file_id').filter(
@@ -106,12 +108,17 @@ def view_inbox(username: str, designation: str, src_module: str) -> dict:
     # remove duplicate file ids (from sending back and forth)
     received_files_unique = uniqueList(received_files)
 
-    received_files_serialized = FileHeaderSerializer(
-        received_files_unique, many=True)
-    return received_files_serialized.data
+    received_files_serialized = list(FileHeaderSerializer(
+        received_files_unique, many=True).data)
+    
+    for file in received_files_serialized: 
+        file['sent_by_user'] = get_last_file_sender(file['id']).username
+        file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
+     
+    return received_files_serialized
 
 
-def view_outbox(username: str, designation: str, src_module: str) -> dict:
+def view_outbox(username: str, designation: str, src_module: str) -> list:
     '''
     This function is used to get all the files in the outbox of a particular user and designation
     '''
@@ -215,28 +222,6 @@ def send_draft(file_id: int, receiver: str, receiver_designation: str, remarks: 
     return None
 
 
-def get_current_file_owner(file_id: int) -> User:
-    '''
-    This functions returns the current owner of the file.
-    The current owner is the latest recipient of the file
-    '''
-    latest_tracking = Tracking.objects.filter(
-        file_id=file_id).order_by('-receive_date').first()
-    latest_recipient = latest_tracking.receiver_id
-    return latest_recipient
-
-
-def get_current_file_owner_designation(file_id: int) -> Designation:
-    '''
-    This function returns the designation of the current owner of the file.
-    The current owner is the latest recipient of the file
-    '''
-    latest_tracking = Tracking.objects.filter(
-        file_id=file_id).order_by('-receive_date').first()
-    latest_recipient_designation = latest_tracking.receive_design
-    return latest_recipient_designation
-
-
 def forward_file(
         file_id: int,
         receiver: str,
@@ -290,6 +275,49 @@ def view_history(file_id: int) -> dict:
     return Tracking_history_serialized.data
 
 
+# HELPER FUNCTIONS
+
+def get_current_file_owner(file_id: int) -> User:
+    '''
+    This functions returns the current owner of the file.
+    The current owner is the latest recipient of the file
+    '''
+    latest_tracking = Tracking.objects.filter(
+        file_id=file_id).order_by('-receive_date').first()
+    latest_recipient = latest_tracking.receiver_id
+    return latest_recipient
+
+
+def get_current_file_owner_designation(file_id: int) -> Designation:
+    '''
+    This function returns the designation of the current owner of the file.
+    The current owner is the latest recipient of the file
+    '''
+    latest_tracking = Tracking.objects.filter(
+        file_id=file_id).order_by('-receive_date').first()
+    latest_recipient_designation = latest_tracking.receive_design
+    return latest_recipient_designation
+
+def get_last_file_sender(file_id: int) -> User: 
+    '''
+    This Function returns the last file sender,
+    one who has last forwarded/sent the file
+    '''
+    latest_tracking = Tracking.objects.filter(
+            file_id=file_id).order_by('-receive_date').first()
+    latest_sender_extra_info = latest_tracking.current_id
+    return latest_sender_extra_info.user
+
+def get_last_file_sender_designation(file_id: int) -> Designation: 
+    '''
+    This Function returns the last file sender's Designation,
+    one who has last forwarded/sent the file
+    '''
+    latest_tracking = Tracking.objects.filter(
+            file_id=file_id).order_by('receive_date').first()
+    latest_sender_holds_designation = latest_tracking.current_design
+    return latest_sender_holds_designation.designation
+
 def get_designations(username: str) -> list:
     '''
     This function is used to return a list of all the designation names of a particular user
@@ -298,17 +326,14 @@ def get_designations(username: str) -> list:
     designations_held = HoldsDesignation.objects.filter(user=user)
     designation_name = [designation.name for designation in designations_held]
 
-
 def get_user_object_from_username(username: str) -> User:
     user = User.objects.get(username=username)
     return user
-
 
 def get_ExtraInfo_object_from_username(username: str) -> ExtraInfo:
     user = User.objects.get(username=username)
     extrainfo = ExtraInfo.objects.get(user=user)
     return extrainfo
-
 
 def uniqueList(l: list) -> list:
     '''
