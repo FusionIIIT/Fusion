@@ -42,7 +42,7 @@ def create_file(
         src_module=src_module,
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
-        # upload_file=upload_file TESTING without file
+        upload_file=attached_file
     )
     uploader_holdsdesignation_obj = HoldsDesignation.objects.get(
         user=uploader_user_obj, designation=uploader_designation_obj)
@@ -185,12 +185,6 @@ def archive_file(file_id: int) -> bool:
         return False
 
 
-def view_drafts(user: str, designation: str, src_module: str) -> dict:
-    '''
-    This function is used to get all the files in the drafts of a particular user and designation
-    '''
-    return None
-
 
 def create_draft(
         uploader: str,
@@ -202,17 +196,34 @@ def create_draft(
     '''
     This function is used to create a draft file object corresponding to any object of a module that needs to be tracked
     It is similar to create_file but is not sent to anyone
-    Later this file can be sent to someone by forward_file or by send_draft by using draft file_id
+    Later this file can be sent to someone by forward_file by using draft file_id
     '''
-    return None
+    uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
+    uploader_designation_obj = Designation.objects.get(
+        name=uploader_designation)
+
+    new_file = File.objects.create(
+        uploader=uploader_extrainfo_obj,
+        designation=uploader_designation_obj,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        upload_file=attached_file
+    )
+    return new_file.id
 
 
-def send_draft(file_id: int, receiver: str, receiver_designation: str, remarks: str = "") -> int:
+def view_drafts(username: str, designation: str, src_module: str) -> dict:
     '''
-    This function is used to send a draft file and inserts a new tracking history into the file tracking table
-    Note that only the current owner(with appropriate designation) of the file has the ability to send drafts
+    This function is used to get all the files in the drafts (has not been sent) of a particular user and designation
     '''
-    return None
+    user_designation = Designation.objects.get(name=designation)
+    user_ExtraInfo_object = get_ExtraInfo_object_from_username(username)
+    draft_files = File.objects.filter(
+        tracking__isnull=True, uploader=user_ExtraInfo_object, designation=user_designation, src_module=src_module)
+    draft_files_serialized = FileHeaderSerializer(draft_files, many=True)
+    return draft_files_serialized.data
+
 
 
 def get_current_file_owner(file_id: int) -> User:
