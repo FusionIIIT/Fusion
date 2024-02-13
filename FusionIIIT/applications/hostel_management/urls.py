@@ -28,4 +28,5 @@ urlpatterns = [
     #Worker Report
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
+
 ]
