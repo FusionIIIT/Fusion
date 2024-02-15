@@ -354,3 +354,15 @@ def uniqueList(l: list) -> list:
     s = set(l)
     unique_list = (list(s))
     return unique_list
+
+
+def add_uploader_department_to_files_list(files: list) -> list:
+    '''
+    This function is used to add the department of the uploader to the file
+    '''
+    for file in files:
+        uploader = file['uploader']
+        uploader_Extrainfo = get_ExtraInfo_object_from_username(uploader)
+        file['uploader_department'] = (str(uploader_Extrainfo.department)).split(': ')[1]
+
+    return files
