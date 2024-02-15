@@ -471,7 +471,8 @@ def alloted_rooms(request, hall_id):
         })
     
     # Return the room_details as JSON response
-    return JsonResponse(room_details, safe=False)
+    # return JsonResponse(room_details, safe=False)
+    return render(request, 'hostelmanagement/alloted_rooms.html', {'allotted_rooms': allotted_rooms})
 
 
 
@@ -505,3 +506,5 @@ def all_staff(request):
     
     # Return the staff_details as JSON response
     return JsonResponse(staff_details, safe=False)
+
+
