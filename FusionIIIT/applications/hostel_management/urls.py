@@ -6,6 +6,7 @@ app_name = 'hostelmanagement'
 urlpatterns = [
     #Home 
     path('', views.hostel_view, name="hostel_view"),
+    path('/hello', views.hostel_view, name="hello"),
 
     #Notice Board
     path('notice_form/', views.notice_board, name="notice_board"),
@@ -28,4 +29,5 @@ urlpatterns = [
     #Worker Report
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
+    path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
 ]

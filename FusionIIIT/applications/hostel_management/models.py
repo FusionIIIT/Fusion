@@ -236,4 +236,24 @@ class WorkerReport(models.Model):
     remark = models.CharField(max_length=100)
 
     def str(self):
-        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
+
+# class HostelAllotment(models.Model):
+#     # hall_id = models.ForeignKey(Hall,max_length=10, primary_key=True)
+#     hall_id = models.ForeignKey(Hall, on_delete=models.CASCADE, primary_key=True)
+#     hostel_name = models.ForeignKey(Hall, on_delete=models.CASCADE)
+#     assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+#     assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+#     def str(self):
+#         return f"{self.hall_id} - {self.hostel_name.hall_name}"     
+
+
+class HostelAllotment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    hostel_name = models.CharField(max_length=100)  # Assuming hostel_name is a CharField
+    assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.hall} - {self.hostel_name}"

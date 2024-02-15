@@ -3,6 +3,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from .models import HostelStudentAttendance
+from django.http import JsonResponse
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 from applications.academic_information.models import Student
@@ -436,3 +438,24 @@ class GeneratePDF(View):
             return response
         return HttpResponse("Not found")
 
+
+
+def hostel_notice_board(request):
+    notices =  .all().values('id', 'hall', 'posted_by', 'head_line', 'content', 'description')
+    data = list(notices)
+    return JsonResponse(data, safe=False)
+
+# from django.http import JsonResponse
+
+
+# from django.http import JsonResponse
+# from django.contrib.auth.decorators import login_required
+# from .models import HostelStudentAttendance
+
+@login_required
+def student_attendance(request):
+    # Retrieve attendance data for the logged-in student
+    student_id = request.user.id
+    attendances = HostelStudentAttendance.objects.filter(student_id=student_id).values('id', 'hall_id', 'date', 'present')
+    data = list(attendances)
+    return JsonResponse(data, safe=False) 
