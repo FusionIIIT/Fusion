@@ -23,6 +23,9 @@ from django.contrib import messages
 from .utils import render_to_pdf, save_worker_report_sheet,get_caretaker_hall
 from .utils import add_to_room, remove_from_room
 
+# //! My change
+from django.http import JsonResponse
+
 @login_required
 def hostel_view(request, context={}):
     """
@@ -435,3 +438,70 @@ class GeneratePDF(View):
             response['Content-Disposition'] = content
             return response
         return HttpResponse("Not found")
+
+    
+
+# //! alloted_rooms
+def alloted_rooms(request, hall_id):
+    """
+    This function returns the allotted rooms in a particular hall.
+    
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+      hall_id - Hall ID for which the allotted rooms need to be retrieved.
+    
+    @variables:
+      allotted_rooms - stores all the rooms allotted in the given hall.
+    """
+    # Query the hall by hall_id
+    hall = Hall.objects.get(hall_id=hall_id)
+    
+    # Query all rooms allotted in the given hall
+    allotted_rooms = HallRoom.objects.filter(hall=hall, room_occupied__gt=0)
+    
+    # Prepare a list of room details to be returned
+    room_details = []
+    for room in allotted_rooms:
+        room_details.append({
+            'hall': room.hall.hall_name,
+            'room_no': room.room_no,
+            'block_no': room.block_no,
+            'room_cap': room.room_cap,
+            'room_occupied': room.room_occupied
+        })
+    
+    # Return the room_details as JSON response
+    return JsonResponse(room_details, safe=False)
+
+
+
+# //! all_staff
+def all_staff(request):
+    """
+    This function returns all staff information.
+    
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    
+    @variables:
+      all_staff - stores all staff information.
+    """
+    # Query all staff information
+    all_staff = StaffSchedule.objects.all()
+
+    print(all_staff)
+    
+    # Prepare a list of staff details to be returned
+    staff_details = []
+    for staff in all_staff:
+        staff_details.append({
+            'type': staff.staff_type,
+            'staff_id': staff.staff_id_id,
+            'hall_id': staff.hall_id,
+            'day': staff.day,
+            'start_time': staff.start_time,
+            'end_time': staff.end_time
+        })
+    
+    # Return the staff_details as JSON response
+    return JsonResponse(staff_details, safe=False)
