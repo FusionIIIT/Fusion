@@ -21,10 +21,4 @@ class FileHeaderSerializer(serializers.ModelSerializer):
     '''
     class Meta:
         model = File
-        fields = [
-            'id',
-            'uploader',
-            'designation',
-            'subject',
-            'description',
-            'upload_date']
+        exclude = ['upload_file', 'is_read']
