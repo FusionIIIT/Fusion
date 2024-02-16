@@ -1,9 +1,9 @@
-{% load voters_tag %} {% block active_poll %}
+{% block active_poll %}
 <div class="ui active tab" data-tab="active">
   <div class="ui styled fluid accordion">
-    {% for poll in voting_polls %} {% validate request.user poll.groups as car%}
-    {% if car %}
-    <div class="title" style="display: flex; align-items: center;">
+    {% for poll in voting_polls %} {% comment %} {% if
+    request.user.groups.filter(name__in=poll.groups).exists %} {% endcomment %}
+    <div class="title" style="display: flex; align-items: center">
       <i class="dropdown icon"></i>
       <div
         style="
@@ -13,31 +13,27 @@
           align-items: center;
         "
       >
-        <p style="margin: 0;">
-          {{poll.title}}
-        </p>
-
-        {% if poll.exp_date == 'expire' %}
-        <p style="margin: 0;">Expired</p>
+        <p style="margin: 0">{{poll.title}}</p>
+        {% if poll.exp_date > now %}
+        <p style="margin: 0">Expired</p>
         {% else %}
-        <p style="margin: 0;">Expires in: {{poll.exp_date}} Days</p>
+        <p style="margin: 0">Expires in: {{poll.exp_date}} Days</p>
         {% endif %}
       </div>
     </div>
     <div class="content">
       <p
         class="transition hidden"
-        style="white-space: pre; background-color: aliceblue; padding: 10px;"
+        style="white-space: pre; background-color: aliceblue; padding: 10px"
       >
         {{poll.desc}}
       </p>
-
       <form
         action="{% url 'gymkhana:vote'  poll.id %}"
         method="POST"
         id="active"
       >
-        {% csrf_token %} {% if poll.exp_date == 'expire' %}
+        {% csrf_token %} {% if poll.exp_date > now %}
         <div
           style="
             display: flex;
@@ -48,12 +44,12 @@
           "
         >
           <p>Results</p>
-          <p style="padding: 15px; background-color: bisque;">{{poll.max}}</p>
+          <p style="padding: 15px; background-color: bisque">{{poll.max}}</p>
         </div>
         {% else %} {% for choice in poll.choices %}
         <div
           class="ui grid"
-          style="box-shadow: 0 0 6.3px 0 rgb(230, 230, 230); margin: 5px;"
+          style="box-shadow: 0 0 6.3px 0 rgb(230, 230, 230); margin: 5px"
         >
           <div class="twelve wide column">{{choice.title}}</div>
           <div class="four wide column">
@@ -66,7 +62,6 @@
           </div>
         </div>
         {% endfor %} {% endif %}
-
         <div class="ui grid">
           <div class="two column row">
             <div class="column">
@@ -74,7 +69,7 @@
               <button class="ui primary button" id="btn" disabled>
                 Poll Expired
               </button>
-              {% elif roll in poll.voters %}
+              {% elif request.user in poll.voters %}
               <button class="ui primary button" id="btn" disabled>
                 Already Voted
               </button>
@@ -83,7 +78,7 @@
               {% endif %}
             </div>
             <div class="column">
-              <p style="margin: 0;">
+              <p style="margin: 0">
                 <b>Created By:</b> {{poll.created_by.0}}, {{poll.created_by.1}}
               </p>
             </div>
@@ -92,7 +87,7 @@
       </form>
     </div>
 
-    {% endif %} {% endfor %}
+    {% comment %} {% endif %} {% endcomment %} {% endfor %}
   </div>
 </div>
 <script>
@@ -119,5 +114,4 @@
     }
   });
 </script>
-
 {% endblock active_poll %}

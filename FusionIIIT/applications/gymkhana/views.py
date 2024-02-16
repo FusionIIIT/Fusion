@@ -473,7 +473,6 @@ def new_club(request):
 		return redirect('/gymkhana/')
 
 
-
 @login_required()
 def form_avail(request):
 	"""
@@ -988,8 +987,6 @@ def act_calender(request):
 		return HttpResponse(content)
 
 
-
-
 @login_required
 def club_report(request):
 	"""
@@ -1104,7 +1101,6 @@ def change_head(request):
 		return HttpResponse(content)
 
 		# return redirect('/gymkhana/')
-
 
 
 @login_required
@@ -1263,35 +1259,50 @@ def fest_budget(request):
 
 @login_required
 def approve(request):
-	"""
-	This view is used by the clubs to approve the students who wants to join the club and changes status of student to  confirmed.
-	It gets a list of students who has to be approved and checks them and approves accordingly.
-	 
-	@variables:
-	          approve_list - list of students who has to be checked and approved.
-			  remarks - gets remarks list if any remarks present
-              club_member - gets the object(club and student) and the confirms the status of student in the club.
-	"""
-	approve_list = list(request.POST.getlist('check'))
-	for user in approve_list:
-		# pos = lis.index(user)
-		remark = "remarks" + user
-		remarks = request.POST.getlist(remark)
-		user = user.split(',')
-		info = user[0].split(' - ')
+    """
+    This view is used by the clubs to approve the students who want to join the club and changes the status of the student to 'confirmed'.
+    It gets a list of students who have to be approved and approves them accordingly.
+    """
+    approve_list = list(request.POST.getlist("check"))
 
-		# getting queryset class objects
-		user_name = get_object_or_404(User, username=info[1])
-		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-		student = get_object_or_404(Student, id=extra1)
+    for user in approve_list:
+        remark = "remarks" + user
+        remarks = request.POST.getlist(remark)
+        user = user.split(",")
+        info = user[0].split(" - ")
 
-		club_member = get_object_or_404(Club_member, club=user[1], member=student)
-		club_member.status = "confirmed"
-		club_member.remarks = remarks[0]
-		club_member.save()
-		messages.success(request, "Successfully Approved !!!")
+        # Retrieve User, ExtraInfo, and Student objects
+        user_name = get_object_or_404(User, username=info[1])
+        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+        student = get_object_or_404(Student, id=extra1)
 
-	return redirect('/gymkhana/')
+        # Check if the user is already a member of the club
+        existing_club_member = Club_member.objects.filter(
+            club=user[1], member=student
+        ).first()
+
+        if existing_club_member:
+            # If the user is already a member, update the existing entry and delete past entry
+            existing_club_member.status = "confirmed"
+            existing_club_member.remarks = remarks[0]
+            existing_club_member.save()
+
+            # Delete past entries
+            Club_member.objects.filter(club=user[1], member=student).exclude(
+                id=existing_club_member.id
+            ).delete()
+
+        else:
+            # If the user is not already a member, create a new entry
+            new_club_member = Club_member.objects.create(
+                club=user[1], member=student, status="confirmed", remarks=remarks[0]
+            )
+            new_club_member.save()
+
+        messages.success(request, "Successfully Approved !!!")
+
+    return redirect("/gymkhana/")
+
 
 @login_required
 def club_approve(request):
@@ -1450,7 +1461,7 @@ def date_events(request):
 		return HttpResponse(dates)
 	return HttpResponse("Hurray")
 
-#this algorithm checks if the passed slot time coflicts with any of already booked sessions
+# this algorithm checks if the passed slot time coflicts with any of already booked sessions
 def conflict_algorithm_session(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	"""
@@ -1628,7 +1639,7 @@ def delete_poll(request, poll_id):
 
 	return redirect('/gymkhana/')
 
-#this algorithm checks if the passed slot time coflicts with any of already booked events
+# this algorithm checks if the passed slot time coflicts with any of already booked events
 
 def conflict_algorithm_event(date, start_time, end_time, venue):
 	"""
@@ -1654,7 +1665,7 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 	#placing start time and end time in tuple fashion inside this list
 	slots = [(start_time, end_time)]
 	for value in booked_Events:
-		slots.append((value.start_time, value.end_time))
+		slots.append((value.start_time, value.end_time))	
 	slots.sort()
 	#if there isn't any slot present for the selected day just book the event
 	if (len(slots) == 1):
@@ -1719,8 +1730,6 @@ def filetracking(request):
 				)
 
 			if 'send' in request.POST:
-
-
 				uploader = request.user.extrainfo
 				logger.info(uploader)
 				#ref_id = request.POST.get('fileid')
@@ -1740,14 +1749,10 @@ def filetracking(request):
 					designation=designation,
 					upload_file=upload_file
 				)
-
-
 				current_id = request.user.extrainfo
 				remarks = request.POST.get('remarks')
-
 				sender = request.POST.get('design')
 				current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
 				receiver = request.POST.get('receiver')
 				receiver_id = User.objects.get(username=receiver)
 				logger.info("Receiver_id = ")
@@ -1772,12 +1777,9 @@ def filetracking(request):
 				)
 				office_module_notif(request.user, receiver_id)
 				messages.success(request,'File sent successfully')
-
 		except IntegrityError:
 			message = "FileID Already Taken.!!"
 			return HttpResponse(message)
-
-
 
 	file = File.objects.select_related('uploader','uploader__user','uploader__department','designation').all()
 	extrainfo = ExtraInfo.objects.select_related('user','department').all()
@@ -1869,6 +1871,3 @@ def forward(request, id):
 	}
 
 	return render(request, 'filetracking/forward.html', context)
-
-
-	

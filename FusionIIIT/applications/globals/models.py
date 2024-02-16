@@ -149,7 +149,7 @@ class ExtraInfo(models.Model):
     phone_no = models.BigIntegerField(null=True, default=9999999999)
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
     department = models.ForeignKey(
-        DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
+        DepartmentInfo, on_delete=models.CASCADE, null=False, blank=True)
     profile_picture = models.ImageField(
         null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
