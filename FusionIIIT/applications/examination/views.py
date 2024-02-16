@@ -11,6 +11,10 @@ from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
+from applications.academic_procedures.models import(course_registration)
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 @login_required(login_url='/accounts/login')
 def exam(request):
@@ -33,19 +37,10 @@ def exam(request):
     
     return HttpResponseRedirect('/dashboard/')
 
-@login_required(login_url='/accounts/login')
-def submit(request):
-    return render(request,'../templates/examination/submit.html' , {})
-
-@login_required(login_url='/accounts/login')
-def verify(request):
-    return render(request,'../templates/examination/verify.html' , {})
-
-@login_required(login_url='/accounts/login')      
-def publish(request):
-    return render(request,'../templates/examination/publish.html' ,{})
 
 
-@login_required(login_url='/accounts/login')
-def notReady_publish(request):
-    return render(request,'../templates/examination/notReady_publish.html',{})
+@api_view(['POST'])
+def fetch_student_details(request):
+    # obj=course_registration.objects.filter(course_id__id=course_id, student_id__batch=batch)
+    obj=course_registration.objects.all()
+    return obj
