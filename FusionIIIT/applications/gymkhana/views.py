@@ -837,7 +837,6 @@ def club_membership(request):
 
 	# return redirect('/gymkhana/')
 
-
 @login_required
 def core_team(request):
 	"""
@@ -918,7 +917,6 @@ def event_report(request):
 
 	return redirect('/gymkhana/')
 
-
 @login_required
 def club_budget(request):
 	"""
@@ -954,7 +952,6 @@ def club_budget(request):
 
 	return redirect('/gymkhana/')
 
-
 @login_required
 def act_calender(request):
 	"""
@@ -987,9 +984,6 @@ def act_calender(request):
 			}
 		content = json.dumps(content)
 		return HttpResponse(content)
-
-
-
 
 @login_required
 def club_report(request):
@@ -1105,8 +1099,6 @@ def change_head(request):
 		return HttpResponse(content)
 
 		# return redirect('/gymkhana/')
-
-
 
 @login_required
 def new_session(request):
@@ -1261,7 +1253,6 @@ def fest_budget(request):
 
 	return redirect('/gymkhana/')
 
-
 @login_required
 def approve(request):
 	"""
@@ -1313,7 +1304,6 @@ def club_approve(request):
 		messages.success(request, "Successfully Approved !!!")
 
 	return redirect('/gymkhana/')
-
 
 @login_required
 def club_reject(request):
@@ -1401,7 +1391,6 @@ def cancel(request):
 		messages.success(request, "Successfully deleted !!!")
 
 	return redirect('/gymkhana/')
-
 
 @login_required
 @csrf_exempt
@@ -1870,6 +1859,3 @@ def forward(request, id):
 	}
 
 	return render(request, 'filetracking/forward.html', context)
-
-
- 
