@@ -30,8 +30,8 @@ urlpatterns = [
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
 
     # !! My Change
-    path('alloted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
-    path('all_staff/', views.all_staff, name='all_staff'),
+    path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
+    path('all_staff/<int:hall_id>/', views.all_staff, name='all_staff'),
     path('staff/<str:staff_id>/', views.StaffScheduleView.as_view(), name='staff_schedule'),
 
 ]

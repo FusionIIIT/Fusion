@@ -483,20 +483,19 @@ def alloted_rooms(request, hall_id):
 
 
 # //! all_staff
-def all_staff(request):
+def all_staff(request, hall_id):
     """
-    This function returns all staff information.
-    
+    This function returns all staff information for a specific hall.
+
     @param:
       request - HttpRequest object containing metadata about the user request.
+      hall_id - The ID of the hall for which staff information is requested.
     
     @variables:
-      all_staff - stores all staff information.
+      all_staff - stores all staff information for the specified hall.
     """
-    # Query all staff information
-    all_staff = StaffSchedule.objects.all()
-
-    print(all_staff)
+    # Query all staff information for the specified hall
+    all_staff = StaffSchedule.objects.filter(hall_id=hall_id)
     
     # Prepare a list of staff details to be returned
     staff_details = []
