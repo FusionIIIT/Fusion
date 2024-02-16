@@ -1113,7 +1113,6 @@ def club_membership(request):
 
     # return redirect('/gymkhana/')
 
-
 @login_required
 def core_team(request):
     """
