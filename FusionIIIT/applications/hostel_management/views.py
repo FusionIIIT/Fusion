@@ -25,6 +25,12 @@ from .utils import add_to_room, remove_from_room
 
 # //! My change
 from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 @login_required
 def hostel_view(request, context={}):
@@ -507,4 +513,64 @@ def all_staff(request):
     # Return the staff_details as JSON response
     return JsonResponse(staff_details, safe=False)
 
+
+
+# //! Edit Stuff schedule
+class StaffScheduleView(APIView):
+    """
+    API endpoint for creating or editing staff schedules.
+    """
+
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def post(self, request, staff_id):
+        staff = get_object_or_404(Staff, pk=staff_id)
+        staff_type = request.data.get('staff_type')
+        start_time = request.data.get('start_time')
+        end_time = request.data.get('end_time')
+        day = request.data.get('day')
+        
+        if start_time and end_time and day and staff_type:
+            # Check if staff schedule already exists for the given day
+            existing_schedule = StaffSchedule.objects.filter(staff_id=staff_id).first()
+            if existing_schedule:
+                existing_schedule.start_time = start_time
+                existing_schedule.end_time = end_time
+                existing_schedule.day = day
+                existing_schedule.staff_type = staff_type
+                existing_schedule.save()
+                return Response({"message": "Staff schedule updated successfully."}, status=status.HTTP_200_OK)
+            
+            # If staff schedule doesn't exist for the given day, create a new one
+            StaffSchedule.objects.create(staff_id=staff_id,staff_type=staff_type, start_time=start_time, end_time=end_time, day=day)
+            return Response({"message": "Staff schedule created successfully."}, status=status.HTTP_201_CREATED)
+        
+        return Response({"error": "Please provide start_time, end_time, and day."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, staff_id):
+        staff = get_object_or_404(Staff, pk=staff_id)
+        staff_type = request.data.get('staff_type')
+        start_time = request.data.get('start_time')
+        end_time = request.data.get('end_time')
+        day = request.data.get('day')
+
+        # print(staff_id, start_time, end_time, day)
+        
+        if start_time and end_time and day and staff_type:
+            # Check if staff schedule exists for the given day
+            existing_schedule = StaffSchedule.objects.filter(staff_id=staff_id).first()
+            # print(existing_schedule)
+            if existing_schedule:
+                existing_schedule.start_time = start_time
+                existing_schedule.end_time = end_time
+                existing_schedule.day = day
+                existing_schedule.staff_type = staff_type
+                existing_schedule.save()
+                return Response({"message": "Staff schedule updated successfully."}, status=status.HTTP_200_OK)
+            else:
+                # If staff schedule doesn't exist for the given day, return 404
+                return Response({"error": "Staff schedule does not exist for the given day."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({"error": "Please provide start_time, end_time, and day."}, status=status.HTTP_400_BAD_REQUEST)
 
