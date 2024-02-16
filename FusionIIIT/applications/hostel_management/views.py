@@ -480,15 +480,50 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import HostelLeave
 
+# api for apply leave
+# class create_hostel_leave(APIView):
+#     authentication_classes = []  # Allow public access for testing
+#     permission_classes = []  # Allow any user to access the view
+#     def post(self, request): 
+#         data = request.data
+#         student_name = data.get('student_name')
+#         roll_num = data.get('roll_num')
+#         reason = data.get('reason')
+#         start_date = data.get('start_date')
+#         end_date = data.get('end_date')
+
+#         # Create HostelLeave object and save to the database
+#         leave = HostelLeave.objects.create(
+#             student_name=student_name,
+#             roll_num=roll_num,
+#             reason=reason,
+#             start_date=start_date,
+#             end_date=end_date
+#         )
+
+#         return Response({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework import status
+from .models import HostelLeave
+from django.utils import timezone
+
 class create_hostel_leave(APIView):
     authentication_classes = []  # Allow public access for testing
     permission_classes = []  # Allow any user to access the view
-    def post(self, request): 
+
+    def get(self, request):
+        return render(request, 'hostelmanagement/create_leave.html')
+    
+    def post(self, request):
+    
         data = request.data
         student_name = data.get('student_name')
         roll_num = data.get('roll_num')
         reason = data.get('reason')
-        start_date = data.get('start_date')
+        start_date = data.get('start_date', timezone.now())
         end_date = data.get('end_date')
 
         # Create HostelLeave object and save to the database
@@ -500,4 +535,7 @@ class create_hostel_leave(APIView):
             end_date=end_date
         )
 
-        return Response({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
+        return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
+
+def create_leave(request):
+    return render(request, 'hostelmanagement/create_leave.html')
