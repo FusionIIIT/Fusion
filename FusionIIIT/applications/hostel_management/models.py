@@ -147,7 +147,7 @@ class StaffSchedule(models.Model):
     'end_time' stores the end time of a schedule.
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
     staff_type = models.CharField(max_length=100, default='Caretaker')
     day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
     start_time = models.TimeField(null=True,blank=True)
@@ -237,3 +237,22 @@ class WorkerReport(models.Model):
 
     def str(self):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
+    
+# class HostelAllotment(models.Model):
+#     hall_id = models.ForeignKey(Hall,max_length=10, primary_key=True)
+#     hostel_name = models.ForeignKey(Hall, on_delete=models.CASCADE)
+#     assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+#     assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return f"{self.hall_id} - {self.hostel_name.hall_name}"
+    
+
+class HostelAllottment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    assignedWarden = models.ForeignKey(Faculty, on_delete=models.ForeignKey)
+    assignedBatch = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.hall) + str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)

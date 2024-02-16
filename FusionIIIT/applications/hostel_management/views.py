@@ -25,6 +25,11 @@ from .utils import add_to_room, remove_from_room
 
 # //! My change
 from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import JsonResponse
+from django.db import IntegrityError
 
 @login_required
 def hostel_view(request, context={}):
@@ -508,3 +513,25 @@ def all_staff(request):
     return JsonResponse(staff_details, safe=False)
 
 
+
+
+def update_allotment(request, pk):
+    if request.method == 'POST':
+        try:
+            allotment = HostelAllottment.objects.get(pk=pk)
+        except HostelAllottment.DoesNotExist:
+            return JsonResponse({'error': 'HostelAllottment not found'}, status=404)
+
+        try:
+            allotment.assignedWarden = Faculty.objects.get(
+                id=request.POST['warden_id'])
+            allotment.assignedCaretaker = Staff.objects.get(
+                id=request.POST['caretaker_id'])
+            allotment.assignedBatch = request.POST.get(
+                'student_batch', allotment.assignedBatch)
+            allotment.save()
+            return JsonResponse({'success': 'HostelAllottment updated successfully'})
+        except (Faculty.DoesNotExist, Staff.DoesNotExist, IntegrityError):
+            return JsonResponse({'error': 'Invalid data or integrity error'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)

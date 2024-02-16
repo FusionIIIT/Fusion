@@ -32,4 +32,7 @@ urlpatterns = [
     # !! My Change
     path('alloted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
     path('all_staff/', views.all_staff, name='all_staff')
+
+         
+
 ]
