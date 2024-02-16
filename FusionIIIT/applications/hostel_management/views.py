@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import HostelStudentAttendance
+# from .models import HostelStudentAttendance
 from django.http import JsonResponse
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
@@ -441,7 +441,7 @@ class GeneratePDF(View):
 
 
 def hostel_notice_board(request):
-    notices =  .all().values('id', 'hall', 'posted_by', 'head_line', 'content', 'description')
+    notices =  all().values('id', 'hall', 'posted_by', 'head_line', 'content', 'description')
     data = list(notices)
     return JsonResponse(data, safe=False)
 
