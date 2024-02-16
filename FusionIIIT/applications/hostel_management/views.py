@@ -1,6 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from .models import HostelLeave
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 # from .models import HostelStudentAttendance
@@ -452,10 +460,44 @@ def hostel_notice_board(request):
 # from django.contrib.auth.decorators import login_required
 # from .models import HostelStudentAttendance
 
-@login_required
-def student_attendance(request):
-    # Retrieve attendance data for the logged-in student
-    student_id = request.user.id
-    attendances = HostelStudentAttendance.objects.filter(student_id=student_id).values('id', 'hall_id', 'date', 'present')
-    data = list(attendances)
-    return JsonResponse(data, safe=False) 
+# @login_required
+# def student_attendance(request):
+#     # Retrieve attendance data for the logged-in student
+#     student_id = request.user.id
+#     attendances = HostelStudentAttendance.objects.filter(student_id=student_id).values('id', 'hall_id', 'date', 'present')
+#     data = list(attendances)
+#     return JsonResponse(data, safe=False)
+
+
+# creating APIs
+
+
+def all_leave_data(request):
+    all_leave = HostelLeave.objects.all()
+    return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import HostelLeave
+
+class create_hostel_leave(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+    def post(self, request): 
+        data = request.data
+        student_name = data.get('student_name')
+        roll_num = data.get('roll_num')
+        reason = data.get('reason')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        # Create HostelLeave object and save to the database
+        leave = HostelLeave.objects.create(
+            student_name=student_name,
+            roll_num=roll_num,
+            reason=reason,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        return Response({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)

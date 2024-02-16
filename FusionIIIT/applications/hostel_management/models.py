@@ -257,3 +257,14 @@ class HostelAllotment(models.Model):
 
     def __str__(self):
         return f"{self.hall} - {self.hostel_name}"
+    
+
+class HostelLeave(models.Model):
+    student_name = models.CharField(max_length=100)
+    roll_num = models.CharField(max_length=20)
+    reason = models.TextField()
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.student_name}'s Leave"   

@@ -30,4 +30,8 @@ urlpatterns = [
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
     path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
+    path('all_leave_data/', views.all_leave_data, name='all_leave_data'),
+    path('create_hostel_leave/', views.create_hostel_leave.as_view(), name='create_hostel_leave'),
+
+
 ]
