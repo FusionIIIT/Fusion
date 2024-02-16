@@ -48,6 +48,7 @@ class Hall(models.Model):
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
+    assigned_batch = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.hall_id 
@@ -237,3 +238,13 @@ class WorkerReport(models.Model):
 
     def str(self):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
+    
+class HostelAllotment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    assignedWarden = models.ForeignKey(Faculty, on_delete=models.ForeignKey)
+    assignedBatch=models.CharField(max_length=50)
+
+
+    def __str__(self):
+        return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)
