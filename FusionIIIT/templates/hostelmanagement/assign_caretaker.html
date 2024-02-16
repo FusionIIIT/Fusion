@@ -1,4 +1,3 @@
-
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -47,12 +46,12 @@
             {% if user.is_authenticated %}
             <div class="row">
                 <div class="ui large fluid vertical pointing menu">
-                    <a href="{% url 'hostelmanagement:AssignBatchView' %}" class="active item" data-tab="first">
+                    <a class="item"  href="{% url 'hostelmanagement:AssignBatchView' %}" data-tab="first">
                         Manage Hostel
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a href="{% url 'hostelmanagement:AssignCaretakerView' %}"  class="item" data-tab="second">
+                    <a class="item" href="{% url 'hostelmanagement:AssignCaretakerView' %}"  class="active item" data-tab="second">
                         Manage Caretaker
                         <i class = "right floated chevron right icon"></i>
                     </a>
@@ -101,11 +100,19 @@
                 </select>
                 </div>
                 <div class="mb-5">
-                  <label for="batch" class="form-label">Batch :</label>
-                  <input type="text" name="batch" required class="form-control mb-3" id="batch">
+                  <label for="caretaker_username" class="form-label">caretaker_username :</label>
+                  
+                  <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
+                  <select name="caretaker_username" class="form-control" id="caretaker_username" required>
+                   
+                    {% for c in caretaker_usernames %}
+                        <option value="{{ c.id.user.username }}">{{ c.id.user.username }}</option>
+                    {% endfor %}
+                </select>
+                
                 </div>
                 
-                <button type="submit" onclick="assignBatch()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+                <button type="submit" onclick="assignCaretaker()" class="btn btn-primary mu-3 admin-btn">Assign</button>
               </form>
         </div>
         {% endif %}
@@ -130,12 +137,12 @@
     </style>
 
     <script>
-        function assignBatch() {
+        function assignCaretaker() {
             var hall_id = document.getElementById('hall_id').value;
-            var batch = document.getElementById('batch').value;
+            var caretaker_username = document.getElementById('caretaker_username').value;
 
             // Perform AJAX request to assign batch
-            fetch('http://0.0.0.0:8000/hostelmanagement/assign-batch/', {
+            fetch('http://0.0.0.0:8000/hostelmanagement/assign-caretaker', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -143,7 +150,7 @@
                 },
                 body: JSON.stringify({
                     hall_id: hall_id,
-                    batch: batch,
+                    caretaker_username: caretaker_username,
                 }),
             })
             .then(response => response.json())
@@ -152,7 +159,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error assigning batch.');
+                alert('Error assigning caretaker.');
             });
         }
 

@@ -36,6 +36,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from Fusion.settings.common import LOGIN_URL
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db import transaction
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -453,11 +454,20 @@ class GeneratePDF(View):
             response['Content-Disposition'] = content
             return response
         return HttpResponse("Not found")
-    
 
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
 class AssignCaretakerView(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    template_name = 'hostelmanagement/assign_caretaker.html' 
+
+
+    def get(self, request, *args, **kwargs):
+        hall = Hall.objects.all()
+        caretaker_usernames=Staff.objects.all()
+        return render(request, self.template_name , {'halls': hall,'caretaker_usernames':caretaker_usernames})
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get('hall_id')
@@ -479,11 +489,11 @@ class AssignCaretakerView(APIView):
             # Assign the new caretaker to the hall in HallCaretaker table
             hall_caretaker = HallCaretaker.objects.create(hall=hall, staff=caretaker_staff)
 
-            # Update the assigned caretaker in RoomAllotment table
-            room_allotments = HostelAllotment.objects.filter(hall=hall)
-            for room_allotment in room_allotments:
-                room_allotment.assignedCaretaker = caretaker_staff
-                room_allotment.save()
+            # Update the assigned caretaker in Hostelallottment table
+            hostel_allotments = HostelAllotment.objects.filter(hall=hall)
+            for hostel_allotment in hostel_allotments:
+                hostel_allotment.assignedCaretaker = caretaker_staff
+                hostel_allotment.save()
 
             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
@@ -491,6 +501,10 @@ class AssignCaretakerView(APIView):
             return Response({'error': f'Hall with ID {hall_id} not found'}, status=status.HTTP_404_NOT_FOUND)
         except Staff.DoesNotExist:
             return Response({'error': f'Caretaker with username {caretaker_username} not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+
+
 
 
 @method_decorator(user_passes_test(is_superuser), name='dispatch')

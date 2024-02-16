@@ -37,7 +37,7 @@ urlpatterns = [
 
     path('assign-batch/', views.AssignBatchView.as_view(),name='AssignBatchView'),
     path('hall-ids/', views.HallIdView.as_view(), name='hall'),
-    path('assigned-caretaker/', views.AssignCaretakerView.as_view(), name='assigned-caretaker'),
+    path('assign-caretaker', views.AssignCaretakerView.as_view(), name='AssignCaretakerView'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', views.logout_view, name='logout_view'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
