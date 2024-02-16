@@ -240,3 +240,16 @@ class WorkerReport(models.Model):
 
 
 
+class HostelInventory(models.Model):
+    """
+    Model to store hostel inventory information.
+    """
+
+    inventory_id = models.AutoField(primary_key=True)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    inventory_name = models.CharField(max_length=100)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.inventory_name

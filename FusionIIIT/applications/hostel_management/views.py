@@ -549,3 +549,91 @@ class StaffScheduleView(APIView):
         
         return Response({"error": "Please provide start_time, end_time, and day."}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+# //! Hostel Inventory
+class HostelInventoryView(APIView):
+    """
+    API endpoint for CRUD operations on hostel inventory.
+    """
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request, hall_id):
+        # Retrieve hostel inventory objects for the given hall ID
+        inventories = HostelInventory.objects.filter(hall_id=hall_id)
+
+        # Serialize inventory data
+        inventory_data = []
+        for inventory in inventories:
+            inventory_data.append({
+                'inventory_id': inventory.inventory_id,
+                'hall_id': inventory.hall_id,
+                'inventory_name': inventory.inventory_name,
+                'cost': str(inventory.cost),  # Convert DecimalField to string
+                'quantity': inventory.quantity,
+            })
+
+        # Return inventory data as JSON response
+        return Response(inventory_data)
+
+    def post(self, request):
+        # Extract data from request
+        hall_id = request.data.get('hall_id')
+        inventory_name = request.data.get('inventory_name')
+        cost = request.data.get('cost')
+        quantity = request.data.get('quantity')
+
+        # Validate required fields
+        if not all([hall_id, inventory_name, cost, quantity]):
+            return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create hostel inventory object
+        try:
+            hostel_inventory = HostelInventory.objects.create(
+                hall_id=hall_id,
+                inventory_name=inventory_name,
+                cost=cost,
+                quantity=quantity
+            )
+            return Response({'message': 'Hostel inventory created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    
+    def put(self, request, inventory_id):
+        # Extract data from request
+        hall_id = request.data.get('hall_id')
+        inventory_name = request.data.get('inventory_name')
+        cost = request.data.get('cost')
+        quantity = request.data.get('quantity')
+
+        # Validate required fields
+        if not all([hall_id, inventory_name, cost, quantity]):
+            return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Retrieve hostel inventory object
+        hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+
+        # Update hostel inventory object
+        try:
+            hostel_inventory.hall_id = hall_id
+            hostel_inventory.inventory_name = inventory_name
+            hostel_inventory.cost = cost
+            hostel_inventory.quantity = quantity
+            hostel_inventory.save()
+            return Response({'message': 'Hostel inventory updated successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    def delete(self, request, inventory_id):
+        # Retrieve hostel inventory object
+        hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+
+        # Delete the hostel inventory object
+        hostel_inventory.delete()
+
+        # Return success response
+        return Response({'message': 'Hostel inventory deleted successfully'}, status=status.HTTP_204_NO_CONTENT)

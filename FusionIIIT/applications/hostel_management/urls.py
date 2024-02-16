@@ -33,5 +33,9 @@ urlpatterns = [
     path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
     path('all_staff/<int:hall_id>/', views.all_staff, name='all_staff'),
     path('staff/<str:staff_id>/', views.StaffScheduleView.as_view(), name='staff_schedule'),
+    path('inventory/', views.HostelInventoryView.as_view(), name='hostel_inventory_list'),
+    path('inventory/<int:inventory_id>/modify/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
+    path('inventory/<int:inventory_id>/delete/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
+    path('inventory/<int:hall_id>/', views.HostelInventoryView.as_view(), name='hostel_inventory_by_hall'),
 
 ]
