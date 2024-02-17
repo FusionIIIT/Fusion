@@ -161,7 +161,7 @@ def drafts(request):
 @login_required(login_url="/accounts/login")
 def fileview(request, id):
     """
-    This function is used to veiw all all created files by the user ordered by upload date.it collects all the created files from File object.
+    This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
 
     @param:
       request - trivial
@@ -207,7 +207,7 @@ def fileview(request, id):
 
 
 @login_required(login_url="/accounts/login")
-def fileview1(request, id):
+def outbox_view(request, id):
     """
          The function is used to get all the files sent by user(employee) to other employees
         which are filtered from Tracking(table) objects by current user i.e. current_id.
@@ -219,23 +219,42 @@ def fileview1(request, id):
                 id - user id 
 
         @variables:
-                out - The Tracking object filtered by current_id i.e, present working user.
+                outward_files - File objects filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
 
     """
-
-    outward_files = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-                                                    'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(current_id=request.user.extrainfo).order_by('-forward_date')
-
-    user_designation = HoldsDesignation.objects.select_related(
+    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
+    s = str(user_HoldsDesignation_obj).split(" - ")
+    designation = s[1]
+
+    # outward_files = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+    #                                                 'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(current_id=request.user.extrainfo).order_by('-forward_date')
+
+    # user_designation = HoldsDesignation.objects.select_related(
+    #     'user', 'working', 'designation').get(pk=id)
+
+    outward_files = view_outbox(username=user_HoldsDesignation_obj.user,
+                                designation=user_HoldsDesignation_obj.designation,
+                                src_module='filetracking')
+    outward_files = add_uploader_department_to_files_list(outward_files)
+
+    for f in outward_files:
+        last_forw_tracking = get_last_forw_tracking_for_user(file_id=f['id'],
+                                                             username=user_HoldsDesignation_obj.user,
+                                                             designation=user_HoldsDesignation_obj.designation)
+        f['sent_to_user'] = last_forw_tracking.receiver_id
+        f['sent_to_design'] = last_forw_tracking.receive_design
+        f['last_sent_date'] = last_forw_tracking.forward_date
+
+        f['upload_date'] = parse_datetime(f['upload_date'])
 
     context = {
 
-        'out': outward_files,
-        'abcd': user_designation,
+        'out_files': outward_files,
+        'viewer_designation': designation,
     }
-    return render(request, 'filetracking/fileview1.html', context)
+    return render(request, 'filetracking/outbox.html', context)
 
 
 @login_required(login_url="/accounts/login")
@@ -266,12 +285,10 @@ def inbox_view(request, id):
         src_module='filetracking'
         )
     inward_files = add_uploader_department_to_files_list(inward_files)
-    # print(inward_files)
 
     # correct upload_date type and add recieve_date
     for f in inward_files:
         f['upload_date'] = parse_datetime(f['upload_date'])
-        print(type(f['upload_date']))
 
         last_recv_tracking = get_last_recv_tracking_for_user(file_id=f['id'], 
                                                             username=user_HoldsDesignation_obj.user,

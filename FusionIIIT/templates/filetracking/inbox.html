@@ -32,7 +32,7 @@
         <tr>
         <td>{{f.sent_by_user}}-{{f.sent_by_designation}}</td>
         <td>{{f.uploader_department}}-{{f.upload_date.year}}-{{f.upload_date.month}}-#{{f.id}}  </td>
-        <td>{{f.file_id.subject|default:"None"}}</td>
+        <td>{{f.subject|default:"None"}}</td>
         <td>{{f.receive_date}}</td>
         <td>
             <a href="{% url 'filetracking:forward' f.id %}"
