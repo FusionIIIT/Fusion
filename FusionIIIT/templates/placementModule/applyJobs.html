@@ -3,7 +3,7 @@
 
 
 {% block title %}
-    Placement Schedule
+   Apply for Jobs
 {% endblock %}
 
 
@@ -116,13 +116,13 @@
                     <i class="right floated chevron right icon"></i>
                   
                 </a>
-              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                <a class="{% if apply_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:apply_job' %}">
                  
                   Apply for jobs
                   <i class="right floated chevron right icon"></i>
                 
               </a>
-              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+              <a class="{% if upload_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:upload_doc' %}">
        
                Upload documents
                 <i class="right floated chevron right icon"></i>
@@ -168,11 +168,11 @@
           <div class="ui pointing secondary menu">
             {% if form5.errors %}
               <a class="item" data-tab="placementschedule">
-                Placement Schedule
+                Apply for Jobs
               </a>
             {% else %}
               <a class="active item" data-tab="placementschedule">
-                Placement Schedule
+                Apply for Jobs
               </a>
             {% endif %}
 

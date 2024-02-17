@@ -1824,7 +1824,14 @@ def manage_records(request):
     return render(request, 'placementModule/managerecords.html', context)
 
 
-
+@login_required
+def upload_doc(request):
+    upload_tab=1
+@login_required
+def apply_job(request):
+    apply_tab=1
+def hello_world(request):
+    return render(request, 'hello.html', {'message': 'Hello, World!'})
 
 @login_required
 def placement_statistics(request):

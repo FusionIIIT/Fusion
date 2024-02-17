@@ -106,14 +106,14 @@
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
-                            <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                            <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                               Apply for jobs
                               <i class="right floated chevron right icon"></i>
                           </a>
                              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                               Upload Documents
                               <i class="right floated chevron right icon"></i>
-                          </a> -->
+                          </a>
                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
@@ -153,14 +153,25 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                  Apply for jobs
+                  Generate reports
                   <i class="right floated chevron right icon"></i>
               </a>
                  <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                  Upload documents
+                Make Announcements
                   <i class="right floated chevron right icon"></i>
               </a>
-
+              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+               Add schedule
+                  <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                Manage Placement schedule
+                   <i class="right floated chevron right icon"></i>
+               </a>
+               <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                View Alumni Data
+                   <i class="right floated chevron right icon"></i>
+               </a>
                 <!--Added for staff only-->
                 {% if current2 %}
                <!-- <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
