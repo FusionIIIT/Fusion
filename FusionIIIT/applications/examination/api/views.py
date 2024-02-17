@@ -6,13 +6,14 @@ import itertools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from applications.academic_procedures.models import(course_registration)
-
+from applications.examination.models import(hidden_grades)
 from . import serializers
 
 from rest_framework import status
@@ -70,3 +71,35 @@ def fetch_student_details(request):
 # @login_required(login_url='/accounts/login')
 # def notReady_publish(request):
 #     return render(request,'../templates/examination/notReady_publish.html',{})
+    
+
+# @api_view(['POST'])
+# def publish_result(request):
+
+
+
+
+
+
+
+
+
+def add_student(request):
+    if request.method == 'POST':
+        # Assuming the POST request contains necessary data for a new student
+        student_id = request.POST.get('student_id')
+        course_id = request.POST.get('course_id')
+        semester_id = request.POST.get('semester_id')
+        grades = request.POST.get('grades')
+
+        # Create a new private_grade object
+        new_student = hidden_grades.objects.create(
+            student_id=student_id,
+            course_id=course_id,
+            semester_id=semester_id,
+            grades=grades
+        )
+
+        return JsonResponse({'message': 'Student added successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
