@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^drafts/$', views.drafts, name='drafts'),
     url(r'^fileview/(?P<id>\d+)$', views.fileview, name='fileview'),
     url(r'^fileview1/(?P<id>\d+)$', views.fileview1, name='fileview1'),
-    url(r'^fileview2/(?P<id>\d+)$', views.fileview2, name='fileview2'),
+    url(r'^inbox/(?P<id>\d+)$', views.inbox_view, name='inbox_view'),
     url(r'^outward/$', views.outward, name='outward'),
     url(r'^inward/$', views.inward, name='inward'),
     url(r'^confirmdelete/(?P<id>\d+)$',

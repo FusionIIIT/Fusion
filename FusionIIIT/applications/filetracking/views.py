@@ -11,7 +11,8 @@ from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif, file_tracking_notif
 from .utils import *
-
+from django.utils.dateparse import parse_datetime
+from .sdk.methods import *
 
 @login_required(login_url="/accounts/login/")
 def filetracking(request):
@@ -238,34 +239,53 @@ def fileview1(request, id):
 
 
 @login_required(login_url="/accounts/login")
-def fileview2(request, id):
+def inbox_view(request, id):
     """
     The function is used to fetch the files received by the user form other employees. 
     These files are filtered by receiver id and ordered by receive date.
 
          @param:
                 request - trivial.
-                id - user id
+                id - HoldsDesignation object id
 
         @variables: 
-                inward_file - The Tracking object filtered by receiver_id i.e, present working user.
+                inward_files - File object with additional sent by information
                 context - Holds data needed to make necessary changes in the template. 
 
     """
-    inward_file = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-                                                  'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(receiver_id=request.user).order_by('-receive_date')
+    # inward_file = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+    #                                               'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(receiver_id=request.user).order_by('-receive_date')
 
-    user_designation = HoldsDesignation.objects.select_related(
+    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
-    s = str(user_designation).split(" - ")
-    designations = s[1]
+    s = str(user_HoldsDesignation_obj).split(" - ")
+    designation = s[1]
+    inward_files = view_inbox(
+        username=user_HoldsDesignation_obj.user, 
+        designation=user_HoldsDesignation_obj.designation,
+        src_module='filetracking'
+        )
+    inward_files = add_uploader_department_to_files_list(inward_files)
+    # print(inward_files)
+
+    # correct upload_date type and add recieve_date
+    for f in inward_files:
+        f['upload_date'] = parse_datetime(f['upload_date'])
+        print(type(f['upload_date']))
+
+        last_recv_tracking = get_last_recv_tracking_for_user(file_id=f['id'], 
+                                                            username=user_HoldsDesignation_obj.user,
+                                                            designation=user_HoldsDesignation_obj.designation)
+        f['receive_date'] = last_recv_tracking.receive_date
+        
+
 
     context = {
 
-        'in_file': inward_file,
-        'designations': designations,
+        'in_file': inward_files,
+        'designations': designation,
     }
-    return render(request, 'filetracking/fileview2.html', context)
+    return render(request, 'filetracking/inbox.html', context)
 
 
 @login_required(login_url="/accounts/login")
