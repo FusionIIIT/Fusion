@@ -48,4 +48,9 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', views.logout_view, name='logout_view'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+  
+    # !! My Change
+    path('alloted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
+    path('all_staff/', views.all_staff, name='all_staff')
+
 ]

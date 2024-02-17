@@ -44,6 +44,14 @@ def is_superuser(user):
     return user.is_authenticated and user.is_superuser
 
 
+# //! My change
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import JsonResponse
+from django.db import IntegrityError
+
 @login_required
 def hostel_view(request, context={}):
     """
@@ -459,6 +467,7 @@ class GeneratePDF(View):
 
 
 
+
 @method_decorator(user_passes_test(is_superuser), name='dispatch')
 class AssignCaretakerView(APIView):
     authentication_classes = [SessionAuthentication]
@@ -569,7 +578,7 @@ class AssignWardenView(APIView):
             hall = Hall.objects.get(hall_id=hall_id)
             warden=Faculty.objects.get(id__user__username=warden_id)
 
-            print('~~~~~~~~~~~~~~~',warden)
+            # print('~~~~~~~~~~~~~~~',warden)
             # Delete any previous assignments of the warden in Hallwarden table
             HallWarden.objects.filter(faculty=warden).delete()
 
@@ -661,7 +670,7 @@ class AdminHostelListView(View):
 @method_decorator(user_passes_test(is_superuser), name='dispatch')
 class DeleteHostelView(View):
     def get(self, request, hall_id, *args, **kwargs):
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~hallid',hall_id)
+        # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~hallid',hall_id)
         # Get the hall instance
         hall = get_object_or_404(Hall, hall_id=hall_id)
 
@@ -689,4 +698,97 @@ def logout_view(request):
     logout(request)
     return redirect("/")
 
+
+
+
+
+# //! alloted_rooms
+def alloted_rooms(request, hall_id):
+    """
+    This function returns the allotted rooms in a particular hall.
+    
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+      hall_id - Hall ID for which the allotted rooms need to be retrieved.
+    
+    @variables:
+      allotted_rooms - stores all the rooms allotted in the given hall.
+    """
+    # Query the hall by hall_id
+    hall = Hall.objects.get(hall_id=hall_id)
+    
+    # Query all rooms allotted in the given hall
+    allotted_rooms = HallRoom.objects.filter(hall=hall, room_occupied__gt=0)
+    
+    # Prepare a list of room details to be returned
+    room_details = []
+    for room in allotted_rooms:
+        room_details.append({
+            'hall': room.hall.hall_name,
+            'room_no': room.room_no,
+            'block_no': room.block_no,
+            'room_cap': room.room_cap,
+            'room_occupied': room.room_occupied
+        })
+    
+    # Return the room_details as JSON response
+    # return JsonResponse(room_details, safe=False)
+    return render(request, 'hostelmanagement/alloted_rooms.html', {'allotted_rooms': allotted_rooms})
+
+
+
+# //! all_staff
+def all_staff(request):
+    """
+    This function returns all staff information.
+    
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    
+    @variables:
+      all_staff - stores all staff information.
+    """
+    # Query all staff information
+    all_staff = StaffSchedule.objects.all()
+
+    print(all_staff)
+    
+    # Prepare a list of staff details to be returned
+    staff_details = []
+    for staff in all_staff:
+        staff_details.append({
+            'type': staff.staff_type,
+            'staff_id': staff.staff_id_id,
+            'hall_id': staff.hall_id,
+            'day': staff.day,
+            'start_time': staff.start_time,
+            'end_time': staff.end_time
+        })
+    
+    # Return the staff_details as JSON response
+    return JsonResponse(staff_details, safe=False)
+
+
+
+
+def update_allotment(request, pk):
+    if request.method == 'POST':
+        try:
+            allotment = HostelAllottment.objects.get(pk=pk)
+        except HostelAllottment.DoesNotExist:
+            return JsonResponse({'error': 'HostelAllottment not found'}, status=404)
+
+        try:
+            allotment.assignedWarden = Faculty.objects.get(
+                id=request.POST['warden_id'])
+            allotment.assignedCaretaker = Staff.objects.get(
+                id=request.POST['caretaker_id'])
+            allotment.assignedBatch = request.POST.get(
+                'student_batch', allotment.assignedBatch)
+            allotment.save()
+            return JsonResponse({'success': 'HostelAllottment updated successfully'})
+        except (Faculty.DoesNotExist, Staff.DoesNotExist, IntegrityError):
+            return JsonResponse({'error': 'Invalid data or integrity error'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
