@@ -477,30 +477,43 @@ def archive_design(request):
 
 
 @login_required(login_url="/accounts/login")
-def archive(request, id):
+def archive_view(request, id):
+    """
+    The function is used to fetch the files in the user's archive 
+    (those which have passed by user and been archived/finished) 
 
-    draft = File.objects.select_related('uploader__user', 'uploader__department', 'designation').filter(
-        is_read=True).order_by('-upload_date')
+    @param:
+        request - trivial.
+        id - HoldsDesignation object id
 
-    extrainfo = ExtraInfo.objects.select_related('user', 'department').all()
-    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
-    abcd = HoldsDesignation.objects.select_related(
+    @variables: 
+        archive_files - File object with additional information
+        context - Holds data needed to make necessary changes in the template. 
+
+    """
+    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
-    s = str(abcd).split(" - ")
-    designations = s[1]
-    # designations = HoldsDesignation.objects.filter(user=request.user)
-    # for x in designations:
-    #  if abcd==x:
-    #      designations=abcd
+    s = str(user_HoldsDesignation_obj).split(" - ")
+    designation = s[1]
+
+    archive_files = view_archived(
+        username=user_HoldsDesignation_obj.user, 
+        designation=user_HoldsDesignation_obj.designation,
+        src_module='filetracking'
+    )
+    archive_files = add_uploader_department_to_files_list(archive_files)
+
+    # correct upload_date type and add receive_date
+    for f in archive_files:
+        f['upload_date'] = parse_datetime(f['upload_date'])
+        f['designation'] = Designation.objects.get(id=f['designation'])
 
     context = {
-
-        'draft': draft,
-        'extrainfo': extrainfo,
-        'designations': designations,
+        'archive_files': archive_files,
+        'designations': designation,
     }
-
     return render(request, 'filetracking/archive.html', context)
+
 
 
 @login_required(login_url="/accounts/login")

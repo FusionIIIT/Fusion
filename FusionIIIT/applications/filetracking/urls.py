@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^inward/$', views.inward, name='inward'),
     url(r'^confirmdelete/(?P<id>\d+)$',
         views.confirmdelete, name='confirm_delete'),
-    url(r'^archive/(?P<id>\d+)/$', views.archive, name='archive'),
+    url(r'^archive/(?P<id>\d+)/$', views.archive_view, name='archive_view'),
     url(r'^finish/(?P<id>\d+)/$', views.finish, name='finish'),
     url(r'^forward/(?P<id>\d+)/$', views.forward, name='forward'),
     url(r'^ajax/$', views.AjaxDropdown1, name='ajax_dropdown1'),
