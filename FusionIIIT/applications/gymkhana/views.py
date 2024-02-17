@@ -1457,7 +1457,10 @@ def change_head(request):
 			'status': "success",
 			'message': message,
 		}
+<<<<<<< HEAD
 >>>>>>> 3168445e (Error fix:Change co and coco api now working (#5))
+=======
+>>>>>>> f76c7371 (change co and coco api working)
 
         old_co_ordinator = HoldsDesignation.objects.select_related(
             "user", "working", "designation"
@@ -1468,6 +1471,7 @@ def change_head(request):
         ).filter(user__username=old_co_coordinator, designation__name="co co-ordinator")
         old_co_coordinator.delete()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         content = {
             "status": "success",
@@ -1482,6 +1486,10 @@ def change_head(request):
     # Handle non-POST requests or redirect if needed
     # return redirect('/gymkhana/')
 >>>>>>> 3168445e (Error fix:Change co and coco api now working (#5))
+=======
+    # Handle non-POST requests or redirect if needed
+    # return redirect('/gymkhana/')
+>>>>>>> f76c7371 (change co and coco api working)
 
 
 @login_required
