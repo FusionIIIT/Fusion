@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Complaints</title>
+</head>
+<body>
+    <h1>Your  Complaints</h1>
+    <ul>
+        {% for complaint in complaints %}
+        <li>{{ complaint.hall_name}}</li>
+        <li>{{ complaint.student_name}}</li>
+        <li>{{ complaint.roll_number}}</li>
+        <li>{{ complaint.contact_number }}</li>
+            <li>{{ complaint.description }}</li>
+
+        {% endfor %}
+    </ul>
+</body>
+</html>

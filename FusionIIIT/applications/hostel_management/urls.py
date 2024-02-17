@@ -1,11 +1,18 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
+from django.urls import include
+from django.contrib import admin
+from django.conf.urls import url, include
 
 app_name = 'hostelmanagement'
 
 urlpatterns = [
+
+    path('admin/', admin.site.urls),
     #Home 
     path('', views.hostel_view, name="hostel_view"),
+    path('/hello', views.hostel_view, name="hello"),
 
     #Notice Board
     path('notice_form/', views.notice_board, name="notice_board"),
@@ -28,4 +35,45 @@ urlpatterns = [
     #Worker Report
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
+
+
+
+    #for superUser
+
+    path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
+    # //caretaker and warden can see all leaves
+    path('all_leave_data/', views.all_leave_data, name='all_leave_data'),
+    # //apply for leave
+    path('create_hostel_leave/', views.create_hostel_leave.as_view(), name='create_hostel_leave'),
+    # caretaker and warden can get all complaints
+    path('hostel_complaints/', views.hostel_complaint_list, name='hostel_complaint_list'),
+    # only user can see its complaints
+    path('user_complaints/<str:roll_number>/', views.UserComplaints.as_view(), name='user_complaints'),
+    # //register complaint
+    path('register_complaint/', views.PostComplaint.as_view(), name='PostComplaint'),
+
+    # //////////////////////
+
+    path('hostel_complaint_list/', views.hostel_complaint_list, name='hostel_complaint_list'),
+
+
+
+    path('assign-batch/', views.AssignBatchView.as_view(),name='AssignBatchView'),
+    path('hall-ids/', views.HallIdView.as_view(), name='hall'),
+    path('assign-caretaker', views.AssignCaretakerView.as_view(), name='AssignCaretakerView'),
+    path('assign-warden',views.AssignWardenView.as_view(), name='AssignWardenView'),
+    path('add-hostel', views.AddHostelView.as_view(), name='add_hostel'),
+    path('admin-hostel-list', views.AdminHostelListView.as_view(), name='admin_hostel_list'),  # URL for displaying the list of hostels
+    path('delete-hostel/<str:hall_id>/', views.DeleteHostelView.as_view(), name='delete_hostel'),
+
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('logout/', views.logout_view, name='logout_view'),
+    # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+  
+    # !! My Change
+    path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
+    path('allotted_rooms/', views.alloted_rooms_main, name="alloted_rooms"),
+    path('all_staff/', views.all_staff, name='all_staff')
+
+
 ]
