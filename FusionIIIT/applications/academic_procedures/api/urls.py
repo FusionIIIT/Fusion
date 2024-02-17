@@ -10,7 +10,7 @@ urlpatterns = [
     
 
 
-    url(r'^stu/add_course' , views.add_course , name ='add_course') ,
+    # url(r'^stu/add_course' , views.add_course , name ='add_course') ,
     # url(r'^stu/dropCourse' , views.dropCourse , name = 'dropCourse'),
     # url(r'^stu/replaceCourse' , views.replaceCourse , name = 'replaceCourse')
 
