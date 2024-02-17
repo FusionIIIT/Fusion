@@ -122,11 +122,8 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     '''
     This function is used to get all the files in the outbox of a particular user and designation
     '''
-    user_designation = Designation.objects.get(name=designation)
+    user_designation = get_designation_obj_from_name(designation=designation)
     user_object = get_user_object_from_username(username)
-
-    # holds designation is used instead of Designation due to legacy code
-    # having it and breaking changes cannot be introduced
     user_HoldsDesignation_object = HoldsDesignation.objects.get(
         user=user_object, designation=user_designation)
     sender_ExtraInfo_object = get_ExtraInfo_object_from_username(username)
@@ -366,3 +363,42 @@ def add_uploader_department_to_files_list(files: list) -> list:
         file['uploader_department'] = (str(uploader_Extrainfo.department)).split(': ')[1]
 
     return files
+
+def get_designation_obj_from_name(designation: str) -> Designation:
+    des = Designation.objects.get(name = designation)
+    return des 
+
+def get_HoldsDesignation_obj(username: str, designation:str) -> HoldsDesignation:
+    user_object = get_user_object_from_username(username=username)
+    user_designation = get_designation_obj_from_name(designation=designation)
+    obj = HoldsDesignation.objects.get(
+        user=user_object, designation=user_designation)
+    return obj
+
+def get_last_recv_tracking_for_user(file_id: int, username: str, designation: str)-> Tracking:
+    '''
+    This returns the last tracking where username+designation recieved file_id
+    '''
+
+    recv_user_obj = get_user_object_from_username(username)
+    recv_design_obj = get_designation_obj_from_name(designation)
+
+    last_tracking = Tracking.objects.filter(file_id=file_id, 
+                                            receiver_id=recv_user_obj, 
+                                            receive_design=recv_design_obj).order_by('-receive_date')[0]
+    return last_tracking
+
+def get_last_forw_tracking_for_user(file_id: int, username: str, designation: str) -> Tracking:
+    '''
+    Returns the last tracking where the specified user forwarded the file.
+    '''
+
+    # Get user and designation objects
+    sender_user_obj = get_ExtraInfo_object_from_username(username)
+    sender_designation_obj = get_HoldsDesignation_obj(username=username, designation=designation)
+
+    # Filter Tracking objects by file_id, sender_id, and sender_designation
+    last_tracking = Tracking.objects.filter(file_id=file_id,
+                                            current_id=sender_user_obj,
+                                            current_design=sender_designation_obj).order_by('-forward_date').first()
+    return last_tracking
