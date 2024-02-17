@@ -35,9 +35,16 @@ urlpatterns = [
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
 
+
+    #for superUser
     path('assign-batch/', views.AssignBatchView.as_view(),name='AssignBatchView'),
     path('hall-ids/', views.HallIdView.as_view(), name='hall'),
     path('assign-caretaker', views.AssignCaretakerView.as_view(), name='AssignCaretakerView'),
+    path('assign-warden',views.AssignWardenView.as_view(), name='AssignWardenView'),
+    path('add-hostel', views.AddHostelView.as_view(), name='add_hostel'),
+    path('admin-hostel-list', views.AdminHostelListView.as_view(), name='admin_hostel_list'),  # URL for displaying the list of hostels
+    path('delete-hostel/<str:hall_id>/', views.DeleteHostelView.as_view(), name='delete_hostel'),
+
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', views.logout_view, name='logout_view'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),

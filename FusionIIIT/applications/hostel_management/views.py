@@ -37,6 +37,8 @@ from django.contrib.auth.decorators import login_required
 from Fusion.settings.common import LOGIN_URL
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
+from .forms import HallForm
+
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -476,24 +478,26 @@ class AssignCaretakerView(APIView):
         try:
             hall = Hall.objects.get(hall_id=hall_id)
             caretaker_staff = Staff.objects.get(id__user__username=caretaker_username)
-
+       
             # Delete any previous assignments of the caretaker in HallCaretaker table
             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
 
-            # Delete any previous assignments of the caretaker in RoomAllotment table
+            # Delete any previous assignments of the caretaker in HostelAllotment table
             HostelAllotment.objects.filter(assignedCaretaker=caretaker_staff).delete()
-
+           
             # Delete any previously assigned caretaker to the same hall
             HallCaretaker.objects.filter(hall=hall).delete()
 
-            # Assign the new caretaker to the hall in HallCaretaker table
+             # Assign the new caretaker to the hall in HallCaretaker table
             hall_caretaker = HallCaretaker.objects.create(hall=hall, staff=caretaker_staff)
 
-            # Update the assigned caretaker in Hostelallottment table
+            # # Update the assigned caretaker in Hostelallottment table
             hostel_allotments = HostelAllotment.objects.filter(hall=hall)
             for hostel_allotment in hostel_allotments:
                 hostel_allotment.assignedCaretaker = caretaker_staff
                 hostel_allotment.save()
+
+            
 
             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
@@ -543,7 +547,134 @@ class AssignBatchView(View):
     def test_func(self):
         # Check if the user is a superuser
         return self.request.user.is_superuser
-    
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AssignWardenView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    template_name = 'hostelmanagement/assign_warden.html' 
+
+
+    def get(self, request, *args, **kwargs):
+        hall = Hall.objects.all()
+        warden_ids=Faculty.objects.all()
+        return render(request, self.template_name , {'halls': hall,'warden_ids':warden_ids})
+
+    def post(self, request, *args, **kwargs):
+        hall_id = request.data.get('hall_id')
+        warden_id = request.data.get('warden_id')
+
+        try:
+            hall = Hall.objects.get(hall_id=hall_id)
+            warden=Faculty.objects.get(id__user__username=warden_id)
+
+            print('~~~~~~~~~~~~~~~',warden)
+            # Delete any previous assignments of the warden in Hallwarden table
+            HallWarden.objects.filter(faculty=warden).delete()
+
+            # Delete any previous assignments of the warden in HostelAllotment table
+            HostelAllotment.objects.filter(assignedWarden=warden).delete()
+
+            # Delete any previously assigned warden to the same hall
+            HallWarden.objects.filter(hall=hall).delete()
+
+            # Assign the new warden to the hall in Hallwarden table
+            hall_warden = HallWarden.objects.create(hall=hall, faculty=warden)
+
+            # Update the assigned warden in Hostelallottment table
+            hostel_allotments = HostelAllotment.objects.filter(hall=hall)
+            for hostel_allotment in hostel_allotments:
+                hostel_allotment.assignedWarden = warden
+                hostel_allotment.save()
+
+            return Response({'message': f'Warden {warden_id} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
+
+        except Hall.DoesNotExist:
+            return Response({'error': f'Hall with ID {hall_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Faculty.DoesNotExist:
+            return Response({'error': f'Warden with username {warden_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AddHostelView(View):
+    template_name = 'hostelmanagement/add_hostel.html'
+
+    def get(self, request, *args, **kwargs):
+        form = HallForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = HallForm(request.POST)
+        if form.is_valid():
+            hall_id = form.cleaned_data['hall_id']
+
+            # Check if a hall with the given hall_id already exists
+            if Hall.objects.filter(hall_id=hall_id).exists():
+                messages.error(request, f'Hall with ID {hall_id} already exists.')
+                return redirect('hostelmanagement:add_hostel')
+
+            # If not, create a new hall
+            form.save()
+            messages.success(request, 'Hall added successfully!')
+            return redirect('hostelmanagement:admin_hostel_list')  # Redirect to the view showing all hostels
+
+        # If form is not valid, render the form with errors
+        return render(request, self.template_name, {'form': form})
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AdminHostelListView(View):
+    template_name = 'hostelmanagement/admin_hostel_list.html'
+
+    def get(self, request, *args, **kwargs):
+        halls = Hall.objects.all()
+         # Create a list to store additional details
+        hostel_details = []
+
+        # Loop through each hall and fetch assignedCaretaker and assignedWarden
+        for hall in halls:
+            try:
+                caretaker = HallCaretaker.objects.filter(hall=hall).first()
+                warden = HallWarden.objects.filter(hall=hall).first()
+            except HostelAllotment.DoesNotExist:
+                assigned_caretaker = None
+                assigned_warden = None
+
+            hostel_detail = {
+                'hall_id': hall.hall_id,
+                'hall_name': hall.hall_name,
+                'max_accomodation': hall.max_accomodation,
+                'number_students': hall.number_students,
+                'assigned_batch': hall.assigned_batch,
+                'assigned_caretaker': caretaker.staff.id.user.username if caretaker else None,
+                'assigned_warden': warden.faculty.id.user.username if warden else None,
+            }
+
+            hostel_details.append(hostel_detail)
+
+        return render(request, self.template_name, {'hostel_details': hostel_details})
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class DeleteHostelView(View):
+    def get(self, request, hall_id, *args, **kwargs):
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~hallid',hall_id)
+        # Get the hall instance
+        hall = get_object_or_404(Hall, hall_id=hall_id)
+
+        # Delete related entries in other tables
+        hostelallotments = HostelAllotment.objects.filter(hall=hall)
+        hostelallotments.delete()
+
+        # Delete the hall
+        hall.delete()
+
+        return redirect('hostelmanagement:admin_hostel_list')
+
+
 class HallIdView(APIView):
     authentication_classes = []  # Allow public access for testing
     permission_classes = []  # Allow any user to access the view
@@ -557,3 +688,5 @@ class HallIdView(APIView):
 def logout_view(request):
     logout(request)
     return redirect("/")
+
+
