@@ -1,9 +1,15 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
+from django.urls import include
+from django.contrib import admin
+from django.conf.urls import url, include
 
 app_name = 'hostelmanagement'
 
 urlpatterns = [
+
+    path('admin/', admin.site.urls),
     #Home 
     path('', views.hostel_view, name="hostel_view"),
 
@@ -29,11 +35,16 @@ urlpatterns = [
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
 
+    path('assign-batch/', views.AssignBatchView.as_view(),name='AssignBatchView'),
+    path('hall-ids/', views.HallIdView.as_view(), name='hall'),
+    path('assign-caretaker', views.AssignCaretakerView.as_view(), name='AssignCaretakerView'),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('logout/', views.logout_view, name='logout_view'),
+    # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+  
     # !! My Change
     path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
     path('allotted_rooms/', views.alloted_rooms_main, name="alloted_rooms"),
     path('all_staff/', views.all_staff, name='all_staff')
-
-         
 
 ]
