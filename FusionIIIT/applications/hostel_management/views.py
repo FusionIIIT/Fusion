@@ -536,21 +536,12 @@ class create_hostel_leave(APIView):
 def create_leave(request):
     return render(request, 'hostelmanagement/create_leave.html')
 
-
-
-
-
-
 # hostel complaints
 
 
 def hostel_complaint_list(request):
     complaints = HostelComplaint.objects.all()
     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
-
-
-
-
 
 
 class PostComplaint(APIView):
@@ -605,18 +596,18 @@ class UserComplaints(APIView):
 #     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
 
 
-@login_required
-def hostel_complaint_list(request):
+# @login_required
+# def hostel_complaint_list(request):
    
-    # Get the currently logged-in student
-    student = request.user
+#     # Get the currently logged-in student
+#     student = request.user
     
 
-    # Filter complaints to show only those posted by the student
-    complaints = HostelComplaint.objects.filter(roll_number=request.data.get("roll_number"))
+#     # Filter complaints to show only those posted by the student
+#     complaints = HostelComplaint.objects.filter(roll_number=request.data.get("roll_number"))
     
 
-    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+#     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
     
 
 
