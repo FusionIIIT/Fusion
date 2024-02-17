@@ -237,7 +237,41 @@ class WorkerReport(models.Model):
     remark = models.CharField(max_length=100)
 
     def str(self):
-        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
+
+
+class HostelAllotment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    hostel_name = models.CharField(max_length=100)  # Assuming hostel_name is a CharField
+    assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.hall} - {self.hostel_name}"
+    
+
+class HostelLeave(models.Model):
+    student_name = models.CharField(max_length=100)
+    roll_num = models.CharField(max_length=20)
+    reason = models.TextField()
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.student_name}'s Leave"   
+
+# changes
+
+class HostelComplaint(models.Model):
+    hall_name = models.CharField(max_length=100)
+    student_name = models.CharField(max_length=100)
+    roll_number = models.CharField(max_length=20)
+    description = models.TextField()
+    contact_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"Complaint from {self.student_name} in {self.hall_name}"
+      
     
 class HostelAllotment(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)

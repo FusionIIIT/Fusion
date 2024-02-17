@@ -1,8 +1,23 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from .models import HostelLeave
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+# from .models import HostelStudentAttendance
+from django.http import JsonResponse
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 from applications.academic_information.models import Student
@@ -476,6 +491,132 @@ class GeneratePDF(View):
             return response
         return HttpResponse("Not found")
 
+
+
+def hostel_notice_board(request):
+    notices =  all().values('id', 'hall', 'posted_by', 'head_line', 'content', 'description')
+    data = list(notices)
+    return JsonResponse(data, safe=False)
+
+
+
+
+def all_leave_data(request):
+    all_leave = HostelLeave.objects.all()
+    return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+
+
+class create_hostel_leave(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request):
+        return render(request, 'hostelmanagement/create_leave.html')
+    
+    def post(self, request):
+    
+        data = request.data
+        student_name = data.get('student_name')
+        roll_num = data.get('roll_num')
+        reason = data.get('reason')
+        start_date = data.get('start_date', timezone.now())
+        end_date = data.get('end_date')
+
+        # Create HostelLeave object and save to the database
+        leave = HostelLeave.objects.create(
+            student_name=student_name,
+            roll_num=roll_num,
+            reason=reason,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
+
+def create_leave(request):
+    return render(request, 'hostelmanagement/create_leave.html')
+
+
+
+
+
+
+# hostel complaints
+
+
+def hostel_complaint_list(request):
+    complaints = HostelComplaint.objects.all()
+    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+
+
+
+
+
+
+class PostComplaint(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request):
+        return render(request, 'hostelmanagement/post_complaint_form.html')
+
+    def post(self, request):
+        hall_name = request.data.get('hall_name')
+        student_name = request.data.get('student_name')
+        roll_number = request.data.get('roll_number')
+        description = request.data.get('description')
+        contact_number = request.data.get('contact_number')
+
+        complaint = HostelComplaint.objects.create(
+            hall_name=hall_name,
+            student_name=student_name,
+            roll_number=roll_number,
+            description=description,
+            contact_number=contact_number
+        )
+        
+        # Use JavaScript to display a pop-up message after submission
+        return HttpResponse('<script>alert("Complaint submitted successfully"); window.location.href = "/hostelmanagement";</script>')
+
+
+# userComplaint user can see complaints registered by him
+
+
+
+class UserComplaints(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request, roll_number):
+        # Filter complaints by the roll number, case-insensitive
+        user_complaints = HostelComplaint.objects.filter(Q(roll_number__iexact=roll_number))
+        
+        # Render a template displaying the user's complaints
+        return render(request, 'hostelmanagement/user_complaints.html', {'complaints': user_complaints})
+
+
+# /// login  required
+
+
+
+# @login_required
+# def hostel_complaint_list(request):
+#     complaints = HostelComplaint.objects.all()
+#     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+
+
+@login_required
+def hostel_complaint_list(request):
+   
+    # Get the currently logged-in student
+    student = request.user
+    
+
+    # Filter complaints to show only those posted by the student
+    complaints = HostelComplaint.objects.filter(roll_number=request.data.get("roll_number"))
+    
+
+    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
     
 
 
