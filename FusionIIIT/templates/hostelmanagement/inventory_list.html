@@ -11,7 +11,7 @@
     <select id="hall_select">
         <option value="">Select a Hall</option>
         {% for hall in halls %}
-        <option value="{{ hall.id }}" {% if hall.id == selected_hall %}selected{% endif %}>Hall {{ hall.id }}</option>
+        <option value="{{ hall.id }}" {% if hall.id == selected_hall %}selected{% endif %}>{{ hall.hall_id }}</option>
         {% endfor %}
     </select>
     <button onclick="navigateToInventory()">Go</button>

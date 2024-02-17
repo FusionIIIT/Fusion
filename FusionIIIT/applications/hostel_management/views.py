@@ -557,18 +557,26 @@ class StaffScheduleView(APIView):
 # //! Hostel Inventory
 
 def get_inventory_form(request):
+    halls = Hall.objects.all();
+
+    # print(halls)
     # Load the template
-    template = loader.get_template('hostelmanagement/inventory_form.html')
+    # template = loader.get_template('hostelmanagement/inventory_form.html')
     # Render the template with any context data if needed
-    rendered_template = template.render()
+    # rendered_template = template.render()
     # Return the rendered template as an HTTP response
-    return HttpResponse(rendered_template)
+    # return HttpResponse(rendered_template)
+    return render(request, 'hostelmanagement/inventory_form.html', {'halls': halls})
+
 
 
 
 def edit_inventory(request, inventory_id):
     # Retrieve hostel inventory object
     inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+
+
+    halls = Hall.objects.all();
 
     # Prepare inventory data for rendering
     inventory_data = {
@@ -580,7 +588,7 @@ def edit_inventory(request, inventory_id):
     }
 
     # Render the inventory update form with inventory data
-    return render(request, 'hostelmanagement/inventory_update_form.html', {'inventory': inventory_data})
+    return render(request, 'hostelmanagement/inventory_update_form.html', {'inventory': inventory_data,"halls": halls})
 
 
 class HostelInventoryUpdateView(APIView):    
