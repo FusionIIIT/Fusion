@@ -148,7 +148,7 @@ class StaffSchedule(models.Model):
     'end_time' stores the end time of a schedule.
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
     staff_type = models.CharField(max_length=100, default='Caretaker')
     day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
     start_time = models.TimeField(null=True,blank=True)
