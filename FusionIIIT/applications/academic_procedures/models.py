@@ -694,3 +694,5 @@ class course_registration(models.Model):
 
     class Meta:
         db_table = 'course_registration'
+
+

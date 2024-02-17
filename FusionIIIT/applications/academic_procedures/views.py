@@ -1789,7 +1789,11 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
 
 def get_branch_courses(roll_no, user_sem, branch):
     roll = str(roll_no)
-    year = int(roll[:4])
+    try:
+        year = int(roll[:4])
+    except:
+        year = int(roll[:2])
+        year = 2000 + year
     courses = Curriculum.objects.all().select_related().filter(batch=(year))
     courses = courses.filter(sem = user_sem)
     courses = courses.filter(floated = True)
