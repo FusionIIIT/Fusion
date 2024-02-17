@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Complaint Form</title>
+</head>
+<body>
+    <h1>Post Complaint</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="hall_name">Hall Name:</label><br>
+        <input type="text" id="hall_name" name="hall_name" required><br><br>
+
+        <label for="student_name">Student Name:</label><br>
+        <input type="text" id="student_name" name="student_name" required><br><br>
+
+        <label for="roll_number">Roll Number:</label><br>
+        <input type="text" id="roll_number" name="roll_number" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" required></textarea><br><br>
+
+        <label for="contact_number">Contact Number:</label><br>
+        <input type="text" id="contact_number" name="contact_number" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Complaints</title>
+</head>
+<body>
+    <h1>Hostel Complaints</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Hall Name</th>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Description</th>
+                <th>Contact Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.hall_name }}</td>
+                <td>{{ complaint.student_name }}</td>
+                <td>{{ complaint.roll_number }}</td>
+                <td>{{ complaint.description }}</td>
+                <td>{{ complaint.contact_number }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

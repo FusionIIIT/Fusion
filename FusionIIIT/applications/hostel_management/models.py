@@ -268,3 +268,16 @@ class HostelLeave(models.Model):
 
     def __str__(self):
         return f"{self.student_name}'s Leave"   
+
+# changes
+
+class HostelComplaint(models.Model):
+    hall_name = models.CharField(max_length=100)
+    student_name = models.CharField(max_length=100)
+    roll_number = models.CharField(max_length=20)
+    description = models.TextField()
+    contact_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"Complaint from {self.student_name} in {self.hall_name}"
+

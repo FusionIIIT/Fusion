@@ -32,6 +32,9 @@ urlpatterns = [
     path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
     path('all_leave_data/', views.all_leave_data, name='all_leave_data'),
     path('create_hostel_leave/', views.create_hostel_leave.as_view(), name='create_hostel_leave'),
+    path('hostel_complaints/', views.HostelComplaintList.as_view(), name='hostel_complaints'),
+    path('register_complaint/', views.PostComplaint.as_view(), name='PostComplaint'),
+
 
 
 ]

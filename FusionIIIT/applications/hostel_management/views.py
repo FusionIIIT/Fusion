@@ -453,32 +453,13 @@ def hostel_notice_board(request):
     data = list(notices)
     return JsonResponse(data, safe=False)
 
-# from django.http import JsonResponse
 
-
-# from django.http import JsonResponse
-# from django.contrib.auth.decorators import login_required
-# from .models import HostelStudentAttendance
-
-# @login_required
-# def student_attendance(request):
-#     # Retrieve attendance data for the logged-in student
-#     student_id = request.user.id
-#     attendances = HostelStudentAttendance.objects.filter(student_id=student_id).values('id', 'hall_id', 'date', 'present')
-#     data = list(attendances)
-#     return JsonResponse(data, safe=False)
-
-
-# creating APIs
 
 
 def all_leave_data(request):
     all_leave = HostelLeave.objects.all()
     return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .models import HostelLeave
 
 # api for apply leave
 # class create_hostel_leave(APIView):
@@ -503,12 +484,7 @@ from .models import HostelLeave
 
 #         return Response({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
 
-from django.shortcuts import render
-from django.http import JsonResponse
-from rest_framework.views import APIView
-from rest_framework import status
-from .models import HostelLeave
-from django.utils import timezone
+
 
 class create_hostel_leave(APIView):
     authentication_classes = []  # Allow public access for testing
@@ -539,3 +515,50 @@ class create_hostel_leave(APIView):
 
 def create_leave(request):
     return render(request, 'hostelmanagement/create_leave.html')
+
+
+
+
+# changes
+
+class HostelComplaintList(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+    def get(self, request):
+        complaints = HostelComplaint.objects.all()
+        return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+
+
+
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import HostelComplaint
+
+class PostComplaint(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request):
+        return render(request, 'hostelmanagement/post_complaint_form.html')
+
+    def post(self, request):
+        hall_name = request.data.get('hall_name')
+        student_name = request.data.get('student_name')
+        roll_number = request.data.get('roll_number')
+        description = request.data.get('description')
+        contact_number = request.data.get('contact_number')
+
+        complaint = HostelComplaint.objects.create(
+            hall_name=hall_name,
+            student_name=student_name,
+            roll_number=roll_number,
+            description=description,
+            contact_number=contact_number
+        )
+        
+        # Use JavaScript to display a pop-up message after submission
+        return HttpResponse('<script>alert("Complaint submitted successfully"); window.location.href = "/hostelmanagement";</script>')
