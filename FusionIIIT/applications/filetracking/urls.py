@@ -8,8 +8,8 @@ app_name = 'filetracking'
 urlpatterns = [
 
     url(r'^$', views.filetracking, name='filetracking'),
-    url(r'^drafts/$', views.drafts, name='drafts'),
-    url(r'^fileview/(?P<id>\d+)$', views.fileview, name='fileview'),
+    url(r'^draftdesign/$', views.draft_design, name='draft_design'),
+    url(r'^drafts/(?P<id>\d+)$', views.drafts_view, name='drafts_view'),
     url(r'^outbox/(?P<id>\d+)$', views.outbox_view, name='outbox_view'),
     url(r'^inbox/(?P<id>\d+)$', views.inbox_view, name='inbox_view'),
     url(r'^outward/$', views.outward, name='outward'),

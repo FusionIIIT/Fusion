@@ -139,7 +139,7 @@ def filetracking(request):
 
 
 @login_required(login_url="/accounts/login")
-def drafts(request):
+def draft_design(request):
     """
         The function is used to get the designation of the user and renders it on draft template.
 
@@ -155,11 +155,11 @@ def drafts(request):
     context = {
         'designation': designation,
     }
-    return render(request, 'filetracking/drafts.html', context)
+    return render(request, 'filetracking/draft_design.html', context)
 
 
 @login_required(login_url="/accounts/login")
-def fileview(request, id):
+def drafts_view(request, id):
     """
     This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
 
@@ -174,36 +174,26 @@ def fileview(request, id):
 
 
     """
-    # draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(uploader=request.user.extrainfo).order_by('-upload_date')
-    # extrainfo = ExtraInfo.objects.select_related('user','department').all()
-
-    extrainfo = ExtraInfo.objects.select_related('user', 'department').all()
-
-    ids = File.objects.filter(uploader=request.user.extrainfo).order_by(
-        '-upload_date').values_list('id', flat=True)
-    draft_files_pk = []
-
-    for i in ids:
-        file_tracking_ids = Tracking.objects.filter(
-            file_id=i).values_list('id', flat=True)
-        if (len(file_tracking_ids) == 0):
-            draft_files_pk.append(i)
-
-    draft_file_list = []
-    for i in draft_files_pk:
-        draft_file_list.append(File.objects.get(pk=i))
-
-    user_designation = HoldsDesignation.objects.select_related(
+    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
-    s = str(user_designation).split(" - ")
-    designations = s[1]
-    context = {
+    s = str(user_HoldsDesignation_obj).split(" - ")
+    designation = s[1]
+    draft_files = view_drafts(
+        username=user_HoldsDesignation_obj.user, 
+        designation=user_HoldsDesignation_obj.designation,
+        src_module='filetracking'
+        )
+    draft_files = add_uploader_department_to_files_list(draft_files)
 
-        'draft': draft_file_list,
-        'extrainfo': extrainfo,
-        'designations': designations,
+    # Correct upload_date type
+    for f in draft_files:
+        f['upload_date'] = parse_datetime(f['upload_date'])
+
+    context = {
+        'draft_files': draft_files,
+        'designations': designation,
     }
-    return render(request, 'filetracking/fileview.html', context)
+    return render(request, 'filetracking/drafts.html', context)
 
 
 @login_required(login_url="/accounts/login")
@@ -630,7 +620,7 @@ def delete(request, id):
     """
     file = File.objects.get(pk=id)
     file.delete()
-    return redirect('/filetracking/drafts/')
+    return redirect('/filetracking/draftdesign/')
 
 
 def forward_inward(request, id):
