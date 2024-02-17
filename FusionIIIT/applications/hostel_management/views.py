@@ -22,6 +22,25 @@ from django.db.models import Q
 from django.contrib import messages
 from .utils import render_to_pdf, save_worker_report_sheet,get_caretaker_hall
 from .utils import add_to_room, remove_from_room
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import JsonResponse
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+import json
+
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from Fusion.settings.common import LOGIN_URL
+from django.shortcuts import get_object_or_404, redirect, render
+from django.db import transaction
+
+def is_superuser(user):
+    return user.is_authenticated and user.is_superuser
+
 
 # //! My change
 from django.http import JsonResponse
@@ -444,7 +463,110 @@ class GeneratePDF(View):
             return response
         return HttpResponse("Not found")
 
+
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AssignCaretakerView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    template_name = 'hostelmanagement/assign_caretaker.html' 
+
+
+    def get(self, request, *args, **kwargs):
+        hall = Hall.objects.all()
+        caretaker_usernames=Staff.objects.all()
+        return render(request, self.template_name , {'halls': hall,'caretaker_usernames':caretaker_usernames})
+
+    def post(self, request, *args, **kwargs):
+        hall_id = request.data.get('hall_id')
+        caretaker_username = request.data.get('caretaker_username')
+
+        try:
+            hall = Hall.objects.get(hall_id=hall_id)
+            caretaker_staff = Staff.objects.get(id__user__username=caretaker_username)
+
+            # Delete any previous assignments of the caretaker in HallCaretaker table
+            HallCaretaker.objects.filter(staff=caretaker_staff).delete()
+
+            # Delete any previous assignments of the caretaker in RoomAllotment table
+            HostelAllotment.objects.filter(assignedCaretaker=caretaker_staff).delete()
+
+            # Delete any previously assigned caretaker to the same hall
+            HallCaretaker.objects.filter(hall=hall).delete()
+
+            # Assign the new caretaker to the hall in HallCaretaker table
+            hall_caretaker = HallCaretaker.objects.create(hall=hall, staff=caretaker_staff)
+
+            # Update the assigned caretaker in Hostelallottment table
+            hostel_allotments = HostelAllotment.objects.filter(hall=hall)
+            for hostel_allotment in hostel_allotments:
+                hostel_allotment.assignedCaretaker = caretaker_staff
+                hostel_allotment.save()
+
+            return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
+
+        except Hall.DoesNotExist:
+            return Response({'error': f'Hall with ID {hall_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Staff.DoesNotExist:
+            return Response({'error': f'Caretaker with username {caretaker_username} not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+
+
+
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AssignBatchView(View):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    template_name = 'hostelmanagement/assign_batch.html'  # Assuming the HTML file is directly in the 'templates' folder
     
+    def get(self, request, *args, **kwargs):
+        hall = Hall.objects.all()
+        return render(request, self.template_name , {'halls': hall})
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            hall_id = data.get('hall_id')
+
+            hall = Hall.objects.get(hall_id=hall_id)
+            hall.assigned_batch = data.get('batch')
+            hall.save()
+
+            # Update the assignedBatch field in HostelAllotment table for the corresponding hall
+            room_allotments = HostelAllotment.objects.filter(hall=hall)
+            for room_allotment in room_allotments:
+                room_allotment.assignedBatch = hall.assigned_batch
+                room_allotment.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
+            
+        except Hall.DoesNotExist:
+            return JsonResponse({'status': 'error', 'error': f'Hall with ID {hall_id} not found'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+
+    def test_func(self):
+        # Check if the user is a superuser
+        return self.request.user.is_superuser
+    
+class HallIdView(APIView):
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def get(self, request, *args, **kwargs):
+        hall_id = HostelAllotment.objects.values('hall_id')
+        return Response(hall_id, status=status.HTTP_200_OK)
+
+
+@login_required(login_url=LOGIN_URL)
+def logout_view(request):
+    logout(request)
+    return redirect("/")
+
 
 # //! alloted_rooms
 def alloted_rooms(request, hall_id):
@@ -535,3 +657,4 @@ def update_allotment(request, pk):
             return JsonResponse({'error': 'Invalid data or integrity error'}, status=400)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+

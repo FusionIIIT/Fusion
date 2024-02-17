@@ -1,0 +1,184 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Super Admin
+{% endblock %}
+
+{% block body %}
+    
+    <div>    
+    <nav class="navbar navbar-inverse">
+        
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+        {% if user.is_authenticated %}
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">FusionIIIT</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+           
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
+            <li><a href="{% url 'hostelmanagement:logout_view' %}"><span class="glyphicon glyphicon-log-in"></span> Logout </a></li>
+          </ul>
+        </div>
+        {% else %}
+        <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+      </nav>
+    </div>
+    <div class="ui stackable doubling grid admin-hall">
+        <div class="column"></div>
+        <div class="three wide column">
+
+            <div class="row">
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui divider"></div>
+            {% if user.is_authenticated %}
+            <div class="row">
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="item"  href="{% url 'hostelmanagement:AssignBatchView' %}" data-tab="first">
+                        Manage Hostel
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" href="{% url 'hostelmanagement:AssignCaretakerView' %}"  class="active item" data-tab="second">
+                        Manage Caretaker
+                        <i class = "right floated chevron right icon"></i>
+                    </a>
+                   
+                    <a class="item" data-tab="third">
+                        Manage Warden
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="fourth">
+                        Add Hostel
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <!-- {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
+                        Book Guest Room 
+                        <i class="right floated chevron right icon"></i>
+                    </a> {% endcomment %} -->
+                </div>
+
+            </div>
+
+        </div>
+        <div class="column"></div>
+        <div class="form-fill">
+            <!-- <form id="assignBatchForm">
+                {% csrf_token %}
+                <label for="hall_id">Hall ID:</label>
+                <input type="text" id="hall_id" name="hall_id" required>
+                <br>
+                <label for="batch">Batch:</label>
+                <input type="text" id="batch" name="batch" required>
+                <br>
+                <button type="button" onclick="assignBatch()">Assign Batch</button>
+            </form> -->
+            <form>
+                {% csrf_token %}
+                <div class="mb-3">
+                    
+                  <label for="hall_id" class="form-label">Hall ID:</label>
+                  <select name="hall_id" class="form-control" id="hall_id" required>
+                    <!-- Add an option for each hall ID dynamically -->
+                    {% for hall in halls %}
+                        <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div class="mb-5">
+                  <label for="caretaker_username" class="form-label">caretaker_username :</label>
+                  
+                  <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
+                  <select name="caretaker_username" class="form-control" id="caretaker_username" required>
+                   
+                    {% for c in caretaker_usernames %}
+                        <option value="{{ c.id.user.username }}">{{ c.id.user.username }}</option>
+                    {% endfor %}
+                </select>
+                
+                </div>
+                
+                <button type="submit" onclick="assignCaretaker()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+              </form>
+        </div>
+        {% endif %}
+    </div>
+
+
+    <style>
+        
+        .admin-hall{
+            display: flex;
+            flex-direction: column;
+
+        }
+        .form-fill{
+            width: 250px;
+            padding: 50px 200px;
+            margin-left: 150px
+        }
+        .admin-btn{
+            margin-top: 10px;
+        }
+    </style>
+
+    <script>
+        function assignCaretaker() {
+            var hall_id = document.getElementById('hall_id').value;
+            var caretaker_username = document.getElementById('caretaker_username').value;
+
+            // Perform AJAX request to assign batch
+            fetch('http://0.0.0.0:8000/hostelmanagement/assign-caretaker', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token in headers
+                },
+                body: JSON.stringify({
+                    hall_id: hall_id,
+                    caretaker_username: caretaker_username,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning caretaker.');
+            });
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if the cookie name matches the expected format
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+{% endblock %}
+
