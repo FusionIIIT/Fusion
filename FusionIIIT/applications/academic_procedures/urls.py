@@ -1,5 +1,4 @@
 from django.conf.urls import url, include
-
 from . import views
 appname = 'procedures'
 urlpatterns = [
@@ -41,7 +40,10 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$', views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
+
     url(r'^api/', include('applications.academic_procedures.api.urls')),
+
+
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
     url(r'^ACF/$', views.ACF, name='ACF'),
     url(r'^MTSGF/$', views.MTSGF),

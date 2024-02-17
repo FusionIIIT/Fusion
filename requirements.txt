@@ -1,5 +1,5 @@
 amqp==5.0.2
-arabic-reshaper==2.1.1
+# arabic-reshaper 
 asgiref==3.3.1
 attrs==20.3.0
 beautifulsoup4==4.9.3
@@ -31,7 +31,7 @@ djangorestframework==3.12.2
 django-semanticui-forms==1.6.5
 django-unused-media==0.2.2
 future==0.18.2
-# gunicorn
+ gunicorn
 html-text==0.5.2
 html5lib==1.1
 idna==2.10
@@ -47,7 +47,7 @@ oauthlib==3.1.0
 openpyxl==3.0.7
 Pillow==8.1.0
 prompt-toolkit==3.0.10
-psycopg2-binary==2.8.6
+psycopg2-binary 
 pycparser==2.20
 PyJWT==2.6.0
 PyPDF2==1.26.0
