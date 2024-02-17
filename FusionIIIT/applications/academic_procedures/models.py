@@ -283,6 +283,9 @@ class SemesterMarks(models.Model):
     # curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     curr_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     #course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, null=True)
+    
+    # def __str__(self):
+    #     return self.student_id
     class Meta:
         db_table = 'SemesterMarks'
 
@@ -691,6 +694,7 @@ class course_registration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
-
+    # def __str__(self):
+    #     return self.course_id
     class Meta:
         db_table = 'course_registration'
