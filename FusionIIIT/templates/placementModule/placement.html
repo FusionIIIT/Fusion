@@ -57,7 +57,7 @@
                             </a>
                         {% else %}
                              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                                 Placement Schedule
+                                 Placement 
                                  <i class="right floated chevron right icon"></i>
                              </a>
                              <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
@@ -86,7 +86,7 @@
                             </a>
                         {% else %}
                              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                                 Placement Schedule
+                                 Placement ss
                                  <i class="right floated chevron right icon"></i>
                              </a>
                              <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
@@ -96,14 +96,14 @@
                     {% endif %}
 
 
-                   <!-- <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                   <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                         Manage Records
                         <i class="right floated chevron right icon"></i>
                     </a>(9-4-22)
                     <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                         Placement Visits
                         <i class="right floated chevron right icon"></i>
-                    </a>-->
+                    </a> 
 
 
                     {% endif %}
@@ -114,13 +114,25 @@
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
+                  
                 </a>
+                <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                 
+                  Apply for jobs
+                  <i class="right floated chevron right icon"></i>
+                
+              </a>
+              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+       
+               Upload documents
+                <i class="right floated chevron right icon"></i>
+            </a>
                  <!--Added student record tab here for staff only-->
                 {% if current2 %}
-                <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                     Student Record
                     <i class="right floated chevron right icon"></i>
-                </a>(9-4-22)-->
+                </a>(9-4-22)
 
 
 
