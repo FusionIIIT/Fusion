@@ -32,6 +32,8 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.template import loader
+from django.urls import reverse
+from django.shortcuts import redirect
 
 @login_required
 def hostel_view(request, context={}):
@@ -563,10 +565,58 @@ def get_inventory_form(request):
     return HttpResponse(rendered_template)
 
 
-# def inventory_handle_table(request):
-#     # Get all hall IDs
-#     halls = Hall.objects.all()
-#     return render(request, 'hostelmanagement/hall_list.html', {'halls': halls})
+
+def edit_inventory(request, inventory_id):
+    # Retrieve hostel inventory object
+    inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+
+    # Prepare inventory data for rendering
+    inventory_data = {
+        'inventory_id': inventory.inventory_id,
+        'hall_id': inventory.hall_id,
+        'inventory_name': inventory.inventory_name,
+        'cost': str(inventory.cost),  # Convert DecimalField to string
+        'quantity': inventory.quantity,
+    }
+
+    # Render the inventory update form with inventory data
+    return render(request, 'hostelmanagement/inventory_update_form.html', {'inventory': inventory_data})
+
+
+class HostelInventoryUpdateView(APIView):    
+    authentication_classes = []  # Allow public access for testing
+    permission_classes = []  # Allow any user to access the view
+
+    def post(self, request, inventory_id):
+        hall_id = request.data.get('hall_id')
+        inventory_name = request.data.get('inventory_name')
+        cost = request.data.get('cost')
+        quantity = request.data.get('quantity')
+
+        # Validate required fields
+        if not all([hall_id, inventory_name, cost, quantity]):
+            return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete
+        HostelInventory.objects.filter(inventory_id=inventory_id).delete()
+
+        # Create hostel inventory object
+        try:
+            hostel_inventory = HostelInventory.objects.create(
+                hall_id=hall_id,
+                inventory_name=inventory_name,
+                cost=cost,
+                quantity=quantity
+            )
+            # Redirect to the inventory page
+            # return HttpResponse(f'<script>alert("Inventory updated successfully"); window.location.href = "/hostelmanagement/inventory/{hall_id}/"</script>')
+            return Response({'message': 'Hostel inventory updated successfully'}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 class HostelInventoryView(APIView):
     """
@@ -618,36 +668,11 @@ class HostelInventoryView(APIView):
                 cost=cost,
                 quantity=quantity
             )
-            return Response({'message': 'Hostel inventory created successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Hostel inventory created successfully','hall_id': hall_id }, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-    
-    def put(self, request, inventory_id):
-        # Extract data from request
-        hall_id = request.data.get('hall_id')
-        inventory_name = request.data.get('inventory_name')
-        cost = request.data.get('cost')
-        quantity = request.data.get('quantity')
-
-        # Validate required fields
-        if not all([hall_id, inventory_name, cost, quantity]):
-            return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Retrieve hostel inventory object
-        hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
-
-        # Update hostel inventory object
-        try:
-            hostel_inventory.hall_id = hall_id
-            hostel_inventory.inventory_name = inventory_name
-            hostel_inventory.cost = cost
-            hostel_inventory.quantity = quantity
-            hostel_inventory.save()
-            return Response({'message': 'Hostel inventory updated successfully'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
     def delete(self, request, inventory_id):

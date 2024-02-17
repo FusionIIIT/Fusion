@@ -25,6 +25,8 @@
                 <th>Inventory Name</th>
                 <th>Cost</th>
                 <th>Quantity</th>
+                <th>Edit</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -35,6 +37,9 @@
                 <td>{{ inventory.inventory_name }}</td>
                 <td>{{ inventory.cost }}</td>
                 <td>{{ inventory.quantity }}</td>
+                <td><button onclick="editInventory('{{ inventory.inventory_id }}')">Edit</button></td> 
+                <td><button onclick="deleteInventory('{{ inventory.inventory_id }}')">Delete</button></td>
+
             </tr>
             {% endfor %}
         </tbody>
@@ -44,6 +49,30 @@
         function navigateToInventory() {
             var selectedHallId = document.getElementById("hall_select").value;
             window.location.href = "/hostelmanagement/inventory/" + selectedHallId + "/";
+        }
+
+        function editInventory(inventoryId) {
+            var selectedHallId = document.getElementById("hall_select").value;
+            window.location.href = "/hostelmanagement/inventory/edit_inventory/" + inventoryId + "/";
+        }
+
+        function deleteInventory(inventoryId) {
+            var selectedHallId = document.getElementById("hall_select").value;
+            fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
+                method: "DELETE",
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Inventory deleted successfully");
+                    window.location.reload(); // Refresh the page to reflect changes
+                } else {
+                    alert("Failed to delete inventory");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while deleting the inventory");
+            });
         }
     </script>
 </body>

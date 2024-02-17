@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hostel Inventory Form</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Hostel Inventory Form</h1>
     <form
       id="inventoryForm"
-      action="/hostelmanagement/inventory/"
+      action="/hostelmanagement/inventory/{{ inventory.inventory_id }}/modify/"
       method="POST"
     >
+      <!-- Remove hidden input for _method -->
       <label for="hall_id">Hall ID:</label>
-      <input type="number" id="hall_id" name="hall_id" /><br /><br />
+      <input
+        type="number"
+        id="hall_id"
+        name="hall_id"
+        value="{{ inventory.hall_id }}"
+      /><br /><br />
 
       <label for="inventory_name">Inventory Name:</label>
       <input
         type="text"
         id="inventory_name"
         name="inventory_name"
+        value="{{ inventory.inventory_name }}"
       /><br /><br />
 
       <label for="cost">Cost:</label>
-      <input type="number" id="cost" name="cost" /><br /><br />
+      <input
+        type="number"
+        id="cost"
+        name="cost"
+        value="{{ inventory.cost }}"
+      /><br /><br />
 
       <label for="quantity">Quantity:</label>
-      <input type="number" id="quantity" name="quantity" /><br /><br />
+      <input
+        type="number"
+        id="quantity"
+        name="quantity"
+        value="{{ inventory.quantity }}"
+      /><br /><br />
 
       <button type="submit">Submit</button>
     </form>
@@ -40,17 +57,15 @@
           event.preventDefault();
           var formData = new FormData(this);
           fetch(this.action, {
-            method: this.method,
+            method: 'POST', // Method should be POST
             body: formData,
           })
-            .then((response) => response.json())
-            .then((data) => {
-              document.getElementById("responseMessage").innerHTML =
-                data.message;
-              if (data.hall_id) {
-                // console.log(data.hall_id);
-                window.location.href =
-                  "/hostelmanagement/inventory/" + data.hall_id + "/";
+            .then((response) => {
+              if (response.ok) {
+                // Redirect to the inventory page
+                window.location.href = "/hostelmanagement/inventory/{{ inventory.hall_id }}/";
+              } else {
+                throw new Error('Failed to update inventory');
               }
             })
             .catch((error) => {

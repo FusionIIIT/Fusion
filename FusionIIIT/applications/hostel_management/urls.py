@@ -36,10 +36,10 @@ urlpatterns = [
     
     # path('inventory/hallList/', views.inventory_handle_table, name='hall_list'),
     path('inventory/', views.HostelInventoryView.as_view(), name='hostel_inventory_list'),
-    path('inventory/<int:inventory_id>/modify/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
+    path('inventory/<int:inventory_id>/modify/', views.HostelInventoryUpdateView.as_view(), name='hostel_inventory_update'),
     path('inventory/<int:inventory_id>/delete/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
     path('inventory/<int:hall_id>/', views.HostelInventoryView.as_view(), name='hostel_inventory_by_hall'),
     path('inventory/form/', views.get_inventory_form, name='get_inventory_form'),
-
+    path('inventory/edit_inventory/<int:inventory_id>/', views.edit_inventory, name='edit_inventory'),
 
 ]
