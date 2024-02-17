@@ -280,4 +280,8 @@ class HostelComplaint(models.Model):
 
     def __str__(self):
         return f"Complaint from {self.student_name} in {self.hall_name}"
+    
+   
+
+
 

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Post Complaint</h1>
-    <form method="post">
+    <form id="complaintForm" method="post">
         {% csrf_token %}
         <label for="hall_name">Hall Name:</label><br>
         <input type="text" id="hall_name" name="hall_name" required><br><br>
@@ -16,7 +16,7 @@
         <input type="text" id="student_name" name="student_name" required><br><br>
 
         <label for="roll_number">Roll Number:</label><br>
-        <input type="text" id="roll_number" name="roll_number" required><br><br>
+        <input type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" required><br><br>
 
         <label for="description">Description:</label><br>
         <textarea id="description" name="description" rows="4" required></textarea><br><br>
@@ -25,6 +25,16 @@
         <input type="text" id="contact_number" name="contact_number" required><br><br>
 
         <input type="submit" value="Submit">
+        <button type="button" id="viewComplaints" onclick="navigateTomy_comp()">View My Complaints</button>
     </form>
+
+    <script>
+        function navigateTomy_comp() {
+            var roll_number = document.getElementById("roll_number").value;
+            window.location.href = "/hostelmanagement/user_complaints/" + roll_number + "/";
+        }
+    </script>
 </body>
+</html>
+
 </html>
