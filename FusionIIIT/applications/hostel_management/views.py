@@ -31,6 +31,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.template import loader
 
 @login_required
 def hostel_view(request, context={}):
@@ -552,6 +553,21 @@ class StaffScheduleView(APIView):
 
 
 # //! Hostel Inventory
+
+def get_inventory_form(request):
+    # Load the template
+    template = loader.get_template('hostelmanagement/inventory_form.html')
+    # Render the template with any context data if needed
+    rendered_template = template.render()
+    # Return the rendered template as an HTTP response
+    return HttpResponse(rendered_template)
+
+
+# def inventory_handle_table(request):
+#     # Get all hall IDs
+#     halls = Hall.objects.all()
+#     return render(request, 'hostelmanagement/hall_list.html', {'halls': halls})
+
 class HostelInventoryView(APIView):
     """
     API endpoint for CRUD operations on hostel inventory.
@@ -562,6 +578,9 @@ class HostelInventoryView(APIView):
     def get(self, request, hall_id):
         # Retrieve hostel inventory objects for the given hall ID
         inventories = HostelInventory.objects.filter(hall_id=hall_id)
+
+        # Get all hall IDs
+        halls = Hall.objects.all()
 
         # Serialize inventory data
         inventory_data = []
@@ -575,7 +594,10 @@ class HostelInventoryView(APIView):
             })
 
         # Return inventory data as JSON response
-        return Response(inventory_data)
+        # return Response(inventory_data)
+        return render(request, 'hostelmanagement/inventory_list.html', {'halls': halls,'inventories': inventory_data})
+    
+
 
     def post(self, request):
         # Extract data from request
@@ -637,3 +659,4 @@ class HostelInventoryView(APIView):
 
         # Return success response
         return Response({'message': 'Hostel inventory deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    

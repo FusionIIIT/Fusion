@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Inventory List</title>
+</head>
+<body>
+    <h1>Select Hall</h1>
+    <label for="hall_select">Choose a Hall:</label>
+    <select id="hall_select">
+        <option value="">Select a Hall</option>
+        {% for hall in halls %}
+        <option value="{{ hall.id }}" {% if hall.id == selected_hall %}selected{% endif %}>Hall {{ hall.id }}</option>
+        {% endfor %}
+    </select>
+    <button onclick="navigateToInventory()">Go</button>
+
+    <h1>Hostel Inventory List</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Hall ID</th>
+                <th>Inventory ID</th>
+                <th>Inventory Name</th>
+                <th>Cost</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inventory in inventories %}
+            <tr>
+                <td>{{ inventory.hall_id }}</td>
+                <td>{{ inventory.inventory_id }}</td>
+                <td>{{ inventory.inventory_name }}</td>
+                <td>{{ inventory.cost }}</td>
+                <td>{{ inventory.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function navigateToInventory() {
+            var selectedHallId = document.getElementById("hall_select").value;
+            window.location.href = "/hostelmanagement/inventory/" + selectedHallId + "/";
+        }
+    </script>
+</body>
+</html>
