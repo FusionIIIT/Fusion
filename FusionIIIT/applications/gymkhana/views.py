@@ -1042,19 +1042,20 @@ def change_head(request):
 	And adds to the database.
 
 	@param:
-		request - trivial
+	      request - trivial
 
 	@variables:
-		club - name of the club
-		co_ordinator - new co_ordinator of the club
-		co_coordinator - new co_cordinator of the club
-		date - date at which the heads of the clubs changes
-		time - time at which the heads changes
-		desc - description on change of heads
-		old_co_ordinator - HoldsDesignation object and after deletes this co_ordinator
-		old_co_coordinator - HoldsDesignation object and after deletes this co_coordinator
-		new_co_ordinator - HoldsDesignation object and after saves this object as co_ordinator
-		new_co_coordinator - HoldsDesignation object and after saves this object as co_coordinator
+
+	       club - name of the club
+		   co_ordinator - new co_ordinator of the club
+		   co_coordinator - new co_cordinator of the club
+		   date - date at which the heads of the clubs changes
+           time - time at which the heads changes
+		   desc - description on change of heads
+		   old_co_ordinator - HoldsDesignation object and after deletes this co_ordinator
+		   old_co_coordinator - HoldsDesignation object and after deletes this co_coordinator
+		   new_co_ordinator - HoldsDesignation object and after saves this object as co_ordinator
+		   new_co_coordinator - HoldsDesignation object and after saves this object as co_coordinator
 	"""
 
 	if request.method == "POST":
@@ -1063,49 +1064,44 @@ def change_head(request):
 		co_coordinator = request.POST.get('coco')
 		date = request.POST.get("date")
 		time = request.POST.get("time")
-		desc = f"co-ordinator and co co-ordinator changed on {date} at {time}"
+		desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
 		message = ""
 
+		# club_name = get_object_or_404(Club_info, club_name=club)
+
 		co_ordinator_student = get_object_or_404(Student, id__user__username=co_ordinator)
+
 		co_coordinator_student = get_object_or_404(Student, id__user__username=co_coordinator)
+
 		club_info = get_object_or_404(Club_info, club_name=club)
 
 		old_co_ordinator = club_info.co_ordinator
 		old_co_coordinator = club_info.co_coordinator
-
 		club_info.co_ordinator = co_ordinator_student
 		club_info.co_coordinator = co_coordinator_student
 		club_info.save()
 
 		message += "Successfully changed !!!"
-
-		new_co_ordinator = HoldsDesignation(
-			user=User.objects.get(username=co_ordinator),
-			working=User.objects.get(username=co_ordinator),
-			designation=Designation.objects.get(name="co-ordinator")
-		)
+		
+		new_co_ordinator = HoldsDesignation(user=User.objects.get(username=co_ordinator), working=User.objects.get(username=co_ordinator), designation=Designation.objects.get(name="co-ordinator"))
 		new_co_ordinator.save()
-
-		new_co_coordinator = HoldsDesignation(
-			user=User.objects.get(username=co_coordinator),
-			working=User.objects.get(username=co_coordinator),
-			designation=Designation.objects.get(name="co co-ordinator")
-		)
+		new_co_coordinator = HoldsDesignation(user=User.objects.get(username=co_coordinator), working=User.objects.get(username=co_coordinator), designation=Designation.objects.get(name="co co-ordinator"))
 		new_co_coordinator.save()
 
-		HoldsDesignation.objects.filter(user__username=old_co_ordinator, designation__name="co-ordinator").delete()
-		HoldsDesignation.objects.filter(user__username=old_co_coordinator, designation__name="co co-ordinator").delete()
+		old_co_ordinator = HoldsDesignation.objects.select_related('user','working','designation').filter(user__username=old_co_ordinator, designation__name="co-ordinator")
+		old_co_ordinator.delete()
+		old_co_coordinator = HoldsDesignation.objects.select_related('user','working','designation').filter(user__username=old_co_coordinator, designation__name="co co-ordinator")
+		old_co_coordinator.delete()
 
 		content = {
-			'status': "success",
-			'message': message,
-		}
+				'status':"success",
+				'message':message,
+			}
 
 		content = json.dumps(content)
 		return HttpResponse(content)
 
-    # Handle non-POST requests or redirect if needed
-    # return redirect('/gymkhana/')
+		# return redirect('/gymkhana/')
 
 @login_required
 def new_session(request):
