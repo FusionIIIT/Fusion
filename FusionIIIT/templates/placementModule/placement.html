@@ -86,7 +86,7 @@
                             </a>
                         {% else %}
                              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                                 Placement ss
+                                 Placement schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
                              <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
@@ -116,17 +116,17 @@
                     <i class="right floated chevron right icon"></i>
                   
                 </a>
-              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+              <!-- <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                  
                   Apply for jobs
                   <i class="right floated chevron right icon"></i>
                 
               </a>
-              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+              <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
        
                Upload documents
                 <i class="right floated chevron right icon"></i>
-            </a>
+            </a> -->
                  <!--Added student record tab here for staff only-->
                 {% if current2 %}
                 <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
@@ -134,7 +134,18 @@
                     <i class="right floated chevron right icon"></i>
                 </a>(9-4-22)
 
-
+  <!-- <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                 
+                  Apply for jobs
+                  <i class="right floated chevron right icon"></i>
+                
+              </a>
+              <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+       
+               Upload documents
+                <i class="right floated chevron right icon"></i>
+            </a> -->
+                 <!--Added student record tab here for staff only-->
 
                 <!--Placement officers could schedule placement -->
                <!-- <a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">

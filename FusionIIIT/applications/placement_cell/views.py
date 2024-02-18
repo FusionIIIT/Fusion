@@ -188,6 +188,298 @@ def checking_roles(request):
             role_name.append(role.role)
         return JsonResponse({'all_roles': role_name})
 
+@login_required
+def PlacementSchedule(request):
+    '''
+    function include the functionality of first tab of UI
+    for student, placement officer & placement chairman
+
+    placement officer & placement chairman
+        - can add schedule
+        - can delete schedule
+    student
+        - accepted or declined schedule
+
+    '''
+    user = request.user
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    schedule_tab = 1
+    placementstatus = ''
+
+
+    form5 = AddSchedule(initial={})
+    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    print(current)
+
+    # If the user is Student
+    if current:
+        student = get_object_or_404(Student, Q(id=profile.id))
+
+        # Student view for showing accepted or declined schedule
+        if request.method == 'POST':
+            if 'studentapprovesubmit' in request.POST:
+                status = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
+                    pk=request.POST['studentapprovesubmit']).update(
+                    invitation='ACCEPTED',
+                    timestamp=timezone.now())
+            if 'studentdeclinesubmit' in request.POST:
+                status = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
+                    Q(pk=request.POST['studentdeclinesubmit'])).update(
+                    invitation='REJECTED',
+                    timestamp=timezone.now())
+
+            if 'educationsubmit' in request.POST:
+                form = AddEducation(request.POST)
+                if form.is_valid():
+                    institute = form.cleaned_data['institute']
+                    degree = form.cleaned_data['degree']
+                    grade = form.cleaned_data['grade']
+                    stream = form.cleaned_data['stream']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    education_obj = Education.objects.select_related('unique_id').create(
+                        unique_id=student, degree=degree,
+                        grade=grade, institute=institute,
+                        stream=stream, sdate=sdate, edate=edate)
+                    education_obj.save()
+            if 'profilesubmit' in request.POST:
+                about_me = request.POST.get('about')
+                age = request.POST.get('age')
+                address = request.POST.get('address')
+                contact = request.POST.get('contact')
+                pic = request.POST.get('pic')
+                # futu = request.POST.get('futu')
+                # print(studentplacement_obj.future_aspect)
+                # print('fut=', fut)
+                # print('futu=', futu)
+                # if studentplacement_obj.future_aspect == "HIGHER STUDIES":
+                #     if futu == 2:
+                #         studentplacement_obj.future_aspect = "PLACEMENT"
+                # elif studentplacement_obj.future_aspect == "PLACEMENT":
+                #     if futu == None:
+                #         studentplacement_obj.future_aspect = "HIGHER STUDIES"
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
+                extrainfo_obj.about_me = about_me
+                extrainfo_obj.age = age
+                extrainfo_obj.address = address
+                extrainfo_obj.phone_no = contact
+                extrainfo_obj.profile_picture = pic
+                extrainfo_obj.save()
+                profile = get_object_or_404(ExtraInfo, Q(user=user))
+            if 'skillsubmit' in request.POST:
+                form = AddSkill(request.POST)
+                if form.is_valid():
+                    skill = form.cleaned_data['skill']
+                    skill_rating = form.cleaned_data['skill_rating']
+                    has_obj = Has.objects.select_related('skill_id','unique_id').create(unique_id=student,
+                                                 skill_id=Skill.objects.get(skill=skill),
+                                                 skill_rating = skill_rating)
+                    has_obj.save()
+            if 'achievementsubmit' in request.POST:
+                form = AddAchievement(request.POST)
+                if form.is_valid():
+                    achievement = form.cleaned_data['achievement']
+                    achievement_type = form.cleaned_data['achievement_type']
+                    description = form.cleaned_data['description']
+                    issuer = form.cleaned_data['issuer']
+                    date_earned = form.cleaned_data['date_earned']
+                    achievement_obj = Achievement.objects.select_related('unique_id').create(unique_id=student,
+                                                                 achievement=achievement,
+                                                                 achievement_type=achievement_type,
+                                                                 description=description,
+                                                                 issuer=issuer,
+                                                                 date_earned=date_earned)
+                    achievement_obj.save()
+            if 'publicationsubmit' in request.POST:
+                form = AddPublication(request.POST)
+                if form.is_valid():
+                    publication_title = form.cleaned_data['publication_title']
+                    description = form.cleaned_data['description']
+                    publisher = form.cleaned_data['publisher']
+                    publication_date = form.cleaned_data['publication_date']
+                    publication_obj = Publication.objects.select_related('unique_id').create(unique_id=student,
+                                                                 publication_title=
+                                                                 publication_title,
+                                                                 publisher=publisher,
+                                                                 description=description,
+                                                                 publication_date=publication_date)
+                    publication_obj.save()
+            if 'patentsubmit' in request.POST:
+                form = AddPatent(request.POST)
+                if form.is_valid():
+                    patent_name = form.cleaned_data['patent_name']
+                    description = form.cleaned_data['description']
+                    patent_office = form.cleaned_data['patent_office']
+                    patent_date = form.cleaned_data['patent_date']
+                    patent_obj = Patent.objects.select_related('unique_id').create(unique_id=student, patent_name=patent_name,
+                                                       patent_office=patent_office,
+                                                       description=description,
+                                                       patent_date=patent_date)
+                    patent_obj.save()
+            if 'coursesubmit' in request.POST:
+                form = AddCourse(request.POST)
+                if form.is_valid():
+                    course_name = form.cleaned_data['course_name']
+                    description = form.cleaned_data['description']
+                    license_no = form.cleaned_data['license_no']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    course_obj = Course.objects.select_related('unique_id').create(unique_id=student, course_name=course_name,
+                                                       license_no=license_no,
+                                                       description=description,
+                                                       sdate=sdate, edate=edate)
+                    course_obj.save()
+            if 'projectsubmit' in request.POST:
+                form = AddProject(request.POST)
+                if form.is_valid():
+                    project_name = form.cleaned_data['project_name']
+                    project_status = form.cleaned_data['project_status']
+                    summary = form.cleaned_data['summary']
+                    project_link = form.cleaned_data['project_link']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    project_obj = Project.objects.create(unique_id=student, summary=summary,
+                                                         project_name=project_name,
+                                                         project_status=project_status,
+                                                         project_link=project_link,
+                                                         sdate=sdate, edate=edate)
+                    project_obj.save()
+            if 'experiencesubmit' in request.POST:
+                form = AddExperience(request.POST)
+                if form.is_valid():
+                    title = form.cleaned_data['title']
+                    status = form.cleaned_data['status']
+                    company = form.cleaned_data['company']
+                    location = form.cleaned_data['location']
+                    description = form.cleaned_data['description']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    experience_obj = Experience.objects.select_related('unique_id').create(unique_id=student, title=title,
+                                                               company=company, location=location,
+                                                               status=status,
+                                                               description=description,
+                                                               sdate=sdate, edate=edate)
+                    experience_obj.save()
+
+            if 'deleteskill' in request.POST:
+                hid = request.POST['deleteskill']
+                hs = Has.objects.select_related('skill_id','unique_id').get(Q(pk=hid))
+                hs.delete()
+            if 'deleteedu' in request.POST:
+                hid = request.POST['deleteedu']
+                hs = Education.objects.select_related('unique_id').get(Q(pk=hid))
+                hs.delete()
+            if 'deletecourse' in request.POST:
+                hid = request.POST['deletecourse']
+                hs = Course.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deleteexp' in request.POST:
+                hid = request.POST['deleteexp']
+                hs = Experience.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletepro' in request.POST:
+                hid = request.POST['deletepro']
+                hs = Project.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deleteach' in request.POST:
+                hid = request.POST['deleteach']
+                hs = Achievement.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletepub' in request.POST:
+                hid = request.POST['deletepub']
+                hs = Publication.objects.select_related('unique_id').get(Q(pk=hid))
+                hs.delete()
+            if 'deletepat' in request.POST:
+                hid = request.POST['deletepat']
+                hs = Patent.objects.get(Q(pk=hid))
+                hs.delete()
+
+        placementschedule = PlacementSchedule.objects.select_related('notify_id').filter(
+            Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
+
+        placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
+            Q(unique_id=student,
+            notify_id__in=placementschedule)).order_by('-timestamp')
+
+
+        check_invitation_date(placementstatus)
+
+    # facult and other staff view only statistics
+    if not (current or current1 or current2):
+        return redirect('/placement/statistics/')
+
+    # delete the schedule
+    if 'deletesch' in request.POST:
+        delete_sch_key = request.POST['delete_sch_key']
+        try:
+            placement_schedule = PlacementSchedule.objects.select_related('notify_id').get(pk = delete_sch_key)
+            NotifyStudent.objects.get(pk=placement_schedule.notify_id.id).delete()
+            placement_schedule.delete()
+            messages.success(request, 'Schedule Deleted Successfully')
+        except Exception as e:
+            messages.error(request, 'Problem Occurred for Schedule Delete!!!')
+
+    # saving all the schedule details
+    if 'schedulesubmit' in request.POST:
+        form5 = AddSchedule(request.POST, request.FILES)
+        if form5.is_valid():
+            company_name = form5.cleaned_data['company_name']
+            placement_date = form5.cleaned_data['placement_date']
+            location = form5.cleaned_data['location']
+            ctc = form5.cleaned_data['ctc']
+            time = form5.cleaned_data['time']
+            attached_file = form5.cleaned_data['attached_file']
+            placement_type = form5.cleaned_data['placement_type']
+            role_offered = request.POST.get('role')
+            description = form5.cleaned_data['description']
+
+            try:
+                comp_name = CompanyDetails.objects.filter(company_name=company_name)[0]
+            except:
+                CompanyDetails.objects.create(company_name=company_name)
+
+            try:
+                role = Role.objects.filter(role=role_offered)[0]
+            except:
+                role = Role.objects.create(role=role_offered)
+                role.save()
+
+
+            notify = NotifyStudent.objects.create(placement_type=placement_type,
+                                                  company_name=company_name,
+                                                  description=description,
+                                                  ctc=ctc,
+                                                  timestamp=timezone.now())
+
+            schedule = PlacementSchedule.objects.select_related('notify_id').create(notify_id=notify,
+                                                        title=company_name,
+                                                        description=description,
+                                                        placement_date=placement_date,
+                                                        attached_file = attached_file,
+                                                        role=role,
+                                                        location=location, time=time)
+
+            notify.save()
+            schedule.save()
+            messages.success(request, "Schedule Added Successfull!!")
+
+
+    schedules = PlacementSchedule.objects.select_related('notify_id').all()
+
+
+    context = {
+        'current': current,
+        'current1': current1,
+        'current2': current2,
+        'schedule_tab': schedule_tab,
+        'schedules': schedules,
+        'placementstatus': placementstatus,
+        'form5': form5,
+    }
+
+    return render(request, 'placementModule/placement.html', context)
 
 @login_required
 def placement(request):
@@ -212,6 +504,7 @@ def placement(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    print(current)
 
     # If the user is Student
     if current:
