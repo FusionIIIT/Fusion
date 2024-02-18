@@ -240,6 +240,21 @@ class WorkerReport(models.Model):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
 
 
+
+class HostelInventory(models.Model):
+    """
+    Model to store hostel inventory information.
+    """
+
+    inventory_id = models.AutoField(primary_key=True)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    inventory_name = models.CharField(max_length=100)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.inventory_name
+
 class HostelAllotment(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     hostel_name = models.CharField(max_length=100)  # Assuming hostel_name is a CharField
@@ -256,6 +271,8 @@ class HostelLeave(models.Model):
     reason = models.TextField()
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
+    status = models.CharField(max_length=20, default='pending')
+
 
     def __str__(self):
         return f"{self.student_name}'s Leave"   

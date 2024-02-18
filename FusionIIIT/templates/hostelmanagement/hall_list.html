@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall List</title>
+</head>
+<body>
+    <h1>Hall List</h1>
+    <ul>
+        {% for hall in halls %}
+        <li><a href="/hostelmanagement/inventory/{{ hall.id }}/">Hall {{ hall.id }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
