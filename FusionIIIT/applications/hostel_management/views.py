@@ -2,8 +2,10 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
+from django.shortcuts import render, redirect
+
 from .models import HostelLeave
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.utils.decorators import method_decorator
@@ -482,16 +484,13 @@ def all_leave_data(request):
         return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
 
-class create_hostel_leave(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
 
-    def get(self, request):
+@login_required
+def create_hostel_leave(request):
+    if request.method == 'GET':
         return render(request, 'hostelmanagement/create_leave.html')
-    
-    def post(self, request):
-    
-        data = request.data
+    elif request.method == 'POST':
+        data = request.POST  # Assuming you are sending form data via POST request
         student_name = data.get('student_name')
         roll_num = data.get('roll_num')
         reason = data.get('reason')
@@ -509,15 +508,11 @@ class create_hostel_leave(APIView):
 
         return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
 
-def create_leave(request):
-    return render(request, 'hostelmanagement/create_leave.html')
 
 
 
 
-
-
-# hostel complaints
+# hostel_complaints_list caretaker can see all hostel complaints
 
 @login_required
 def hostel_complaint_list(request):
@@ -536,9 +531,18 @@ def hostel_complaint_list(request):
  
 
 
+
+
+# Student can post complaints
+
 class PostComplaint(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+    authentication_classes = [SessionAuthentication]  # Assuming you are using session authentication
+    permission_classes = [IsAuthenticated]  # Allow only authenticated users to access the view
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/hostelmanagement')  # Redirect to the login page if user is not authenticated
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         return render(request, 'hostelmanagement/post_complaint_form.html')
@@ -549,6 +553,9 @@ class PostComplaint(APIView):
         roll_number = request.data.get('roll_number')
         description = request.data.get('description')
         contact_number = request.data.get('contact_number')
+
+        # Assuming the student's name is stored in the user object
+        student_name = request.user.username  
 
         complaint = HostelComplaint.objects.create(
             hall_name=hall_name,
@@ -562,71 +569,8 @@ class PostComplaint(APIView):
         return HttpResponse('<script>alert("Complaint submitted successfully"); window.location.href = "/hostelmanagement";</script>')
 
 
-# userComplaint user can see complaints registered by him
 
-
-
-class UserComplaints(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
-
-    def get(self, request, roll_number):
-        # Filter complaints by the roll number, case-insensitive
-        user_complaints = HostelComplaint.objects.filter(Q(roll_number__iexact=roll_number))
-        
-        # Render a template displaying the user's complaints
-        return render(request, 'hostelmanagement/user_complaints.html', {'complaints': user_complaints})
-
-
-# /// login  required
-
-
-
-# @login_required
-# def hostel_complaint_list(request):
-#     complaints = HostelComplaint.objects.all()
-#     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
-
-
-
-from rest_framework.decorators import api_view
-
-
-# @api_view(['GET'])
-# def student_view_registration(request):
-#     # Getting the registration status of the current user for the given semester
-#     current_user = request.user
-#     student_id = current_user.extrainfo.id
-#     print(student_id)
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from .models import HostelLeave
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from .models import HostelLeave
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import HostelLeave
-
-
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from .models import HostelLeave
-
-from django.shortcuts import render
+# // student can see his leave status
 
 class my_leaves(View):
     @method_decorator(login_required, name='dispatch')
@@ -651,28 +595,7 @@ class my_leaves(View):
             return HttpResponse(f"User with ID {user_id} does not exist.")
         
 
-# ////////////////////////////////////////////////update apis
-# views.py
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import HostelLeave
-
-from django.shortcuts import render, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import HostelLeave
-
-
-
-from django.shortcuts import redirect
-from django.contrib import messages
-from .models import HostelLeave
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import HostelLeave
-
+# //Caretaker can approve or reject leave applied by the student
 @csrf_exempt
 def update_leave_status(request):
     if request.method == 'POST':
