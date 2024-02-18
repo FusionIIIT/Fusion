@@ -43,6 +43,6 @@ urlpatterns = [
     url(r'^api', include('applications.central_mess.api.urls')),
     
     url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
-    url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
+    # url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
 
 ]

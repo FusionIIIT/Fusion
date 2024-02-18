@@ -174,11 +174,11 @@ Central Mess
             {% include 'messModule/registered_student.html' %}
             {% endblock %}
         </div>
-        <div class="ui tab segment" data-tab="twentyfour">
+        {% comment %} <div class="ui tab segment" data-tab="twentyfour">
             {% block uploadPaymentDue %}
             {% include 'messModule/uploadPaymentDue.html' %}
             {% endblock %}
-        </div>
+        </div> {% endcomment %}
         <div class="ui tab segment" data-tab="twentyfive">
             {% block updatemenu %}
             {% include 'messModule/updatemenu.html' %}
