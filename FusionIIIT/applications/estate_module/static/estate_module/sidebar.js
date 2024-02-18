@@ -36,7 +36,7 @@ $(document).ready(function () {
         .sidebar('setting', 'transition', 'overlay');
 });
 function newNotification() {
-    console.log('A new Notification added!');
+    // console.log('A new Notification added!');
 
     var notifactionName = document.createTextNode('Kanishka Munshi');
     var notificationEmail = document.createTextNode('gmail@zlatan.com');
