@@ -44,6 +44,8 @@ urlpatterns = [
     # //////////////////////
 
     path('hostel_complaint_list/', views.hostel_complaint_list, name='hostel_complaint_list'),
+    path('my_leaves/', views.my_leaves.as_view(), name='my_leaves'),
+
 
 
 

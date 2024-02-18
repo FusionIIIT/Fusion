@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+
 from django.urls import reverse
 from .models import HostelLeave
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -510,7 +511,7 @@ def hostel_complaint_list(request):
 
 
 
-
+ 
 
 
 class PostComplaint(APIView):
@@ -565,16 +566,119 @@ class UserComplaints(APIView):
 #     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
 
 
-@login_required
-def hostel_complaint_list(request):
-   
-    # Get the currently logged-in student
-    student = request.user
-    
 
-    # Filter complaints to show only those posted by the student
-    complaints = HostelComplaint.objects.filter(roll_number=request.data.get("roll_number"))
-    
+from rest_framework.decorators import api_view
 
-    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
 
+# @api_view(['GET'])
+# def student_view_registration(request):
+#     # Getting the registration status of the current user for the given semester
+#     current_user = request.user
+#     student_id = current_user.extrainfo.id
+#     print(student_id)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import HostelLeave
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import HostelLeave
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import HostelLeave
+
+# class AllLeaveDataAPIView(APIView):
+#     authentication_classes = []  # Allow public access for testing
+#     permission_classes = []  # Allow any user to access the view
+
+#     def get(self, request):
+#         # Get all leave data
+#         all_leave = HostelLeave.objects.all()
+
+#         # Manually construct the JSON response
+#         leave_data = []
+#         for leave in all_leave:
+#             leave_data.append({
+#                 'student_name': leave.student_name,
+#                 'roll_num': leave.roll_num,
+#                 'reason': leave.reason,
+#                 'start_date': leave.start_date,
+#                 'end_date': leave.end_date,
+#             })
+
+#         # Return the JSON response
+#         return Response(leave_data, status=status.HTTP_200_OK)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import HostelLeave
+
+# class AllLeaveDataAPIView(View):
+#     @method_decorator(login_required, name='dispatch')
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             # Get the user ID from the request's user
+#             user_id = request.user.extrainfo.id
+#             print("~~~~~",user_id)
+#             # Retrieve user details based on the user ID
+#         #     user = User.objects.get(username=user_id)
+#         #     my_leaves = HostelLeave.objects.filter(roll_num=user_id)
+        
+#         #     leave_data = []
+#         #     for leave in my_leaves:
+#         #         leave_data.append({
+#         #             'student_name': leave.student_name,
+#         #             'roll_num': leave.roll_num,
+#         #             'reason': leave.reason,
+#         #             'start_date': leave.start_date,
+#         #             'end_date': leave.end_date,
+#         #         })
+
+#             # Return the JSON response
+#             return Response(user_id, status=status.HTTP_200_OK)
+
+         
+
+#         except User.DoesNotExist:
+#             # Handle the case where the user with the given ID doesn't exist
+#             return HttpResponse(f"User with ID {user_id} does not exist.")
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import HostelLeave
+
+from django.shortcuts import render
+
+class my_leaves(View):
+    @method_decorator(login_required, name='dispatch')
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get the user ID from the request's user
+            user_id = str(request.user)
+
+            # Retrieve leaves registered by the current student based on their roll number
+            my_leaves = HostelLeave.objects.filter(roll_num__iexact=user_id)
+
+            # Construct the context to pass to the template
+            context = {
+                'leaves': my_leaves
+            }
+
+            # Render the template with the context data
+            return render(request, 'hostelmanagement/my_leaves.html', context)
+
+        except User.DoesNotExist:
+            # Handle the case where the user with the given ID doesn't exist
+            return HttpResponse(f"User with ID {user_id} does not exist.")
