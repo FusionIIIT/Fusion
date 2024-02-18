@@ -32,8 +32,13 @@ urlpatterns = [
     path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
     # //caretaker and warden can see all leaves
     path('all_leave_data/', views.all_leave_data, name='all_leave_data'),
+    # caretaker  or wardern can approve leave
+    path('update_leave_status/', views.update_leave_status, name='update_leave_status'),
     # //apply for leave
     path('create_hostel_leave/', views.create_hostel_leave.as_view(), name='create_hostel_leave'),
+    
+    
+
     # caretaker and warden can get all complaints
     path('hostel_complaints/', views.hostel_complaint_list, name='hostel_complaint_list'),
     # only user can see its complaints

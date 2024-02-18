@@ -265,6 +265,8 @@ class HostelLeave(models.Model):
     reason = models.TextField()
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
+    status = models.CharField(max_length=20, default='pending')
+
 
     def __str__(self):
         return f"{self.student_name}'s Leave"   

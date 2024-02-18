@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from django.urls import reverse
 from .models import HostelLeave
@@ -461,10 +463,23 @@ def hostel_notice_board(request):
 
 
 
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from .models import HostelLeave, HallCaretaker
 
+@login_required
 def all_leave_data(request):
-    all_leave = HostelLeave.objects.all()
-    return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+    user_id = request.user.id  # Using request.user to get the user ID
+    try:
+        staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
+    except AttributeError:
+        staff = None
+
+    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+        all_leave = HostelLeave.objects.all()
+        return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+    else:
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
 
 class create_hostel_leave(APIView):
@@ -504,12 +519,19 @@ def create_leave(request):
 
 # hostel complaints
 
-
+@login_required
 def hostel_complaint_list(request):
-    complaints = HostelComplaint.objects.all()
-    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+    user_id = request.user.id 
+    try:
+        staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
+    except AttributeError:
+        staff = None
 
-
+    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+        complaints = HostelComplaint.objects.all()
+        return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+    else:
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
  
 
@@ -598,62 +620,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import HostelLeave
 
-# class AllLeaveDataAPIView(APIView):
-#     authentication_classes = []  # Allow public access for testing
-#     permission_classes = []  # Allow any user to access the view
 
-#     def get(self, request):
-#         # Get all leave data
-#         all_leave = HostelLeave.objects.all()
-
-#         # Manually construct the JSON response
-#         leave_data = []
-#         for leave in all_leave:
-#             leave_data.append({
-#                 'student_name': leave.student_name,
-#                 'roll_num': leave.roll_num,
-#                 'reason': leave.reason,
-#                 'start_date': leave.start_date,
-#                 'end_date': leave.end_date,
-#             })
-
-#         # Return the JSON response
-#         return Response(leave_data, status=status.HTTP_200_OK)
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import HostelLeave
-
-# class AllLeaveDataAPIView(View):
-#     @method_decorator(login_required, name='dispatch')
-#     def get(self, request, *args, **kwargs):
-#         try:
-#             # Get the user ID from the request's user
-#             user_id = request.user.extrainfo.id
-#             print("~~~~~",user_id)
-#             # Retrieve user details based on the user ID
-#         #     user = User.objects.get(username=user_id)
-#         #     my_leaves = HostelLeave.objects.filter(roll_num=user_id)
-        
-#         #     leave_data = []
-#         #     for leave in my_leaves:
-#         #         leave_data.append({
-#         #             'student_name': leave.student_name,
-#         #             'roll_num': leave.roll_num,
-#         #             'reason': leave.reason,
-#         #             'start_date': leave.start_date,
-#         #             'end_date': leave.end_date,
-#         #         })
-
-#             # Return the JSON response
-#             return Response(user_id, status=status.HTTP_200_OK)
-
-         
-
-#         except User.DoesNotExist:
-#             # Handle the case where the user with the given ID doesn't exist
-#             return HttpResponse(f"User with ID {user_id} does not exist.")
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -682,3 +649,41 @@ class my_leaves(View):
         except User.DoesNotExist:
             # Handle the case where the user with the given ID doesn't exist
             return HttpResponse(f"User with ID {user_id} does not exist.")
+        
+
+# ////////////////////////////////////////////////update apis
+# views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import HostelLeave
+
+from django.shortcuts import render, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import HostelLeave
+
+
+
+from django.shortcuts import redirect
+from django.contrib import messages
+from .models import HostelLeave
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import HostelLeave
+
+@csrf_exempt
+def update_leave_status(request):
+    if request.method == 'POST':
+        leave_id = request.POST.get('leave_id')
+        status = request.POST.get('status')
+        try:
+            leave = HostelLeave.objects.get(id=leave_id)
+            leave.status = status
+            leave.save()
+            return JsonResponse({'status': status, 'message': 'Leave status updated successfully.'})
+        except HostelLeave.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Leave not found.'}, status=404)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'}, status=405)

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Leave Data</title>
+    <!-- Include jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <h1>All Leave Data</h1>
@@ -15,19 +17,63 @@
                 <th>Reason</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for leave in all_leave %}
+            {% if leave.status != 'approved' %}
             <tr>
                 <td>{{ leave.student_name }}</td>
                 <td>{{ leave.roll_num }}</td>
                 <td>{{ leave.reason }}</td>
                 <td>{{ leave.start_date }}</td>
                 <td>{{ leave.end_date }}</td>
+                <td>{{ leave.status }}</td>
+                <td>
+                    <form class="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="approved">
+                        <button type="button" class="status-update">Approve</button>
+                    </form>
+                    <form class="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="button" class="status-update">Reject</button>
+                    </form>
+                </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        $(document).ready(function() {
+            $('.status-update').click(function() {
+                var form = $(this).closest('form');
+                var formData = form.serialize();
+                $.ajax({
+                    type: 'POST',
+                    url: '/hostelmanagement/update_leave_status/',
+                    data: formData,
+                    success: function(response) {
+                        // Update the status cell text
+                        var statusCell = form.closest('tr').find('td:nth-child(6)');
+                        statusCell.text(response.status);
+                        // Show success message
+                        alert('Leave status updated successfully.');
+                    },
+                    error: function(xhr, status, error) {
+                        // Show error message
+                        alert('Error occurred while updating status.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
