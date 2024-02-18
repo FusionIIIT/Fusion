@@ -66,7 +66,7 @@ class Club_info(models.Model):
     spent_budget - the amount spent by the club
     avail_budget  - the amount available at the club
     status - status of club wheather it is confirmed or not
-     
+
     """
 
     club_name = models.CharField(max_length=50, null=False, primary_key=True)
@@ -93,8 +93,8 @@ class Club_info(models.Model):
     spent_budget = models.IntegerField(null=True, default=0)
     avail_budget = models.IntegerField(null=True, default=0)
     status = models.CharField(max_length=50, choices=Constants.status, default="open")
-    head_changed_on = models.DateField(default=None, auto_now=False, null=False)
-    created_on = models.DateField(default=None, auto_now=False, null=False)
+    head_changed_on = models.DateField(default=timezone.now, auto_now=False, null=True)
+    created_on = models.DateField(default=timezone.now, auto_now=False, null=True)
 
     def __str__(self):
         return str(self.club_name)
@@ -222,6 +222,7 @@ class Club_budget(models.Model):
     budget_file - it is file which contains complete details regarding the amount they want to spend
     descrion - description about the budget if any
     """
+
     id = models.AutoField(primary_key=True)
     club = models.ForeignKey(
         Club_info, on_delete=models.CASCADE, max_length=50, null=False
@@ -254,6 +255,7 @@ class Session_info(models.Model):
     details - for which purpose they are taking the session
     status - wheather it is approved/rejected.
     """
+
     id = models.AutoField(primary_key=True)
     club = models.ForeignKey(
         Club_info, on_delete=models.CASCADE, max_length=50, null=True

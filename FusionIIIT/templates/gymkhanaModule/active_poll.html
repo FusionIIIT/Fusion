@@ -1,8 +1,8 @@
 {% block active_poll %}
 <div class="ui active tab" data-tab="active">
   <div class="ui styled fluid accordion">
-    {% for poll in voting_polls %} {% comment %} {% if
-    request.user.groups.filter(name__in=poll.groups).exists %} {% endcomment %}
+    {% for poll in voting_polls %} {% comment %} {% validate request.user poll.groups as car%}
+    {% if car %} {% endcomment %}
     <div class="title" style="display: flex; align-items: center">
       <i class="dropdown icon"></i>
       <div

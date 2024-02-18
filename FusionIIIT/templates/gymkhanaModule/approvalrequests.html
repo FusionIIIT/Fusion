@@ -231,4 +231,20 @@
         </form>
         </div>
     </div>
+    <script>
+        // Function to handle button clicks
+        function handleButtonClick(action) {
+            document.getElementById("club_action_form").action = action;
+            document.getElementById("club_action_form").submit();
+        }
+
+        // Add event listeners to buttons
+        document.getElementById("approve_button").addEventListener("click", function() {
+            handleButtonClick("/gymkhana/club_approve/");
+        });
+
+        document.getElementById("reject_button").addEventListener("click", function() {
+            handleButtonClick("/gymkhana/club_reject/");
+        });
+    </script>
 {% endblock %}
