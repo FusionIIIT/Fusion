@@ -11,14 +11,15 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from applications.academic_procedures.models import ThesisTopicProcess
 from applications.globals.models import HoldsDesignation, Designation, ExtraInfo
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester)
+from applications.programme_curriculum.models import ( CourseSlot, Course as Courses, Batch, Semester)
 
 
 from applications.academic_procedures.models import (Course, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistrations, SemesterMarks,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments )
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration)
+
+from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 
 from applications.academic_procedures.views import (get_user_semester, get_acad_year,
                                                     get_currently_registered_courses,
@@ -35,46 +36,11 @@ from . import serializers
 User = get_user_model()
 
 date_time = datetime.datetime.now()
- 
-@api_view(['GET'])
-def academic_procedures_faculty(request):
-    current_user = request.user
-    user_details = current_user.extrainfo
-    des = current_user.holds_designations.all().first()
 
-    if str(des.designation) == 'student':
-        return Response({'error':'Not a faculty'}, status=status.HTTP_400_BAD_REQUEST)
-    elif str(current_user) == 'acadadmin':
-        return Response({'error':'User is acadadmin'}, status=status.HTTP_400_BAD_REQUEST)
 
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
-        faculty_object = user_details.faculty
-        month = int(date_time.month)
-        sem = []
-        if month>=7 and month<=12:
-            sem = [1,3,5,7]
-        else:
-            sem = [2,4,6,8]
-        student_flag = False
-        fac_flag = True
 
-        thesis_supervision_request_list = faculty_object.thesistopicprocess_supervisor.all()
-        thesis_supervision_request_list_data = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list, many=True).data
-        approved_thesis_request_list = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list.filter(approval_supervisor = True), many=True).data
-        pending_thesis_request_list = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list.filter(pending_supervisor = True), many=True).data
-        courses_list = serializers.CurriculumInstructorSerializer(user_details.curriculum_instructor_set.all(), many=True).data
-        fac_details = serializers.UserSerializer(current_user).data
+#--------------------------------------- APIs of student----------------------------------------------------------
 
-        resp = {
-            'student_flag' : student_flag,
-            'fac_flag' : fac_flag,
-            'thesis_supervision_request_list' : thesis_supervision_request_list_data,
-            'pending_thesis_request_list' : pending_thesis_request_list,
-            'approved_thesis_request_list' : approved_thesis_request_list,
-            'courses_list': courses_list,
-            'faculty': fac_details
-        }
-        return Response(data=resp, status=status.HTTP_200_OK)
 
 # with this student can get all his details in one api call 
 @api_view(['GET'])
@@ -289,50 +255,48 @@ def academic_procedures_student(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def test(request):
-    current_user = request.user
-    current_user_data = {
-        'first_name': current_user.first_name,
-        'last_name': current_user.last_name,
-        'username': current_user.username,
-        'email': current_user.email
-    }
-    user_details = current_user.extrainfo
-    des = current_user.holds_designations.all().first()
-    obj = user_details.student
-
-    current_date = date_time.date()
-    current_year = date_time.year
-    batch = obj.batch_id
-    
-    user_branch = user_details.department.name
-    cpi = obj.cpi
-    cur_spi='Sem results not available' # To be fetched from db if result uploaded
-
-    details = {
-        'current_user': current_user_data,
-        'user_branch' : str(user_branch),
-        'cpi' : cpi,
-        'spi' : cur_spi
-    }
-    return Response(data = details , status=status.HTTP_200_OK)
-
-
-# api for student for adding courses for next semester  
+# api for student for adding courses for next semester 
 @api_view(['POST'])
 def add_course(request):
-    current_user = request.user
-    
-    if request.content_type == "application/json":
-        course_name = request.data["course_name"]
-        course_id = request.data["course_id"]
-    else:
-        course_name = request.POST["course_name"]
-        course_id = request.POST["course_id"]
+    try:
+        current_user = request.user
+        current_user_id = serializers.UserSerializer(current_user).data["id"]
+        s_id = current_user.extrainfo.id
 
-    res = {'message' : 'Course successfully added' , 'course_name' : course_name , 'course_id' : course_id}
-    return Response(data = res , status = status.HTTP_200_OK)
+        current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user_id).first()
+        current_user = serializers.ExtraInfoSerializer(current_user).data
+
+        current_user_instance = Student.objects.all().filter(id=current_user["id"]).first()
+        current_user = serializers.StudentSerializers(current_user_instance).data
+
+        sem_id_instance = Semester.objects.get(id = request.data.get('semester'))
+        sem_id = serializers.SemesterSerializer(sem_id_instance).data["id"]
+
+        count = request.data.get('ct')
+        count = int(count)
+        reg_curr=[]
+        for i in range(1, count+1):
+            choice = "choice["+str(i)+"]"
+            slot = "slot["+str(i)+"]"
+            try:
+                course_id = Courses.objects.get(id = request.data.get(choice))
+                courseslot_id = CourseSlot.objects.get(id = request.data.get(slot))
+                # Check if maximum course registration limit has not reached and student has not already registered for that course
+                if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit and (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
+                    p = course_registration(
+                        course_id = course_id,
+                        student_id=current_user_instance,
+                        course_slot_id = courseslot_id,
+                        semester_id=sem_id_instance
+                        )
+                    if p not in reg_curr:
+                        reg_curr.append(p)
+            except Exception as e:
+                continue
+        course_registration.objects.bulk_create(reg_curr)
+        return Response(data = {"message" : "Courses have been added successfully."} , status = status.HTTP_200_OK)
+    except Exception as e: 
+        return Response(data = {"error" : str(e) }, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # simple api for getting to know the details of user who have logined in the system
@@ -348,27 +312,30 @@ def get_user_info(request):
     return Response(data = details  , status= status.HTTP_200_OK)
 
 
-# with this acad admin can fetch the list of courses for any batch , semester and brach
+# with this api student can see the list of courses offered to him in upcoming semester
 @api_view(['GET'])
-def get_course_list(request):
-    
-    programme = request.data['programme']
-    branch = request.data['branch']
-    batch = request.data['batch']
-
+def view_offered_courses(request):
     try : 
-        print(programme , branch , batch)
         obj = Curriculum.objects.filter(
             programme = request.data['programme'],
             branch = request.data['branch'],
-            batch = request.data["batch"]
+            batch = request.data["batch"],
+            sem = request.data["semester"]
         )
         serializer = serializers.CurriculumSerializer(obj, many=True).data
         return Response(serializer, status=status.HTTP_200_OK)
     except Exception as e:
             return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    # obj = Curriculum.objects.filter(curriculum_id_=curriculum_id, course_type_ = course_type, programme_ = programme, batch_ = batch, branch_ = branch, sem_ = sem, optional_ = optional)
-
+    # try:
+    #     ug_flag = True
+    #     masters_flag = False
+    #     phd_flag = False
+    #     current_semester =  get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+    #     current_year = date_time.date().year
+        
+    #     return Response(data= { } , status=status.HTTP_200_OK)
+    # except Exception as e:
+    #     return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #  with this student can know status of pre registration and final registration
 @api_view(['GET'])
@@ -522,13 +489,125 @@ def student_final_registration(request):
 
 
 
+#--------------------------------------- APIs of acad person----------------------------------------------------------
 
 
+# with this acad admin can fetch the list of courses for any batch , semester and brach
+@api_view(['GET'])
+def get_course_list(request):
+    
+    programme = request.data['programme']
+    branch = request.data['branch']
+    batch = request.data['batch']
+
+    try : 
+        print(programme , branch , batch)
+        obj = Curriculum.objects.filter(
+            programme = request.data['programme'],
+            branch = request.data['branch'],
+            batch = request.data["batch"]
+        )
+        serializer = serializers.CurriculumSerializer(obj, many=True).data
+        return Response(serializer, status=status.HTTP_200_OK)
+    except Exception as e:
+            return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # obj = Curriculum.objects.filter(curriculum_id_=curriculum_id, course_type_ = course_type, programme_ = programme, batch_ = batch, branch_ = branch, sem_ = sem, optional_ = optional)
+
+#  with this api acad person can see the list of students who have completed their pre and final registrations for any semester
+@api_view(['GET'])
+def acad_view_reigstrations(request):
+    try:
+        semester = request.data["semester"]
+        sem_id_instance = Semester.objects.get(id = request.data.get('semester'))
+        sem_id = serializers.SemesterSerializer(sem_id_instance).data["id"]
+        obj = StudentRegistrationChecks.objects.filter(semester_id_id = sem_id,   final_registration_flag =True)
+        student_registration_check = serializers.StudentRegistrationChecksSerializer(obj, many=True).data
+
+        return Response(data= student_registration_check  , status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# with this api acad person set the date of pre registration date for any semester
+@api_view(['POST'])
+def configure_pre_registration_date(request):
+    try:
+        try:
+            from_date = request.data.get('from_date')
+            to_date = request.data.get('to_date')
+            semester = request.data.get('semester')
+            current_year = date_time.date().year
+            desc = "Pre Registration " + str(semester) +" " + str(current_year)
+            print(from_date , to_date , desc)
+            from_date = from_date.split('-')
+            from_date = [int(i) for i in from_date]
+            from_date = datetime.datetime(*from_date).date()
+            to_date = to_date.split('-')
+            to_date = [int(i) for i in to_date]
+            to_date = datetime.datetime(*to_date).date()
+        except Exception as e:
+            from_date=""
+            to_date=""
+            desc=""
+            pass
+        c = Calendar(
+            from_date=from_date,
+            to_date=to_date,
+            description=desc)
+        c.save()
+        return Response(data = {"message" : "Pre registration for semester " + str(semester) + " will be opened from " + str(from_date) + " to " + str(to_date) + ". "  ,  } , status= status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = {"error " : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# with this api request acad person can set the date of final registration
+@api_view(['POST'])
+def configure_final_registration_date(request):
+    try:
+        try:
+            from_date = request.data.get('from_date')
+            to_date = request.data.get('to_date')
+            semester = request.data.get('semester')
+            current_year = date_time.date().year
+            desc = "Physical Reporting at the Institute"
+            print(from_date , to_date , desc)
+            from_date = from_date.split('-')
+            from_date = [int(i) for i in from_date]
+            from_date = datetime.datetime(*from_date).date()
+            to_date = to_date.split('-')
+            to_date = [int(i) for i in to_date]
+            to_date = datetime.datetime(*to_date).date()
+        except Exception as e:
+            from_date=""
+            to_date=""
+            desc=""
+            pass
+        c = Calendar(
+            from_date=from_date,
+            to_date=to_date,
+            description=desc)
+        c.save()
+        return Response(data = {"message" : "Physical Reporting at the Institute will be opened from " + str(from_date) + " to " + str(to_date) + ". "  ,  } , status= status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = {"error " : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 
+#--------------------------------------- APIs of faculty----------------------------------------------------------
 
-
-
+# with this api faculty can know what are the courses assigned to him 
+@api_view(['GET'])
+def faculty_assigned_courses(request):
+    try:
+        current_user = request.user
+        curriculum_ids = Curriculum_Instructor.objects.filter(instructor_id=current_user.id).values_list('curriculum_id', flat=True)
+        course_infos = []
+        print(current_user.id)
+        for curriculum_id in curriculum_ids:
+            course_info = Curriculum.objects.filter(curriculum_id=curriculum_id).values_list('course_code','course_type','programme','branch','sem','course_id_id').first()
+            course_infos.append(course_info)
+    
+        return Response(data= course_infos , status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -545,6 +624,48 @@ def student_final_registration(request):
 
 
 #  These apis were implemented before but now don't use them they have some errors
+
+
+# @api_view(['GET'])
+# def academic_procedures_faculty(request):
+#     current_user = request.user
+#     user_details = current_user.extrainfo
+#     des = current_user.holds_designations.all().first()
+
+#     if str(des.designation) == 'student':
+#         return Response({'error':'Not a faculty'}, status=status.HTTP_400_BAD_REQUEST)
+#     elif str(current_user) == 'acadadmin':
+#         return Response({'error':'User is acadadmin'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
+#         faculty_object = user_details.faculty
+#         month = int(date_time.month)
+#         sem = []
+#         if month>=7 and month<=12:
+#             sem = [1,3,5,7]
+#         else:
+#             sem = [2,4,6,8]
+#         student_flag = False
+#         fac_flag = True
+
+#         thesis_supervision_request_list = faculty_object.thesistopicprocess_supervisor.all()
+#         thesis_supervision_request_list_data = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list, many=True).data
+#         approved_thesis_request_list = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list.filter(approval_supervisor = True), many=True).data
+#         pending_thesis_request_list = serializers.ThesisTopicProcessSerializer(thesis_supervision_request_list.filter(pending_supervisor = True), many=True).data
+#         courses_list = serializers.CurriculumInstructorSerializer(user_details.curriculum_instructor_set.all(), many=True).data
+#         fac_details = serializers.UserSerializer(current_user).data
+
+#         resp = {
+#             'student_flag' : student_flag,
+#             'fac_flag' : fac_flag,
+#             'thesis_supervision_request_list' : thesis_supervision_request_list_data,
+#             'pending_thesis_request_list' : pending_thesis_request_list,
+#             'approved_thesis_request_list' : approved_thesis_request_list,
+#             'courses_list': courses_list,
+#             'faculty': fac_details
+#         }
+#         return Response(data=resp, status=status.HTTP_200_OK)
+
 
 
 
