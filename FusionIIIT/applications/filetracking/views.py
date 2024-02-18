@@ -183,11 +183,13 @@ def drafts_view(request, id):
         designation=user_HoldsDesignation_obj.designation,
         src_module='filetracking'
         )
-    draft_files = add_uploader_department_to_files_list(draft_files)
 
     # Correct upload_date type
     for f in draft_files:
         f['upload_date'] = parse_datetime(f['upload_date'])
+        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
+
+    draft_files = add_uploader_department_to_files_list(draft_files)
 
     context = {
         'draft_files': draft_files,
@@ -227,7 +229,6 @@ def outbox_view(request, id):
     outward_files = view_outbox(username=user_HoldsDesignation_obj.user,
                                 designation=user_HoldsDesignation_obj.designation,
                                 src_module='filetracking')
-    outward_files = add_uploader_department_to_files_list(outward_files)
 
     for f in outward_files:
         last_forw_tracking = get_last_forw_tracking_for_user(file_id=f['id'],
@@ -238,6 +239,9 @@ def outbox_view(request, id):
         f['last_sent_date'] = last_forw_tracking.forward_date
 
         f['upload_date'] = parse_datetime(f['upload_date'])
+        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
+
+    outward_files = add_uploader_department_to_files_list(outward_files)
 
     context = {
 
@@ -274,7 +278,6 @@ def inbox_view(request, id):
         designation=user_HoldsDesignation_obj.designation,
         src_module='filetracking'
         )
-    inward_files = add_uploader_department_to_files_list(inward_files)
 
     # correct upload_date type and add recieve_date
     for f in inward_files:
@@ -284,7 +287,9 @@ def inbox_view(request, id):
                                                             username=user_HoldsDesignation_obj.user,
                                                             designation=user_HoldsDesignation_obj.designation)
         f['receive_date'] = last_recv_tracking.receive_date
+        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
         
+    inward_files = add_uploader_department_to_files_list(inward_files)
 
 
     context = {
@@ -354,6 +359,76 @@ def confirmdelete(request, id):
 
     return render(request, 'filetracking/confirmdelete.html', context)
 
+def view_file(request, id): 
+    ''' 
+    This function is used to view a particular file received by an employee from another.
+    This function also conditionally renders two forms 'forward_file' and 'archive_file'
+    based on if the user has necessary permissions or not. 
+    The business permissions are as follows: 
+        1. User can forward file only if they are the last recipient of the file 
+        2. User can archive a file only if they have received it last and they are also the original owner of the file
+
+    To forward the file and to archive the file separate views with POST request are called
+        
+    It displays the details file of a File and remarks as well as the attachments of all the users 
+    who have been involved till that point of the workflow.
+
+    @param:
+        request - Trivial.
+        id - ID of the file object which the user intends to forward to another employee.
+
+    @variables:
+        file - The File object.
+        track - The Tracking object.
+        designation - the designations of the user
+    '''
+
+    file = get_object_or_404(File, id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file)
+    designations = get_designation(request.user)
+
+    forward_enable = False
+    archive_enable = False
+
+    current_owner = get_current_file_owner(file.id)
+    file_uploader = get_user_object_from_username(file.uploader.user.username) 
+
+
+    if current_owner == request.user and file.is_read is False: 
+        forward_enable = True
+    if current_owner == request.user and file_uploader == request.user and not file.is_read is False:
+        archive_enable = True
+
+    print(forward_enable, archive_enable)
+
+    context = {
+        'designations': designations,
+        'file': file,
+        'track': track,
+        'forward_enable': forward_enable, 
+        'archive_enable': archive_enable,
+    }
+    return render(request, 'filetracking/viewfile.html', context)
+
+@login_required(login_url="/accounts/login")
+def archive_file(request, id): 
+    '''This function is used to archive a file.
+       It returns unauthorized access if the user is not file uploader 
+       and the current owner of the file
+    '''
+    if request.method == "POST":
+        file = get_object_or_404(File, id=id);
+        current_owner = get_current_file_owner(file.id)
+        file_uploader = get_user_object_from_username(file.uploader.user.username)
+        if current_owner == request.user and file_uploader == request.user:
+            file.is_read = True
+            file.save()
+            messages.success(request, 'File Archived')
+        else: 
+            messages.error(request, 'Unauthorized access')
+
+        return render(request, 'filetracking/composefile.html')
 
 @login_required(login_url="/accounts/login")
 def forward(request, id):
@@ -491,12 +566,14 @@ def archive_view(request, id):
         designation=user_HoldsDesignation_obj.designation,
         src_module='filetracking'
     )
-    archive_files = add_uploader_department_to_files_list(archive_files)
 
     # correct upload_date type and add receive_date
     for f in archive_files:
         f['upload_date'] = parse_datetime(f['upload_date'])
         f['designation'] = Designation.objects.get(id=f['designation'])
+        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
+
+    archive_files = add_uploader_department_to_files_list(archive_files)
 
     context = {
         'archive_files': archive_files,

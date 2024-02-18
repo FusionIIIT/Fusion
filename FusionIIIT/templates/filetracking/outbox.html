@@ -30,7 +30,7 @@
                     <td>{{f.subject|default:"None"}}</td>
                     <td>{{f.last_sent_date}}</td>
                     <td>
-                        <a href="{% url 'filetracking:forward' f.id %}"
+                        <a href="{% url 'filetracking:view_file_view' f.id %}"
                         ><button class="ui primary button">View</button></a
                         >
                     </td>

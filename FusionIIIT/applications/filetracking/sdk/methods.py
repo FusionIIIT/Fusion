@@ -352,14 +352,12 @@ def uniqueList(l: list) -> list:
     unique_list = (list(s))
     return unique_list
 
-
 def add_uploader_department_to_files_list(files: list) -> list:
     '''
     This function is used to add the department of the uploader to the file
     '''
     for file in files:
-        uploader = file['uploader']
-        uploader_Extrainfo = get_ExtraInfo_object_from_username(uploader)
+        uploader_Extrainfo = file['uploader']
         file['uploader_department'] = (str(uploader_Extrainfo.department)).split(': ')[1]
 
     return files
@@ -402,3 +400,6 @@ def get_last_forw_tracking_for_user(file_id: int, username: str, designation: st
                                             current_id=sender_user_obj,
                                             current_design=sender_designation_obj).order_by('-forward_date').first()
     return last_tracking
+
+def get_extra_info_object_from_id(id: int):
+    return ExtraInfo.objects.get(id=id)
