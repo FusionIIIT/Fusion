@@ -21,48 +21,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
-#Login 
-# @login_required(login_url='/accounts/login')
-# def exam(request):
-#     """
-#     This function is used to Differenciate acadadmin and all other user.
-
-#     @param:
-#         request - contains metadata about the requested page
-
-#     @variables:
-#         user_details - Gets the information about the logged in user.
-#         des - Gets the designation about the looged in user.
-#     """
-#     user_details = ExtraInfo.objects.get(user = request.user)
-#     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-#     if str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
-#         return HttpResponseRedirect('/examination/submit/')
-#     elif str(request.user) == "acadadmin" :
-#         return HttpResponseRedirect('/examination/submit/')
-    
-#     return HttpResponseRedirect('/dashboard/')
-
-# @login_required(login_url='/accounts/login')
-
-
-
-
-#Get all students
-# @api_view(['GET'])
-# def fetch_student_details(request):
-#     if request.method == 'GET':
-#         # obj=course_registration.objects.filter(course_id__id=course_id, student_id__batch=batch)
-#         obj=course_registration.objects.all()
-#         obj_serialized = serializers.CourseRegistrationSerializer(obj , many=True).data
-#         resp = {
-#             'objt' : obj_serialized
-#         }
-
-#         return Response(data=resp , status=status.HTTP_200_OK)
-
-
-
 
 
 @api_view(['GET', 'POST'])
@@ -154,7 +112,7 @@ def update_authenticator(request):
         year = request.data.get('year')
         authenticator_number = request.data.get('authenticator_number')
         
-        # Validate year format
+        # Validate year format  
         try:
             datetime.strptime(year, '%Y')
         except ValueError:
@@ -218,56 +176,4 @@ def publish_grade(request):
     else:
         return JsonResponse({'error': 'Authentication object not present'}, status=404)
 
-
-
-
-# def submit(request):
-    
-#     return render(request,'../templates/examination/submit.html' , {})
-
-# @login_required(login_url='/accounts/login')
-# def verify(request):
-#     return render(request,'../templates/examination/verify.html' , {})
-
-# @login_required(login_url='/accounts/login')      
-# def publish(request):
-#     return render(request,'../templates/examination/publish.html' ,{})
-
-
-# @login_required(login_url='/accounts/login')
-# def notReady_publish(request):
-#     return render(request,'../templates/examination/notReady_publish.html',{})
-    
-
-# @api_view(['POST'])
-# def publish_result(request):
-
-
-
-
-
-
-
-
-
-# def add_student(request):
-#     if request.method == 'POST':
-#         # Assuming the POST request contains necessary data for a new student
-#         student_id = request.POST.get('student_id')
-#         course_id = request.POST.get('course_id')
-#         semester_id = request.POST.get('semester_id')
-#         grades = request.POST.get('grades')
-
-#         # Create a new private_grade object
-#         new_student = hidden_grades.objects.create(
-#             student_id=student_id,
-#             course_id=course_id,
-#             semester_id=semester_id,
-#             grades=grades
-#         )
-
-#         return JsonResponse({'message': 'Student added successfully'})
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
 

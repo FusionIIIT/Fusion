@@ -685,7 +685,7 @@ class course_registration(models.Model):
 
         
     '''
-
+    
 
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
@@ -694,7 +694,7 @@ class course_registration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
-    # def __str__(self):
-    #     return self.course_id
+    def __str__(self):
+        return self.semester_id
     class Meta:
         db_table = 'course_registration'
