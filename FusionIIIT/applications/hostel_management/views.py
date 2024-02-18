@@ -28,7 +28,7 @@ from datetime import time, datetime, date
 from time import mktime, time, localtime
 from .models import *
 import xlrd
-from .forms import HostelNoticeBoardForm
+from .forms import GuestRoomBookingForm, HostelNoticeBoardForm
 import re
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -1075,3 +1075,62 @@ def update_allotment(request, pk):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
+
+@login_required
+def request_guest_room(request):
+    """
+    This function is used by the student to book a guest room.
+    @param:
+      request - HttpRequest object containing metadata about the user request.
+    """
+    print("Inside book guest room")
+    if request.method == "POST":
+        form = GuestRoomBookingForm(request.POST)
+
+        if form.is_valid():
+            print("Iside valid")
+            hall = form.cleaned_data['hall']
+            guest_name = form.cleaned_data['guest_name']
+            guest_phone = form.cleaned_data['guest_phone']
+            guest_email = form.cleaned_data['guest_email']
+            guest_address = form.cleaned_data['guest_address']
+            rooms_required = form.cleaned_data['rooms_required']
+            total_guest = form.cleaned_data['total_guest']
+            purpose = form.cleaned_data['purpose']
+            arrival_date = form.cleaned_data['arrival_date']
+            arrival_time = form.cleaned_data['arrival_time']
+            departure_date = form.cleaned_data['departure_date']
+            departure_time = form.cleaned_data['departure_time']
+            nationality = form.cleaned_data['nationality']
+
+            newBooking = GuestRoomBooking.objects.create(hall=hall, intender=request.user, guest_name=guest_name, guest_address=guest_address,
+                                                        guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
+                                                        arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality= nationality)
+            newBooking.save()
+            messages.success(request,"Room booked successfuly")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        else:
+            messages.error(request, "Something went wrong")
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+@login_required
+def update_guest_room(request):
+    if request.method == "POST":
+        if 'accept_request' in request.POST:
+            status = request.POST['status']
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['accept_request'])
+            guest_room_request.status = status
+            guest_room_request.guest_room_id = request.POST['guest_room_id']
+            room_booked = GuestRoom.objects.get(hall=guest_room_request.hall, room=request.POST['guest_room_id'])
+            room_booked.occupied_till = guest_room_request.departure_date
+            room_booked.save()
+            guest_room_request.save()
+            messages.success(request, "Request accepted successfully!")
+        elif 'reject_request' in request.POST:
+            guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['reject_request'])
+            guest_room_request.delete()
+            messages.success(request, "Request rejected successfully!")
+        else:
+            messages.error(request, "Invalid request!")
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))

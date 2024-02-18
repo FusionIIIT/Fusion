@@ -282,3 +282,21 @@ class HostelAllotment(models.Model):
 
     def __str__(self):
         return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)
+
+
+class GuestRoom(models.Model):
+    """
+    'hall' foreign key: the hostel to which the room belongs
+    'room' guest room number
+    'vacant' boolean value to determine if the room is vacant
+    'occupied_till', date field that tells the next time the room will be vacant, null if 'vacant' == True
+    """
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room = models.CharField(max_length=255)
+    occupied_till = models.DateField(null=True, blank=True)
+    vacant = models.BooleanField(default=True)
+    @property
+    def _vacant(self) -> bool:
+        if self.occupied_till and self.occupied_till > timezone.now():
+            self.vacant = False
+        self.vacant = True

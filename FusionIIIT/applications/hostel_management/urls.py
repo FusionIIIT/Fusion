@@ -73,7 +73,10 @@ urlpatterns = [
     # !! My Change
     path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
     path('allotted_rooms/', views.alloted_rooms_main, name="alloted_rooms"),
-    path('all_staff/', views.all_staff, name='all_staff')
+    path('all_staff/', views.all_staff, name='all_staff'),
 
+    #guest room
+    path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
+    path('update_guest_room/', views.update_guest_room, name="update_guest_room"),
 
 ]

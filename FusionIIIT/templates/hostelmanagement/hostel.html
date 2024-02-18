@@ -51,6 +51,13 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
+                    {%if user not in hall_caretaker and user not in hall_warden%}
+                    <a class="item" data-tab="seventh">
+                        Book Guest Room
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+
                     {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
                         Book Guest Room 
                         <i class="right floated chevron right icon"></i>
@@ -87,6 +94,14 @@
                     {% include 'hostelmanagement/attendance.html' %}
                 {% endblock %}
             </div>
+
+            {% if user not in hall_caretaker and user not in hall_warden%}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block book_guest_room %}
+                    {% include 'hostelmanagement/book_guest_room.html' %}
+                {% endblock %}
+            </div>
+            {% endif %}
 
             {% comment %} <div class="ui tab segment" data-tab="fourth">
                 {% block guest_room %}

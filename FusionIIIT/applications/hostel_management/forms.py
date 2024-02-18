@@ -1,5 +1,5 @@
 from django import forms
-from .models import HostelNoticeBoard, Hall
+from .models import HostelNoticeBoard, Hall, GuestRoomBooking
 
 
 class HostelNoticeBoardForm(forms.ModelForm):
@@ -12,3 +12,22 @@ class HallForm(forms.ModelForm):
     class Meta:
         model = Hall
         fields = ['hall_id', 'hall_name', 'max_accomodation', 'assigned_batch']
+
+class GuestRoomBookingForm(forms.ModelForm):
+    class Meta:
+        model = GuestRoomBooking 
+        fields = (
+            'hall',
+            'guest_name',
+            'guest_phone',
+            'guest_email',
+            'guest_address',
+            'rooms_required',
+            'total_guest',
+            'purpose',
+            'arrival_date',
+            'arrival_time',
+            'departure_date',
+            'departure_time',
+            'nationality'
+        )
