@@ -30,8 +30,8 @@
                                 <div class="ui divider"></div>
                             </div>
                             {% for t in track %}
-                            <div class="ui comments">
-                                <div class="comment">
+                            <div class="ui comments" style="max-width: 100%;">
+                                <div class="comment" style="max-width: 100%;">
                                         <div class="content">
                                             <a class="author">{{t.current_design}}
                                                 <a class="metadata">
@@ -89,8 +89,8 @@
                 <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
                     <div class="item">
                         {% for t in track %}
-                        <div class="ui comments">
-                            <div class="comment">
+                        <div class="ui comments" style="max-width: 100%;">
+                            <div class="comment" style="max-width: 100%;">
                                 <div class="content">
                                         <a class="paperclip icon">
                                             {% if t.upload_file %}

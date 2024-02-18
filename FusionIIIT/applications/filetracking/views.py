@@ -385,7 +385,7 @@ def view_file(request, id):
 
     file = get_object_or_404(File, id=id)
     track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file)
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file).order_by('receive_date')
     designations = get_designation(request.user)
 
     forward_enable = False
@@ -397,10 +397,8 @@ def view_file(request, id):
 
     if current_owner == request.user and file.is_read is False: 
         forward_enable = True
-    if current_owner == request.user and file_uploader == request.user and not file.is_read is False:
+    if current_owner == request.user and file_uploader == request.user and file.is_read is False:
         archive_enable = True
-
-    print(forward_enable, archive_enable)
 
     context = {
         'designations': designations,
@@ -459,7 +457,7 @@ def forward(request, id):
 
     file = get_object_or_404(File, id=id)
     track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file)
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file).order_by('receive_date')
 
     if request.method == "POST":
         if 'finish' in request.POST:
