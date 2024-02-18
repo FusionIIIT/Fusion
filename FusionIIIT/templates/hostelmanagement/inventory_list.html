@@ -65,17 +65,48 @@
             window.location.href = "/hostelmanagement/inventory/edit_inventory/" + inventoryId + "/";
         }
 
+        // function deleteInventory(inventoryId) {
+        //     var selectedHallId = document.getElementById("hall_select").value;
+        //     fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
+        //         method: "DELETE",
+        //     })
+        //     .then(response => {
+        //         if (response.ok) {
+        //             alert("Inventory deleted successfully");
+        //             window.location.reload(); // Refresh the page to reflect changes
+        //         } 
+        //         // else {
+        //         //     // alert("Failed to delete inventory");
+        //         //     alert("You are not authorized to access this page"); 
+        //         //     window.location.href = "/hostelmanagement/"
+        //         // }
+        //     })
+        //     .catch(error => {
+        //         console.error("Error:", error);
+        //         alert("An error occurred while deleting the inventory");
+        //     });
+        // }
+
+
         function deleteInventory(inventoryId) {
             var selectedHallId = document.getElementById("hall_select").value;
+            var csrfToken = getCookie("csrftoken"); // Function to retrieve the CSRF token
+            
             fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
                 method: "DELETE",
+                headers: {
+                    "X-CSRFToken": csrfToken
+                },
             })
             .then(response => {
                 if (response.ok) {
                     alert("Inventory deleted successfully");
                     window.location.reload(); // Refresh the page to reflect changes
-                } else {
-                    alert("Failed to delete inventory");
+                } 
+                else {
+                    // alert("Failed to delete inventory");
+                    alert("You are not authorized to access this page"); 
+                    window.location.href = "/hostelmanagement/"
                 }
             })
             .catch(error => {
@@ -83,6 +114,24 @@
                 alert("An error occurred while deleting the inventory");
             });
         }
+
+        // Function to retrieve the CSRF token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
 
         // Set selected option in dropdown list on page load
         window.onload = function() {

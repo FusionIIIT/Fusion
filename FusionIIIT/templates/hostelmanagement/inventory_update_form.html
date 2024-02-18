@@ -11,6 +11,7 @@
   <h1>Hostel Edit Inventory Form</h1>
   <form id="inventoryForm" action="/hostelmanagement/inventory/{{ inventory.inventory_id }}/modify/" method="POST">
     <!-- Remove hidden input for _method -->
+    {% csrf_token %}
     <label for="hall_id">Hall ID:</label>
     <!-- <input
         type="number"

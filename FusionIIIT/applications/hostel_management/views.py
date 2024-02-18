@@ -555,47 +555,75 @@ class StaffScheduleView(APIView):
 
 
 # //! Hostel Inventory
+from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import IsAuthenticated
+from django.utils.decorators import method_decorator
+from rest_framework.authentication import SessionAuthentication
 
+@login_required
 def get_inventory_form(request):
-    halls = Hall.objects.all();
+    user_id = request.user
+    # print("user_id",user_id)
+    staff=user_id.extrainfo.id
+    # print("staff",staff)
 
-    # print(halls)
-    # Load the template
-    # template = loader.get_template('hostelmanagement/inventory_form.html')
-    # Render the template with any context data if needed
-    # rendered_template = template.render()
-    # Return the rendered template as an HTTP response
-    # return HttpResponse(rendered_template)
-    return render(request, 'hostelmanagement/inventory_form.html', {'halls': halls})
+    # Check if the user is present in the HallCaretaker table
+    if HallCaretaker.objects.filter(staff_id=staff).exists():
+        # If the user is a caretaker, allow access
+        halls = Hall.objects.all()
+        return render(request, 'hostelmanagement/inventory_form.html', {'halls': halls})
+    else:
+        # If the user is not a caretaker, redirect to the login page
+        # return redirect('login')  # Adjust 'login' to your login URL name
+        return HttpResponse(f'<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
 
 
 
+@login_required
 def edit_inventory(request, inventory_id):
     # Retrieve hostel inventory object
     inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+    
+    # Check if the user is a caretaker
+    user_id = request.user
+    staff_id = user_id.extrainfo.id
+    
+    if HallCaretaker.objects.filter(staff_id=staff_id).exists():
+        halls = Hall.objects.all()
 
+        # Prepare inventory data for rendering
+        inventory_data = {
+            'inventory_id': inventory.inventory_id,
+            'hall_id': inventory.hall_id,
+            'inventory_name': inventory.inventory_name,
+            'cost': str(inventory.cost),  # Convert DecimalField to string
+            'quantity': inventory.quantity,
+        }
 
-    halls = Hall.objects.all();
+        # Render the inventory update form with inventory data
+        return render(request, 'hostelmanagement/inventory_update_form.html', {'inventory': inventory_data, 'halls': halls})
+    else:
+        # If the user is not a caretaker, show a message and redirect
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
-    # Prepare inventory data for rendering
-    inventory_data = {
-        'inventory_id': inventory.inventory_id,
-        'hall_id': inventory.hall_id,
-        'inventory_name': inventory.inventory_name,
-        'cost': str(inventory.cost),  # Convert DecimalField to string
-        'quantity': inventory.quantity,
-    }
-
-    # Render the inventory update form with inventory data
-    return render(request, 'hostelmanagement/inventory_update_form.html', {'inventory': inventory_data,"halls": halls})
 
 
 class HostelInventoryUpdateView(APIView):    
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request, inventory_id):
+        user_id = request.user
+        staff_id = user_id.extrainfo.id
+
+        if not HallCaretaker.objects.filter(staff_id=staff_id).exists():
+            return Response({'error': 'You are not authorized to update this hostel inventory'}, status=status.HTTP_401_UNAUTHORIZED)
+
         hall_id = request.data.get('hall_id')
         inventory_name = request.data.get('inventory_name')
         cost = request.data.get('cost')
@@ -605,35 +633,43 @@ class HostelInventoryUpdateView(APIView):
         if not all([hall_id, inventory_name, cost, quantity]):
             return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete
-        HostelInventory.objects.filter(inventory_id=inventory_id).delete()
+        # Retrieve hostel inventory object
+        hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
 
-        # Create hostel inventory object
-        try:
-            hostel_inventory = HostelInventory.objects.create(
-                hall_id=hall_id,
-                inventory_name=inventory_name,
-                cost=cost,
-                quantity=quantity
-            )
-            # Redirect to the inventory page
-            # return HttpResponse(f'<script>alert("Inventory updated successfully"); window.location.href = "/hostelmanagement/inventory/{hall_id}/"</script>')
-            return Response({'message': 'Hostel inventory updated successfully'}, status=status.HTTP_201_CREATED)
+        # Update hostel inventory object
+        hostel_inventory.hall_id = hall_id
+        hostel_inventory.inventory_name = inventory_name
+        hostel_inventory.cost = cost
+        hostel_inventory.quantity = quantity
+        hostel_inventory.save()
 
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
+        # Return success response
+        return Response({'message': 'Hostel inventory updated successfully'}, status=status.HTTP_200_OK)
 
 
 class HostelInventoryView(APIView):
     """
     API endpoint for CRUD operations on hostel inventory.
     """
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+    # permission_classes = [IsAuthenticated]
+
+    # authentication_classes = []  # Allow public access for testing
+    # permission_classes = []  # Allow any user to access the view
+
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get(self, request, hall_id):
+        user_id = request.user
+        staff_id = user_id.extrainfo.id
+
+        if not HallCaretaker.objects.filter(staff_id=staff_id).exists():
+            return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+
         # Retrieve hostel inventory objects for the given hall ID
         inventories = HostelInventory.objects.filter(hall_id=hall_id)
 
@@ -652,12 +688,17 @@ class HostelInventoryView(APIView):
             })
 
         # Return inventory data as JSON response
-        # return Response(inventory_data)
         return render(request, 'hostelmanagement/inventory_list.html', {'halls': halls,'inventories': inventory_data})
     
 
 
     def post(self, request):
+        user_id = request.user
+        staff_id = user_id.extrainfo.id
+
+        if not HallCaretaker.objects.filter(staff_id=staff_id).exists():
+            return Response({'error': 'You are not authorized to create a new hostel inventory'}, status=status.HTTP_401_UNAUTHORIZED)
+
         # Extract data from request
         hall_id = request.data.get('hall_id')
         inventory_name = request.data.get('inventory_name')
@@ -683,13 +724,32 @@ class HostelInventoryView(APIView):
 
         
 
+    # def delete(self, request, inventory_id):
+    #     user_id = request.user
+    #     staff_id = user_id.extrainfo.id
+
+    #     print(staff_id)
+
+    #     if not HallCaretaker.objects.filter(staff_id=staff_id).exists():
+    #         return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+        
+    #     # Retrieve hostel inventory object
+    #     hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+
+    #     # Delete the hostel inventory object
+    #     hostel_inventory.delete()
+
+    #     # Return success response
+    #     return Response({'message': 'Hostel inventory deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
     def delete(self, request, inventory_id):
-        # Retrieve hostel inventory object
-        hostel_inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+        user_id = request.user
+        staff_id = user_id.extrainfo.id
 
-        # Delete the hostel inventory object
-        hostel_inventory.delete()
+        if not HallCaretaker.objects.filter(staff_id=staff_id).exists():
+            return Response({'error': 'You are not authorized to delete this hostel inventory'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Return success response
+        inventory = get_object_or_404(HostelInventory, pk=inventory_id)
+        inventory.delete()
         return Response({'message': 'Hostel inventory deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-    
