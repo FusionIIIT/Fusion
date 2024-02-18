@@ -83,10 +83,8 @@
                     </th>
                 </tr>
                 </thead>
-
-                <tbody>
                 {% for i in Club_member %}
-                    {% if request.user.username in i.club.co_ordinator|stringformat:"s" and i.status == "open" %}
+                    {% if i.status == "open" %}
                     <tr >
                         <td class="collapsing">
                             <div class="ui fitted checkbox">
@@ -123,8 +121,6 @@
 
             <br>
 
-            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
-            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
             <div class="field">
                 <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
                     Approve Selected
