@@ -43,15 +43,15 @@ class Vacation_foodSerializer(serializers.ModelSerializer):
         model = Vacation_food
         fields=('__all__')
 
-class Nonveg_menuSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Nonveg_menu
-        fields=('__all__')
+# class Nonveg_menuSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Nonveg_menu
+#         fields=('__all__')
 
-class Nonveg_dataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Nonveg_data
-        fields=('__all__')
+# class Nonveg_dataSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model=Nonveg_data
+#         fields=('__all__')
 
 class Special_requestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -77,4 +77,3 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model=Feedback
         fields=('__all__')
-

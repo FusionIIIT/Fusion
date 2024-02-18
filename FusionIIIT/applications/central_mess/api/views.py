@@ -109,7 +109,7 @@ class Monthly_billApi(APIView):
         amount = data['amount']
         rebate_count = data['rebate_count']
         rebate_amount = data['rebate_amount']
-        nonveg_total_bill = data['nonveg_total_bill']
+        #nonveg_total_bill = data['nonveg_total_bill']
         paid = data['paid']
 
         username = get_object_or_404(User,username=request.user.username)
@@ -124,7 +124,7 @@ class Monthly_billApi(APIView):
             amount = amount,
             rebate_count = rebate_count,
             rebate_amount = rebate_amount,
-            nonveg_total_bill = nonveg_total_bill,
+            # nonveg_total_bill = nonveg_total_bill,
             paid = paid
         )
         obj.save()
@@ -139,8 +139,8 @@ class PaymentsApi(APIView):
     def post(self, request):
         data = request.data
         
-        sem = data['sem']
-        year = data['year']
+        # sem = data['sem']
+        # year = data['year']
         amount_paid = data['amount_paid']
 
 
@@ -151,8 +151,8 @@ class PaymentsApi(APIView):
         
         obj = Payments(
             student_id = student,
-            sem = sem,
-            year = year,
+            # sem = sem,
+            # year = year,
             amount_paid = amount_paid,
         )
         obj.save()
@@ -364,12 +364,12 @@ class Mess_minutesApi(APIView):
     def post(self, request):
         data = request.data
 
-        meeting_date  = data['meeting_date']
+        # meeting_date  = data['meeting_date']
         mess_minutes  = data['mess_minutes']
         meeting_date_obj = Mess_meeting.objects.get(meet_date=meeting_date)
 
         obj = Mess_minutes(
-            meeting_date = meeting_date_obj,
+            # meeting_date = meeting_date_obj,
             mess_minutes = mess_minutes,
         )
         obj.save()
