@@ -72,6 +72,17 @@ urlpatterns = [
   
     # !! My Change
     path('allotted_rooms/<str:hall_id>/', views.alloted_rooms, name="alloted_rooms"),
+
+    path('all_staff/<int:hall_id>/', views.all_staff, name='all_staff'),
+    path('staff/<str:staff_id>/', views.StaffScheduleView.as_view(), name='staff_schedule'),
+    
+    # path('inventory/hallList/', views.inventory_handle_table, name='hall_list'),
+    path('inventory/', views.HostelInventoryView.as_view(), name='hostel_inventory_list'),
+    path('inventory/<int:inventory_id>/modify/', views.HostelInventoryUpdateView.as_view(), name='hostel_inventory_update'),
+    path('inventory/<int:inventory_id>/delete/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
+    path('inventory/<int:hall_id>/', views.HostelInventoryView.as_view(), name='hostel_inventory_by_hall'),
+    path('inventory/form/', views.get_inventory_form, name='get_inventory_form'),
+    path('inventory/edit_inventory/<int:inventory_id>/', views.edit_inventory, name='edit_inventory'),
     path('allotted_rooms/', views.alloted_rooms_main, name="alloted_rooms"),
     path('all_staff/', views.all_staff, name='all_staff')
 
