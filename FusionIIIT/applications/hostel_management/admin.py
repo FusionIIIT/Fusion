@@ -14,6 +14,8 @@ admin.site.register(HallRoom)
 admin.site.register(WorkerReport)
 admin.site.register(HostelLeave)
 admin.site.register(HostelComplaint)
+admin.site.register(StudentDetails)
+
 
 
 # admin.site.register(HostelAllotment)
