@@ -1,6 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
+from django.shortcuts import render, redirect
+
 from .models import HostelLeave
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.utils.decorators import method_decorator
@@ -513,22 +518,32 @@ def hostel_notice_board(request):
 
 
 
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from .models import HostelLeave, HallCaretaker
 
+@login_required
 def all_leave_data(request):
-    all_leave = HostelLeave.objects.all()
-    return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+    user_id = request.user.id  # Using request.user to get the user ID
+    try:
+        staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
+    except AttributeError:
+        staff = None
+
+    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+        all_leave = HostelLeave.objects.all()
+        return render(request, 'hostelmanagement/all_leave_data.html', {'all_leave': all_leave})
+    else:
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
 
-class create_hostel_leave(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
 
-    def get(self, request):
+@login_required
+def create_hostel_leave(request):
+    if request.method == 'GET':
         return render(request, 'hostelmanagement/create_leave.html')
-    
-    def post(self, request):
-    
-        data = request.data
+    elif request.method == 'POST':
+        data = request.POST  # Assuming you are sending form data via POST request
         student_name = data.get('student_name')
         roll_num = data.get('roll_num')
         reason = data.get('reason')
@@ -546,20 +561,37 @@ class create_hostel_leave(APIView):
 
         return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
 
-def create_leave(request):
-    return render(request, 'hostelmanagement/create_leave.html')
 
-# hostel complaints
+# hostel_complaints_list caretaker can see all hostel complaints
 
-
+@login_required
 def hostel_complaint_list(request):
-    complaints = HostelComplaint.objects.all()
-    return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+    user_id = request.user.id 
+    try:
+        staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
+    except AttributeError:
+        staff = None
 
+    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+        complaints = HostelComplaint.objects.all()
+        return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
+    else:
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+
+ 
+
+
+
+# Student can post complaints
 
 class PostComplaint(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+    authentication_classes = [SessionAuthentication]  # Assuming you are using session authentication
+    permission_classes = [IsAuthenticated]  # Allow only authenticated users to access the view
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/hostelmanagement')  # Redirect to the login page if user is not authenticated
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         return render(request, 'hostelmanagement/post_complaint_form.html')
@@ -570,6 +602,9 @@ class PostComplaint(APIView):
         roll_number = request.data.get('roll_number')
         description = request.data.get('description')
         contact_number = request.data.get('contact_number')
+
+        # Assuming the student's name is stored in the user object
+        student_name = request.user.username  
 
         complaint = HostelComplaint.objects.create(
             hall_name=hall_name,
@@ -583,31 +618,31 @@ class PostComplaint(APIView):
         return HttpResponse('<script>alert("Complaint submitted successfully"); window.location.href = "/hostelmanagement";</script>')
 
 
-# userComplaint user can see complaints registered by him
 
+# // student can see his leave status
 
+class my_leaves(View):
+    @method_decorator(login_required, name='dispatch')
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get the user ID from the request's user
+            user_id = str(request.user)
 
-class UserComplaints(APIView):
-    authentication_classes = []  # Allow public access for testing
-    permission_classes = []  # Allow any user to access the view
+            # Retrieve leaves registered by the current student based on their roll number
+            my_leaves = HostelLeave.objects.filter(roll_num__iexact=user_id)
 
-    def get(self, request, roll_number):
-        # Filter complaints by the roll number, case-insensitive
-        user_complaints = HostelComplaint.objects.filter(Q(roll_number__iexact=roll_number))
+            # Construct the context to pass to the template
+            context = {
+                'leaves': my_leaves
+            }
+
+            # Render the template with the context data
+            return render(request, 'hostelmanagement/my_leaves.html', context)
+
+        except User.DoesNotExist:
+            # Handle the case where the user with the given ID doesn't exist
+            return HttpResponse(f"User with ID {user_id} does not exist.")
         
-        # Render a template displaying the user's complaints
-        return render(request, 'hostelmanagement/user_complaints.html', {'complaints': user_complaints})
-
-
-# /// login  required
-
-
-
-# @login_required
-# def hostel_complaint_list(request):
-#     complaints = HostelComplaint.objects.all()
-#     return render(request, 'hostelmanagement/hostel_complaint.html', {'complaints': complaints})
-
 
 # @login_required
 # def hostel_complaint_list(request):
@@ -1296,3 +1331,18 @@ def update_allotment(request, pk):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+# //Caretaker can approve or reject leave applied by the student
+@csrf_exempt
+def update_leave_status(request):
+    if request.method == 'POST':
+        leave_id = request.POST.get('leave_id')
+        status = request.POST.get('status')
+        try:
+            leave = HostelLeave.objects.get(id=leave_id)
+            leave.status = status
+            leave.save()
+            return JsonResponse({'status': status, 'message': 'Leave status updated successfully.'})
+        except HostelLeave.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Leave not found.'}, status=404)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'}, status=405)
