@@ -1,40 +1,199 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Complaint Form</title>
-</head>
-<body>
-    <h1>Post Complaint</h1>
-    <form id="complaintForm" method="post">
-        {% csrf_token %}
-        <label for="hall_name">Hall Name:</label><br>
-        <input type="text" id="hall_name" name="hall_name" required><br><br>
+{% extends 'globals/base.html' %}
+{% load static %}
 
-        <label for="student_name">Student Name:</label><br>
-        <input type="text" id="student_name" name="student_name" required><br><br>
+{% block title %}
+Complaint Register Form
+{% endblock %}
 
-        <label for="roll_number">Roll Number:</label><br>
-        <input type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" required><br><br>
 
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" required></textarea><br><br>
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
 
-        <label for="contact_number">Contact Number:</label><br>
-        <input type="text" id="contact_number" name="contact_number" required><br><br>
 
-        <input type="submit" value="Submit">
-        <button type="button" id="viewComplaints" onclick="navigateTomy_comp()">View My Complaints</button>
-    </form>
+<div class="ui stackable doubling grid">
 
-    <script>
-        function navigateTomy_comp() {
-            var roll_number = document.getElementById("roll_number").value;
-            window.location.href = "/hostelmanagement/user_complaints/" + roll_number + "/";
+    <div class="column"></div>
+
+    <div class="three wide column">
+
+        <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="row">
+            <div class="ui large fluid vertical pointing menu">
+                <a class="active item" data-tab="first">
+                    Students' Alloted Room
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% if user in hall_caretaker or hall_warden%}
+                <a class="item" data-tab="second">
+                    Staff's Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+
+                <a class="item" data-tab="third">
+                    Notice Board
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Student Attendance
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="eight wide column">
+        <div class="ui active tab segment " data-tab="first">
+            <div class="box-table">
+                <h2 class="heading-complaint-form">Complaint Register Form</h2>
+                <form id="complaintForm" method="post">
+                    {% csrf_token %}
+                    <label for="hall_name">Hall Name:</label>
+                    <input type="text" id="hall_name" name="hall_name" required><br>
+                
+                    <label for="student_name">Student Name:</label>
+                    <input type="text" id="student_name" name="student_name" required><br>
+                
+                    <label for="roll_number">Roll Number:</label>
+                    <input type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" required><br>
+                
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" required></textarea><br>
+                
+                    <label for="contact_number">Contact Number:</label>
+                    <input type="text" id="contact_number" name="contact_number" required><br>
+                    <div class="complaint-btns">
+                        <!-- <button type="button" id="viewComplaints" onclick="navigateTomy_comp()">View My Complaints</button> -->
+                        <input type="submit" value="Submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+{% block javascript %}
+<style>
+    .complaint-btns{
+        display: flex;
+        justify-content: space-evenly;
+    }
+    .heading-complaint-form {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    th {
+        padding: 5px;
+        text-align: center;
+        background-color: #f2f2f2;
+    }
+
+    td {
+        padding: 5px;
+        text-align: center;
+    }
+    
+    .ui.doubling.stackable.grid {
+        margin-top: 20px;
+    }
+
+    .three.wide.column {
+        background-color: #f8f8f8;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .ui.large.vertical.menu {
+        width: 100%;
+    }
+
+    .ui.active.tab.segment {
+        display: block;
+    }
+
+    .box-table {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .heading-complaint-form {
+        text-align: center;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    input[type="submit"],
+    button[type="button"] {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    input[type="submit"]:hover,
+    button[type="button"]:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive styling for smaller screens */
+    @media screen and (max-width: 768px) {
+        .eight.wide.column {
+            margin-top: 20px;
         }
-    </script>
-</body>
-</html>
 
-</html>
+        .three.wide.column {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+<script>
+    function navigateTomy_comp() {
+        var roll_number = document.getElementById("roll_number").value;
+        window.location.href = "/hostelmanagement/user_complaints/" + roll_number + "/";
+    }
+</script>
+{% endblock %}

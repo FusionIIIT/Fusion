@@ -48,6 +48,7 @@ class Hall(models.Model):
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
+    assigned_batch = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.hall_id 
@@ -147,7 +148,7 @@ class StaffSchedule(models.Model):
     'end_time' stores the end time of a schedule.
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
     staff_type = models.CharField(max_length=100, default='Caretaker')
     day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
     start_time = models.TimeField(null=True,blank=True)
@@ -238,16 +239,21 @@ class WorkerReport(models.Model):
     def str(self):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
 
-# class HostelAllotment(models.Model):
-#     # hall_id = models.ForeignKey(Hall,max_length=10, primary_key=True)
-#     hall_id = models.ForeignKey(Hall, on_delete=models.CASCADE, primary_key=True)
-#     hostel_name = models.ForeignKey(Hall, on_delete=models.CASCADE)
-#     assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-#     assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
-#     def str(self):
-#         return f"{self.hall_id} - {self.hostel_name.hall_name}"     
 
+class HostelInventory(models.Model):
+    """
+    Model to store hostel inventory information.
+    """
+
+    inventory_id = models.AutoField(primary_key=True)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    inventory_name = models.CharField(max_length=100)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.inventory_name
 
 class HostelAllotment(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
@@ -282,8 +288,14 @@ class HostelComplaint(models.Model):
 
     def __str__(self):
         return f"Complaint from {self.student_name} in {self.hall_name}"
+      
     
-   
+class HostelAllotment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.CASCADE ,null=True)
+    assignedWarden = models.ForeignKey(Faculty, on_delete=models.CASCADE ,null=True)
+    assignedBatch=models.CharField(max_length=50)
 
 
-
+    def __str__(self):
+        return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)

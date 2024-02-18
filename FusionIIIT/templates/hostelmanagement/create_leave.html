@@ -1,46 +1,174 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Hostel Leave</title>
-</head>
-<body>
-    <h1>Create Hostel Leave</h1>
-    <form id="createLeaveForm" method="POST" action="{% url 'hostelmanagement:create_hostel_leave' %}">
-        {% csrf_token %}
-        <label for="student_name">Student Name:</label>
-        <input type="text" id="student_name" name="student_name" required><br><br>
-        
-        <label for="roll_num">Roll Number:</label>
-        <input type="text" id="roll_num" name="roll_num" required><br><br>
-        
-        <label for="reason">Reason:</label><br>
-        <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br><br>
-        
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" required><br><br>
-        
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" required><br><br>
-        
-        <button type="submit" id="submitBtn">Submit</button>
-    </form>
+{% extends 'globals/base.html' %}
+{% load static %}
 
-    <script>
-        document.getElementById("createLeaveForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent default form submission
-            var form = this;
-            var formData = new FormData(form);
+{% block title %}
+Leave Form
+{% endblock %}
 
-            // Send AJAX POST request
-            fetch(form.action, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
-                }
-            })
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+
+<div class="ui stackable doubling grid">
+
+    <div class="column"></div>
+
+    <div class="three wide column">
+
+        <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="row">
+            <div class="ui large fluid vertical pointing menu">
+                <a class="active item" data-tab="first">
+                    Students' Alloted Room
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% if user in hall_caretaker or hall_warden%}
+                <a class="item" data-tab="second">
+                    Staff's Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+
+                <a class="item" data-tab="third">
+                    Notice Board
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Student Attendance
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="eight wide column">
+        <div class="ui active tab segment " data-tab="first">
+            <div class="box-table">
+                <h2 class="heading-leave-form">Leave Form</h2>
+                <form id="createLeaveForm" method="POST" action="{% url 'hostelmanagement:create_hostel_leave' %}">
+                    {% csrf_token %}
+                    <label for="student_name">Student Name:</label>
+                    <input type="text" id="student_name" name="student_name" required><br><br>
+                
+                    <label for="roll_num">Roll Number:</label>
+                    <input type="text" id="roll_num" name="roll_num" required><br><br>
+                
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br><br>
+                
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" required><br><br>
+                
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" required><br><br>
+                    <div class="leave-form-btn">
+                    <button type="submit" id="submitBtn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+{% block javascript %}
+<style>
+    .leave-form-btn{
+        display: flex;
+        justify-content: center;
+    }
+    th {
+        padding: 5px;
+        text-align: center;
+        background-color: #f2f2f2;
+    }
+
+    td {
+        padding: 5px;
+        text-align: center;
+    }
+    .ui.doubling.stackable.grid {
+        margin-top: 10px;
+    }
+
+    .box-table {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .heading-leave-form {
+        text-align: center;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    button[type="submit"] {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+</style>
+<script>
+    document.getElementById("createLeaveForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent default form submission
+        var form = this;
+        var formData = new FormData(form);
+
+        // Send AJAX POST request
+        fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -60,6 +188,6 @@
                 alert('An error occurred while submitting the form.');
             });
         });
-    </script>
-</body>
-</html>
+    
+</script>
+{% endblock %}
