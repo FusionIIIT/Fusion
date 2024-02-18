@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from applications.filetracking.models import File, Tracking
+from applications.filetracking.sdk.methods import *
 from applications.ps1.models import IndentFile,StockEntry
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
@@ -14,6 +14,15 @@ from notification.views import office_module_notif
 
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
+    # print("-------------------------------------------------")
+    # print(request.user)
+    # print("-------------------------------------------------")
+    # print("-------------------------------------------------")
+    # print(request.GET)
+    # print("-------------------------------------------------")
+    # print("-------------------------------------------------")
+    # print(request.body)
+    # print("-------------------------------------------------")
     """
         The function is used to create indents by faculty.
         It adds the indent datails to the indet_table of Purchase and Store module
@@ -47,11 +56,20 @@ def ps1(request):
                 purchased =request.POST.get('purchased')
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    print("-------------------------------------------------")
+    print("designation ")
+    print(des.designation)
+    print("-------------------------------------------------")
     if  str(des.designation) == "student":
           return redirect('/dashboard')
+    
+    if  str(des.designation) == "dept_admin":
+          return redirect('/purchase-and-store/entry/')
+    
     if request.user.extrainfo.id == '132':
           return redirect("/purchase-and-store/entry/")
-    if request.method =="POST":
+    
+    if request.method =="POST" and str(des.designation) == "Assistant Professor":
         try:
             if 'save' in request.POST:
                 uploader = request.user.extrainfo
@@ -136,35 +154,7 @@ def ps1(request):
                 financial_approval=False
                 purchased = False
 
-                file = File.objects.create(
-                    uploader=uploader,
-                    description=description,
-                    subject=subject,
-                    designation=designation,
-                    upload_file=upload_file
-                )
 
-
-                IndentFile.objects.create(
-                    file_info=file,
-                    item_name= item_name,
-                    quantity=quantity,      
-                    present_stock=present_stock,             
-                    estimated_cost=estimated_cost,
-                    purpose=purpose,
-                    specification=specification,
-                    indent_type=indent_type,
-                    nature=nature,
-                    indigenous=indigenous, 
-                    replaced = replaced ,
-                    budgetary_head=budgetary_head,
-                    expected_delivery=expected_delivery,
-                    sources_of_supply=sources_of_supply,
-                    head_approval=head_approval,
-                    director_approval=director_approval,
-                    financial_approval=financial_approval,
-                    purchased =purchased,
-                )
 
 
                 current_id = request.user.extrainfo
@@ -186,17 +176,54 @@ def ps1(request):
                     messages.error(request, 'Enter a valid Designation')
                     return redirect('/ps1/')
 
-                upload_file = request.FILES.get('myfile')
 
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
+                file_id = create_file(
+                    uploader=request.user,
+                    uploader_designation=designation,
+                    receiver= receiver_id,
+                    receiver_designation=receive_design,
+                    src_module="ps1",
+                    src_object_id="",
+                    file_extra_JSON={"value": 2},
+                    attached_file=request.FILES.get('myfile')
+                    # description=description,
+                    # subject=subject,
+                    # designation=designation,
+                    # upload_file=upload_file
                 )
+
+                IndentFile.objects.create(
+                    file_info=get_object_or_404(File, pk=file_id),
+                    item_name= item_name,
+                    quantity=quantity,      
+                    present_stock=present_stock,             
+                    estimated_cost=estimated_cost,
+                    purpose=purpose,
+                    specification=specification,
+                    indent_type=indent_type,
+                    nature=nature,
+                    indigenous=indigenous, 
+                    replaced = replaced ,
+                    budgetary_head=budgetary_head,
+                    expected_delivery=expected_delivery,
+                    sources_of_supply=sources_of_supply,
+                    head_approval=head_approval,
+                    director_approval=director_approval,
+                    financial_approval=financial_approval,
+                    purchased =purchased,
+                )
+
+
+
+                # Tracking.objects.create(
+                #     file_id=file,
+                #     current_id=current_id,
+                #     current_design=current_design,
+                #     receive_design=receive_design,
+                #     receiver_id=receiver_id,
+                #     remarks=remarks,
+                #     upload_file=upload_file,
+                # )
                 office_module_notif(request.user, receiver_id)
                 messages.success(request,'Indent Filed Successfully!')
 
@@ -295,6 +322,16 @@ def drafts(request):
 
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
+    # des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    # print(des)
+    # # designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
+    # outbox_files = view_outbox(
+    # username=request.user,
+    # designation=des.designation,
+    # src_module="ps1"
+    # )
+
+    # print(outbox_files)
 
 
     tracking_objects=Tracking.objects.all()
@@ -438,9 +475,13 @@ def forwardindent(request, id):
                 current_id = request.user.extrainfo
                 remarks = request.POST.get('remarks')
 
-                sender = request.POST.get('sender')
-                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
+                # sender = request.POST.get('sender')
+                # sender = request.user.id
+                print("-----------------------------------------------")
+                print(request.user.id)
+                print("-----------------------------------------------")
+                # current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
+                current_design = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
                 receiver = request.POST.get('receiver')
                 try:
                     receiver_id = User.objects.get(username=receiver)
@@ -475,6 +516,16 @@ def forwardindent(request, id):
                 # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
+                # print("--------------------------------------------")
+                # print(file)
+                forwarded_file_id = forward_file(
+                    file_id=file.id,
+                    receiver=receiver_id,
+                    receiver_designation=receive_design,
+                    file_extra_JSON={"key": 2},
+                    remarks="Forwarding",
+                    file_attachment=None
+                )
                 Tracking.objects.create(
                     file_id=file,
                     current_id=current_id,
@@ -815,8 +866,21 @@ def stock_update(request):
 #     return render(request,'ps1/stock_view.html',{'StockEntry':sto})
 # @login_required(login_url = "/accounts/login")
 def stock_view(request):
-    
-    sto=StockEntry.objects.all()
+
+    # stock_entries = StockEntry.objects.filter(
+    #     item_id__file_info__designation__name='Professor'
+    # )
+    # print(stock_entries)
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    department = request.user.extrainfo.department.name
+
+    if  str(des.designation) == "dept_admin":
+        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+    else:
+        sto=StockEntry.objects.all()
+    # print(request.user)
+          
     if sto:
         temp=sto.first()
         
@@ -850,8 +914,15 @@ def entry(request):
         
         
 
-    
-    ent=IndentFile.objects.all()
+    # ent=IndentFile.objects.all()
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    department = request.user.extrainfo.department.name
+
+    if  str(des.designation) == "dept_admin":
+        ent=IndentFile.objects.filter(file_info__uploader__department__name=department)
+        # sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+    else:
+        ent=IndentFile.objects.all()
     return render(request,'ps1/entry.html',{'ent':ent})
     
 def dealing_assistant(request):
@@ -861,3 +932,22 @@ def dealing_assistant(request):
         return redirect('/ps1/entry/')   
     else:
         return redirect('/ps1')       
+
+
+@login_required(login_url = "/accounts/login")
+def generate_report(request):
+
+    # stock_entries = StockEntry.objects.filter(
+    #     item_id__file_info__designation__name='Professor'
+    # )
+    # print(stock_entries)
+
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    department = request.user.extrainfo.department.name
+
+    if  str(des.designation) == "dept_admin":
+        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+    else:
+        sto=StockEntry.objects.all()
+        
+    return render(request,'ps1/generate_report.html',{'sto':sto})
