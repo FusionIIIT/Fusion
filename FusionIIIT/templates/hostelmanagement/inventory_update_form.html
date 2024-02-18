@@ -20,12 +20,12 @@
       /><br /><br /> -->
       <h1></h1>
     <select id="hall_id" name="hall_id">
-  {% for hall in halls %}
-    <option value="{{ hall.id }}" {% if hall.id == inventory.hall_id %} selected {% endif %}>
-      {{ hall.hall_id }}
-    </option>
-  {% endfor %}
-</select><br /><br />
+      {% for hall in halls %}
+        <option value="{{ hall.id }}" {% if hall.id == inventory.hall_id %} selected {% endif %}>
+          {{ hall.hall_id }}
+        </option>
+      {% endfor %}
+    </select><br /><br />
 
 
     <label for="inventory_name">Inventory Name:</label>
