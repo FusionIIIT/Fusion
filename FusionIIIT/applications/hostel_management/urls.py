@@ -54,7 +54,7 @@ urlpatterns = [
 
     # //////////////////////
 
-    # path('hostel_complaint_list/', views.hostel_complaint_list, name='hostel_complaint_list'),
+    path('hostel_complaint_list/', views.hostel_complaint_list, name='hostel_complaint_list'),
 
 
 
