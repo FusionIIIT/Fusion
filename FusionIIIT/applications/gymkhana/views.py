@@ -989,7 +989,7 @@ def act_calender(request):
 
 @login_required
 def club_report(request):
-	"""
+    """
      This function is used to add the details of the club event along with a report.
 	 It adds the club event details to the database.
 	 And also uploads report file.
@@ -1007,31 +1007,32 @@ def club_report(request):
 			report - the club_report file on the event uploads by the user who adds data
             
 	"""
-	if request.method == 'POST' and request.FILES['report']:
-		# getting form data
-		club = request.POST.get('club')
-		user = request.POST.get("s_inc")
-		event = request.POST.get("event")
-		d_d = request.POST.get("d_d")
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		report = request.FILES["report"]
-		report.name = club+"_"+event+"_report"
+    if request.method == 'POST' and request.FILES['report']:
+        # getting form data
+        club = request.POST.get('club')
+        user = request.POST.get("s_inc")
+        event = request.POST.get("event")
+        d_d = request.POST.get("d_d")
+        date = request.POST.get("date")
+        time = request.POST.get("time")
+        report = request.FILES["report"]
+        report.name = club+"_"+event+"_report"
 
-		# getting queryset class objects
-		USER = user.split(' - ')
-		user_name = get_object_or_404(User, username=USER[1])
-		extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
+        # getting queryset class objects
+        USER = user.split(' - ')
+        user_name = get_object_or_404(User, username=USER[1])
+        extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
 
-		club_name = get_object_or_404(Club_info, club_name=club)
+        club_name = get_object_or_404(Club_info, club_name=club)
 
-		# saving data to the database
-		club_report = Club_report(club=club_name, incharge=extra, event_name=event,
+        # saving data to the database
+        club_report = Club_report(club=club_name, incharge=extra, event_name=event,
 								  date=date+" "+time, event_details=report, description=d_d)
-		club_report.save()
-		messages.success(request, "Successfully updated the report !!!")
+        club_report.save()
+        messages.success(request, "Successfully updated the report !!!")
 
-	return redirect('/gymkhana/')
+    return redirect('/gymkhana/')
+
 
 @login_required
 def change_head(request):
@@ -1105,7 +1106,6 @@ def change_head(request):
 
     # Handle non-POST requests or redirect if needed
     # return redirect('/gymkhana/')
-
 
 @login_required
 def new_session(request):
@@ -1310,23 +1310,27 @@ def approve(request):
 
 @login_required
 def club_approve(request):
-	"""
+    """
     This view is used by the administration to approve the clubs.
-	It gets a list of clubs and then approves if they want to.
+    It gets a list of clubs and then approves if they want to.
 
-	@variables:
-	          club_approve_list - list of clubs which has to be approved
-			  club_name - gets the object and then confirms the club
+    @variables:
+              club_approve_list - list of clubs which has to be approved
+              club_name - gets the object and then confirms the club
 
-	"""
-	club_approve_list = list(request.POST.getlist('check'))
-	for club in club_approve_list:
-		club_name = get_object_or_404(Club_info, club_name=club)
-		club_name.status = "confirmed"
-		club_name.save()
-		messages.success(request, "Successfully Approved !!!")
+    """
+    if request.method == "POST":
+        club_approve_list = request.POST.getlist("check")
+        for club in club_approve_list:
+            club_name = get_object_or_404(Club_info, club_name=club)
+            club_name.status = "confirmed"
+            club_name.created_on = timezone.now()
+            club_name.save()
+            messages.success(
+                request, f"Successfully approved {club_name.club_name} club."
+            )
 
-	return redirect('/gymkhana/')
+    return redirect("/gymkhana/")
 
 
 @login_required
