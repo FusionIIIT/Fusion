@@ -36,6 +36,10 @@ urlpatterns = [
     path('worker_report/', views.generate_worker_report, name='workerreport'),
     path('pdf/', views.GeneratePDF.as_view(), name="pdf"),
 
+
+
+    #for superUser
+
     path('hostel-notices/', views.hostel_notice_board, name='hostel_notices_board'),
     # //caretaker and warden can see all leaves
     path('all_leave_data/', views.all_leave_data, name='all_leave_data'),
@@ -53,9 +57,15 @@ urlpatterns = [
     # path('hostel_complaint_list/', views.hostel_complaint_list, name='hostel_complaint_list'),
 
 
+
     path('assign-batch/', views.AssignBatchView.as_view(),name='AssignBatchView'),
     path('hall-ids/', views.HallIdView.as_view(), name='hall'),
     path('assign-caretaker', views.AssignCaretakerView.as_view(), name='AssignCaretakerView'),
+    path('assign-warden',views.AssignWardenView.as_view(), name='AssignWardenView'),
+    path('add-hostel', views.AddHostelView.as_view(), name='add_hostel'),
+    path('admin-hostel-list', views.AdminHostelListView.as_view(), name='admin_hostel_list'),  # URL for displaying the list of hostels
+    path('delete-hostel/<str:hall_id>/', views.DeleteHostelView.as_view(), name='delete_hostel'),
+
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', views.logout_view, name='logout_view'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),

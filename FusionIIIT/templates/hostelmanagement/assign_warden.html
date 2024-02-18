@@ -10,8 +10,8 @@
     <div>    
     <nav class="navbar navbar-inverse">
         
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
         {% if user.is_authenticated %}
         <div class="container-fluid">
@@ -69,7 +69,6 @@
                         Hostels
                         <i class="right floated chevron right icon"></i>
                     </a>
-
                     <!-- {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
                         Book Guest Room 
                         <i class="right floated chevron right icon"></i>
@@ -81,7 +80,16 @@
         </div>
         <div class="column"></div>
         <div class="form-fill">
-            
+            <!-- <form id="assignBatchForm">
+                {% csrf_token %}
+                <label for="hall_id">Hall ID:</label>
+                <input type="text" id="hall_id" name="hall_id" required>
+                <br>
+                <label for="batch">Batch:</label>
+                <input type="text" id="batch" name="batch" required>
+                <br>
+                <button type="button" onclick="assignBatch()">Assign Batch</button>
+            </form> -->
             <form>
                 {% csrf_token %}
                 <div class="mb-3">
@@ -95,19 +103,19 @@
                 </select>
                 </div>
                 <div class="mb-5">
-                  <label for="caretaker_username" class="form-label">caretaker_username :</label>
+                  <label for="warden_id" class="form-label">warden_id :</label>
                   
                   <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
-                  <select name="caretaker_username" class="form-control" id="caretaker_username" required>
+                  <select name="warden_id" class="form-control" id="warden_id" required>
                    
-                    {% for c in caretaker_usernames %}
-                        <option value="{{ c.id.user.username }}">{{ c.id.user.username }}</option>
+                    {% for warden in warden_ids %}
+                        <option value="{{warden.id.user.username }}">{{ warden.id.user.username}}</option>
                     {% endfor %}
                 </select>
                 
                 </div>
                 
-                <button type="submit" onclick="assignCaretaker()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+                <button type="submit" onclick="assignWarden()" class="btn btn-primary mu-3 admin-btn">Assign</button>
               </form>
         </div>
         {% endif %}
@@ -132,14 +140,13 @@
     </style>
 
     <script>
-       
-        function assignCaretaker() {
+        function assignWarden() {
             var hall_id = document.getElementById('hall_id').value;
-            var caretaker_username = document.getElementById('caretaker_username').value;
-            
+            var warden_id = document.getElementById('warden_id').value;
+            console.log(warden_id);
 
             // Perform AJAX request to assign batch
-            fetch('http://0.0.0.0:8000/hostelmanagement/assign-caretaker', {
+            fetch('http://0.0.0.0:8000/hostelmanagement/assign-warden', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -147,7 +154,7 @@
                 },
                 body: JSON.stringify({
                     hall_id: hall_id,
-                    caretaker_username: caretaker_username,
+                    warden_id: warden_id,
                 }),
             })
             .then(response => response.json())
@@ -156,11 +163,10 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error assigning caretaker.');
+                alert('Error assigning warden.');
             });
-            
         }
-        
+
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {

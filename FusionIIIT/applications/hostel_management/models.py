@@ -275,8 +275,8 @@ class HostelComplaint(models.Model):
     
 class HostelAllotment(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.ForeignKey)
-    assignedWarden = models.ForeignKey(Faculty, on_delete=models.ForeignKey)
+    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.CASCADE ,null=True)
+    assignedWarden = models.ForeignKey(Faculty, on_delete=models.CASCADE ,null=True)
     assignedBatch=models.CharField(max_length=50)
 
 
