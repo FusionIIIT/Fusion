@@ -1062,9 +1062,8 @@ def change_head(request):
 		club = request.POST.get("club")
 		co_ordinator = request.POST.get('co')
 		co_coordinator = request.POST.get('coco')
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
+		
+		desc = "co-ordinator and co co-ordinator changed on " + str(timezone.now())
 		message = ""
 
 		# club_name = get_object_or_404(Club_info, club_name=club)
@@ -1079,6 +1078,7 @@ def change_head(request):
 		old_co_coordinator = club_info.co_coordinator
 		club_info.co_ordinator = co_ordinator_student
 		club_info.co_coordinator = co_coordinator_student
+		club_info.head_changed_on = timezone.now()
 		club_info.save()
 
 		message += "Successfully changed !!!"
