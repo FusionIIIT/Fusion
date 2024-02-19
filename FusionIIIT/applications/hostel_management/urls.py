@@ -55,6 +55,8 @@ urlpatterns = [
 
 #  Student can view his leave status
     path('my_leaves/', views.my_leaves.as_view(), name='my_leaves'),
+    path('get_students/', views.get_students, name='get_students'),
+
 
 
 
