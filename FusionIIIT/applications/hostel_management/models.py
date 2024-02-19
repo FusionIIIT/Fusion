@@ -296,6 +296,22 @@ class HostelAllotment(models.Model):
     assignedWarden = models.ForeignKey(Faculty, on_delete=models.CASCADE ,null=True)
     assignedBatch=models.CharField(max_length=50)
 
+class StudentDetails(models.Model):
+    id = models.CharField(primary_key=True, max_length=20)
+    first_name = models.CharField(max_length=100,blank=True,null=True)
+    last_name = models.CharField(max_length=100,blank=True,null=True)
+    programme = models.CharField(max_length=100,blank=True,null=True)
+    batch = models.CharField(max_length=100,blank=True,null=True)
+    room_num= models.CharField(max_length=20,blank=True,null=True)
+    hall_no= models.CharField(max_length=20,blank=True,null=True)
+    specialization = models.CharField(max_length=100,blank=True,null=True)
+    parent_contact = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.first_name + ' ' + self.last_name
+
+
 
     def __str__(self):
         return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)
