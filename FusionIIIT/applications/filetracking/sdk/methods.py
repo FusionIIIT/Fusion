@@ -102,7 +102,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False)
+        file_id__is_read=False).order_by('receive_date');
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -131,7 +131,7 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         current_id=sender_ExtraInfo_object,
         current_design=user_HoldsDesignation_object,
         file_id__src_module=src_module,
-        file_id__is_read=False)
+        file_id__is_read=False).order_by('-receive_date')
     sent_files = [tracking.file_id for tracking in sent_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -141,9 +141,6 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     return sent_files_serialized.data
 
 
-# need: view_archived, archive_file, (can get details of archived files by view_file, etc)
-# view_drafts, create_draft, (delete_draft can be via delete_file),
-# (forward_draft can be via forward_file, but lets implement a send draft that follows our remark convention)
 
 def view_archived(username: str, designation: str, src_module: str) -> dict:
     '''
@@ -348,8 +345,12 @@ def uniqueList(l: list) -> list:
     This function is used to return a list with unique elements
     O(n) time and space
     '''
-    s = set(l)
-    unique_list = (list(s))
+    seen = set()
+    unique_list = []
+    for item in l:
+        if item not in seen:
+            unique_list.append(item)
+            seen.add(item)
     return unique_list
 
 def add_uploader_department_to_files_list(files: list) -> list:
