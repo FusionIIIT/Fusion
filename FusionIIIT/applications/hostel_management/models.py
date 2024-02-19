@@ -82,20 +82,7 @@ class HallWarden(models.Model):
         return str(self.hall) + '  (' + str(self.faculty.id.user.username) + ')'
     
 
-class GuestRoomDetail(models.Model):
-    """
-    Records information related to guest rooms in Hall of Residences.
 
-    'hall' refers to the related Hall of Residence.
-    'room_no' stores the guest room number.
-    'room_status' stores the current status of the guest room from the available choices in 'ROOM_STATUS'.
-    """
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    room_no = models.CharField(max_length=4, unique=True)
-    room_status  = models.CharField(max_length=20, choices=HostelManagementConstants.ROOM_STATUS, default='Available')
-
-    def __str__(self):
-        return self.room_no
 
 
 class GuestRoomBooking(models.Model):
@@ -117,24 +104,25 @@ class GuestRoomBooking(models.Model):
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     intender = models.ForeignKey(User, on_delete=models.CASCADE)
-    guest_name = models.CharField(max_length=100)
-    guest_phone = models.CharField(max_length=15)
-    guest_email = models.CharField(max_length=40, blank=True)
+    guest_name = models.CharField(max_length=255)
+    guest_phone = models.CharField(max_length=255)
+    guest_email = models.CharField(max_length=255, blank=True)
     guest_address = models.TextField(blank=True)
-    rooms_required =  models.IntegerField(default=1,null=True,blank=True)
-    guest_room_id = models.ManyToManyField(GuestRoomDetail)
+    rooms_required =  models.IntegerField(default=1, null=True, blank=True)
+    guest_room_id = models.CharField(max_length=255, blank=True)
     total_guest = models.IntegerField(default=1)
     purpose = models.TextField()
     arrival_date = models.DateField(auto_now_add=False, auto_now=False)
     arrival_time = models.TimeField(auto_now_add=False, auto_now=False)
     departure_date = models.DateField(auto_now_add=False, auto_now=False)
     departure_time = models.TimeField(auto_now_add=False, auto_now=False)
-    status = models.CharField(max_length=15, choices=HostelManagementConstants.BOOKING_STATUS ,default ="Pending")
+    status = models.CharField(max_length=255, choices=HostelManagementConstants.BOOKING_STATUS ,default ="Pending")
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
-    nationality = models.CharField(max_length=20, blank=True)
+    nationality = models.CharField(max_length=255, blank=True)
     
     def __str__(self):
         return '%s ----> %s - %s' % (self.id, self.guest_name, self.status)
+
 
 
 class StaffSchedule(models.Model):

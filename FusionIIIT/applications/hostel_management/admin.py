@@ -5,7 +5,7 @@ from .models import *
 admin.site.register(Hall)
 admin.site.register(HallCaretaker)
 admin.site.register(HallWarden)
-admin.site.register(GuestRoomDetail)
+
 admin.site.register(GuestRoomBooking)
 admin.site.register(StaffSchedule)
 admin.site.register(HostelNoticeBoard)

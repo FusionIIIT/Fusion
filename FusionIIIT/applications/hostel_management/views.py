@@ -69,6 +69,7 @@ from django.http import JsonResponse
 from django.db import IntegrityError
 
 
+
 @login_required
 def hostel_view(request, context={}):
     """
@@ -103,6 +104,15 @@ def hostel_view(request, context={}):
         hall_notices[hall.hall_id] = HostelNoticeBoard.objects.filter(
             hall=hall).select_related('hall', 'posted_by__user')
 
+    pending_guest_room_requests = {}
+    for hall in all_hall:
+        pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(hall=hall, status='Pending').select_related('hall', 'intender')
+    guest_rooms = {}
+    for hall in all_hall:
+        guest_rooms[hall.hall_id] = GuestRoom.objects.filter(hall=hall).select_related('hall')
+    user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user).order_by("-arrival_date")
+
+
     Staff_obj = Staff.objects.all().select_related('id__user')
     hall1 = Hall.objects.get(hall_id='hall1')
     hall3 = Hall.objects.get(hall_id='hall3')
@@ -136,6 +146,11 @@ def hostel_view(request, context={}):
     hall_warden_user = []
     for warden in hall_wardens:
         hall_warden_user.append(warden.faculty.id.user)
+
+    all_students = Student.objects.all().select_related('id__user')
+    all_students_id = []
+    for student in all_students:
+        all_students_id.append(student.id_id)
 
     todays_date = date.today()
     current_year = todays_date.year
@@ -172,6 +187,10 @@ def hostel_view(request, context={}):
         'hall_staffs': hall_staffs,
         'hall_notices': hall_notices,
         'attendance': halls_attendance,
+        'guest_rooms': guest_rooms,
+        'pending_guest_room_requests': pending_guest_room_requests,
+        'user_guest_room_requests': user_guest_room_requests,
+        'all_students_id': all_students_id,
         **context
     }
 
@@ -1120,17 +1139,29 @@ def update_guest_room(request):
         if 'accept_request' in request.POST:
             status = request.POST['status']
             guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['accept_request'])
-            guest_room_request.status = status
-            guest_room_request.guest_room_id = request.POST['guest_room_id']
+            guest_room_instance = GuestRoom.objects.get(hall=guest_room_request.hall, room=request.POST['guest_room_id'])
+
+            # Assign the guest room ID to guest_room_id field
+            guest_room_request.guest_room_id = str(guest_room_instance.id)
+
             room_booked = GuestRoom.objects.get(hall=guest_room_request.hall, room=request.POST['guest_room_id'])
             room_booked.occupied_till = guest_room_request.departure_date
             room_booked.save()
+            # Save the guest room request after updating the fields
+            guest_room_request.status = status
             guest_room_request.save()
             messages.success(request, "Request accepted successfully!")
         elif 'reject_request' in request.POST:
             guest_room_request = GuestRoomBooking.objects.get(pk=request.POST['reject_request'])
-            guest_room_request.delete()
+            guest_room_request.status = 'Rejected'
+            guest_room_request.save()
+            
             messages.success(request, "Request rejected successfully!")
         else:
             messages.error(request, "Invalid request!")
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+
+
+
