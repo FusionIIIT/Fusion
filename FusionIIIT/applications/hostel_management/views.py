@@ -86,6 +86,8 @@ def hostel_view(request, context={}):
         all_hall - stores all the hall of residence
         all_notice - stores all notices of hostels (latest first)
     """
+    # Check if the user is a superuser
+    is_superuser = request.user.is_superuser
 
     all_hall = Hall.objects.all()
     halls_student = {}
@@ -111,6 +113,34 @@ def hostel_view(request, context={}):
     for hall in all_hall:
         guest_rooms[hall.hall_id] = GuestRoom.objects.filter(hall=hall).select_related('hall')
     user_guest_room_requests = GuestRoomBooking.objects.filter(intender=request.user).order_by("-arrival_date")
+
+
+    halls = Hall.objects.all()
+         # Create a list to store additional details
+    hostel_details = []
+
+        # Loop through each hall and fetch assignedCaretaker and assignedWarden
+    for hall in halls:
+        try:
+            caretaker = HallCaretaker.objects.filter(hall=hall).first()
+            warden = HallWarden.objects.filter(hall=hall).first()
+        except HostelAllotment.DoesNotExist:
+                assigned_caretaker = None
+                assigned_warden = None
+
+        hostel_detail = {
+                'hall_id': hall.hall_id,
+                'hall_name': hall.hall_name,
+                'max_accomodation': hall.max_accomodation,
+                'number_students': hall.number_students,
+                'assigned_batch': hall.assigned_batch,
+                'assigned_caretaker': caretaker.staff.id.user.username if caretaker else None,
+                'assigned_warden': warden.faculty.id.user.username if warden else None,
+            }
+
+        hostel_details.append(hostel_detail)
+
+
 
 
     Staff_obj = Staff.objects.all().select_related('id__user')
@@ -169,6 +199,8 @@ def hostel_view(request, context={}):
         halls_attendance[hall.hall_id] = HostelStudentAttendence.objects.filter(
             hall=hall).select_related()
 
+    add_hostel_form = HallForm()
+    warden_ids=Faculty.objects.all().select_related('id__user')
     context = {
 
         'all_hall': all_hall,
@@ -191,6 +223,10 @@ def hostel_view(request, context={}):
         'pending_guest_room_requests': pending_guest_room_requests,
         'user_guest_room_requests': user_guest_room_requests,
         'all_students_id': all_students_id,
+        'is_superuser': is_superuser,
+        'warden_ids':warden_ids,
+        'add_hostel_form':add_hostel_form,
+        'hostel_details':hostel_details,
         **context
     }
 
@@ -655,6 +691,7 @@ class AssignCaretakerView(APIView):
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get('hall_id')
+       
         caretaker_username = request.data.get('caretaker_username')
 
         try:
@@ -756,6 +793,7 @@ class AssignCaretakerView(APIView):
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get('hall_id')
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~',hall_id)
         caretaker_username = request.data.get('caretaker_username')
 
         try:
@@ -836,23 +874,19 @@ class AssignBatchView(View):
 class AssignWardenView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
-    template_name = 'hostelmanagement/assign_warden.html' 
-
-
-    def get(self, request, *args, **kwargs):
-        hall = Hall.objects.all()
-        warden_ids=Faculty.objects.all()
-        return render(request, self.template_name , {'halls': hall,'warden_ids':warden_ids})
+    template_name = 'hostelmanagement/assign_warden.html'
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get('hall_id')
         warden_id = request.data.get('warden_id')
-
+        print(hall_id)
+        # print ("this is from view ~~~~~~~~~~~~~~~")
+        print("~~~~~~~~~~~~~~~~`",warden_id)
         try:
             hall = Hall.objects.get(hall_id=hall_id)
-            warden=Faculty.objects.get(id__user__username=warden_id)
-
-            # print('~~~~~~~~~~~~~~~',warden)
+            print("helpopppppppooooooooooooooiiiiiii")
+            warden = Faculty.objects.get(id__user__username=warden_id)
+            
             # Delete any previous assignments of the warden in Hallwarden table
             HallWarden.objects.filter(faculty=warden).delete()
 
@@ -894,18 +928,42 @@ class AddHostelView(View):
         if form.is_valid():
             hall_id = form.cleaned_data['hall_id']
 
+            # # Check if a hall with the given hall_id already exists
+            # if Hall.objects.filter(hall_id=hall_id).exists():
+            #     messages.error(request, f'Hall with ID {hall_id} already exists.')
+            #     return redirect('hostelmanagement:add_hostel')
+            
             # Check if a hall with the given hall_id already exists
             if Hall.objects.filter(hall_id=hall_id).exists():
-                messages.error(request, f'Hall with ID {hall_id} already exists.')
-                return redirect('hostelmanagement:add_hostel')
+                error_message = f'Hall with ID {hall_id} already exists.'
+                
+                return HttpResponse(error_message, status=400)
 
             # If not, create a new hall
             form.save()
             messages.success(request, 'Hall added successfully!')
-            return redirect('hostelmanagement:admin_hostel_list')  # Redirect to the view showing all hostels
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))  # Redirect to the view showing all hostels
 
         # If form is not valid, render the form with errors
         return render(request, self.template_name, {'form': form})
+
+class CheckHallExistsView(View):
+    
+    def get(self, request, *args, **kwargs):
+        
+        hall_id = request.GET.get('hall_id')
+        # hall_id='hall9'
+        print('~~~~~~~~~~~~~~~~~~~~')
+        print(hall_id)
+        try:
+            hall = Hall.objects.get(hall_id=hall_id)
+            exists = True
+        except Hall.DoesNotExist:
+            exists = False
+        messages.MessageFailure(request, f'Hall {hall_id} already exist.')
+        return JsonResponse({'exists': exists})
+
+
 
 
 @method_decorator(user_passes_test(is_superuser), name='dispatch')
@@ -954,8 +1012,9 @@ class DeleteHostelView(View):
 
         # Delete the hall
         hall.delete()
+        messages.success(request, f'Hall {hall_id} deleted successfully.')
 
-        return redirect('hostelmanagement:admin_hostel_list')
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 class HallIdView(APIView):

@@ -1,203 +1,45 @@
-{% extends 'globals/base.html' %}
-{% load static %}
-
-{% block title %}
-Super Admin
-{% endblock %}
-
-{% block body %}
-
-<div>
-    <nav class="navbar navbar-inverse">
-
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
-            integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
-        {% if user.is_authenticated %}
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">FusionIIIT</a>
-            </div>
-            <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="#"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
-                <li><a href="{% url 'hostelmanagement:logout_view' %}"><span class="glyphicon glyphicon-log-in"></span>
-                        Logout </a></li>
-            </ul>
-        </div>
-        {% else %}
-        <li><a href="{% url 'login' %}">Login</a></li>
-        {% endif %}
-    </nav>
-</div>
-
-<div class="ui stackable doubling grid admin-hall">
-    <div class="column"></div>
-    <div class="three wide column">
-
-        <div class="row">
-            {% block userCard %}
-            {% include 'globals/usercard.html' %}
-            {% endblock %}
-        </div>
-
-        <div class="ui divider"></div>
-        {% if user.is_authenticated %}
-        <div class="row">
-            <div class="ui large fluid vertical pointing menu">
-                <a class="item" href="{% url 'hostelmanagement:AssignBatchView' %}" data-tab="first">
-                    Manage Hostel
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" href="{% url 'hostelmanagement:AssignCaretakerView' %}" class="active item"
-                    data-tab="second">
-                    Manage Caretaker
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" href="{% url 'hostelmanagement:AssignWardenView' %}" data-tab="third">
-                    Manage Warden
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" href="{% url 'hostelmanagement:add_hostel' %}" data-tab="fourth">
-                    Add Hostel
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" href="{% url 'hostelmanagement:admin_hostel_list' %}" data-tab="fifth">
-                    Hostels
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <!-- {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
-                    Book Guest Room 
-                    <i class="right floated chevron right icon"></i>
-                </a> {% endcomment %} -->
-            </div>
-
-        </div>
-
-    </div>
-    <div class="column"></div>
-
-
-    <form method="post" enctype="multipart/form-data">
-        <h1>Add Hostel</h1>
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add Hostel</button>
-    </form>
+{% block Add_hostel %}
+<form class="ui form" action="{% url 'hostelmanagement:add_hostel' %}" method="post" enctype="multipart/form-data">
+    <h1>Add Hostel</h1>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
-</div>
-<style>
-    /* body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    } */
-    form {
-            background-color: #fff;
-            padding: 10px; /* Reduced padding */
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            height: 100%;
-            font-size: 12px;
-            margin-top: 15px;
-            margin-left: 20px;
+    {% csrf_token %}
+    {{ add_hostel_form.as_p }}
+    <button type="submit">Add Hostel</button>
+</form>
+
+<script>
+    document.getElementById('id_hall_id').onblur = function() {
+        // Get the current value of the hall_id input
+        var hallId = this.value;
+        console.log('Hall ID:', hallId);
+
+        // Check if the hall_id is not empty
+        if (hallId.trim() !== '') {
+            // Perform the AJAX request to check if the hall_id exists
+            fetch(`http://0.0.0.0:8000/hostelmanagement/check-hall-exists/?hall_id=${hallId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display a message to the user or update the UI accordingly
+                    if (data.exists) {
+                       alert(`Hall with ID ${hallId} already exists. Please choose a different hall ID.`);
+                        // Disable the next input field
+                        document.getElementById('id_next_field').disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
+    };
+</script>
 
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 20px;
-        }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            
-        }
 
-        
 
-        input[type="text"],
-        input[type="number"],
-
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 1px; /* Adjusted margin */
-            
-            font-size: 14px; /* Reduced font size */
-            box-sizing: border-box;
-            border-radius: 4px;
-
-        }
-        
-
-        button {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .messages {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            margin-top: 10px;
-            border-radius: 14px;
-        }
-
-        .messages li {
-            margin-bottom: 5px;
-            padding: 1px;
-            border-radius: 14px;
-            /* border: #28a745; */
-        }
-
-        .success {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .error {
-            background-color: #dc3545;
-            color: #fff;
-            margin-bottom: 5px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-</style>
 {% endblock %}
