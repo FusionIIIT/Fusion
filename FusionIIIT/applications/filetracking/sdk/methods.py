@@ -11,6 +11,8 @@ def create_file(
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
+        subject: str = "", 
+        description: str = "", 
         src_module: str = "filetracking",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
@@ -38,11 +40,14 @@ def create_file(
 
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
+        subject=subject, 
+        description=description,
         designation=uploader_designation_obj,
         src_module=src_module,
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
     )
+    
 
     if attached_file is not None: 
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
