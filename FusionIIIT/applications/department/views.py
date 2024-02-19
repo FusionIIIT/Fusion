@@ -554,6 +554,7 @@ def faculty():
 
 
     }
+    print(cse_f)
     return context_f
 
 def approved(request):
