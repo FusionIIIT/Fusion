@@ -7,10 +7,10 @@
         <input class="ui required form" type="text" id="hall_name" name="hall_name" required><br>
 
         <label for="student_name">Student Name:</label>
-        <input class="ui required form" type="text" id="student_name" name="student_name" required><br>
+        <input class="ui required form" type="text" id="student_name" name="student_name" value="{{request.user.first_name}} {{request.user.last_name}}" required readonly><br>
 
         <label for="roll_number">Roll Number:</label>
-        <input class="ui required form" type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" required><br>
+        <input class="ui required form" type="text" id="roll_number" name="roll_number" value="{{ request.user.username }}" required readonly><br>
 
         <label for="description">Description:</label>
         <textarea id="description" class="required field" name="description" rows="4" required></textarea><br>
