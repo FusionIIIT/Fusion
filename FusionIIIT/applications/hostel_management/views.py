@@ -128,7 +128,11 @@ def hostel_view(request, context={}):
     hall4_staff = StaffSchedule.objects.filter(hall=hall4)
     hall_caretakers = HallCaretaker.objects.all().select_related()
     hall_wardens = HallWarden.objects.all().select_related()
-
+    all_students = Student.objects.all().select_related('id__user')
+    all_students_id = []
+    for student in all_students:
+        all_students_id.append(student.id_id)
+    # print(all_students)
     hall_student = ""
     current_hall = ""
     get_avail_room = []
@@ -169,6 +173,18 @@ def hostel_view(request, context={}):
     for hall in all_hall:
         halls_attendance[hall.hall_id] = HostelStudentAttendence.objects.filter(
             hall=hall).select_related()
+        
+    user_complaints = HostelComplaint.objects.filter(roll_number=request.user.username)
+    user_leaves = HostelLeave.objects.filter(roll_num=request.user.username)
+    my_leaves = []
+    for leave in user_leaves:
+        my_leaves.append(leave)
+    my_complaints = []
+    for complaint in user_complaints:
+        my_complaints.append(complaint)
+
+    all_leaves = HostelLeave.objects.all()
+    all_complaints = HostelComplaint.objects.all()
 
     context = {
 
@@ -188,6 +204,11 @@ def hostel_view(request, context={}):
         'hall_staffs': hall_staffs,
         'hall_notices': hall_notices,
         'attendance': halls_attendance,
+        'all_students_id': all_students_id,
+        'my_complaints': my_complaints,
+        'my_leaves': my_leaves,
+        'all_leaves': all_leaves,
+        'all_complaints': all_complaints,
         **context
     }
 
@@ -630,7 +651,6 @@ class my_leaves(View):
 
             # Retrieve leaves registered by the current student based on their roll number
             my_leaves = HostelLeave.objects.filter(roll_num__iexact=user_id)
-
             # Construct the context to pass to the template
             context = {
                 'leaves': my_leaves
@@ -659,91 +679,91 @@ class my_leaves(View):
     
 
 
-@method_decorator(user_passes_test(is_superuser), name='dispatch')
-class AssignCaretakerView(APIView):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-    template_name = 'hostelmanagement/assign_caretaker.html' 
+# @method_decorator(user_passes_test(is_superuser), name='dispatch')
+# class AssignCaretakerView(APIView):
+#     authentication_classes = [SessionAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     template_name = 'hostelmanagement/assign_caretaker.html' 
 
 
-    def get(self, request, *args, **kwargs):
-        hall = Hall.objects.all()
-        caretaker_usernames=Staff.objects.all()
-        return render(request, self.template_name , {'halls': hall,'caretaker_usernames':caretaker_usernames})
+#     def get(self, request, *args, **kwargs):
+#         hall = Hall.objects.all()
+#         caretaker_usernames=Staff.objects.all()
+#         return render(request, self.template_name , {'halls': hall,'caretaker_usernames':caretaker_usernames})
 
-    def post(self, request, *args, **kwargs):
-        hall_id = request.data.get('hall_id')
-        caretaker_username = request.data.get('caretaker_username')
+#     def post(self, request, *args, **kwargs):
+#         hall_id = request.data.get('hall_id')
+#         caretaker_username = request.data.get('caretaker_username')
 
-        try:
-            hall = Hall.objects.get(hall_id=hall_id)
-            caretaker_staff = Staff.objects.get(id__user__username=caretaker_username)
+#         try:
+#             hall = Hall.objects.get(hall_id=hall_id)
+#             caretaker_staff = Staff.objects.get(id__user__username=caretaker_username)
 
-            # Delete any previous assignments of the caretaker in HallCaretaker table
-            HallCaretaker.objects.filter(staff=caretaker_staff).delete()
+#             # Delete any previous assignments of the caretaker in HallCaretaker table
+#             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
 
-            # Delete any previous assignments of the caretaker in RoomAllotment table
-            HostelAllotment.objects.filter(assignedCaretaker=caretaker_staff).delete()
+#             # Delete any previous assignments of the caretaker in RoomAllotment table
+#             HostelAllotment.objects.filter(assignedCaretaker=caretaker_staff).delete()
 
-            # Delete any previously assigned caretaker to the same hall
-            HallCaretaker.objects.filter(hall=hall).delete()
+#             # Delete any previously assigned caretaker to the same hall
+#             HallCaretaker.objects.filter(hall=hall).delete()
 
-            # Assign the new caretaker to the hall in HallCaretaker table
-            hall_caretaker = HallCaretaker.objects.create(hall=hall, staff=caretaker_staff)
+#             # Assign the new caretaker to the hall in HallCaretaker table
+#             hall_caretaker = HallCaretaker.objects.create(hall=hall, staff=caretaker_staff)
 
-            # Update the assigned caretaker in Hostelallottment table
-            hostel_allotments = HostelAllotment.objects.filter(hall=hall)
-            for hostel_allotment in hostel_allotments:
-                hostel_allotment.assignedCaretaker = caretaker_staff
-                hostel_allotment.save()
+#             # Update the assigned caretaker in Hostelallottment table
+#             hostel_allotments = HostelAllotment.objects.filter(hall=hall)
+#             for hostel_allotment in hostel_allotments:
+#                 hostel_allotment.assignedCaretaker = caretaker_staff
+#                 hostel_allotment.save()
 
-            return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
+#             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
-        except Hall.DoesNotExist:
-            return Response({'error': f'Hall with ID {hall_id} not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Staff.DoesNotExist:
-            return Response({'error': f'Caretaker with username {caretaker_username} not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+#         except Hall.DoesNotExist:
+#             return Response({'error': f'Hall with ID {hall_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+#         except Staff.DoesNotExist:
+#             return Response({'error': f'Caretaker with username {caretaker_username} not found'}, status=status.HTTP_404_NOT_FOUND)
+#         except Exception as e:
+#             return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
 
 
 
-@method_decorator(user_passes_test(is_superuser), name='dispatch')
-class AssignBatchView(View):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-    template_name = 'hostelmanagement/assign_batch.html'  # Assuming the HTML file is directly in the 'templates' folder
+# @method_decorator(user_passes_test(is_superuser), name='dispatch')
+# class AssignBatchView(View):
+#     authentication_classes = [SessionAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     template_name = 'hostelmanagement/assign_batch.html'  # Assuming the HTML file is directly in the 'templates' folder
     
-    def get(self, request, *args, **kwargs):
-        hall = Hall.objects.all()
-        return render(request, self.template_name , {'halls': hall})
+#     def get(self, request, *args, **kwargs):
+#         hall = Hall.objects.all()
+#         return render(request, self.template_name , {'halls': hall})
 
-    def post(self, request, *args, **kwargs):
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            hall_id = data.get('hall_id')
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             data = json.loads(request.body.decode('utf-8'))
+#             hall_id = data.get('hall_id')
 
-            hall = Hall.objects.get(hall_id=hall_id)
-            hall.assigned_batch = data.get('batch')
-            hall.save()
+#             hall = Hall.objects.get(hall_id=hall_id)
+#             hall.assigned_batch = data.get('batch')
+#             hall.save()
 
-            # Update the assignedBatch field in HostelAllotment table for the corresponding hall
-            room_allotments = HostelAllotment.objects.filter(hall=hall)
-            for room_allotment in room_allotments:
-                room_allotment.assignedBatch = hall.assigned_batch
-                room_allotment.save()
+#             # Update the assignedBatch field in HostelAllotment table for the corresponding hall
+#             room_allotments = HostelAllotment.objects.filter(hall=hall)
+#             for room_allotment in room_allotments:
+#                 room_allotment.assignedBatch = hall.assigned_batch
+#                 room_allotment.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
+#             return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
             
-        except Hall.DoesNotExist:
-            return JsonResponse({'status': 'error', 'error': f'Hall with ID {hall_id} not found'}, status=404)
+#         except Hall.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'error': f'Hall with ID {hall_id} not found'}, status=404)
 
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+#         except Exception as e:
+#             return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
 
-    def test_func(self):
-        # Check if the user is a superuser
-        return self.request.user.is_superuser
+#     def test_func(self):
+#         # Check if the user is a superuser
+#         return self.request.user.is_superuser
     
 class HallIdView(APIView):
     authentication_classes = []  # Allow public access for testing
