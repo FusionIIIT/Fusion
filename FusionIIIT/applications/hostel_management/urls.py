@@ -68,7 +68,8 @@ urlpatterns = [
     path('add-hostel', views.AddHostelView.as_view(), name='add_hostel'),
     path('admin-hostel-list', views.AdminHostelListView.as_view(), name='admin_hostel_list'),  # URL for displaying the list of hostels
     path('delete-hostel/<str:hall_id>/', views.DeleteHostelView.as_view(), name='delete_hostel'),
-
+  
+    path('check-hall-exists/', views.CheckHallExistsView.as_view(), name='check_hall_exists'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', views.logout_view, name='logout_view'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -87,7 +88,10 @@ urlpatterns = [
     path('inventory/form/', views.get_inventory_form, name='get_inventory_form'),
     path('inventory/edit_inventory/<int:inventory_id>/', views.edit_inventory, name='edit_inventory'),
     path('allotted_rooms/', views.alloted_rooms_main, name="alloted_rooms"),
-    path('all_staff/', views.all_staff, name='all_staff')
+    path('all_staff/', views.all_staff, name='all_staff'),
 
+    #guest room
+    path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
+    path('update_guest_room/', views.update_guest_room, name="update_guest_room"),
 
 ]
