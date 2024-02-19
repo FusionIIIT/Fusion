@@ -28,10 +28,12 @@
 
             <div class="row">
                 <div class="ui large fluid vertical pointing menu">
+                    {% if user in hall_caretaker or hall_warden%}
                     <a class="active item" data-tab="first">
                         Students' Alloted Room
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    {% endif %}
 
                     {% if user in hall_caretaker or hall_warden%}
                     <a class="item" data-tab="second">
@@ -50,6 +52,17 @@
                         Student Attendance
                         <i class="right floated chevron right icon"></i>
                     </a>
+
+                    <a class="item" data-tab="fifth" >
+                        Complaint Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="sixth" >
+                        Leave Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
 
                     {% comment %} <a class="item" href="{% url 'hostelmanagement:guest_room_book' %}">
                         Book Guest Room 
@@ -88,7 +101,19 @@
                 {% endblock %}
             </div>
 
-            {% comment %} <div class="ui tab segment" data-tab="fourth">
+            <div class="ui tab segment" data-tab="fifth">
+                {% block post_complaint_form %}
+                    {% include 'hostelmanagement/post_complaint_form.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="sixth">
+                {% block create_leave%}
+                    {% include 'hostelmanagement/create_leave.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %} <div class="ui tab segment" data-tab="sixth">
                 {% block guest_room %}
                     {% include 'hostelmanagement/guestroom_booking.html'%}
                 {% endblock %}
