@@ -10,10 +10,10 @@
     <form id="createLeaveForm" method="POST" action="{% url 'hostelmanagement:create_hostel_leave' %}">
         {% csrf_token %}
         <label for="student_name">Student Name:</label>
-        <input type="text" id="student_name" name="student_name" required><br><br>
+        <input type="text" id="student_name" name="student_name" value="{{ request.user.first_name }} {{ request.user.last_name }}" required readonly><br><br>
         
         <label for="roll_num">Roll Number:</label>
-        <input type="text" id="roll_num" name="roll_num" required><br><br>
+        <input type="text" id="roll_num" name="roll_num" value="{{ request.user.username}}" required readonly><br><br>
         
         <label for="reason">Reason:</label><br>
         <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br><br>

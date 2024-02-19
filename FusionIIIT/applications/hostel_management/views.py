@@ -492,6 +492,7 @@ def all_leave_data(request):
 
 @login_required
 def create_hostel_leave(request):
+    print(request.user.username)
     if request.method == 'GET':
         return render(request, 'hostelmanagement/create_leave.html')
     elif request.method == 'POST':
@@ -521,7 +522,8 @@ def create_hostel_leave(request):
 
 @login_required
 def hostel_complaint_list(request):
-    user_id = request.user.id 
+    user_id = request.user.id
+    
     try:
         staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
     except AttributeError:
@@ -566,8 +568,9 @@ def get_students(request):
 class PostComplaint(APIView):
     authentication_classes = [SessionAuthentication]  # Assuming you are using session authentication
     permission_classes = [IsAuthenticated]  # Allow only authenticated users to access the view
-
+    
     def dispatch(self, request, *args, **kwargs):
+        print(request.user.username)
         if not request.user.is_authenticated:
             return redirect('/hostelmanagement')  # Redirect to the login page if user is not authenticated
         return super().dispatch(request, *args, **kwargs)

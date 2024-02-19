@@ -13,10 +13,10 @@
         <input type="text" id="hall_name" name="hall_name" required><br><br>
 
         <label for="student_name">Student Name:</label><br>
-        <input type="text" id="student_name" name="student_name" required><br><br>
+        <input type="text" id="student_name" value="{{ request.user.first_name }} {{ request.user.last_name }}" required readonly><br><br>
 
         <label for="roll_number">Roll Number:</label><br>
-        <input type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" required><br><br>
+        <input type="text" id="roll_number" name="roll_number" value="{{ request.user.username }}" required readonly><br><br>
 
         <label for="description">Description:</label><br>
         <textarea id="description" name="description" rows="4" required></textarea><br><br>
