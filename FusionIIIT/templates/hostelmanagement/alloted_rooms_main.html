@@ -60,6 +60,7 @@ Hostel
     <div class="eight wide column">
         <div class="ui active tab segment " data-tab="first">
             <div class="box-table">
+                <h2 class="heading-alloted-rooms">Alloted rooms</h2>
                 <div class="hall-dropbox">
                     <label for="hall_id-allotted-rooms" class="select-hall-label">Select Hall :</label>
                     <form id="hallForm" class="custom-select" method="get">
@@ -100,7 +101,10 @@ Hostel
         flex-direction: column;
         justify-content: center;
     }
-
+    .heading-alloted-rooms {
+        text-align: center;
+        margin-bottom: 15px;
+    }
     .hall-dropbox {
         display: flex;
         align-items: center;
@@ -129,7 +133,7 @@ Hostel
     }
 
     select {
-        border: 1px solid #2c9beb;
+        border: 1px solid black;
         outline: none;
         border-radius: 5px;
         width: 100px;
