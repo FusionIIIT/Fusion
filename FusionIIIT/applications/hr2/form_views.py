@@ -18,7 +18,7 @@ class LTC(APIView):
         serializer = self.serializer_class(data = request.data[1])
         if serializer.is_valid():
             serializer.save()
-            file_id = create_file(uploader = user_info['uploader_name'], uploader_designation = user_info['uploader_designation'], receiver = "21BCS151", receiver_designation="student", src_module="HR", src_object_id= str(serializer.data['id']), file_extra_JSON= {"type": "LTC"}, attached_file= None)
+            file_id = create_file(uploader = user_info['uploader_name'], uploader_designation = user_info['uploader_designation'], receiver = "21BCS140", receiver_designation="hradmin", src_module="HR", src_object_id= str(serializer.data['id']), file_extra_JSON= {"type": "LTC"}, attached_file= None)
             return Response(serializer.data, status= status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
@@ -207,3 +207,8 @@ class Appraisal(APIView):
             return Response(serializer.data, status = status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        
+class AssignerReviewer(APIView):
+    def post(self, request, *args, **kwargs):
+        forward_file(file_id = request.data['file_id'], receiver = "21BCS140", receiver_designation = 'hradmin', remarks = request.data['remarks'], file_extra_JSON = request.data['file_extra_JSON'])
+        return Response(status = status.HTTP_200_OK)
