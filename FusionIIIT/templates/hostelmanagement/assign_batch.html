@@ -1,6 +1,7 @@
 {% block manage_Hostel %}
 
             <form class="ui form">
+            <form>
                 {% csrf_token %}
                 <div class="mb-3">
                     
@@ -21,14 +22,10 @@
               </form>
         
 
-
-    
-
     <script>
         function assignBatch() {
             var hall_id = document.getElementById('hall_id').value;
             var batch = document.getElementById('batch').value;
-            console.log('~~~~~~~~~~~',hall_id, caretaker_username);
 
             // Perform AJAX request to assign batch
             fetch('http://0.0.0.0:8000/hostelmanagement/assign-batch/', {
@@ -69,5 +66,3 @@
         }
     </script>
 {% endblock %}
-
-

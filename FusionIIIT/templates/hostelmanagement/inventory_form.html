@@ -1,0 +1,54 @@
+{% block inventory_form %}
+  <h2 align="center">Hostel Inventory Form</h2>
+  <form class="ui form" id="inventoryForm" method="POST" action="{% url 'hostelmanagement:get_inventory_form' %}" >
+    {% csrf_token %}
+    <div class="field">
+    <label for="hall_id">Hall ID:</label>
+    <!-- <input type="number" id="hall_id" name="hall_id" /><br /><br /> -->
+    <select id="hall_id" name="hall_id">
+      {% for hall in all_hall %}
+      <option value="{{ hall.id }}">{{ hall.hall_id }}</option>
+      {% endfor %}
+    </select>
+    </div>
+    <div class="field">
+    <label for="inventory_name">Inventory Name:</label>
+    <input type="text" id="inventory_name" name="inventory_name" />
+    </div>
+    <div class="field">
+    <label for="cost">Cost:</label>
+    <input type="number" id="cost" name="cost" />
+      </div>
+    <div class="field">
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" />
+    </div>
+  
+    <button class="ui primary button" type="submit">Submit</button>
+  </form>
+  <script>
+    document
+      .getElementById("inventoryForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        fetch(this.action, {
+          method: this.method,
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("responseMessage").innerHTML =
+              data.message;
+            if (data.hall_id) {
+              // console.log(data.hall_id);
+              window.location.href =
+                "/hostelmanagement/inventory/" + data.hall_id + "/";
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      });
+  </script>
+{% endblock %}
