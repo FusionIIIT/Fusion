@@ -313,5 +313,5 @@ class StudentDetails(models.Model):
 
 
 
-    def __str__(self):
-        return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)
+    # def __str__(self):
+    #     return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)

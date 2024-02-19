@@ -12,17 +12,8 @@ def copy_data():
     for student_instance in student_data:
         # Extract data from the related User instance
         id = student_instance.id_id
-        # print(id)
         user_instance = User.objects.filter(username=id).first();
-        # print('name',user_instance.first_name)
-        print(student_instance.room_no)
-        print(student_instance.hall_no)
         user_instance = User.objects.get(username=id)
-        print(user_instance.username)
-        
-    
-      
-
 
         # Create a StudentDetails instance using data from the Student and User instances
         student_details_instance = StudentDetails(
