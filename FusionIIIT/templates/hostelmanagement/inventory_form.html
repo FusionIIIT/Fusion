@@ -44,6 +44,17 @@
         .getElementById("inventoryForm")
         .addEventListener("submit", function (event) {
           event.preventDefault();
+          // Validate form fields
+          var hallId = document.getElementById("hall_id").value;
+          var inventoryName = document.getElementById("inventory_name").value;
+          var cost = document.getElementById("cost").value;
+          var quantity = document.getElementById("quantity").value;
+
+          if (!hallId || !inventoryName || !cost || !quantity) {
+            alert("Please fill in all fields.");
+            return;
+          }
+
           var formData = new FormData(this);
           fetch(this.action, {
             method: this.method,
