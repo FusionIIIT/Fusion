@@ -359,6 +359,7 @@ def confirmdelete(request, id):
 
     return render(request, 'filetracking/confirmdelete.html', context)
 
+@login_required(login_url="/accounts/login")
 def view_file(request, id): 
     ''' 
     This function is used to view a particular file received by an employee from another.
