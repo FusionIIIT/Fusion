@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Details</title>
-</head>
-<body>
+{% block hall_all_students %}
     <h1>Student Details</h1>
-    <table border="1">
+    <table class="ui table" border="1">
         <thead>
             <tr>
                 <th>ID</th>
@@ -39,5 +32,4 @@
             {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
+{% endblock %}

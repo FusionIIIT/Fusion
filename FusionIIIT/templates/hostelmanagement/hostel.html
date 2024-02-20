@@ -99,6 +99,13 @@ Hostel
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% endif %}
+
+                    {% if user in hall_caretaker or user in hall_warden %}
+                    <a class="item" data-tab="eleventh" >
+                        Hall Students
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
               
                 {% if user.username in all_students_id %}
                 <a class="item" data-tab="guest1">
@@ -162,7 +169,7 @@ Hostel
 
     </div>
 
-    <div class="eight wide column">
+    <div class="eleven wide column">
         <div class="ui active tab segment" data-tab="first">
             {% block alloted_hostel_room %}
             {% include 'hostelmanagement/alloted_hostel_room.html'%}
@@ -222,6 +229,12 @@ Hostel
             <div class="ui tab segment" data-tab="tenth">
                 {% block inventory_form %}
                     {% include 'hostelmanagement/inventory_form.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="eleventh">
+                {% block hall_all_students %}
+                    {% include 'hostelmanagement/student_details.html' %}
                 {% endblock %}
             </div>
           
