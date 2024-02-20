@@ -266,44 +266,6 @@ Gymkhana Module
                 <i class="right floated chevron right icon"></i>
             </a>
 
-            <!--                 {% if "student" in Curr_desig and status == True %}
-                    {% if form_name == 'senate_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Senate Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'mess_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Mess Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'hostel_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Hostel Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endif %}
-                {% endif %} -->
-
-            <!--                 {% if "Convenor" in Curr_desig %}
-                    {% if form_name == 'senate_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Senate Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'mess_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Mess Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'hostel_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Hostel Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endif %}
-                {% endif %} -->
-
             {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
 
             <a class="item" data-tab="fourth">
@@ -376,7 +338,7 @@ Gymkhana Module
 
             {% endif %}
 
-            {% if "co-ordinator" not in Curr_desig and "Co-coordinator" not in Curr_desig and "Dean_s" not in Curr_desig and "Counsellor" not in Curr_desig %}
+            {% if "co-ordinator" not in Curr_desig and "Co-coordinator" not in Curr_desig and "Dean_s" not in Curr_desig and "Counsellor" not in Curr_desig and "student" not in Curr_desig and "Convener" not in Curr_desig %}
             <a class="item" data-tab="last">
                 Submitted requests
                 <i class="right floated chevron right icon"></i>
