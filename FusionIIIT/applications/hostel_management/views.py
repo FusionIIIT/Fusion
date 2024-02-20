@@ -81,6 +81,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.template import loader
 from django.urls import reverse
 from django.shortcuts import redirect
+from rest_framework.exceptions import NotFound
 from rest_framework import status
 from django.http import JsonResponse
 from django.db import IntegrityError
@@ -1279,6 +1280,8 @@ class HostelInventoryView(APIView):
                 'quantity': inventory.quantity,
             })
 
+        inventory_data.sort(key=lambda x: x['inventory_id'])
+
         # Return inventory data as JSON response
         return render(request, 'hostelmanagement/inventory_list.html', {'halls': halls,'inventories': inventory_data})
     
@@ -1436,3 +1439,202 @@ def update_leave_status(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'}, status=405)
 
+
+    
+
+
+
+
+
+# //! Manage Fine
+# //todo: Add Fine Functionality
+    
+from rest_framework import status
+from rest_framework.response import Response
+from django.http import HttpResponseBadRequest
+
+
+@login_required
+def impose_fine_view(request):
+    user_id = request.user
+    staff=user_id.extrainfo.id
+    students = Student.objects.all();
+
+    if HallCaretaker.objects.filter(staff_id=staff).exists():
+        return render(request, 'hostelmanagement/impose_fine.html',{'students':students})
+
+    return HttpResponse(f'<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+
+
+
+
+class HostelFineView(APIView):
+    """
+    API endpoint for imposing fines on students.
+    """
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+
+    def post(self, request):
+        # Check if the user is a caretaker
+        user_id = request.user
+        staff = user_id.extrainfo.id
+
+        try:
+            caretaker = HallCaretaker.objects.get(staff_id=staff)
+        except HallCaretaker.DoesNotExist:
+            return HttpResponse(f'<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+
+        hall_id = caretaker.hall_id
+
+        # Extract data from the request
+        student_id = request.data.get('student_id')
+        student_name = request.data.get('student_name')
+        amount = request.data.get('amount')
+        reason = request.data.get('reason')
+
+
+
+        # Validate the data
+        if not all([student_id, student_name, amount, reason]):
+            return HttpResponse({'error': 'Incomplete data provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the HostelFine object
+        try:
+            fine = HostelFine.objects.create(
+                student_id=student_id,
+                student_name=student_name,
+                amount=amount,
+                reason=reason,
+                hall_id=hall_id
+            )
+            return HttpResponse({'message': 'Fine imposed successfully.'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@login_required
+def get_student_name(request, username):
+    try:
+        user = User.objects.get(username=username)
+        full_name = f"{user.first_name} {user.last_name}" if user.first_name or user.last_name else ""
+        return JsonResponse({"name": full_name})
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+@login_required
+def hostel_fine_list(request):
+    user_id = request.user
+    staff=user_id.extrainfo.id
+    caretaker = HallCaretaker.objects.get(staff_id=staff)
+    hall_id = caretaker.hall_id
+    hostel_fines = HostelFine.objects.filter(hall_id=hall_id).order_by('fine_id')
+
+
+    if HallCaretaker.objects.filter(staff_id=staff).exists():
+        return render(request, 'hostelmanagement/hostel_fine_list.html', {'hostel_fines': hostel_fines})
+
+    return HttpResponse(f'<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
+
+
+
+@login_required
+def student_fine_details(request):
+    user_id = request.user.username
+    print(user_id)
+    # staff=user_id.extrainfo.id
+
+    # Check if the user_id exists in the Student table
+    # if HallCaretaker.objects.filter(staff_id=staff).exists():
+    #     return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>')
+    
+    if not Student.objects.filter(id_id=user_id).exists():
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>')
+
+    # # Check if the user_id exists in the HostelFine table
+    if not HostelFine.objects.filter(student_id=user_id).exists():
+        return HttpResponse('<script>alert("You have no fines recorded"); window.location.href = "/hostelmanagement/";</script>')
+
+    # # Retrieve the fines associated with the current student
+    student_fines = HostelFine.objects.filter(student_id=user_id)
+
+    
+    return render(request, 'hostelmanagement/student_fine_details.html', {'student_fines': student_fines})
+
+    # return JsonResponse({'message': 'Nice'}, status=status.HTTP_200_OK)
+
+
+class HostelFineUpdateView(APIView):    
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request, fine_id):        
+        user_id = request.user
+        staff = user_id.extrainfo.id
+
+        data = request.data
+        fine_idd = data.get('fine_id')
+        status_ = data.get('status')
+        # print("fine_idd",fine_idd)
+        # print("status_",status_)
+
+        try:
+            caretaker = HallCaretaker.objects.get(staff_id=staff)
+        except HallCaretaker.DoesNotExist:
+            return Response({'error': 'You are not authorized to access this page'}, status=status.HTTP_403_FORBIDDEN)
+
+        hall_id = caretaker.hall_id
+
+        # Convert fine_id to integer
+        fine_id = int(fine_id)
+
+        # Get hostel fine object
+        try:
+            hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
+        except HostelFine.DoesNotExist:
+            raise NotFound(detail="Hostel fine not found")
+
+        # Validate required fields
+        if status_ not in ['Pending', 'Paid']:
+            return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # # Update status of the hostel fine
+        hostel_fine.status = status_
+        hostel_fine.save()
+
+        # Return success response
+        return Response({'message': 'Hostel fine status updated successfully!'}, status=status.HTTP_200_OK)
+    
+
+
+
+    def delete(self, request, fine_id):
+        user_id = request.user
+        staff = user_id.extrainfo.id
+
+        try:
+            caretaker = HallCaretaker.objects.get(staff_id=staff)
+        except HallCaretaker.DoesNotExist:
+            return Response({'error': 'You are not authorized to access this page'}, status=status.HTTP_403_FORBIDDEN)
+
+        hall_id = caretaker.hall_id
+
+         # Convert fine_id to integer
+        fine_id = int(fine_id)
+
+        # Get hostel fine object
+        try:
+            hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
+            hostel_fine.delete()
+        except HostelFine.DoesNotExist:
+            raise NotFound(detail="Hostel fine not found")
+
+        return Response({'message': 'Fine deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)

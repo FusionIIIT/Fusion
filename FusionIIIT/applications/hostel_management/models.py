@@ -319,3 +319,21 @@ class GuestRoom(models.Model):
         if self.occupied_till and self.occupied_till > timezone.now():
             self.vacant = False
         self.vacant = True
+
+    
+
+class HostelFine(models.Model):
+    fine_id = models.AutoField(primary_key=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE,default=1)
+    student_name = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Paid', 'Paid'),
+    ]
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"{self.student_name}'s Fine - {self.amount} - {self.status}"
