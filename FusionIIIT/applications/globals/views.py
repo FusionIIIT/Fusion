@@ -766,15 +766,24 @@ def profile(request, username=None):
         username: Username of the user. If None,
             displays the profile of currently logged-in user
     """
+
+    print(username)
     user = get_object_or_404(User, Q(username=username)) if username else request.user
 
+    print("user1" ,user)
 
     editable = request.user == user
+
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    if(str(user.extrainfo.user_type)=='faculty'):
-        return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
+    print("user2",user.extrainfo.user_type)
+
+    if(str(user.extrainfo.user_type)=='fx'):
+        print("user3")
+        return HttpResponseRedirect('/eis/profile/' + (username if username else '') + '/')
+    
     if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
+    
     current = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user, designation__name="student"))
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
