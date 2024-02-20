@@ -85,17 +85,16 @@
                         <tr>
                             <th>Course Code</th>
                             <th>Name Of the Course</th>
-                            {% ifequal extrainfo.user_type|stringformat:"s" "student" %}
-                            <th>Instructor</th> {% endifequal %}
+                            {% if extrainfo.user_type == 'student'%}
+                            <th>Instructor</th> {% endif %}
                         </tr>
                     </thead>
                     <tbody>
-                        {% ifequal extrainfo.user_type|stringformat:"s" "student" %} {% for x in courses %}
+                        {% if extrainfo.user_type == 'student'%} {% for course,instructor in courses.items %}
                         <tr>
-                            {% comment %} {{x.data}} {% endcomment %}
-                             <td><a href="{{x.data.course_code}}">{{x.data.course_code}}</a></td>
-                            <td>{{x.data.course_id}}</td>
-                            <td>{{x.instructor.instructor_id.user.username}}</td> 
+                            <td><a href="{{course.curr_id.course_code}}">{{course.curr_id.course_code}}</a></td>
+                            <td>{{course.curr_id.course_id.course_name}}</td>
+                            <td>{{instructor.instructor_id.user.username}}</td>
                         </tr>
                         {% endfor %} {% else %} 
                         {% for curriculum in curriculum_list %}
@@ -106,7 +105,7 @@
 
                         </tr>
                         {% endfor %}
-                        {% endifequal %}
+                        {% endif %}
                        
                     </tbody>
                 </table>
@@ -250,7 +249,7 @@
                     <div class="row">
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                                
                             </div>
 
                             <button class="ui primary button">
@@ -261,7 +260,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                                
                             </div>
 
                             <button class="ui primary button">
@@ -272,7 +271,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                                
                             </div>
 
                             <button class="ui primary button">
@@ -282,7 +281,7 @@
                         </div>
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -302,7 +301,7 @@
                     <div class="row">
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -313,7 +312,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -324,7 +323,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -334,7 +333,7 @@
                         </div>
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -353,7 +352,7 @@
                     <div class="row">
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -364,7 +363,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -375,7 +374,7 @@
                         <div class="column">
 
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -385,7 +384,7 @@
                         </div>
                         <div class="column">
                             <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
-                                <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe>
+                               
                             </div>
 
                             <button class="ui primary button">
@@ -590,25 +589,25 @@
     {% comment %}The central-rail segment ends here!{% endcomment %} {% comment %}The right-rail segment starts here!{% endcomment %}
 
     {% comment %}The grid ends here!{% endcomment %} {% endblock %} {% block javascript %}
-    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script> -->
 
 </div>
-<!--
-<script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
-<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
--->
+
+<!-- <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script> -->
+
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
 <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
 <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 
 
-<script>
+<!-- <script>
     $(document).ready(function() {
         $('table').tablesort();
     });
-</script>
+</script> -->
 
 <script>
     function toggleContent() {

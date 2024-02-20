@@ -1,0 +1,88 @@
+{% load static %}
+{% block gradingScheme %}
+<div class="ui segment" style="height:45em;overflow:scroll;overflow-x:hidden;width:100%;">
+    <h3 class="ui dividing header">Create Grading Scheme</h3>
+
+    <form class="ui form" id="gradingScheme_submit" method="post" action="/ocms/{{ curriculum.course_code }}/create_grading_scheme">
+    {% csrf_token %}
+
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+	        <thead>
+	            <tr>
+	                <th style="width: 30%;">Type of Evaluation</th>
+	                <th style="width: 30%;">Weightage (%)</th>
+	                      
+	            </tr>
+	        </thead>
+	        <tbody>
+        		<tr>
+        			<td>Quiz</td>
+               		<td>
+                        	<input type="number" name="quiz_weightage" id="quiz_weightage" value="{{ quiz_weightage }}" />
+                    </td>
+           		</tr>
+                <tr>
+        			<td>Mid Semester</td>
+               		<td>
+                        	<input type="number" name="midsem_weightage" id="midsem_weightage" value="{{ midsem_weightage }}" />
+                    </td>
+           		</tr>
+                <tr>
+        			<td>Assignment</td>
+               		<td>
+                        	<input type="number" name="assignment_weightage" id="assignment_weightage" value="{{ assignment_weightage }}" />
+                    </td>
+           		</tr>
+                <tr>
+        			<td>End Semester</td>
+               		<td>
+                        	<input type="number" name="endsem_weightage" id="endsem_weightage" value="{{ endsem_weightage }}" />
+                    </td>
+           		</tr>
+                <tr>
+        			<td>Project</td>
+               		<td>
+                        	<input type="number" name="project_weightage" id="project_weightage" value="{{ project_weightage }}" />
+                    </td>
+           		</tr>
+               
+            </tbody>
+	    </table>
+	</div>
+
+    <input type="button" class="ui primary button" id="submit_gradingScheme" style="display: flex; justify-content: center;" value="Upload">
+
+	</form>
+
+
+</div>
+
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+
+<script type="text/javascript">
+    // Function to handle form submission
+    function submitForm() {
+        var form = document.getElementById("gradingScheme_submit");
+        var formData = new FormData(form);
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action, true);
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                alert('Success: ' + xhr.responseText); // Display success message
+            } else {
+                alert('Error: ' + xhr.statusText); // Display error message
+            }
+        };
+        xhr.onerror = function () {
+            alert('Request failed'); // Display request failure message
+        };
+        xhr.send(formData);
+    }
+
+    // Attach submitForm function to the click event of the submit button
+    document.getElementById("submit_gradingScheme").addEventListener("click", submitForm);
+</script>
+
+{% endblock %}

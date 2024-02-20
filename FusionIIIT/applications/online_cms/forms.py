@@ -4,8 +4,11 @@ from datetime import time, timedelta
 #import information from the models 
 from django import forms
 # from .models import StoreMarks
+
+from applications.academic_information.models import Timetable
 from applications.academic_information.models import Student_attendance
 from django.forms import ModelForm
+
 
 from .models import *
 #the types of exam whose marks can be stored from edit marks in assessment, related to StoreMarks table in models
@@ -118,6 +121,30 @@ class MarksForm(forms.Form):
         return self.cleaned_data
 
 
+class GradingSchemeForm(forms.Form):
+    quiz_weightage = forms.DecimalField(label='Quiz', max_digits=10, decimal_places=2)
+    midsem_weightage = forms.DecimalField(label='Mid Semester', max_digits=10, decimal_places=2)
+    assignment_weightage = forms.DecimalField(label='Assignment', max_digits=10, decimal_places=2)
+    endsem_weightage = forms.DecimalField(label='End Semester', max_digits=10, decimal_places=2)
+    project_weightage = forms.DecimalField(label='Project', max_digits=10, decimal_places=2)
+
+
+class AcademicTimetableForm(forms.ModelForm):
+    """
+    the form to add a new academic timetable to the database.
+    It consist of year, programme and the timetable file upload
+
+    @attrubutes:
+        model - the model used is the Timetable class
+        fields - the fields shown in the form for the user to fill up is year, programme and timetable file upload
+        widgets - defining the id, required and placeholder of the filed in the form
+
+    """
+    class Meta:
+        model = Timetable
+        fields = ('programme', 'batch', 'branch', 'time_table')
+
+
 class UploadSlideForm(forms.Form):
     class Meta:
         model=CourseDocuments
@@ -125,3 +152,4 @@ class UploadSlideForm(forms.Form):
 
     # title = forms.CharField(max_length=50)
     file = forms.FileField()
+

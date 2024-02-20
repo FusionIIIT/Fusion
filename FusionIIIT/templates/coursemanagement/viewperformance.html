@@ -3,7 +3,8 @@
 <div class="ui pointing secondary menu">
     <a class="item active tab vptab" id="assignmenttab" data-tab="assignment">Assignment</a>
 
-    <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a>
+    <!-- <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a> -->
+    <a class="item tab vptab" id="attendancetab" data-tab="attendance">Attendance</a>
     <!-- {% if Lecturer == 1 %}
       <a class="item tab vptab" id="viewmarkstab" data-tab="viewmarks"> Exams </a>
     {% endif %} -->
@@ -107,6 +108,7 @@
     {% endif %}
   {% endif %}
 </div>
+
 <div class="ui bottom attached tab vptabdata segment" id="quiztabdata" data-tab="quiz">
   {% if Lecturer is 0 %}
     <h4>Results</h4>
@@ -241,7 +243,49 @@
           {% endfor %}
           </tbody>
         </table>
+        
     </div>
+
+
+<div class="ui bottom attached tab vptabdata segment" id="attendancetabdata" data-tab="attendance">
+  <!-- <p> Total Attendance = {{total_attendance}} </p>
+	<p> Total Present = {{present_attendance}} </p>
+  <p> Total Absent = {{absent_attendance}} </p> -->
+  <h4> Total Attendance = {{total_attendance}} </h4>
+  <h4>Attendance % = {{attendance_percent}}</h4>
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+        <thead>
+            <tr>
+                <th style="width: 30%;">Date.</th>
+                <th style="width: 30%;">Present(1) / Absent(0)</th>
+                      
+            </tr>
+        </thead>
+        <tbody>
+        	<!-- {% for roll_no, name in students.items %}
+        		<tr>
+        			<td>{{roll_no}}</td>
+        			<td>{{name}}</td>
+        			<td></td>
+        		</tr>
+            {% endfor %}
+                       -->
+                   
+			{% for date, present in present_attendance.items %}    
+			<tr>
+        			<td>{{date}}</td>
+        			<td>{{present}}</td>
+        		</tr>
+        	{% endfor %}
+
+                  
+        </tbody>
+    </table>  
+    
+</div>
+</div>
+
 
 
 {% endblock %}
