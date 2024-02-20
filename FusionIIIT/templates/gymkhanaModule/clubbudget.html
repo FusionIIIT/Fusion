@@ -2,13 +2,17 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="clubbudgetform">
-            Club Budget Form
-        </a>      
-
-        <a class="item" data-tab="viewbudget">
+       
+        <a class="active item" data-tab="viewbudget">
             View Budget
-        </a>      
+        </a>   
+        {% if "Dean_s" not in Curr_desig %}
+        <a class=" item" data-tab="clubbudgetform">
+            Club Budget Form
+        </a>   
+        {% endif %}   
+
+          
     </div>
 
     <script type="text/javascript">
@@ -28,7 +32,7 @@
     </script>
 
 
-    <div class="ui active tab" data-tab="clubbudgetform">
+    <div class="ui  tab" data-tab="clubbudgetform">
         <div class="ui vertical segment">
             <form method="Post" id="club_budget_form" enctype="multipart/form-data">
             {%csrf_token %}
@@ -96,7 +100,7 @@
         
     </script>
     
-    <div class="ui tab" data-tab="viewbudget">
+    <div class="ui active tab" data-tab="viewbudget">
         <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 32px; padding-right: 32px">
                 <div class="sixteen wide field">
