@@ -1,10 +1,11 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.conf.urls import url
-
 from . import views
-app_name = 'online_cms'
+app_name = 'online_cms' 
 
 urlpatterns = [
-
+    
     url(r'^$', views.viewcourses, name='viewcourses'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
     # url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_marks$', views.edit_marks, name='edit_marks'),

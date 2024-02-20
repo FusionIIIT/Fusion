@@ -1,10 +1,16 @@
+# from django import forms
 import datetime
 from datetime import time, timedelta
 #import information from the models 
 from django import forms
 # from .models import StoreMarks
-from applications.academic_information.models import (Student_attendance,Timetable)
 
+from applications.academic_information.models import Timetable
+from applications.academic_information.models import Student_attendance
+from django.forms import ModelForm
+
+
+from .models import *
 #the types of exam whose marks can be stored from edit marks in assessment, related to StoreMarks table in models
 EXAM_TYPES= [
     ('quiz1', 'Quiz 1'),
@@ -114,6 +120,7 @@ class MarksForm(forms.Form):
         enteredmarks = self.cleaned_data.get("entered_marks")
         return self.cleaned_data
 
+
 class GradingSchemeForm(forms.Form):
     quiz_weightage = forms.DecimalField(label='Quiz', max_digits=10, decimal_places=2)
     midsem_weightage = forms.DecimalField(label='Mid Semester', max_digits=10, decimal_places=2)
@@ -136,3 +143,13 @@ class AcademicTimetableForm(forms.ModelForm):
     class Meta:
         model = Timetable
         fields = ('programme', 'batch', 'branch', 'time_table')
+
+
+class UploadSlideForm(forms.Form):
+    class Meta:
+        model=CourseDocuments
+        fields=['couse_id','doc']
+
+    # title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
