@@ -80,7 +80,7 @@ urlpatterns = [
     path('all_staff/<int:hall_id>/', views.all_staff, name='all_staff'),
     path('staff/<str:staff_id>/', views.StaffScheduleView.as_view(), name='staff_schedule'),
     
-    # path('inventory/hallList/', views.inventory_handle_table, name='hall_list'),
+    # !!? Inventory
     path('inventory/', views.HostelInventoryView.as_view(), name='hostel_inventory_list'),
     path('inventory/<int:inventory_id>/modify/', views.HostelInventoryUpdateView.as_view(), name='hostel_inventory_update'),
     path('inventory/<int:inventory_id>/delete/', views.HostelInventoryView.as_view(), name='hostel_inventory_detail'),
@@ -94,4 +94,18 @@ urlpatterns = [
     path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
     path('update_guest_room/', views.update_guest_room, name="update_guest_room"),
 
+
+    # !!todo: Add Fine Functionality
+    path('fine/', views.impose_fine_view, name='fine_form_show'),
+    path('fine/impose/', views.HostelFineView.as_view(), name='fine_form_show'),
+    path('fine/impose/list/', views.hostel_fine_list, name='fine_list_show'),
+    path('fine/impose/list/update/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_update'),
+    path('fine/delete/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_delete'),
+    path('fine/show/', views.student_fine_details, name='fine_show'),
+    
+    
+    
+    path('student/<str:username>/name/', views.get_student_name, name='find_name'),
+
+     
 ]
