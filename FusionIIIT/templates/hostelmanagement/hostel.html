@@ -156,6 +156,19 @@ Hostel
                 </a>
                 {% endif %}
 
+                {% if user in hall_caretaker%}
+                <a class="item" data-tab="fine1">
+                    Impose Fine
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                {% if user in hall_caretaker%}
+                <a class="item" data-tab="fine2">
+                     All Fines
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
             </div>
 
         </div>
@@ -287,6 +300,22 @@ Hostel
         <div class="ui tab segment" data-tab="superUser5">
             {% block View_Hostels %}
                 {% include 'hostelmanagement/admin_hostel_list.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        {% if user in hall_caretaker%}
+        <div class="ui tab segment" data-tab="fine1">
+            {% block Impose_fine  %}
+                {% include 'hostelmanagement/impose_fine.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        {% if user in hall_caretaker%}
+        <div class="ui tab segment" data-tab="fine2">
+            {% block fine_list  %}
+                {% include 'hostelmanagement/hostel_fine_list.html' %}
             {% endblock %}
         </div>
         {% endif %}
