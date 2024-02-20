@@ -1,6 +1,6 @@
 {% block Add_hostel %}
 <form class="ui form" action="{% url 'hostelmanagement:add_hostel' %}" method="post" enctype="multipart/form-data">
-    <h1>Add Hostel</h1>
+    <h2 align="center">Add Hostel</h2>
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -10,7 +10,7 @@
     {% endif %}
     {% csrf_token %}
     {{ add_hostel_form.as_p }}
-    <button type="submit">Add Hostel</button>
+    <button type="submit" class="ui primary button">Add Hostel</button>
 </form>
 
 <script>

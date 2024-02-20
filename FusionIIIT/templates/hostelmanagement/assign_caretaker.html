@@ -1,17 +1,18 @@
 {% block manage_Caretaker %}
 <form class="ui form">
     {% csrf_token %}
-    <div class="mb-3">
+    <h2 class="text-center" align="center">Assign Caretaker</h2>
+    <div class="field">
 
         <label for="hall_id" class="form-label">Hall ID:</label>
-        <select name="hall_id" class="form-control" id="hall__id" required>
+        <select name="hall_id" class="form-control" id="_hall__id" required>
             <!-- Add an option for each hall ID dynamically -->
             {% for hall in all_hall %}
             <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
             {% endfor %}
         </select>
     </div>
-    <div class="mb-5">
+    <div class="field">
         <label for="caretaker_username" class="form-label">caretaker_username :</label>
 
         <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
@@ -24,7 +25,7 @@
 
     </div>
 
-    <button type="submit" onclick="assignCaretaker()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+    <button type="submit" onclick="assignCaretaker()" class="ui primary button">Assign</button>
 </form>
 
 
@@ -35,8 +36,9 @@
    
     function assignCaretaker() {
 
-        var hall_id = document.getElementById('hall__id').value;
+        var hall_id = document.getElementById('_hall__id').value;
         var caretaker_username = document.getElementById('caretaker_username').value;
+        console.log('~~~~~~~~~~~', hall_id);
      
         // Perform AJAX request to assign caretaker
         fetch('http://0.0.0.0:8000/hostelmanagement/assign-caretaker', {
