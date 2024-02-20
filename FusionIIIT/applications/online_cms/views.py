@@ -83,7 +83,7 @@ def course(request, course_code):
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
         student = Student.objects.select_related('id').get(id=extrainfo)
-        roll = student.id.id[:2]
+        roll = student.id.id[:4]
 
         #info about courses he is registered in
         curriculum = Curriculum.objects.select_related('course_id').get(course_code=course_code)
