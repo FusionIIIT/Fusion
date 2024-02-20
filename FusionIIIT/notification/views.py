@@ -336,7 +336,21 @@ def department_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = type
-    flag = "department"
+    flag = "announcement"
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                flag=flag)
+def examination_notif(sender, recipient, type):
+    url='examination:examination'
+    module='examination'
+    sender = sender
+    recipient = recipient
+    verb = type
+    flag = "announcement"
 
     notify.send(sender=sender,
                 recipient=recipient,
