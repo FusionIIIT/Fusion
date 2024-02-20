@@ -3,6 +3,7 @@ import json
 from operator import or_
 from functools import reduce
 
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -70,6 +71,8 @@ def spacs(request):
 
 @login_required(login_url='/accounts/login')
 def convener_view(request):
+    print(request)
+    
     try:
         convener = Designation.objects.get(name='spacsconvenor')
         hd = HoldsDesignation.objects.get(
@@ -77,8 +80,11 @@ def convener_view(request):
     except:
         return HttpResponseRedirect('/logout')
     if request.method == 'POST':
+        print("this is a check for post request")
         if 'Submit' in request.POST:
+            print("this is a check for post xfhjgisdfkhlsjk request")
             award = request.POST.get('type')
+            print("award " + award)
             programme = request.POST.get('programme')
             batch = request.POST.get('batch')
             from_date = request.POST.get('From')
@@ -98,14 +104,26 @@ def convener_view(request):
             )
             
             # It updates the student Notification table on the spacs head sending the mcm invitation
-            if batch == 'all':
+            if batch == 'All':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
+                # active_batches=str(active_batches)
+                # active_batches.split(',')
+                querybatch = []
+                for batch in active_batches:
+                    if batch > 2019:
+                        batch=batch%2000
+                        querybatch.append(batch)
+                print( active_batches)
+                query = reduce(or_, (Q(id__id__startswith=batch) for batch in querybatch))
+                print(query)
                 recipient = Student.objects.filter(programme=programme).filter(query)
             else:
+                if(batch>2019):
+                    batch=batch%2000
                 recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
             
             # Notification starts
+            print(recipient)
             convenor = request.user
             for student in recipient:
                 scholarship_portal_notif(convenor, student.id.user, 'award_' + award)  # Notification
@@ -126,7 +144,7 @@ def convener_view(request):
             # Notification ends
             
             messages.success(request, 
-                    award + ' applications are invited successfully for ' + batch + ' batch(es)')
+                    award + ' applications are invited successfully for ' + str(batch) + ' batch(es)')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Email' in request.POST:
@@ -257,6 +275,7 @@ def convener_view(request):
 
 @login_required(login_url='/accounts/login')
 def student_view(request):
+
     if request.method == 'POST':
         if 'Submit_MCM' in request.POST:
             return submitMCM(request)
@@ -480,6 +499,18 @@ def updateEndDate(request):
     else:
         context['result'] = 'Failure'
     return HttpResponse(json.dumps(context), content_type='updateEndDate/json')
+
+def deleteRelease(request):
+    print("deleteRelease")
+    id = request.GET.get('id')
+    is_deleted = Release.objects.filter(pk=id).delete()
+    request.session['last_clicked'] = "Release_deleted"
+    context = {}
+    if is_deleted:
+        context['result'] = 'Success'
+    else:
+        context['result'] = 'Failure'
+    return HttpResponse(json.dumps(context), content_type='deleteRelease/json')
 
 def getAwardId(request):
     award = request.POST.get('award')
@@ -1020,6 +1051,7 @@ def sendConvenerRenderRequest(request, additionalParams={}):
 
 def sendStudentRenderRequest(request, additionalParams={}):
     context = getCommonParams(request)
+
     ch = Constants.BATCH
     time = Constants.TIME
     mother_occ = Constants.MOTHER_OCC_CHOICES
@@ -1041,7 +1073,30 @@ def sendStudentRenderRequest(request, additionalParams={}):
     x_notif_con_flag = False
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
-            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            curBatch = dates.batch
+            checkBatch = str(request.user.extrainfo.student)[0:4]
+            batchCondition = False
+            if checkBatch[2:4] == "BC":
+                if(curBatch == 'All'):
+                    batchRange = range(datetime.datetime.now().year - 4, datetime.datetime.now().year + 1)
+                    for batches in batchRange :
+                        if int(checkBatch[0:2]) == batches % 2000:
+                            batchCondition = True
+                elif curBatch == checkBatch:
+                    batchCondition = True
+            else:
+                if(curBatch == 'All'):
+                    batchRange = range(datetime.datetime.now().year - 4, datetime.datetime.now().year + 1)
+                    for batch in batchRange:
+                        if str(checkBatch) == batch:
+                            batchCondition = True
+                elif curBatch == checkBatch:
+                    True
+                print("bye")
+            
+            
+            print(curBatch, checkBatch)
+            if dates.award == 'Merit-cum-Means Scholarship' and batchCondition and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_mcm_flag = True
                 if no_of_mcm_filled > 0:
                     update_mcm_flag = True
@@ -1081,7 +1136,7 @@ def sendStudentRenderRequest(request, additionalParams={}):
     context.update(additionalParams)
     return render(request, 'scholarshipsModule/scholarships_student.html',context)
 
-def sendStaffRenderRequest(request, additionalParams={}):
+def sendStaffRenderRequest(request, additionalParams={}):    
     context = getCommonParams(request)
     context.update(additionalParams)
     return render(request, 'scholarshipsModule/scholarships_staff.html', context)
