@@ -1,24 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostel Inventory List</title>
-</head>
-<body>
-    <h1>Select Hall</h1>
-    <label for="hall_select">Choose a Hall:</label>
-    <select id="hall_select">
-        <option value="">Select a Hall</option>
-        {% for hall in halls %}
-            <option value="{{ hall.id }}" {% if hall.id == selectedHallId %} selected {% endif %}>
-                {{ hall.hall_id }}
-            </option>
-        {% endfor %} 
-    </select>
+{% block inventory_list %}
 
-
-    <button onclick="navigateToInventory()">Go</button>
 
     <h1>Hostel Inventory List</h1>
     <table border="1">
@@ -29,7 +10,7 @@
                 <th>Inventory Name</th>
                 <th>Cost</th>
                 <th>Quantity</th>
-                <th>Edit</th>
+                <!-- <th>Edit</th> -->
                 <th>Delete</th>
             </tr>
         </thead>
@@ -41,7 +22,7 @@
                 <td>{{ inventory.inventory_name }}</td>
                 <td>{{ inventory.cost }}</td>
                 <td>{{ inventory.quantity }}</td>
-                <td><button onclick="editInventory('{{ inventory.inventory_id }}')">Edit</button></td> 
+                <!-- <td><button onclick="editInventory('{{ inventory.inventory_id }}')">Edit</button></td>  -->
                 <td><button onclick="deleteInventory('{{ inventory.inventory_id }}')">Delete</button></td>
 
             </tr>
@@ -50,20 +31,12 @@
     </table>
 
     <script>
-        function navigateToInventory() {
-            var selectedHallId = document.getElementById("hall_select").value;
-            if (selectedHallId) {
-                localStorage.setItem("selectedHallId", selectedHallId);
-                window.location.href = "/hostelmanagement/inventory/" + selectedHallId + "/";
-            } else {
-                alert("Please select a hall before proceeding.");
-            }
-        }
+        
 
-        function editInventory(inventoryId) {
-            var selectedHallId = document.getElementById("hall_select").value;
-            window.location.href = "/hostelmanagement/inventory/edit_inventory/" + inventoryId + "/";
-        }
+        // function editInventory(inventoryId) {
+        //     var selectedHallId = document.getElementById("hall_select").value;
+        //     window.location.href = "/hostelmanagement/inventory/edit_inventory/" + inventoryId + "/";
+        // }
 
         // function deleteInventory(inventoryId) {
         //     var selectedHallId = document.getElementById("hall_select").value;
@@ -89,9 +62,12 @@
 
 
         function deleteInventory(inventoryId) {
-            var selectedHallId = document.getElementById("hall_select").value;
+            // console.log("hiiiiiiiiii");
+            console.log(inventoryId)
+            // var selectedHallId = document.getElementById("hall_select").value;
             var csrfToken = getCookie("csrftoken"); // Function to retrieve the CSRF token
-            
+            // console.log(selectedHallId);
+            console.log("hiiiiiiiiii");
             fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
                 method: "DELETE",
                 headers: {
@@ -134,19 +110,18 @@
 
 
         // Set selected option in dropdown list on page load
-        window.onload = function() {
-            // Get the hall ID from the URL
-            var pathSegments = window.location.pathname.split('/');
-            var hallIdFromUrl = pathSegments[pathSegments.length - 2]; // Assuming the hall ID is the second-to-last segment
-            // console.log("Hall ID from URL:", hallIdFromUrl);
-            localStorage.setItem("selectedHallId", hallIdFromUrl);
+        // window.onload = function() {
+        //     // Get the hall ID from the URL
+        //     var pathSegments = window.location.pathname.split('/');
+        //     var hallIdFromUrl = pathSegments[pathSegments.length - 2]; // Assuming the hall ID is the second-to-last segment
+        //     // console.log("Hall ID from URL:", hallIdFromUrl);
+        //     localStorage.setItem("selectedHallId", hallIdFromUrl);
             
-            var selectedHallId = localStorage.getItem("selectedHallId");
-            if (selectedHallId) {
-                document.getElementById("hall_select").value = selectedHallId;
-            }
+        //     var selectedHallId = localStorage.getItem("selectedHallId");
+        //     if (selectedHallId) {
+        //         document.getElementById("hall_select").value = selectedHallId;
+        //     }
 
-        };
+        // };
     </script>
-</body>
-</html>
+{% endblock %}

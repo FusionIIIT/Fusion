@@ -1,28 +1,29 @@
 {% block Impose_fine  %}
-    <h1>Hostel Fine Form</h1>
+    <h2 align="center">Hostel Fine Form</h2>
     <form  class="ui form" id="fineForm" action="/hostelmanagement/fine/impose/" method="POST">
         {% csrf_token %}
+        <div class="field">
         <label for="student_id">Student ID:</label>
-
         <select id="student_id" name="student_id">
             <option value="">Select a Student ID</option>
             {% for student in students %}
             <option value="{{ student.id_id }}">{{ student.id_id }}</option>
             {% endfor %}
-        </select><br /><br />
-
+        </select>
+        </div>
+        <div class="field">
         <label for="student_name">Student Name:</label>
-        <input type="text" id="student_fine_name" name="student_fine_name" required readonly /><br /><br />
-
+        <input type="text" id="student_fine_name" name="student_fine_name" required readonly />
+        </div>
+        <div class="field">
         <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" min="0" step="1" required /><br />
-
-        <br />
-
+        <input type="number" id="amount" name="amount" min="0" step="1" required />
+        </div>
+        <div class="field">
         <label for="reason">Reason:</label><br />
         <textarea id="reason" name="reason" required></textarea><br />
-
-        <button type="submit">Submit</button>
+        </div>
+        <button type="submit" class="ui primary button">Submit</button>
     </form>
 
     <div id="responseMessage"></div>

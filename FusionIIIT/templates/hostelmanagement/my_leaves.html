@@ -18,7 +18,7 @@
                 <td>{{ leave.start_date }}</td>
                 <td>{{ leave.end_date }}</td>
                 <td
-                    class="{% if leave.status == 'Approved' %}approved-status{% elif leave.status == 'Rejected' %}rejected-status{% endif %}">
+                    class="{% if leave.status == 'Approved' %}approved-status{% elif leave.status == 'Rejected' %}rejected-status{% elif leave.status == 'pending' %}pending-status{%endif%}">
                     {{ leave.status }}
                 </td>
             </tr>
@@ -36,6 +36,10 @@
         .rejected-status {
             background-color: #ff0000;
             /* Red for Rejected status */
+        }
+        .pending-status {
+            background-color: #ffff00;
+            /* Yellow for Pending status */
         }
     </style>
 {% endblock %}

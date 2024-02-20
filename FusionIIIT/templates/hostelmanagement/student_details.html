@@ -16,18 +16,18 @@
             </tr>
         </thead>
         <tbody>
-            {% for student in students %}
+            {% for stu in hostel_students_details %}
             <tr>
-                <td>{{ student.id }}</td>
-                <td>{{ student.first_name }}</td>
-                <td>{{ student.last_name }}</td>
-                <td>{{ student.programme }}</td>
-                <td>{{ student.batch }}</td>
-                <td>{{ student.room_num }}</td>
-                <td>{{ student.hall_id }}</td>
-                <td>{{ student.specialization }}</td>
-                <td>{{ student.parent_contact }}</td>
-                <td>{{ student.address }}</td>
+                <td>{{ stu.id }}</td>
+                <td>{{ stu.first_name }}</td>
+                <td>{{ stu.last_name }}</td>
+                <td>{{ stu.programme }}</td>
+                <td>{{ stu.batch }}</td>
+                <td>{{ stu.room_num }}</td>
+                <td>{{ stu.hall_id }}</td>
+                <td>{{ stu.specialization }}</td>
+                <td>{{ stu.parent_contact }}</td>
+                <td>{{ stu.address }}</td>
             </tr>
             {% endfor %}
         </tbody>
