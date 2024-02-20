@@ -10,6 +10,11 @@ urlpatterns = [
     # url(r'^add_student/', views.add_student, name='add_student'),
 
     url(r'^update_hidden_grade/', views.update_hidden_grade, name='update_hidden_grade'),
+    
+    url(r'^update_hidden_grade_multiple/', views.update_hidden_grade_multiple, name='update_hidden_grade_multiple'),
+    
+    url(r'^enter_student_grades/', views.enter_student_grades, name='enter_student_grades'),
+    
 
 
     url(r'^update_authenticator/', views.update_authenticator, name='update_authenticator'),
