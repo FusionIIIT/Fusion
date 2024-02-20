@@ -119,9 +119,9 @@ def convener_view(request):
                 print(query)
                 recipient = Student.objects.filter(programme=programme).filter(query)
             else:
-                if(batch>2019):
-                    batch=batch%2000
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
+                if(int(batch)>2019):
+                    curbatch=int(batch)%2000
+                recipient = Student.objects.filter(programme=programme, id__id__startswith=curbatch)
             
             # Notification starts
             print(recipient)
@@ -451,7 +451,7 @@ def get_MCM_Flag(request):  # Here we are extracting mcm_flag
     # return HttpResponseRedirect('/spacs/student_view')
 
 def getConvocationFlag(request):  # Here we are extracting convocation_flag
-    x = Notification.objects.filter(student_id=request.user.extrainfo.id)
+    x = Notification.objects.select_related('student_id', 'release_id').filter(student_id=request.user.extrainfo.id)
     for i in x:
         i.invite_convocation_accept_flag = True
         i.save()

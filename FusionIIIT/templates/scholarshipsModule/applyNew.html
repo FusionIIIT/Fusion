@@ -368,7 +368,7 @@
                  </div>
                {% endif %}
                {% else %}
-               <div class="ui  button">
+               <div class="ui  button" id="apply_convocation_btn">
                  Apply
                </div>
                {% endif %}
@@ -1077,7 +1077,7 @@
                             success: function (response) {
                                 if(response.result==='Success'){
                                   location.reload();
-                                    console.log(response.result)
+                                    console.log("reuk", response.result)
                                 }
                                 else{
                                     console.log(response.result);
