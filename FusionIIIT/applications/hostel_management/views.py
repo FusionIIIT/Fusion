@@ -626,6 +626,7 @@ def all_leave_data(request):
 
 @login_required
 def create_hostel_leave(request):
+    print(request.user.username)
     if request.method == 'GET':
         return render(request, 'hostelmanagement/create_leave.html')
     elif request.method == 'POST':
@@ -652,7 +653,8 @@ def create_hostel_leave(request):
 
 @login_required
 def hostel_complaint_list(request):
-    user_id = request.user.id 
+    user_id = request.user.id
+    
     try:
         staff = request.user.extrainfo.id  # Assuming the user's profile is stored in extrainfo
     except AttributeError:
@@ -677,13 +679,16 @@ def get_students(request):
     if HallCaretaker.objects.filter(staff_id=staff).exists():
         hall_id = HallCaretaker.objects.get(staff_id=staff).hall_id
         print(hall_id)
-        student_details = StudentDetails.objects.filter(hall_no=hall_id)
+        hall_no = Hall.objects.get(id=hall_id)
+        print(hall_no)
+        student_details = StudentDetails.objects.filter(hall_id=hall_no)
+        
        
         return render(request, 'hostelmanagement/student_details.html', {'students': student_details})
         
     elif HallWarden.objects.filter(faculty_id=staff).exists():
         hall_id = HallWarden.objects.get(faculty_id=staff).hall_id
-        student_details = StudentDetails.objects.filter(hall_no=hall_id)
+        student_details = StudentDetails.objects.filter(hall_id=hall_no)
         
         return render(request, 'hostelmanagement/student_details.html', {'students': student_details})
     else:
@@ -694,8 +699,9 @@ def get_students(request):
 class PostComplaint(APIView):
     authentication_classes = [SessionAuthentication]  # Assuming you are using session authentication
     permission_classes = [IsAuthenticated]  # Allow only authenticated users to access the view
-
+    
     def dispatch(self, request, *args, **kwargs):
+        print(request.user.username)
         if not request.user.is_authenticated:
             return redirect('/hostelmanagement')  # Redirect to the login page if user is not authenticated
         return super().dispatch(request, *args, **kwargs)
