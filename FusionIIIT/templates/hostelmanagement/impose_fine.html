@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostel Fine Form</title>
-</head>
-<body>
+{% block Impose_fine  %}
     <h1>Hostel Fine Form</h1>
-    <form id="fineForm" action="/hostelmanagement/fine/impose/" method="POST">
+    <form  class="ui form" id="fineForm" action="/hostelmanagement/fine/impose/" method="POST">
         {% csrf_token %}
         <label for="student_id">Student ID:</label>
 
@@ -19,7 +12,7 @@
         </select><br /><br />
 
         <label for="student_name">Student Name:</label>
-        <input type="text" id="student_name" name="student_name" required readonly /><br /><br />
+        <input type="text" id="student_fine_name" name="student_fine_name" required readonly /><br /><br />
 
         <label for="amount">Amount:</label>
         <input type="number" id="amount" name="amount" min="0" step="1" required /><br />
@@ -46,7 +39,8 @@
             fetch(`/hostelmanagement/student/${studentId}/name/`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("student_name").value = data.name;
+                    console.log(data.name);
+                    document.getElementById("student_fine_name").value = data.name;
                 })
                 .catch(error => {
                     console.error("Error fetching student name:", error);
@@ -68,7 +62,7 @@
             })
             .then(response => {
                 if (response.ok) {
-                    window.location.href = "impose/list/";
+                    window.location.href = "/hostelmanagement/";
                 } else {
                     console.error("Error updating status");
                 }
@@ -78,5 +72,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}

@@ -243,6 +243,19 @@ def hostel_view(request, context={}):
 
     add_hostel_form = HallForm()
     warden_ids=Faculty.objects.all().select_related('id__user')
+
+    #//! My change for imposing fines
+    user_id = request.user
+    staff_fine_caretaker=user_id.extrainfo.id
+    students = Student.objects.all();
+
+    fine_user=request.user
+
+    
+    caretaker_fine_id = HallCaretaker.objects.get(staff_id=staff_fine_caretaker)
+    hall_fine_id = caretaker_fine_id.hall_id
+    hostel_fines = HostelFine.objects.filter(hall_id=hall_fine_id).order_by('fine_id')
+
     context = {
 
         'all_hall': all_hall,
@@ -274,6 +287,10 @@ def hostel_view(request, context={}):
         'my_leaves': my_leaves,
         'all_leaves': all_leaves,
         'all_complaints': all_complaints,
+        
+        'staff_fine_caretaker':staff_fine_caretaker,
+        'students':students,
+        'hostel_fines':hostel_fines,
         **context
     }
 
@@ -1494,7 +1511,7 @@ class HostelFineView(APIView):
 
         # Extract data from the request
         student_id = request.data.get('student_id')
-        student_name = request.data.get('student_name')
+        student_name = request.data.get('student_fine_name')
         amount = request.data.get('amount')
         reason = request.data.get('reason')
 
