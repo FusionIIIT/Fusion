@@ -4,7 +4,7 @@
   <a class="active item" data-tab="active">
     Active Polls
   </a>
-  {% if "CONVENER" in Curr_desig|upper  %}
+  {% if "Counsellor" in Curr_desig  %}
   <a class="item" data-tab="create">
     Create Poll
   </a>
@@ -18,7 +18,7 @@
     <a class="active item" data-tab="active">
       Active Polls
     </a>
-    {% if "Convener" in Curr_desig %}
+    {% if "Counsellor" in Curr_desig %}
     <a class="item" data-tab="create">
       Create Poll
     </a>
