@@ -1,15 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Leave Data</title>
-    <!-- Include jQuery library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-</head>
-<body>
-    <h1>All Leave Data</h1>
-    <table border="1">
+{% block leave_requests %}
+    <h2 align="center">All Leave Requests</h2>
+    <table border="1" class="ui table">
         <thead>
             <tr>
                 <th>Student Name</th>
@@ -22,8 +13,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for leave in all_leave %}
-            {% if leave.status != 'approved' %}
+            {% for leave in all_leaves %}
+            <!-- {% if leave.status != 'Rejected' %} -->
             <tr>
                 <td>{{ leave.student_name }}</td>
                 <td>{{ leave.roll_num }}</td>
@@ -31,43 +22,52 @@
                 <td>{{ leave.start_date }}</td>
                 <td>{{ leave.end_date }}</td>
                 <td>{{ leave.status }}</td>
-                <td>
+                <td class="flex-container">
                     <form class="status-form">
                         {% csrf_token %}
                         <input type="hidden" name="leave_id" value="{{ leave.id }}">
-                        <input type="hidden" name="status" value="approved">
-                        <button type="button" class="status-update">Approve</button>
+                        <input type="hidden" name="status" value="Approved">
+                        <button type="button" class="ui status-update positive button mini">Approve</button>
                     </form>
                     <form class="status-form">
                         {% csrf_token %}
                         <input type="hidden" name="leave_id" value="{{ leave.id }}">
-                        <input type="hidden" name="status" value="rejected">
-                        <button type="button" class="status-update">Reject</button>
+                        <input type="hidden" name="status" value="Rejected">
+                        <button type="button" style="margin-top: 10px;" class="ui status-update negative button tiny">Reject</button>
                     </form>
                 </td>
             </tr>
-            {% endif %}
+            <!-- {% endif %} -->
             {% endfor %}
         </tbody>
     </table>
+    <style>
+        .flex-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
     <script>
-        $(document).ready(function() {
-            $('.status-update').click(function() {
+        $(document).ready(function () {
+            $('.status-update').click(function () {
                 var form = $(this).closest('form');
                 var formData = form.serialize();
                 $.ajax({
                     type: 'POST',
                     url: '/hostelmanagement/update_leave_status/',
                     data: formData,
-                    success: function(response) {
+                    success: function (response) {
                         // Update the status cell text
                         var statusCell = form.closest('tr').find('td:nth-child(6)');
                         statusCell.text(response.status);
                         // Show success message
                         alert('Leave status updated successfully.');
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         // Show error message
                         alert('Error occurred while updating status.');
                     }
@@ -75,5 +75,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}
