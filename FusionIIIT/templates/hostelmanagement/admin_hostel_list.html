@@ -1,8 +1,5 @@
 
 {% block View_Hostels %}
-
-
-    
         <h1 align="center">Hostel List</h1>
 
         <table class ="ui table">
@@ -33,6 +30,7 @@
                        
                         <!-- <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm">Delete</a> -->
                         <!-- <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm">Delete</a> -->
+                        <!-- <button class="ui negative button tiny" onclick="if(confirmDelete()) window.location.href='{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}' >Delete</button> -->
                         <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm" onclick="return confirmDelete()">Delete</a>
 
                         

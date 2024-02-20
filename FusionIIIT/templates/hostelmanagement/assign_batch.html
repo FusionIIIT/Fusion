@@ -1,32 +1,31 @@
 {% block manage_Hostel %}
 
             <form class="ui form">
-            <form>
+
                 {% csrf_token %}
-                <div class="mb-3">
-                    
+                <h2 class="text-center" align="center">Assign Batch</h2>
+                <div class="field">
                   <label for="hall_id" class="form-label">Hall ID:</label>
-                  <select name="hall_id" class="form-control" id="hall_id" required>
+                  <select name="hall_id" class="form-control" id="hall__id" required>
                     <!-- Add an option for each hall ID dynamically -->
                     {% for hall in all_hall %}
                         <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
                     {% endfor %}
                 </select>
                 </div>
-                <div class="mb-5">
+                <div class="field">
                   <label for="batch" class="form-label">Batch :</label>
                   <input type="text" name="batch" required class="form-control mb-3" id="batch">
                 </div>
-                
-                <button type="submit" onclick="assignBatch()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+                <button type="submit" onclick="assignBatch()" class="ui primary button">Assign</button>
               </form>
         
 
     <script>
         function assignBatch() {
-            var hall_id = document.getElementById('hall_id').value;
+            var hall_id = document.getElementById('hall__id').value;
             var batch = document.getElementById('batch').value;
-
+            console.log('~~~~~~~~~~~',hall_id);
             // Perform AJAX request to assign batch
             fetch('http://0.0.0.0:8000/hostelmanagement/assign-batch/', {
                 method: 'POST',

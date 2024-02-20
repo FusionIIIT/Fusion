@@ -925,7 +925,8 @@ class AddHostelView(View):
             form.save()
             messages.success(request, 'Hall added successfully!')
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))  # Redirect to the view showing all hostels
-
+            # return render(request, 'hostelmanagement/admin_hostel_list.html')
+            
         # If form is not valid, render the form with errors
         return render(request, self.template_name, {'form': form})
 
