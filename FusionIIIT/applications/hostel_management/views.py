@@ -535,10 +535,7 @@ def hostel_complaint_list(request):
     else:
         return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>')
 
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
-from applications.hostel_management.models import HallCaretaker, HallWarden
+
 
 @login_required
 def get_students(request):
@@ -551,13 +548,16 @@ def get_students(request):
     if HallCaretaker.objects.filter(staff_id=staff).exists():
         hall_id = HallCaretaker.objects.get(staff_id=staff).hall_id
         print(hall_id)
-        student_details = StudentDetails.objects.filter(hall_no=hall_id)
+        hall_no = Hall.objects.get(id=hall_id)
+        print(hall_no)
+        student_details = StudentDetails.objects.filter(hall_id=hall_no)
+        
        
         return render(request, 'hostelmanagement/student_details.html', {'students': student_details})
         
     elif HallWarden.objects.filter(faculty_id=staff).exists():
         hall_id = HallWarden.objects.get(faculty_id=staff).hall_id
-        student_details = StudentDetails.objects.filter(hall_no=hall_id)
+        student_details = StudentDetails.objects.filter(hall_id=hall_no)
         
         return render(request, 'hostelmanagement/student_details.html', {'students': student_details})
     else:
