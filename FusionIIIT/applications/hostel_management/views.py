@@ -688,6 +688,8 @@ class HostelInventoryView(APIView):
                 'quantity': inventory.quantity,
             })
 
+        inventory_data.sort(key=lambda x: x['inventory_id'])
+
         # Return inventory data as JSON response
         return render(request, 'hostelmanagement/inventory_list.html', {'halls': halls,'inventories': inventory_data})
     
@@ -846,7 +848,7 @@ def hostel_fine_list(request):
     staff=user_id.extrainfo.id
     caretaker = HallCaretaker.objects.get(staff_id=staff)
     hall_id = caretaker.hall_id
-    hostel_fines = HostelFine.objects.filter(hall_id=hall_id)
+    hostel_fines = HostelFine.objects.filter(hall_id=hall_id).order_by('fine_id')
 
 
     if HallCaretaker.objects.filter(staff_id=staff).exists():
@@ -856,6 +858,30 @@ def hostel_fine_list(request):
 
 
 
+@login_required
+def student_fine_details(request):
+    user_id = request.user.username
+    print(user_id)
+    # staff=user_id.extrainfo.id
+
+    # Check if the user_id exists in the Student table
+    # if HallCaretaker.objects.filter(staff_id=staff).exists():
+    #     return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>')
+    
+    if not Student.objects.filter(id_id=user_id).exists():
+        return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>')
+
+    # # Check if the user_id exists in the HostelFine table
+    if not HostelFine.objects.filter(student_id=user_id).exists():
+        return HttpResponse('<script>alert("You have no fines recorded"); window.location.href = "/hostelmanagement/";</script>')
+
+    # # Retrieve the fines associated with the current student
+    student_fines = HostelFine.objects.filter(student_id=user_id)
+
+    
+    return render(request, 'hostelmanagement/student_fine_details.html', {'student_fines': student_fines})
+
+    # return JsonResponse({'message': 'Nice'}, status=status.HTTP_200_OK)
 
 
 class HostelFineUpdateView(APIView):    

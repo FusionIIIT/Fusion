@@ -49,6 +49,7 @@ urlpatterns = [
     path('fine/impose/list/', views.hostel_fine_list, name='fine_list_show'),
     path('fine/impose/list/update/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_update'),
     path('fine/delete/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_delete'),
+    path('fine/show/', views.student_fine_details, name='fine_show'),
     
     
     
