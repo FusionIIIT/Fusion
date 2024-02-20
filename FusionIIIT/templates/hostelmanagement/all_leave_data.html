@@ -1,0 +1,78 @@
+{% block leave_requests %}
+    <h2 align="center">All Leave Requests</h2>
+    <table border="1" class="ui table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Reason</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leave in all_leaves %}
+            <!-- {% if leave.status != 'Rejected' %} -->
+            <tr>
+                <td>{{ leave.student_name }}</td>
+                <td>{{ leave.roll_num }}</td>
+                <td>{{ leave.reason }}</td>
+                <td>{{ leave.start_date }}</td>
+                <td>{{ leave.end_date }}</td>
+                <td>{{ leave.status }}</td>
+                <td class="flex-container">
+                    <form class="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="Approved">
+                        <button type="button" class="ui status-update positive button mini">Approve</button>
+                    </form>
+                    <form class="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="Rejected">
+                        <button type="button" style="margin-top: 10px;" class="ui status-update negative button tiny">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            <!-- {% endif %} -->
+            {% endfor %}
+        </tbody>
+    </table>
+    <style>
+        .flex-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <script>
+        $(document).ready(function () {
+            $('.status-update').click(function () {
+                var form = $(this).closest('form');
+                var formData = form.serialize();
+                $.ajax({
+                    type: 'POST',
+                    url: '/hostelmanagement/update_leave_status/',
+                    data: formData,
+                    success: function (response) {
+                        // Update the status cell text
+                        var statusCell = form.closest('tr').find('td:nth-child(6)');
+                        statusCell.text(response.status);
+                        // Show success message
+                        alert('Leave status updated successfully.');
+                    },
+                    error: function (xhr, status, error) {
+                        // Show error message
+                        alert('Error occurred while updating status.');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
