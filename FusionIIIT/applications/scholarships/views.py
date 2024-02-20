@@ -108,11 +108,12 @@ def convener_view(request):
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
                 # active_batches=str(active_batches)
                 # active_batches.split(',')
+                print(active_batches)
                 querybatch = []
-                for batch in active_batches:
-                    if batch > 2019:
-                        batch=batch%2000
-                        querybatch.append(batch)
+                for curbatch in active_batches:
+                    if curbatch > 2019:
+                        curbatch=curbatch%2000
+                        querybatch.append(curbatch)
                 print( active_batches)
                 query = reduce(or_, (Q(id__id__startswith=batch) for batch in querybatch))
                 print(query)
@@ -142,7 +143,7 @@ def convener_view(request):
                     notification_convocation_flag=True,
                     invite_convocation_accept_flag=False) for student in recipient])
             # Notification ends
-            
+            print(batch)
             messages.success(request, 
                     award + ' applications are invited successfully for ' + str(batch) + ' batch(es)')
             return HttpResponseRedirect('/spacs/convener_view')
