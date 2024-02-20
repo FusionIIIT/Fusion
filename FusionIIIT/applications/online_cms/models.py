@@ -202,4 +202,17 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
+    
+class GradingScheme(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    quiz = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    assignment = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    midsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    endsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    projects = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+
+    def __str__(self):
+        return '{} - {}'.format(
+                self.pk, self.course_id)
+    
 

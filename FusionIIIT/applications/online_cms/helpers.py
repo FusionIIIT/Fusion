@@ -9,7 +9,7 @@ def semester(roll):
     sem = 0
     if month >= 8 and month <= 12:
         sem = 1
-    semester = (datetime.now().year-int(roll))*2+sem
+    semester = (datetime.now().year-2000-int(roll))*2+sem
     return semester
 
 #storing media files like images, videos and assignments 

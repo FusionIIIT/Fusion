@@ -69,4 +69,12 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_bank/(?P<qb_code>[0-9]+)$',
         views.edit_bank, name='edit_bank'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/attendance$', views.submit_attendance,
-        name='submit_attendance'),]
+        name='submit_attendance'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/create_grading_scheme$',
+        views.create_grading_scheme, name='Create_grading_scheme'),
+    url(r'^add_academic_calendar', views.add_academic_calendar, name='Add Calendar'),
+    url(r'^update_calendar', views.update_calendar, name='Add Calendar'),
+    url(r'^add_timetable', views.add_timetable, name="add_timetable"),
+    url(r'^delete_timetable', views.delete_timetable, name='delete_timetable'),
+        ]
+
