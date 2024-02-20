@@ -4,7 +4,11 @@
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="clubbudgetform">
             Club Budget Form
-        </a>
+        </a>      
+
+        <a class="item" data-tab="viewbudget">
+            View Budget
+        </a>      
     </div>
 
     <script type="text/javascript">
@@ -76,5 +80,63 @@
         <br>
         <div class="extra content"></div>
     </div>
+
+    <script type="text/javascript">
+        function display() {
+            var data = document.getElementById("clubName").value;
+            console.log("Selected club:", data);
+            $("#record_table tbody tr").prop("hidden", true);
+            $(".clubname-" + data).removeAttr("hidden");
+        }
+        window.onclick = function(e){
+            if(document.activeElement != document.querySelector('[data-tab="viewbudget"] input.search')){
+                $('div[data-tab="viewbudget"] .dropdown').dropdown('hide');
+            }
+        }
+        
+    </script>
+    
+    <div class="ui tab" data-tab="viewbudget">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px">
+                <div class="sixteen wide field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" id="clubName" onchange="display();" required>
+                        <option value="">Select</option>
+                        {% for club in Club_name %}
+                        <option value="{{ club.club_name }}">{{ club.club_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <br />
+    
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px">Budget Information</h4>
+
+            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;" id="record_table">
+                <thead>
+                    <th class="four wide column">Budget For</th>
+                    <th>Budget Amount</th>
+                    <th class="six wide column">Description</th>
+                    <th>File</th>
+                </thead>
+                <tbody>
+                    {% for budget in club_budgets %}
+                    {% if budget.club.club_name == selected_club %}
+                    <tr class="clubname-{{ budget.club.club_name }}" hidden>
+                        <td>{{ budget.budget_for }}</td>
+                        <td>{{ budget.budget_amt }}</td>
+                        <td>{{ budget.description }}</td>
+                        <td><a href="{{ budget.budget_file.url }}">Download File</a></td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+    
 
 {% endblock %}
