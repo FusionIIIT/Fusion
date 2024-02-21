@@ -144,7 +144,7 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience, 
 
 logger = logging.getLogger('django.server')
 @login_required
-def placementStatistics(request):
+def placement__Statistics(request):
     '''
     logic of the view shown under Placement Statistics tab
     '''
@@ -870,7 +870,7 @@ def checking_roles(request):
         return JsonResponse({'all_roles': role_name})
 
 @login_required
-def PlacementSchedule(request):
+def Placement__Schedule(request):
     '''
     function include the functionality of first tab of UI
     for student, placement officer & placement chairman
@@ -2798,14 +2798,7 @@ def manage_records(request):
     return render(request, 'placementModule/managerecords.html', context)
 
 
-@login_required
-def upload_doc(request):
-    upload_tab=1
-@login_required
-def apply_job(request):
-    apply_tab=1
-def hello_world(request):
-    return render(request, 'hello.html', {'message': 'Hello, World!'})
+
 
 @login_required
 def placement_statistics(request):
@@ -3713,6 +3706,128 @@ def export_to_xls_std_records(qs):
 
     wb.save(response)
     return response
+def resume(request, username):
+    # Retrieve data or whatever you need
+    """
+    The function is used to generate the cv in the pdf format.
+    Embeds the data into the predefined template.
+    @param:
+            request - trivial
+            username - name of user whose cv is to be generated
+    @variables:
+            user = stores current user
+            profile = stores extrainfo of user
+            current = Stores all working students from HoldsDesignation for the respective degignation
+            achievementcheck = variable for achievementcheck in form for cv generation
+            educationcheck = variable for educationcheck in form for cv generation
+            publicationcheck = variable for publicationcheck in form for cv generation
+            patentcheck = variable for patentcheck in form for cv generation
+            internshipcheck = variable for internshipcheck in form for cv generation
+            projectcheck = variable for projectcheck in form for cv generation
+            coursecheck = variable for coursecheck in form for cv generation
+            skillcheck = variable for skillcheck in form for cv generation
+            user = get_object_or_404(User, Q(username=username))
+            profile = get_object_or_404(ExtraInfo, Q(user=user))
+            import datetime
+            now = stores current timestamp
+            roll = roll of the user
+            student = variable storing the profile data
+            studentplacement = variable storing the placement data
+            skills = variable storing the skills data
+            education = variable storing the education data
+            course = variable storing the course data
+            experience = variable storing the experience data
+            project = variable storing the project data
+            achievement = variable storing the achievement data
+            publication = variable storing the publication data
+            patent = variable storing the patent data
+    """
+    user = request.user
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    if current:
+        if request.method == 'POST':
+            achievementcheck = request.POST.get('achievementcheck')
+            educationcheck = request.POST.get('educationcheck')
+            publicationcheck = request.POST.get('publicationcheck')
+            patentcheck = request.POST.get('patentcheck')
+            internshipcheck = request.POST.get('internshipcheck')
+            projectcheck = request.POST.get('projectcheck')
+            coursecheck = request.POST.get('coursecheck')
+            skillcheck = request.POST.get('skillcheck')
+            reference_list = request.POST.getlist('reference_checkbox_list')
+            extracurricularcheck = request.POST.get('extracurricularcheck')
+            conferencecheck =  request.POST.get('conferencecheck')
+    else:
+        conferencecheck = '1'
+        achievementcheck = '1'
+        educationcheck = '1'
+        publicationcheck = '1'
+        patentcheck = '1'
+        internshipcheck = '1'
+        projectcheck = '1'
+        coursecheck = '1'
+        skillcheck = '1'
+        extracurricularcheck = '1'
+
+
+    # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
+    user = get_object_or_404(User, Q(username=username))
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    now = datetime.datetime.now()
+    if int(str(profile.id)[:2]) == 20:
+        if (now.month>4):
+          roll = 1+now.year-int(str(profile.id)[:4])
+        else:
+          roll = now.year-int(str(profile.id)[:4])
+    else:
+        if (now.month>4):
+          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+        else:
+          roll = (now.year)-int("20"+str(profile.id)[0:2])
+
+    student = get_object_or_404(Student, Q(id=profile.id))
+    skills = Has.objects.select_related('skill_id','unique_id').filter(Q(unique_id=student))
+    education = Education.objects.select_related('unique_id').filter(Q(unique_id=student))
+    reference = Reference.objects.filter(id__in=reference_list)
+    course = Course.objects.select_related('unique_id').filter(Q(unique_id=student))
+    experience = Experience.objects.select_related('unique_id').filter(Q(unique_id=student))
+    project = Project.objects.select_related('unique_id').filter(Q(unique_id=student))
+    achievement = Achievement.objects.select_related('unique_id').filter(Q(unique_id=student))
+    extracurricular = Extracurricular.objects.select_related('unique_id').filter(Q(unique_id=student))
+    conference = Conference.objects.select_related('unique_id').filter(Q(unique_id=student))
+    publication = Publication.objects.select_related('unique_id').filter(Q(unique_id=student))
+    patent = Patent.objects.select_related('unique_id').filter(Q(unique_id=student))
+    today = datetime.date.today()
+
+    if len(reference) == 0:
+        referencecheck = '0'
+    else:
+        referencecheck = '1'
+
+    return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user, 'references': reference,
+                                                     'profile': profile, 'projects': project,
+                                                     'skills': skills, 'educations': education,
+                                                     'courses': course, 'experiences': experience,
+                                                     'referencecheck': referencecheck,
+                                                     'achievements': achievement,
+                                                     'extracurriculars': extracurricular,
+                                                     'publications': publication,
+                                                     'patents': patent, 'roll': roll,
+                                                     'achievementcheck': achievementcheck,
+                                                     'extracurricularcheck': extracurricularcheck,
+                                                     'educationcheck': educationcheck,
+                                                     'publicationcheck': publicationcheck,
+                                                     'patentcheck': patentcheck,
+                                                     'conferencecheck': conferencecheck,
+                                                     'conferences': conference,
+                                                     'internshipcheck': internshipcheck,
+                                                     'projectcheck': projectcheck,
+                                                     'coursecheck': coursecheck,
+                                                     'skillcheck': skillcheck,
+                                                     'today':today})
+
 
 
 def export_to_xls_invitation_status(qs):
@@ -3913,7 +4028,19 @@ def add_placement_visit(request):
     }
     return render(request, 'placementModule/add_placement_visits.html', context)
 
+def update_placement_data(request):
+    add_record_tab = 1
+    user=request.user
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
+    #print(all_record_data)
+    context = {
+        'add_record_tab': add_record_tab,
+        'current':current,
+        'current2':current2,
+    }
+    return render(request, 'placementModule/add_placement_record.html', context)
 def placement_visit_save(request):
     if request.method!="POST":
         return HttpResponse("Method Not Allowed")

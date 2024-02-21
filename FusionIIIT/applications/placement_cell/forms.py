@@ -483,6 +483,7 @@ class AddSchedule(forms.Form):
 
         return company_name
 
+
 def current_year():
     return date.today().year
 
@@ -543,6 +544,57 @@ class SearchPbiRecord(forms.Form):
                                                             'class': 'field',
                                                             'id': 'add_pbi_cname'}),
                             label="cname", required=False)
+
+
+
+class AddPlacementSchedule(forms.Form):
+    """
+    The form is used to placement or pbi schedule.
+    @variables:
+            time - time of placement activity
+            ctc - salary
+            company_name - name of company
+            placement_type - placement type (placement/pbi)
+            location - location of company
+            description - description of company
+            placement_date - date of placement activity
+    """
+    time = forms.TimeField(label='time', widget=forms.widgets.TimeInput(attrs={'type': "time",
+                                                                                'value':"00:00",
+                                                                                'min':"0:00",
+                                                                                'max':"24:00"}))
+    ctc = forms.DecimalField(label="ctc", widget=forms.NumberInput(attrs={ 'min':0, 'step': 0.25}) )
+    company_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                              'class': 'field',
+                                                              'list': 'company_dropdown1',
+                                                              'id': 'company_input'}),
+                                   label="company_name")
+    placement_type = forms.ChoiceField(widget=forms.Select(attrs={'style': "height:45px"}), label="placement_type",
+                                       choices=Constants.PLACEMENT_TYPE)
+    location = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                           'class': 'field'}),
+                               label="location")
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                          'class': 'form-control'}),
+                                  label="description", required=False)
+    attached_file = forms.FileField(required=False)
+    placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+    def clean_ctc(self):
+        ctc = self.cleaned_data['ctc']
+        # print('form validation \n\n\n\n', ctc)
+        if ctc <= 0:
+            raise forms.ValidationError("CTC must be positive value")
+
+        return ctc
+
+    def clean_company_name(self):
+        company_name = self.cleaned_data['company_name']
+        # print('form validation \n\n\n\n', ctc)
+        if NotifyStudent.objects.filter(company_name=company_name):
+            raise forms.ValidationError("company_name must be unique")
+
+        return company_name
 
 
 class SearchHigherRecord(forms.Form):
