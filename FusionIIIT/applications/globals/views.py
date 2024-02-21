@@ -779,7 +779,16 @@ def profile(request, username=None):
 
     if(str(user.extrainfo.user_type)=='fx'):
         print("user3")
-        return HttpResponseRedirect('/eis/profile/' + (username if username else '') + '/')
+        if username:
+            return HttpResponseRedirect('/eis/profile/' + username+'/')
+        else:
+            return HttpResponseRedirect('/eis/profile/' )
+    if(str(user.extrainfo.user_type)=='staff'):
+        print("staff")
+        if username:
+            return HttpResponseRedirect('/profile/' + username+'/')
+        else:
+            return HttpResponseRedirect('/eis/profile/' )
     
     if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
