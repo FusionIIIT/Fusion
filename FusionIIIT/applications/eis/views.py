@@ -276,8 +276,9 @@ countries = {
 # Main profile landing view
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
+    print("eir", user, username)
     extra_info = get_object_or_404(ExtraInfo, user=user)
-    if extra_info.user_type != 'faculty':
+    if extra_info.user_type != 'fx':
         return redirect('/')
     pf = extra_info.id
 
