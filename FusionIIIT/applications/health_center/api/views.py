@@ -5,7 +5,6 @@ from applications.health_center.models import *
 from datetime import datetime, timedelta, time,date
 from django.db import transaction
 from notification.views import  healthcare_center_notif
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status

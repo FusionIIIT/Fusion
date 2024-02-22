@@ -11,14 +11,23 @@
         <a class="item" data-tab="removedoctor">
             Remove Doctor
         </a>
+        <a class="item" data-tab="viewpathologist">
+            Pathologists
+        </a>
+        <a class="item" data-tab="addpathologist">
+            Add Pathologists
+        </a>
+        <a class="item" data-tab="removepathologist">
+            Remove Pathologists
+        </a>
     </div>
     {% comment %}the view doctor tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewdoctor">
          <div id="docs_print" class="ui vertical segment" >
-              <!--  <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
+                <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
                     Download
                     <i class="ui download icon right floated"></i>
-                </button>  -->
+                </button> 
 
                 <script>
     $('#pr_docs').click(function(e){
@@ -57,9 +66,9 @@
         <tr>
           <td style="font-weight:bold;color:black;">Doctor</td>
           
-          {% for d in doct %}
+          {% for d in doctors %}
           {{count.doctor_count}}
-          <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
+          <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d.doctor_name}}</td>
           {% endfor %}
         </tr>
         <tr>
@@ -86,7 +95,7 @@
 {% comment %}the view doctor tab ends here {% endcomment %}
 
 
-    {% comment %}the add doctor tab starts here {% endcomment %}
+  {% comment %}the add doctor tab starts here {% endcomment %}
     <div class="ui tab" data-tab="adddoctor">
       <p id="doc_add"></p>
         <div class="ui vertical segment">
@@ -124,7 +133,7 @@
                                                     var new_doctor = document.getElementById('new_doctor').value;
                                                     var specialization = document.getElementById('specialization').value;
                                                     var phone = document.getElementById('phone').value;
-                                                    if ( new_medicine==""||phone==""||specialization=="") {
+                                                    if ( new_doctor==""||phone==""||specialization=="") {
                                                         $('#doc_add').html('Enter valid details');
                                                         return false;
                                                     }
@@ -163,7 +172,7 @@ $('#phc_docs tbody').append("<tr><td>" + data.doctor + "</td><td>" + data.specia
     </div>
     {% comment %}the add doctor tab ends here {% endcomment %}
 
-    {% comment %}the remove medicine tab starts here {% endcomment %}
+    {% comment %}the remove doctor tab starts here {% endcomment %}
     <div class="ui tab" data-tab="removedoctor">
         <div class="ui vertical segment">
             <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
@@ -215,5 +224,211 @@ $('#phc_docs tbody').append("<tr><td>" + data.doctor + "</td><td>" + data.specia
         <div class="extra segment"></div>
     </div>
     {% comment %}the remove doctor tab ends here {% endcomment %}
+
+    {% comment %}the view pathologist tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewpathologist">
+         <div id="pathos_print" class="ui vertical segment" >
+                <button type="button"  id="pr_pathos" name="PDF" value="PDF" class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button> 
+
+                <script>
+    $('#pr_pathos').click(function(e){
+        var sTable = document.getElementById('pathos_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >PHC Pathologists</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+        <table  border=1 class="ui definition padded table" style="margin: auto;">
+        </br>
+          </br>
+              </br>
+        <thead>
+
+        <tr>
+          <td style="font-weight:bold;color:black;">Pathologist</td>
+          
+          {% for p in pathologists %}
+          {{count.pathologist_count}}
+          <td style="font-weight:bold;color:black; word-wrap:break-word;">{{p.pathologist_name}}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td >Specialization</td>
+          {% for p in pathologists %}
+          {{count.pathologist_count}}
+          <td style="word-wrap:break-word;">{{p.specialization}}</td>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <td >Phone Number</td>
+          {% for p in pathologists %}
+          {{count.pathologist_count}}
+          <td style="word-wrap:break-word;">{{p.pathologist_phone}}</td>
+          {% endfor %}
+        </tr>
+        </thead>
+        </table>
+
+
+        </div>
+    </div>
+{% comment %}the view pathologist tab ends here {% endcomment %}
+
+{% comment %}the add pathologist tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="addpathologist">
+      <p id="patho_add"></p>
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Pathologist Name</label>
+                <div class="ui fluid large input">
+                    <input placeholder="Pathologist Name" id="new_pathologist" name="new_pathologist" type="text">
+                </div>
+                </div>
+                <div class="field">
+                    <label>Specialization</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Specialization" id="specialization_1" name="specialization" type="text">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Phone Number</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Phone" id="phone_1" name="phone" type="number">
+                    </div>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="add_pathologist" name="add_pathologist"  value="Submit" class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#add_pathologist').click(function(e)
+                                                  {
+                                                    var new_pathologist = document.getElementById('new_pathologist').value;
+                                                    var specialization = document.getElementById('specialization_1').value;
+                                                    var phone = document.getElementById('phone_1').value;
+                                                    if ( new_pathologist==""|| phone==""|| specialization=="") {
+                                                        $('#patho_add').html('Enter valid details');
+                                                        return false;
+                                                    }
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      new_pathologist:$("#new_pathologist").val(),
+                                                      specialization:$("#specialization_1").val(),
+                                                      phone:$("#phone_1").val(),
+                                                      add_pathologist:$('#add_pathologist').val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("added pathologist");
+
+                                            {% comment %}          $('#phc_docs').find('tbody');
+$('#phc_docs tbody').append("<tr><td>" + data.pathologist + "</td><td>" + data.specialization + "</td><td>"  + data.phone + "</td></tr>");
+                                                       {% endcomment %}
+
+                                                      document.getElementById("new_pathologist").value="";
+                                                      document.getElementById("specialization").value="";
+                                                      document.getElementById("phone").value="";
+                                                      window.location.reload();
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+  {% comment %}the add pathologist tab ends here {% endcomment %}
+
+  {% comment %}the remove pathologist tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="removepathologist">
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Pathologist</label>
+                <select id="patho_active" class="ui search fluid dropdown" name="pathologist_id" required="true">
+                  <option selected hidden>--SELECT--</option>
+                  {% for pathologist in pathologists %}
+                  <option value="{{pathologist.id}}">{{pathologist.pathologist_name}}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="remove_pathologist" name="remove_pathologist"  value="Submit"class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#remove_pathologist').click(function(e)
+                                                  {
+                                                    var new_pathologist = document.querySelector('#patho_active').value;
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      pathologist_active:new_pathologist,
+                                                      remove_pathologist:$('#remove_pathologist').val()
+                                                    },
+                                                      success: function(data){
+                                                      $('#'+data.id).parent().remove();
+
+                                                      alert("removed pathologist : "+data.doc);
+                                                      document.getElementById("patho_active").value="";
+                                                      window.location.reload();
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+    {% comment %}the remove pathologist tab ends here {% endcomment %}
+
+
 
 {% endblock %}

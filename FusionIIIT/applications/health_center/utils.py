@@ -7,7 +7,7 @@ from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
                      Prescribed_medicine, Prescription, Schedule,
-                     Stock)
+                     Stock, Announcements, SpecialRequest, Pathologist)
 
 def datetime_handler(date):
     '''
@@ -65,12 +65,45 @@ def compounder_view_handler(request):
         )
         data={'status':1, 'doctor':doctor, 'specialization':specialization, 'phone':phone}
         return JsonResponse(data)
+    
+    # updating new pathologist info in db    
+    elif 'add_pathologist' in request.POST:                                         
+        doctor=request.POST.get('new_pathologist')
+        specialization=request.POST.get('specialization')
+        phone=request.POST.get('phone')
+        Pathologist.objects.create(
+        pathologist_name=doctor,
+        pathologist_phone=phone,
+        specialization=specialization,
+        active=True
+        )
+        data={'status':1, 'pathologist_name':doctor, 'specialization':specialization, 'pathologist_phone':phone}
+        return JsonResponse(data)
+    
+    # making announcements from compounder 
+    # elif 'add' in request.POST:                                         
+    #     ven=request.POST.get('venue')
+    #     announcement=request.POST.get('announcement')
+    #     Announcement.objects.create(
+    #     venue=ven,
+    #     announcement=announcement,
+    #     )
+    #     data={ 'venue':ven, 'announcement':announcement }
+    #     return JsonResponse(data)
 
     # remove doctor by changing active status
     elif 'remove_doctor' in request.POST:                              
         doctor=request.POST.get('doctor_active')
         Doctor.objects.filter(id=doctor).update(active=False)
         doc=Doctor.objects.get(id=doctor).doctor_name
+        data={'status':1, 'id':doctor, 'doc':doc}
+        return JsonResponse(data)
+    
+    # remove pathologist by changing active status
+    elif 'remove_pathologist' in request.POST:                              
+        doctor=request.POST.get('pathologist_active')
+        Pathologist.objects.filter(id=doctor).update(active=False)
+        doc=Pathologist.objects.get(id=doctor).pathologist_name
         data={'status':1, 'id':doctor, 'doc':doc}
         return JsonResponse(data)
 
@@ -106,7 +139,7 @@ def compounder_view_handler(request):
         return JsonResponse(data)
 
     # edit schedule for doctors
-    elif 'edit' in request.POST:                                             
+    elif 'edit_1' in request.POST:                                             
         doctor = request.POST.get('doctor')
         day = request.POST.get('day')
         time_in = request.POST.get('time_in')
@@ -124,13 +157,46 @@ def compounder_view_handler(request):
         data={'status':1}
         return JsonResponse(data)
 
+
     # remove schedule for a doctor
     elif 'rmv' in request.POST:  
         doctor = request.POST.get('doctor')
+        
         day = request.POST.get('day')
         Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day).delete()
         data = {'status': 1}
         return JsonResponse(data)
+    
+    
+     # edit schedule for pathologists
+    elif 'edit12' in request.POST:                                             
+        doctor = request.POST.get('pathologist')
+        day = request.POST.get('day')
+        time_in = request.POST.get('time_in')
+        time_out = request.POST.get('time_out')
+        room = request.POST.get('room')
+        pathologist_id = Pathologist.objects.get(id=doctor)
+        schedule = Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day)
+        if schedule.count() == 0:
+            Schedule.objects.create(pathologist_id=pathologist_id, day=day, room=room,
+                                    from_time=time_in, to_time=time_out)
+        else:
+            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(room=room)
+            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(from_time=time_in)
+            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(to_time=time_out)
+        data={'status':1}
+        return JsonResponse(data)
+    
+    
+    # remove schedule for a doctor
+    elif 'rmv1' in request.POST:  
+        doctor = request.POST.get('pathologist')
+        
+        day = request.POST.get('day')
+        Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day).delete()
+        data = {'status': 1}
+        return JsonResponse(data)
+    
 
     elif 'add_medicine' in request.POST:
         medicine = request.POST.get('new_medicine')
@@ -422,6 +488,8 @@ def student_view_handler(request):
                 healthcare_center_notif(request.user, cmp.user, 'appoint_req')
 
         return JsonResponse(data)
+    
+    
     elif 'doctor' in request.POST:
         doctor_id = request.POST.get('doctor')
         days = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
@@ -442,6 +510,8 @@ def student_view_handler(request):
         schedule = sch.filter(doctor_id=doctor_id).order_by('date')
         schedules = serializers.serialize('json', schedule)
         return HttpResponse(schedules, content_type='json')
+    
+    
     elif 'feed_submit' in request.POST:
         user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
         feedback = request.POST.get('feedback')
