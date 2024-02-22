@@ -21,7 +21,7 @@ class SpecialRequest(models.Model):
 
 class Announcements(models.Model):
     maker_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    ann_date = models.DateTimeField(default="04-04-2021")
+    ann_date = models.DateTimeField(auto_now_add=True)
     message = models.CharField(max_length=200)
     batch = models.CharField(max_length=40,default="Year-1")
     department = models.CharField(max_length=40,default="ALL")
