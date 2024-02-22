@@ -160,3 +160,22 @@ class NoOfTechnicalBidTimes(models.Model):
     key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
     number = models.IntegerField()
 
+class Requests(models.Model):
+    # id = models.IntegerField(primary_key=True, max_length=200)
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    area = models.CharField(max_length=200)
+    requestCreatedBy = models.CharField(max_length=200)
+    engineerProcessed = models.IntegerField()
+    directorApproval = models.IntegerField()
+    deanProcessed = models.IntegerField()
+    status = models.CharField(max_length=200)
+    
+class Bills(models.Model):
+    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
+    name = models.CharField(max_length=200)
+    work = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    agency = models.CharField(max_length=200)
+    bill_processed = models.IntegerField()
+    bill_settled = models.IntegerField()

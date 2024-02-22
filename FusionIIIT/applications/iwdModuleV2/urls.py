@@ -36,5 +36,16 @@ urlpatterns = [
     url(r'milestoneView/$', views.milestoneView, name='Milestones'),
     url(r'addendumView/$', views.addendumView, name='Addendum View'),
     url('agreementView/$', views.agreementView, name='Agreement VIew'),
-    url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View')
+    url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View'),
+    url('requestsView/',views.requestsView, name='Requests view'),
+    url('createdRequestsView/',views.createdRequests, name='Created Requests view'),
+    url('handleEngineerProcessRequests/', views.handleEngineerProcessRequests, name='Engineer-Process-Requests'),
+    url('engineerProcessedRequestsView/',views.engineerProcessedRequests, name='Engineer-Processed-Requests view'),
+    url('handleDeanProcessRequests/', views.handleDeanProcessRequests, name='Dean-Process-Requests'),
+    url('deanProcessedRequestsView/',views.deanProcessedRequests, name='Dean-Processed-Requests view'),
+    url('handleDirectorApprovalRequests/', views.handleDirectorApprovalRequests, name='Director-Approval-Requests'),
+    url('handleDirectorRejectionRequests/', views.handleDirectorRejectionRequests, name='Director-Rejection-Requests'),
+    url('requestsStatus/', views.requestsStatus, name='Requests-Status'),
+    url('billsView/',views.billsView, name='Bills View'),
+
 ]

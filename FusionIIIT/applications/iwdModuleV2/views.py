@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-
+from django.db.models import Q
 from applications.globals.models import *
 from .models import *
 from django.http import HttpResponseRedirect
@@ -17,16 +17,23 @@ from django.http import HttpResponseRedirect
 # owing to length and inherent extensiveness of code. Rather than, whosoever read this code is advised to do so
 # in conjunction with SRS. After that, everything will become easier.
 
+# def dashboard(request):
+#     eligible = False
+#     userObj = request.user
+#     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+#     for p in userDesignationObjects:
+#         if p.designation.name == 'Admin IWD':
+#             eligible = True
+#             break
+#     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+
 def dashboard(request):
-    eligible = False
+    eligible = ""
     userObj = request.user
     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
     for p in userDesignationObjects:
-        if p.designation.name == 'Admin IWD':
-            eligible = True
-            break
+        eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
-
 
 def page1_1(request):
     if request.method == 'POST':
@@ -401,3 +408,119 @@ def page3View(request):
 def extensionFormView(request):
     extensionObjects = ExtensionOfTimeDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
+
+def requestsView(request):
+    if request.method == 'POST':
+        formObject = Requests()
+        # formObject.key = Projects.objects.get(id=request.session['projectId']) 
+        formObject.name = request.POST['name']
+        formObject.description = request.POST['description']
+        formObject.area = request.POST['area']
+        formObject.engineerProcessed = 0
+        formObject.directorApproval = 0
+        formObject.deanProcessed = 0
+        formObject.requestCreatedBy = request.user.username
+        formObject.status = "Pending"
+        formObject.save()
+        return redirect('http://127.0.0.1:8000/iwdModuleV2/')
+    return render(request, 'http://127.0.0.1:8000/iwdModuleV2/', {})
+
+
+def billsView(request):
+    if request.method == 'POST':
+        formObject = Requests()
+        # formObject.key = Projects.objects.get(id=request.session['projectId'])
+        formObject.name = request.POST['name']
+        formObject.work = request.POST['work']
+        formObject.description = request.POST['description']
+        formObject.agency = request.POST['agency']
+        formObject.bill_processed = request.POST['bill_processed']
+        formObject.bill_settled = request.POST['bill_settled']
+        formObject.save()
+        return redirect('iwdModuleV2/billsView.html')
+    return render(request, 'iwdModuleV2/billsView.html', {})
+
+def createdRequests(request):
+    obj = []
+    requestsObject = Requests.objects.exclude(
+        Q(requestCreatedBy=request.user.username) |
+        Q(engineerProcessed__gt=0) |
+        Q(deanProcessed__gt=0) |
+        Q(directorApproval__gt=0)
+    )
+
+    for x in requestsObject:
+        element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+        obj.append(element)
+    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
+
+def handleEngineerProcessRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+        Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the engineer")
+        obj = []
+        requestsObject = Requests.objects.filter(engineerProcessed = 0, deanProcessed = 0, directorApproval = 0)
+        for x in requestsObject:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+            obj.append(element)
+    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
+
+def engineerProcessedRequests(request):
+    obj = []
+    requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 0, directorApproval = 0)
+    for x in requestsObject:
+        element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+        obj.append(element)
+    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj})
+
+def handleDeanProcessRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+        Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean")
+        obj = []
+        requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 0, directorApproval = 0)
+        for x in requestsObject:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+            obj.append(element)
+    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj})
+
+def deanProcessedRequests(request):
+    print(request)
+    obj = []
+    requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 1, directorApproval = 0)
+    for x in requestsObject:
+        element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+        obj.append(element)
+    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
+
+def handleDirectorApprovalRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
+        obj = []
+        requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 1, directorApproval = 0)
+        for x in requestsObject:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+            obj.append(element)
+    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
+
+def handleDirectorRejectionRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+        obj = []
+        requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 1, directorApproval = 0)
+        for x in requestsObject:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
+            obj.append(element)
+    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
+
+def requestsStatus(request):
+    print(request)
+    obj = []
+    requestsObject = Requests.objects.all()
+    for x in requestsObject:
+        element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.status]
+        obj.append(element)
+    return render(request, 'iwdModuleV2/requestsStatus.html', {'obj' : obj})
+
