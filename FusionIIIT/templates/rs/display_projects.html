@@ -1,0 +1,140 @@
+{% extends 'globals/base.html' %}
+
+{% load static %}
+
+{% block title %}
+IPR
+{% endblock %}
+
+{% block view_projects %}
+
+{% block body %}
+   
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <div class="ui positive message">
+                    <i class="close icon"></i>
+                        {{ message.message }}
+                </div>  
+            {% else %}
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    {{ message.message }}
+                </div> 
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        $('.message .close')
+            .on('click', function() {
+                $(this)
+                    .closest('.message')
+                    .transition('fade')
+                ;
+            });
+    </script>
+    {% comment %}table for viewing projects!{% endcomment %}
+
+   <div class="ui pointing secondary menu" style="font-size:25px;">
+        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}" >
+            Projects             
+        </label>      
+    </div>
+    <!-- set border for table and sort the rows using project id-->
+    
+
+    <style>
+        table {
+            /* border-collapse: collapse; */
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn{
+             background-color: #007bff;
+              color: #fff;
+               border: 2px solid white;
+               border-radius:10px; 
+               padding: 5px 2px ; 
+               cursor: pointer;
+                width: 50%;
+        }
+        .btn-disabled{
+             background-color:#63c6ff;
+              color: #fff;
+               border: 2px solid white;
+               border-radius:10px; 
+               padding: 5px 2px ; 
+                cursor: not-allowed;
+                width: 50%;
+          
+        }
+    </style>
+
+    <table >
+        <tr>
+            <th>S.No.</th>
+            <th>Project ID</th>
+            <th>Project Name</th>
+            <th>Status</th>
+            <th>Sponsored Agency</th>
+            {% if username == "21bcs3000" %}
+                <th>Project Investigator ID</th>
+            {% endif %}
+            
+            <th>Financial Outlay</th>
+            {% if username == "atul" %}
+                <th>Submit Closure Report form</th>
+            {% endif %}
+        </tr>
+
+        {% for project in projects %}
+        <tr>
+            <!-- sort the list using the project_id -->
+            <td>{{forloop.counter}}</td>
+            <td>{{project.project_id}}</td>
+            <td>{{project.project_name}}</td>
+            <td>{{project.status}}</td>
+            <td>{{project.sponsored_agency}}</td>
+            {% if username == "21bcs3000" %}
+            <td>{{project.project_investigator_id}}</td>
+            {% endif %}
+            <td>{{project.financial_outlay}}</td>
+            {% if username != "21bcs3000" %}      
+            <td><a 
+                 href="{% url 'research_procedures:submit_closure_report' project.project_id %}"
+                 >
+            
+                 {% if project.status == 1 %} 
+                    <button class="btn-disabled" disabled>Completed</button>
+
+                    {% else %}
+                    <button class="btn">submit</button>
+                    {% endif %}
+            </a></td>
+            {% endif %}
+        </tr>
+        {% endfor %}    
+    </table>
+    
+    {% comment %}The table segment ends here!{% endcomment %}
+
+    {% comment %}Form for adding projects!{% endcomment %}
+
+   
+    {% comment %}The Technology segment ends here!{% endcomment %}
+{% endblock %}
+
+{% endblock %}

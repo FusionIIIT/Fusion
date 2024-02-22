@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import ResearchGroup
+from .models import *
 from django.contrib.auth.models import User
 
 class ResearchGroupForm(forms.ModelForm):
@@ -35,6 +35,6 @@ class ResearchGroupForm(forms.ModelForm):
         return instance
 
 
-    class Meta:
-        model = ResearchGroup
-        fields = ('name','students','faculty','description',)
+    # class Meta:
+    #     model = ResearchGroup
+    #     fields = ('name','students','faculty','description',)

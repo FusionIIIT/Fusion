@@ -1,8 +1,9 @@
-from rest_framework.serializers import ModelSerializer
-from applications.research_procedures.models import Patent
+# from rest_framework.viewsets import ModelViewSet
+# from applications.research_procedures.models import Patent
+# from .serializers import PatentSerializer
+# from rest_framework.permissions import IsAuthenticatedOrReadOnly 
 
-# Create a Serializer for Model Patent
-class PatentSerializer(ModelSerializer):
-    class Meta:
-        model = Patent
-        fields = '__all__'
+# class ResearchProceduresSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = research_procedures
+#         fields = ('__all__')
