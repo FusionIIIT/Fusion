@@ -1,7 +1,7 @@
 from django.urls import include,path
 from django.conf.urls import url
 from . import views
-
+from . import tests
 app_name="research_procedures"
 
 urlpatterns = [
@@ -21,4 +21,6 @@ urlpatterns = [
       path('add_staff_requests',views.add_staff_requests, name="add_staff_requests"),
       
       
+      url(r'^test/$',tests.testfun,name = 'test')
+
 ]

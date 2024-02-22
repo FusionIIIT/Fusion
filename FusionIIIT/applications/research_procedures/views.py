@@ -14,95 +14,13 @@ from .models import *
 @login_required
 def patent_registration(request):
 
-    """
-        This function is used to register a patent and to retrieve all patents filed by the faculty.
-
-        @param:
-            request - contains metadata about the requested page.
-        
-        @variables:
-            user - the user who is currently logged in.
-            extrainfo - extra information of the user.
-            user_designations - The designations of the user currently logged in.
-            patent - The new patent to be registered.
-            patents - All the patents filed by the faculty.
-            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
-            ipd_form_pdf - The pdf file of the IPD form of the patent sent by the user.
-            project_details_pdf - The pdf file of the project details of the patent sent by the user.
-            file_system - The file system to store the files.
-
-
-    """
-
-    # user = request.user
-    # user_extra_info = ExtraInfo.objects.get(user=user)
-    # user_designations = HoldsDesignation.objects.filter(user=user)
-    # patent = Patent()
-    # context = {}
-    
-    # context['patents'] = Patent.objects.all()
-    # context['user_extra_info'] = user_extra_info
-    # context['user_designations'] = user_designations
-
-  
-    # if request.method=='POST':
-    #     if ("ipd_form_file" in request.FILES) and ("project_details_file" in request.FILES) and ("title" in request.POST):  
-    #         if(user_extra_info.user_type == "faculty"):
-    #             patent.faculty_id = user_extra_info
-    #             patent.title = request.POST.get('title')
-    #             ipd_form_pdf = request.FILES['ipd_form_file']
-    #             if(ipd_form_pdf.name.endswith('.pdf')):
-    #                 patent.ipd_form = request.FILES['ipd_form_file']
-    #                 file_system = FileSystemStorage()
-    #                 ipd_form_pdf_name = file_system.save(ipd_form_pdf.name,ipd_form_pdf)
-    #                 patent.ipd_form_file = file_system.url(ipd_form_pdf_name)
-    #             else:
-    #                 messages.error(request, 'Please upload pdf file')
-    #                 return render(request ,"rs/research.html",context)
-                
-    #             project_details_pdf = request.FILES['project_details_file']
-    #             if(project_details_pdf.name.endswith('.pdf')):
-    #                 patent.project_details=request.FILES['project_details_file']
-    #                 file_system = FileSystemStorage()
-    #                 project_details_pdf_name = file_system.save(project_details_pdf.name,project_details_pdf)
-    #                 patent.project_details_file = file_system.url(project_details_pdf_name)
-    #                 messages.success(request, 'Patent filed successfully')
-    #             else:
-    #                 messages.error(request, 'Please upload pdf file')
-    #                 return render(request ,"rs/research.html",context)
-
-    #             # creating notifications for user and dean_rspc about the patent
-    #             dean_rspc_user = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='dean_rspc').first()).working
-    #             research_procedures_notif(request.user,request.user,"submitted")
-    #             research_procedures_notif(request.user,dean_rspc_user,"created")
-    #             patent.status='Pending'
-    #             patent.save()
-    #         else:
-    #             messages.error(request, 'Only Faculty can file patent')
-    #     else:
-    #         messages.error(request,"All fields are required")
-    # patents = Patent.objects.all() 
-    # context['patents'] = patents
-    # context['research_groups'] = ResearchGroup.objects.all()
-    # context['research_group_form'] = ResearchGroupForm()
+   
     return render(request ,"rs/research.html")
 
 @login_required
 #dean_rspc can update status of patent.   
 def patent_status_update(request):
-    """
-        This function is used to update the status of the patent.
-        @param:
-            request - contains metadata about the requested page.
-        @variables:
-            user - the user who is currently logged in.
-            extrainfo - extra information of the user.
-            user_designations - The designations of the user currently logged in.
-            patent - The patent whose status is to be updated.
-            patents - All the patents filed by the faculty.
-            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
     
-    """
     user = request.user
     user_extra_info = ExtraInfo.objects.get(user=user)
     user_designations = HoldsDesignation.objects.filter(user=user)
@@ -123,19 +41,7 @@ def patent_status_update(request):
 
 @login_required
 def research_group_create(request):
-    """
-        This function is used to create a research group.
-        @param:
-            request - contains metadata about the requested page.
-        @variables:
-            user - the user who is currently logged in.
-            extrainfo - extra information of the user.
-            user_designations - The designations of the user currently logged in.
-            research_group - The research group to be created.
-            research_groups - All the research groups.
-            dean_rspc_user - The Dean RSPC user who can modify status of the patent.
     
-    """
     user = request.user
     user_extra_info = ExtraInfo.objects.get(user=user)
     if request.method=='POST':
@@ -238,6 +144,28 @@ def add_projects(request):
         subd= obj.get('submission_date')
         finishd= obj.get('finish_date')
 
+        check= HoldsDesignation.objects.get(user=pid , designation= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.get(user=pid , designation= "Assistant Professor")
+
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists")
+                    return redirect("rs/projects.html")    
+        
+        check= User.objects.filter(username=rspc)
+        if not check.exists():
+            messages.error(request,"Project not added, no such rspc admin exists")
+            return render(request,"rs/projects.html")
+
+        check= HoldsDesignation.objects.get(user=copid , designation= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.get(user=copid , designation= "Assistant Professor")
+
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists")
+                    return redirect("rs/projects.html")   
+
+
 
         projects.objects.create(
             project_id=projectid,
@@ -253,9 +181,8 @@ def add_projects(request):
             submission_date=subd,
             finish_date=finishd
         )
+
         messages.success(request,"Project added successfully")
-        return redirect("/research_procedures/add_projects")
-    
     return render(request,"rs/projects.html")
 
 def add_fund_requests(request):
@@ -267,6 +194,8 @@ def add_staff_requests(request):
 def add_requests(request,id):
     if request.method == 'POST':
         obj=request.POST
+
+
         if(id=='0') :  
             requestid = obj.get('request_id')
             projectid = obj.get('project_id')
@@ -275,6 +204,16 @@ def add_requests(request,id):
             stats = obj.get('status')
             desc= obj.get('description')
             amt= obj.get('amount')
+
+            check= projects.objects.filter(project_id=projectid)
+            if not check.exists():
+                messages.error(request,"Request not added, no such project exists")
+                return render(request,"rs/add_fund_requests.html")
+
+            check= projects.objects.filter(project_id= projectid, project_investigator_id=pi_id)
+            if not check.exists():
+                messages.error(request,"Request not added, no such project investigator exists")
+                return render(request,"rs/add_fund_requests.html")
 
             requests.objects.create(
                 request_id=requestid,
@@ -299,6 +238,17 @@ def add_requests(request,id):
             reqtype = obj.get('request_type')
             pi_id = obj.get('project_investigator_id')
             stats = obj.get('status')
+
+            check= projects.objects.filter(project_id=projectid)
+            if not check.exists():
+                messages.error(request,"Request not added, no such project exists")
+                return render(request,"rs/add_fund_requests.html")
+
+            check= projects.objects.filter(project_id= projectid, project_investigator_id=pi_id)
+            if not check.exists():
+                messages.error(request,"Request not added, no such project investigator exists")
+                return render(request,"rs/add_fund_requests.html")
+
 
             requests.objects.create(
             request_id=requestid,
