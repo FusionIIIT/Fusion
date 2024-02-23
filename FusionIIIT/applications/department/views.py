@@ -155,6 +155,7 @@ def faculty_view(request):
         department, ann_date, user_info - Gets and store data from FORM used for Announcements.
 
     """
+    context_f = faculty()
     usrnm = get_object_or_404(User, username=request.user.username)
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
@@ -183,7 +184,8 @@ def faculty_view(request):
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
-                                                            "request_to":requests_received
+                                                            "request_to":requests_received,
+                                                            "fac_list" : context_f
                                                         })
 
 def staff_view(request):
@@ -200,6 +202,7 @@ def staff_view(request):
         department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
 
     """
+    context_f = faculty()
     usrnm = get_object_or_404(User, username=request.user.username)
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
@@ -228,7 +231,8 @@ def staff_view(request):
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
-                                                            "request_to":requests_received
+                                                            "request_to":requests_received,
+                                                            "fac_list" : context_f
                                                         })
 
 @login_required(login_url='/accounts/login')
@@ -255,7 +259,7 @@ def all_students(request, bid):
             programme = {
                 '1': 'B.Tech',
                 '2': 'M.Tech',
-                '3': 'PhD',  # Assuming there are more departments
+                '3': 'PhD',
             }[department_code]
             batch = 2021 - len(bid) + 1
             return {'programme': programme, 'batch': batch}
@@ -315,6 +319,31 @@ def faculty():
     }
     print(cse_f)
     return context_f
+
+def alumni(request):
+    """
+    This function is used to Return data of Alumni Department-Wise.
+
+    @variables:
+        cse_a - Stores data of alumni from CSE Department
+        ece_a - Stores data of alumni from ECE Department
+        me_a - Stores data of alumni from ME Department
+        sm_a - Stores data of alumni from ME Department
+        context_a - Stores all above variables in Dictionary
+
+    """
+    cse_a=ExtraInfo.objects.filter(department__name='CSE',user_type='alumni')
+    ece_a=ExtraInfo.objects.filter(department__name='ECE',user_type='alumni')
+    me_a=ExtraInfo.objects.filter(department__name='ME',user_type='alumni')
+    sm_a=ExtraInfo.objects.filter(department__name='SM',user_type='alumni')
+
+    context_a = {
+        "cse_a" : cse_a,
+        "ece_a" : ece_a,
+        "me_a" : me_a,
+        "sm_a" : sm_a
+    }
+    return render(request, 'department/alumni.html', context_a)
 
 def approved(request):
     """
