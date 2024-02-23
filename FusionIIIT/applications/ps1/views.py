@@ -11,18 +11,32 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif
+from django.utils import timezone
+
+
 
 @login_required(login_url = "/accounts/login/")
 def ps1(request):
-    # print("-------------------------------------------------")
-    # print(request.user)
-    # print("-------------------------------------------------")
-    # print("-------------------------------------------------")
-    # print(request.GET)
-    # print("-------------------------------------------------")
-    # print("-------------------------------------------------")
-    # print(request.body)
-    # print("-------------------------------------------------")
+    des_obj = HoldsDesignation.objects.filter(user=request.user)
+
+    if des_obj:
+        designations = [des.designation.name for des in des_obj]
+
+
+    if "ps_admin" in designations or "dept_admin" in designations:
+        return redirect('/purchase-and-store/entry/')
+    elif not("student" in designations) and str((request.user.extrainfo.department.name)):
+        return redirect('/purchase-and-store/create_proposal/')
+    else:
+        return redirect('/dashboard')
+
+
+
+
+
+
+@login_required(login_url = "/accounts/login/")
+def create_proposal(request):
     """
         The function is used to create indents by faculty.
         It adds the indent datails to the indet_table of Purchase and Store module
@@ -56,20 +70,8 @@ def ps1(request):
                 purchased =request.POST.get('purchased')
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    print("-------------------------------------------------")
-    print("designation ")
-    print(des.designation)
-    print("-------------------------------------------------")
-    if  str(des.designation) == "student":
-          return redirect('/dashboard')
     
-    if  str(des.designation) == "dept_admin":
-          return redirect('/purchase-and-store/entry/')
-    
-    if request.user.extrainfo.id == '132':
-          return redirect("/purchase-and-store/entry/")
-    
-    if request.method =="POST" and str(des.designation) == "Assistant Professor":
+    if request.method =="POST":
         try:
             if 'save' in request.POST:
                 uploader = request.user.extrainfo
@@ -128,6 +130,7 @@ def ps1(request):
                 )
 
             if 'send' in request.POST:
+
                 uploader = request.user.extrainfo
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
@@ -153,6 +156,13 @@ def ps1(request):
                 director_approval=False
                 financial_approval=False
                 purchased = False
+                designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+                for des in designations:         
+                    if str(des.designation) == "Director":
+                        head_approval=True
+                        director_approval=True
+                        financial_approval=True
+                        break
 
 
 
@@ -163,18 +173,19 @@ def ps1(request):
                 sender = request.POST.get('design')
                 current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
+
                 receiver = request.POST.get('receiver')
                 try:
                     receiver_id = User.objects.get(username=receiver)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
-                receive = request.POST.get('recieve')
+                receive = request.POST.get('receive')
                 try:
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
-                    return redirect('/ps1/')
+                    return redirect('/create_proposal/')
 
 
                 file_id = create_file(
@@ -186,10 +197,6 @@ def ps1(request):
                     src_object_id="",
                     file_extra_JSON={"value": 2},
                     attached_file=request.FILES.get('myfile')
-                    # description=description,
-                    # subject=subject,
-                    # designation=designation,
-                    # upload_file=upload_file
                 )
 
                 IndentFile.objects.create(
@@ -213,17 +220,6 @@ def ps1(request):
                     purchased =purchased,
                 )
 
-
-
-                # Tracking.objects.create(
-                #     file_id=file,
-                #     current_id=current_id,
-                #     current_design=current_design,
-                #     receive_design=receive_design,
-                #     receiver_id=receiver_id,
-                #     remarks=remarks,
-                #     upload_file=upload_file,
-                # )
                 office_module_notif(request.user, receiver_id)
                 messages.success(request,'Indent Filed Successfully!')
 
@@ -234,12 +230,31 @@ def ps1(request):
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+    today = timezone.now().strftime('%Y-%m-%d')
+
+    Receiver_designation = "HOD (" + get_ExtraInfo_object_from_username(request.user.username).department.name + ")" 
+
+    for des in designations:
+        if str(des.designation) == Receiver_designation:
+            Receiver_designation = "Director"
+            break
+        elif str(des.designation) == "Director":
+            Receiver_designation = "ps_admin"
+            break
+
+
+    users_with_designation = HoldsDesignation.objects.filter(designation__name=Receiver_designation)
+    Forward_to = [user_designation.user for user_designation in users_with_designation] 
 
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
         'designations': designations,
+        'today': today,
+        'receiver':Receiver_designation,
+        'forwardto': Forward_to
+
     }
     return render(request, 'ps1/composeIndent.html', context)
 
@@ -477,9 +492,6 @@ def forwardindent(request, id):
 
                 # sender = request.POST.get('sender')
                 # sender = request.user.id
-                print("-----------------------------------------------")
-                print(request.user.id)
-                print("-----------------------------------------------")
                 # current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
                 current_design = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
                 receiver = request.POST.get('receiver')
@@ -566,14 +578,14 @@ def forwardindent(request, id):
 
 
                 if val=="accept":
-                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "HOD (CSE)", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=True
                     elif "Director" in designs:
                         indent.director_approval=True
                         indent.financial_approval=True
                 
                 else:
-                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "CSE HOD", "HOD (Design)", "HOD (NS)")):
+                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "HOD (CSE)", "HOD (Design)", "HOD (NS)")):
                         indent.head_approval=False
                     elif "Director" in designs:
                         indent.director_approval=False
@@ -589,6 +601,14 @@ def forwardindent(request, id):
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
+    Receiver_designation = "dept_admin "+get_ExtraInfo_object_from_username(request.user.username).department.name 
+    users_with_designation = HoldsDesignation.objects.filter(designation__name=Receiver_designation)
+    Forward_to = [user_designation.user for user_designation in users_with_designation] 
+
+
+
+
+
     context = {
         # 'extrainfo': extrainfo,
         # 'holdsdesignations': holdsdesignations,
@@ -596,6 +616,8 @@ def forwardindent(request, id):
         'file': file,
         'track': track,
         'indent':indent,
+        'receiver':Receiver_designation,
+        'forwardto': Forward_to
     }
 
     return render(request, 'ps1/forwardindent.html', context)
@@ -854,6 +876,7 @@ def stock_update(request):
             stocks.current_stock=request.POST.get('current_stock')
             #stocks.recieved_date=request.POST.get('recieved_date')
             stocks.bill=request.FILES.get('bill')
+            stocks.dept = request.POST.get('dept')
             stocks.save() 
     return HttpResponseRedirect('../stock_view')   
   
@@ -886,8 +909,6 @@ def stock_view(request):
         
         if temp.item_id.purchased:
             print("Purchase Succesful")
-            print()   
-            print()   
         
     return render(request,'ps1/stock_view.html',{'sto':sto})
 @login_required(login_url = "/accounts/login")    
@@ -937,10 +958,60 @@ def dealing_assistant(request):
 @login_required(login_url = "/accounts/login")
 def generate_report(request):
 
-    # stock_entries = StockEntry.objects.filter(
-    #     item_id__file_info__designation__name='Professor'
-    # )
-    # print(stock_entries)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    department = request.user.extrainfo.department.name
+
+    if  str(des.designation) == "dept_admin":
+        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+    else:
+        sto=StockEntry.objects.all()
+
+    return render(request,'ps1/generate_report.html',{'sto':sto})
+
+
+@login_required(login_url = "/accounts/login")
+def report(request):
+    id=request.POST.get('id')
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+    sto=StockEntry.objects.select_related('item_id').get(item_id=indent)
+    file=indent.file_info
+    total_stock = indent.quantity + indent.present_stock
+
+    print(sto.recieved_date)
+
+    context = {
+        'designations':designations,
+        'file': file,
+        'indent':indent,
+        'sto' : sto,
+        'total_stock': total_stock
+    }
+        
+    return render(request,'ps1/report.html',context)
+
+
+def view_bill(request, stock_entry_id):
+    stock_entry = get_object_or_404(StockEntry, pk=stock_entry_id)
+    
+    # Check if the bill file exists
+    if stock_entry.bill:
+        # Read the contents of the bill file
+        bill_content = stock_entry.bill.read()
+        
+        # Return the bill file as a response
+        response = HttpResponse(bill_content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{stock_entry.bill.name}"'
+        return response
+    else:
+        # If the bill file does not exist, return a 404 response
+        return HttpResponse("Bill not found", status=404)
+
+
+
+
+@login_required(login_url = "/accounts/login")
+def perform_transfer(request):
 
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     department = request.user.extrainfo.department.name
@@ -950,4 +1021,21 @@ def generate_report(request):
     else:
         sto=StockEntry.objects.all()
         
-    return render(request,'ps1/generate_report.html',{'sto':sto})
+    return render(request,'ps1/perform_transfer1.html',{'sto':sto})
+
+
+
+@login_required(login_url = "/accounts/login")
+def stock_transfer(request): 
+    # stocks=StockEntry.objects.get(pk=id)
+    # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
+   
+
+    if request.method =="POST":
+            id=request.POST.get('id')
+            temp=File.objects.get(id=id) 
+            temp1=IndentFile.objects.get(file_info=temp)   
+            stocks=StockEntry.objects.get(item_id=temp1)
+            return render(request,'ps1/stock_transfer.html',{'StockEntry':stocks})        
+
+    return HttpResponseRedirect('../stock_transfer')   

@@ -7,6 +7,7 @@ app_name = 'ps1'
 urlpatterns = [
 
     url(r'^$', views.ps1, name='ps1'),
+    url(r'^create_proposal/$', views.create_proposal, name='create_proposal'),
     # url(r'^compose_indent/$', views.compose_indent, name='compose_indent'),
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
     url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
@@ -25,5 +26,10 @@ urlpatterns = [
     url(r'^stock_update/$', views.stock_update, name='stock_update'),
     url(r'^entry/$', views.entry, name='entry'),
     url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant'),
-    url(r'^generate_report/$', views.generate_report, name='generate_report')
+    url(r'^generate_report/$', views.generate_report, name='generate_report'),
+    url(r'^report/$', views.report, name='report'),
+    url(r'view-bill/<int:stock_entry_id>/$', views.view_bill, name='view_bill'),
+    url(r'^perform_transfer/$', views.perform_transfer, name='perform_transfer'),
+    url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer')
+
 ]

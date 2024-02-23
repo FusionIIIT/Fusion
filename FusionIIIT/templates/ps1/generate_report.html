@@ -148,8 +148,7 @@
                 <th >Quantity  </th>
                 <th>dealing assistant id</th>
                 <th>Department</th>
-                    <th >Edit stocks  </th>
-                    <th >Delete stocks  </th>
+                    <th >stock Report  </th>
             
         </tr>
         </thead>
@@ -164,15 +163,11 @@
                 <td>{{s.dealing_assistant_id}}</td>
                 <td>{{s.item_id.file_info.uploader.department.name}}</td>
                  
-                 <td><form action="/purchase-and-store/stock_edit/" method="POST" id="item_id">{% csrf_token %}
+                 <td><form action="/purchase-and-store/report/" method="POST" id="item_id">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
-                    <button class="ui primary button" >Edit</button>
+                    <button class="ui primary button" >Report</button>
                   </form></td>
                   <td>
-                    <form action="/purchase-and-store/stock_delete/" method="POST" id="item_id">{% csrf_token %}
-                        <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
-                        <button class="ui primary button" >Delete</button>
-                      </form> 
                   </td>
 
                 
