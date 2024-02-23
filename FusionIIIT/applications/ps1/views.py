@@ -993,6 +993,7 @@ def report(request):
 
 def view_bill(request, stock_entry_id):
     stock_entry = get_object_or_404(StockEntry, pk=stock_entry_id)
+    user = request.user
     
     # Check if the bill file exists
     if stock_entry.bill:
