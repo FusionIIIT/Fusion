@@ -260,6 +260,7 @@ def all_students(request, bid):
                 '1': 'B.Tech',
                 '2': 'M.Tech',
                 '3': 'PhD',
+
             }[department_code]
             batch = 2021 - len(bid) + 1
             return {'programme': programme, 'batch': batch}
