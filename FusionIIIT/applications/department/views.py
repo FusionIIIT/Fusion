@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 # Create your views here.
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
@@ -232,7 +232,8 @@ def staff_view(request):
                                                         })
 
 @login_required(login_url='/accounts/login')
-def all_students(request,bid):
+
+def all_students(request, bid):
     """
     This function is used to Return data of Faculties Department-Wise.
 
@@ -245,282 +246,40 @@ def all_students(request,bid):
         student_list - Stores data pagewise
 
     """
-    if int(bid)==1:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==11:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==111:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==1111:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==11111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==111111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==1111111:
-        student_list1=Student.objects.order_by('id').filter(programme='PhD',
-                                                            id__user_type='student',
-                                                            id__department__name='CSE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==2:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==21:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==211:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==2111:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==21111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==211111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==2111111:
-        student_list1=Student.objects.order_by('id').filter(programme='PhD',
-                                                            id__user_type='student',
-                                                            id__department__name='ECE').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==3:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==31:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==311:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==3111:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==31111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==311111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==3111111:
-        student_list1=Student.objects.order_by('id').filter(programme='PhD',
-                                                            id__user_type='student',
-                                                            id__department__name='ME').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==4:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==41:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==411:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2019,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id') 
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==4111:
-        student_list1=Student.objects.order_by('id').filter(programme='B.Tech',
-                                                            batch=2018,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==41111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2021,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==411111:
-        student_list1=Student.objects.order_by('id').filter(programme='M.Tech',
-                                                            batch=2020,
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
-    elif int(bid)==4111111:
-        student_list1=Student.objects.order_by('id').filter(programme='PhD',
-                                                            id__user_type='student',
-                                                            id__department__name='SM').select_related('id')
-        paginator=Paginator(student_list1,25,orphans=5)
-        page_number=request.GET.get('page')
-        student_list=paginator.get_page(page_number)
-        id_dict={'student_list':student_list,}
-        return render(request, 'department/AllStudents.html',context=id_dict)
+
+    def decode_bid(bid):
+        """Decodes the bid structure into programme, batch, and department (if applicable)."""
+
+        try:
+            department_code = bid[0]
+            programme = {
+                '1': 'B.Tech',
+                '2': 'M.Tech',
+                '3': 'PhD',  # Assuming there are more departments
+            }[department_code]
+            batch = 2021 - len(bid) + 1
+            return {'programme': programme, 'batch': batch}
+        except (IndexError, KeyError):
+            return None  # Handle malformed bid values
+
+    # Decode bid into filter criteria
+    filter_criteria = decode_bid(bid)
+    if not filter_criteria:
+        return HttpResponseBadRequest("Invalid bid value")
+
+    # Apply additional department filter since it seems fixed 
+    filter_criteria['id__department__name'] = 'CSE'
+
+    student_list1 = Student.objects.order_by('id').filter(
+        id__user_type='student',
+        **filter_criteria
+    ).select_related('id')
+
+    paginator = Paginator(student_list1, 25, orphans=5)
+    page_number = request.GET.get('page')
+    student_list = paginator.get_page(page_number)
+    id_dict = {'student_list': student_list}
+    return render(request, 'department/AllStudents.html', context=id_dict)
 
     
 
