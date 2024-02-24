@@ -344,13 +344,14 @@ def request_booking(request):
       #      flag=1
 
       #  if flag ==0:
-        print(sys.getsizeof(booking_from_time))
-        print(sys.getsizeof(booking_from))
-        print(sys.getsizeof(purpose_of_visit))
-        print(sys.getsizeof(bill_to_be_settled_by))
-
+        # print(sys.getsizeof(booking_from_time))
+        # print(sys.getsizeof(booking_from))
+        # print(sys.getsizeof(purpose_of_visit))
+        # print(sys.getsizeof(bill_to_be_settled_by))
+        # print("gfcfhcghv")
         care_taker = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")
-        care_taker = care_taker[1]
+        care_taker = care_taker[0]
+        # print(care_taker,"care_taker")
         care_taker = care_taker.user
         bookingObject = BookingDetail.objects.create(
                                                      caretaker = care_taker,
