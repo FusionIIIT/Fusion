@@ -96,7 +96,52 @@ class StaffAPIView(APIView):
         }
 
         return Response(data)
+    
+class AllStudentsAPIView(APIView):
+    def get(self,request,bid):
+        print(self.request.query_params) 
+        # bid = self.request.query_params.get()
+
+        # Decode bid into filter criteria
+        filter_criteria = decode_bid(bid)
+        if not filter_criteria:
+            return Response({'detail': 'Invalid bid value'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Apply additional department filter since it seems fixed
+        filter_criteria['id__department__name'] = 'CSE'
+
+        student_list1 = Student.objects.order_by('id').filter(
+            id__user_type='student',
+            **filter_criteria
+        ).select_related('id')
+
+        # paginator = Paginator(student_list1, 25, orphans=5)
+        # page_number = request.GET.get('page')
+        # student_list = paginator.get_page(page_number)
+
+        # Serialize the queryset
+        serializer = StudentSerializer(student_list1, many=True)
+        serialized_data = serializer.data
+
+        # Create a response dictionary
+        response_data = {'student_list': serialized_data}
+
+        return Response(response_data)
+
         
+def decode_bid(bid):
+    """Decodes the bid structure into programme, batch, and department (if applicable)."""
+    try:
+        department_code = bid[0]
+        programme = {
+            '1': 'B.Tech',
+            '2': 'M.Tech',
+            '3': 'PhD',  # Assuming there are more departments
+        }[department_code]
+        batch = 2021 - len(bid) + 1
+        return {'programme': programme, 'batch': batch}
+    except (IndexError, KeyError):
+        return None  # Handle malformed bid values
     
 def browse_announcements():
     """
