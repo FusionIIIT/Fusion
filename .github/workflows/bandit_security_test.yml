@@ -27,7 +27,7 @@ jobs:
 
     - name: Security check - Bandit  
       run: |
-        bandit -r -f json -o output/security_report.json --exclude ${{matrix.targetFiles}} .
+        bandit -r -f json --exclude ${{matrix.targetFiles}} .
 
     - name: Security check report artifacts
       uses: actions/upload-artifact@v2
