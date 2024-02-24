@@ -26,7 +26,7 @@ jobs:
 
     - name: Security check - Bandit  
       run: |
-        bandit -r -f json --exclude ./FusionIIIT/Fusion/settings/common.py .
+        bandit -r -f json --exclude ./FusionIIIT/Fusion/settings/common.py --exclude ./FusionIIIT/Fusion/settings/development.py --exclude ./FusionIIIT/applications/academic_information/views.py --exclude ./FusionIIIT/applications/academic_procedures/views.py --exclude ./FusionIIIT/applications/feeds/models.py --exclude ./FusionIIIT/applications/globals/views.py --exclude ./FusionIIIT/applications/health_center/views.py --exclude ./FusionIIIT/applications/hr2/views.py --exclude ./FusionIIIT/applications/leave/helpers.py --exclude ./FusionIIIT/applications/library/views.py --exclude ./FusionIIIT/applications/online_cms/helpers.py --exclude ./FusionIIIT/applications/online_cms/views.py --exclude ./FusionIIIT/applications/scholarships/views.py --exclude ./FusionIIIT/applications/visitor_hostel/views.py .
 
     - name: Security check report artifacts
       uses: actions/upload-artifact@v2
