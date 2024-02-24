@@ -8,7 +8,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-latest] 
-        targetFiles: ['./FusionIIIT/Fusion/settings/common.py','./FusionIIIT/Fusion/settings/development.py']
     name: Python ${{ matrix.os }}  
 
     steps:
@@ -27,7 +26,9 @@ jobs:
 
     - name: Security check - Bandit  
       run: |
-        bandit -r -f json --exclude ${{matrix.targetFiles}} .
+        bandit -r -f json --exclude 
+        ./FusionIIIT/Fusion/settings/common.py, 
+        ./FusionIIIT/Fusion/settings/development.py .
 
     - name: Security check report artifacts
       uses: actions/upload-artifact@v2
