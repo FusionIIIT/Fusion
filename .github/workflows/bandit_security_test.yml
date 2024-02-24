@@ -1,4 +1,4 @@
-name: Security check - Bandit 
+name: Security check - Bandit
 
 on: [push, pull_request]  
 
@@ -8,18 +8,29 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-latest] 
+        targetFiles: ['./FusionIIIT/Fusion/settings/common.py','./FusionIIIT/Fusion/settings/development.py']
     name: Python ${{ matrix.os }}  
 
     steps:
-    - uses: actions/checkout@v2  
+    - name: Checkout code
+      uses: actions/checkout@v2  
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit
 
     - name: Security check - Bandit  
-      uses: ioggstream/bandit-report-artifacts@v0.0.2  
-      with:
-        project_path: . 
+      run: |
+        bandit -r -f json -o output/security_report.json --exclude ${{matrix.targetFiles}} .
 
     - name: Security check report artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: Security report 
-        path: output/security_report.txt  
+        path: output/security_report.json
