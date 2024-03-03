@@ -16,7 +16,7 @@ from applications.programme_curriculum.models import ( CourseSlot, Course as Cou
 
 
 from applications.academic_procedures.models import (Course, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
-                                                     FinalRegistrations, SemesterMarks,
+                                                     FinalRegistrations, SemesterMarks,backlog_course,
                                                      BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
@@ -255,48 +255,71 @@ def academic_procedures_student(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 
-# api for student for adding courses for next semester 
+# api for student for adding courses  
 @api_view(['POST'])
 def add_course(request):
     try:
         current_user = request.user
-        current_user_id = serializers.UserSerializer(current_user).data["id"]
-        s_id = current_user.extrainfo.id
+        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id=current_user.id).first()
 
-        current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user_id).first()
-        current_user = serializers.ExtraInfoSerializer(current_user).data
-
-        current_user_instance = Student.objects.all().filter(id=current_user["id"]).first()
-        current_user = serializers.StudentSerializers(current_user_instance).data
-
-        sem_id_instance = Semester.objects.get(id = request.data.get('semester'))
-        sem_id = serializers.SemesterSerializer(sem_id_instance).data["id"]
-
-        count = request.data.get('ct')
+        sem_id_instance = Semester.objects.get(id = request.data['semester'])
+        
+        count = request.data['ct']
         count = int(count)
-        reg_curr=[]
+        reg_curr = []
+
         for i in range(1, count+1):
             choice = "choice["+str(i)+"]"
             slot = "slot["+str(i)+"]"
             try:
-                course_id = Courses.objects.get(id = request.data.get(choice))
-                courseslot_id = CourseSlot.objects.get(id = request.data.get(slot))
-                # Check if maximum course registration limit has not reached and student has not already registered for that course
-                if course_registration.objects.filter(student_id__batch_id__year = current_user.batch_id.year, course_id = course_id).count() < courseslot_id.max_registration_limit and (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
+                course_id_instance = Courses.objects.get(id = request.data[choice])
+                courseslot_id_instance = CourseSlot.objects.get(id = request.data[slot])
+                
+                print(courseslot_id_instance.max_registration_limit)
+                if course_registration.objects.filter(working_year = current_user.batch_id.year, course_id = course_id_instance).count() < courseslot_id_instance.max_registration_limit and (course_registration.objects.filter(course_id=course_id_instance, student_id=current_user).count() == 0):
                     p = course_registration(
-                        course_id = course_id,
-                        student_id=current_user_instance,
-                        course_slot_id = courseslot_id,
+                        course_id=course_id_instance,
+                        student_id=current_user,
+                        course_slot_id=courseslot_id_instance,
                         semester_id=sem_id_instance
-                        )
+                    )
+                    print(serializers.course_registration(p))
                     if p not in reg_curr:
                         reg_curr.append(p)
+                    else:
+                        print("already exist")
             except Exception as e:
-                continue
-        course_registration.objects.bulk_create(reg_curr)
-        return Response(data = {"message" : "Courses have been added successfully."} , status = status.HTTP_200_OK)
-    except Exception as e: 
-        return Response(data = {"error" : str(e) }, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+                error_message = str(e) 
+                resp = {'message': 'Course addition failed', 'error': error_message}
+                return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+        print(reg_curr)
+        course_registration_data = course_registration.objects.bulk_create(reg_curr)
+        course_registration_data = serializers.CourseRegistrationSerializer(course_registration_data , many = True).data
+        res = {'message' : 'Courses successfully added' , "courses_added" : course_registration_data }
+        return Response(data = res , status = status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
+@api_view(['POST'])
+def drop_course(request):
+    current_user = request.user
+    current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+    current_user = Student.objects.all().filter(id = current_user.id).first()
+    
+    courses = request.data['courses']
+
+    for course in courses:
+        try:
+            course_id = Courses.objects.all().filter(id=course).first()
+            course_registration.objects.filter(course_id = course_id, student_id = current_user).delete()
+        except Exception as e:
+            resp = {"message" : "Course drop failed", "error" : str(e)}
+            return Response(data = resp, status = status.HTTP_400_BAD_REQUEST)
+    
+    resp = {"message" : "Course successfully dropped"}
+    return Response(data = resp , status = status.HTTP_200_OK)
 
 
 # simple api for getting to know the details of user who have logined in the system
@@ -337,23 +360,28 @@ def view_offered_courses(request):
     # except Exception as e:
     #     return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 #  with this student can know status of pre registration and final registration
 @api_view(['GET'])
 def student_view_registration(request):
-    # getting the registration status of current user for the given semester
-    current_user = request.user
-    student_id = current_user.extrainfo.id
-    
-    sem_id = Semester.objects.get(id = request.data.get('semester'))
-    sem_id = serializers.SemesterSerializer(sem_id).data["id"]
+    try:
+        # getting the registration status of current user for the given semester
+        current_user = request.user
+        student_id = current_user.extrainfo.id
+        
+        sem_id = Semester.objects.get(id = request.data.get('semester'))
+        sem_id = serializers.SemesterSerializer(sem_id).data["id"]
 
-    # filter based on the semester id and student id
-    obj = StudentRegistrationChecks.objects.filter(semester_id_id = sem_id,  student_id = student_id)
+        # filter based on the semester id and student id
+        obj = StudentRegistrationChecks.objects.filter(semester_id_id = sem_id,  student_id = student_id)
 
-    # serialize the data for displaying
-    serializer = serializers.StudentRegistrationChecksSerializer(obj, many=True).data
+        # serialize the data for displaying
+        serializer = serializers.StudentRegistrationChecksSerializer(obj, many=True).data
 
-    return Response(serializer, status=status.HTTP_200_OK)
+        return Response(serializer, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # with this student can do his pre registration for the upcoming semester
 @api_view(['POST'])
@@ -488,6 +516,28 @@ def student_final_registration(request):
         return Response(data = {"message" : "Final Registration Failed " , "error" : str(e)} , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# with this api student can get his backlog courses list
+@api_view(['GET'])
+def student_backlog_courses(request):
+    try : 
+        stu_id = Student.objects.select_related('id','id__user','id__department').get(id=request.user.username)
+        backlogCourseList = []
+        backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=stu_id)
+        for i in backlogCourses:
+            obj = {
+                "course_id" : i.course_id.id,
+                "course_name" : i.course_id.course_name,
+                "faculty" : i.course_id.course_details,
+                "semester" : i.semester_id.semester_no,
+                "is_summer_course" : i.is_summer_course
+            }
+            backlogCourseList.append(obj)
+
+        return Response(backlogCourseList, status=status.HTTP_200_OK)
+    except Exception as e:
+            return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 #--------------------------------------- APIs of acad person----------------------------------------------------------
 
@@ -513,6 +563,7 @@ def get_course_list(request):
             return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     # obj = Curriculum.objects.filter(curriculum_id_=curriculum_id, course_type_ = course_type, programme_ = programme, batch_ = batch, branch_ = branch, sem_ = sem, optional_ = optional)
 
+
 #  with this api acad person can see the list of students who have completed their pre and final registrations for any semester
 @api_view(['GET'])
 def acad_view_reigstrations(request):
@@ -526,6 +577,7 @@ def acad_view_reigstrations(request):
         return Response(data= student_registration_check  , status=status.HTTP_200_OK)
     except Exception as e:
         return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # with this api acad person set the date of pre registration date for any semester
 @api_view(['POST'])
@@ -557,6 +609,7 @@ def configure_pre_registration_date(request):
         return Response(data = {"message" : "Pre registration for semester " + str(semester) + " will be opened from " + str(from_date) + " to " + str(to_date) + ". "  ,  } , status= status.HTTP_200_OK)
     except Exception as e:
         return Response(data = {"error " : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # with this api request acad person can set the date of final registration
 @api_view(['POST'])

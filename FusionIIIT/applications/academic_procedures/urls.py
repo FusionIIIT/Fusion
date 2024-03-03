@@ -59,5 +59,12 @@ urlpatterns = [
     url(r'^update_hod_assistantship/$', views.update_hod_assistantship),
     url(r'^mdue/$', views.mdue),
     url(r'^assis_stat/$', views.assis_stat),
-    url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses')
+    url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses'),
+
+    url(r'^acad_person/get_next_sem_courses/' , views.get_next_sem_courses , name = 'get_next_sem_courses'),
+
+    url(r'^acad_person/remove_course_from_slot/' , views.remove_course_from_slot , name = 'remove_course_from_slot'),
+    url(r'^acad_person/add_course_to_slot/' , views.add_course_to_slot , name = 'add_course_to_slot'),
+
+
 ]

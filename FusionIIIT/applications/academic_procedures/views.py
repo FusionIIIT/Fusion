@@ -11,6 +11,7 @@ import xlrd
 import logging
 from django.db import transaction
 from django.contrib import messages
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum
@@ -34,12 +35,12 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status , backlog_course)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
-
-
+from .api import serializers
+from django.core.serializers import serialize
 
 demo_date = timezone.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
@@ -341,7 +342,7 @@ def academic_procedures_student(request):
         currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
 
         current_credits = get_current_credits(currently_registered_course)
-
+ 
         cur_cpi=0.0
         details = {
                 'current_user': current_user,
@@ -374,7 +375,7 @@ def academic_procedures_student(request):
             for final_registered_course in final_registered_courses:
                 final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
-            #drop_courses_options = get_drop_course_options(currently_registered_course)
+            drop_courses_options = get_drop_course_options(currently_registered_course)
 
         except Exception as e:
             final_registered_courses = None
@@ -455,6 +456,13 @@ def academic_procedures_student(request):
             attendence.append((i,pr,pr+ab))
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
 
+        backlogCourseList = []
+        backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=obj)
+        for i in backlogCourses:
+            summer_course = "Yes" if i.is_summer_course else "No"
+            course_details = i.course_id.course_details if i.course_id.course_details else "N/A"
+
+            backlogCourseList.append([i.course_id.course_name, course_details , i.semester_id.semester_no , summer_course])
         
         Mess_bill = Monthly_bill.objects.filter(student_id = obj)
         Mess_pay = Payments.objects.filter(student_id = obj)
@@ -503,7 +511,7 @@ def academic_procedures_student(request):
                            # 'change_branch': change_branch,
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
-                            #'drop_courses_options' : drop_courses_options,
+                            'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
@@ -527,6 +535,7 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
+                           'backlogCourseList' : backlogCourseList,
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
@@ -1428,24 +1437,31 @@ def allot_courses(request):
             profiles=request.FILES['allotedCourses']
             batch_id=request.POST['batch']
             sem_no=int(request.POST['semester'])
-
+            
             batch=Batch.objects.get(id=batch_id)
             sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
-
+            print(batch , sem_id)
+            #  format of excel sheet being uploaded should be xls only , otherwise error
             excel = xlrd.open_workbook(file_contents=profiles.read())
             sheet=excel.sheet_by_index(0)
             final_registrations=[]
+            # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
             for i in range(1,sheet.nrows):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                # print("Roll No from Excel:", roll_no)
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
-                user=User.objects.get(username=roll_no)
-                user_info = ExtraInfo.objects.get(user=user)
-                student = Student.objects.get(id=user_info)
-                course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
-                course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
-                #print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                try:
+                    user=User.objects.get(username=roll_no)
+                    user_info = ExtraInfo.objects.get(user=user)
+                    student = Student.objects.get(id=user_info)
+                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                    print(course_code.strip() , course_name.strip())
+                    course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                except Exception as e:
+                    print('----------------------' , e)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
                 final_registrations.append(final_registration)
@@ -2227,12 +2243,12 @@ def student_list(request):
         batch_id = Batch.objects.get(id = batch)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
         if (student_obj):
-            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
+            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True , student_id__finalregistration__verified=False).select_related(
                 'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
                     'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
                     'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
-                    'student_id__id__user__username').order_by('student_id__id__user')
+                    'student_id__id__user__username').order_by('student_id__id__user').distinct()
         else :
             reg_table = []
 
@@ -2292,7 +2308,7 @@ def student_list(request):
                     'specialization','gender','category',
                     'pwd_status','phone_no','actual_fee',
                     'fee_paid','reason','date_deposited',
-                    'mode','utr_number','fee_receipt'))
+                    'mode','utr_number','fee_receipt')).distinct()
 
             excel_response = BytesIO()
 
@@ -2339,11 +2355,16 @@ def verify_registration(request):
 
         batch = student.batch_id
         curr_id = batch.curriculum
-        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student.curr_semester_no+1)
+        
+        if(student.curr_semester_no+1 >= 9):
+            sem_no = 4
+        else:
+            sem_no = student.curr_semester_no+1
+
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
 
         final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
 
-        sem_no = student.curr_semester_no + 1
 
         with transaction.atomic():
             ver_reg = []
@@ -2367,8 +2388,11 @@ def verify_registration(request):
 
         batch = student_id.batch_id
         curr_id = batch.curriculum
-        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student_id.curr_semester_no + 1)
-
+        if(student.curr_semester_no+1 >= 9):
+            sem_no = 4
+        else:
+            sem_no = student.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         with transaction.atomic():
             academicadmin = get_object_or_404(User, username = "acadadmin")
             FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
@@ -3466,7 +3490,89 @@ def mdue(request):
         content = json.dumps("success")
         return HttpResponse(content)
 
-        
 
 
+
+def get_detailed_sem_courses(sem_id):
+    course_slots = CourseSlot.objects.filter(semester_id=sem_id)
+    # Serialize queryset of course slots into JSON
+    course_slots_json = serialize('json', course_slots)
+    # Convert JSON string into Python object
+    course_slots_data = json.loads(course_slots_json)
+    
+    # Iterate over each course slot data and include associated course data
+    for slot_data in course_slots_data:
+        # Retrieve associated courses for the current course slot
+        slot = CourseSlot.objects.get(id=slot_data['pk'])
+        courses = list(slot.courses.all().values())
+        # Add courses data to the course slot data
+        slot_data['courses'] = courses
+    
+    return course_slots_data
+
+
+def get_next_sem_courses(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        next_sem = data.get('next_sem')
+        branch = data.get('branch')
+        programme = data.get('programme')
+        batch = data.get('batch')
+        #  we go to student table and apply filters and get batch_id of the students with these filter
+        batch_id = Student.objects.filter(programme = programme , batch = batch , specialization = branch)[0].batch_id
+        # batch_id = serialize('json', batch_id)
+        # batch_id = json.loads(batch_id)
+        # batch_id = batch_id[0]['fields']['batch_id']
+
+        # print('-----------------------------------------------------------------------------------------------',next_sem, programme , batch , branch , batch_id)
+
+        curr_id = batch_id.curriculum
+        # print('-----------------------------------------------------------------------------------------', curr_id)
+        # curr_id = 1
+        next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = next_sem)
         
+        if next_sem_id:
+            next_sem_registration_courses = get_detailed_sem_courses(next_sem_id )
+            # next_sem_registration_courses = serializers.CourseSlotSerializer(next_sem_registration_courses).data
+            # print(next_sem_registration_courses)
+            return JsonResponse(next_sem_registration_courses, safe=False)
+    return JsonResponse({'error': 'Invalid request'})
+
+
+def add_course_to_slot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        course_slot_name = data.get('course_slot_name')
+        course_code = data.get('course_name')
+        # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
+        try:
+            course_slot = CourseSlot.objects.get(name=course_slot_name)
+            course = Courses.objects.get(code=course_code)
+            course_slot.courses.add(course)
+            
+            return JsonResponse({'message': f'Course {course_code} added to slot {course_slot_name} successfully.'}, status=200)
+        except CourseSlot.DoesNotExist:
+            return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+        except Course.DoesNotExist:
+            return JsonResponse({'error': 'Course does not exist.'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+def remove_course_from_slot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        course_slot_name = data.get('course_slot_name')
+        course_code = data.get('course_name')
+        # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
+        try:
+            course_slot = CourseSlot.objects.get(name=course_slot_name)
+            course = Courses.objects.get(code=course_code)
+            course_slot.courses.remove(course)
+            return JsonResponse({'message': f'Course {course_code} removed from slot {course_slot_name} successfully.'}, status=200)
+        except CourseSlot.DoesNotExist:
+            return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+        except Course.DoesNotExist:
+            return JsonResponse({'error': 'Course does not exist.'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)       
