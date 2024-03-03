@@ -1,7 +1,7 @@
 from django.urls import include
 from django.conf.urls import url
 from . import views
-
+from . import tests
 app_name="research_procedures"
 
 urlpatterns = [
