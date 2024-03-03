@@ -1,0 +1,93 @@
+<!-- file_tracking_form.html -->
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    File Tracking
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <!-- Your existing menu items -->
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="first">
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                            <th>Discipline</th>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>Bank A/C No.</th>
+                            <th>TA Supervisor</th>
+                            <th>Thesis Supervisor</th>
+                            <th>Actions(TA supervisor)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in form_data %}
+                        <tr>
+                            <td>{{ entry.roll_no_id }}</td>
+                            <td>{{ entry.student_name }}</td>
+                            <td>{{ entry.discipline }}</td>
+                            <td>{{ entry.month }}</td>
+                            <td>{{ entry.year }}</td>
+                            <td>{{ entry.bank_account }}</td>
+                            <td>{{ entry.ta_supervisor }}</td>
+                            <td>{{ entry.thesis_supervisor }}</td>
+                            <td>
+                                <button class="ui green button approve-button" data-id="{{ entry.id }}">Approve</button>
+                                <br>
+                                <button class="ui blue button forward-button" data-id="{{ entry.id }}">Forward</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.approve-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to approve the entry with ID entryId
+                console.log('Approved entry with ID: ' + entryId);
+            });
+
+            $('.forward-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to forward the entry with ID entryId
+                console.log('Forwarded entry with ID: ' + entryId);
+            });
+        });
+    </script>
+{% endblock %}
