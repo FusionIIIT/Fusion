@@ -1,5 +1,5 @@
 from django.contrib import admin
-from applications.research_procedures.models import Patent, ResearchGroup,ResearchProject,ConsultancyProject,TechTransfer
+from applications.research_procedures.models import *
 from django.utils.html import format_html
 
 # Adding a custom admin view for patent
@@ -24,7 +24,7 @@ class ResearchGroupAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Patent,PatentAdmin)
-admin.site.register(ResearchProject)
-admin.site.register(ConsultancyProject)
-admin.site.register(TechTransfer)
+admin.site.register(pr_test)
+admin.site.register(projects)
+admin.site.register(requests)
 # admin.site.register(ResearchGroup,ResearchGroupAdmin)
