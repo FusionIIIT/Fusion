@@ -1,6 +1,14 @@
 {% block menucard %}
 
-<a class="item"  data-tab="fourth">Patents</a>
-<a class="item"  data-tab="second">Projects</a>
-
+{% comment %} <a class="item"  data-tab="fourth">Patents</a> {% endcomment %}
+{% if request.user.username == "21bcs3000" %}
+<a class="item"  href="/research_procedures/projects">Add Projects</a>
+{% endif %}
+<a class="item"  href="/research_procedures/view_projects" >View Projects</a>
+{% if request.user.username != "21bcs3000" %}
+<a class="item"  href="/research_procedures/add_fund_requests">Add Fund Requests</a>
+<a class="item"  href="/research_procedures/add_staff_requests">Add Staff Requests</a>
+{% endif %}
+<a class="item"  href="/research_procedures/view_requests/0">View Inventory</a>
+<a class="item"  href="/research_procedures/view_requests/1">View Staff Requests</a>
 {% endblock %}

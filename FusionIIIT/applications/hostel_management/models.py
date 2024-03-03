@@ -238,9 +238,3 @@ class WorkerReport(models.Model):
     def str(self):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
 
-class test_model(models.Model):
-    name= models.CharField(max_length=100)
-    date = models.DateField()
-
-    def __str__(self):
-        return self.name 
