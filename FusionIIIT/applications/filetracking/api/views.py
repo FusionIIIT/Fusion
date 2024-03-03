@@ -1,3 +1,5 @@
+from venv import logger
+from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -36,6 +38,7 @@ class ViewFileView(APIView):
     def get(self, request, file_id):
         try:
             file_details = view_file(int(file_id))
+            # print(file_details)
             return Response(file_details, status=status.HTTP_200_OK)
         except ValueError:
             return Response({'error': 'Invalid file ID format.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -43,20 +46,29 @@ class ViewFileView(APIView):
             return Response({'error': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, file_id):
+        try:
+            # file_details = view_file(int(file_id))
+            # print(file_details)
+            success = delete_file(int(file_id))
+            if success:
+                return Response({'message': 'File deleted successfully'},
+                                status=status.HTTP_204_NO_CONTENT)
+            else :
+                return
 
-
-class DeleteFileView(APIView):
-    #authentication_classes = [TokenAuthentication]
-    #permission_classes = [permissions.IsAuthenticated]
-
-    def delete(self, request, file_id, *args, **kwargs):
-        success = delete_file(int(file_id))
-        if success:
-            return Response({'message': 'File deleted successfully'},
-                            status=status.HTTP_204_NO_CONTENT)
-        else:
+        except ValueError:
+            return Response({'error': 'Invalid file ID format'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except File.DoesNotExist:
             return Response({'error': 'File not found'},
                             status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)  # Handle ValidationError specifically
+        except Exception as e:  # Catch unexpected errors
+            logger.error(f"Unexpected error in DeleteFileView: {e}")
+            return Response({'error': 'An internal server error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ViewInboxView(APIView):
