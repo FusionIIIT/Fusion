@@ -9,9 +9,9 @@
         <a class="active item" data-tab="pendingcomplaints">
             Pending Complaints
         </a>
-        <a class="item" data-tab="onholdcomplaints">
+        <!-- <a class="item" data-tab="onholdcomplaints">
             On Hold Complaints
-        </a>
+        </a> -->
         
     </div>
 
@@ -28,7 +28,7 @@
              
              <thead>
                 <tr>
-                    <td>
+                    <td >
                        <b> Student </b>
                     </td>
 
@@ -55,18 +55,22 @@
                    <!-- <th class="four wide column">
                         Status
                     </th>-->
-                    <td class="two large column">
+                    <!-- <td class="two large column">
                        <b> Worker </br> Name</b>
-                    </td>
+                    </td> -->
                     
                     <td>
-                        <b>Assign worker</b>
+                        <b>Change status</b>
                     </td>
-                   
+                    <td>
+                        <b>Redirect</b>
+                    </td>
+               
+                    
                 </tr>
                 </thead>
                 {% for a in history %}
-                    {% if a.status == 0 %}
+                    {% if a.status == 0  %}
                 <tbody>
                 <tr>
                     <td>
@@ -95,14 +99,25 @@
                    <!-- <td>
                           <i class="large green checkmark icon"></i>
                     </td>-->
-                    <td>
+                    <!-- <td>
                         <b>{{ a.worker_id }}</b>
+                    </td> -->
+                    <td>
+                        <div class="field">
+                                <center>
+                                    <a href="./pending/{{ a.id }}">
+                                    <button class="ui inverted basic button" data-tooltip="Change status">
+                                       <i class="extra large green edit icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
+                            </div>
                     </td>
                     <td>
                         <div class="field">
                                 <center>
                                     <a href="./{{ a.id }}">
-                                    <button class="ui inverted basic button" data-tooltip="Assign Worker" >
+                                    <button class="ui inverted basic button" data-tooltip="Redirect to supervisor" >
                                         <i class="large green plus icon"></i>
                                     </button>
                                     </a>
@@ -123,12 +138,7 @@
 
 
     
-    <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large orange warning icon"></i> : These Complaints Are YET TO BE ASSIGNED To A Worker ! &ensp;&ensp;&ensp;&ensp;&ensp;
-
-                </div>
-            </div>
+   
             </div>
         </div>
 
@@ -177,21 +187,21 @@
                         Specific </br> Location
                     </th> -->
 
-                    <td class="two wide column">
+                    <!-- <td class="two wide column">
                         <b>Details</b>
-                    </td>
+                    </td> -->
 
                    <!-- <th class="four wide column">
                         Status
                     </th>-->
-                    <td class="two large column">
+                    <!-- <td class="two large column">
                         <b>Worker </br> Name</b>
-                    </td>
+                    </td> -->
                     
-                    <td>
+                    <!-- <td>
                         <b>change status</b>
                     </td>
-                   
+                    -->
                 </tr>
                 </thead>
                 {% for a in history %}
@@ -225,10 +235,10 @@
                    <!-- <td>
                           <i class="large green checkmark icon"></i>
                     </td>-->
-                    <td>
+                    <!-- <td>
                         <b>{{ a.worker_id }}</b>
-                    </td>
-                    <td>
+                    </td> -->
+                    <!-- <td>
                         <div class="field">
                                 <center>
                                     <a href="./pending/{{ a.id }}">
@@ -238,7 +248,7 @@
                                     </a>
                                 </center>
                             </div>
-                    </td>
+                    </td> -->
 </tr>
 
 

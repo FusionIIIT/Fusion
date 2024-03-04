@@ -18,9 +18,7 @@
 
     <div class="ui active  tab" data-tab="complainthistory">
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
-            
-            
-        
+
        
             {% csrf_token %}
             <table class="ui very basic collapsing celled sortable table"
@@ -58,9 +56,9 @@
                     </td>
 
                     
-                    <td class="four large column">
+                    <!-- <td class="four large column">
                         <b>Worker <br> Name</b>
-                    </td>
+                    </td> -->
                     <td class="four large column">
                         <b>Feedback</b>
                     </td>
@@ -105,7 +103,7 @@
                    
 
                   
-                    <td>
+                    <!-- <td>
                         {% if a.worker_id == NULL %}
                             NOT ASSIGN
                             <td></td>
@@ -114,7 +112,7 @@
                           
                             
                         {% endif %}
-                    </td>
+                    </td> -->
                     {% if a.feedback != "" %}
                     <td>
                         <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="View feedback" ><i class="large green comments icon"></i></button></a>

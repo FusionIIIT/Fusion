@@ -30,7 +30,7 @@
                     </td>
 
                     <td class="seven wide column">
-                        <b>Register </br> Date</b>
+                        <b>Register  Date</b>
                     </td>
 
                     <td class="four wide column">
@@ -46,12 +46,12 @@
                     <td class="four wide column">
                         <b>Delay (days)</b>
                     </td>
-                    <td class="two wide column">
+                    <!-- <td class="two wide column">
                         <b>status</b>
-                    </td>
-                    <td class="four large column">
+                    </td> -->
+                    <!-- <td class="four large column">
                         <b>Worker </br> Name</b>
-                    </td>
+                    </td> -->
                 </tr>
                 </thead>
 
@@ -93,31 +93,31 @@
                         {{ a.delay.days }} days
                     </td>
 
-                    <td>
+                    <!-- <td>
                         {% if a.status == 0 %}
-                             <i class="large orange warning icon"></i>
+                             <i class="large orange warning icon"></i> -->
                             <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="0" >
                              <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
-                        {% elif a.status == 1 %}
-                             <i class="large orange add user icon"></i>
+                        <!-- {% elif a.status == 1 %}
+                             <i class="large orange warning icon"></i> -->
                             <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="1" >
                              <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
-                        {% elif a.status == 2 %}
-                             <i class="large green checkmark icon"></i>
+                        <!-- {% elif a.status == 2 %}
+                             <i class="large green checkmark icon"></i> -->
                             <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="2" >
                              <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
-                        {% elif a.status == 3 %}
-                             <i class="large red x icon"></i>
+                        <!-- {% elif a.status == 3 %}
+                             <i class="large red x icon"></i> -->
                             <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="3" >
                              <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
-                        {% endif %}
+                        <!-- {% endif %}
 
-                    </td>
-                    <td>
+                    </td> -->
+                    <!-- <td>
                         {% if a.worker_id == NULL %}
                             NOT ASSIGN
                         {% else %}
-                            {{ a.worker_id.name }}
+                            {{ a.worker_id.name }} -->
                           <!--  <td>
                             <div class="ui secondary menu">
                                 <div class="ui dropdown item ">
@@ -131,8 +131,8 @@
                                   </div>
                             </div>
                             </td>-->
-                        {% endif %}
-                    </td>
+                        <!-- {% endif %}
+                    </td> -->
 
                 </tr>
 

@@ -72,7 +72,7 @@ Resolved, Declined-->
                 </tr>
                 </thead>
                 
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 0 %}
                         
                     
@@ -196,7 +196,7 @@ Resolved, Declined-->
                      
                     </tr>
                 </thead>
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 2 %}
                 <tbody>
                 <tr>
@@ -310,7 +310,7 @@ Resolved, Declined-->
                    
                 </tr>
             </thead>
-                {% for a in history %}
+                {% for a in outbox %}
                 {% if a.status == 3 %}
                 <tbody>
                 <tr>

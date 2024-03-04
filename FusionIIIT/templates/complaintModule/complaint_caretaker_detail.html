@@ -98,7 +98,7 @@ Complaint
                                     <h3><label><b>Complaint Details :</b></label></h3>
                                     <div><i>Complaint ID :</i> {{ comp_id }}<br>
                                         <i>Complaint Details : </i> <font color="red"> {{detail2.details }}</font></div>
-                                        <i>Worker Assigned : {{ worker_name }}</i>
+                                        <!-- <i>Worker Assigned : {{ worker_name }}</i> -->
                                 </div>
                                 <br>
                                 {% if num == 1 %}
@@ -123,12 +123,12 @@ Complaint
                     </form>
 
                     <a href="javascript:history.go(-1)"><button class="ui large primary button right floated">Back</button></i></a>
-                    {% if worker_name is None %}
+                    <!-- {% if worker_name is None %}
                         <a href="{% url 'complaint:assign_worker' comp_id1=comp_id %}"><button class="ui large primary button right floated">Assign Worker</button></i></a>
                     {% else %}
                       <a href="{% url 'complaint:discharge_worker' wid=wid cid=comp_id %}"><button class="ui large primary button right floated">Delete Assigned Worker</button></i></a>
                       <a href="{% url 'complaint:assign_worker' comp_id1=comp_id %}"><button class="ui large primary button right floated">Re-Assign Worker</button></i></a>
-                    {% endif %}
+                    {% endif %} -->
                 </div>
 
             </div>

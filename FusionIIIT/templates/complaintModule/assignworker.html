@@ -34,11 +34,10 @@ Complaint
         <div class="ui divider"></div>
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu"
-             style="max-width: 320px;">
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="active item" data-tab="first">
-                Assign Workers / Redirect
+                Redirect
                 <i class="right floated chevron right icon"></i>
             </a>
 
@@ -52,17 +51,16 @@ Complaint
     <div class="nine wide column">
         {% comment %}The ... start here!{% endcomment %}
         <div class="ui active tab segment" data-tab="first">
-
             <div class="ui pointing secondary menu ">
-                <a class="active item" data-tab="feedback">
+                <!-- <a class="active item" data-tab="feedback">
                     Assign Worker
-                </a>
-                <a class="item" data-tab="redirect">
+                </a> -->
+                <a class="active item" data-tab="redirect">
                     Redirect
                 </a>
             </div>
 
-            <div class="ui active tab large" data-tab="feedback">
+            <!-- <div class="ui active tab large" data-tab="feedback">
                 <div class="ui vertical segment">
                     <form method="post" action=".">
                         {% csrf_token %}
@@ -159,13 +157,13 @@ Complaint
                 <br>
 
 
-            </div>
+            </div> -->
 
-<!-- redirect complaint -->
-            <div class="ui tab large" data-tab="redirect">
+            <!-- redirect complaint -->
+            <div class="ui active tab large" data-tab="redirect">
                 <div class="ui vertical segment" style="padding:40px">
-                    <h4>If you think that this complaint does not belong to you .</br>
-                        You a can pass this complaint to required caretaker .</h4>
+                    <h4>If you think that this complaint does not belong to you ,</br>
+                        you can pass this complaint to required supervisor .</h4>
                     <form method="post" action=".">
                         {% csrf_token %}
                         <div class="ui header">
@@ -202,16 +200,17 @@ Complaint
 
                                 <H3>You have assigned a worker. First, remove the worker from this complaint then
                                     <span style="color: red;">declined</span> this complaint.
-                                    .</H3>
+                                    .
+                                </H3>
                                 {% else %}
-                                <label>Choose particular caretaker from a drop down box :</label>
+                                <label>Choose particular supervisor from a drop down box :</label>
                                 <select name="assign_caretaker">
                                     {% if total_caretakers_in_area %}
                                     {% for i in total_caretakers_in_area %}
-                                    <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
+                                    <option value="{{ i.id }}">{{ i.area }}-incharge</option>
                                     {% endfor %}
                                     {% else %}
-                                    <option ></option>
+                                    <option></option>
                                     {% endif %}
                                 </select>
                                 <br><br>
@@ -223,7 +222,7 @@ Complaint
 
                                 {% if total_caretakers_in_area %}
                                 <button class="ui large primary button right floated" type="submit" name="submit"
-                                        value="redirect" onclick="redirectsubmit()">
+                                    value="redirect" onclick="redirectsubmit()">
                                     Submit
                                 </button>
                                 {% endif %}
@@ -261,7 +260,8 @@ Complaint
     {% endblock %}
 
     {% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script
+        src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
     <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
@@ -271,4 +271,3 @@ Complaint
     {% block css %}
 
     {% endblock %}
-
