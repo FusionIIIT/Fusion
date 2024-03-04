@@ -6,6 +6,7 @@ from .views import (
     ViewOutboxView,
     ViewHistoryView,
     ForwardFileView,
+    DraftFileView,
     GetDesignationsView,
 )
 
@@ -16,5 +17,6 @@ urlpatterns = [
     url(r'^outbox/$', ViewOutboxView.as_view(), name='view_outbox'),
     url(r'^history/(?P<file_id>\d+)/$', ViewHistoryView.as_view(), name='view_history'),
     url(r'^forwardfile/(?P<file_id>\d+)/$', ForwardFileView.as_view(), name='forward_file'),
+    url(r'^draft/$', DraftFileView.as_view(), name='view_drafts'),
     url(r'^designations/(?P<username>\w+)/$', GetDesignationsView.as_view(), name='get_designations'),
 ]

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
-from ..sdk.methods import create_file, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations
+from ..sdk.methods import create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -154,44 +154,62 @@ class ViewHistoryView(APIView):
             return Response({'error': 'Internal server error.'}, status=500)
         
 class ForwardFileView(APIView):
-#     # Authentication and permission classes (adjust based on your needs)
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+# #     # Authentication and permission classes (adjust based on your needs)
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, file_id):
 #         # Extract data from request.data
         receiver = request.data.get('receiver')
-        # receiver_designation = request.data.get('receiver_designation')
-        # file_extra_JSON = request.data.get('file_extra_JSON', {})
-        # remarks = request.data.get('remarks', "")
+        receiver_designation = request.data.get('receiver_designation')
+        file_extra_JSON = request.data.get('file_extra_JSON', {})
+        remarks = request.data.get('remarks', "")
 
-        # # Validate data
-        # if not receiver or not receiver_designation:
-        #     raise ValidationError("Missing required fields: receiver and receiver_designation")
+        # Validate data
+        if not receiver or not receiver_designation:
+            raise ValidationError("Missing required fields: receiver and receiver_designation")
 
         # # Extract and validate file attachment (if present)
-        # file_attachment = request.FILES.get('file_attachment')
-        # if file_attachment:
-        #     if file_attachment.size > 10 * 1024 * 1024:  # Adjust size limit as needed
-        #         raise ValidationError("File size exceeds limit (10 MB)")
+        file_attachment = request.FILES.get('file_attachment')
+        if file_attachment:
+            if file_attachment.size > 10 * 1024 * 1024:  # Adjust size limit as needed
+                raise ValidationError("File size exceeds limit (10 MB)")
 
-        # # Call forward_file function
-        # try:
-        #     new_tracking_id = forward_file(
-        #         int(file_id),
-        #         receiver,
-        #         receiver_designation,
-        #         file_extra_JSON,
-        #         remarks,
-        #         file_attachment
-        #     )
-        #     logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
-        # except Exception as e:
-        #     logging.error(f"Error forwarding file {file_id}: {str(e)}")
-        #     raise ValidationError(str(e))  # Re-raise exception with a user-friendly message
+        # Call forward_file function
+        try:
+            new_tracking_id = forward_file(
+                int(file_id),
+                receiver,
+                receiver_designation,
+                file_extra_JSON,
+                remarks,
+                file_attachment
+            )
+            logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
+        except Exception as e:
+            logging.error(f"Error forwarding file {file_id}: {str(e)}")
+            raise ValidationError(str(e))  # Re-raise exception with a user-friendly message
 
-        # # Return response
-        # return Response({'tracking_id': new_tracking_id}, status=status.HTTP_201_CREATED)
+        # Return response
+        return Response({'tracking_id': new_tracking_id}, status=status.HTTP_201_CREATED)
+
+class DraftFileView(APIView):
+   authentication_classes = [TokenAuthentication]
+   permission_classes = [permissions.IsAuthenticated]
+
+   def get(self, request):
+       username = request.data.get('username')
+       designation = request.data.get('designation')
+       src_module = request.data.get('src_module')
+
+       try:
+           draft_files = view_drafts(username, designation, src_module)
+           print(draft_files)
+           return Response(draft_files, status=status.HTTP_200_OK)
+       except Exception as e:
+           return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
     
 class GetDesignationsView(APIView):
     #authentication_classes = [TokenAuthentication]
