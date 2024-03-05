@@ -220,12 +220,6 @@ def outbox_view(request, id):
     s = str(user_HoldsDesignation_obj).split(" - ")
     designation = s[1]
 
-    # outward_files = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-    #                                                 'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(current_id=request.user.extrainfo).order_by('-forward_date')
-
-    # user_designation = HoldsDesignation.objects.select_related(
-    #     'user', 'working', 'designation').get(pk=id)
-
     outward_files = view_outbox(username=user_HoldsDesignation_obj.user,
                                 designation=user_HoldsDesignation_obj.designation,
                                 src_module='filetracking')
@@ -266,8 +260,6 @@ def inbox_view(request, id):
                 context - Holds data needed to make necessary changes in the template. 
 
     """
-    # inward_file = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
-    #                                               'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(receiver_id=request.user).order_by('-receive_date')
 
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
@@ -339,8 +331,8 @@ def inward(request):
     return render(request, 'filetracking/inward.html', context)
 
 
-@login_required(login_url="/accounts/login")
-def confirmdelete(request, id):
+@login_required(login_url = "/accounts/login")
+def confirmdelete(request,id):
     """
      The function is used to confirm the deletion of a file.
         @param:
@@ -530,7 +522,6 @@ def forward(request, id):
 
 @login_required(login_url="/accounts/login")
 def archive_design(request):
-
     designation = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').filter(user=request.user)
 
@@ -636,6 +627,7 @@ def finish(request, id):
 
 
 def AjaxDropdown1(request):
+
     """
     This function returns the designation of receiver  on the forward or compose file template.
 
@@ -684,8 +676,9 @@ def test(request):
     return HttpResponse('success')
 
 
-@login_required(login_url="/accounts/login")
-def delete(request, id):
+
+@login_required(login_url = "/accounts/login")
+def delete(request,id):
     """ 
      The function is used the delete of a file and it returns to the drafts page. 
 
@@ -699,7 +692,9 @@ def delete(request, id):
     return redirect('/filetracking/draftdesign/')
 
 
-def forward_inward(request, id):
+
+
+def forward_inward(request,id):
     """ This function is used forward the files which are available in the inbox of the user .
 
         @param:
