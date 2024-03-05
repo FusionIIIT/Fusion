@@ -13,8 +13,10 @@ from notification.views import office_module_notif, file_tracking_notif
 from .utils import *
 from django.utils.dateparse import parse_datetime
 from .sdk.methods import *
+from .decorators import *
 
 @login_required(login_url="/accounts/login/")
+@user_is_student
 def filetracking(request):
     """
         The function is used to create files by current user(employee).
