@@ -190,6 +190,16 @@ def archive_file(file_id: int) -> bool:
     except File.DoesNotExist:
         return False
 
+def unarchive_file(file_id: int) -> bool: 
+    '''
+    This functions is used to unarchive a file and returns true if the unarchiving was successful
+    '''
+    try: 
+        File.objects.filter(id=file_id).update(is_read=False)
+        return True
+    except File.DoesNotExist:
+        return False
+
 
 
 def create_draft(
@@ -334,7 +344,9 @@ def get_designations(username: str) -> list:
     '''
     user = User.objects.get(username=username)
     designations_held = HoldsDesignation.objects.filter(user=user)
-    designation_name = [designation.name for designation in designations_held]
+    designation_name = [hold_designation.designation.name for hold_designation in designations_held]
+    return designation_name
+
 
 def get_user_object_from_username(username: str) -> User:
     user = User.objects.get(username=username)

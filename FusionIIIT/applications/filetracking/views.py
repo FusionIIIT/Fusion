@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from timeit import default_timer as time
 from notification.views import office_module_notif, file_tracking_notif
 from .utils import *
@@ -723,3 +724,9 @@ def forward_inward(request,id):
         'track': track,
     }
     return render(request, 'filetracking/forward.html', context)
+
+def get_designations_view(request, username):
+    designations = get_designations(username)
+    print(designations)
+    return JsonResponse(designations, safe=False)
+    
