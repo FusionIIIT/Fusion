@@ -82,7 +82,7 @@ class StudentComplain(models.Model):
 
 class Supervisor(models.Model):
     sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    area = models.CharField(choices=Constants.AREA, max_length=20,default='hall-3')
+    type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
     def __str__(self):
-        return str(self.id) + '-' + str(self.area)
+        return str(self.id) + '-' + str(self.type)

@@ -127,57 +127,27 @@ def assign_worker(request, comp_id1):
         a = get_object_or_404(User, username=request.user.username)
         y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
         comp_id = y.id
-
-        # if a.username=="shyams":
-        #     desgn="hall3caretaker"
-        # if type == 'assign':
-        #     complaint_finish = request.POST.get('complaint_finish', '')
-        #     worker_id = request.POST.get('assign_worker', '')
-        #     w = Workers.objects.select_related('caretaker_id','caretaker_id__staff_id','caretaker_id__staff_id__user','caretaker_id__staff_id__department').get(id=worker_id)
-        #     StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').select_for_update().filter(id=comp_id1).\
-        #         update(worker_id=w, status=1)
-        #     complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=comp_id1)
-        #     student = 0
-        #     message = "Worker has been assigned to your complaint"
-        #     complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student,message)
-
-        #     return HttpResponseRedirect('/complaint/caretaker/')
-        # elif type == 'redirect':
-        print(comp_id1)
-        print("1234567890")
         assign_caretaker = request.POST.get('assign_caretaker', '')
-        # c = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(id=assign_caretaker)
         c1 = Caretaker.objects.select_related('staff_id','staff_id__user','staff_id__department').get(staff_id=comp_id)
         c2=Supervisor.objects.all().filter(area=c1.area)
-        # c3=User.objects.all().filter(id=c2[0].sup_id.id)
-        # print(c3[0])
         y1 = ExtraInfo.objects.all().select_related('user','department').filter(id=c2[0].sup_id.id).first()
-        print(y1)
-        # b = get_object_or_404(User, id=y1.user.username)
-        # remark = 'Redirect complaint from ' + c1.area
-        # StudentComplain.objects.select_for_update().filter(id=comp_id1).\
-        #     update(location=c.area, remarks=remark)
         complainer_details = StudentComplain.objects.select_related('complainer','complainer__user','complainer__department','worker_id','worker_id__caretaker_id__staff_id','worker_id__caretaker_id__staff_id__user','worker_id__caretaker_id__staff_id__department').get(id=comp_id1)
         student=0
         message = "Your Complaint has been redirected to supervisor"
         complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
-        # return render(request, "complaintModule/assignworker.html",
-        #           {'detail': detail, 'worker': worker, 'flag':
-        #               flag, 'total_caretaker': total_caretaker,'a':a, 'total_caretakers_in_area':total_caretakers_in_area})
-
         sup = HoldsDesignation.objects.select_related('user','working','designation').get(user = y1.user_id)
         print(sup.designation)
-        
+        files=File.objects.all().filter(src_object_id=comp_id1)
+        print("----------")
+        print(files.first().id)
         user_details=User.objects.get(id=y.user_id)
         des=HoldsDesignation.objects.filter(user=user_details).all()
-        file_id = create_file(uploader=a.username, 
-        uploader_designation=des[0].designation, 
+        file=forward_file(file_id= files.first().id,
         receiver=c2[0].sup_id.user,
         receiver_designation=sup.designation, 
-        src_module="complaint", 
-        src_object_id= str(comp_id1), 
         file_extra_JSON= {}, 
-        attached_file = None)
+        remarks = "",
+        file_attachment= None)
 
 
         return HttpResponseRedirect('/complaint/caretaker/')
