@@ -170,7 +170,7 @@ class Rebate(models.Model):
     app_date = models.DateField(default=datetime.date.today)
     leave_type = models.CharField(choices=LEAVE_TYPE, max_length=20, default="casual")
     # leave_document = models.FileField(upload_to='central_mess/')
-
+    rebate_remark = models.CharField(max_length=50,default='NA')
     def __str__(self):
         return str(self.student_id.id)
 
@@ -260,6 +260,6 @@ class Feedback(models.Model):
     fdate = models.DateField(default=datetime.date.today)
     description = models.TextField()
     feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE)
-
+    feedback_remark = models.CharField(max_length=50, default ="NA")
     def __str__(self):
         return str(self.student_id.id)
