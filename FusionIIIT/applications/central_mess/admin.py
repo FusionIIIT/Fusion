@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Payments, Rebate,
-                     Special_request, Vacation_food,MessBillBase)
+                     Special_request, Vacation_food,MessBillBase, Registration_Request, Reg_records, Reg_main)
 
 # Register your models here.
 
@@ -166,13 +166,13 @@ class Mess_meetingAdmin(admin.ModelAdmin):
 
 class FeedbackAdmin(admin.ModelAdmin):
     model = Feedback
-    # fieldsets = [
-    #     ('student_id', {'fields': ['student_id']}),
-    #     ('fdate', {'fields': ['fdate']}),
-    #     ('description', {'fields': ['description']}),
-    #     ('feedback_type', {'fields': ['feedback_type']}),
-    #     ('feedback_remark', {'fields':['feedback_remark']})
-    #     ]
+    fieldsets = [
+        ('student_id', {'fields': ['student_id']}),
+        ('fdate', {'fields': ['fdate']}),
+        ('description', {'fields': ['description']}),
+        ('feedback_type', {'fields': ['feedback_type']}),
+        ('feedback_remark', {'fields':['feedback_remark']})
+        ]
     list_display = ('student_id', 'fdate', 'description', 'feedback_type', 'feedback_remark')
 
 
@@ -182,6 +182,19 @@ class MessBillBaseAdmin(admin.ModelAdmin):
         ('bill_amount', {'fields': ['bill_amount']})
         ]
     list_display = ('bill_amount', 'timestamp')
+
+class Reg_mainAdmin(admin.ModelAdmin):
+    model = Reg_main
+    list_display = ('student_id','program','current_mess_status','balance','mess_option')
+
+class Reg_recordsAdmin(admin.ModelAdmin):
+    model=Reg_records
+    list_display = ('student_id','start_date','end_date')
+
+
+class Registration_RequestAdmin(admin.ModelAdmin):
+    model=Registration_Request
+    list_display = ('student_id','Txn_no','img','amount','status','registration_remark')
 
 
 admin.site.register(Mess_minutes, Mess_minutesAdmin),
@@ -199,3 +212,6 @@ admin.site.register(Mess_meeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
 admin.site.register(MessBillBase,MessBillBaseAdmin),
 admin.site.register(Menu_change_request, Menu_change_requestAdmin)
+admin.site.register(Reg_main,Reg_mainAdmin)
+admin.site.register(Reg_records,Reg_recordsAdmin)
+admin.site.register(Registration_Request,Registration_RequestAdmin)

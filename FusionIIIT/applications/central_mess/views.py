@@ -18,7 +18,7 @@ from .forms import MinuteForm, MessInfoForm,RegistrationRequest
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase,Registration_Request)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main)
 from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -74,6 +74,9 @@ def mess(request):
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         reg_form = RegistrationRequest()
+        reg_request = Registration_Request.objects.filter(student_id=student)
+        reg_main = Reg_main.objects.get(student_id=student)
+        reg_record = Reg_records.objects.filter(student_id=student)
         monthly_bill=monthly_bill[::-1]
 
         tot_am=0
@@ -213,7 +216,10 @@ def mess(request):
                     'count8': count8,
                     'form': form,
                     'desig': desig,
-                    'reg_form':reg_form
+                    'reg_form':reg_form,
+                    'reg_request':reg_request,
+                    'reg_main':reg_main,
+                    'reg_record':reg_record
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -279,7 +285,10 @@ def mess(request):
                     'count8': count8,
                     'form': form,
                     'desig': desig,
-                    'reg_form':reg_form
+                    'reg_form':reg_form,
+                    'reg_request':reg_request,
+                    'reg_main':reg_main,
+                    'reg_record':reg_record
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -303,8 +312,10 @@ def mess(request):
                    'minutes': minutes,
                    'meeting': meeting,
                    'reg_form':reg_form,
-                  
-            }
+                   'reg_request':reg_request,
+                   'reg_main':reg_main,
+                   'reg_record':reg_record
+                  }
 
         return render(request, "messModule/mess.html", context)
 
@@ -353,7 +364,10 @@ def mess(request):
       
         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
-               
+
+        reg_request = Registration_Request.objects.all()
+        reg_main = Reg_main.objects.all()
+        reg_record = Reg_records.objects.all()
         context = {
             'bill_base': current_bill,
             'today': today_g.date(),
@@ -375,7 +389,8 @@ def mess(request):
             'count1': count1,
             'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
             'count4': count4, 'form': form, 'count5': count5,
-            'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+            'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
+            'reg_request':reg_request, 'reg_main':reg_main, 'reg_record':reg_record
 
         }
         return render(request, "messModule/mess.html", context)
