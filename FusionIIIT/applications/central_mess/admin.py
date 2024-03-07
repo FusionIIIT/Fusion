@@ -45,7 +45,7 @@ class Mess_regAdmin(admin.ModelAdmin):
         ('start_reg', {'fields': ['start_reg']}),
         ('end_reg', {'fields': ['end_reg']}),
         ]
-    list_display = ('start_reg', 'end_reg')
+    list_display = ('sem','start_reg', 'end_reg')
 
 
 
@@ -166,13 +166,14 @@ class Mess_meetingAdmin(admin.ModelAdmin):
 
 class FeedbackAdmin(admin.ModelAdmin):
     model = Feedback
-    fieldsets = [
-        ('student_id', {'fields': ['student_id']}),
-        ('fdate', {'fields': ['fdate']}),
-        ('description', {'fields': ['description']}),
-        ('feedback_type', {'fields': ['feedback_type']})
-        ]
-    list_display = ('student_id', 'fdate', 'description', 'feedback_type')
+    # fieldsets = [
+    #     ('student_id', {'fields': ['student_id']}),
+    #     ('fdate', {'fields': ['fdate']}),
+    #     ('description', {'fields': ['description']}),
+    #     ('feedback_type', {'fields': ['feedback_type']}),
+    #     ('feedback_remark', {'fields':['feedback_remark']})
+    #     ]
+    list_display = ('student_id', 'fdate', 'description', 'feedback_type', 'feedback_remark')
 
 
 class MessBillBaseAdmin(admin.ModelAdmin):
