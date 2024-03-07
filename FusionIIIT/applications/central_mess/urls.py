@@ -44,6 +44,6 @@ urlpatterns = [
     
     url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
     # url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
-    url(r'^respond_to_reg_req',views.)
+    url(r'^respond_to_reg_req',views.respond_to_reg, name='reg_response')
 
 ]
