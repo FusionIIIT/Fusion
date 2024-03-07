@@ -1,0 +1,130 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block Registration %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="apply_registration">
+            Apply for Registration
+        </a>
+
+        <a class="item" data-tab="view_registration">
+            Previous Registration
+        </a>    
+    </div>
+
+    <div class="ui active tab" data-tab="" id="">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method = "post" action="registrationRequest" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ reg_form.as_p }}
+                <button type="submit">Upload</button>
+              </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="">
+
+        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
+            {% for app in feedback %}
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
+            <div class="item">
+
+                <div class="left floated content">
+                    <a class="header">{{info.user.username}}</a>
+                    <a class="meta">{{app.feedback_type}}</a>
+
+                    <div class="description">
+                        {{app.description}}
+                    </div>
+                </div>
+
+                <div class="right floated content">
+                    <span class="meta">{{app.fdate}}</span>
+                </div>
+                
+            </div>
+            {% endfor %}
+        </div>
+
+    <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        function required_check_feedback(){
+            if ($("#description").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+        function feedback(){
+            check = required_check_feedback();
+            if(check == 0){
+                alert("Please add description");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitmessfeedback/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'feedback_type': $("#feedback_type").val(),
+                        'description': $("#description").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+
+                            $("#feedback").load(location.href + " #feedback>*", "");
+
+                            var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                            var name = $("#user_name").text();
+                            var today_date = new Date();
+                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
+                                    "<a class='header'>" + name + "</a>" +
+                                "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
+                                + $("#description").val() + "</div></div><div class='right floated content'>" +
+                                "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
+                    }
+                });
+            }
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %}
+
+
+
