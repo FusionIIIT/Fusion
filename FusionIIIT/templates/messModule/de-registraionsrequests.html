@@ -45,9 +45,9 @@
                     </td>
                     <td>
                             <div class="ui buttons">
-                                    <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="acceptReq({{var.pk}})">A</button>
+                                    <button class="btn-req ui positive button" name="submit" value="accept"  data-var ="{{var.pk}}" onclick="acceptReq({{var.pk}})">A</button>
                         <div class="or"></div>
-              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="acceptReq({{var.pk}})" >R</button>
+              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectReq({{var.pk}})" >R</button>
                         </div>
                         <!--<form action="{{var.pk}}/specialrequestresponse/" method="POST">-->
                         <!--{% csrf_token %}-->
@@ -143,13 +143,14 @@ function acceptReq(id){
    
             $.ajax({
                    type: 'POST',
-                   url: 'registrationresponse',
+                   url: 'respond_to_reg_req',
                    dataType: 'json',
                    data: {
                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                       'id_registration':id,
-                       'status':'2',
-   
+                       'id_reg':id,
+                       'status':'accept',
+                       'remark':'default remark',
+                       'mess_no':'mess2' 
                    },
                    success: function(data) {
 
@@ -168,13 +169,14 @@ function acceptReq(id){
             document.getElementById('accr-'+id).style.display="none";
             $.ajax({
                 type: 'POST',
-                url: 'regestrationresponse',
+                url: 'respond_to_reg_req',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id_registration':id,
-                    'status':'0',
-
+                    'id_reg':id,
+                    'status':'reject',
+                    'remark':'default remark',
+                    'mess_no':'mess2'
                 },
                 success: function(data) {
 

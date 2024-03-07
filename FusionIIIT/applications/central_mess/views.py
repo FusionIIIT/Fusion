@@ -364,7 +364,7 @@ def mess(request):
         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
 
-        reg_request = Registration_Request.objects.all()
+        reg_request = Registration_Request.objects.all().filter(status='pending')
         # reg_main = Reg_main.objects.all()
         reg_record = Reg_records.objects.all()
         context = {
