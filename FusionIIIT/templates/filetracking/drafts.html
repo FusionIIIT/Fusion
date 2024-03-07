@@ -29,8 +29,8 @@
                     <td>{{ draft.subject|default:"None" }}</td>
                     <td>{{ draft.upload_date }}</td>
                     <td>
-                        <a href="{% url 'filetracking:forward' draft.id %}">
-                            <button class="ui primary button">View</button>
+                        <a href="{% url 'filetracking:edit_draft' draft.id %}">
+                            <button class="ui primary button">Edit</button>
                         </a>
                     </td>
                     <td>

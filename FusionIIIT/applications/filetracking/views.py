@@ -697,8 +697,6 @@ def delete(request,id):
     return redirect('/filetracking/draftdesign/')
 
 
-
-
 def forward_inward(request,id):
     """ This function is used forward the files which are available in the inbox of the user .
 
@@ -744,5 +742,101 @@ def unarchive_file(request, id):
 
     return render(request, 'filetracking/archive.html')
     
+
+@login_required(login_url="/accounts/login")
+def edit_draft_view(request, id, *args, **kwargs):
+    """
+            The function is used to edit and send drafted files, and also alter their title and subject 
+            along with their remarks and attachments
+
+            @param:
+                    request - trivial.
+                    id - id of the file object which the user intends to forward to other employee.
+
+            @variables:
+                    file - The File object.
+                    track - The Tracking object.
+                    remarks = Remarks posted by user.
+                    receiver = Receiver to be selected by user for forwarding file.
+                    receiver_id = Receiver_id who has been selected for forwarding file.
+                    upload_file = File attached by user.
+                    extrainfo = ExtraInfo object.
+                    holdsdesignations = HoldsDesignation objects.
+                    context - Holds data needed to make necessary changes in the template.
+    """
+
+    file = get_object_or_404(File, id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file).order_by('receive_date')
+
+    if request.method == "POST":
+        if 'send' in request.POST:
+            current_id = request.user.extrainfo
+            remarks = request.POST.get('remarks')
+            subject = request.POST.get('subject')
+            description = request.POST.get('description')
+
+            file.subject = subject
+            file.description = description
+            file.save()
+            track.update(is_read=True)
+
+            sender = request.POST.get('sender')
+            current_design = HoldsDesignation.objects.select_related(
+                'user', 'working', 'designation').get(id=sender)
+
+            receiver = request.POST.get('receiver')
+            try:
+                receiver_id = User.objects.get(username=receiver)
+            except Exception as e:
+                messages.error(request, 'Enter a valid destination')
+                designations = HoldsDesignation.objects.select_related(
+                    'user', 'working', 'designation').filter(user=request.user)
+
+                context = {
+
+                    'designations': designations,
+                    'file': file,
+                    'track': track,
+                }
+                return render(request, 'filetracking/editdraft.html', context)
+            receive = request.POST.get('receive')
+            try:
+                receive_design = Designation.objects.get(name=receive)
+            except Exception as e:
+                messages.error(request, 'Enter a valid Designation')
+                designations = get_designation(request.user)
+
+                context = {
+
+                    'designations': designations,
+                    'file': file,
+                }
+                return render(request, 'filetracking/editdraft.html', context)
+
+            upload_file = request.FILES.get('myfile')
+
+            Tracking.objects.create(
+                file_id=file,
+                current_id=current_id,
+                current_design=current_design,
+                receive_design=receive_design,
+                receiver_id=receiver_id,
+                remarks=remarks,
+                upload_file=upload_file,
+            )
+        messages.success(request, 'File sent successfully')
+
+    designations = get_designation(request.user)
+
+    context = {
+
+        'designations': designations,
+        'file': file,
+        'track': track,
+    }
+
+    return render(request, 'filetracking/editdraft.html', context)
+
 
     

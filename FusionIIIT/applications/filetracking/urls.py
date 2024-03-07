@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'unarchive/(?P<id>\d+)/$', 
         views.unarchive_file, name='unarchive'),
     url(r'^getdesignations/(?P<username>\w+)/$', views.get_designations_view, name="get_user_designations"),
+    url(r'^editdraft/(?P<id>\w+)/$', views.edit_draft_view, name="edit_draft"),
 
     # REST api urls
     url(r'^api/', include(urls))
