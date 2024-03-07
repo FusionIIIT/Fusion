@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import Mess_minutes
+from .models import Registration_Request
 
 
 class MinuteForm(forms.ModelForm):
@@ -15,3 +16,9 @@ class MessInfoForm(forms.Form, ):
         ]
     mess_option = forms.CharField(label='Mess Option', widget=forms.Select(
         choices=MESS_CHOICES, attrs={'style': 'border-radius:1rem;padding:7px;'}))
+    
+
+class RegistrationRequest(forms.ModelForm):
+    class Meta:
+        model = Registration_Request
+        fields = ('Txn_no','amount','img')    

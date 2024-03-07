@@ -14,11 +14,11 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm, MessInfoForm
+from .forms import MinuteForm, MessInfoForm,RegistrationRequest
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request)
 from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -73,6 +73,7 @@ def mess(request):
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
+        reg_form = RegistrationRequest()
         monthly_bill=monthly_bill[::-1]
 
         tot_am=0
@@ -211,7 +212,8 @@ def mess(request):
                     'count7': count7,
                     'count8': count8,
                     'form': form,
-                    'desig': desig
+                    'desig': desig,
+                    'reg_form':reg_form
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -276,7 +278,8 @@ def mess(request):
                     'count7': count7,
                     'count8': count8,
                     'form': form,
-                    'desig': desig
+                    'desig': desig,
+                    'reg_form':reg_form
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -299,6 +302,7 @@ def mess(request):
                    'desig': desig,
                    'minutes': minutes,
                    'meeting': meeting,
+                   'reg_form':reg_form,
                   
             }
 
@@ -1387,3 +1391,16 @@ def respond_to_reg(request):
     return JsonResponse(data)
     
 
+def reg_request(request):
+
+    user = request.user
+    extra_info = ExtraInfo.objects.select_related().get(user=user)
+    student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+    if request.method == 'POST':
+        form = RegistrationRequest(request.POST, request.FILES)
+
+        if form.is_valid():
+            temp=form.save(commit=False)
+            temp.student_id=student
+            temp.save()
+            return HttpResponseRedirect("/mess")  
