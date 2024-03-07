@@ -39,6 +39,7 @@ def filetracking(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
+    print(request.POST)
     if request.method == "POST":
         try:
             if 'save' in request.POST:
@@ -99,8 +100,9 @@ def filetracking(request):
                 except Exception as e:
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
-                receive = request.POST.get('recieve')
+                receive = request.POST.get('receive')
                 try:
+                    print(receive)
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -483,7 +485,7 @@ def forward(request, id):
                     'track': track,
                 }
                 return render(request, 'filetracking/forward.html', context)
-            receive = request.POST.get('recieve')
+            receive = request.POST.get('receive')
             try:
                 receive_design = Designation.objects.get(name=receive)
             except Exception as e:
@@ -727,6 +729,20 @@ def forward_inward(request,id):
 
 def get_designations_view(request, username):
     designations = get_designations(username)
-    print(designations)
     return JsonResponse(designations, safe=False)
+
+def unarchive_file(request, id): 
+    try:
+        file = get_object_or_404(File, id=id)
+        file.is_read = False
+        file.save()
+        messages.success(request, 'File unarchived')
+    except File.DoesNotExist:
+        messages.error(request, 'File does not exist')
+    except Exception as e: 
+        messages.error(request, 'Unable to unarchive: {}'.format(str(e)))
+
+    return render(request, 'filetracking/archive.html')
+    
+
     
