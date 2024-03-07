@@ -415,6 +415,8 @@ def handle_rebate_response(request):
     rebate_count = abs((d - b).days) + 1
     receiver = leaves.student_id.id.user
     action = request.POST["status"]
+    remark = request.POST["remark"]
+    leaves.rebate_remark = remark
     leaves.status = action
     leaves.save()
     if action == '2':
@@ -573,6 +575,7 @@ def generate_bill():
     first_day_prev_month = last_day_prev_month.replace(day=1)
     # previous_month = month_t.strftime("%B")
     student_all = Student.objects.prefetch_related('rebate_set')
+    print(student_all)  
     amount_c = MessBillBase.objects.latest('timestamp')
     for student in student_all:
         # nonveg_total_bill=0

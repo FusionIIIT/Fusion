@@ -1,3 +1,4 @@
+
 from datetime import date, datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -97,6 +98,8 @@ def mess(request):
                 monthly_bill[i].due_amount=(-tot_am)
             tot_am+=monthly_bill[i].total_bill
         amount_due=-payments[0].amount_paid
+        
+        ## adding the batch of student if btech or bdes then value of programme is 1 or else 0, holds value of phd and mtech.
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
@@ -756,6 +759,8 @@ def rebate_response(request):
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = handle_rebate_response(request)
+            print(data)
+            print(request)
     return JsonResponse(data)
 
 
