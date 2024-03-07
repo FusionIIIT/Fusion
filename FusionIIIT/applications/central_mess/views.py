@@ -23,7 +23,7 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
+                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response)
 from notification.views import central_mess_notif
 
 import csv
@@ -1359,4 +1359,31 @@ def uploadPaymentDue(request):
     return HttpResponseRedirect("/mess")
         
         
+@csrf_exempt
+@login_required
+def respond_to_reg(request):
+    """
+    This function is used to respond to registeration requests
+
+    @param request: 
+        request - contains metadata about the requested page 
+
+    @variables: 
+        user: Current user details
+        designation : designation of the user
+
+    @return:
+        data: returns the status of the application
+    """
+    data = {
+        'status': 1
+    }
+    user = request.user
+    designation = HoldsDesignation.objects.select_related().filter(user=user)
+
+    for d in designation:
+        if d.designation.name == 'mess_manager':
+            data = handle_reg_response(request)
+    return JsonResponse(data)
     
+

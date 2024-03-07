@@ -16,8 +16,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                      Payments, Rebate,
-                     Special_request, Vacation_food, MessBillBase)
+                      Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records)
 from notification.views import central_mess_notif
 
 
@@ -626,3 +625,54 @@ def generate_bill():
             bill_object.save()
 
 
+
+
+def handle_reg_response(request):
+    """
+       This function is to respond to registeration requests
+       @variables:
+       id: id of the registeration request
+       leaves: Object corresponding to the id of the reg request
+       @return:
+       data: returns the status of the application
+    """
+
+    id = request.POST['id_reg']
+    status = request.POST['status']
+    remark = request.POST['remark']
+    reg_req = Registration_Request.objects.get(pk=id)
+    student = reg_req.student_id
+    reg_req.status = status
+    reg_req.registration_remark=remark
+    reg_req.save()
+    message=''
+    if(status=='accept'):
+        amount = reg_req.amount
+        mess = request.POST['mess_no']
+        try :
+            reg_main = Reg_main.objects.get(student_id=student)
+            reg_main.current_mess_status="Registered"
+            reg_main.mess_option=mess
+            reg_main.balance=reg_main.balance+amount
+            reg_main.save()
+        except:
+            program = student.programme
+            mess_status = "Registered"
+            new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
+            new_reg.save()
+
+        new_reg_record = Reg_records(student_id=student)
+        new_reg_record.save()
+        message="Your registeration request has been accepted"
+    else:
+        message="Your registeration request has been rejected"            
+            
+
+
+    
+    receiver = reg_req.student_id.id.user
+    central_mess_notif(request.user, receiver, 'leave_request', message)
+    data = {
+        'message': 'success'
+    }
+    return data
