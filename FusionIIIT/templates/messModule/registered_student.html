@@ -4,6 +4,7 @@
   <a class="active item" data-tab="searchOrRemove"> Search/Remove Student </a>
   <a class="item" data-tab="addMess1"> Register for Mess1 </a>
   <a class="item" data-tab="addMess2"> Register for Mess2 </a>
+  <a class="item" data-tab="regList"> View Registration List</a>
 </div>
 <div class="ui active tab" data-tab="searchOrRemove">
   <div class="ui vertical segment">
@@ -196,6 +197,11 @@
   </div>
 </div>
 
+<div class="ui tab" data-tab="regList">
+  {% block reg_list %}
+    {% include 'messModule/reg_list.html' %}
+    {% endblock %}
+</div>
 <br />
 
 {% block javascript %}
