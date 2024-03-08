@@ -1,0 +1,361 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                <img src="{% static 'globals/img/zlatan.jpg' %}">
+            </div>
+
+            <div class="content">
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                {% if employee %}
+                <div class="ui large header" href="">
+                    {{ employee.user.first_name}}
+                    {{ employee.user.last_name}}
+                    <span class="right floated meta">
+                        {{ employee.department.name}}
+                    </span>
+                </div>
+                {% else %}
+                <div class="ui large header" href="">
+                    {{ request.user.first_name}}
+                    {{ request.user.last_name}}
+                    <span class="right floated meta">
+                        {{ request.user.extrainfo.department.name}}
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="meta">
+                    {% for i in Curr_desig %}
+                    <span> {% comment %}Should this be inside if else?{% endcomment %}
+                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                        {% else %}
+                        {{ i }}
+                        {% endif %}
+                    </span>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">CPDA Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+                        
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+                    
+                    
+                            
+                            <form method="post" id="editDetail" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                {% for cpda_form in cpda_form %}
+                                <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                                    value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+                    
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    
+                                    
+                    
+                                    <div class="eight wide field">
+                                        <label for="post_title">Name</label>
+                                        <input type="text" name="name" maxlength="40" required id="id_name" value="{{ cpda_form.name }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Designation</label>
+                                        <input type="text" name="designation" maxlength="40" required id="id_designation" value="{{ cpda_form.designation }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">P.F. No.</label>
+                                        <input type="number" name="pf_no" maxlength="30" required id="id_pf_no" value="{{ cpda_form.pf_no }}" readonly>
+                                    </div>
+                                    <div class="fifteen wide field">
+                                        <label for="post_title">Purpose</label>
+                                        <input type="text" name="purpose" maxlength="40" required id="id_purpose" value="{{ cpda_form.purpose }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Amount Required</label>
+                                        <input type="number" name="amount_required" maxlength="40" required id="id_amount_required" value="{{ cpda_form.amount_required }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Advance (PDA) due for adjustment, if any</label>
+                                        <input type="number" name="adjusted_pda" maxlength="40" required id="id_adjusted_pda" value="{{ cpda_form.adjusted_pda }}" readonly>
+                                    </div>
+                    
+                    
+                                    <div>
+                                        <label for="text" >I hereby declare that I have uploaded all my achievements (including publications, visits, projects etc.) on <b>Institute's website and EIS module on</b></label>
+                                        <div class="three wide field">
+                                            <input type="date" name="achievements_uploaded_date" value="{{ cpda_form.achievements_uploaded_date|date:'Y-m-d' }}" readonly>
+                                        </div>
+                                        <br>
+                                    </div>
+                                    
+                                    
+                                    <div class="eight wide field" style="float: right;">
+                                        <!-- <div class="eight wide field">
+                                            <label for="post_title">Signature of Applicant</label>
+                                            <input type="image" name="sign_applicant" maxlength="40" required id="id_sign_faculty">
+                                        </div> -->
+                                        <div class="eight wide field">
+                                            <label for="post_title">Date</label>
+                                            <input type="date" name="submission_date" maxlength="40" required id="id_contact" value="{{ cpda_form.submission_date |date:'Y-m-d'}}" readonly>
+                                        </div>
+                                    </div>
+                                    <br><br><br><br><br><br><br><br>
+                                    
+                                    <div class="three fields ">
+                                        <label for="post_title"><b>1. Recommended & Forwarded by HOD: </b></label>
+                                        <div class="field">
+                                            <label for="recomm_hod_confirm">Recommended & Forwarded by HOD:</label>
+                                            <select id="recomm_hod_confirm" name="recomm_hod_confirm">
+                                                <option value="True">Yes</option>
+                                                <option value="False">No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="three fields">
+                                        <label for="post_title"><b>2. Date of Module on EIS module is verified: (Dean RSPC) </b></label>
+                                        <div class="field">
+                                            <label for="date_rspc_confirm">Date of Module on EIS module is verified (Dean RSPC):</label>
+                                            <select id="date_rspc_confirm" name="date_rspc_confirm">
+                                                <option value="True">Yes</option>
+                                                <option value="False">No</option>
+                                            </select>
+                                        </div>
+                                        
+                                    </div>
+                    
+                                    <hr>
+                    
+                                    <div style="text-align: center;">
+                                        <h4><u>Estt. Section</u></h4>
+                                    </div>
+                                    <br><br>
+                    
+                                    <div class="eight wide field">
+                                        <label for="post_title">Balance available as on date:</label>
+                                        <input type="number" name="balance_available" maxlength="40" required id="id_balance_available" value="{{ cpda_form.balance_available }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Advance amount entered in PDA Register Page no.</label>
+                                        <input type="number" name="advance_amount_pda" maxlength="40" required id="id_advance_amount_pda" value="{{ cpda_form.advance_amount_pda }}" readonly>
+                                    </div>
+                                    <br><br>
+                                   
+                                    <div class="two fields">
+                                        <div class="fifteen wide field" style="float: left;">
+                                            <label>Dealing Asstt. (Estt.) <br> Name</label>
+                                            <input type="text" name="dealing_asstt_name" maxlength="40" required id="id_dealing_asstt_name" value="{{ cpda_form.dealing_asstt_name }}" readonly>
+                                        </div>
+                                        <div class="fifteen wide field" style="float: right;">
+                                            <label>AR/DR (Estt.) <br> Name</label>
+                                            <input type="text" name="ar_dr_name" maxlength="40" required id="id_ar_dr_name" value="{{ cpda_form.ar_dr_name }}" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                    
+                                    <div style="text-align: center;">
+                                        <h4><u>Internal Audit</u></h4>
+                                    </div>
+                                    <br><br>
+                    
+                                    <div class="eight wide field">
+                                        <label for="post_title">Entry checked in PDA Register for Rs.</label>
+                                        <input type="number" name="check_amount" maxlength="40" required id="id_check_amount" value="{{ cpda_form.check_amount }}" readonly>
+                                    </div>
+                                    <br><br>
+                                   
+                                    <div class="two fields">
+                                        <div class="fifteen wide field" style="float: left;">
+                                            <label>Dealing Asstt. (IA) <br> Name</label>
+                                            <input type="text" name="dealing_asstt_ia_name" maxlength="40" required id="id_dealing_asstt_ia_name" value="{{ cpda_form.dealing_asstt_ia_name }}" readonly>
+                                        </div>
+                                        <div class="fifteen wide field" style="float: right;">
+                                            <label>AR/DR (IA) <br> Name</label>
+                                            <input type="text" name="ar_dr_ia_name" maxlength="40" required id="id_ar_dr_ia_name" value="{{ cpda_form.ar_dr_ia_name }}" readonly>
+                                        </div>
+                                    </div>
+                    
+                                    <hr>
+                    
+                                   <div style="text-align: center;">
+                                    <div class="field">
+                                        <label for="sanction_status">Sanction Status:</label>
+                                        <select id="sanction_status" name="sanction_status" value="{{ cpda_form.sanction_status }}" readonly>
+                                            <option value="True">Sanctioned</option>
+                                            <option value="False">Not Sanctioned</option>
+                                        </select>
+                                    </div>
+                                    
+                                    </div>
+                    
+                                    <br>
+                                    <!-- <div class="fifteen wide field" style="text-align: center;">
+                                        <label for="post-title"><h4>Director</h4> </label>
+                                        <input type="image" name="sign_director" maxlength="40" required id="id_sign_director">
+                                    </div> -->
+                                    <div class="eight wide field">
+                                        <label for="post_title"><u>AR(F&A)</u> for payment of advance <br> Copy to:</label>
+                                        <input type="number" name="copy_to" maxlength="40" required id="id_copy_to" value="{{ cpda_form.copy_to }}" readonly>
+                                        <label for="post-title">for records</label>
+                                    </div>
+                    
+                                    <div class="field">
+                                        <button class="ui primary button right floated" type="submit" value="Submit">
+                                            Submit
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                            </form>
+                    
+                            <br>
+                            <br>
+                    
+                    
+                        </div>
+                        <br>
+                        <div class="extra content"></div>
+                    </div>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+                
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    /*$(document).ready(function(){
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        setTimeout(loader, 1750);
+    });
+
+    function loader() {
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        $("#loader").removeClass("active");
+        $("#loader").addClass("disabled");
+    }*/
+</script>
+{% endblock %}
+
+
+
+<!--  -->
+<!--  -->
+<!--  -->

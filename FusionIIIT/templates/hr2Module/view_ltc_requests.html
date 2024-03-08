@@ -1,0 +1,90 @@
+<!-- jQuery Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Table Segment -->
+<div class="ui bottom attached tab segment" data-tab="second">
+    <div id="textSegmentDiv">
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+            <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <!-- Table to display LTC requests -->
+                    <table class="ui celled medium table" style="text-align: center; margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <th><h4>Form Id</h4></th>
+                                <th><h4>View</h4></th>
+                                {% if hr == "1" %}
+                                    <th><h4>Forward</h4></th>
+                                {% endif %}
+                                {% if hr == "1" %}
+                                    <th><h4>Reject</h4></th>
+                                {% endif %}
+                                <!-- Add more headers for LTC request details -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through LTC requests and display in table -->
+                            {% for ltc_request in ltc_requests %}
+                                <tr>
+                                    <td>{{ ltc_request.id }}</td>
+                                    <td><a href="http://127.0.0.1:8000/hr2/view_ltc_form/{{ ltc_request.id }}">View</a></td>
+                                    <!-- Adjust URL name as per your project -->
+                                    <!-- Add more <td> elements to display other LTC request details -->
+                                    {% if hr == "1" %}
+                                    <td><button class="ui primary button forward-btn" data-ltc-id="{{ ltc_request.id }}">Forward</button></td>
+                                    {% endif %}
+                                    {% if hr == "1" %}
+                                    <td><button class="ui primary button" style="background-color: crimson;">Reject</button></td>
+                                    {% endif %}
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No LTC requests found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle button click -->
+<script>
+    $(document).ready(function() {
+        $('.forward-btn').on('click', function() {
+            var ltcId = $(this).data('ltc-id'); // Get LTC request ID from button data
+            var userDesignation = '{{ user_designation }}'; // Get the user's designation from Django context
+            console.log(userDesignation)
+
+            if(userDesignation==""){
+                userDesignation="hr_"
+            }
+
+           
+            var url = '/hr2/form_mangement_ltc_' + userDesignation.toLowerCase() + '/';
+            
+
+            // Append the LTC ID to the URL
+            url += ltcId + '/';
+
+            $.ajax({
+                url: url, // Use the dynamically generated URL
+                type: 'POST', // HTTP method
+                data: {
+                    'id': ltcId, // Include LTC request ID in data
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                },
+                success: function(response) {
+                    // Handle success response, if needed
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>

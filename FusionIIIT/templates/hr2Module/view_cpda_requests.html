@@ -1,0 +1,111 @@
+<!-- jQuery Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Table Segment -->
+<div class="ui bottom attached tab segment" data-tab="second">
+    <div id="textSegmentDiv">
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+            <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <!-- Table to display cpda requests -->
+                    <table class="ui celled medium table" style="text-align: center; margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <th>
+                                    <h4>Form Id</h4>
+                                </th>
+                                <th>
+                                    <h4>View</h4>
+                                </th>
+                                {% if dire == "2" and hr == "1" %}
+                                <th>
+                                    <h4>Approve</h4>
+                                </th>
+                                {% elif hr == "1" %}
+                                <th>
+                                    <h4>Forward</h4>
+                                </th>
+                                {% endif %}
+                                {% if hr == "1" %}
+                                <th>
+                                    <h4>Reject</h4>
+                                </th>
+                                {% endif %}
+                                <!-- Add more headers for cpda request details -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through cpda requests and display in table -->
+                            {% for cpda_request in cpda_requests %}
+                            <tr>
+                                <td>{{ cpda_request.id }}</td>
+                                <td><a href="http://127.0.0.1:8000/hr2/view_cpda_form/{{ cpda_request.id }}">View</a>
+                                </td>
+                                <!-- Adjust URL name as per your project -->
+                                <!-- Add more <td> elements to display other cpda request details -->
+                                    {% if dire == "2" and hr == "1" %}
+                                    
+                                        <td><button class="ui primary button forward-btn"
+                                            data-cpda-id="{{ cpda_request.id }}">Approve</button></td>
+                                    
+                                    {% elif hr == "1" %}
+                                    
+                                <td><button class="ui primary button forward-btn"
+                                        data-cpda-id="{{ cpda_request.id }}">Forward</button></td>
+                                {% endif %}
+                                {% if hr == "1" %}
+                                <td><button class="ui primary button" style="background-color: crimson;">Reject</button>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">No CPDA requests found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle button click -->
+<script>
+    $(document).ready(function () {
+        $('.forward-btn').on('click', function () {
+            var cpdaId = $(this).data('cpda-id'); // Get cpda request ID from button data
+            var userDesignation = '{{ user_designation }}'; // Get the user's designation from Django context
+            console.log(userDesignation)
+
+            if (userDesignation == "") {
+                userDesignation = "hr"
+            }
+
+
+            var url = '/hr2/form_mangement_cpda_' + userDesignation.toLowerCase() + '/';
+
+
+            // Append the cpda ID to the URL
+            url += cpdaId + '/';
+
+            $.ajax({
+                url: url, // Use the dynamically generated URL
+                type: 'POST', // HTTP method
+                data: {
+                    'id': cpdaId, // Include cpda request ID in data
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                },
+                success: function (response) {
+                    // Handle success response, if needed
+                    console.log(response);
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>
