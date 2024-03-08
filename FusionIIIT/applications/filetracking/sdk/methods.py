@@ -4,6 +4,7 @@ from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
 from applications.filetracking.api.serializers import FileSerializer, FileHeaderSerializer, TrackingSerializer
 from django.core.exceptions import ValidationError
 from typing import Any
+from amqp import NotFound
 
 
 def create_file(
