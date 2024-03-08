@@ -59,16 +59,10 @@
             {% endif %}
             <br/>
             <div class="meta">
-                {% for i in Curr_desig %}
-                <span> {% comment %}Should this be inside if else?{% endcomment %}
-                    {% if i == "co-ordinator" or  i == "co co-ordinator" %}
-                        {{ i }} of {{ club_details }} club
-                    {% else %}
-                        {{ i }}
-                    {% endif %}
+               
+                <span> 
+                    {{global_var|capfirst}}
                 </span>
-                <br>
-                {% endfor %}
             </div>
         </div>
     </div>
