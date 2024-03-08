@@ -1282,39 +1282,75 @@ def searchAddOrRemoveStudent(request):
         msg=""
         if submitType=='searchStudent':
             studentId=str((request.GET.get('roll_number'))).upper()
-            try:    
-                mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
-                msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
+            try:
+                reg_main = Reg_main.objects.values('current_mess_status','mess_option').get(student_id=studentId)
+                if(reg_main['current_mess_status']=="Registered"):
+                    msg= str(studentId)+" is registered for "+str(reg_main['mess_option'])
+                else:
+                    msg=str(studentId)+" is not registered for Mess" 
             except:
-                msg=str(studentId)+" is not registered for Mess" 
+                msg="unable to find this student in database."                    
+
+            # try:    
+            #     mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+            #     msg= str(studentId)+" is registered for "+str(mess_optn['mess_option'])
+            # except:
+            #     msg=str(studentId)+" is not registered for Mess" 
+                
         elif submitType=='addStudent1' or submitType=='addStudent2':
             messNo=request.GET.get('messNo')  
             studentId = str((request.GET.get('roll_number'))).upper()
             try:
-                mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
-                msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
+                reg_main = Reg_main.objects.get(student_id=studentId)
+
+                if(reg_main.current_mess_status=="Registered"):
+                    msg=str(studentId)+" is already registered for "+str(reg_main.mess_option) 
+                else:
+                    reg_main.current_mess_status="Registered"
+                    reg_main.mess_option=str(messNo)
+                    reg_main.save()
+                    msg="success"
             except:
-                try:
-                    studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
-                    newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
-                    newData.save()
-                    msg=str(studentId)+" is successfully registered for Mess."
-                except:
-                    msg="unable to find this student in database."
+                msg="unable to find this student in database."        
+
+            # try:
+            #     mess_optn = Messinfo.objects.select_related().values('mess_option').get(student_id=studentId)
+            #     msg=str(studentId)+" is already registered for "+str(mess_optn['mess_option']) 
+            # except:
+            #     try:
+            #         studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+            #         newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
+            #         newData.save()
+            #         msg=str(studentId)+" is successfully registered for Mess."
+            #     except:
+            #         msg="unable to find this student in database."
+                
         elif submitType=='removeStudent':
             studentId = str((request.GET.get('roll_number'))).upper()
             try:
-                studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
-                data=Messinfo.objects.get(student_id=studentId)
-                data.delete()
-                Messinfo.objects.all()
+                reg_main = Reg_main.objects.get(student_id=studentId,current_mess_status="Registered")
+                reg_main.current_mess_status="Deregistered"
+                reg_main.save()
                 msg=str(studentId)+" is successfully removed from mess." 
             except:
                 msg=str(studentId)+" is not registered for mess." 
+
+            # try:
+            #     studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+            #     data=Messinfo.objects.get(student_id=studentId)
+            #     data.delete()
+            #     Messinfo.objects.all()
+            #     msg=str(studentId)+" is successfully removed from mess." 
+            # except:
+            #     msg=str(studentId)+" is not registered for mess." 
         elif (submitType=='removeAllStudent1' or submitType=='removeAllStudent2'):
             messNo=request.GET.get('mess')
+    
             try:
-                Messinfo.objects.filter(mess_option=str(messNo)).delete()
+                reg_main = Reg_main.objects.filter(mess_option=str(messNo),current_mess_status="Registered")
+                for reg in reg_main:
+                    reg.current_mess_status="Deregistered"
+                    reg.save()
                 msg="All students removed successfully from "+str(messNo)
             except:
                 msg="can't remove students." 
@@ -1335,11 +1371,15 @@ def searchAddOrRemoveStudent(request):
                 studentId=(str(row[0].value)).upper()
                 try:
                     studentHere = Student.objects.get(id=studentId)
-                    if Messinfo.objects.filter(student_id=studentId).exists():
-                        Messinfo.objects.filter(student_id=studentId).update(mess_option=str(messNo))
-                    else:
-                        newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
-                        newData.save()
+                    reg_main = Reg_main.objects.get(student_id=studentId)
+                    reg_main.current_mess_status="Registered"
+                    reg_main.mess_option=str(messNo)
+                    reg_main.save()
+                    # if Messinfo.objects.filter(student_id=studentId).exists():
+                    #     Messinfo.objects.filter(student_id=studentId).update(mess_option=str(messNo))
+                    # else:
+                    #     newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
+                    #     newData.save()
                 except:
                     1
         messages.success(request,"Done.")
