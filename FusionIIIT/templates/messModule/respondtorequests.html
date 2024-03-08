@@ -144,7 +144,7 @@
                   name="submit"
                   value="approve"
                   data-acc="{{item.pk}}"
-                  onclick="acceptReq({{item.pk}})">
+                  onclick="rebateAcceptReq({{item.pk}})">
                   A
                 </button>
 
@@ -154,7 +154,7 @@
                   id="remark"
                   name="submit"
                   value="reject"
-                  onclick="rejectReq({{item.pk}})">
+                  onclick="rebateRejectReq({{item.pk}})">
                   R
                 </button>
               </div>
@@ -171,7 +171,8 @@
                     -->
             </td>
             <td>
-                {% comment %} {% set the_var = "rebate_remark" ~{{ item.pk }} %} {% endcomment %}
+              {% comment %} {% set the_var = "rebate_remark" ~{{ item.pk }} %}
+              {% endcomment %}
               <div class="field">
                 <textarea
                   rows="2"
@@ -333,6 +334,7 @@
       $('#rvrtab').show();
     });
   });
+  {% comment %} acceptReq; {% endcomment %}
 </script>
 
 <script>
@@ -347,10 +349,10 @@
   <!--    document.getElementById('leave-form-t').style.display="block";-->
   }
 
-  function acceptReq(id){
+  function rebateAcceptReq(id){
     console.log(id)
     var remark_res = document.getElementById("rebate_remark-"+id).value;
-    
+
     console.log(remark_res)
    document.getElementById('accr-'+id).style.display="none";
 
@@ -376,9 +378,9 @@
               });
 
            }
-           function rejectReq(id){
+           function rebateRejectReq(id){
             var remark_res = document.getElementById("rebate_remark-"+id).value;
-            
+
             console.log(remark_res)
             document.getElementById('accr-'+id).style.display="none";
            $.ajax({
