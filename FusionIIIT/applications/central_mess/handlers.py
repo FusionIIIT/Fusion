@@ -24,6 +24,8 @@ today_g = datetime.today()
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
 first_day_of_this_month = date.today().replace(day=1)
+this_month = first_day_of_this_month.strftime('%B')
+this_year = first_day_of_this_month.year
 last_day_prev_month = first_day_of_this_month - timedelta(days=1)
 previous_month = last_day_prev_month.strftime('%B')
 previous_month_year = last_day_prev_month.year
@@ -401,7 +403,49 @@ def add_mess_meeting_invitation(request):
     }
     return data
 
-
+def rebateCountFn(start_date, end_date, student_id):
+    '''
+    This function is used to store the rebate_count in generte bill table and in what month that rebate has been issued.
+    '''    
+    start_date_month = start_date.strftime('%B')
+    start_date_year = start_date.year
+    end_date_month = end_date.strftime('%B')
+    date_format = "%Y-%m-%d"
+    begin_day = datetime.strptime(str(start_date), date_format)
+    end_day = datetime.strptime(str(end_date), date_format)
+    rebate_count_days = 0
+    rebate_count_days_next_month = 0
+    if start_date_month != end_date_month:
+        last_day_day = int(last_day_of_this_month.day)
+        begin_day_day = int(begin_day.day)
+        end_day_day = int(end_day.day)
+        first_day_day = int(first_day_of_next_month.day)
+        rebate_count_days = abs(last_day_day-begin_day_day) + 1 
+        rebate_count_days_next_month = abs(end_day_day-first_day_day)+1
+    else:
+        rebate_count_days = abs((end_day - begin_day).days) + 1
+    
+    #### Storing the rebate count days into the monthly bill table so it can be used while bill generation.
+        
+    try:
+        existing_student = Monthly_bill.objects.get(student_id=student_id, month=start_date_month, year=start_date_year)
+        new_rebate_count = existing_student.rebate_count + rebate_count_days
+        existing_student.rebate_count = new_rebate_count
+        existing_student.save()
+        if(rebate_count_days_next_month != 0):
+            new_student = Monthly_bill.objects.create(student_id=student_id, month=end_date_month, year=start_date_year, rebate_count=rebate_count_days_next_month)
+            new_student.save()        
+    except:
+            new_student = Monthly_bill.objects.create(student_id=student_id, month=start_date_month, year=start_date_year, rebate_count=rebate_count_days)
+            new_student.save()
+            if(rebate_count_days_next_month != 0):
+                new_student = Monthly_bill.objects.create(student_id=student_id, month=end_date_month, year=start_date_year, rebate_count=rebate_count_days_next_month)
+                new_student.save() 
+        
+    
+        
+    
+    
 def handle_rebate_response(request):
     """
        This function is to respond to rebate requests
@@ -427,6 +471,7 @@ def handle_rebate_response(request):
     leaves.status = action
     leaves.save()
     if action == '2':
+        rebateCountFn(leaves.start_date, leaves.end_date, leaves.student_id)
         message = 'Your leave request has been accepted between dates ' + str(b.date()) + ' and ' + str(d.date())
     else:
         message = 'Your leave request has been rejected between dates ' + str(b.date()) + ' and ' + str(d.date())
@@ -599,70 +644,37 @@ def Calculate_rebate(id, month_previous, amount_per_day):
             
 
 def generate_bill():
-    # month_previous  = datetime.now().month - 1
-    month_previous = last_day_prev_month.month
-    print(previous_month)
-    # print(datetime.month())
-    first_day_prev_month = last_day_prev_month.replace(day=1)
-    # previous_month = month_t.strftime("%B")
-    # student_all = Student.objects.prefetch_related('rebate_set')
-    student_all = Reg_main.objects.filter(current_mess_status="Registered")
     
-    print(student_all)  
-    amount_per_day = MessBillBase.objects.latest('timestamp')
-    print(amount_per_day.bill_amount)
+    per_day_cost_obj = MessBillBase.objects.latest('timestamp')
+    per_day_cost = per_day_cost_obj.bill_amount
+    print(per_day_cost)
+    amount = int(last_day_prev_month.day) * int(per_day_cost)
+    print(amount)
+    student_all = Reg_main.objects.filter(current_mess_status = "Registered")
+    print(student_all)
     for student in student_all:
-        rebate_amount = Calculate_rebate(student.student_id, month_previous, amount_per_day.bill_amount)
-        print(rebate_amount)
-        # rebate_count = rebate_amount/amount_per_day
-        # print(rebate_count)
-        total = 0
-        # nonveg_data = student.nonveg_data_set.all()
-        rebates = student.rebate_set.all()
-        # for order in nonveg_data:
-        #     if order.order_date.strftime("%B") == previous_month:
-        #         nonveg_total_bill = nonveg_total_bill + order.dish.price
-
-        for r in rebates:
-            if r.status == '2':
-                if r.start_date.month == month_g:
-                    if r.end_date.month == today_g:
-                        rebate_count = rebate_count + abs((last_day_prev_month - r.start_date).days) + 1
-                    else:
-                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-                elif r.end_date.month == month_g:
-                    rebate_count = rebate_count + abs((r.end_date - first_day_prev_month).days) + 1
-                else:
-                    rebate_count = 0
-        rebate_amount = rebate_count*amount_c.bill_amount/30
-        total = amount_c.bill_amount  - rebate_amount
-        bill_object = Monthly_bill(student_id=student,
-                                   month=previous_month,
-                                   year = previous_month_year,
-                                   amount=amount_c.bill_amount,
-                                   rebate_count=rebate_count,
-                                   rebate_amount=rebate_amount,
-                                   total_bill=total)
-        if Monthly_bill.objects.filter(student_id=student,
-                                       month=previous_month,
-                                       year = previous_month_year,
-                                       total_bill=total).exists():
-           1
-        elif Monthly_bill.objects.filter(student_id=student,
-                                       month=previous_month,
-                                       year = previous_month_year):
-            Monthly_bill.objects.filter(student_id=student,
-                                        month=previous_month,
-                                        year=previous_month_year).update(student_id=student,
-                                                            month=previous_month,
-                                                            amount=amount_c.bill_amount,
-                                                            rebate_count=rebate_count,
-                                                            rebate_amount=rebate_amount,
-                                                            total_bill=total)
-            # bill_object.update()
-        else:
-            bill_object.save()
-
+        student_id = student.student_id
+        rem_balance = student.balance
+        try:        
+            monthly_bill_obj = Monthly_bill.objects.get(student_id=student_id, month=previous_month, year=previous_month_year)
+            rebate_count_count = monthly_bill_obj.rebate_count
+            rebate_amount = int(rebate_count_count)*int(per_day_cost)
+            monthly_bill_obj.rebate_amount = rebate_amount
+            total_bill = amount - rebate_amount
+            monthly_bill_obj.total_bill = total_bill
+            rem_balance = rem_balance - total_bill
+            student.balance = rem_balance
+            monthly_bill_obj.amount = amount
+            monthly_bill_obj.save()
+        except:
+            new_monthly_bill_obj = Monthly_bill(student_id=student_id, month=previous_month, year=previous_month_year, amount=amount, total_bill=amount)
+            rem_balance = rem_balance - amount
+            student.balance = rem_balance
+            new_monthly_bill_obj.save()
+        if(student.balance <= 0):
+            student.current_mess_status = 'Deregistered'
+        student.save()
+        
 
 
 
