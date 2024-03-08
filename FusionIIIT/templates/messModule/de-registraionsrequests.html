@@ -22,6 +22,8 @@
                   <th>Transaction No</th>
                   <th>Image</th>
                   <th>Amount</th>
+                  <th>Remark</th>
+                  <th>Mess</th>
                   <th>Accept/Reject</th>
                 </tr>
               </thead>
@@ -34,15 +36,37 @@
                     <td class="two wide">
                         {{var.Txn_no}}
                     </td>
-                    <td class="three wide">
+                    <td class="one wide">
                         <a href="media/{{var.img}}" target="_blank">
                             Receipt
 
                         </a>
                     </td>
-                    <td>
+                    <td class="one wide">
                         {{var.amount}}
                     </td>
+                    
+                    <td class="one wide">
+                        <textarea rows="2" class="remark" name="remark" required="true"></textarea>
+                    </td>
+
+                    <td class="one wide">
+                        <!-- <div class="ui selection dropdown">
+                            <input type="hidden" name="gender">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Mess</div>
+                            <div class="menu">
+                              <div class="item" data-value="mess1">Mess1</div>
+                              <div class="item" data-value="mess2">Mess2</div>
+                            </div>
+                        </div> -->
+
+                        <select name="messno" id="messno-{{var.pk}}">
+                            <option value="mess1">Mess1</option>
+                            <option value="mess2">Mess2</option>
+                        </select>
+                    </td>
+                    
                     <td>
                             <div class="ui buttons">
                                     <button class="btn-req ui positive button" name="submit" value="accept"  data-var ="{{var.pk}}" onclick="acceptReq({{var.pk}})">A</button>
@@ -137,9 +161,10 @@
     });
    </script>
 <script>
-   
+    
 function acceptReq(id){
-    document.getElementById('accr-'+id).style.display="none";
+    document.getElementById('accpt-'+id).style.display="none";
+    var messno=document.getElementById('messno-'+id).value;
    
             $.ajax({
                    type: 'POST',
@@ -149,8 +174,8 @@ function acceptReq(id){
                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
                        'id_reg':id,
                        'status':'accept',
-                       'remark':'default remark',
-                       'mess_no':'mess2' 
+                       'remark':$("textarea.remark").val(),
+                       'mess_no':messno,
                    },
                    success: function(data) {
 
@@ -166,7 +191,7 @@ function acceptReq(id){
             }
             
             function rejectReq(id){
-            document.getElementById('accr-'+id).style.display="none";
+            document.getElementById('accpt-'+id).style.display="none";
             $.ajax({
                 type: 'POST',
                 url: 'respond_to_reg_req',
@@ -175,7 +200,7 @@ function acceptReq(id){
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
                     'id_reg':id,
                     'status':'reject',
-                    'remark':'default remark',
+                    'remark':$("textarea.remark").val(),
                     'mess_no':'mess2'
                 },
                 success: function(data) {
