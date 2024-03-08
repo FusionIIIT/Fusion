@@ -1,7 +1,7 @@
 from Fusion.settings.common import *
 
 DEBUG = True
-
+TEMPLATE_DEBUG = True 
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 
 ALLOWED_HOSTS = ['*']
@@ -53,3 +53,7 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT=os.path.join(BASE_DIR,"media/")

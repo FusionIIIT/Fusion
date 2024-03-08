@@ -76,6 +76,14 @@ Central Mess
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
+        {% comment %}The ... start here!{% endcomment %}
+        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="Registration">
+            {% block Registration %}
+            {% include 'messModule/registration.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... end here!{% endcomment %}
+
         {% comment %}The ... starts here!{% endcomment %}
         {% comment %} <div class="ui tab segment" data-tab="sixth">
             {% block nonvegfood %}
@@ -162,7 +170,11 @@ Central Mess
             {% include 'messModule/respondmenu.html' %}
             {% endblock %}
         </div>
-        
+        <div class="ui tab segment" data-tab="twentysix" style="min-width:45rem;">
+            {% block de-registraionsrequests %}
+            {% include 'messModule/de-registraionsrequests.html' %}
+            {% endblock %}
+        </div>
         
         {% comment %} <div class="ui tab segment" data-tab="twentytwo">
             {% block nonvegorders %}
