@@ -3,127 +3,74 @@
 {#{% block body %}#}
 {% block Registration %}
     {% comment %}The tab menu starts here!{% endcomment %}
+
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="apply_registration">
-            Apply for Registration
+            Registration Request
         </a>
-
-        <a class="item" data-tab="view_registration">
-            Previous Registration
-        </a>    
+        <a class="item" data-tab="reg_req_status">
+            Request status
+        </a>
     </div>
-
-    <div class="ui active tab" data-tab="" id="">
-        <div class="ui vertical segment">
-
+    <div class="ui active tab" data-tab="apply_registration">
+        <div class="ui vertical strip segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form method = "post" action="registrationRequest" enctype="multipart/form-data">
+                <form method = "post" action="registrationRequest" enctype="multipart/form-data" class="ui form">
+
                 {% csrf_token %}
                 {{ reg_form.as_p }}
-                <button type="submit">Upload</button>
+                <button class="ui primary fluid button" type="submit" style="width: '40px';">Upload</button>
               </form>
             {% comment %}Form Tag ends here!{% endcomment %}
-
-
-            <div class="ui divider"></div>
-
         </div>
+        
     </div>
 
-    <div class="ui tab" data-tab="">
-
-        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
-        <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
-            {% for app in feedback %}
-                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
-            <div class="item">
-
-                <div class="left floated content">
-                    <a class="header">{{info.user.username}}</a>
-                    <a class="meta">{{app.feedback_type}}</a>
-
-                    <div class="description">
-                        {{app.description}}
-                    </div>
-                </div>
-
-                <div class="right floated content">
-                    <span class="meta">{{app.fdate}}</span>
-                </div>
-                
-            </div>
-            {% endfor %}
-        </div>
-
-    <div class="ui divider"></div>
-    </div>
-
-{% endblock %}
-{#{% endblock %}#}
-
-{% block javascript %}
-<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-
- <script>
-        function required_check_feedback(){
-            if ($("#description").val().length == 0) {
-                check = 0;
-                return check;
-            }
-            else {
-                check = 1;
-            }
-        }
-        function feedback(){
-            check = required_check_feedback();
-            if(check == 0){
-                alert("Please add description");
-            }
-            else {
-                $.ajax({
-                    type: 'POST',
-                    url: 'submitmessfeedback/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'feedback_type': $("#feedback_type").val(),
-                        'description': $("#description").val()
-                    },
-                    success: function (data) {
-                        if (data.status) {
-
-                            $("#feedback").load(location.href + " #feedback>*", "");
-
-                            var monthNames = ["January", "February", "March", "April", "May", "June",
-                                              "July", "August", "September", "October", "November", "December"];
-                            var name = $("#user_name").text();
-                            var today_date = new Date();
-                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
-                            $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
-                                    "<a class='header'>" + name + "</a>" +
-                                "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
-                                + $("#description").val() + "</div></div><div class='right floated content'>" +
-                                "<span class='meta'>" + t_date + "</span></div></div>");
-
-                            alert("Data Inserted Successfully");
-
-                            document.getElementById('feedback_type').value = "";
-                            document.getElementById('description').value = "";
-
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-                        $("#feedback").load(location.href + " #feedback>*", "");
-                    }
-                });
-            }
-        return false;
-    }
+    <div class="ui tab" data-tab="reg_req_status">
+        <div class="ui vertical strip segment">
     
+                <table class="ui single line table" style="margin: auto;">
+                  <thead>
+                    <tr>
+                      <th>Student Id</th>
+                      <th>Txn_no</th>
+                      <th>image</th>
+                      <th>Amount</th>
+                      <th>status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                {% for var in reg_request %}
+                    <tr>
+                        <th>
+                            {{var.student_id}}
+                        </th>
+                        <td>
+                            {{var.Txn_no}}
+                        </td>
+                        <td>
+                            <a href="media/{{var.img}}" target="_blank">
+                                receipt
+                            </a>
+                        </td>
+                        <td>
+                            {{var.amount}}
+                        </td>
+                        <td>
+                            {{var.status}}
+                        </td>
+                    </tr>
+   
+            {% endfor %}
+        </tbody>
+        </table>
 
+    </tbody>
+</table>
+</div>
 
-</script>
+</div>
 {% endblock %}
 
 
