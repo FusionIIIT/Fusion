@@ -30,7 +30,14 @@ previous_month_year = last_day_prev_month.year
 first_day_of_next_month = (date.today().replace(day=28) + timedelta(days=4)).replace(day=1)
 last_day_of_this_month = first_day_of_next_month - timedelta(days=1)
 next_month = first_day_of_next_month.month
+first_day_prev_month = last_day_prev_month.replace(day=1)
 
+def current_month():
+    return datetime.datetime.now().strftime("%B")
+
+
+def current_year():
+    return datetime.datetime.now().strftime("%Y")
 
 # def add_nonveg_order(request, student):
 #     """
@@ -415,6 +422,8 @@ def handle_rebate_response(request):
     rebate_count = abs((d - b).days) + 1
     receiver = leaves.student_id.id.user
     action = request.POST["status"]
+    remark = request.POST["remark"]
+    leaves.rebate_remark = remark
     leaves.status = action
     leaves.save()
     if action == '2':
@@ -567,16 +576,46 @@ def add_mess_committee(request, roll_number):
         }
 
 
+def Calculate_rebate(id, month_previous, amount_per_day):
+    students = Rebate.objects.filter(student_id_id=id)
+    print(students)
+    no_of_days = 0
+    for student in students:
+        start_date_month = student.start_date.month
+        end_date_month = student.end_date.month
+        if(start_date_month == month_previous):
+            if(end_date_month == month_previous):
+                no_of_days = no_of_days + abs((student.end_date - student.start_date).days) + 1 
+            elif(end_date_month == today_g.month):
+                no_of_days = no_of_days + abs((last_day_prev_month - student.start_date).days) + 1 
+        else:
+            if(end_date_month == month_previous):
+                no_of_days = no_of_days + abs((student.end_date - student.start_date).days) + 1 
+            elif(end_date_month == today_g.month):
+                no_of_days = no_of_days + abs((last_day_prev_month - first_day_prev_month).days) + 1
+    print(no_of_days)
+    rebate_amount = no_of_days*amount_per_day
+    return rebate_amount
+            
+
 def generate_bill():
-    month_t = datetime.now().month - 1
-    month_g = last_day_prev_month.month
+    # month_previous  = datetime.now().month - 1
+    month_previous = last_day_prev_month.month
+    print(previous_month)
+    # print(datetime.month())
     first_day_prev_month = last_day_prev_month.replace(day=1)
     # previous_month = month_t.strftime("%B")
-    student_all = Student.objects.prefetch_related('rebate_set')
-    amount_c = MessBillBase.objects.latest('timestamp')
+    # student_all = Student.objects.prefetch_related('rebate_set')
+    student_all = Reg_main.objects.filter(current_mess_status="Registered")
+    
+    print(student_all)  
+    amount_per_day = MessBillBase.objects.latest('timestamp')
+    print(amount_per_day.bill_amount)
     for student in student_all:
-        # nonveg_total_bill=0
-        rebate_count = 0
+        rebate_amount = Calculate_rebate(student.student_id, month_previous, amount_per_day.bill_amount)
+        print(rebate_amount)
+        # rebate_count = rebate_amount/amount_per_day
+        # print(rebate_count)
         total = 0
         # nonveg_data = student.nonveg_data_set.all()
         rebates = student.rebate_set.all()
@@ -660,9 +699,16 @@ def handle_reg_response(request):
             mess_status = "Registered"
             new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
             new_reg.save()
-
         new_reg_record = Reg_records(student_id=student)
         new_reg_record.save()
+        try:
+            existing_student = Payments.objects.get(student_id=student, payment_month=current_month(), payment_year=current_year())
+            new_amount = existing_student.amount_paid + amount
+            existing_student.amount_paid = new_amount
+            existing_student.save()
+        except:
+            new_payment_record = Payments(student_id = student, amount_paid = amount)
+            new_payment_record.save()
         message="Your registeration request has been accepted"
     else:
         message="Your registeration request has been rejected"            
