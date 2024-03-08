@@ -19,7 +19,7 @@
 
     <div class="ui active tab" data-tab="pendingcomplaints">
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="unresolved_care"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -70,7 +70,7 @@
                 </tr>
                 </thead>
                 {% for a in history %}
-                    {% if a.status == 0  %}
+                    {% if a.status == 0 or a.status == 1 %}
                 <tbody>
                 <tr>
                     <td>
@@ -115,6 +115,7 @@
                     </td>
                     <td>
                         <div class="field">
+                            {% if a.status == 0 %}
                                 <center>
                                     <a href="./{{ a.id }}">
                                     <button class="ui inverted basic button" data-tooltip="Redirect to supervisor" >
@@ -123,6 +124,11 @@
                                     </a>
                                    
                                 </center>
+                            {%elif a.status == 1 %}
+                                <center>
+                                    <p>Redirected</p>
+                                </center>
+                            {% endif %}
                             </div>
                     </td>
 </tr>
@@ -132,7 +138,7 @@
                    {% endif %}
                 {% endfor %}
             </table>
-
+            <div id="paginationunresolved_care" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
 
@@ -270,5 +276,9 @@
             </div>
             </div>
         </div>
-
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                paginate('unresolved_care', 3, 'paginationunresolved_care'); // Call the pagination function with table ID and rows per page
+            });
+        </script>
 {% endblock %}

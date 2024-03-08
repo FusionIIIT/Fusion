@@ -21,7 +21,7 @@
 
        
             {% csrf_token %}
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="resolved_care"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -131,7 +131,7 @@
                     {%endif%}
                 {% endfor %}
             </table>
-
+            <div id="paginationresolved_care" class="pagination" style="text-align: center; margin-top: 10px;"></div>
                 <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
             <br>
             <div class="ui divider"></div>
@@ -154,5 +154,9 @@
 
 
     
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('resolved_care', 2, 'paginationresolved_care'); // Call the pagination function with table ID and rows per page
+        });
+    </script>
 {% endblock %}

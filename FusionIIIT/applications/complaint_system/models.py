@@ -85,4 +85,4 @@ class Supervisor(models.Model):
     type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
     def __str__(self):
-        return str(self.id) + '-' + str(self.type)
+        return str(self.sup_id) + '-' + str(self.type)

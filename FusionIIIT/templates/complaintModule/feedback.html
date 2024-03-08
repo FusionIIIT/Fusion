@@ -15,7 +15,7 @@
     <div class="ui active tab " data-tab="feedback">
         <div class="ui vertical segment" style="overflow-y: auto";>
 
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="feedback_user"
                    style="padding-left: 0.5%;
                                                           padding-right: 0.5%;
                                                           padding-top: 1%;
@@ -115,6 +115,7 @@
                     {% endif %}
                 {% endfor %}
             </table>
+            <div id="paginationfeedback_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
             <div class="extra content">
@@ -124,4 +125,9 @@
             </div>
     </div>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('feedback_user', 3, 'paginationfeedback_user'); // Call the pagination function with table ID and rows per page
+        });
+    </script>
 {% endblock %}

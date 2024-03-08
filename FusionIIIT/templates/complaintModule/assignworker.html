@@ -162,8 +162,8 @@ Complaint
             <!-- redirect complaint -->
             <div class="ui active tab large" data-tab="redirect">
                 <div class="ui vertical segment" style="padding:40px">
-                    <h4>If you think that this complaint does not belong to you ,</br>
-                        you can pass this complaint to required supervisor .</h4>
+                    <h4>If you want to redirect this complaint ,</br>
+                        you can pass this complaint to specific Incharge .</h4>
                     <form method="post" action=".">
                         {% csrf_token %}
                         <div class="ui header">
@@ -203,8 +203,9 @@ Complaint
                                     .
                                 </H3>
                                 {% else %}
-                                <label>Choose particular supervisor from a drop down box :</label>
-                                <select name="assign_caretaker">
+                                <!-- <p>Incharge:{{ detail.complaint_type }} incharge</p> -->
+
+                                <!-- <select name="assign_caretaker">
                                     {% if total_caretakers_in_area %}
                                     {% for i in total_caretakers_in_area %}
                                     <option value="{{ i.id }}">{{ i.area }}-incharge</option>
@@ -212,8 +213,8 @@ Complaint
                                     {% else %}
                                     <option></option>
                                     {% endif %}
-                                </select>
-                                <br><br>
+                                </select> -->
+                                <!-- <br><br> -->
                                 <a href="javascript:history.go(-1)">
                                     <button class="ui large primary button right floated" type="button" name="back">
                                         Back
