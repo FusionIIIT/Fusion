@@ -1,4 +1,3 @@
-
 from datetime import date, datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -71,7 +70,7 @@ def mess(request):
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         feedback_obj = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-fdate')
         monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
-        payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
+        # payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         reg_form = RegistrationRequest()
@@ -80,29 +79,29 @@ def mess(request):
         reg_record = Reg_records.objects.filter(student_id=student)
         monthly_bill=monthly_bill[::-1]
 
-        tot_am=0
-        if len(payments)>0:
-            tot_am=payments[0].amount_paid
-        else:
-            tot_am=0
-            for x in monthly_bill:
-                tot_am=tot_am+x.total_bill
-            Payments.objects.create(student_id=student,amount_paid=(-tot_am))
-            payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
+        # tot_am=0
+        # if len(payments)>0:
+        #     tot_am=payments[0].amount_paid
+        # else:
+        #     tot_am=0
+        #     for x in monthly_bill:
+        #         tot_am=tot_am+x.total_bill
+        #     Payments.objects.create(student_id=student,amount_paid=(-tot_am))
+        #     payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
 
             
             
 
-        for i in range(0,len(monthly_bill)):
-            if(monthly_bill[i].paid):
-                monthly_bill[i].due_amount=0;
-            elif monthly_bill[i].total_bill+tot_am<0:
-                monthly_bill[i].due_amount=(monthly_bill[i].total_bill)
-            else:
-                monthly_bill[i].due_amount=(-tot_am)
-            tot_am+=monthly_bill[i].total_bill
-        amount_due=-payments[0].amount_paid
-        
+        # for i in range(0,len(monthly_bill)):
+        #     if(monthly_bill[i].paid):
+        #         monthly_bill[i].due_amount=0;
+        #     elif monthly_bill[i].total_bill+tot_am<0:
+        #         monthly_bill[i].due_amount=(monthly_bill[i].total_bill)
+        #     else:
+        #         monthly_bill[i].due_amount=(-tot_am)
+        #     tot_am+=monthly_bill[i].total_bill
+        # amount_due=-payments[0].amount_paid
+        amount_due = 0
         ## adding the batch of student if btech or bdes then value of programme is 1 or else 0, holds value of phd and mtech.
         
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
@@ -192,6 +191,7 @@ def mess(request):
                     'newmenu': newmenu,
                     'monthly_bill': monthly_bill,
                     'total_due': amount_due,
+                    
                     'vaca': vaca_obj,
                     'info': extrainfo,
                     'feedback': feedback_obj,
