@@ -844,7 +844,9 @@ def generatexlsheet(request):
     
     try:
         batch = request.POST['batch']
-        course = Courses.objects.get(id = request.POST['course'])
+        # print('-------------------------------------------------------------------------------------' , request.POST['course'])
+        course_name = Course.objects.get(id = request.POST['course']).course_name
+        course = Courses.objects.get(name = course_name )
         obj = course_registration.objects.all().filter(course_id = course)
     except Exception as e:
         batch=""

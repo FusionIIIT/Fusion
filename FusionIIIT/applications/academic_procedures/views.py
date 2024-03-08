@@ -30,7 +30,7 @@ from applications.central_mess.models import(Monthly_bill, Payments)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
-
+from applications.programme_curriculum.models import Course as Courses
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
@@ -159,6 +159,40 @@ def academic_procedures_faculty(request):
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
         courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
+
+        user = request.user
+        curriculum_ids = Curriculum_Instructor.objects.filter(instructor_id= user_details.pk).values_list('curriculum_id', flat=True)
+        # Fetch course info for each curriculum ID
+        course_infos = list(Curriculum.objects.filter(curriculum_id__in=curriculum_ids).values_list('course_code', 'course_type', 'programme', 'branch', 'sem', 'batch', 'course_id_id'))
+        
+        # Fetch course names using course IDs from course_infos
+        course_ids = [info[6] for info in course_infos]
+        # print(course_ids)
+        course_names = Course.objects.filter(id__in=course_ids).values_list('course_name', flat=True)
+
+        # Convert course_names queryset to a list
+        course_name_values = list(course_names)
+
+        # Update course_infos with course names
+        for index, info in enumerate(course_infos):
+            if(len(course_name_values) > index):
+                course_infos[index] = (course_name_values[index],) + info[:7]
+
+        # Fetch REAL COURSE ID using course CODE from course_infos
+        # real_course_codes = [info[1] for info in course_infos]
+        # print(real_course_codes)
+        # real_course_ids = Courses.objects.filter(code__in=real_course_codes).values_list('id', flat=True)
+
+        # Convert real_course_ids queryset to a list
+        # real_course_ids_values = list(real_course_ids)
+        # print(len(real_course_ids))
+        # print(real_course_ids)
+
+        # Update course_infos with real course IDs
+        # for index, info in enumerate(course_infos):
+        #     if(len(real_course_ids_values) > index):
+        #         course_infos[index] = info[:7] + (real_course_ids_values[index],)
+        # print('-------------------------------------------------------------------------------------' , course_infos)
         r = range(4)
         return render(
                         request,
@@ -182,6 +216,9 @@ def academic_procedures_faculty(request):
                             'mtechseminar_request_list' : mtechseminar_request_list,
                             'phdprogress_request_list' : phdprogress_request_list,
                             'r' : r,
+                            'curriculum_ids' : curriculum_ids,
+                            'course_infos' : course_infos,
+                            'course_name_values' : course_name_values,
                         })
     else:
         HttpResponse("user not found")
@@ -3520,11 +3557,6 @@ def get_next_sem_courses(request):
         batch = data.get('batch')
         #  we go to student table and apply filters and get batch_id of the students with these filter
         batch_id = Student.objects.filter(programme = programme , batch = batch , specialization = branch)[0].batch_id
-        # batch_id = serialize('json', batch_id)
-        # batch_id = json.loads(batch_id)
-        # batch_id = batch_id[0]['fields']['batch_id']
-
-        # print('-----------------------------------------------------------------------------------------------',next_sem, programme , batch , branch , batch_id)
 
         curr_id = batch_id.curriculum
         # print('-----------------------------------------------------------------------------------------', curr_id)
