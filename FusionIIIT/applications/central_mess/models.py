@@ -293,3 +293,10 @@ class Reg_records(models.Model):
     end_date = models.DateField(default=None, null=True)
     def __str__(self):
         return str(self.student_id.id)
+    
+class Deregistration_Request(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    status=models.CharField(max_length=10,default='pending')
+    deregistration_remark=models.CharField(max_length=50,default='NA')
+    def __str__(self):
+        return str(self.student_id.id) 
