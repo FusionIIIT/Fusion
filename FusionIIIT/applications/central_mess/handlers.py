@@ -33,11 +33,11 @@ next_month = first_day_of_next_month.month
 first_day_prev_month = last_day_prev_month.replace(day=1)
 
 def current_month():
-    return datetime.datetime.now().strftime("%B")
+    return date.today().strftime("%B")
 
 
 def current_year():
-    return datetime.datetime.now().strftime("%Y")
+    return date.today().strftime("%Y")
 
 # def add_nonveg_order(request, student):
 #     """

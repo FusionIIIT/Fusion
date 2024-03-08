@@ -128,7 +128,7 @@ class Monthly_bill(models.Model):
     rebate_amount = models.IntegerField(default=0)
     # nonveg_total_bill = models.IntegerField(default=0)
     total_bill = models.IntegerField(default=0)
-    # paid = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (('student_id', 'month', 'year'),)
