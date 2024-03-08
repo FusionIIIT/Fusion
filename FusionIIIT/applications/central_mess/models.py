@@ -128,7 +128,7 @@ class Monthly_bill(models.Model):
     rebate_amount = models.IntegerField(default=0)
     # nonveg_total_bill = models.IntegerField(default=0)
     total_bill = models.IntegerField(default=0)
-    paid = models.BooleanField(default=False)
+    # paid = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (('student_id', 'month', 'year'),)
@@ -142,9 +142,11 @@ class Payments(models.Model):
     # sem = models.IntegerField()   
     # year = models.IntegerField(default=current_year)
     amount_paid = models.IntegerField(default=0)
+    payment_month = models.CharField(max_length=20, default=current_month)
+    payment_year = models.IntegerField(default = current_year)
 
     class Meta:
-        unique_together = (('student_id'),)
+        unique_together = (('student_id', 'payment_month', 'payment_year'),)
 
     def __str__(self):
         return '{}'.format(self.student_id.id)
@@ -168,6 +170,7 @@ class Rebate(models.Model):
     purpose = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS, default='1')
     app_date = models.DateField(default=datetime.date.today)
+    # TODO = remove leave type
     leave_type = models.CharField(choices=LEAVE_TYPE, max_length=20, default="casual")
     # leave_document = models.FileField(upload_to='central_mess/')
     rebate_remark = models.CharField(max_length=50,default='NA')
