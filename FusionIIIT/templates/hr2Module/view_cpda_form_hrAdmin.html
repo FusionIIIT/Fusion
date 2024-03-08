@@ -1,0 +1,97 @@
+<!-- {% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+
+    <div class="three wide column">
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+            <div class="image">
+                <img src="{% static 'globals/img/zlatan.jpg' %}">
+            </div> 
+
+            <div class="content">
+                {% if employee %}
+                <div class="ui large header">
+                    {{ employee.user.first_name}}
+                    {{ employee.user.last_name}}
+                    <span class="right floated meta">
+                        {{ employee.department.name}}
+                    </span>
+                </div>
+                {% else %}
+                <div class="ui large header">
+                    {{ request.user.first_name}}
+                    {{ request.user.last_name}}
+                    <span class="right floated meta">
+                        {{ request.user.extrainfo.department.name}}
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="meta">
+                    {% for i in Curr_desig %}
+                    <span>
+                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                        {% else %}
+                        {{ i }}
+                        {% endif %}
+                    </span>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="ui divider"></div>
+    </div>
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <a class="active item" data-tab="first">CPDA Requests</a>
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    <table class="ui celled medium table" style="text-align: center; margin: auto; justify-content: space-evenly;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <td><h4>Form ID</h4></td>
+                                <td><h4>View</h4></td>
+                                <td><h4>*</h4></td>
+                                <td><h4>*</h4></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cpda_request in cpda_requests %}
+                            <tr>
+                                <td>{{ cpda_request.id }}</a></td>
+                                <td><a href="http://127.0.0.1:8000/hr2/view_cpda_form/{{ cpda_request.id }}" >View</a></td>
+                                <td><button type="button" class="ui primary button" style="background:brown">Reject</button></td>
+                                <td><button type="button" class="ui primary button" style="background: green;">Forward</button></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7">No Pending Applications</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="three wide column">
+        {% include 'dashboard/modules.html' %}
+    </div>
+</div>
+
+{% endblock %} -->

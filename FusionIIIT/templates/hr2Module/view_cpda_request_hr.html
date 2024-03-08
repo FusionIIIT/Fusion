@@ -1,0 +1,33 @@
+<!-- <div class="content">
+    <div class="description" style="overflow: auto; max-height: 480px">
+        <table class="ui celled medium table"
+        style="text-align: center;
+            margin: auto;">
+            <thead>
+                <tr style="font-size: medium;
+                    background-color: whitesmoke;">
+                    <td><h4>Employee Name</h4></td>
+                    <td ><h4><a href = "http://127.0.0.1:8000/hr2/view_cpda_form/{{ cpda_request.id }}"></a>View</h4></td>
+                    <td><h4>Approve</h4></td>
+                    <td ><h4>Forward</h4></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curriculum in curriculums %}
+                    <tr>
+                        <td>{{ curriculum.name }}</a></td>
+                        <td>{{ curriculum.version }}</td>
+                        <td>
+                            {% for batch in curriculum.batches %}
+                                <p>{{ batch }}</p>
+                            {% endfor %}
+                        </td>
+                        <td>{{ curriculum.no_of_semester }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7  ">No Pending Applications</td><tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> -->
