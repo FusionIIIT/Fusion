@@ -29,7 +29,7 @@
               </thead>
               <tbody>
                   {% for var in reg_request %}
-                <tr id="accpt-{{var.pk}}">
+                <tr id="accpt1-{{var.pk}}">
                     <th class="two wide">
                         {{var.student_id}}
                     </th>
@@ -161,9 +161,9 @@
     });
    </script>
 <script>
-    
+
 function acceptReq(id){
-    document.getElementById('accpt-'+id).style.display="none";
+    document.getElementById('accpt1-'+id).style.display="none";
     var messno=document.getElementById('messno-'+id).value;
    
             $.ajax({
@@ -191,7 +191,7 @@ function acceptReq(id){
             }
             
             function rejectReq(id){
-            document.getElementById('accpt-'+id).style.display="none";
+            document.getElementById('accpt1-'+id).style.display="none";
             $.ajax({
                 type: 'POST',
                 url: 'respond_to_reg_req',
