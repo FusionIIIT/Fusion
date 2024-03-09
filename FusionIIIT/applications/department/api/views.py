@@ -1,19 +1,23 @@
 from rest_framework import generics
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .permissions import IsFacultyStaffOrReadOnly
+
 from applications.department.models import Announcements
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
+
 from .serializers import (AnnouncementSerializer,ExtraInfoSerializer,SpiSerializer,StudentSerializer,DesignationSerializer
                           ,HoldsDesignationSerializer,FacultySerializer,faculty_aboutSerializer,emp_research_projectsSerializer)
-from rest_framework.permissions import IsAuthenticated
-from .permissions import IsFacultyStaffOrReadOnly
-from django.http import JsonResponse 
+
+ 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
-from rest_framework.response import Response
-from rest_framework import status
+
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import date

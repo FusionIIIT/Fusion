@@ -26,9 +26,9 @@
             Announcements
         </a>
 
-        <a class="item" data-tab="Request">
+        {% comment %} <a class="item" data-tab="Request">
             Requests
-        </a>
+        </a> {% endcomment %}
 
     </div>
     <div class="ui active tab" data-tab="about-us">
@@ -316,7 +316,7 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="Request">
+    {% comment %} <div class="ui tab" data-tab="Request">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
@@ -344,7 +344,7 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+ 
                                     </div>
                                 </div>
                             </div>
@@ -359,18 +359,18 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+
                 </div>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     
 

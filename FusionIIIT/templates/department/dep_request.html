@@ -47,10 +47,19 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="third" id="request_status">
+                    {% comment %} <a class="item" data-tab="third" id="request_status">
                         Request Status
                         <i class="right floated chevron right icon"></i>
+                    </a> {% endcomment %}
+                    <a class="item" data-tab="students">
+                        Students 
+                        <i class="right floated chevron right icon"></i>
                     </a>
+                    <a class="item" data-tab="faculty">
+                        Faculty 
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    
 
                     
                     
@@ -99,7 +108,147 @@
                         {% include "department/request_status.html" %} 
                     {% endblock %}
                 </div>
+                <div class="ui tab" data-tab="students">
+                    <div class="ui vertical segment">
+                        <div class="content">
+                            <div class="description">
+                                <span>
+                                    {% comment %}Get student Data{% endcomment %}
+                                    <div class="ui styled accordion">
+                                        <div class="title">
+                                            <i class="dropdown icon"></i>
+                                            PhD Students
+                                        </div>
+                                        <div class="content">
+                                            <a class="item" href="All_Students/{{1111111}}  ">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    PhD CSE Students
+                                                </button>
+                                            </a>
+                                            <br>  
+                                        </div>
+                                    </div>
+            
+                                    <div class="ui styled accordion">
+                                        <div class="title">
+                                            <i class="dropdown icon"></i>
+                                            Mtech Students
+                                        </div>
+                                        <div class="content">
+                                            <a class="item" href="./All_Students/{{11111}}">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;" >
+                                                    M.Tech First Year
+                                                </button>
+                                            </a>
+                                            <a class="item" href="./All_Students/{{111111}}">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    M.Tech Second Year
+                                                </button>
+                                            </a>
+                                            <br>     
+                                        </div>
+                                    </div>
+                                        
+                                    
+            
+                                    <div class="ui styled accordion">
+                                        <div class="title">
+                                            <i class="dropdown icon"></i>
+                                           B.Tech Students
+                                        </div>
+                                        <div class="content">
+                                            {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
+                                            <a class="active item" href="./All_Students/{{1}}">
+                                            <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    B.Tech First Year
+                                                </button>
+                                            </a>
+                                            {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
+                                            <a class="active item" href="./All_Students/{{11}}">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    B.Tech Second Year
+                                                </button>
+                                            </a>
+                                            <a class="active item" href="./All_Students/{{111}}">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    B.Tech Third Year
+                                                </button>
+                                            </a>
+                                            <a class="active item" href="./All_Students/{{1111}}">
+                                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                                <button style="border: solid; float: left; display: block;">
+                                                    B.Tech Final Year
+                                                </button>
+                                            </a>
+                                            <br>
+                                        </div>
+                                    </div>
+            
+                                </span>
+                                <div class="ui divider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% comment %}status of request!{% endcomment %}
+
+                <div class="ui tab" data-tab="faculty">
+                    <div class="ui vertical segment">
+                        <div class="content">
+                            <div class="description">
+                                <span>
+            
+                                    <div class="ui vertical segment" >
+            
+                                        {% comment %} {% if ann_list %} {% endcomment %}
+                                        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                            <thead>
+                                                <td> id </td>
+                                                <td> faculty name </td>
+                                                <!-- <td> title </td> -->
+                                                <td> sex </td>
+                                                <td> date_of_birth </td>
+                                                <td> address </td>
+                                                <td> phone_no </td>
+                                                {% comment %} <td> user_type </td>
+                                                <td> department </td>
+                                                <td> github </td> {% endcomment %}
+            
+                                            </thead>
+            
+                                            {% for fcu in fac_list.cse_f %}
+                                                <tr>
+                                                    {% with "/eis/profile/"|add:fcu.user.username as link %}
+                                                    <td>{{ fcu.id }}</td>
+                                                    <td><a href = {{ link }}>{{fcu.title}} {{ fcu.user.first_name}} {{ fcu.user.last_name}}</a></td>
+                                                    <!-- <td>{{ fcu.title }}</td> -->
+                                                    <td>{{ fcu.sex }}</td>
+                                                    <td>{{ fcu.date_of_birth }}</td>
+                                                    <td>{{ fcu.address }}</td>
+                                                    <td>{{ fcu.phone_no }}</td>
+                                                    {% comment %} <td>{{ fcu.user_type }}</td>
+                                                    <td>{{ fcu.department.name }}</td>
+                                                    <td>{{ fcu.id.faculty_about.github }}</td> {% endcomment %}
+                                                    {% endwith %}
+                                                </tr>
+            
+                                            {% endfor %}
+            
+                                        </table>
+            
+                                    </div>
+                                </span>
+                                <div class="ui divider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 
 
@@ -116,6 +265,7 @@
             
             {% comment %}The right-margin segment!{% endcomment %}
             <div class="column"></div>
+        
 
 
     </div>

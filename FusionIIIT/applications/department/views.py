@@ -155,6 +155,7 @@ def faculty_view(request):
         department, ann_date, user_info - Gets and store data from FORM used for Announcements.
 
     """
+    context_f = faculty()
     usrnm = get_object_or_404(User, username=request.user.username)
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
@@ -183,7 +184,8 @@ def faculty_view(request):
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
-                                                            "request_to":requests_received
+                                                            "request_to":requests_received,
+                                                            "fac_list" : context_f
                                                         })
 
 def staff_view(request):
@@ -200,6 +202,7 @@ def staff_view(request):
         department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
 
     """
+    context_f = faculty()
     usrnm = get_object_or_404(User, username=request.user.username)
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
@@ -228,7 +231,8 @@ def staff_view(request):
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
                                                             "announcements":context,
-                                                            "request_to":requests_received
+                                                            "request_to":requests_received,
+                                                            "fac_list" : context_f
                                                         })
 
 @login_required(login_url='/accounts/login')
@@ -554,7 +558,7 @@ def faculty():
 
 
     }
-    print(cse_f)
+    # print(cse_f)
     return context_f
 
 def approved(request):
