@@ -120,41 +120,41 @@ def mess(request):
             y = Menu.objects.filter(mess_option=mess_optn.mess_option)
 
         
-            bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
-            amount_c = MessBillBase.objects.latest('timestamp')
-            rebate_count = 0
+            # bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
+            # amount_c = MessBillBase.objects.latest('timestamp')
+            # rebate_count = 0
             
-            for r in rebates:
-                if r.status == '2':
-                    if r.start_date.month == month_g:
-                        if r.end_date.month == next_month:
-                            rebate_count = rebate_count + abs((last_day_of_this_month - r.start_date).days) + 1
-                        else:
-                            rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-                    elif r.end_date.month == month_g:
-                        rebate_count = rebate_count + abs((r.end_date - first_day_of_this_month).days) + 1
-                    else:
-                        rebate_count = 0
-            rebate_amount = rebate_count * amount_c.bill_amount / 30
-            total_bill = amount_c.bill_amount - rebate_amount 
-            if bill:
-                bill.update(student_id = student,
-                            month = month_g_l,
-                            year = year_g,
-                            amount = amount_c.bill_amount,
-                            rebate_count = rebate_count,
-                            rebate_amount = rebate_amount,
-                            total_bill = total_bill)
+            # for r in rebates:
+            #     if r.status == '2':
+            #         if r.start_date.month == month_g:
+            #             if r.end_date.month == next_month:
+            #                 rebate_count = rebate_count + abs((last_day_of_this_month - r.start_date).days) + 1
+            #             else:
+            #                 rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+            #         elif r.end_date.month == month_g:
+            #             rebate_count = rebate_count + abs((r.end_date - first_day_of_this_month).days) + 1
+            #         else:
+            #             rebate_count = 0
+            # rebate_amount = rebate_count * amount_c.bill_amount / 30
+            # total_bill = amount_c.bill_amount - rebate_amount 
+            # if bill:
+            #     bill.update(student_id = student,
+            #                 month = month_g_l,
+            #                 year = year_g,
+            #                 amount = amount_c.bill_amount,
+            #                 rebate_count = rebate_count,
+            #                 rebate_amount = rebate_amount,
+            #                 total_bill = total_bill)
 
-            else:
-                bill_object = Monthly_bill(student_id=student,
-                                        amount=amount_c.bill_amount,
-                                        rebate_count=rebate_count,
-                                        rebate_amount=rebate_amount,
-                                        total_bill=total_bill,
-                                        month=month_g_l,
-                                        year=year_g)
-                bill_object.save()
+            # else:
+            #     bill_object = Monthly_bill(student_id=student,
+            #                             amount=amount_c.bill_amount,
+            #                             rebate_count=rebate_count,
+            #                             rebate_amount=rebate_amount,
+            #                             total_bill=total_bill,
+            #                             month=month_g_l,
+            #                             year=year_g)
+            #     bill_object.save()
         except:
             mess_optn={'mess_option':'no-mess'}
             y = Menu.objects.filter(mess_option="mess1")
