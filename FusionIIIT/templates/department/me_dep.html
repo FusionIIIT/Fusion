@@ -26,9 +26,10 @@
             Announcements
         </a>
 
-        {% comment %} <a class="item" data-tab="Request">
-            Requests
-        </a> {% endcomment %}
+        <a class="item" data-tab="alumni">
+            Alumni
+        </a>
+
 
     </div>
 
@@ -373,57 +374,64 @@
         </div>
     </div>
 
-     <div class="ui tab" data-tab="Request">
+    <div class="ui tab" data-tab="alumni">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        <div class="ui pointing secondary menu">
-                            <a class="active item" data-tab="file-request">
-                                File Requests
-                            </a>
-                            
-                            <a class="item" data-tab="request-history">
-                                Request History
-                            </a>
-
-
-                        </div>
-
-                        <div class="ui active tab" data-tab="file-request">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% with fac_list.staffNme as faculty %}
-                                                {% block file-requests %}
-                                                    {% include "department/file_request.html" %}
-                                                {% endblock %}
-                                            {% endwith %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        {% comment %}Get student Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        PhD Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
-                        <div class="ui tab" data-tab="request-history">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% block request_history %}
-                                                {% include "department/request_history.html" %}
-                                            {% endblock %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                MTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        MTech Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+                            
+                        
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                BTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        BTech Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>

@@ -10,3 +10,7 @@ services:
     ports:
       - 8000
     command: /bin/bash docker-entrypoint.sh
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
