@@ -47,6 +47,7 @@ urlpatterns = [
     url(r'^registeredstudent', views.searchAddOrRemoveStudent, name='registeredstudent'),
     url(r'^registrationRequest', views.reg_request, name='reg_request'),
     # url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
-    url(r'^respond_to_reg_req',views.respond_to_reg, name='reg_response')
+    url(r'^respond_to_reg_req',views.respond_to_reg, name='reg_response'),
+    url(r'^deregistrationRequest', views.de_reg_request, name='de_reg_request'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

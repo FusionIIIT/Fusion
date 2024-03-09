@@ -18,7 +18,7 @@ from .forms import MinuteForm, MessInfoForm,RegistrationRequest
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request)
 from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -75,7 +75,10 @@ def mess(request):
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         reg_form = RegistrationRequest()
         reg_request = Registration_Request.objects.filter(student_id=student)
+
+        de_reg_request = Deregistration_Request.objects.filter(student_id=student)
         reg_main = Reg_main.objects.get(student_id=student)
+
         reg_record = Reg_records.objects.filter(student_id=student)
         monthly_bill=monthly_bill[::-1]
 
@@ -222,7 +225,9 @@ def mess(request):
                     'reg_form':reg_form,
                     'reg_request':reg_request,
                     'reg_main':reg_main,
-                    'reg_record':reg_record
+                    'reg_record':reg_record,
+                    'de_reg_request':de_reg_request,
+
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -291,7 +296,8 @@ def mess(request):
                     'reg_form':reg_form,
                     'reg_request':reg_request,
                     'reg_main':reg_main,
-                    'reg_record':reg_record
+                    'reg_record':reg_record,
+                    'de_reg_request':de_reg_request,
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -316,7 +322,8 @@ def mess(request):
                    'meeting': meeting,
                    'reg_form':reg_form,
                    'reg_request':reg_request,
-                   'reg_record':reg_record
+                   'reg_record':reg_record,
+                   'de_reg_request':de_reg_request,
                   }
 
         return render(request, "messModule/mess.html", context)
@@ -1463,3 +1470,15 @@ def reg_request(request):
             temp.student_id=student
             temp.save()
             return HttpResponseRedirect("/mess")  
+
+def de_reg_request(request):
+    if request.method == 'POST':
+        data={
+            'message':'request submitted successfully'
+        }
+        user = request.user
+        extra_info = ExtraInfo.objects.select_related().get(user=user)
+        student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+        new_req=Deregistration_Request(student_id=student)
+        new_req.save()
+        return JsonResponse(data)             
