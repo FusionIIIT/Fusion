@@ -75,8 +75,10 @@ def mess(request):
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         reg_form = RegistrationRequest()
         reg_request = Registration_Request.objects.filter(student_id=student)
+
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
-        # reg_main = Reg_main.objects.get(student_id=student)
+        reg_main = Reg_main.objects.get(student_id=student)
+
         reg_record = Reg_records.objects.filter(student_id=student)
         monthly_bill=monthly_bill[::-1]
 
@@ -222,9 +224,10 @@ def mess(request):
                     'desig': desig,
                     'reg_form':reg_form,
                     'reg_request':reg_request,
-                    # 'reg_main':reg_main,
+                    'reg_main':reg_main,
                     'reg_record':reg_record,
                     'de_reg_request':de_reg_request,
+
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -292,7 +295,7 @@ def mess(request):
                     'desig': desig,
                     'reg_form':reg_form,
                     'reg_request':reg_request,
-                    # 'reg_main':reg_main,
+                    'reg_main':reg_main,
                     'reg_record':reg_record,
                     'de_reg_request':de_reg_request,
                 }
@@ -372,7 +375,7 @@ def mess(request):
         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
 
         reg_request = Registration_Request.objects.all().filter(status='pending')
-        # reg_main = Reg_main.objects.all()
+        reg_main = Reg_main.objects.filter(current_mess_status="Registered").all()
         reg_record = Reg_records.objects.all()
         context = {
             'bill_base': current_bill,
@@ -396,7 +399,7 @@ def mess(request):
             'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
             'count4': count4, 'form': form, 'count5': count5,
             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
-            'reg_request':reg_request,'reg_record':reg_record
+            'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main
 
         }
         return render(request, "messModule/mess.html", context)

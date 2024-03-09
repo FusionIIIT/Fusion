@@ -1,0 +1,38 @@
+{% load static %}
+{% block body %}
+{% block reg_list %}
+
+<table class="ui celled table">
+    <thead>
+      <tr><th>Name</th>
+      <th>Roll No</th>
+      <th>Program</th>
+      <th>Balance</th>
+      <th>Mess</th>
+    </tr></thead>
+    <tbody>
+        {% for entry in reg_main %}
+        
+      <tr>
+        <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
+        <td data-label="Roll No">{{entry.student_id.id.id}}</td>
+        <td data-label="Program">{{entry.student_id.programme}}</td>
+        <td data-label="Balance">{{entry.balance}}</td>
+        <td data-label="Mess"> {{entry.mess_option}}</td>
+      </tr>
+        
+        {% endfor %}
+    </tbody>
+  </table>
+
+
+
+
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+
+
+
+{% endblock %}
