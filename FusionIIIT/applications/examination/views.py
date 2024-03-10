@@ -1,3 +1,5 @@
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 from django.db.models.query_utils import Q
 from django.http import request, HttpResponse
 from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
@@ -19,12 +21,23 @@ from applications.eis.models import (faculty_about, emp_research_projects)
 from applications.programme_curriculum.models import Course
 from applications.academic_procedures.models import course_registration
 from applications.programme_curriculum.filters import CourseFilter
-from notification.views import department_notif
+from notification.views import  department_notif
 from applications.department.models import SpecialRequest, Announcements
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from django.shortcuts import render, redirect, HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import hidden_grades
+from .forms import StudentGradeForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import hidden_grades
+from rest_framework.permissions import AllowAny
 
 
 @login_required(login_url='/accounts/login')
@@ -51,18 +64,40 @@ def exam(request):
 
 @login_required(login_url='/accounts/login')
 def submit(request):
-    courses = Course.objects.all()
+    # courses = Course.objects.all()
 
-    coursefilter = CourseFilter(request.GET, queryset=courses)
+    # coursefilter = CourseFilter(request.GET, queryset=courses)
 
-    courses = coursefilter.qs
-    return render(request, '../templates/examination/submit.html', {'courses': courses})
+    # courses = coursefilter.qs
+     unique_course_ids = course_registration.objects.values('course_id').distinct()
+
+    # Cast the course IDs to integers
+     unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast('course_id', IntegerField()))
+
+    # Retrieve course names and course codes based on unique course IDs
+     courses_info = Course.objects.filter(
+        id__in=unique_course_ids.values_list('course_id_int', flat=True))
+    
+     return render(request, '../templates/examination/submit.html',{'courses_info': courses_info})
     # return render(request,'../templates/examination/submit.html' , {})
 
 
 @login_required(login_url='/accounts/login')
 def verify(request):
-    return render(request, '../templates/examination/verify.html', {})
+    # Retrieve unique course IDs from hidden_grades
+    unique_course_ids = hidden_grades.objects.values('course_id').distinct()
+
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast('course_id', IntegerField()))
+
+    # Retrieve course names and course codes based on unique course IDs
+    courses_info = Course.objects.filter(
+        id__in=unique_course_ids.values_list('course_id_int', flat=True))
+
+    # Pass the unique course IDs and corresponding course names and codes to the template
+    return render(request, '../templates/examination/verify.html', {'courses_info': courses_info})
 
 
 @login_required(login_url='/accounts/login')
@@ -127,6 +162,12 @@ def entergrades(request):
     course_id = request.GET.get('course')
     semester_id = request.GET.get('semester')
 
+    course_present = hidden_grades.objects.filter(
+        course_id=course_id, semester_id=semester_id)
+
+    if (course_present):
+        return render(request, 'examination/all_course_grade_filled.html', {})
+
     # Retrieve course registrations based on course and semester
     registrations = course_registration.objects.filter(
         course_id__id=course_id, semester_id=semester_id)
@@ -137,6 +178,36 @@ def entergrades(request):
     }
 
     return render(request, 'examination/entergrades.html', context)
+
+def verifygrades(request):
+    course_id = request.GET.get('course')
+    semester_id = request.GET.get('semester')
+
+    registrations = hidden_grades.objects.filter(
+        course_id=course_id, semester_id=semester_id)
+
+    # Pass the registrations queryset to the template context
+    context = {
+        'registrations': registrations
+    }
+
+    return render(request, 'examination/verifygrades.html', context)
+
+def authenticate(request):
+    course_id = request.GET.get('course')
+    semester_id = request.GET.get('semester')
+    print(course_id)
+    print(semester_id)
+
+    # registrations = hidden_grades.objects.filter(
+    #     course_id=course_id, semester_id=semester_id)
+
+    # # Pass the registrations queryset to the template context
+    # context = {
+    #     'registrations': registrations
+    # }
+
+    return render(request, '../templates/examination/notReady_publish.html', {})
 
 
 @login_required(login_url='/accounts/login')
@@ -155,7 +226,8 @@ def announcement(request):
 
     """
     usrnm = get_object_or_404(User, username=request.user.username)
-    user_info = ExtraInfo.objects.all().select_related('user', 'department').filter(user=usrnm).first()
+    user_info = ExtraInfo.objects.all().select_related(
+        'user', 'department').filter(user=usrnm).first()
     num = 1
     ann_maker_id = user_info.id
     requests_received = get_to_request(usrnm)
@@ -185,3 +257,47 @@ def announcement(request):
                                                                  "announcements": context,
                                                                  "request_to": requests_received
                                                                  })
+
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+
+
+class Updatehidden_gradesMultipleView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        student_ids = request.POST.getlist('student_ids[]')
+        semester_ids = request.POST.getlist('semester_ids[]')
+        course_ids = request.POST.getlist('course_ids[]')
+        grades = request.POST.getlist('grades[]')
+
+        if len(student_ids) != len(semester_ids) != len(course_ids) != len(grades):
+            return Response({'error': 'Invalid grade data provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        for student_id, semester_id, course_id, grade in zip(student_ids, semester_ids, course_ids, grades):
+            # Create an instance of hidden_grades model and save the data
+
+            try:
+                hidden_grade = hidden_grades.objects.get(
+                    course_id=course_id, student_id=student_id, semester_id=semester_id)
+                hidden_grade.grade = grade
+                hidden_grade.save()
+            except hidden_grades.DoesNotExist:
+                # If the grade doesn't exist, create a new one
+                hidden_grade = hidden_grades.objects.create(
+                    course_id=course_id, student_id=student_id, semester_id=semester_id, grade=grade)
+                hidden_grade.save()
+            # hidden_grade = hidden_grades.objects.create(
+            #     student_id=student_id,
+            #     course_id=course_id,
+            #     semester_id=semester_id,
+            #     grade=grade
+            # )
+            print(
+                f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
+            hidden_grade.save()
+
+        # return Response({'message': 'Grades updated successfully'}, status=status.HTTP_200_OK)
+        return render(request, '../templates/examination/grades_updated.html', {})

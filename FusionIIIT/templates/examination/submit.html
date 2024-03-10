@@ -36,11 +36,11 @@
                 <i class="dropdown icon"></i>
                 <div class="default text">Select Item</div>
                 <div class="menu">
-                    {% for course in courses %}
-                        <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }}</div>
-                    {% empty %}
-                        <div class="item">No Courses Available</div>
-                    {% endfor %}
+                  {% for course in courses_info %}
+                  <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }}</div>
+              {% empty %}
+                  <div class="item">No Courses Available</div>
+              {% endfor %}
                 </div>
             </div>
         </div>
