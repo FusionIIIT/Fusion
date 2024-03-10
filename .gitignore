@@ -75,7 +75,7 @@ package-lock.json
 
 docker-entrypoint.sh
 
-migrations
+
 FusionIIIT/applications/eis/migrations/
 
 postgres_data
