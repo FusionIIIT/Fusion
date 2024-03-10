@@ -77,3 +77,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model=Feedback
         fields=('__all__')
+
+class GetFilteredSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model=Reg_main
+        fields=('__all__')
