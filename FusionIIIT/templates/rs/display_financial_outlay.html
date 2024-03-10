@@ -38,12 +38,14 @@ IPR
 
     {% for year in years %}
     <p> Year {{year}} <p>
-    <table class="ui celled table">
+    <table class="ui celled table bg-color:[#4CAF50]">
         <thead>
             <tr>
                 <th>Category</th>
                 <th>Subcategory</th>
-                <th>Amount</th>
+                <th>Total Amount</th>
+                <th>Amount Utilised</th>
+                <th>Amount Remaining</th>
             </tr>
         </thead>
         <tbody>
@@ -54,6 +56,10 @@ IPR
                                 <td >{{ item.category }}</td>
                                 <td>{{ item.sub_category }}</td>
                                 <td>{{ item.amount }}</td>
+                                <!--TODO: item ustilised mention cheyali  -->
+                                <td>{{ item.amount }}</td>
+                                <td>{{ item.amount - item.amount }}</td>
+
                             </tr>
                         {% endif %}
                     {% endfor %}

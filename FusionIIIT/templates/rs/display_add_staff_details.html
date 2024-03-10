@@ -11,31 +11,6 @@ IPR
     $(this).closest(".message").transition("fade");
   });
 
-    function populate( categoriesId, category_subcategory_map,year) {
-        console.log(category_subcategory_map)
-        let id1 = "subcategory-select-"+year+ "-";
-        let id2 = categoriesId;
-        id1 += id2.charAt(id2.length - 1);
-        subcategoriesId= id1;
-        var categoriesSelect = document.getElementById(categoriesId);
-        var subcategoriesSelect = document.getElementById(subcategoriesId);
-
-        subcategoriesSelect.innerHTML = "";
-        var optionArray = category_subcategory_map
-        var selectedSubcategories = [];
-        for (var key in optionArray) {
-          if (categoriesSelect.value == key) {
-            selectedSubcategories = optionArray[key]; 
-          }
-        }
-        for (var j = 0; j < selectedSubcategories.length; j++) {
-            var newOption = document.createElement("option");
-            newOption.value = selectedSubcategories[j];
-            newOption.innerHTML = selectedSubcategories[j];
-            subcategoriesSelect.options.add(newOption);
-        }
-        
-    }
     
     function addCategorySection(event,year,category_subcategory_map) {
       event.preventDefault();
@@ -167,6 +142,8 @@ button {
           <input name="stipened" id="stipened" class="stipened">
         </div>
       </div> 
+    <button class="f-group" onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add Staff</button>
+
     </div>
   <input type="submit" value="Submit" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
 </form>
