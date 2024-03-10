@@ -10,9 +10,12 @@ class ResearchGroupAdmin(admin.ModelAdmin):
 # Register your models here.
 
 admin.site.register(projects)
-admin.site.register(requests)
-admin.site.register(rspc_inventory)
-admin.site.register(project_staff_info)
+admin.site.register(staff_allocations)
+admin.site.register(financial_outlay)
+admin.site.register(category)
+# admin.site.register(requests)
+# admin.site.register(rspc_inventory)
+# admin.site.register(project_staff_info)
 
 
 # admin.site.register(ResearchGroup,ResearchGroupAdmin)

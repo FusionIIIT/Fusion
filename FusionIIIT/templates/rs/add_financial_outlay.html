@@ -78,18 +78,18 @@ IPR
     {% endcomment %}
 
      <div >
-        {% block requests %}
-        {% include 'rs/display_requests.html' %}
+        {% block add_financial_outlay %}
+        {% include 'rs/display_add_financial_outlay.html' %}
         {% endblock %}
         </div>
 
     <div class="eight wide column">
 
-        <div class="ui tab segment" data-tab="fourth">
+        {% comment %} <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'rs/patent.html' %}
             {% endblock %}
-        </div>
+        </div> {% endcomment %}
 
         <div class="ui tab segment" data-tab="second">
             

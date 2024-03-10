@@ -26,66 +26,59 @@ IPR
             Add Projects               
         </label>      
     </div>
+    
+        
     <div style="margin-left: 20px; margin-top:30px;">
-        <form class="ui form" method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_projects' %}" style="max-width: 600px; margin: 0 auto;">
+        <form class="ui form" method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_projects' %}" style="width:800px; margin: 0 auto;">
             {% csrf_token %}
             <div style="margin-bottom: 20px;">
                 <div style="display: flex;">
-                    <div style="flex: 1;">
-                        <label for="project_id">Project ID:</label><br>
-                        <input type="number" id="project_id" name="project_id" required style="width: 100%;">
-                    </div>
-                    <div style="flex: 1; margin-left: 20px;">
+                    <div style="flex: 1; margin-right: 10px;">
                         <label for="project_name">Project Name:</label><br>
                         <input type="text" id="project_name" name="project_name" required style="width: 100%;">
                     </div>
-                    <div style="flex: 1; margin-left: 20px;">
-                        <label for="status">Status:</label><br>
-                        <input type="number" id="status" name="status" style="width: 100%;">
+                    <div style="flex: 1;">
+                        <label for="project_investigator_id">Project Investigator Id:</label><br>
+                        <input type="text" id="project_investigator_id" name="project_investigator_id" required style="width: 100%;"><br><br>
                     </div>
                 </div>
             </div>
+            
             <div style="margin-bottom: 20px; ">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="flex: 1;">
-                    <label for="sponsored_agency">Sponsored Agency:</label><br>
-                    <input type="text" id="sponsored_agency" name="sponsored_agency" required style="width: 90%;"><br><br>
-                </div>
-
-                    <div style="flex: 1;">
-                    <label for="project_investigator_id">Project Investigator ID:</label><br>
-                    <input type="text" id="project_investigator_id" name="project_investigator_id" required style="width: 90%;"><br><br>
+                    <div style="flex: 1; margin-right: 10px;">
+                        <label for="sponsored_agency">Sponsored Agency:</label><br>
+                        <input type="text" id="sponsored_agency" name="sponsored_agency" required style="width: 100%;"><br><br>
                     </div>
 
                     <div style="flex: 1;">
-                    <label for="co_project_investigator_id">Co-Project Investigator ID:</label><br>
-                    <input type="text" id="co_project_investigator_id" name="co_project_investigator_id" required style="width: 100%;"><br><br>
+                        <label for="co_project_investigator_id">Co-Project Investigator ID:</label><br>
+                        <input type="text" id="co_project_investigator_id" name="co_project_investigator_id" required style="width: 100%;"><br><br>
                     </div>
                 </div>
             </div>
-            <label for="financial_outlay">Financial Outlay:</label><br>
-            <input type="number" id="financial_outlay" name="financial_outlay" required style="width: 100%;"><br><br>
+            <label for="project_type">Project Type:</label><br>
+            <input type="text" id="project_type" name="project_type" required style="width: 100%;"><br><br>
+
+            <label for="number_of_years">Number of Years:</label><br>
+            <input type="number" id="number_of_years" name="number_of_years" required style="width: 100%;"><br><br>
 
             <label for="start_date">Start Date:</label><br>
             <input type="date" id="start_date" name="start_date" required style="width: 100%;"><br><br>
 
-            <label for="submission_date">Submission Date:</label><br>
-            <input type="date" id="submission_date" name="submission_date" required style="width: 100%;"><br><br>
-
-            <label for="finish_date">Finish Date:</label><br>
+            <label for="finish_date">Project Deadline:</label><br>
             <input type="date" id="finish_date" name="finish_date" required style="width: 100%;"><br><br>
 
-            <label for="rspc_admin_id">RSPC Admin ID:</label><br>
-            <input type="text" id="rspc_admin_id" name="rspc_admin_id" required style="width: 100%;"><br><br>
+            <label for="description">Description</label><br>
+            <input type="text" id="description" name="description" required style="width: 100%;"><br><br>
 
-            <label for="project_type">Project Type:</label><br>
-            <input type="text" id="project_type" name="Project_type" required style="width: 100%;"><br><br>
-            
+            {% comment %} <label for="fileInput">Select a file:</label>
+            <input type="file" id="fileInput" name="fileInput" accept=".jpg, .jpeg, .png"> <br><br> {% endcomment %}
             <input type="submit" value="Submit" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
         </form>
     </div>
+    
 
-    {% comment %}The Technology segment ends here!{% endcomment %}
 {% endblock %}
 
 {% endblock %}

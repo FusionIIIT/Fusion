@@ -12,47 +12,106 @@ class Constants:
     )
 
 
-class projects(models.Model):
+
+
+
+
+class projects(models.Model):       
     project_id= models.IntegerField(primary_key= True)
     project_name= models.CharField(max_length=500)
     project_type= models.CharField(max_length=500)
-    status= models.IntegerField()
-    financial_outlay= models.IntegerField()
-    project_investigator_id=models.CharField(max_length=500)
-    rspc_admin_id=models.CharField(max_length=500)
-    co_project_investigator_id=models.CharField(max_length=500)
+    # financial_outlay= models.IntegerField()
+    project_investigator_id=models.ForeignKey(User,related_name='pi_id', on_delete=models.CASCADE)
+    # rspc_admin_id=models.CharField(max_length=500)
+    co_project_investigator_id=models.ForeignKey(User,related_name='copi_id' ,on_delete=models.CASCADE, null=True)
     sponsored_agency= models.CharField(max_length=500)
     start_date=models.DateField()
     submission_date=models.DateField()
     finish_date=models.DateField()
+    years= models.IntegerField()
+    status= models.IntegerField(default=0)
+    # project_info_file=models.FileField(upload_to='project_info_file', null=True, blank=True)
+    project_description=models.CharField(max_length=500 ,default="description")
+    financial_outlay_status=models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.project_id)
-    
-class requests(models.Model):
-    request_id=models.IntegerField(primary_key=True)
-    project_id= models.IntegerField()
-    request_type=models.CharField(max_length=500)
-    project_investigator_id=models.CharField(max_length=500)
-    status= models.IntegerField() #value 0 means pending
-    description=models.CharField(max_length=400,default=None, null= True)
-    amount= models.IntegerField(default=0) #value 0 means pending
-    
-class rspc_inventory(models.Model):
-    inventory_id=models.IntegerField(primary_key=True)
-    project_id= models.IntegerField()
-    project_investigator_id=models.CharField(max_length=500)
-    status= models.IntegerField() #value 0 means pending
-    description=models.CharField(max_length=400)
-    amount= models.IntegerField(default=0) #value 0 means pending
 
-class project_staff_info(models.Model):
-    staff_id=models.CharField(primary_key=True,max_length=400)
-    project_investigator_id= models.CharField(max_length=500)
-    project_id=models.IntegerField()
-    staff_name=models.CharField(max_length=400)
-    status=models.IntegerField()
-    description=models.CharField(max_length=400)
+    class Meta:
+        ordering = ['-project_id']
+
+class financial_outlay(models.Model):
+    financial_outlay_id= models.IntegerField(primary_key=True)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+    category=models.CharField(max_length=500)
+    sub_category=models.CharField(max_length=500)
+    amount=models.IntegerField()
+    year=models.IntegerField()
+    status= models.IntegerField(default=0)
+    staff_limit=models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.financial_outlay_id)
+
+    class Meta:
+        ordering = ['-financial_outlay_id']
+
+
+class category(models.Model):
+    category_id= models.IntegerField(primary_key=True)
+    category_name= models.CharField(max_length=500)
+    sub_category_name= models.CharField(max_length=500)
+
+
+    def __str__(self):
+        return str(self.category_id)
+
+    class Meta:
+        ordering = ['-category_id']
+
+
+class staff_allocations(models.Model):
+    staff_allocation_id=models.IntegerField(primary_key=True)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+    staff_id=models.ForeignKey(User, on_delete=models.CASCADE)
+    staff_name=models.CharField(max_length=500)
+    qualification=models.CharField(max_length=500)
+    year=models.IntegerField()
+    stipend=models.IntegerField()
+
+    def __str__(self):
+        return str(self.staff_allocation_id)
+
+    class Meta:
+        ordering = ['-staff_allocation_id']
+    
+# class requests(models.Model):
+#     request_id=models.IntegerField(primary_key=True)
+#     project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+#     request_type=models.CharField(max_length=500)
+#     project_investigator_id=models.ForeignKey(User, related_name='rj_pi'  , on_delete= models.CASCADE)
+#     status= models.IntegerField(default=0) #value 0 means pending
+#     description=models.CharField(max_length=400,default=None, null= True)
+#     amount= models.IntegerField(default=0) #value 0 means pending
+
+#     class Meta:
+#         ordering = ['-request_id']
+    
+# class rspc_inventory(models.Model):
+#     inventory_id=models.IntegerField(primary_key=True)
+#     project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+#     project_investigator_id=models.ForeignKey(User, related_name="rin_pi" , on_delete= models.CASCADE)
+#     status= models.IntegerField(default=0) #value 0 means pending
+#     description=models.CharField(max_length=400)
+#     amount= models.IntegerField(default=0) #value 0 means pending
+
+# class project_staff_info(models.Model):
+#     staff_id=models.CharField(primary_key=True,max_length=400)
+#     project_investigator_id= models.ForeignKey(User, on_delete=models.CASCADE)
+#     project_id=models.ForeignKey(projects, related_name='p_pji', on_delete=models.CASCADE)
+#     staff_name=models.CharField(max_length=400)
+#     status=models.IntegerField(default=0)
+#     description=models.CharField(max_length=400)
 
     
     

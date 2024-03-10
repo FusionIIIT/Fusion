@@ -1,0 +1,64 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+IPR
+{% endblock %}
+
+{% block body %}
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <div class="ui positive message">
+                    <i class="close icon"></i>
+                    {{ message.message }}
+                </div>
+            {% else %}
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    {{ message.message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            $('.message .close').on('click', function() {
+                $(this).closest('.message').transition('fade');
+            });
+        });
+    </script>
+
+    <div class="ui pointing secondary menu" style="font-size:25px;">
+        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Financial Outlay
+        </label>
+    </div>
+
+    {% for year in years %}
+    <p> Year {{year}} <p>
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+                {% for category, subcategory_data in category_data.items %}
+                    {% for item in subcategory_data %}
+                        {% if item.year == year %}
+                            <tr>
+                                <td >{{ item.category }}</td>
+                                <td>{{ item.sub_category }}</td>
+                                <td>{{ item.amount }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}    
+{% endblock %}

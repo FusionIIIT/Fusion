@@ -3,14 +3,17 @@ from django.contrib import messages
 from applications.research_procedures.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.core.files.storage import FileSystemStorage
+from django.core.exceptions import ObjectDoesNotExist
 from notification.views import research_procedures_notif
 from django.urls import reverse
 from .forms import *
 from django.contrib.auth.decorators import login_required
 import datetime
 from .models import *
+from collections import defaultdict
 
 # Faculty can file patent and view status of it.
+
 @login_required
 def patent_registration(request):
 
@@ -47,6 +50,7 @@ def research_group_create(request):
     if request.method=='POST':
         if user_extra_info.user_type == "faculty":
             form = ResearchGroupForm(request.POST)
+            
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Research group created successfully')
@@ -127,80 +131,101 @@ def consult_insert(request):
     messages.success(request,"Successfully created consultancy project")
     return redirect(reverse("research_procedures:patent_registration"))
 
-
 def add_projects(request):
     if request.method== "POST":
         obj= request.POST
-        projectid= obj.get('project_id')
         projectname= obj.get('project_name')
         projecttype= obj.get('project_type')
-        stats= obj.get('status')
         fo= obj.get('financial_outlay')
         pid= obj.get('project_investigator_id')
-        rspc= obj.get('rspc_admin_id')
         copid=obj.get('co_project_investigator_id')
         sa= obj.get('sponsored_agency')
         startd= obj.get('start_date')
-        subd= obj.get('submission_date')
+        subd= obj.get('finish_date')
         finishd= obj.get('finish_date')
+        years= obj.get('number_of_years')
+        project_description= obj.get('description')
 
-        # check= HoldsDesignation.objects.get(user=pid , designation= "Professor")
-        # if not check.exists():
-        #         check= HoldsDesignation.objects.get(user=pid , designation= "Assistant Professor")
-
-        #         if not check.exists():
-        #             messages.error(request,"Request not added, no such project investigator exists")
-        #             return redirect("rs/projects.html")    
+        check = User.objects.filter(username=pid) 
+        print(check[0].username)
+       
         
-        # check= User.objects.filter(username=rspc)
-        # if not check.exists():
-        #     messages.error(request,"Project not added, no such rspc admin exists")
-        #     return render(request,"rs/projects.html")
+        check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
 
-        # check= HoldsDesignation.objects.get(user=copid , designation= "Professor")
-        # if not check.exists():
-        #         check= HoldsDesignation.objects.get(user=copid , designation= "Assistant Professor")
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    return render(request,"rs/projects.html")  
 
-        #         if not check.exists():
-        #             messages.error(request,"Request not added, no such project investigator exists")
-        #             return redirect("rs/projects.html")   
+        
+        check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
 
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    return render(request,"rs/projects.html")  
+
+        
+        obj= projects.objects.all()
+        if len(obj)==0 :
+            projectid=1
+        
+        else :
+            projectid= obj[0].project_id+1
+
+        userpi_instance = User.objects.get(username=pid)
+        usercpi_instance = User.objects.get(username=copid)
 
         projects.objects.create(
             project_id=projectid,
             project_name=projectname,
             project_type=projecttype, 
-            status=stats,
-            financial_outlay=fo,
-            project_investigator_id=pid,
-            rspc_admin_id=rspc,
-            co_project_investigator_id=copid,
+            status=0,
+            project_investigator_id=userpi_instance,
+            co_project_investigator_id=usercpi_instance,
             sponsored_agency=sa,
             start_date=startd,
-            submission_date=subd,
-            finish_date=finishd
+            submission_date=finishd,
+            finish_date=finishd,
+            years=years,
+            project_description=project_description
         )
 
         messages.success(request,"Project added successfully")
+        categories = category.objects.all()
+
+        data = {
+            "pid": pid,
+            "years": list(range(1, int(years) + 1)),    
+            "categories": categories,
+        }
+       
+        # return render(request,'rs/add_financial_outlay.html', context=data)
     return render(request,"rs/projects.html")
 
-def add_fund_requests(request):
-    return render(request,"rs/add_fund_requests.html")
+def add_fund_requests(request,pj_id):
+    data= {
+        "pj_id": pj_id
+    }
+    return render(request,"rs/add_fund_requests.html",context=data)
 
-def add_staff_requests(request):
-    return render(request,"rs/add_staff_requests.html")
+def add_staff_requests(request,pj_id):
+    data= {
+        "pj_id": pj_id  
+    }
+    return render(request,"rs/add_staff_requests.html",context=data)
 
-def add_requests(request,id):
+def add_requests(request,id,pj_id):
     if request.method == 'POST':
         obj=request.POST
 
 
         if(id=='0') :  
-            requestid = obj.get('request_id')
-            projectid = obj.get('project_id')
+            projectid = pj_id
             reqtype = obj.get('request_type')
-            pi_id = obj.get('project_investigator_id')
-            stats = obj.get('status')
+            stats =0
             desc= obj.get('description')    
             amt= obj.get('amount')
 
@@ -209,22 +234,33 @@ def add_requests(request,id):
                 messages.error(request,"Request not added, no such project exists")
                 return render(request,"rs/add_fund_requests.html")
 
-            check= projects.objects.filter(project_id= projectid, project_investigator_id=pi_id)
+            check= projects.objects.filter(project_id= projectid, project_investigator_id__username=pi_id)
             if not check.exists():
                 messages.error(request,"Request not added, no such project investigator exists")
                 return render(request,"rs/add_fund_requests.html")
 
+
+            pi_id_instance=User.objects.get(username= request.user.username )
+            project_instance=projects.objects.get(project_id=projectid)
+
+            obj= requests.objects.all()
+            if len(obj)==0 :
+                requestid=1
+            
+            else :
+                requestid= obj[0].request_id+1
+
             requests.objects.create(
                 request_id=requestid,
-                project_id=projectid,
-                request_type=reqtype,
-                project_investigator_id=pi_id,
+                project_id=project_instance,
+                request_type="funds",
+                project_investigator_id=pi_id_instance,
                 status=stats, description=desc, amount= amt
             )
             rspc_inventory.objects.create(
                 inventory_id=requestid,
-                project_id=projectid,
-                project_investigator_id=pi_id,
+                project_id=project_instance,
+                project_investigator_id=pi_id_instance,
                 status=stats,
                 description=desc, amount= amt
             )
@@ -232,43 +268,45 @@ def add_requests(request,id):
             return render(request,"rs/add_fund_requests.html")
 
         if(id=='1'):
-            requestid = obj.get('request_id')
             projectid = obj.get('project_id')
-            reqtype = obj.get('request_type')
             pi_id = obj.get('project_investigator_id')
             stats = obj.get('status')
+            desc= obj.get('description')
+
+            obj= requests.objects.all()
+            if len(obj)==0 :
+                requestid=1
+            
+            else :
+                requestid= obj[0].request_id+1
+
 
             check= projects.objects.filter(project_id=projectid)
             if not check.exists():
                 messages.error(request,"Request not added, no such project exists")
                 return render(request,"rs/add_fund_requests.html")
 
-            check= projects.objects.filter(project_id= projectid, project_investigator_id=pi_id)
+            check= projects.objects.filter(project_id= projectid, project_investigator_id__username=pi_id)
             if not check.exists():
                 messages.error(request,"Request not added, no such project investigator exists")
                 return render(request,"rs/add_fund_requests.html")
 
+            pi_id_instance=User.objects.get(username=pi_id)
+            project_instance=projects.objects.get(project_id=projectid)
 
             requests.objects.create(
-            request_id=requestid,
-            project_id=projectid,
-            request_type=reqtype,
-            project_investigator_id=pi_id,
-            status=stats,description= "staff request", amount= 0
-            )
+                    request_id=requestid,
+                    project_id=project_instance,
+                    request_type="staff",
+                    project_investigator_id=pi_id_instance,
+                    description=desc
+                )
         messages.success(request,"Request added successfully")
-        # print("prudvi lanja")
         return redirect("/research_procedures")
     return render(request, "rs/add_requests.html")    
 
-    # return redirect("/")
-
-
-
-
 
 def view_projects(request):
-    # context= 
     queryset= projects.objects.all()
 
 
@@ -279,23 +317,19 @@ def view_projects(request):
         }
         return render(request,"rs/view_projects_rspc.html", context= data)
 
-    queryset= projects.objects.filter(project_investigator_id= request.user.username)
+    queryset= projects.objects.filter(project_investigator_id__username= request.user.username)
    
     data= {
         "projects": queryset,
         "username": request.user.username,
-       
     }
     print(data)
 
     print(request.user.username)
-    if request.user.username != "atul":
-        return redirect("/")
 
     return render(request,"rs/view_projects_rspc.html", context= data)
 
 def view_requests(request,id):
-    # context=  
         
     if id== '1':
         queryset= requests.objects.filter(request_type= "staff")
@@ -309,7 +343,7 @@ def view_requests(request,id):
             return render(request,"rs/view_requests.html", context= data)
         
            
-        queryset= rspc_inventory.objects.filter(project_investigator_id = request.user.username)
+        queryset= rspc_inventory.objects.filter(project_investigator_id = request.user.username )
     else:
         render(request,"/404.html")
 
@@ -319,10 +353,31 @@ def view_requests(request,id):
         "id":id,
     }
 
-    print(data)
+    # print(data)
     print(request.user.username)
 
     return render(request,"rs/view_requests.html", context= data)
+
+def view_financial_outlay(request,pid):
+
+    table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
+
+    years = set(table_data.values_list('year', flat=True))
+
+    category_data = {}
+    for category in table_data.values_list('category', flat=True).distinct():
+        category_data[category] = table_data.filter(category=category)
+
+
+    data = {
+        'table_title': 'Total Budget Outlay',
+        'table_caption': '...',  # Add caption if needed
+        'years': list(years),
+        'category_data': category_data,
+    }
+
+    print(data)
+    return render(request,"rs/view_financial_outlay.html", context= data)
 
 def submit_closure_report(request,id):
     id= int(id)
@@ -341,5 +396,150 @@ def submit_closure_report(request,id):
     messages.success(request,"Closure report submitted successfully")
     return render(request,"rs/view_projects_rspc.html",context=data)
 
+def view_project_inventory(request,pj_id):
+    pj_id=int(pj_id)
+    queryset= requests.objects.filter(project_id=pj_id,request_type="funds")
+
+
+    print(queryset)
+    
+    data= {
+        "requests": queryset,
+        "username": request.user.username
+    }
+    return render(request,"rs/view_project_inventory.html",context=data)
+
+def view_project_staff(request,pj_id):
+    pj_id=int(pj_id)
+    queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
+
+
+    print(queryset)
+    
+    data= {
+        "requests": queryset,
+        "username": request.user.username
+    }
+    return render(request,"rs/view_project_staff.html",context=data)
+
 def projectss(request):
     return render(request,"rs/projects.html")
+
+def view_project_info(request,id):
+    id= int(id)
+    obj= projects.objects.get(project_id=id)
+
+
+
+    data = {
+        "project": obj,
+    }
+    
+    return render(request,"rs/view_project_info.html", context= data)
+
+def financial_outlay_form(request,pid):
+    pid= int(pid)
+    project= projects.objects.get(project_id=pid);
+    categories = category.objects.all().distinct();
+
+    categories_with_subcategories = category.objects.values('category_name', 'sub_category_name')
+
+    # Organize the data into a dictionary
+    category_subcategory_map = {}
+    for item in categories_with_subcategories:
+        category_name = item['category_name']
+        subcategory = item['sub_category_name']
+        if category_name in category_subcategory_map:
+            category_subcategory_map[category_name].append(subcategory)
+        else:
+            category_subcategory_map[category_name] = [subcategory]
+
+    # Pass the organized data to the template
+    
+    data = {
+       "project_id": project.project_id,
+       "years": list(range(1, int(project.years) + 1)),
+       "category_subcategory_map": category_subcategory_map
+       
+    }
+
+    return render(request,"rs/add_financial_outlay.html", context= data)
+
+def add_financial_outlay(request,pid):
+    if request.method == 'POST':
+        
+        project = projects.objects.get(project_id=pid)
+        project.financial_outlay_status = 1
+        project.save()
+        
+        obj = request.POST
+        for key, value in obj.items():
+            if key.startswith('category-select'):                
+                year_count = key.split('-')[-2]
+                category_count = key.split('-')[-1]
+                subcategory_key = f'subcategory-select-{year_count}-{category_count}'
+                amount_key = f'amount-{year_count}-{category_count}'
+
+                category = value
+                subcategory = obj.get(subcategory_key, [''])
+                amount = obj.get(amount_key, [''])
+                year = int(year_count)
+
+                print(year)
+                print(amount)
+                print(subcategory)
+                print(category)
+                project_instance=projects.objects.get(project_id=pid)
+
+
+                ob= financial_outlay.objects.all()
+                if len(ob)==0 :
+                    fid=1
+                
+                else :
+                    fid= ob[0].financial_outlay_id+1
+                financial_outlay.objects.create(
+                    financial_outlay_id=fid,
+                    project_id=project_instance,
+                    category=category,
+                    sub_category=subcategory,
+                    amount=amount,
+                    year=year,
+                    status=0,
+                    staff_limit=0
+                )
+
+    return render(request,"rs/projects.html")
+
+def add_staff_details(request , pid):
+
+
+    return render(request,"rs/add_staff_details.html" )
+
+# def add_financial_outlay(request):
+#     if request.method == 'POST':
+#         obj=request.POST
+#         projectid = obj.get('project_id')
+#         amount = obj.get('amount')
+#         desc = obj.get('description')
+#         check= projects.objects.filter(project_id=projectid)
+#         if not check.exists():
+#             messages.error(request,"Request not added, no such project exists")
+#             return render(request,"rs/add_financial_outlay.html")
+
+#         obj= financial_outlay.objects.all()
+#         if len(obj)==0 :
+#             requestid=1
+            
+#         else :
+#             requestid= obj[0].request_id+1
+
+#         financial_outlay.objects.create(
+#             request_id=requestid,
+#             project_id=projectid,
+#             amount= amount,
+#             description= desc
+#         )
+#         messages.success(request,"Financial outlay added successfully")
+#         return redirect("/research_procedures")
+#     return render(request,"rs/add_financial_outlay.html")
