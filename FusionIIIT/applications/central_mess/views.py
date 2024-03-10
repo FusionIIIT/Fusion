@@ -324,6 +324,7 @@ def mess(request):
                    'reg_request':reg_request,
                    'reg_record':reg_record,
                    'de_reg_request':de_reg_request,
+                   
                   }
 
         return render(request, "messModule/mess.html", context)
@@ -403,6 +404,7 @@ def mess(request):
             'count4': count4, 'form': form, 'count5': count5,
             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
             'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
+            'de_reg_request':de_reg_request,
             'bill': bills
         }
         return render(request, "messModule/mess.html", context)
