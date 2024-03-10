@@ -17,9 +17,9 @@
             Payment History
         </a>
         -->
-        <a class="item" id="regm">
+        {% comment %} <a class="item" id="regm">
             Register for Mess
-        </a>
+        </a> {% endcomment %}
     </div>
 
     <div class="ui active tab  " id="menu1tab">
@@ -45,6 +45,7 @@
                                 <td>{{item.dish}}</td>
                             {% endif %}
                     {% endfor %}
+                    {% comment %} <h2>Total Due Amount : {{total_due}}</h2> {% endcomment %}
 
                     {% for item in reg_menu %}
                             {% if item.meal_time == 'ML' %}
@@ -212,7 +213,7 @@
             <div class="ui divider"></div>
             <div class="extra content">
                 <!-- TODO add code to direct to a function which renders the template as a pdf file -->
-                <form method="post" target="_blank" action="{% url 'mess:MenuPDF' %}">
+                <form method="post" target="_blank" action="{% url 'mess:MenuPDF1' %}">
                     {% csrf_token %}
                 <button type="submit" class="ui primary button right floated">
                     <!-- Download -->
@@ -232,12 +233,10 @@
                 <thead>
                 <tr>
                     <th>Month</th>
-                    <th>Monthly bill</th>
+                    <th>Monthly Amount</th>
                     <th>Rebate Count</th>
-                    <th>Rebate Amt</th>
-                    <th>Total</th>
-                    <th>Paid</th>
-                    <th>Due Amount</th>
+                    <th>Rebate Amount</th>
+                    <th>Total Bill </th>
                 </tr></thead>
                 <tbody>
                 {% for stu in monthly_bill %}
@@ -247,30 +246,44 @@
                     <td>{{stu.rebate_count}}</td>
                     <td>{{stu.rebate_amount}}</td>
                     <td>{{stu.total_bill}}</td>
-                    <td>
+                    {% comment %} <td>
                         {% if stu.paid %}
                             <i class="large green checkmark icon"></i>
                         {% else %}
                          <i class="large red x icon"></i>
                         {% endif %}
-                    </td>
-                     <td>
+                    </td> {% endcomment %}
+                     {% comment %} <td>
                         {% if stu.paid %}
                             0
                         {% else  %}
                             {{stu.due_amount}}
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
-            <h2>Total Due Amount : {{total_due}}</h2>
+
+
+            {% comment %} <h2>Total Due Amount : {{total_due}}</h2> {% endcomment %}
             <br>
             <br>
 
             <div class="ui divider"></div>
+            
+            <div class="extra content">
+                <!-- TODO add code to direct to a function which renders the template as a pdf file -->
+                <form method="post" target="_blank" action="{% url 'mess:BillPDFStudent' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+                </form>
+                <br>
+            </div>
 
         </div>
     </div>
@@ -407,7 +420,7 @@
 </script>
 
  <script>
-  function download(){
+  {% comment %} function download(){
             $.ajax({
                 type: 'POST',
                 url: 'menudownload/',
@@ -421,7 +434,7 @@
                 }
             });
         return false;
-    }
+    } {% endcomment %}
 
 </script>
 {% endblock %}

@@ -379,6 +379,7 @@ def mess(request):
         reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
         reg_record = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
         bills = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+        # bills = Monthly_bill.objects.all()
         context = {
             'bill_base': current_bill,
             'today': today_g.date(),
@@ -402,8 +403,7 @@ def mess(request):
             'count4': count4, 'form': form, 'count5': count5,
             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
             'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
-            'de_reg_request':de_reg_request,
-            'bill':bills
+            'bill': bills
         }
         return render(request, "messModule/mess.html", context)
 
@@ -924,6 +924,19 @@ class MenuPDF1(View):
             'mess_option': 'mess1'
         }
         return render_to_pdf('messModule/menudownloadable1.html', context)
+    
+class BillPDFStudent(View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        extra_info = ExtraInfo.objects.select_related().get(user=user)
+        student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+        # reg_student = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id_id=student)
+        monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
+        if monthly_bill.exists():
+            context = {
+                'student_bill': monthly_bill
+            }
+            return render_to_pdf('messModule/billpdfexport.html', context)
 
 
 def menu_change_request(request):
