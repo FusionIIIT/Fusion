@@ -1,3 +1,4 @@
+from amqp import NotFound
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
