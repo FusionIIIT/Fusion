@@ -4,14 +4,14 @@
 {% block de-registraionsrequests %}
 
 <div class="ui pointing secondary menu">
-    <a class="active item" data-tab="splreq">
+    <a class="active item" data-tab="reg-req">
         Registration Request
     </a>
-    <a class="item" data-tab="splreq_acc">
+    <a class="item" data-tab="dreg-req">
         Deregistration Requests
     </a>
 </div>
-<div class="ui active tab" data-tab="splreq">
+<div class="ui active tab" data-tab="reg-req">
     <div class="ui vertical strip segment">
 
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
@@ -47,7 +47,7 @@
                     </td>
                     
                     <td class="one wide">
-                        <textarea rows="2" class="remark" name="remark" required="true"></textarea>
+                        <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
                     </td>
 
                     <td class="one wide">
@@ -91,42 +91,33 @@
     </div>
 </div>
 
-<div class="ui tab" data-tab="splreq_acc">
+<div class="ui tab" data-tab="dreg-req">
     <div class="ui vertical strip segment">
 
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
               <thead>
                 <tr>
                   <th>Student Id</th>
-                  <th>Date</th>
+                  <th>Remark</th>
                   <th>Accept/Reject</th>
                 </tr>
               </thead>
               <tbody>
-                  {% for var in deregistration %}
-                <tr>
+                  {% for var in de_reg_request %}
+                <tr id="dreg-{{var.pk}}">
                     <th class="two wide">
                         {{var.student_id}}
                     </th>
-                    <td class="two wide">
-                        {{var.date}}
+                    <td class="one wide">
+                        <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
                     </td>
                     <td>
                         <div class="ui buttons">
-                                <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="rejectReq({{var.pk}})">A</button>
-                    <div class="or"></div>
-          <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectReq({{var.pk}})" >R</button>
-                    </div>
-                    <!--<form action="{{var.pk}}/specialrequestresponse/" method="POST">-->
-                    <!--{% csrf_token %}-->
-                    <!--<div class="ui buttons">-->
-                                <!--<button class="acbtn ui positive button" name="submit" value="approve" onclick="acceptSplReq({{var.pk}})">A</button>-->
-
-                    <!--<div class="or"></div>-->
-          <!--<button class="ui negative button" name="submit" value="reject" >R</button>-->
-                    <!--</div>-->
-                    <!--</form>-->
-                </td>
+                                <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="accptDReq({{var.pk}})">A</button>
+                            <div class="or"></div>
+                            <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectDReq({{var.pk}})" >R</button>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
 
@@ -173,8 +164,9 @@ function acceptReq(id){
                    data: {
                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
                        'id_reg':id,
+                       'type':'reg',
                        'status':'accept',
-                       'remark':$("textarea.remark").val(),
+                       'remark':$(`tr${'#accpt1-'+id} td.one.wide textarea`).val(),
                        'mess_no':messno,
                    },
                    success: function(data) {
@@ -199,9 +191,63 @@ function acceptReq(id){
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
                     'id_reg':id,
+                    'type':'reg',
                     'status':'reject',
-                    'remark':$("textarea.remark").val(),
-                    'mess_no':'mess2'
+                    'remark':$(`tr${'#accpt1-'+id} td.one.wide textarea`).val(),
+                    'mess_no':'no-mess'
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+
+        }
+
+        function accptDReq(id){
+    document.getElementById('dreg-'+id).style.display="none";
+   
+            $.ajax({
+                   type: 'POST',
+                   url: 'respond_to_reg_req',
+                   dataType: 'json',
+                   data: {
+                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                       'id_reg':id,
+                       'type':'dreg',
+                       'status':'accept',
+                       'remark':$(`tr${'#dreg-'+id} td.one.wide textarea`).val(),
+                   },
+                   success: function(data) {
+
+                           alert(data.message);
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+
+            function rejectDReq(id){
+            document.getElementById('dreg-'+id).style.display="none";
+            $.ajax({
+                type: 'POST',
+                url: 'respond_to_reg_req',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id_reg':id,
+                    'type':'dreg',
+                    'status':'reject',
+                    'remark':$(`tr${'#dreg-'+id} td.one.wide textarea`).val(),
                 },
                 success: function(data) {
 

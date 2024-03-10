@@ -16,7 +16,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                      Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records)
+                      Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request)
 from notification.views import central_mess_notif
 
 
@@ -683,7 +683,7 @@ def handle_reg_response(request):
        This function is to respond to registeration requests
        @variables:
        id: id of the registeration request
-       leaves: Object corresponding to the id of the reg request
+       reg_req: Object corresponding to the id of the reg request
        @return:
        data: returns the status of the application
     """
@@ -729,6 +729,46 @@ def handle_reg_response(request):
 
     
     receiver = reg_req.student_id.id.user
+    central_mess_notif(request.user, receiver, 'leave_request', message)
+    data = {
+        'message': 'success'
+    }
+    return data
+
+
+def handle_dreg_response(request):
+    """
+       This function is to respond to de registeration requests
+       @variables:
+       id: id of the registeration request
+       dreg_req: Object corresponding to the id of the de reg request
+       @return:
+       data: returns the status of the application
+    """
+
+    id = request.POST['id_reg']
+    status = request.POST['status']
+    remark = request.POST['remark']
+    dreg_req = Deregistration_Request.objects.get(pk=id)
+    student = dreg_req.student_id
+    dreg_req.status = status
+    dreg_req.deregistration_remark=remark
+    dreg_req.save()
+    message=''
+    if(status=='accept'):
+        try :
+            reg_main = Reg_main.objects.get(student_id=student)
+            reg_main.current_mess_status="Deregistered"
+            reg_main.save()
+        except:
+            data = {'message': 'Student does not exist in database'}
+            return data
+        
+        message="Your De-registeration request has been accepted"
+    else:
+        message="Your De-registeration request has been rejected"            
+            
+    receiver = dreg_req.student_id.id.user
     central_mess_notif(request.user, receiver, 'leave_request', message)
     data = {
         'message': 'success'
