@@ -547,6 +547,36 @@ class SearchPbiRecord(forms.Form):
 
 
 
+class SendInvitation(forms.Form):
+    """
+    The form is used to send invite to students about upcoming placement or pbi events.
+    @variables:
+            company - name of company
+    """
+    company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
+    rollno = forms.IntegerField(label="rollno", widget=forms.NumberInput(attrs={'min': 0}), required=False)
+    programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
+                                  label="programme", widget=forms.Select(attrs={'style': "height:45px",
+                                                                                'onchange': "changeDeptForSend()",
+                                                                                'id': "id_programme_send"}))
+
+    dep_btech = forms.MultipleChoiceField(choices = Constants.BTECH_DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    dep_bdes = forms.MultipleChoiceField(choices = Constants.BDES_DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    dep_mtech = forms.MultipleChoiceField(choices = Constants.MTECH_DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    dep_mdes = forms.MultipleChoiceField(choices = Constants.MDES_DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    dep_phd = forms.MultipleChoiceField(choices = Constants.PHD_DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    cpi = forms.DecimalField(label="cpi", required=False)
+    no_of_days = forms.CharField(required=True, widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max':30,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}))
+
+
 class AddPlacementSchedule(forms.Form):
     """
     The form is used to placement or pbi schedule.
