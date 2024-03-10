@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
-from ..sdk.methods import create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations
+from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -89,12 +89,13 @@ class ViewInboxView(APIView):
             JSON response containing a list of serialized file data, including sender information.
         """
 
-        username = request.data.get('username')
-        designation = request.data.get('designation')
-        src_module = request.data.get('src_module')
+        username = request.query_params.get('username')
+        designation = request.query_params.get('designation')
+        src_module = request.query_params.get('src_module')
 
-        if not username or not src_module:
-            return Response({'error': 'Missing required query parameters: username and src_module.'}, status=400)
+
+        # if not username or not src_module:
+        #     return Response({'error': 'Missing required query parameters: username and src_module.'}, status=400)
 
         inbox_files = view_inbox(username, designation, src_module)
         return Response(inbox_files)
@@ -117,9 +118,10 @@ class ViewOutboxView(APIView):
             JSON response containing a paginated list of serialized file data.
         """
 
-        username = request.data.get('username')
-        designation = request.data.get('designation')
-        src_module = request.data.get('src_module')
+        username = request.query_params.get('username')
+        designation = request.query_params.get('designation')
+        src_module = request.query_params.get('src_module')
+
 
         if not username or not src_module:
             return Response({'error': 'Missing required query parameters: username and src_module.'}, status=400)
@@ -192,15 +194,40 @@ class ForwardFileView(APIView):
 
         # Return response
         return Response({'tracking_id': new_tracking_id}, status=status.HTTP_201_CREATED)
+    
+class CreateDraftFile(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        uploader = request.data.get('uploader')
+        uploader_designation = request.data.get('uploader_designation')
+        src_module = request.data.get('src_module', 'filetracking')
+        src_object_id = request.data.get('src_object_id', '')
+        file_extra_JSON = request.data.get('file_extra_JSON', {})
+        attached_file = request.FILES.get('attached_file', None)
+
+        try:
+            file_id = create_draft(
+                uploader=uploader,
+                uploader_designation=uploader_designation,
+                src_module=src_module,
+                src_object_id=src_object_id,
+                file_extra_JSON=file_extra_JSON,
+                attached_file=attached_file
+            )
+            return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DraftFileView(APIView):
    authentication_classes = [TokenAuthentication]
    permission_classes = [permissions.IsAuthenticated]
 
    def get(self, request):
-       username = request.data.get('username')
-       designation = request.data.get('designation')
-       src_module = request.data.get('src_module')
+       username = request.query_params.get('username')
+       designation = request.query_params.get('designation')
+       src_module = request.query_params.get('src_module')
 
        try:
            draft_files = view_drafts(username, designation, src_module)
