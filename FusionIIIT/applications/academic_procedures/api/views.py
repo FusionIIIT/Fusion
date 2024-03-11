@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
 
+from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -29,6 +30,7 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     get_pre_registration_eligibility,
                                                     get_final_registration_eligibility,
                                                     get_add_or_drop_course_date_eligibility,
+                                                    get_detailed_sem_courses,
                                                     InitialRegistration)
 
 from . import serializers
@@ -641,7 +643,38 @@ def configure_final_registration_date(request):
         return Response(data = {"message" : "Physical Reporting at the Institute will be opened from " + str(from_date) + " to " + str(to_date) + ". "  ,  } , status= status.HTTP_200_OK)
     except Exception as e:
         return Response(data = {"error " : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+# with this api request acad person can add any courses in a specific slot   
+@api_view(['POST'])
+def add_course_to_slot(request):
+    course_code = request.data.get('course_code')
+    course_slot_name = request.data.get('course_slot_name')
+    try:
+        course_slot = CourseSlot.objects.get(name=course_slot_name)
+        course = Courses.objects.get(code=course_code)
+        course_slot.courses.add(course)
+        
+        return JsonResponse({'message': f'Course {course_code} added to slot {course_slot_name} successfully.'}, status=200)
+    except CourseSlot.DoesNotExist:
+        return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+    except Course.DoesNotExist:
+        return JsonResponse({'error': 'Course does not exist.'}, status=400)
+
+# with this api request acad person can remove any course from a specific slot   
+@api_view(['POST'])
+def remove_course_from_slot(request):
+    course_code = request.data.get('course_code')
+    course_slot_name = request.data.get('course_slot_name')
+    try:
+        course_slot = CourseSlot.objects.get(name=course_slot_name)
+        course = Courses.objects.get(code=course_code)
+        course_slot.courses.remove(course)
+        return JsonResponse({'message': f'Course {course_code} removed from slot {course_slot_name} successfully.'}, status=200)
+    except CourseSlot.DoesNotExist:
+        return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+    except Course.DoesNotExist:
+        return JsonResponse({'error': 'Course does not exist.'}, status=400)
+  
 
 
 #--------------------------------------- APIs of faculty----------------------------------------------------------
@@ -663,8 +696,25 @@ def faculty_assigned_courses(request):
         return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+def get_next_sem_courses(request):
+    try:
+        next_sem = request.data.get('next_sem')
+        branch = request.data.get('branch')
+        programme = request.data.get('programme')
+        batch = request.data.get('batch')
 
+        #  we go to student table and apply filters and get batch_id of the students with these filter
+        batch_id = Student.objects.filter(programme = programme , batch = batch , specialization = branch)[0].batch_id
 
+        curr_id = batch_id.curriculum
+        next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = next_sem)
+        
+        if next_sem_id:
+            next_sem_registration_courses = get_detailed_sem_courses(next_sem_id )
+            return JsonResponse(next_sem_registration_courses, safe=False)
+    except Exception as e:
+        return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
