@@ -79,6 +79,13 @@ class FeedbackSerializer(serializers.ModelSerializer):
         fields=('__all__')
 
 class GetFilteredSerialzer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='student_id.id.user.first_name')
+    last_name = serializers.CharField(source='student_id.id.user.last_name')
     class Meta:
         model=Reg_main
+        fields=('__all__')
+
+class reg_recordSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = Reg_records
         fields=('__all__')
