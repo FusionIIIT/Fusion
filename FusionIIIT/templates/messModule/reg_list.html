@@ -2,28 +2,52 @@
 {% block body %}
 {% block reg_list %}
 
-<table class="ui celled table">
-    <thead>
-      <tr><th>Name</th>
-      <th>Roll No</th>
-      <th>Program</th>
-      <th>Balance</th>
-      <th>Mess</th>
-    </tr></thead>
-    <tbody>
-        {% for entry in reg_main %}
-        {% if entry.current_mess_status == 'Registered' %}
-      <tr>
-        <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
-        <td data-label="Roll No">{{entry.student_id.id.id}}</td>
-        <td data-label="Program">{{entry.student_id.programme}}</td>
-        <td data-label="Balance">{{entry.balance}}</td>
-        <td data-label="Mess"> {{entry.mess_option}}</td>
-      </tr>
-        {% endif %}
-        {% endfor %}
-    </tbody>
-  </table>
+<div>
+  <div style="display: flex;justify-content: space-evenly;margin-bottom: 4px;">
+    <select class="ui dropdown" id="status">
+      <option value="Registered">Registered</option>
+      <option value="Deregistered">Deregistered</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="program">
+      <option value="B.Tech">Btech</option>
+      <option value="M.Tech">Mtech</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="mess_dropdown_option">
+      <option value="mess1">Mess 1</option>
+      <option value="mess2">Mess 2</option>
+      <option value="all">All</option>
+    </select>
+    <button class="ui button primary" onclick="get_filter_students()">Filter</button>
+  </div>
+  <div style="max-height: 60vh; overflow:scroll"  id="mess_students_table">
+    <table class="ui celled table">
+      <thead>
+        <th>Name</th>
+        <th>Roll No</th>
+        <th>Program</th>
+        <th>Balance</th>
+        <th>Mess</th>
+        <th>View Reg Records</th>
+      </tr></thead>
+      <tbody>
+          {% for entry in reg_main %}
+        <tr id="uniq-{{entry.pk}}">
+          <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
+          <td data-label="Roll No" id="roll">{{entry.student_id.id.id}}</td>
+          <td data-label="Program">{{entry.student_id.programme}}</td>
+          <td data-label="Balance">{{entry.balance}}</td>
+          <td data-label="Mess"> {{entry.mess_option}}</td>
+          <td>
+          <button class="ui button" onclick="get_reg_details({{entry.pk}})">View Details</button>
+          </td>
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 
 
@@ -32,6 +56,126 @@
 {% endblock %}
 
 {% block javascript %}
+
+<script>
+  function get_filter_students(){
+
+    var data={}
+
+    const status=document.getElementById('status').value;
+    const program=document.getElementById('program').value;
+    const mess_option=document.getElementById('mess_dropdown_option').value;
+    const mess_students=document.getElementById('mess_students_table');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_mess_students',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'status':status,
+                      'program':program,
+                      'mess_option':mess_option
+                   },
+                   success: function(data) {
+
+                           console.log(data.payload)
+                          //  alert('data updated successfully')
+                           var students_data=`
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Name</th>
+                                  <th>Roll No</th>
+                                  <th>Program</th>
+                                  <th>Balance</th>
+                                  <th>Mess</th>
+                                  <th>View Reg Records</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr id="uniq-${element.id}">
+                                    <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                                    <td data-label="Roll No" id="roll">${element.student_id}</td>
+                                    <td data-label="Program">${element.program}</td>
+                                    <td data-label="Balance">${element.balance}</td>
+                                    <td data-label="Mess"> ${element.mess_option}</td>
+                                    <td>
+                                    <button class="ui button" onclick="get_reg_details(${element.id})">View Details</button>
+                                    </td>
+                                  </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+
+
+
+  function get_reg_details(id){
+    const student = document.getElementById('uniq-'+id).querySelector('#roll').textContent
+    const mess_students=document.getElementById('mess_students_table');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_reg_records',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'student_id':student,
+                   },
+                   success: function(data) {
+
+                          //  console.log(data.payload)
+                          //  alert('data updated successfully')
+                           var students_data=`
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Reg Start date</th>
+                                  <th>Reg End date</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="reg start date">${element.start_date}</td>
+                                    <td data-label="reg end date">${element.end_date}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+  }
+</script>
 
 
 
