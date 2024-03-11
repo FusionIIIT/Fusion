@@ -28,7 +28,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 
 
-from applications.academic_procedures.views import acad_proced_global_context
+from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
 
 
@@ -107,7 +107,6 @@ def get_context(request):
     # course_type = Constants.COURSE_TYPE
     # timetable = Timetable.objects.all()
     # exam_t = Exam_timetable.objects.all()
-
     procedures_context = acad_proced_global_context()
 
     try:
@@ -845,7 +844,9 @@ def generatexlsheet(request):
     
     try:
         batch = request.POST['batch']
-        course = Courses.objects.get(id = request.POST['course'])
+        # print('-------------------------------------------------------------------------------------' , request.POST['course'])
+        course_name = Course.objects.get(id = request.POST['course']).course_name
+        course = Courses.objects.get(name = course_name )
         obj = course_registration.objects.all().filter(course_id = course)
     except Exception as e:
         batch=""
@@ -1029,9 +1030,14 @@ def generate_preregistration_report(request):
                 max_width = max(max_width,len(choices_of_current_student))
 
                 for choice in range(1,len(choices_of_current_student)+1):
-                    current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
-                    # #print("current choice is ",current_choice)
-                    z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
+                    try:
+                        current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem, course_slot_id=slot, priority=choice)
+                        z.append(str(current_choice.course_id.code) + "-" + str(current_choice.course_id.name))
+                    except :
+                        z.append("No registration found")
+                    # current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
+                    # # #print("current choice is ",current_choice)
+                    # z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
                 
                 data.append(z)
                 m+=1

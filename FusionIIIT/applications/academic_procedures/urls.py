@@ -1,5 +1,4 @@
 from django.conf.urls import url, include
-
 from . import views
 appname = 'procedures'
 urlpatterns = [
@@ -41,7 +40,10 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$', views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
+
     url(r'^api/', include('applications.academic_procedures.api.urls')),
+
+
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
     url(r'^ACF/$', views.ACF, name='ACF'),
     url(r'^MTSGF/$', views.MTSGF),
@@ -51,12 +53,18 @@ urlpatterns = [
     url(r'^update_phdform/$', views.update_phdform),
     url(r'^update_dues/$', views.update_dues),
     url(r'^dues_pdf/$', views.dues_pdf),
-    url(r'^acad_person/gen_course_list$',
-        views.gen_course_list, name='gen_course_list'),
+    url(r'^acad_person/gen_course_list$', views.gen_course_list, name='gen_course_list'),
     url(r'^update_acad_assistantship/$', views.update_acad_assis),
     url(r'^update_account_assistantship/$', views.update_account_assistantship),
     url(r'^update_hod_assistantship/$', views.update_hod_assistantship),
     url(r'^mdue/$', views.mdue),
     url(r'^assis_stat/$', views.assis_stat),
-    url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses')
+    url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses'),
+
+    url(r'^acad_person/get_next_sem_courses/' , views.get_next_sem_courses , name = 'get_next_sem_courses'),
+
+    url(r'^acad_person/remove_course_from_slot/' , views.remove_course_from_slot , name = 'remove_course_from_slot'),
+    url(r'^acad_person/add_course_to_slot/' , views.add_course_to_slot , name = 'add_course_to_slot'),
+
+
 ]

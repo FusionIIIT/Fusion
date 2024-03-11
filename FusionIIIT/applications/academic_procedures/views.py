@@ -11,6 +11,7 @@ import xlrd
 import logging
 from django.db import transaction
 from django.contrib import messages
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum
@@ -29,17 +30,17 @@ from applications.central_mess.models import(Monthly_bill, Payments)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
-
+from applications.programme_curriculum.models import Course as Courses
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status , backlog_course)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
-
-
+from .api import serializers
+from django.core.serializers import serialize
 
 demo_date = timezone.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
@@ -158,6 +159,40 @@ def academic_procedures_faculty(request):
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
         courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
+
+        user = request.user
+        curriculum_ids = Curriculum_Instructor.objects.filter(instructor_id= user_details.pk).values_list('curriculum_id', flat=True)
+        # Fetch course info for each curriculum ID
+        course_infos = list(Curriculum.objects.filter(curriculum_id__in=curriculum_ids).values_list('course_code', 'course_type', 'programme', 'branch', 'sem', 'batch', 'course_id_id'))
+        
+        # Fetch course names using course IDs from course_infos
+        course_ids = [info[6] for info in course_infos]
+        # print(course_ids)
+        course_names = Course.objects.filter(id__in=course_ids).values_list('course_name', flat=True)
+
+        # Convert course_names queryset to a list
+        course_name_values = list(course_names)
+
+        # Update course_infos with course names
+        for index, info in enumerate(course_infos):
+            if(len(course_name_values) > index):
+                course_infos[index] = (course_name_values[index],) + info[:7]
+
+        # Fetch REAL COURSE ID using course CODE from course_infos
+        # real_course_codes = [info[1] for info in course_infos]
+        # print(real_course_codes)
+        # real_course_ids = Courses.objects.filter(code__in=real_course_codes).values_list('id', flat=True)
+
+        # Convert real_course_ids queryset to a list
+        # real_course_ids_values = list(real_course_ids)
+        # print(len(real_course_ids))
+        # print(real_course_ids)
+
+        # Update course_infos with real course IDs
+        # for index, info in enumerate(course_infos):
+        #     if(len(real_course_ids_values) > index):
+        #         course_infos[index] = info[:7] + (real_course_ids_values[index],)
+        # print('-------------------------------------------------------------------------------------' , course_infos)
         r = range(4)
         return render(
                         request,
@@ -181,6 +216,9 @@ def academic_procedures_faculty(request):
                             'mtechseminar_request_list' : mtechseminar_request_list,
                             'phdprogress_request_list' : phdprogress_request_list,
                             'r' : r,
+                            'curriculum_ids' : curriculum_ids,
+                            'course_infos' : course_infos,
+                            'course_name_values' : course_name_values,
                         })
     else:
         HttpResponse("user not found")
@@ -341,7 +379,7 @@ def academic_procedures_student(request):
         currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
 
         current_credits = get_current_credits(currently_registered_course)
-
+ 
         cur_cpi=0.0
         details = {
                 'current_user': current_user,
@@ -374,7 +412,7 @@ def academic_procedures_student(request):
             for final_registered_course in final_registered_courses:
                 final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
-            #drop_courses_options = get_drop_course_options(currently_registered_course)
+            drop_courses_options = get_drop_course_options(currently_registered_course)
 
         except Exception as e:
             final_registered_courses = None
@@ -455,6 +493,13 @@ def academic_procedures_student(request):
             attendence.append((i,pr,pr+ab))
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
 
+        backlogCourseList = []
+        backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=obj)
+        for i in backlogCourses:
+            summer_course = "Yes" if i.is_summer_course else "No"
+            course_details = i.course_id.course_details if i.course_id.course_details else "N/A"
+
+            backlogCourseList.append([i.course_id.course_name, course_details , i.semester_id.semester_no , summer_course])
         
         Mess_bill = Monthly_bill.objects.filter(student_id = obj)
         Mess_pay = Payments.objects.filter(student_id = obj)
@@ -503,7 +548,7 @@ def academic_procedures_student(request):
                            # 'change_branch': change_branch,
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
-                            #'drop_courses_options' : drop_courses_options,
+                            'drop_courses_options' : drop_courses_options,
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
@@ -527,6 +572,7 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
+                           'backlogCourseList' : backlogCourseList,
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
@@ -1428,24 +1474,31 @@ def allot_courses(request):
             profiles=request.FILES['allotedCourses']
             batch_id=request.POST['batch']
             sem_no=int(request.POST['semester'])
-
+            
             batch=Batch.objects.get(id=batch_id)
             sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
-
+            print(batch , sem_id)
+            #  format of excel sheet being uploaded should be xls only , otherwise error
             excel = xlrd.open_workbook(file_contents=profiles.read())
             sheet=excel.sheet_by_index(0)
             final_registrations=[]
+            # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
             for i in range(1,sheet.nrows):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                # print("Roll No from Excel:", roll_no)
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
-                user=User.objects.get(username=roll_no)
-                user_info = ExtraInfo.objects.get(user=user)
-                student = Student.objects.get(id=user_info)
-                course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
-                course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
-                #print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                try:
+                    user=User.objects.get(username=roll_no)
+                    user_info = ExtraInfo.objects.get(user=user)
+                    student = Student.objects.get(id=user_info)
+                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                    print(course_code.strip() , course_name.strip())
+                    course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                except Exception as e:
+                    print('----------------------' , e)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
                 final_registrations.append(final_registration)
@@ -1789,7 +1842,11 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
 
 def get_branch_courses(roll_no, user_sem, branch):
     roll = str(roll_no)
-    year = int(roll[:4])
+    try:
+        year = int(roll[:4])
+    except:
+        year = int(roll[:2])
+        year = 2000 + year
     courses = Curriculum.objects.all().select_related().filter(batch=(year))
     courses = courses.filter(sem = user_sem)
     courses = courses.filter(floated = True)
@@ -2223,12 +2280,12 @@ def student_list(request):
         batch_id = Batch.objects.get(id = batch)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
         if (student_obj):
-            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True).select_related(
+            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True , student_id__finalregistration__verified=False).select_related(
                 'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
                     'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
                     'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
-                    'student_id__id__user__username').order_by('student_id__id__user')
+                    'student_id__id__user__username').order_by('student_id__id__user').distinct()
         else :
             reg_table = []
 
@@ -2288,7 +2345,7 @@ def student_list(request):
                     'specialization','gender','category',
                     'pwd_status','phone_no','actual_fee',
                     'fee_paid','reason','date_deposited',
-                    'mode','utr_number','fee_receipt'))
+                    'mode','utr_number','fee_receipt')).distinct()
 
             excel_response = BytesIO()
 
@@ -2335,11 +2392,16 @@ def verify_registration(request):
 
         batch = student.batch_id
         curr_id = batch.curriculum
-        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student.curr_semester_no+1)
+        
+        if(student.curr_semester_no+1 >= 9):
+            sem_no = 4
+        else:
+            sem_no = student.curr_semester_no+1
+
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
 
         final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
 
-        sem_no = student.curr_semester_no + 1
 
         with transaction.atomic():
             ver_reg = []
@@ -2363,8 +2425,11 @@ def verify_registration(request):
 
         batch = student_id.batch_id
         curr_id = batch.curriculum
-        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = student_id.curr_semester_no + 1)
-
+        if(student.curr_semester_no+1 >= 9):
+            sem_no = 4
+        else:
+            sem_no = student.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         with transaction.atomic():
             academicadmin = get_object_or_404(User, username = "acadadmin")
             FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
@@ -3462,7 +3527,84 @@ def mdue(request):
         content = json.dumps("success")
         return HttpResponse(content)
 
-        
 
 
+
+def get_detailed_sem_courses(sem_id):
+    course_slots = CourseSlot.objects.filter(semester_id=sem_id)
+    # Serialize queryset of course slots into JSON
+    course_slots_json = serialize('json', course_slots)
+    # Convert JSON string into Python object
+    course_slots_data = json.loads(course_slots_json)
+    
+    # Iterate over each course slot data and include associated course data
+    for slot_data in course_slots_data:
+        # Retrieve associated courses for the current course slot
+        slot = CourseSlot.objects.get(id=slot_data['pk'])
+        courses = list(slot.courses.all().values())
+        # Add courses data to the course slot data
+        slot_data['courses'] = courses
+    
+    return course_slots_data
+
+
+def get_next_sem_courses(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        next_sem = data.get('next_sem')
+        branch = data.get('branch')
+        programme = data.get('programme')
+        batch = data.get('batch')
+        #  we go to student table and apply filters and get batch_id of the students with these filter
+        batch_id = Student.objects.filter(programme = programme , batch = batch , specialization = branch)[0].batch_id
+
+        curr_id = batch_id.curriculum
+        # print('-----------------------------------------------------------------------------------------', curr_id)
+        # curr_id = 1
+        next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = next_sem)
         
+        if next_sem_id:
+            next_sem_registration_courses = get_detailed_sem_courses(next_sem_id )
+            # next_sem_registration_courses = serializers.CourseSlotSerializer(next_sem_registration_courses).data
+            # print(next_sem_registration_courses)
+            return JsonResponse(next_sem_registration_courses, safe=False)
+    return JsonResponse({'error': 'Invalid request'})
+
+
+def add_course_to_slot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        course_slot_name = data.get('course_slot_name')
+        course_code = data.get('course_name')
+        # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
+        try:
+            course_slot = CourseSlot.objects.get(name=course_slot_name)
+            course = Courses.objects.get(code=course_code)
+            course_slot.courses.add(course)
+            
+            return JsonResponse({'message': f'Course {course_code} added to slot {course_slot_name} successfully.'}, status=200)
+        except CourseSlot.DoesNotExist:
+            return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+        except Course.DoesNotExist:
+            return JsonResponse({'error': 'Course does not exist.'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+def remove_course_from_slot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        course_slot_name = data.get('course_slot_name')
+        course_code = data.get('course_name')
+        # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
+        try:
+            course_slot = CourseSlot.objects.get(name=course_slot_name)
+            course = Courses.objects.get(code=course_code)
+            course_slot.courses.remove(course)
+            return JsonResponse({'message': f'Course {course_code} removed from slot {course_slot_name} successfully.'}, status=200)
+        except CourseSlot.DoesNotExist:
+            return JsonResponse({'error': 'Course slot does not exist.'}, status=400)
+        except Course.DoesNotExist:
+            return JsonResponse({'error': 'Course does not exist.'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)       
