@@ -405,3 +405,26 @@ class Menu_change_requestApi(APIView):
         )
         obj.save()
         return Response({'status':200})      
+
+class Get_Filtered_Students(APIView): 
+
+    def post(self,request):
+        reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+        status=request.data['status']
+        program=request.data['program']
+        mess_option=request.data['mess_option']
+
+        if(status!='all'):
+
+            reg_main=reg_main.filter(current_mess_status=status)
+
+        if(program!='all'):
+            reg_main=reg_main.filter(program=program)
+
+        if(mess_option!='all'):
+
+            reg_main=reg_main.filter(mess_option=mess_option)        
+
+
+        serialized_obj = GetFilteredSerialzer(reg_main,many=True)
+        return Response({'payload':serialized_obj.data})  

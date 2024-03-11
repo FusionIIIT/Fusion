@@ -18,4 +18,5 @@ urlpatterns = [
     url("monthlyBillApi", views.Monthly_billApi.as_view(), name="monthlyBillApi"),
     url("messBillBaseApi", views.MessBillBaseApi.as_view(), name="messBillBaseApi"),
     url("messRegApi", views.Mess_regApi.as_view(), name="messRegApi"),
+    url("get_mess_students", views.Get_Filtered_Students.as_view(), name="get_mess_students")
 ]
