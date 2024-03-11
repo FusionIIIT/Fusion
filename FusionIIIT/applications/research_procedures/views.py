@@ -486,12 +486,15 @@ def add_staff_details(request , pid):
                 year = year_count
                 stipend_key = f'stipend-{year_count}-{staff_count}'
                 staff_id = obj.get(staff_id_key, [''])
+                # staff_id = obj.get(staff_id_key, [''])[0].strip()  # Trim whitespace
                 staff_name = obj.get(staff_name_key, [''])
                 qualification = obj.get(qualification_key, [''])
                 stipend = obj.get(stipend_key, [''])
                 project_instance=projects.objects.get(project_id=pid)
                 ob= staff_allocations.objects.all()
 
+
+                
                 if len(ob)==0 :
                     fid=1
 
