@@ -9,6 +9,7 @@ from django.urls import reverse
 from .forms import *
 from django.contrib.auth.decorators import login_required
 import datetime
+from django.utils import timezone
 from .models import *
 from collections import defaultdict
 
@@ -465,6 +466,66 @@ def financial_outlay_form(request,pid):
 
     return render(request,"rs/add_financial_outlay.html", context= data)
 
+
+
+def add_staff_details(request , pid):
+    if request.method == 'POST':
+        obj = request.POST
+        print("MG bro")
+        print(obj)
+        for key, value in obj.items():
+            if key.startswith('staff'):                
+                year_count = key.split('-')[-2]
+                staff_count = key.split('-')[-1]
+                # subcategory_key = f'subcategory-select-{year_count}-{category_count}'
+                
+                 # the table name is staff_allocations, and fileds are staff_allocation_id, project_id, staff_id, staff_name, qualification,year, stipend
+                staff_id_key = f'staff_id-{year_count}-{staff_count}'    
+                staff_name_key = f'staff_name-{year_count}-{staff_count}'
+                qualification_key= f'qualification-{year_count}-{staff_count}'
+                year = year_count
+                stipend_key = f'stipend-{year_count}-{staff_count}'
+                staff_id = obj.get(staff_id_key, [''])
+                staff_name = obj.get(staff_name_key, [''])
+                qualification = obj.get(qualification_key, [''])
+                stipend = obj.get(stipend_key, [''])
+                project_instance=projects.objects.get(project_id=pid)
+                ob= staff_allocations.objects.all()
+
+                if len(ob)==0 :
+                    fid=1
+
+                else :
+                    fid= ob[0].staff_allocation_id+1
+                
+                staff_id_instance=User.objects.get(username=staff_id)   
+                staff_allocations.objects.create(
+                    staff_allocation_id=fid,
+                    project_id=project_instance,
+                    staff_id=staff_id_instance,
+                    staff_name=staff_name,
+                    qualification=qualification,
+                    year=year,
+                    stipend=stipend
+                )
+        
+        return render(request,"rs/projects.html")
+
+
+    project= projects.objects.get(project_id=pid);
+    
+    years_passed = int((datetime.datetime.now().date() - project.start_date).days / 365.25)
+    
+    data={
+        "project_id":project.project_id,
+        "years":list(range(1,int(project.years)+1)),
+        "year":int(years_passed)+1,
+    }
+    
+    return render(request,"rs/add_staff_details.html",context=data )
+
+
+
 def add_financial_outlay(request,pid):
     if request.method == 'POST':
         
@@ -511,10 +572,6 @@ def add_financial_outlay(request,pid):
 
     return render(request,"rs/projects.html")
 
-def add_staff_details(request , pid):
-
-
-    return render(request,"rs/add_staff_details.html" )
 
 # def add_financial_outlay(request):
 #     if request.method == 'POST':

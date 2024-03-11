@@ -30,6 +30,7 @@ IPR
         });
     </script>
 
+    
     <div class="ui pointing secondary menu" style="font-size:25px;">
         <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
             Financial Outlay
@@ -37,28 +38,40 @@ IPR
     </div>
 
     {% for year in years %}
-    <p> Year {{year}} <p>
-    <table class="ui celled table">
-        <thead>
-            <tr>
-                <th>Category</th>
-                <th>Subcategory</th>
-                <th>Amount</th>
+    <div style="padding: 30px;"> 
+    <p style=" width: 100%; font-size:25px; text-align: center; "> Year {{year}} <p>
+    <table class="ui celled table" style="width: 100%; border-collapse: collapse; ">
+        <thead class="green-background" >
+            <tr style=" text-align: center;" >
+                <th style="background-color:#4CAF50; color:white">S.No</th>
+                   <th style="background-color:#4CAF50; color:white">Category</th>
+                <th style="background-color:#4CAF50; color:white" >Subcategory</th>
+                <th style="background-color:#4CAF50; color:white" >Alloted Amount</th>
+                <th style="background-color:#4CAF50; color:white" >Amount Utilised</th>
+                <th style="background-color:#4CAF50; color:white" >Amount Remaining</th>
             </tr>
         </thead>
         <tbody>
-                {% for category, subcategory_data in category_data.items %}
-                    {% for item in subcategory_data %}
-                        {% if item.year == year %}
-                            <tr>
-                                <td >{{ item.category }}</td>
-                                <td>{{ item.sub_category }}</td>
-                                <td>{{ item.amount }}</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
+            {% for category, subcategory_data in category_data.items %}
+                {% for item in subcategory_data %}
+                    {% if item.year == year %}
+                        <tr style="text-align: center;">
+                            <!--TODO: serial number mention cheyali  -->
+                            <td>{{ 0 }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.sub_category }}</td>
+                            <td>{{ item.amount }}</td>
+                            <!--TODO: item ki amt utilised mention cheyali  -->
+                            <td>{{ item.amount }}</td>
+                            <!--TODO: item ki amt remaining mention cheyali  -->
+                            <td>{{ item.amount }}</td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
-            </tbody>
-        </table>
-        {% endfor %}    
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+   
 {% endblock %}
