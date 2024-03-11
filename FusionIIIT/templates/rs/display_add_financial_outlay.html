@@ -1,0 +1,183 @@
+{% extends 'globals/base.html' %} 
+{% load static %} 
+{% block title %} 
+IPR 
+{% endblock %} 
+{% block projects %} 
+{% block body %}
+
+<script>
+  $(".message .close").on("click", function () {
+    $(this).closest(".message").transition("fade");
+  });
+
+    function populate( categoriesId, category_subcategory_map,year) {
+        console.log(category_subcategory_map)
+        let id1 = "subcategory-select-"+year+ "-";
+        let id2 = categoriesId;
+        id1 += id2.charAt(id2.length - 1);
+        subcategoriesId= id1;
+        var categoriesSelect = document.getElementById(categoriesId);
+        var subcategoriesSelect = document.getElementById(subcategoriesId);
+
+        subcategoriesSelect.innerHTML = "";
+        var optionArray = category_subcategory_map
+        var selectedSubcategories = [];
+        for (var key in optionArray) {
+          if (categoriesSelect.value == key) {
+            selectedSubcategories = optionArray[key]; 
+          }
+        }
+        for (var j = 0; j < selectedSubcategories.length; j++) {
+            var newOption = document.createElement("option");
+            newOption.value = selectedSubcategories[j];
+            newOption.innerHTML = selectedSubcategories[j];
+            subcategoriesSelect.options.add(newOption);
+        }
+        
+    }
+    
+    function addCategorySection(event,year,category_subcategory_map) {
+      event.preventDefault();
+      var category_selection_id = '.'+'category-section-'+year;
+      var originalSection = document.querySelector(category_selection_id);
+      var clonedSection = originalSection.cloneNode(true); 
+      var clonedcatselect_id = '.'+'category-select-'+ year;
+      var clonedsubcatselect_id = '.'+'subcategory-select-'+ year;  
+      var clonedamount_id = '.'+'amount-'+ year;
+      var clonedCategorySelect = clonedSection.querySelector(clonedcatselect_id);   
+      var clonedSubcategorySelect = clonedSection.querySelector(clonedsubcatselect_id);
+      var clonedAmount = clonedSection.querySelector(clonedamount_id);
+      var remove_button_id = '.'+'remove_button-'+year;
+      var remove_button = clonedSection.querySelector(remove_button_id);
+
+      remove_button.setAttribute('class','remove_button-'+year);
+
+      clonedSubcategorySelect.disabled = false;
+      clonedSubcategorySelect.value = '';
+      clonedCategorySelect.value = '';
+      category_select_id = '.'+'category-select-'+ year ;
+      var fieldcount= document.querySelectorAll(category_select_id).length+1;
+
+      console.log(fieldcount + " field count")
+      
+      var newName = 'category-select-'+ year+ '-' + fieldcount; // Generate unique ID
+      var newSubcategoryName =  'subcategory-select-' + year+ '-' + fieldcount; // Generate unique ID
+      var newAmountName = 'amount-'+ year+ '-' + fieldcount; // Generate unique ID
+      var newRemoveButton = 'remove_button-'+ year+ '-' + fieldcount; // Generate unique ID
+
+      var newId = newName // Generate unique ID
+      var newSubcategoryId = newSubcategoryName; // Generate unique ID
+      var newAmountId = newAmountName; // Generate unique ID
+      
+      clonedCategorySelect.setAttribute('id', newId);
+      clonedSubcategorySelect.setAttribute('id', newSubcategoryId);
+      clonedAmount.setAttribute('id', newAmountId);
+      remove_button.setAttribute('id', newRemoveButton);
+
+
+      clonedCategorySelect.setAttribute('name', newName);
+      clonedSubcategorySelect.setAttribute('name', newSubcategoryName);
+      clonedAmount.setAttribute('name', newAmountName);
+    
+      // Append the cloned section to the container 
+      
+      var container_id='container-'+year
+      console.log(container_id)
+      var clonedContainer = document.getElementById(container_id); 
+      clonedContainer.setAttribute('id',container_id)
+      clonedContainer.appendChild(clonedSection);
+
+      var category_count_id = 'category-count-'+year;
+      var category_count = document.getElementById(category_count_id);
+      category_count.setAttribute('value',fieldcount);
+  }
+
+  function removeCategorySection(event,year,category_subcategory_map) {
+    event.preventDefault();
+    var category_selection_id = '.'+'category-section-'+year;
+    var category_select_id = '.'+'category-select-'+ year ;
+    var fieldcount= document.querySelectorAll(category_select_id).length;
+    console.log(fieldcount + " field count")
+    if (fieldcount > 1) {
+      var container_id='container-'+year
+      var container = document.getElementById(container_id);
+      var currentSection = event.target.parentElement.parentElement;
+      container.removeChild(currentSection);
+      // to remove corresponding category section
+      
+      
+      var category_count_id = 'category-count-'+year;
+      var category_count = document.getElementById(category_count_id);
+      category_count.setAttribute('value',fieldcount-1);
+    }
+  }
+  
+</script>
+<style>
+.catt {
+   display: flex;
+  flex-wrap: wrap;
+  flex: 1; /* Grow flex items to take up available space */
+  margin-right: 10px; /* Add spacing between category sections */
+}
+.invisible{
+  display:none;
+}
+.f-group {
+  margin-bottom: 10px; /* Add margin between form groups */
+}
+
+button {
+  margin-left: 10px; /* Add space between form and button */
+}
+
+</style>
+<div class="ui pointing secondary menu" style="font-size: 25px">
+  <label
+    class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}"
+  >
+    Financial Outlay
+  </label>
+</div>
+
+
+<form method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_financial_outlay' project_id %}">
+  {% csrf_token %}
+  {% for year in years %}
+  <h3>Year - {{year}}</h3>
+  <div class="container" id="container-{{year}}" >
+    <div class="category-section-{{year}} catt">
+      <div class="f-group">
+        <label for="">Category</label>
+        <select name="category-select-{{year}}-1" id="category-select-{{year}}-1" class="category-select-{{year}}" onchange="populate(this.id,{{ category_subcategory_map|safe }},{{year|safe}})" >
+          <option value=""> -- Choose Category -- </option>
+          {% for category , subcategories in  category_subcategory_map.items %}
+              <option value="{{category}}">{{category}}</option>
+          {% endfor %}
+        </select>
+		  </div>  
+      <div class="f-group">
+        <label for="">Sub Category</label>
+        <select name="subcategory-select-{{year}}-1" class="subcategory-select-{{year}}" id="subcategory-select-{{year}}-1"></select>
+		  </div>
+        <div class="f-group">
+          <label for="amount-{{year}}-1">Amount(Rs.in lakhs)</label>
+          <input name="amount-{{year}}-1" id="amount-{{year}}-1" class="amount-{{year}}">
+        </div>
+        <div class="f-group">
+          <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeCategorySection(event,{{year}},{{category_subcategory_map}})">Remove category</button>
+        </div>
+      </div> 
+    </div>
+    <button class="f-group" onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add category</button>
+    <div class="f-group">
+      <label for="category-count-{{year}}">category count</label>
+      <input name="category-count-{{year}}" id="category-count-{{year}}" value="1">
+    </div>
+  {% endfor %}
+  <input type="submit" value="Submit" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
+</form>
+
+{% endblock %} 
+{% endblock %}
