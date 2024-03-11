@@ -9,24 +9,34 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from datetime import date
+
 import requests
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
+
                                          HoldsDesignation, Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from applications.programme_curriculum.models import Course
 from applications.academic_procedures.models import course_registration
 from applications.programme_curriculum.filters import CourseFilter
 from notification.views import  department_notif
+
+                                         HoldsDesignation,Faculty)
+from applications.eis.models import (faculty_about, emp_research_projects)
+
+from notification.views import department_notif
+
 from applications.department.models import SpecialRequest, Announcements
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+
 from django.shortcuts import render, redirect, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -38,6 +48,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import hidden_grades
 from rest_framework.permissions import AllowAny
+
 
 
 @login_required(login_url='/accounts/login')
@@ -58,6 +69,7 @@ def exam(request):
     #     return HttpResponseRedirect('/examination/submit/')
     # elif str(request.user) == "acadadmin" :
     #     return HttpResponseRedirect('/examination/submit/')
+
 
     return HttpResponseRedirect('/examination/submit/')
 
@@ -279,6 +291,27 @@ class Updatehidden_gradesMultipleView(APIView):
         for student_id, semester_id, course_id, grade in zip(student_ids, semester_ids, course_ids, grades):
             # Create an instance of hidden_grades model and save the data
 
+    
+    return render(request,'../templates/examination/submit.html' , {})
+
+@login_required(login_url='/accounts/login')
+def submit(request):
+    return render(request,'../templates/examination/submit.html' , {})
+
+@login_required(login_url='/accounts/login')
+def verify(request):
+    return render(request,'../templates/examination/verify.html' , {})
+
+@login_required(login_url='/accounts/login')      
+def publish(request):
+    return render(request,'../templates/examination/publish.html' ,{})
+
+
+@login_required(login_url='/accounts/login')
+def notReady_publish(request):
+    return render(request,'../templates/examination/notReady_publish.html',{})
+
+
             try:
                 hidden_grade = hidden_grades.objects.get(
                     course_id=course_id, student_id=student_id, semester_id=semester_id)
@@ -299,5 +332,102 @@ class Updatehidden_gradesMultipleView(APIView):
                 f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
             hidden_grade.save()
 
+
         # return Response({'message': 'Grades updated successfully'}, status=status.HTTP_200_OK)
         return render(request, '../templates/examination/grades_updated.html', {})
+
+@login_required(login_url='/accounts/login')
+def timetable(request):
+    return render(request,'../templates/examination/timetable.html',{})
+
+
+
+def browse_announcements():
+    """
+    This function is used to browse Announcements Department-Wise
+    made by different faculties and admin.
+
+    @variables:
+        cse_ann - Stores CSE Department Announcements
+        ece_ann - Stores ECE Department Announcements
+        me_ann - Stores ME Department Announcements
+        sm_ann - Stores SM Department Announcements
+        all_ann - Stores Announcements intended for all Departments
+        context - Dictionary for storing all above data
+
+    """
+    cse_ann = Announcements.objects.filter(department="CSE")
+    ece_ann = Announcements.objects.filter(department="ECE")
+    me_ann = Announcements.objects.filter(department="ME")
+    sm_ann = Announcements.objects.filter(department="SM")
+    all_ann = Announcements.objects.filter(department="ALL")
+
+    context = {
+        "cse" : cse_ann,
+        "ece" : ece_ann,
+        "me" : me_ann,
+        "sm" : sm_ann,
+        "all" : all_ann
+    }
+
+    return context
+
+def get_to_request(username):
+    """
+    This function is used to get requests for the receiver
+
+    @variables:
+        req - Contains request queryset
+
+    """
+    req = SpecialRequest.objects.filter(request_receiver=username)
+    return req
+
+
+
+@login_required(login_url='/accounts/login')
+def announcement(request):
+    """
+    This function is contains data for Requests and Announcement Related methods.
+    Data is added to Announcement Table using this function.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        usrnm, user_info, ann_maker_id - Stores data needed for maker
+        batch, programme, message, upload_announcement,
+        department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
+
+    """
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    num = 1
+    ann_maker_id = user_info.id
+    requests_received = get_to_request(usrnm)
+    if request.method == 'POST':
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('announcement', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        department = request.POST.get('department')
+        ann_date = date.today()
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)
+
+        obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
+                                    batch=batch,
+                                    programme=programme,
+                                    message=message,
+                                    upload_announcement=upload_announcement,
+                                    department = department,
+                                    ann_date=ann_date)
+        # department_notif(usrnm, recipients , message)
+        
+    context = browse_announcements()
+    return render(request, 'examination/announcement_req.html', {"user_designation":user_info.user_type,
+                                                            "announcements":context,
+                                                            "request_to":requests_received
+                                                        })
+

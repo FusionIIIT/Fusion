@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'notReady_publish/', views.notReady_publish, name='notReady_publish'),
     url(r'announcement/', views.announcement, name='announcement'),
     url(r'timetable/', views.timetable, name='timetable'),
+
     path('entergrades/', views.entergrades, name='entergrades'),
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
@@ -23,5 +24,6 @@ urlpatterns = [
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
     # url(r'entergrades/', views.entergrades, name='entergrades'),
+
 
 ]
