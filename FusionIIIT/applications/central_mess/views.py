@@ -23,7 +23,7 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response)
+                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response, handle_dreg_response)
 from notification.views import central_mess_notif
 
 import csv
@@ -374,9 +374,11 @@ def mess(request):
         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
 
-        reg_request = Registration_Request.objects.all().filter(status='pending')
-        reg_main = Reg_main.objects.filter(current_mess_status="Registered").all()
-        reg_record = Reg_records.objects.all()
+        reg_request = Registration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
+        de_reg_request = Deregistration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
+        reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+        reg_record = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+        bills = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
         context = {
             'bill_base': current_bill,
             'today': today_g.date(),
@@ -399,8 +401,9 @@ def mess(request):
             'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
             'count4': count4, 'form': form, 'count5': count5,
             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
-            'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main
-
+            'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
+            'de_reg_request':de_reg_request,
+            'bill':bills
         }
         return render(request, "messModule/mess.html", context)
 
@@ -1450,10 +1453,13 @@ def respond_to_reg(request):
     }
     user = request.user
     designation = HoldsDesignation.objects.select_related().filter(user=user)
-
+    type = request.POST['type']
     for d in designation:
         if d.designation.name == 'mess_manager':
-            data = handle_reg_response(request)
+            if(type=='reg'):
+                data = handle_reg_response(request)
+            elif(type=='dreg'):
+                data = handle_dreg_response(request)    
     return JsonResponse(data)
     
 
