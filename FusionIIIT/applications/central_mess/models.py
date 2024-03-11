@@ -14,6 +14,12 @@ SPECIAL_FOOD = (
     ('tomato_soup','Tomato Soup')
 )
 
+MEAL_TIME = (
+    ('breakfast', 'Breakfast'),
+    ('lunch', 'Lunch'),
+    ('dinner','Dinner')
+)
+
 MEAL = (
     ('MB', 'Monday Breakfast'),
     ('ML', 'Monday Lunch'),
@@ -225,7 +231,7 @@ class Special_request(models.Model):
     request = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS, default='1')
     item1 = models.CharField(choices = SPECIAL_FOOD, max_length=50, default ='dal_chawal')
-    item2 = models.CharField(choices = SPECIAL_FOOD, max_length=50, default ='dal_chawal')
+    item2 = models.CharField(choices = MEAL_TIME, max_length=50, default ='breakfast')
     app_date = models.DateField(default=datetime.date.today)
     # special_food = models.CharField(choices = SPECIAL_FOOD, max_length = 50)
 
