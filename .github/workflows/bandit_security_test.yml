@@ -1,0 +1,27 @@
+name: Security check - Bandit
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+    name: Python ${{ matrix.os }} 
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Security check - Bandit
+      uses: ioggstream/bandit-report-artifacts@v0.0.2
+      with:
+        project_path: .
+        ignore_failure: true
+
+    # This is optional
+    - name: Security check report artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: Security report
+        path: output/security_report.txt
