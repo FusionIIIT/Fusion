@@ -1416,7 +1416,7 @@ def request_guest_room(request):
         form = GuestRoomBookingForm(request.POST)
 
         if form.is_valid():
-            print("Iside valid")
+            # print("Inside valid")
             hall = form.cleaned_data['hall']
             guest_name = form.cleaned_data['guest_name']
             guest_phone = form.cleaned_data['guest_phone']
@@ -1435,7 +1435,7 @@ def request_guest_room(request):
                                                          guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
                                                          arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality)
             newBooking.save()
-            messages.success(request, "Room booked successfuly")
+            messages.success(request, "Room request submitted successfully!")
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
         else:
             messages.error(request, "Something went wrong")
