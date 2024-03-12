@@ -242,15 +242,6 @@ class HostelInventory(models.Model):
 
     def __str__(self):
         return self.inventory_name
-
-class HostelAllotment(models.Model):
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    hostel_name = models.CharField(max_length=100)  # Assuming hostel_name is a CharField
-    assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.hall} - {self.hostel_name}"
     
 
 class HostelLeave(models.Model):
