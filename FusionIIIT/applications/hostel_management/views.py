@@ -278,7 +278,7 @@ def hostel_view(request, context={}):
             inventory_data.sort(key=lambda x: x['inventory_id'])
             context['inventories'] = inventory_data
 
-    # all studens details for caretaker and warden
+    # all students details for caretaker and warden
     if request.user.id in Staff.objects.values_list('id__user', flat=True):
         staff_student_info = request.user.extrainfo.id
 
@@ -297,7 +297,12 @@ def hostel_view(request, context={}):
             hostel_students_details = StudentDetails.objects.filter(hall_id=hall_num)
             context['hostel_students_details'] = hostel_students_details
 
-
+    # print(request.user.username);
+    if Student.objects.filter(id_id=request.user.username).exists():
+        user_id = request.user.username
+        student_fines = HostelFine.objects.filter(student_id=user_id)
+        # print(student_fines)
+        context['student_fines'] = student_fines
 
     context = {
 
@@ -1578,7 +1583,7 @@ def hostel_fine_list(request):
 @login_required
 def student_fine_details(request):
     user_id = request.user.username
-    print(user_id)
+    # print(user_id)
     # staff=user_id.extrainfo.id
 
     # Check if the user_id exists in the Student table

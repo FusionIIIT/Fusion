@@ -1,31 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Fine Details</title>
-</head>
-<body>
-    <h1>Student Fine Details</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Hall</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Reason</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for fine in student_fines %}
-            <tr>
-                <td>{{ fine.hall }}</td>
-                <td>{{ fine.amount }}</td>
-                <td>{{ fine.status }}</td>
-                <td>{{ fine.reason }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+{% block My_fine %}
+<h1>My Fine</h1>
+<table class="ui table " border="1">
+  <thead>
+    <tr>
+      <th>Hall</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fine in student_fines %}
+    <tr>
+      <td>{{ fine.hall }}</td>
+      <td>{{ fine.amount }}</td>
+      <td>{{ fine.status }}</td>
+      <td>{{ fine.reason }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
