@@ -31,7 +31,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
-                     Register, Thesis, FinalRegistration, ThesisTopicProcess,
+                     Register, Thesis, FinalRegistration, ThesisTopicProcess,BonafideDetails,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status)
@@ -3110,7 +3110,7 @@ def Bonafide_form(request):
 #     # if this is a POST request we need to process the form data
 #     if request.method == 'POST':
 #         # create a form instance and populate it with data from the request:
-#         form = BonafideForm(request.POST)
+#         form = Bonafide_form(request.POST)
 #         # check whether it's valid:
 #         if form.is_valid():
 #             # process the data in form.cleaned_data as required
@@ -3120,9 +3120,31 @@ def Bonafide_form(request):
 
 #     # if a GET (or any other method) we'll create a blank form
 #     else:
-#         form = BonafideForm()
+#         form = Bonafide_form()
 
 #     return render(request, 'bonafide.html', {'form': form})
+
+
+def saveit(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        name=request.POST.get('name')
+        branch=request.POST.get('branch')
+        purpose=request.POST.get('purpose')
+        discipline=request.POST.get('discipline')
+        roll_no=request.POST.get('roll_no')
+        data=BonafideDetails(name=name,roll_no=roll_no,branch=branch,discipline=discipline,purpose=purpose)
+        data.save()
+        message=""
+        message= message + "Form submitted succesfully"
+        res="Done"
+        content = {
+        'status' : res,
+        'message' : message
+        } 
+        content = json.dumps(content) 
+        return HttpResponse(content)
+     
 
 @login_required
 def ACF(request):

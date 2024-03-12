@@ -179,6 +179,15 @@ class InitialRegistrations(models.Model):
     def __str__(self):
         return str(self.semester_id) + "-" + str(self.student_id)
 
+class BonafideDetails(models.Model):
+    name=models.CharField(max_length=200)
+    roll_no=models.CharField(max_length=100)
+    discipline=models.CharField(max_length=50)
+    branch=models.CharField(max_length=100)
+    purpose=models.TextField()
+    class Meta:
+        db_table = 'BonafideDetails'
+
 
 class FinalRegistrations(models.Model):
     curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
