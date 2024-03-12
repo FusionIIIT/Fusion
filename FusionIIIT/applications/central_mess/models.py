@@ -8,6 +8,18 @@ LEAVE_TYPE = (
     ('vacation', 'Vacation')
 )
 
+SPECIAL_FOOD = (
+    ('dal_chawal', 'Dal Chawal'),
+    ('khicdi', 'Khicdi'),
+    ('tomato_soup','Tomato Soup')
+)
+
+MEAL_TIME = (
+    ('breakfast', 'Breakfast'),
+    ('lunch', 'Lunch'),
+    ('dinner','Dinner')
+)
+
 MEAL = (
     ('MB', 'Monday Breakfast'),
     ('ML', 'Monday Lunch'),
@@ -218,9 +230,10 @@ class Special_request(models.Model):
     end_date = models.DateField(default=datetime.date.today)
     request = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS, default='1')
-    item1 = models.CharField(max_length=50)
-    item2 = models.CharField(max_length=50)
+    item1 = models.CharField(choices = SPECIAL_FOOD, max_length=50, default ='dal_chawal')
+    item2 = models.CharField(choices = MEAL_TIME, max_length=50, default ='breakfast')
     app_date = models.DateField(default=datetime.date.today)
+    # special_food = models.CharField(choices = SPECIAL_FOOD, max_length = 50)
 
     def __str__(self):
         return str(self.student_id.id)
