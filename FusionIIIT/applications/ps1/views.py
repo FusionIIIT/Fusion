@@ -31,10 +31,6 @@ def ps1(request):
         return redirect('/dashboard')
 
 
-
-
-
-
 @login_required(login_url = "/accounts/login/")
 def create_proposal(request):
     """
@@ -80,8 +76,6 @@ def create_proposal(request):
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
                 upload_file = request.FILES.get('myfile')
-
-
                 item_name=request.POST.get('item_name')
                 quantity= request.POST.get('quantity')
                 present_stock=request.POST.get('present_stock')
@@ -136,9 +130,7 @@ def create_proposal(request):
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
-
                 upload_file = request.FILES.get('myfile')
-
                 item_name=request.POST.get('item_name')
                 quantity= request.POST.get('quantity')
                 present_stock=request.POST.get('present_stock')
@@ -180,12 +172,13 @@ def create_proposal(request):
                 except Exception as e:
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
-                receive = request.POST.get('receive')
+                recieve = request.POST.get('recieve')
                 try:
-                    receive_design = Designation.objects.get(name=receive)
+                    receive_design = Designation.objects.get(name=recieve)
                 except Exception as e:
+                    receive_design = Designation.objects.get(name=recieve)
                     messages.error(request, 'Enter a valid Designation')
-                    return redirect('/create_proposal/')
+                    return redirect('/purchase-and-store/create_proposal/')
 
 
                 file_id = create_file(
@@ -196,7 +189,7 @@ def create_proposal(request):
                     src_module="ps1",
                     src_object_id="",
                     file_extra_JSON={"value": 2},
-                    attached_file=request.FILES.get('myfile')
+                    attached_file=upload_file
                 )
 
                 IndentFile.objects.create(
@@ -231,30 +224,12 @@ def create_proposal(request):
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
     today = timezone.now().strftime('%Y-%m-%d')
-
-    Receiver_designation = "HOD (" + get_ExtraInfo_object_from_username(request.user.username).department.name + ")" 
-
-    for des in designations:
-        if str(des.designation) == Receiver_designation:
-            Receiver_designation = "Director"
-            break
-        elif str(des.designation) == "Director":
-            Receiver_designation = "ps_admin"
-            break
-
-
-    users_with_designation = HoldsDesignation.objects.filter(designation__name=Receiver_designation)
-    Forward_to = [user_designation.user for user_designation in users_with_designation] 
-
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
         'designations': designations,
         'today': today,
-        'receiver':Receiver_designation,
-        'forwardto': Forward_to
-
     }
     return render(request, 'ps1/composeIndent.html', context)
 
@@ -395,7 +370,6 @@ def indentview2(request,id):
 
 
     indent_files = IndentFile.objects.all().values('file_info')
-    print(indent_files)
     in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
 
     #print (File.designation)
@@ -403,9 +377,14 @@ def indentview2(request,id):
     s = str(abcd).split(" - ")
     designations = s[1]
 
+    data = view_inbox(request.user.username, designations, "ps1")
+    # print("===================")
+    # print(data)
+    # print("===================")
     context = {
-
+        'receive_design':abcd,
         'in_file': in_file,
+        # 'in_file': data,
         'designations': designations,
     }
     return render(request, 'ps1/indentview2.html', context)
@@ -489,12 +468,15 @@ def forwardindent(request, id):
             if 'send' in request.POST:
                 current_id = request.user.extrainfo
                 remarks = request.POST.get('remarks')
+                sender_design_id = request.POST.get('sender')
+                sender_designationobj = HoldsDesignation.objects.get(id=sender_design_id).designation
+                sender_designation_name = sender_designationobj.name
 
-                # sender = request.POST.get('sender')
-                # sender = request.user.id
-                # current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-                current_design = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-                receiver = request.POST.get('receiver')
+                receiverHdid = request.POST.get('receive')
+                receiverHdobj = HoldsDesignation.objects.get(id=receiverHdid)
+                receiver = receiverHdobj.user.username
+                receive_design = receiverHdobj.designation.name
+
                 try:
                     receiver_id = User.objects.get(username=receiver)
                 except Exception as e:
@@ -502,122 +484,66 @@ def forwardindent(request, id):
                     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
                     context = {
-                        # 'extrainfo': extrainfo,
-                        # 'holdsdesignations': holdsdesignations,
                         'designations': designations,
                         'file': file,
                         'track': track,
                     }
                     return render(request, 'ps1/forwardindent.html', context)
-                receive = request.POST.get('recieve')
                 try:
-                    receive_design = Designation.objects.get(name=receive)
+                    receive_design = Designation.objects.get(name=receive_design)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
                     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
                     context = {
-                        # 'extrainfo': extrainfo,
-                        # 'holdsdesignations': holdsdesignations,
                         'designations': designations,
                         'file': file,
                         'track': track,
                     }
                     return render(request, 'ps1/forwardindent.html', context)
 
-                # receive_design = receive_designation[0]
+
                 upload_file = request.FILES.get('myfile')
-                # return HttpResponse ("success")
-                # print("--------------------------------------------")
-                # print(file)
                 forwarded_file_id = forward_file(
                     file_id=file.id,
                     receiver=receiver_id,
                     receiver_designation=receive_design,
                     file_extra_JSON={"key": 2},
-                    remarks="Forwarding",
-                    file_attachment=None
-                )
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
                     remarks=remarks,
-                    upload_file=upload_file,
+                    file_attachment=upload_file
                 )
 
-                check=str(request.user)
-                val=str(request.POST.get('approval'))
-                
-                
-                # if val=="accept":
-                #     print("correct")
-                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
-                #         indent.head_approval=True
-                #     elif check=="director":
-                #         indent.director_approval=True
-                #     elif check=="rizwan":
-                #         indent.financial_approval=True
-                
-                # else:
-                #     if check=="ptandon" or check=="atul" or check=="prabin16" or check=="subirs" or check=="prabir":
-                #         indent.head_approval=False
-                #     elif check=="director":
-                #         indent.director_approval=False
-                #     elif check=="rizwan":
-                #         indent.financial_approval=False
 
-                
+                if (receive_design in ["dept_admin ME", "dept_admin ECE", "dept_admin CSE", "dept_admin Design", "dept_admin NS"]):
+                        indent.head_approval=True
+                elif ((sender_designation_name =="Director" or sender_designation_name =="Registrar") and (receive_design == "Accounts Admin")):
+                        indent.director_approval=True
+                        indent.financial_approval=True
+
                 designs =[] 
                 designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
                 for designation in designations :
                     s = str(designation).split(" - ")
                     designs.append(s[1]) 
 
-
-                if val=="accept":
-                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "HOD (CSE)", "HOD (Design)", "HOD (NS)")):
-                        indent.head_approval=True
-                    elif "Director" in designs:
-                        indent.director_approval=True
-                        indent.financial_approval=True
-                
-                else:
-                    if any(d in designs for d in ("HOD (ME)", "HOD (ECE)", "HOD (CSE)", "HOD (Design)", "HOD (NS)")):
-                        indent.head_approval=False
-                    elif "Director" in designs:
-                        indent.director_approval=False
-                        indent.financial_approval=False
-                    
-
                 indent.save()
 
 
-            messages.success(request, 'Indent File sent successfully')
-    # start = timer()
+            messages.success(request, 'Indent File Forwarded successfully')
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-
-    Receiver_designation = "dept_admin "+get_ExtraInfo_object_from_username(request.user.username).department.name 
-    users_with_designation = HoldsDesignation.objects.filter(designation__name=Receiver_designation)
-    Forward_to = [user_designation.user for user_designation in users_with_designation] 
-
 
 
 
 
     context = {
-        # 'extrainfo': extrainfo,
-        # 'holdsdesignations': holdsdesignations,
+        'extrainfo': extrainfo,
+        'holdsdesignations': holdsdesignations,
         'designations':designations,
         'file': file,
         'track': track,
-        'indent':indent,
-        'receiver':Receiver_designation,
-        'forwardto': Forward_to
+        'indent':indent
     }
 
     return render(request, 'ps1/forwardindent.html', context)
@@ -695,8 +621,6 @@ def createdindent(request, id):
                         'track': track,
                     }
                     return render(request, 'ps1/createdindent.html', context)
-
-                # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
                 Tracking.objects.create(
@@ -711,14 +635,9 @@ def createdindent(request, id):
 
 
             messages.success(request, 'Indent File sent successfully')
-    # start = timer()
-    extrainfo = ExtraInfo.objects.select_related('user','department').all()
-    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
     context = {
-        # 'extrainfo': extrainfo,
-        # 'holdsdesignations': holdsdesignations,
         'designations':designations,
         'file': file,
         'track': track,
@@ -749,7 +668,6 @@ def AjaxDropdown1(request):
 
 
 def AjaxDropdown(request):
-    print('asdasdasdasdasdasdasdas---------------\n\n')
     # Name = ['student','co-ordinator','co co-ordinator']
     # design = Designation.objects.filter(~Q(name__in=(Name)))
     # hold = HoldsDesignation.objects.filter(Q(designation__in=(design)))

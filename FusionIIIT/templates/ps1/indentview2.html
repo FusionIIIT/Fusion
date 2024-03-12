@@ -27,6 +27,10 @@
         </thead>
 
         <tbody>
+
+            {% comment %} id, uploader, designation, subject, description, uploaddate {% endcomment %}
+            {% comment %} send by, file id, subject, date {% endcomment %}
+
         {% for j in in_file %}
             {% ifequal designations j.receive_design|stringformat:'s' %}
             <tr>
@@ -35,15 +39,14 @@
                 <td>{{j.file_id.uploader.department.name}}-{{j.file_id.upload_date.year}}-{{j.file_id.upload_date.month}}-#{{j.file_id.id}}  </td>
                 <td>{{j.file_id.subject}}</td>
                 <td>{{j.receive_date}}</td>
-                <td><a href="{% url 'ps1:forwardindent' j.file_id.id %}"><button class="ui primary button">
+                {% comment %} <td>{{request.user.extrainfo.user}} - {{receive_design}}</td>
+                <td>{{j.uploader}}</td>
+                <td>{{j.file_id.uploader.department.name}}-{{j.upload_date.year}}-{{j.upload_date.month}}-#{{j.id}}  </td>
+                <td>{{j.subject}}</td>
+                <td>{{j.upload_date}}</td> {% endcomment %}
+                <td><a href="{% url 'ps1:forwardindent' j.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
-
-
-
-
-
-
 
               </tr>
             {% endifequal %}
