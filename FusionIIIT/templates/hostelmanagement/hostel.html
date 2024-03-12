@@ -114,7 +114,7 @@ Hostel
                 </a>
                 {% endif %}
 
-                {% if user in hall_caretaker or user in hall_warden%}
+                {% if user in hall_caretaker%}
                 <a class="item" data-tab="guest2">
                     Guest Room requests
                     <i class="right floated chevron right icon"></i>
@@ -190,7 +190,7 @@ Hostel
 
     </div>
 
-    <div class="eleven wide column">
+    <div class="eight wide column">
         <div class="ui active tab segment" data-tab="first">
             {% block alloted_hostel_room %}
             {% include 'hostelmanagement/alloted_hostel_room.html'%}
@@ -268,7 +268,7 @@ Hostel
         {% endif %}
       
 
-        {% if user in hall_caretaker or hall_warden%}
+        {% if user in hall_caretaker %}
         <div class="ui tab segment" data-tab="guest2">
             {% block request_list %}
             {% include 'hostelmanagement/update_guest_room.html' %}
