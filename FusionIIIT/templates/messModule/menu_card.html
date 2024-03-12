@@ -45,13 +45,17 @@
                 View Meeting Minutes
             </a> -->
 
-            {% if reg_main.current_mess_status == "Registered" %}
+            {% if reg_main_stud.current_mess_status == "Deregistered" %}
 
             <a class="item" data-tab="Registration">
                 Registration
             </a>
 
             {% else %}
+
+            <a class="item" data-tab="Registration">
+                Update Balance
+            </a>
 
             <a class="item" data-tab="Deregistration">
                 Deregistration

@@ -321,6 +321,7 @@ def mess(request):
                    'minutes': minutes,
                    'meeting': meeting,
                    'reg_form':reg_form,
+                   'reg_main_stud':reg_main,
                    'reg_request':reg_request,
                    'reg_record':reg_record,
                    'de_reg_request':de_reg_request,
