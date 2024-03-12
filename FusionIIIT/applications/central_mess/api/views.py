@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from applications.central_mess.models import *
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-
+from django.http import JsonResponse
 
 class FeedbackApi(APIView):
 
@@ -409,26 +409,39 @@ class Menu_change_requestApi(APIView):
 class Get_Filtered_Students(APIView): 
 
     def post(self,request):
-        reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
-        status=request.data['status']
-        program=request.data['program']
-        mess_option=request.data['mess_option']
+        type = request.data['type']
+        if(type=='filter'):
+            reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+            status=request.data['status']
+            program=request.data['program']
+            mess_option=request.data['mess_option']
 
-        if(status!='all'):
+            if(status!='all'):
 
-            reg_main=reg_main.filter(current_mess_status=status)
+                reg_main=reg_main.filter(current_mess_status=status)
 
-        if(program!='all'):
-            reg_main=reg_main.filter(program=program)
+            if(program!='all'):
+                reg_main=reg_main.filter(program=program)
 
-        if(mess_option!='all'):
+            if(mess_option!='all'):
 
-            reg_main=reg_main.filter(mess_option=mess_option)        
+                reg_main=reg_main.filter(mess_option=mess_option)        
 
+            serialized_obj = GetFilteredSerialzer(reg_main,many=True)
+            return Response({'payload':serialized_obj.data})
 
-        serialized_obj = GetFilteredSerialzer(reg_main,many=True)
-        return Response({'payload':serialized_obj.data})  
-    
+        elif(type=='search'):
+            student = request.data['student_id']
+            student = str(student).upper()
+            try:
+                reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+                serialized_obj = GetFilteredSerialzer(reg_main)
+                return Response({'payload':serialized_obj.data})
+            except:
+                response = JsonResponse({"error": "student does not exist"})
+                response.status_code = 404 
+                return response
+
 class Get_Reg_Records(APIView):
 
     def post(self,request):

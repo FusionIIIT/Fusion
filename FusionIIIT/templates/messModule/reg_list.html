@@ -21,6 +21,30 @@
     </select>
     <button class="ui button primary" onclick="get_filter_students()">Filter</button>
   </div>
+
+
+  <div>
+    <div class="ui form" style="display: flex;margin-top: 10px; margin-bottom: 10px;">       
+      <input
+        type="text"
+        id="roll_no_search"
+        name="roll_number"
+        placeholder="Student Roll Number Here"
+        style="max-width: 60%;"
+      />
+      <button
+        class="ui primary fluid button"
+        style="max-width: 8rem; max-height: 3rem; margin-left: 10px;"
+        type="submit"
+        id="searchStudent"
+        onclick="search_student()"
+      >
+        Search
+      </button>
+    </div>
+  </div>
+
+
   <div style="max-height: 60vh; overflow:scroll"  id="mess_students_table">
     <table class="ui celled table">
       <thead>
@@ -72,6 +96,7 @@
                    dataType: 'json',
                    data: {
                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'type':'filter',
                       'status':status,
                       'program':program,
                       'mess_option':mess_option
@@ -174,6 +199,59 @@
                        alert(err.message);
                    }
                });
+  }
+
+  function search_student(){
+    const student = document.getElementById('roll_no_search').value
+    const mess_students=document.getElementById('mess_students_table');
+    $.ajax({
+      type: 'POST',
+      url: 'api/get_mess_students',
+      dataType: 'json',
+      data: {
+        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+        'type': 'search',
+        'student_id':student
+      },
+      success: function(data) {
+
+        // console.log(data.payload)
+      //  alert('data updated successfully')
+        var students_data=`
+        <table class="ui celled table">
+            <thead>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Program</th>
+              <th>Balance</th>
+              <th>Mess</th>
+              <th>View Reg Records</th>
+            </tr></thead>
+            <tbody>`;
+
+                element=data.payload
+                students_data=students_data+`
+                <tr id="uniq-${element.id}">
+                <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                <td data-label="Roll No" id="roll">${element.student_id}</td>
+                <td data-label="Program">${element.program}</td>
+                <td data-label="Balance">${element.balance}</td>
+                <td data-label="Mess"> ${element.mess_option}</td>
+                <td>
+                <button class="ui button" onclick="get_reg_details(${element.id})">View Details</button>
+                </td>
+                </tr>
+                </tbody>
+                </table>`
+
+            mess_students.innerHTML=students_data;
+          },
+           error: function(data, err) {
+                      alert(data.responseJSON.error);
+                      // alert(err.message);
+                  }
+              });
+   
   }
 </script>
 
