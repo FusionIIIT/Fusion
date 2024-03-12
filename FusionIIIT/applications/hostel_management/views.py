@@ -251,10 +251,22 @@ def hostel_view(request, context={}):
 
     fine_user=request.user
 
-    
-    caretaker_fine_id = HallCaretaker.objects.get(staff_id=staff_fine_caretaker)
-    hall_fine_id = caretaker_fine_id.hall_id
-    hostel_fines = HostelFine.objects.filter(hall_id=hall_fine_id).order_by('fine_id')
+    # Check if the user is staff
+    if request.user.id in Staff.objects.values_list('id__user', flat=True):
+        staff_fine_caretaker = request.user.extrainfo.id
+        
+        # Now, you can proceed with your logic for staff members
+        caretaker_fine_id = HallCaretaker.objects.filter(staff_id=staff_fine_caretaker).first()
+        
+        if caretaker_fine_id:
+            hall_fine_id = caretaker_fine_id.hall_id
+            hostel_fines = HostelFine.objects.filter(hall_id=hall_fine_id).order_by('fine_id')
+            context['hostel_fines'] = hostel_fines
+
+
+    # caretaker_fine_id = HallCaretaker.objects.get(staff_id=staff_fine_caretaker) 
+    # hall_fine_id = caretaker_fine_id.hall_id
+    # hostel_fines = HostelFine.objects.filter(hall_id=hall_fine_id).order_by('fine_id')
 
     context = {
 
@@ -290,7 +302,7 @@ def hostel_view(request, context={}):
         
         'staff_fine_caretaker':staff_fine_caretaker,
         'students':students,
-        'hostel_fines':hostel_fines,
+        # 'hostel_fines':hostel_fines,
         **context
     }
 
