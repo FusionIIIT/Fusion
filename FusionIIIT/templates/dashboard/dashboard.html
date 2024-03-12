@@ -20,25 +20,26 @@ Dashboard
 
 
 {% comment %}The grid starts here!{% endcomment %}
-<div class="ui stackable doubling grid" style="justify-content: space-around;">
+<div class="ui stackable doubling grid">
 
     {% comment %}The left-margin segment!{% endcomment %}
-    {% comment %} <div class="column"></div> {% endcomment %}
+    <div class="column"></div>
 
     {% comment %}
     The left-rail segment starts here!
     {% endcomment %}
-    <div class="four wide column">
+    <div class="three wide column">
 
         {% comment %}The user image card starts here!{% endcomment %}
         {% block usercard %}
-        {% comment %} {% include 'globals/usercard.html' %} {% endcomment %}
+        {% include 'globals/usercard.html' %}
         {% endblock %}
         {% comment %}The user image card ends here!{% endcomment %}
 
-        {% if 'staff' != request.user.extrainfo.user_type %}
+        <div class="ui divider"></div>
+
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" ">
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="item" href="{% url 'globals:profile' %}">
                 View Professional Profile 
@@ -59,12 +60,12 @@ Dashboard
 
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
-        {% endif %}
 
-        {% if 'student' != request.user.extrainfo.user_type %}
+
+        {% if 'student' == request.user.extrainfo.user_type %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" ">
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
             <a class="item
             " href="/hr2/administrativeProfile">
                 View Administrative Profile
@@ -82,7 +83,7 @@ Dashboard
         {%for desig in designat%}
         {% if 'hradmin' == desig.designation.name %}
 
-        <div class="ui huge fluid vertical pointing menu" ">
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="item" href="{% url 'hr2:hradmin' %}">
                 Hr-Admin
@@ -167,7 +168,7 @@ Dashboard
     {% comment %}The right-rail segment ends here!{% endcomment %}
 
     {% comment %}The right-margin segment!{% endcomment %}
-    {% comment %} <div class="column"></div> {% endcomment %}
+    <div class="column"></div>
 
 </div>
 {% comment %}The grid ends here!{% endcomment %}
