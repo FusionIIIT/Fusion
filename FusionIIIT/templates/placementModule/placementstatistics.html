@@ -40,6 +40,14 @@
                          Placement Schedule
                          <i class="right floated chevron right icon"></i>
                      </a>
+                     <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                      Apply for jobs
+                      <i class="right floated chevron right icon"></i>
+                  </a>
+                     <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                      Upload Documents
+                      <i class="right floated chevron right icon"></i>
+                  </a> -->
 
                     {% endif %}
                  {% endfor %}
@@ -52,6 +60,14 @@
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
+                            <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Apply for jobs
+                              <i class="right floated chevron right icon"></i>
+                          </a>
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Upload Documents
+                              <i class="right floated chevron right icon"></i>
+                          </a> -->
                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
@@ -61,6 +77,14 @@
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
+                             <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Apply for jobs
+                              <i class="right floated chevron right icon"></i>
+                          </a>
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Upload Documents
+                              <i class="right floated chevron right icon"></i>
+                          </a> -->
                              <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                                  Send Notification
                                  <i class="right floated chevron right icon"></i>
@@ -78,6 +102,14 @@
                                 Placement Schedule
                                 <i class="right floated chevron right icon"></i>
                             </a>
+                            <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Manage Schedule
+                              <i class="right floated chevron right icon"></i>
+                          </a>
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                              Add Schedule
+                              <i class="right floated chevron right icon"></i>
+                          </a>
                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
                                 Send Notification
                                 <i class="right floated chevron right icon"></i>
@@ -101,20 +133,19 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-
                 {% if current2 %}
 
                 <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
-                    Add Placement Record
+                  Add Placement Record
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-                {% if current1 %}
+                <!-- {% if current1 %}
                 <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
                     Add Chairman Visit
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                {% endif %} -->
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -785,10 +816,10 @@
                                   <thead>
                                   <tr>
                                       <th></th>
-                                      <th class="two wide">CSE</th>
+                                      <!-- <th class="two wide">CSE</th>
                                       <th class="two wide">ECE</th>
                                       <th class="two wide">ME</th>
-                                      <th class="two wide">Total</th>
+                                      <th class="two wide">Total</th> -->
                                       <th class="two wide">Package</th>
                                   </tr>
                                   </thead>
@@ -799,7 +830,7 @@
                                     {% if record.placement_type != "HIGHER STUDIES" %}
                                   <tr>
                                       <td>{{ record.name }}</td>
-                                      <td>
+                                      <!-- <td>
                                         {{ record.name__count }}
                                       </td>
                                       <td>
@@ -807,14 +838,14 @@
                                       </td>
                                       <td>
                                         {{ record.placement_type__count }}
-                                      </td>
-                                      <td>{{ record.ctc__count }}</td>
+                                      </td> -->
+                                      <!-- <td>{{ record.ctc__count }}</td> -->
                                       <td>{{ record.ctc }}</td>
                                   </tr>
                                   {% endif %}
                                   {% endif %}
                                   {% endfor %}
-                                  <tr>
+                                  <!-- <tr>
                                       <td>Total Offers</td>
 
                                       <td>
@@ -836,7 +867,7 @@
                                       <td>
 
                                       </td>
-                                  </tr>
+                                  </tr> -->
 
                                   </tbody>
 
