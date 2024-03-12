@@ -35,7 +35,7 @@ month_g = today_g.month
 month_g_l = today_g.strftime('%B')
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
-first_day_of_this_month = date.today().replace(day=1)
+first_day_of_this_month = date.today().replace(day=1)           
 first_day_of_next_month = (date.today().replace(day=28) + timedelta(days=4)).replace(day=1)
 last_day_of_this_month = first_day_of_next_month - timedelta(days=1)
 next_month = first_day_of_next_month.month
