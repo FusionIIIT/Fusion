@@ -50,7 +50,7 @@ Hostel
                 </a>
                 {% endif %}
 
-                {% if user.username in all_students_id or user in hall_caretaker or user in hall_warden %}
+                {% if user in hall_caretaker %}
                 <a class="item" data-tab="fourth">
                     Student Attendance
                     <i class="right floated chevron right icon"></i>
@@ -93,9 +93,16 @@ Hostel
                     {% endif %}
 
                     <!-- This should be only in hall_caretaker -->
-                    {% if user in hall_caretaker or user in hall_warden %}
+                    {% if user in hall_caretaker %}
                     <a class="item" data-tab="tenth" >
                         Inventory Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+
+                    {% if user in hall_caretaker or user in hall_warden %}
+                    <a class="item" data-tab="eleventh" >
+                        Hall Students
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% endif %}
@@ -169,13 +176,21 @@ Hostel
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+
+                {% if user in hall_caretaker%}
+                <a class="item" data-tab="inventory1">
+                    Inventory list
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
             </div>
 
         </div>
 
     </div>
 
-    <div class="eight wide column">
+    <div class="eleven wide column">
         <div class="ui active tab segment" data-tab="first">
             {% block alloted_hostel_room %}
             {% include 'hostelmanagement/alloted_hostel_room.html'%}
@@ -235,6 +250,12 @@ Hostel
             <div class="ui tab segment" data-tab="tenth">
                 {% block inventory_form %}
                     {% include 'hostelmanagement/inventory_form.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="eleventh">
+                {% block hall_all_students %}
+                    {% include 'hostelmanagement/student_details.html' %}
                 {% endblock %}
             </div>
           
@@ -319,6 +340,15 @@ Hostel
             {% endblock %}
         </div>
         {% endif %}
+
+        {% if user in hall_caretaker %}
+        <div class="ui tab segment" data-tab="inventory1">
+            {% block inventory_list %}
+            {% include 'hostelmanagement/inventory_list.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
 
     </div>
 

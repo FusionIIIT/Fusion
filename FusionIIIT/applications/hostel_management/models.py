@@ -294,12 +294,13 @@ class StudentDetails(models.Model):
     batch = models.CharField(max_length=100,blank=True,null=True)
     room_num= models.CharField(max_length=20,blank=True,null=True)
     hall_no= models.CharField(max_length=20,blank=True,null=True)
+    hall_id=models.CharField(max_length=20,blank=True,null=True)
     specialization = models.CharField(max_length=100,blank=True,null=True)
     parent_contact = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-      return self.first_name + ' ' + self.last_name
+      return self.first_name
 
 
 

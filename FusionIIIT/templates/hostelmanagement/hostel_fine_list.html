@@ -1,6 +1,6 @@
 {% block fine_list  %}
     <h1 align ="center">Hostel Fine List</h1>
-    <table  class= "ui form">
+    <table  class= "ui form" border="1">
         <thead>
             <tr>
                 <th>Fine ID</th>
@@ -28,12 +28,17 @@
                     </select>
                 </td>
                 <td>{{ hostel_fine.reason }}</td>
-                <td><button onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button></td> 
+                <td><button class="ui negative button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button></td> 
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
+ <style>
+    td,th{
+        text-align: center;
+        padding: 5px;
+    }
+ </style>
 
     <script>
         function updateStatus(fineId, status) {

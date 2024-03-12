@@ -1,7 +1,8 @@
 {% block manage_Warden %}
             <form class="ui form">
                 {% csrf_token %}
-                <div class="mb-3">
+                <h2 class="text-center" align="center">Assign Warden</h2>
+                <div class="field">
                     
                   <label for="hall_id" class="form-label">Hall ID:</label>
                   <select name="hall_id" class="form-control" id="hallid" required>
@@ -11,7 +12,7 @@
                     {% endfor %}
                 </select>
                 </div>
-                <div class="mb-5">
+                <div class="field">
                   <label for="warden_id" class="form-label">warden_id :</label>
                   
                   <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
@@ -24,7 +25,7 @@
                 
                 </div>
                 
-                <button type="submit" onclick="assignWarden()" class="btn btn-primary mu-3 admin-btn">Assign</button>
+                <button type="submit" onclick="assignWarden()" class="ui primary button">Assign</button>
               </form>
         
 
@@ -35,7 +36,6 @@
         function assignWarden() {
             var hall_id = document.getElementById('hallid').value;
             var warden_id = document.getElementById('warden_id').value;
-            console.log('~~~~~~~~~~~',hall_id);
             
 
             // Perform AJAX request to assign batch
