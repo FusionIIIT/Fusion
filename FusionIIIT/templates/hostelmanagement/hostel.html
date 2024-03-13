@@ -201,6 +201,7 @@ Hostel
                     {% endif %}
 
                 
+
                 {% if is_superuser %}
                 <a class="item" data-tab="superUser1">
                     Manage Hostel
@@ -221,7 +222,7 @@ Hostel
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-                
+
                 {% if is_superuser %}
                 <a class="item" data-tab="superUser4">
                     Add Hostel
@@ -236,7 +237,13 @@ Hostel
                 </a>
                 {% endif %}
 
-                
+
+                {% if is_superuser %}
+                <a class="item" data-tab="superUser6">
+                    Transactions
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
 
                 {% if user in hall_caretaker%}
                 <a class="item" data-tab="inventory1">
@@ -278,17 +285,18 @@ Hostel
             {% endblock %}
         </div>
 
-            <div class="ui tab segment" data-tab="fifth">
-                {% block post_complaint_form %}
-                    {% include 'hostelmanagement/post_complaint_form.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="fifth">
+            {% block post_complaint_form %}
+            {% include 'hostelmanagement/post_complaint_form.html' %}
+            {% endblock %}
+        </div>
 
-            <div class="ui tab segment" data-tab="sixth">
-                {% block create_leave%}
-                    {% include 'hostelmanagement/create_leave.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="sixth">
+            {% block create_leave%}
+            {% include 'hostelmanagement/create_leave.html' %}
+            {% endblock %}
+        </div>
+
 
 
             <div class="ui tab segment" data-tab="seventh">
@@ -297,23 +305,24 @@ Hostel
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="eighth">
-                {% block leave_requests %}
-                    {% include 'hostelmanagement/all_leave_data.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="eighth">
+            {% block leave_requests %}
+            {% include 'hostelmanagement/all_leave_data.html' %}
+            {% endblock %}
+        </div>
 
-            <div class="ui tab segment" data-tab="nineth">
-                {% block all_complaints %}
-                    {% include 'hostelmanagement/hostel_complaint.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="nineth">
+            {% block all_complaints %}
+            {% include 'hostelmanagement/hostel_complaint.html' %}
+            {% endblock %}
+        </div>
 
-            <div class="ui tab segment" data-tab="tenth">
-                {% block inventory_form %}
-                    {% include 'hostelmanagement/inventory_form.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="tenth">
+            {% block inventory_form %}
+            {% include 'hostelmanagement/inventory_form.html' %}
+            {% endblock %}
+        </div>
+
 
             <div class="ui tab segment" data-tab="eleventh">
                 {% block hall_all_students %}
@@ -321,6 +330,7 @@ Hostel
                 {% endblock %}
             </div>
           
+
         {% if user.username in all_students_id %}
         <div class="ui tab segment" data-tab="guest1">
             {% block book_guest_room %}
@@ -328,7 +338,7 @@ Hostel
             {% endblock %}
         </div>
         {% endif %}
-      
+
 
         {% if user in hall_caretaker %}
         <div class="ui tab segment" data-tab="guest2">
@@ -341,7 +351,7 @@ Hostel
         {% if user.username in all_students_id %}
         <div class="ui tab segment" data-tab="guest3">
             {% block book_guest_room_status %}
-                {% include 'hostelmanagement/book_guest_room_status.html' %}
+            {% include 'hostelmanagement/book_guest_room_status.html' %}
             {% endblock %}
         </div>
         {% endif %}
@@ -349,7 +359,7 @@ Hostel
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser1">
             {% block manage_Hostel %}
-                {% include 'hostelmanagement/assign_batch.html' %}
+            {% include 'hostelmanagement/assign_batch.html' %}
             {% endblock %}
         </div>
         {% endif %}
@@ -357,15 +367,15 @@ Hostel
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser2">
             {% block manage_Caretaker %}
-                {% include 'hostelmanagement/assign_caretaker.html' %}
+            {% include 'hostelmanagement/assign_caretaker.html' %}
             {% endblock %}
         </div>
         {% endif %}
-        
+
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser3">
             {% block manage_Warden %}
-                {% include 'hostelmanagement/assign_warden.html' %}
+            {% include 'hostelmanagement/assign_warden.html' %}
             {% endblock %}
         </div>
         {% endif %}
@@ -373,32 +383,43 @@ Hostel
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser4">
             {% block Add_hostel %}
-                {% include 'hostelmanagement/add_hostel.html' %}
+            {% include 'hostelmanagement/add_hostel.html' %}
             {% endblock %}
         </div>
         {% endif %}
-
+        
+        {% if is_superuser %}
+        <div class="ui tab segment" data-tab="superUser6">
+            {% block Hostel_Transactions %}
+            {% include 'hostelmanagement/hostel_transactions.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+        
 
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser5">
             {% block View_Hostels %}
-                {% include 'hostelmanagement/admin_hostel_list.html' %}
+            {% include 'hostelmanagement/admin_hostel_list.html' %}
             {% endblock %}
         </div>
         {% endif %}
 
+        
+
+
         {% if user in hall_caretaker%}
         <div class="ui tab segment" data-tab="fine1">
-            {% block Impose_fine  %}
-                {% include 'hostelmanagement/impose_fine.html' %}
+            {% block Impose_fine %}
+            {% include 'hostelmanagement/impose_fine.html' %}
             {% endblock %}
         </div>
         {% endif %}
 
         {% if user in hall_caretaker%}
         <div class="ui tab segment" data-tab="fine2">
-            {% block fine_list  %}
-                {% include 'hostelmanagement/hostel_fine_list.html' %}
+            {% block fine_list %}
+            {% include 'hostelmanagement/hostel_fine_list.html' %}
             {% endblock %}
         </div>
         {% endif %}
@@ -411,6 +432,7 @@ Hostel
         </div>
         {% endif %}
 
+        
 
     </div>
 
