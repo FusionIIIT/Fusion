@@ -1493,7 +1493,7 @@ def update_leave_status(request):
 
 
 # //! Manage Fine
-# //todo: Add Fine Functionality
+# //! Add Fine Functionality
 
 
 @login_required
