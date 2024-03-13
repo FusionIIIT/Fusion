@@ -283,7 +283,7 @@ def hostel_view(request, context={}):
             inventory_data.sort(key=lambda x: x['inventory_id'])
             context['inventories'] = inventory_data
 
-    # all studens details for caretaker and warden
+    # all students details for caretaker and warden
     if request.user.id in Staff.objects.values_list('id__user', flat=True):
         staff_student_info = request.user.extrainfo.id
 
@@ -302,8 +302,15 @@ def hostel_view(request, context={}):
             hostel_students_details = StudentDetails.objects.filter(hall_id=hall_num)
             context['hostel_students_details'] = hostel_students_details
 
-    hostel_transactions = HostelTransactionHistory.objects.order_by('-timestamp')
 
+    # print(request.user.username);
+    if Student.objects.filter(id_id=request.user.username).exists():
+        user_id = request.user.username
+        student_fines = HostelFine.objects.filter(student_id=user_id)
+        # print(student_fines)
+        context['student_fines'] = student_fines
+
+    hostel_transactions = HostelTransactionHistory.objects.order_by('-timestamp')
     context = {
 
         'all_hall': all_hall,
@@ -1459,7 +1466,7 @@ def request_guest_room(request):
         form = GuestRoomBookingForm(request.POST)
 
         if form.is_valid():
-            print("Iside valid")
+            # print("Inside valid")
             hall = form.cleaned_data['hall']
             guest_name = form.cleaned_data['guest_name']
             guest_phone = form.cleaned_data['guest_phone']
@@ -1478,7 +1485,7 @@ def request_guest_room(request):
                                                          guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
                                                          arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality)
             newBooking.save()
-            messages.success(request, "Room booked successfuly")
+            messages.success(request, "Room request submitted successfully!")
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
         else:
             messages.error(request, "Something went wrong")
@@ -1544,7 +1551,7 @@ def update_leave_status(request):
 
 
 # //! Manage Fine
-# //todo: Add Fine Functionality
+# //! Add Fine Functionality
 
 
 @login_required
@@ -1634,7 +1641,7 @@ def hostel_fine_list(request):
 @login_required
 def student_fine_details(request):
     user_id = request.user.username
-    print(user_id)
+    # print(user_id)
     # staff=user_id.extrainfo.id
 
     # Check if the user_id exists in the Student table
