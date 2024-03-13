@@ -10,7 +10,7 @@
             Monthly Bill
         </a>
         <a class="ui item" data-tab="" id="mr">
-            Mess Registration
+            View Students Bills
         </a>
     </div>
 
@@ -75,12 +75,12 @@
             </div>
         </div>
 
-        <div class="ui tab" data-tab="mess_registration" id="mrs">
+        <div class="ui tab" data-tab="View Student Bills" id="mrs" style="minheight: 80vh; overflow: scroll;">
             <div class="ui vertical segment">
 
                 {% comment %}Form Tag starts here!{% endcomment %}
 
-                {% if current_date < mess_reg.end_reg %}
+                {% comment %} {% if current_date < mess_reg.end_reg %}
                     <strong>Registration ongoing till {{ mess_reg.end_reg }}</strong>
                     <form method="post" action="{% url 'mess:closemessregistration' %}">                           
                         <div class="field">
@@ -89,29 +89,54 @@
                             </button>
                         </div>
                     </form>
-                {% else %}
+                {% else %} {% endcomment %}
                     {#            <form method="post" action="{% url 'mess:startmessregistration' %}">#}
                     <form method="post">
                         {% csrf_token %}
-                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                            <div class="two fields">
-                                <div class="field">
-                                    <label>Choose Sem:</label>
-                                    <select class="ui search fluid dropdown" name="sem" id="reg_sem">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                    </select>
+                        <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+                            <div class="flex" style="display:flex; flex-direction:Horizontal; justify-content: space-around;"> 
+                                <div class="six fields" >
+                                    <div class="field" >
+                                        <label>Choose Programme:</label>
+                                        <select class="ui search fluid dropdown " name="Programme" id="student_programme">
+                                            <option value=""></option>
+                                            <option value="B.Tech">B.Tech</option>
+                                            <option value="B.Des">B.Des</option>
+                                            <option value="M.Tech">M.Tech</option>
+                                            <option value="M.Des">M.Des</option>
+                                            <option value="Phd">Phd</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="thirteen fields">
+                                    <div class="field">
+                                        <label>Choose Month:</label>
+                                        <select class="ui search fluid dropdown" name="Month" id="bill_month">
+                                            <option value=""></option>
+                                            <option value="January">January</option>
+                                            <option value="February">February</option>
+                                            <option value="March">March</option>
+                                            <option value="April">April</option>
+                                            <option value="May">May</option>
+                                            <option value="June">June</option>
+                                            <option value="July">July</option>
+                                            <option value="August">August</option>
+                                            <option value="September">September</option>
+                                            <option value="October">October</option>
+                                            <option value="November">November</option>
+                                            <option value="December">December</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-
                             <div class="field">
-                                <label>Start date:</label>
-                                <input type="date" name="start_date" id="reg_start_date">
+                                <label>Year:</label>
+                                <input type="integer" name="year" id="bill_year">
                             </div>
 
                             <div class="field">
-                                <label>End date:</label>
-                                <input type="date" name="end_date" id="reg_end_date">
+                                <label>Student Roll No: </label>
+                                <input type="textarea" name="roll_no" id="student_roll_no">
                             </div>
 
                             <div class="field">
@@ -123,9 +148,43 @@
                         </div>
                     </form>
 
-                {% endif %}
+                {% comment %} {% endif %} {% endcomment %}
                 {% comment %}Form Tag ends here!{% endcomment %}
                 <br>
+                <br>
+                <div>
+                    <table class="ui celled table">
+                        <thead>
+                        <tr>
+                        <th style="min-width:88px;">Name</th>
+                        <th style="min-width:88px;">Roll No</th>
+                        <th style="min-width:88px;">Program</th>
+                        <th style="min-width:88px;">Balance</th>
+                        <th style="min-width:88px;">Mess</th>
+                        <th style="min-width:88px;">Month</th>
+                        <th style="min-width:88px;">Year</th>
+                        <th style="min-width:88px;">Rebate Amount</th>
+                        <th style="min-width:88px;">Total Bill</th>
+                        <th style="min-width:88px;">Rem Balance</th>
+                        <th style="min-width:88px;">Current Status</th>
+                        </tr></thead>
+                        <tbody>
+                            {% comment %} {% for entry in reg_main %}
+                            {% if entry.current_mess_status == 'Registered' %}
+                        <tr>
+                            <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
+                            <td data-label="Roll No">{{entry.student_id.id.id}}</td>
+                            <td data-label="Program">{{entry.student_id.programme}}</td>
+                            <td data-label="Balance">{{entry.balance}}</td>
+                            <td data-label="Mess"> {{entry.mess_option}}</td>
+                        </tr>
+                            {% endif %}
+                            {% endfor %} {% endcomment %}
+                            <tr></tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
 
@@ -164,37 +223,9 @@
                         <br>
                     </form>
                     <br>
-                    <!--
-                    <form method="post" target="_blank" action="{% url 'mess:billdownload' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="ui primary button right floated">
-                            Download Bill
-                        </button>
-                        <br>
-                    </form>
-                    -->
+                    
                 </div>
-                <!--
-        <form method="post">
-            {% csrf_token %}
-            <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
-                <div class="two field">
-                    <div class="field">
-                    <label>Year-Month</label>
-                    <input>
-                    </div>
-
-                    <div class="field">
-                        <button class="ui primary button right floated" type="submit" name="submit" id="bill_dwn">
-                            Download
-                        </button>
-                        <br>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-        -->
+                
 
             </div>
         </div>
