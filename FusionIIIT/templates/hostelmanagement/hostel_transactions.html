@@ -1,0 +1,28 @@
+
+{% block Hostel_Transactions %}
+    <div>
+        <h1 align="center">Hostel Transaction History</h1>
+        <table class ="ui table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Hall</th>
+                    <th>Change Type</th>
+                    <th>Previous Value</th>
+                    <th>New Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in hostel_transactions %}
+                <tr>
+                    <td>{{ transaction.timestamp }}</td>
+                    <td>{{ transaction.hall }}</td>
+                    <td>{{ transaction.change_type }}</td>
+                    <td>{{ transaction.previous_value }}</td>
+                    <td>{{ transaction.new_value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -122,6 +122,8 @@ def hostel_view(request, context={}):
     for hall in all_hall:
         pending_guest_room_requests[hall.hall_id] = GuestRoomBooking.objects.filter(
             hall=hall, status='Pending').select_related('hall', 'intender')
+        
+       
     guest_rooms = {}
     for hall in all_hall:
         guest_rooms[hall.hall_id] = GuestRoom.objects.filter(
@@ -142,11 +144,14 @@ def hostel_view(request, context={}):
             assigned_caretaker = None
             assigned_warden = None
 
+        vacant_seat=(hall.max_accomodation-hall.number_students)
         hostel_detail = {
             'hall_id': hall.hall_id,
             'hall_name': hall.hall_name,
+            'seater_type':hall.type_of_seater,
             'max_accomodation': hall.max_accomodation,
             'number_students': hall.number_students,
+            'vacant_seat':vacant_seat,
             'assigned_batch': hall.assigned_batch,
             'assigned_caretaker': caretaker.staff.id.user.username if caretaker else None,
             'assigned_warden': warden.faculty.id.user.username if warden else None,
@@ -278,7 +283,7 @@ def hostel_view(request, context={}):
             inventory_data.sort(key=lambda x: x['inventory_id'])
             context['inventories'] = inventory_data
 
-    # all studens details for caretaker and warden
+    # all students details for caretaker and warden
     if request.user.id in Staff.objects.values_list('id__user', flat=True):
         staff_student_info = request.user.extrainfo.id
 
@@ -298,7 +303,14 @@ def hostel_view(request, context={}):
             context['hostel_students_details'] = hostel_students_details
 
 
+    # print(request.user.username);
+    if Student.objects.filter(id_id=request.user.username).exists():
+        user_id = request.user.username
+        student_fines = HostelFine.objects.filter(student_id=user_id)
+        # print(student_fines)
+        context['student_fines'] = student_fines
 
+    hostel_transactions = HostelTransactionHistory.objects.order_by('-timestamp')
     context = {
 
         'all_hall': all_hall,
@@ -332,6 +344,7 @@ def hostel_view(request, context={}):
         'all_complaints': all_complaints,
         'staff_fine_caretaker': staff_fine_caretaker,
         'students': students,
+        'hostel_transactions':hostel_transactions,
         **context
     }
 
@@ -846,6 +859,10 @@ class AssignCaretakerView(APIView):
             caretaker_staff = Staff.objects.get(
                 id__user__username=caretaker_username)
 
+            # Retrieve the previous caretaker for the hall, if any
+            prev_hall_caretaker = HallCaretaker.objects.filter(hall=hall).first()
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            # print(prev_hall_caretaker.staff.id)
             # Delete any previous assignments of the caretaker in HallCaretaker table
             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
 
@@ -865,6 +882,20 @@ class AssignCaretakerView(APIView):
             for hostel_allotment in hostel_allotments:
                 hostel_allotment.assignedCaretaker = caretaker_staff
                 hostel_allotment.save()
+
+            
+
+            print("Before creating HostelTransactionHistory")
+            try:
+                history_entry = HostelTransactionHistory.objects.create(
+                    hall=hall,
+                    change_type='Caretaker',
+                    previous_value= prev_hall_caretaker.staff.id if (prev_hall_caretaker and prev_hall_caretaker.staff) else 'None',
+                    new_value=caretaker_username
+                )
+                print("HostelTransactionHistory created successfully")
+            except Exception as e:
+                print("Error creating HostelTransactionHistory:", e)
 
             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
@@ -893,6 +924,7 @@ class AssignBatchView(View):
             hall_id = data.get('hall_id')
 
             hall = Hall.objects.get(hall_id=hall_id)
+            previous_batch = hall.assigned_batch  # Get the previous batch
             hall.assigned_batch = data.get('batch')
             hall.save()
 
@@ -901,6 +933,14 @@ class AssignBatchView(View):
             for room_allotment in room_allotments:
                 room_allotment.assignedBatch = hall.assigned_batch
                 room_allotment.save()
+
+            # Record the transaction history
+            HostelTransactionHistory.objects.create(
+                hall=hall,
+                change_type='Batch',
+                previous_value=previous_batch,
+                new_value=hall.assigned_batch
+            )
 
             return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
 
@@ -928,6 +968,9 @@ class AssignWardenView(APIView):
             hall = Hall.objects.get(hall_id=hall_id)
             warden = Faculty.objects.get(id__user__username=warden_id)
 
+            # Retrieve the previous caretaker for the hall, if any
+            prev_hall_warden = HallWarden.objects.filter(hall=hall).first()
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             # Delete any previous assignments of the warden in Hallwarden table
             HallWarden.objects.filter(faculty=warden).delete()
 
@@ -945,6 +988,18 @@ class AssignWardenView(APIView):
             for hostel_allotment in hostel_allotments:
                 hostel_allotment.assignedWarden = warden
                 hostel_allotment.save()
+
+            print("Before creating HostelTransactionHistory")
+            try:
+                history_entry = HostelTransactionHistory.objects.create(
+                    hall=hall,
+                    change_type='Warden',
+                    previous_value= prev_hall_warden.faculty.id if (prev_hall_warden and prev_hall_warden.faculty) else 'None',
+                    new_value=warden
+                )
+                print("HostelTransactionHistory created successfully")
+            except Exception as e:
+                print("Error creating HostelTransactionHistory:", e)
 
             return Response({'message': f'Warden {warden_id} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
@@ -1411,7 +1466,7 @@ def request_guest_room(request):
         form = GuestRoomBookingForm(request.POST)
 
         if form.is_valid():
-            print("Iside valid")
+            # print("Inside valid")
             hall = form.cleaned_data['hall']
             guest_name = form.cleaned_data['guest_name']
             guest_phone = form.cleaned_data['guest_phone']
@@ -1430,7 +1485,7 @@ def request_guest_room(request):
                                                          guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
                                                          arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality)
             newBooking.save()
-            messages.success(request, "Room booked successfuly")
+            messages.success(request, "Room request submitted successfully!")
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
         else:
             messages.error(request, "Something went wrong")
@@ -1488,7 +1543,7 @@ def update_leave_status(request):
 
 
 # //! Manage Fine
-# //todo: Add Fine Functionality
+# //! Add Fine Functionality
 
 
 @login_required
@@ -1578,7 +1633,7 @@ def hostel_fine_list(request):
 @login_required
 def student_fine_details(request):
     user_id = request.user.username
-    print(user_id)
+    # print(user_id)
     # staff=user_id.extrainfo.id
 
     # Check if the user_id exists in the Student table

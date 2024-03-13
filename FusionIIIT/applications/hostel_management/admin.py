@@ -19,4 +19,5 @@ admin.site.register(HostelComplaint)
 admin.site.register(StudentDetails)
 admin.site.register(HostelAllotment)
 admin.site.register(GuestRoom)
+admin.site.register(HostelTransactionHistory)
 
