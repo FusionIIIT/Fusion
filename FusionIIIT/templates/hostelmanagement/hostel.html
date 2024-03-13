@@ -49,6 +49,14 @@ Hostel
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+              
+              
+        {% if user.username in all_students_id %}
+        <a class="item" data-tab="fine3">
+          My Fine
+          <i class="right floated chevron right icon"></i>
+        </a>
+        {% endif %}
 
                 
 <!-- Start here -->
@@ -256,7 +264,8 @@ Hostel
 
         </div>
 
-    </div>
+  </div>
+
 
     <div class="eight wide column">
         <div class="ui active tab segment" data-tab="first">
@@ -264,14 +273,16 @@ Hostel
             {% include 'hostelmanagement/alloted_hostel_room.html'%}
             {% endblock %}
         </div>
-
+      
+          
         {% if user in hall_caretaker or user in hall_warden%}
-        <div class="ui tab segment" data-tab="second">
-            {% block staff_schedule %}
+          <div class="ui tab segment" data-tab="second">
+           {% block staff_schedule %}
             {% include 'hostelmanagement/staff_schedule.html'%}
-            {% endblock %}
-        </div>
-        {% endif %}
+           {% endblock %}
+           </div>
+          {% endif %}
+      
 
         <div class="ui tab segment" data-tab="third">
             {% block notice_board %}
@@ -296,8 +307,6 @@ Hostel
             {% include 'hostelmanagement/create_leave.html' %}
             {% endblock %}
         </div>
-
-
 
             <div class="ui tab segment" data-tab="seventh">
                 {% block leave_status %}
@@ -424,47 +433,54 @@ Hostel
         </div>
         {% endif %}
 
-        {% if user in hall_caretaker %}
+          {% if user in hall_caretaker %}
         <div class="ui tab segment" data-tab="inventory1">
-            {% block inventory_list %}
-            {% include 'hostelmanagement/inventory_list.html' %}
-            {% endblock %}
-        </div>
+          {% block inventory_list %}
+         {% include 'hostelmanagement/inventory_list.html' %}
+          {% endblock %}
+          </div>
         {% endif %}
 
-        
+    {% if user.username in all_students_id %}
+    <div class="ui tab segment" data-tab="fine3">
+      {% block my_fine %}
+      {% include 'hostelmanagement/student_fine_details.html' %}
+      {% endblock %}
+    </div>
+    {% endif %}
+
+      </div>
 
     </div>
-
-</div>
+  
 
 {% endblock %}
 {% block javascript %}
 <script>
-    function checkInputs(form_id) {
-        var inputs = document.getElementById(form_id).elements;
+  function checkInputs(form_id) {
+    var inputs = document.getElementById(form_id).elements;
 
-        // Iterate over the form controls
-        for (i = 0; i < inputs.length; i++) {
-            if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
-                alert("Please fill the required details");
-                return;
-            }
-        }
-    };
-
-    function checkTimes() {
-        const start_time = document.getElementsByName("start_time")[0].value;
-        const end_time = document.getElementsByName("end_time")[0].value;
-
-        const [start_hour, start_mins] = start_time.split(':').map(x => parseInt(x, 10));
-        const [end_hour, end_mins] = end_time.split(':').map(x => parseInt(x, 10));
-
-        if (start_hour * 60 + start_mins >= end_hour * 60 + end_mins) {
-            alert("Start time cannot be later than end time of the worker shift!");
-            return false;
-        }
-        return true;
+    // Iterate over the form controls
+    for (i = 0; i < inputs.length; i++) {
+      if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
+        alert("Please fill the required details");
+        return;
+      }
     }
+  };
+
+  function checkTimes() {
+    const start_time = document.getElementsByName("start_time")[0].value;
+    const end_time = document.getElementsByName("end_time")[0].value;
+
+    const [start_hour, start_mins] = start_time.split(':').map(x => parseInt(x, 10));
+    const [end_hour, end_mins] = end_time.split(':').map(x => parseInt(x, 10));
+
+    if (start_hour * 60 + start_mins >= end_hour * 60 + end_mins) {
+      alert("Start time cannot be later than end time of the worker shift!");
+      return false;
+    }
+    return true;
+  }
 </script>
 {% endblock %}
