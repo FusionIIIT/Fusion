@@ -329,3 +329,14 @@ class HostelFine(models.Model):
 
     def __str__(self):
         return f"{self.student_name}'s Fine - {self.amount} - {self.status}"
+    
+
+class HostelTransactionHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    change_type = models.CharField(max_length=100)  # Example: 'Caretaker', 'Warden', 'Batch'
+    previous_value = models.CharField(max_length=255)
+    new_value = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.change_type} change in {self.hall} at {self.timestamp}"
