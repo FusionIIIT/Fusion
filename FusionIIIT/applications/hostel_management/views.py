@@ -127,7 +127,7 @@ def hostel_view(request, context={}):
     guest_rooms = {}
     for hall in all_hall:
         guest_rooms[hall.hall_id] = GuestRoom.objects.filter(
-            hall=hall).select_related('hall')
+            hall=hall,vacant=True).select_related('hall')
     user_guest_room_requests = GuestRoomBooking.objects.filter(
         intender=request.user).order_by("-arrival_date")
 
@@ -1505,14 +1505,22 @@ def update_guest_room(request):
             # Assign the guest room ID to guest_room_id field
             guest_room_request.guest_room_id = str(guest_room_instance.id)
 
+            # Update the assigned guest room's occupancy details
+            guest_room_instance.occupied_till = guest_room_request.departure_date
+            guest_room_instance.vacant = False  # Mark the room as occupied
+            guest_room_instance.save()
+
+            # Update the occupied_till field of the room_booked
             room_booked = GuestRoom.objects.get(
                 hall=guest_room_request.hall, room=request.POST['guest_room_id'])
             room_booked.occupied_till = guest_room_request.departure_date
             room_booked.save()
+
             # Save the guest room request after updating the fields
             guest_room_request.status = status
             guest_room_request.save()
             messages.success(request, "Request accepted successfully!")
+
         elif 'reject_request' in request.POST:
             guest_room_request = GuestRoomBooking.objects.get(
                 pk=request.POST['reject_request'])
