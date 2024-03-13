@@ -15,6 +15,7 @@ from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm, MessInfoForm,RegistrationRequest
+from .tasks import *
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
@@ -23,14 +24,14 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response, handle_dreg_response,add_sem_dates)
+                       handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response)
 from notification.views import central_mess_notif
 
 import csv
 import openpyxl
  
 
-today_g = datetime.today()
+today_g = datetime.datetime.now()
 month_g = today_g.month
 month_g_l = today_g.strftime('%B')
 year_g = today_g.year
@@ -887,9 +888,10 @@ def generate_mess_bill(request):
     """
     # todo generate proper logic for generate_mess_bill
     user = request.user
-    t1 = Thread(target=generate_bill, args=())
-    t1.setDaemon(True)
-    t1.start()
+    # t1 = Thread(target=generate_bill, args=())
+    # t1.setDaemon(True)
+    # t1.start()
+    generate_bill()
     data ={
         'status': 1
     }

@@ -34,6 +34,7 @@ if DEBUG:
     INSTALLED_APPS += (
         'debug_toolbar',
         'django_extensions',
+        'background_task',
         )
 
 
@@ -54,7 +55,12 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+    
+CRONJOBS = [
+    ('* * * * *', 'applications.central_mess.tasks.generate_bill')
+]
 
+CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"media/")
