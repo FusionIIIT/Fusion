@@ -51,6 +51,7 @@ def mess(request):
     It also shows the previous feedback submitted by the user.
     """
     user = request.user
+    notifs=request.user.notifications.all()
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     current_date = date.today()
     holds_designations = HoldsDesignation.objects.select_related().filter(user=user)
@@ -325,7 +326,7 @@ def mess(request):
                    'reg_request':reg_request,
                    'reg_record':reg_record,
                    'de_reg_request':de_reg_request,
-                   
+                   'notifications':notifs
                   }
 
         return render(request, "messModule/mess.html", context)

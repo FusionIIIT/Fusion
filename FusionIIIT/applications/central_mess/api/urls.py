@@ -20,5 +20,5 @@ urlpatterns = [
     url("messRegApi", views.Mess_regApi.as_view(), name="messRegApi"),
     url("get_mess_students", views.Get_Filtered_Students.as_view(), name="get_mess_students"),
     url("get_reg_records",views.Get_Reg_Records.as_view(),name="reg_record_API"),
-    url("billDashboard", views.Bill_dashboard.as_view(), name="billDashboard"),
+    # url("billDashboard", views.Bill_dashboard.as_view(), name="billDashboard"),
 ]
