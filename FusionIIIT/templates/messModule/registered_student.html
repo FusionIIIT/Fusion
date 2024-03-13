@@ -1,12 +1,13 @@
 {% load static %} {% block registeredstudent %}
 
 <div class="ui pointing secondary menu">
-  <a class="active item" data-tab="searchOrRemove"> Search/Remove Student </a>
-  <a class="item" data-tab="addMess1"> Register for Mess1 </a>
-  <a class="item" data-tab="addMess2"> Register for Mess2 </a>
+  <!-- <a class="active item" data-tab="searchOrRemove"> Search/Remove Student </a> -->
+  <!-- <a class="item" data-tab="addMess1"> Register for Mess1 </a> -->
+  <!-- <a class="item" data-tab="addMess2"> Register for Mess2 </a> -->
+  <a class="active item" data-tab="add_remove">Add/Remove from mess</a>
   <a class="item" data-tab="regList"> View Registration List</a>
 </div>
-<div class="ui active tab" data-tab="searchOrRemove">
+<!-- <div class="ui active tab" data-tab="searchOrRemove">
   <div class="ui vertical segment">
     <div class="ui form">
       <form id="#myform1">
@@ -195,7 +196,7 @@
       </form>
     </div>
   </div>
-</div>
+</div> -->
 
 <div class="ui tab" data-tab="regList">
   {% block reg_list %}
@@ -203,6 +204,12 @@
     {% endblock %}
 </div>
 <br />
+
+<div class="ui active tab" data-tab="add_remove">
+  {% block add_remove %}
+  {% include 'messModule/add_remove.html' %}
+  {% endblock %}
+</div>
 
 {% block javascript %}
 <script
@@ -213,9 +220,9 @@
 <script type="text/javascript">
 
 
-  document.getElementById("#myform1").addEventListener("submit", searchOrRemove);
-  document.getElementById("#myform2").addEventListener("submit", addMess1);
-  document.getElementById("#myform3").addEventListener("submit", addMess2);
+  // document.getElementById("#myform1").addEventListener("submit", searchOrRemove);
+  // document.getElementById("#myform2").addEventListener("submit", addMess1);
+  // document.getElementById("#myform3").addEventListener("submit", addMess2);
 
   function searchOrRemove(event){
         event.preventDefault();

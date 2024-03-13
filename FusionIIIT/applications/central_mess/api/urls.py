@@ -23,4 +23,5 @@ urlpatterns = [
     # url("billDashboard", views.Bill_dashboard.as_view(), name="billDashboard"),
     url("get_student_bill",views.Get_Student_bill.as_view(),name="student_bill_API"),
     url("get_student_payment",views.Get_Student_Payments.as_view(),name="student_payment_API")
+
 ]
