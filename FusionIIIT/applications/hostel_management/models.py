@@ -49,7 +49,13 @@ class Hall(models.Model):
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
     assigned_batch = models.CharField(max_length=50, null=True, blank=True)
+    TYPE_OF_SEATER_CHOICES = [
+        ('single', 'Single Seater'),
+        ('double', 'Double Seater'),
+        ('triple', 'Triple Seater'),
+    ]
 
+    type_of_seater = models.CharField(max_length=50, choices=TYPE_OF_SEATER_CHOICES, default='single')
     def __str__(self):
         return self.hall_id 
 
@@ -242,15 +248,6 @@ class HostelInventory(models.Model):
 
     def __str__(self):
         return self.inventory_name
-
-class HostelAllotment(models.Model):
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    hostel_name = models.CharField(max_length=100)  # Assuming hostel_name is a CharField
-    assigned_warden = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    assigned_caretaker = models.ForeignKey(Staff, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.hall} - {self.hostel_name}"
     
 
 class HostelLeave(models.Model):
@@ -338,3 +335,14 @@ class HostelFine(models.Model):
 
     def __str__(self):
         return f"{self.student_name}'s Fine - {self.amount} - {self.status}"
+    
+
+class HostelTransactionHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    change_type = models.CharField(max_length=100)  # Example: 'Caretaker', 'Warden', 'Batch'
+    previous_value = models.CharField(max_length=255)
+    new_value = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.change_type} change in {self.hall} at {self.timestamp}"

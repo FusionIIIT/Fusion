@@ -22,7 +22,14 @@
                         <td>{{user_request.guest_phone}}</td>
                         <td>{{user_request.arrival_date}}</td>
                         <td>{{user_request.departure_date}}</td>
+                        {% if user_request.status == 'Accepted' %}
+                        <td class="positive">{{user_request.status}}</td>
+                        {% elif user_request.status == 'Rejected' %}
+                        <td class="negative">{{user_request.status}}</td>
+                        {% else %}
                         <td>{{user_request.status}}</td>
+                        {% endif %}
+                        <!-- <td>{{user_request.status}}</td> -->
                       </tr>
                       <tr>
                         <td colspan="6">
