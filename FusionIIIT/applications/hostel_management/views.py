@@ -142,11 +142,14 @@ def hostel_view(request, context={}):
             assigned_caretaker = None
             assigned_warden = None
 
+        vacant_seat=(hall.max_accomodation-hall.number_students)
         hostel_detail = {
             'hall_id': hall.hall_id,
             'hall_name': hall.hall_name,
+            'seater_type':hall.type_of_seater,
             'max_accomodation': hall.max_accomodation,
             'number_students': hall.number_students,
+            'vacant_seat':vacant_seat,
             'assigned_batch': hall.assigned_batch,
             'assigned_caretaker': caretaker.staff.id.user.username if caretaker else None,
             'assigned_warden': warden.faculty.id.user.username if warden else None,

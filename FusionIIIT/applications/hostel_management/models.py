@@ -49,7 +49,13 @@ class Hall(models.Model):
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
     assigned_batch = models.CharField(max_length=50, null=True, blank=True)
+    TYPE_OF_SEATER_CHOICES = [
+        ('single', 'Single Seater'),
+        ('double', 'Double Seater'),
+        ('triple', 'Triple Seater'),
+    ]
 
+    type_of_seater = models.CharField(max_length=50, choices=TYPE_OF_SEATER_CHOICES, default='single')
     def __str__(self):
         return self.hall_id 
 
