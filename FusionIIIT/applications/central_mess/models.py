@@ -313,3 +313,9 @@ class Deregistration_Request(models.Model):
     deregistration_remark=models.CharField(max_length=50,default='NA')
     def __str__(self):
         return str(self.student_id.id) 
+
+class Semdates(models.Model):
+    start_date = models.DateField(blank=False,default=datetime.date.today)
+    end_date = models.DateField(blank=False,default=datetime.date.today)
+    class Meta:
+        unique_together = (('start_date', 'end_date'),)

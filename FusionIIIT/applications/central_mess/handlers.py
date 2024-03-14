@@ -16,7 +16,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
-                      Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request)
+                      Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request, Semdates)
 from notification.views import central_mess_notif
 
 
@@ -586,6 +586,29 @@ def add_bill_base_amount(request):
 
     return data
 
+def add_sem_dates(request):
+    """
+    This function is to update the semester start and end date
+    :param request:
+    :return:
+    """
+    start_date = request.POST.get("semstart_date")
+    end_date = request.POST.get("semend_date")
+
+    if (end_date <= start_date):
+        data = {
+            'status': 3,
+            'message': "Please check the dates"
+        }
+        return data
+    
+    data = {
+        'status': 1,
+        'message': "Successfully updated"
+    }
+    semdate_object = Semdates(start_date=start_date, end_date=end_date)
+    semdate_object.save()
+    return data
 
 def add_mess_committee(request, roll_number):
     studentHere = Student.objects.get(id=roll_number)

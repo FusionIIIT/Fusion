@@ -23,7 +23,7 @@ from .handlers import (add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response, handle_dreg_response)
+                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill, handle_reg_response, handle_dreg_response,add_sem_dates)
 from notification.views import central_mess_notif
 
 import csv
@@ -853,6 +853,20 @@ def update_cost(request):
     data = add_bill_base_amount(request)
     return JsonResponse(data)
 
+@login_required
+def update_semdates(request):
+    """
+    This function is to update the semester start and end date
+    
+    @param:
+        request - contains metadata about the requested page 
+
+    @variables:  
+        user - contains user details
+    """
+    user = request.user
+    data = add_sem_dates(request)
+    return HttpResponseRedirect('/mess')
 
 def generate_mess_bill(request):
     """

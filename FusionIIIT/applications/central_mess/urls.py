@@ -49,5 +49,6 @@ urlpatterns = [
     # url(r'^uploadpayment', views.uploadPaymentDue, name='uploadpayment')
     url(r'^respond_to_reg_req',views.respond_to_reg, name='reg_response'),
     url(r'^deregistrationRequest', views.de_reg_request, name='de_reg_request'),
+    url(r'^updatesemdates', views.update_semdates, name='updatesemdates'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
