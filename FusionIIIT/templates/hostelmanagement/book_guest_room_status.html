@@ -6,6 +6,7 @@
               <h2 class="ui center aligned header">Room for {{user_request.total_guest}} in {{user_request.hall.hall_id}}</h2>
               <div class="ui grid">
                 <div class="16 wide column">
+                  <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
                   <table class="ui celled table">
                     <thead>
                       <tr>
@@ -22,7 +23,14 @@
                         <td>{{user_request.guest_phone}}</td>
                         <td>{{user_request.arrival_date}}</td>
                         <td>{{user_request.departure_date}}</td>
+                        {% if user_request.status == 'Accepted' %}
+                        <td class="positive">{{user_request.status}}</td>
+                        {% elif user_request.status == 'Rejected' %}
+                        <td class="negative">{{user_request.status}}</td>
+                        {% else %}
                         <td>{{user_request.status}}</td>
+                        {% endif %}
+                        <!-- <td>{{user_request.status}}</td> -->
                       </tr>
                       <tr>
                         <td colspan="6">
@@ -40,6 +48,7 @@
                       </tr>
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             </div>

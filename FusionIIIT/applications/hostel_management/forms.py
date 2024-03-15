@@ -11,7 +11,7 @@ class HostelNoticeBoardForm(forms.ModelForm):
 class HallForm(forms.ModelForm):
     class Meta:
         model = Hall
-        fields = ['hall_id', 'hall_name', 'max_accomodation', 'assigned_batch']
+        fields = ['hall_id', 'hall_name', 'max_accomodation', 'assigned_batch','type_of_seater']
 
 class GuestRoomBookingForm(forms.ModelForm):
     class Meta:
