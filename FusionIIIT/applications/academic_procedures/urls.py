@@ -6,8 +6,11 @@ urlpatterns = [
     url(r'^main/', views.academic_procedures, name='procedures'),
     url(r'^register/', views.register, name='register'),
     url(r'^pre_registration/', views.pre_registration, name='pre_register'),
+    url(r'^auto_pre_registration/', views.auto_pre_registration, name='automatic_pre_register'),
+
     url(r'^final_registration/', views.final_registration, name='final_register'),
     url(r'^addCourse/', views.add_courses, name='addCourse'),
+    url(r'^add_one_course/' , views.add_one_course , name = 'add_one_course'),
     url(r'^drop_course/', views.drop_course, name='drop_course'),
     url(r'^branch-change/', views.approve_branch_change, name='branch_change'),
     url(r'^brach-change-request/', views.branch_change_request,

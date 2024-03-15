@@ -64,7 +64,7 @@
         padding: .5rem;
     }
     .get-info>div{
-        font-size: 2rem;
+        font-size: 1rem !important;
         min-width: 75%;
         padding: 1rem;
     }
@@ -73,6 +73,21 @@
     }
     .get-info>div>input{
         min-width: 75%;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+        padding: 10px; /* Increase padding for better readability */
+        border: 1px solid #ccc; /* Add border for clear field separation */
+        border-radius: 5px; /* Rounded corners for a modern look */
+        outline: none; /* Remove default focus outline */
+        transition: border-color 0.3s; /* Smooth transition on focus */
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+        border-color: #007bff; /* Change border color on focus */
     }
 </style>
 
@@ -117,7 +132,7 @@
             <option value="Smart Manufacturing">Smart Manufacturing</option>
         </select>
     </div>
-
+    
     <div class="field">
         <button class="ui primary button" onclick="fetchCourses()">Get Courses</button>
     </div>
@@ -146,7 +161,7 @@
                     <th>Slot type</th>
                     <th>Semester</th>
                     <th>Credits</th>
-                    <th>Select</th>
+                    <th>Courses</th>
                 </tr>
             </thead>
             
@@ -194,7 +209,7 @@
                     <td>${nextSemId}</td>
                     <td>${course_slot.courses[0].credit}</td>
                     <td>
-                        <select required="True" name="course_priority-${course_slot.pk}">
+                        <select class="ui dropdown" required="True" name="course_priority-${course_slot.pk}">
                             ${course_slot.courses.map(course => `
                                 <option value="${course_slot.pk}-${course.id}" data-value2="${course.credit}">
                                     ${course.code}-${course.name}

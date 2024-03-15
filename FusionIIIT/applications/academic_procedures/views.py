@@ -413,11 +413,11 @@ def academic_procedures_student(request):
                 final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
             drop_courses_options = get_drop_course_options(currently_registered_course)
-
+            
         except Exception as e:
             final_registered_courses = None
             final_registered_course_show = None
-            #drop_courses_options = None
+            # drop_courses_options = None
             add_courses_options = None
 
         fee_payment_mode_list = dict(Constants.PaymentMode)
@@ -1414,7 +1414,67 @@ def pre_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
+@login_required(login_url='/accounts/login')
+@transaction.atomic
+def auto_pre_registration(request):
+    if request.method == 'POST':
+        try:
+            current_user = get_object_or_404(User, username=request.POST.get('user'))
+            current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
+            sem_id = Semester.objects.get(id = request.POST.get('semester'))
 
+            course_slots=request.POST.getlist("course_slot")             
+            try:
+                student_registeration_check=get_student_registrtion_check(current_user,sem_id)
+                if(student_registeration_check and student_registeration_check.pre_registration_flag==True):
+                    messages.error(request,"You have already registered for next semester")
+                    return HttpResponseRedirect('/academic-procedures/main')
+            except Exception as e:
+                print(e)
+
+            reg_curr = []
+            for course_slot in course_slots :
+                course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                if(course_priorities[0] == 'NULL'):
+                    continue
+                course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
+                # print("=----> course_priorities ----- ",course_priorities)
+                # print("------------>course slot id ",course_slot_id_for_model)
+                for course_priority in course_priorities:
+                    priority_of_current_course,course_id = map(int,course_priority.split("-"))
+
+                    course_id_for_model = Courses.objects.get(id = course_id)
+                    
+                    p = InitialRegistration(
+                        course_id = course_id_for_model,
+                        semester_id = sem_id,
+                        student_id = current_user,
+                        course_slot_id = course_slot_id_for_model,
+                        priority = priority_of_current_course
+                    )
+                    reg_curr.append(p)
+            try:
+                InitialRegistration.objects.bulk_create(reg_curr)
+                registration_check = StudentRegistrationChecks(
+                            student_id = current_user,
+                            pre_registration_flag = True,
+                            final_registration_flag = False,
+                            semester_id = sem_id
+                        )
+                registration_check.save()
+                messages.info(request, 'Successfully Registered.')
+                messages.success(request, "Successfully Registered.")
+                return HttpResponseRedirect('/academic-procedures/stu')
+            except Exception as e:
+                messages.error(request, "Error in Registration.")
+                return HttpResponseRedirect('/academic-procedures/stu') 
+        except Exception as e:
+            messages.error(request, "Error in Registration.")
+            return HttpResponseRedirect('/academic-procedures/main')
+    else:
+        return HttpResponseRedirect('/academic-procedures/main')
+    
 def get_student_registrtion_check(obj, sem):
     return StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem).first()
 
@@ -2286,6 +2346,7 @@ def student_list(request):
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
                     'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
                     'student_id__id__user__username').order_by('student_id__id__user').distinct()
+            print('------------------------------------------------------------------------------------------------------------------------------------------',reg_table)
         else :
             reg_table = []
 
@@ -2402,7 +2463,7 @@ def verify_registration(request):
 
         final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
 
-
+        
         with transaction.atomic():
             ver_reg = []
             for obj in final_register_list:
@@ -2415,6 +2476,7 @@ def verify_registration(request):
                 ver_reg.append(p)
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
             course_registration.objects.bulk_create(ver_reg)
+            # StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = True)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
@@ -3608,3 +3670,44 @@ def remove_course_from_slot(request):
             return JsonResponse({'error': 'Course does not exist.'}, status=400)
 
     return JsonResponse({'error': 'Invalid request method.'}, status=405)       
+
+
+def add_one_course(request):
+    if request.method == 'POST':
+        try:
+            print(request.POST)
+            current_user = get_object_or_404(User, username=request.POST.get('user'))
+            current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
+
+            sem_id = Semester.objects.get(id=request.POST.get('semester'))
+            choice = request.POST.get('choice')
+            slot = request.POST.get('slot')
+
+            try:
+                course_id = Courses.objects.get(id=choice)
+                courseslot_id = CourseSlot.objects.get(id=slot)
+                if course_registration.objects.filter(course_slot_id_id=courseslot_id, student_id=current_user).count() == 1:
+                    already_registered_course_id = course_registration.objects.filter(course_slot_id_id=courseslot_id, student_id=current_user)[0].course_id
+                    # print(already_registered_course_id)
+                    msg = 'Already Registered in the course : ' +already_registered_course_id.code + '-'+ already_registered_course_id.name
+                    return JsonResponse({'message' : msg})
+                # Check if maximum course registration limit has not been reached
+                if course_registration.objects.filter(student_id__batch_id__year=current_user.batch_id.year, course_id=course_id).count() < courseslot_id.max_registration_limit and \
+                        (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
+                    p = course_registration(
+                        course_id=course_id,
+                        student_id=current_user,
+                        course_slot_id=courseslot_id,
+                        semester_id=sem_id
+                    )
+                    p.save()
+                    return JsonResponse({'message': 'Course added successfully'})
+                else:
+                    return JsonResponse({'message': 'Course not added because seats are full'}, status=400)
+            except Exception as e:
+                return JsonResponse({'message': 'Error adding course'}, status=500)
+        except Exception as e:
+            return JsonResponse({'message': 'Error adding course'}, status=500)
+    else:
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
