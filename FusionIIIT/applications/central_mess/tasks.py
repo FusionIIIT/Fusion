@@ -19,14 +19,11 @@
 # def some_task():
 #     print("5")
 
-from background_task import background
 from datetime import date, datetime, timedelta
 from django.db import transaction
 from threading import Thread
 from .models import *
 from notification.views import central_mess_notif
-import celery
-import schedule
 
 today_g = date.today()
 year_g = today_g.year
