@@ -1,7 +1,8 @@
 {% load custom_tags %}
 
 {% block {{hall.hall_id}} %}
-<h1 align="center">{{hall.hall_id}} History</h1>
+<h2 align="center">{{hall.hall_id}} History</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
     <table class="ui table" border="1">
         <thead>
             <tr>
@@ -32,5 +33,6 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 
     {% endblock %}
