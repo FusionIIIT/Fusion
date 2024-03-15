@@ -1,5 +1,6 @@
 {% block leave_requests %}
     <h2 align="center">All Leave Requests</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
     <table border="1" class="ui table">
         <thead>
             <tr>
@@ -41,6 +42,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     <style>
         .flex-container{
             display: flex;
