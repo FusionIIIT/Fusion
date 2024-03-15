@@ -470,3 +470,5 @@ class Get_Student_Payments(APIView):
 
         serialized_obj = PaymentsSerializer(payment_details,many=True)
         return Response({'payload':serialized_obj.data}) 
+
+    
