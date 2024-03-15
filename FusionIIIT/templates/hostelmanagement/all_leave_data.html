@@ -11,6 +11,7 @@
                 <th>End Date</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>Remark</th>
             </tr>
         </thead>
         <tbody>
@@ -22,6 +23,7 @@
                 <td>{{ leave.start_date }}</td>
                 <td>{{ leave.end_date }}</td>
                 <td>{{ leave.status }}</td>
+                
                 <td class="">
 
                     <!-- {%if leave.status == 'pending' %} -->
@@ -48,6 +50,7 @@
 
 
                 </td>
+                <td>{{leave.remark}}</td>
             </tr>
             {% endfor %}
         </tbody>
