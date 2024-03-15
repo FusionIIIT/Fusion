@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^final_registration/', views.final_registration, name='final_register'),
     url(r'^addCourse/', views.add_courses, name='addCourse'),
     url(r'^drop_course/', views.drop_course, name='drop_course'),
-    url(r'^replaceCourse/', views.replace_courses, name='replaceCourse'),
     url(r'^branch-change/', views.approve_branch_change, name='branch_change'),
     url(r'^brach-change-request/', views.branch_change_request,
         name='branch_change_request'),
