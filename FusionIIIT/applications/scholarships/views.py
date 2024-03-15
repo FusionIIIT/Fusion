@@ -1077,7 +1077,7 @@ def sendStudentRenderRequest(request, additionalParams={}):
             curBatch = dates.batch
             checkBatch = str(request.user.extrainfo.student)[0:4]
             batchCondition = False
-            if checkBatch[2:4] == "BC":
+            if checkBatch[2] >= "A" and checkBatch[2] <= "Z":
                 if(curBatch == 'All'):
                     batchRange = range(datetime.datetime.now().year - 4, datetime.datetime.now().year + 1)
                     for batches in batchRange :
