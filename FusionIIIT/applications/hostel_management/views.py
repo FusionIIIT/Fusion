@@ -311,6 +311,9 @@ def hostel_view(request, context={}):
         context['student_fines'] = student_fines
 
     hostel_transactions = HostelTransactionHistory.objects.order_by('-timestamp')
+
+    # Retrieve all hostel history entries
+    hostel_history = HostelHistory.objects.order_by('-timestamp')
     context = {
 
         'all_hall': all_hall,
@@ -345,6 +348,7 @@ def hostel_view(request, context={}):
         'staff_fine_caretaker': staff_fine_caretaker,
         'students': students,
         'hostel_transactions':hostel_transactions,
+        'hostel_history':hostel_history,
         **context
     }
 
@@ -883,7 +887,8 @@ class AssignCaretakerView(APIView):
                 hostel_allotment.assignedCaretaker = caretaker_staff
                 hostel_allotment.save()
 
-            
+            # Retrieve the current warden for the hall
+            current_warden = HallWarden.objects.filter(hall=hall).first()
 
             print("Before creating HostelTransactionHistory")
             try:
@@ -897,6 +902,18 @@ class AssignCaretakerView(APIView):
             except Exception as e:
                 print("Error creating HostelTransactionHistory:", e)
 
+            
+            # Create hostel history
+            try:
+                HostelHistory.objects.create(
+                    hall=hall,
+                    caretaker=caretaker_staff,
+                    batch=hall.assigned_batch,
+                    warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
+                )
+                print("hostel hostory created succeessfully")
+            except Exception as e:
+                print ("Error creating history",e)
             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
         except Hall.DoesNotExist:
@@ -933,6 +950,10 @@ class AssignBatchView(View):
             for room_allotment in room_allotments:
                 room_allotment.assignedBatch = hall.assigned_batch
                 room_allotment.save()
+            
+            # retrieve the current caretaker and current warden for the hall
+            current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
+            current_warden = HallWarden.objects.filter(hall=hall).first()
 
             # Record the transaction history
             HostelTransactionHistory.objects.create(
@@ -941,6 +962,20 @@ class AssignBatchView(View):
                 previous_value=previous_batch,
                 new_value=hall.assigned_batch
             )
+
+            # Create hostel history
+            try:
+                HostelHistory.objects.create(
+                    hall=hall,
+                    caretaker=current_caretaker.staff if (current_caretaker and current_caretaker.staff) else None,
+                    
+                    batch=hall.assigned_batch,
+                    warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
+
+                )
+                print("hostel hostory created succeessfully")
+            except Exception as e:
+                print ("Error creating history",e)
 
             return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
 
@@ -970,7 +1005,7 @@ class AssignWardenView(APIView):
 
             # Retrieve the previous caretaker for the hall, if any
             prev_hall_warden = HallWarden.objects.filter(hall=hall).first()
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+           
             # Delete any previous assignments of the warden in Hallwarden table
             HallWarden.objects.filter(faculty=warden).delete()
 
@@ -983,6 +1018,11 @@ class AssignWardenView(APIView):
             # Assign the new warden to the hall in Hallwarden table
             hall_warden = HallWarden.objects.create(hall=hall, faculty=warden)
 
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            #current caretker
+            current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
+            print(current_caretaker)
+            
             # Update the assigned warden in Hostelallottment table
             hostel_allotments = HostelAllotment.objects.filter(hall=hall)
             for hostel_allotment in hostel_allotments:
@@ -1000,6 +1040,21 @@ class AssignWardenView(APIView):
                 print("HostelTransactionHistory created successfully")
             except Exception as e:
                 print("Error creating HostelTransactionHistory:", e)
+
+
+            # Create hostel history
+            try:
+                HostelHistory.objects.create(
+                    hall=hall,
+                    caretaker=current_caretaker.staff if (current_caretaker and current_caretaker.staff) else None,
+                    
+                    batch=hall.assigned_batch,
+                    warden=warden
+                )
+                print("hostel hostory created succeessfully")
+            except Exception as e:
+                print ("Error creating history",e)
+
 
             return Response({'message': f'Warden {warden_id} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
 
