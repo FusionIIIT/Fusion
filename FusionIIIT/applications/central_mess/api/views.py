@@ -470,5 +470,16 @@ class Get_Student_Payments(APIView):
 
         serialized_obj = PaymentsSerializer(payment_details,many=True)
         return Response({'payload':serialized_obj.data}) 
-
     
+class Get_Student_Details(APIView):
+
+    def post(self,request):
+        student = request.data['student_id'] 
+        bill_details = Monthly_bill.objects.filter(student_id=student)
+        payment_details = Payments.objects.filter(student_id=student)
+        reg_record = Reg_records.objects.filter(student_id=student)
+        payment_serialized_obj = PaymentsSerializer(payment_details,many=True)
+        bill_serialized_obj = Monthly_billSerializer(bill_details,many=True)
+        reg_record_serialized_obj = reg_recordSerialzer(reg_record,many=True)
+        data={'payment':payment_serialized_obj.data,'bill':bill_serialized_obj.data,'reg_records':reg_record_serialized_obj.data}
+        return Response({'payload':data}) 
