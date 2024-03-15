@@ -1,8 +1,9 @@
 {% block inventory_list %}
 
 
-    <h1>Hostel Inventory List</h1>
-    <table border="1">
+    <h2 align="center">Hostel Inventory List</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table class="ui table" border="1">
         <thead>
             <tr>
                 <th>Hall ID</th>
@@ -29,6 +30,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 
     <script>
         

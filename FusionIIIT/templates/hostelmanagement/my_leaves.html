@@ -1,5 +1,6 @@
 {% block leave_status %}
     <h2 align="center">My Leaves</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
     <table class="ui table" border="1">
         <thead>
             <tr>
@@ -25,6 +26,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     <style>
         /* Add this CSS block to your existing stylesheet or in a separate style tag */
         /* Adjust the selector as needed based on your HTML structure */
