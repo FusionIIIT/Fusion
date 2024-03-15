@@ -1,3 +1,4 @@
+import datetime
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -8,16 +9,16 @@ from django.shortcuts import redirect, render, reverse
 from django.core.exceptions import ValidationError
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
-                    StudentApplicationForm, AcademicReplacementFormOffline, AdminReplacementFormOffline,
+                    StudentApplicationFormUG, StudentApplicationFormPG, AcademicReplacementFormOffline, AdminReplacementFormOffline,
                     BaseLeaveFormSetOffline, EmployeeCommonFormOffline, LeaveSegmentFormOffline )
-from .helpers import (create_migrations, deduct_leave_balance,
+from .helpers import (create_migrations, deduct_leave_balance, deduct_leave_balance_student, get_leave_days,
                       get_pending_leave_requests, restore_leave_balance, get_designation)
 from .models import (Leave, LeaveRequest, LeaveSegment,
-                     LeaveType, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
+                     LeaveType, LeavesCount, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
 from applications.globals.models import HoldsDesignation
 from notification.views import leave_module_notif
-import datetime
 from django.utils import timezone
+from applications.globals.models import (ExtraInfo)
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -392,19 +393,14 @@ def handle_staff_leave_application(request):
 def handle_student_leave_application(request):
     """
     Handle student leave application.
-
-    This view function handles the form submission of student leave application. If the form is valid, the leave application is
-    created and a leave request is sent to the concerned leave authority. Then, the leave balance of the student is deducted.
-
-    Parameters:
-    request : HttpRequest object
-    The HTTP request object representing the current request.
-
-    Returns:
-    HttpResponse object
-    The HTTP response object representing the resulting page.
     """
-    form = StudentApplicationForm(request.POST, request.FILES, user=request.user)
+
+    form = None
+    if request.user.extrainfo.u_type == 'ug':
+        form = StudentApplicationFormUG(request.POST, request.FILES, user=request.user)
+    else:
+        form = StudentApplicationFormPG(request.POST, request.FILES, user=request.user)
+
     user_designation = get_designation(request.user)
 
     if form.is_valid():
@@ -416,10 +412,7 @@ def handle_student_leave_application(request):
         )
         leave.save()
 
-        try:
-            leave_type = LeaveType.objects.get(name=data.get('leave_type'))
-        except LeaveType.DoesNotExist:
-            leave_type = LeaveType()
+        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
 
         leave_type.save()
 
@@ -431,13 +424,47 @@ def handle_student_leave_application(request):
             end_date=data.get('end_date')
         )
 
-        requested_from = request.user
+        count = (data.get('end_date') -data.get('start_date')).days + 1
+
+        taken_medical_leaves = 0
+        taken_special_leaves = 0
+        taken_casual_leaves = 0
+        taken_vacational_leaves = 0
+
+        if leave_type.name.lower() == 'medical':
+            taken_medical_leaves = count
+        elif leave_type.name.lower() == 'casual':
+            taken_casual_leaves = count
+        elif leave_type.name.lower() == 'vacational':
+            taken_vacational_leaves = count
+        else:
+            taken_special_leaves = count
+
+        try:
+            lc = LeavesCount.objects.get(user=request.user, year=datetime.date.today().year)
+            lc.medical += taken_medical_leaves
+            lc.casual += taken_casual_leaves
+            lc.special += taken_special_leaves
+            lc.vacational += taken_vacational_leaves
+        except:
+            LeavesCount.objects.create(
+                user = request.user,
+                medical = taken_medical_leaves,
+                special = taken_special_leaves,
+                casual = taken_casual_leaves,
+                vacational = taken_vacational_leaves
+            )
+
+        dep_id = request.user.extrainfo.department_id
+        hod_id = ExtraInfo.objects.get(department_id=dep_id, user_type="hod").user_id
+
+        hod = User.objects.get(id=hod_id)
 
         LeaveRequest.objects.create(
             leave=leave,
-            requested_from=requested_from
+            requested_from=hod
         )
-        deduct_leave_balance(leave,False)
+        deduct_leave_balance_student(leave_type, count, request.user)
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect('leave:leave')
 
@@ -484,7 +511,8 @@ def send_faculty_leave_form(request):
         'leave_requests': leave_requests,
         'designation': user_designation,
         'user_leave_applications': user_leave_applications,
-        'user_leave_applications_offline': user_leave_applications_offline
+        'user_leave_applications_offline': user_leave_applications_offline,
+        'form': StudentApplicationFormPG(initial={}, user=request.user)
     }
 
     return render(request, 'leaveModule/leave.html', context)
@@ -545,13 +573,21 @@ def send_student_leave_form(request):
     """
     leave_balance = request.user.leave_balance.all()
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
-    form = StudentApplicationForm(initial={}, user=request.user)
+    form = None
     user_designation = get_designation(request.user)
+    user_type = request.user.extrainfo.u_type
+
+    if user_type == 'ug':
+        form = StudentApplicationFormUG(initial={}, user=request.user)
+    else:
+        form = StudentApplicationFormPG(initial={}, user=request.user)
+
     context = {
         'leave_balance': leave_balance,
         'user_leave_applications': user_leave_applications,
         'designation': user_designation,
         'form': form,
+        'u_type': user_type
     }
 
     return render(request, 'leaveModule/leave.html', context)
