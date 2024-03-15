@@ -715,6 +715,7 @@ def handle_reg_response(request):
     status = request.POST['status']
     remark = request.POST['remark']
     reg_req = Registration_Request.objects.get(pk=id)
+    start_date = reg_req.start_date
     student = reg_req.student_id
     reg_req.status = status
     reg_req.registration_remark=remark
@@ -734,7 +735,7 @@ def handle_reg_response(request):
             mess_status = "Registered"
             new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
             new_reg.save()
-        new_reg_record = Reg_records(student_id=student)
+        new_reg_record = Reg_records(student_id=student, start_date=start_date)
         new_reg_record.save()
         try:
             existing_student = Payments.objects.get(student_id=student, payment_month=current_month(), payment_year=current_year())
