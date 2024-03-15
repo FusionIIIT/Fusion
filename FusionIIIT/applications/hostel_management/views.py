@@ -706,6 +706,7 @@ def create_hostel_leave(request):
         reason = data.get('reason')
         start_date = data.get('start_date', timezone.now())
         end_date = data.get('end_date')
+        
 
         # Create HostelLeave object and save to the database
         leave = HostelLeave.objects.create(
@@ -713,7 +714,8 @@ def create_hostel_leave(request):
             roll_num=roll_num,
             reason=reason,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            
         )
 
         return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
@@ -1597,8 +1599,9 @@ def update_leave_status(request):
         try:
             leave = HostelLeave.objects.get(id=leave_id)
             leave.status = status
+            leave.remark = request.POST.get('remark')
             leave.save()
-            return JsonResponse({'status': status, 'message': 'Leave status updated successfully.'})
+            return JsonResponse({'status': status,'remarks':leave.remark,'message': 'Leave status updated successfully.'})
         except HostelLeave.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Leave not found.'}, status=404)
     else:
