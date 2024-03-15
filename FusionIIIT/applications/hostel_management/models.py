@@ -257,6 +257,7 @@ class HostelLeave(models.Model):
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
     status = models.CharField(max_length=20, default='pending')
+    remark = models.TextField(blank=True, null=True)
 
 
     def __str__(self):
