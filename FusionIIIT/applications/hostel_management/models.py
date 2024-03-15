@@ -346,3 +346,13 @@ class HostelTransactionHistory(models.Model):
 
     def __str__(self):
         return f"{self.change_type} change in {self.hall} at {self.timestamp}"
+    
+class HostelHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    caretaker = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, related_name='caretaker_history')
+    batch = models.CharField(max_length=50, null=True)
+    warden = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, related_name='warden_history')
+
+    def __str__(self):
+        return f"History for {self.hall.hall_name} - {self.timestamp}"
