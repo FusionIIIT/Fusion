@@ -268,7 +268,8 @@
             </table>
 
 
-            {% comment %} <h2>Total Due Amount : {{total_due}}</h2> {% endcomment %}
+            <h2>Total Remaining Balance : {{curr_balance}}</h2>
+            <h2>Current Mess Status: {{curr_status}}</h2>
             <br>
             <br>
 
@@ -293,7 +294,7 @@
         <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
             <thead>
                 <tr>
-                    
+                    <th>Payment Date</th>
                     <th>Amount</th>
                     <th>Month</th>
                     <th>Year</th>
@@ -302,6 +303,7 @@
             <tbody>
                 {% for student in payments %}
                 <tr>
+                    <td>{{student.payment_date}}</td>
                     <td>{{student.amount_paid}}</td>
                     <td>{{student.payment_month}}</td>
                     <td>{{student.payment_year}}</td>

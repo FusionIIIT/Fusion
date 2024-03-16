@@ -716,9 +716,12 @@ def handle_reg_response(request):
     remark = request.POST['remark']
     reg_req = Registration_Request.objects.get(pk=id)
     start_date = reg_req.start_date
+    payment_date = reg_req.payment_date
     student = reg_req.student_id
     reg_req.status = status
     reg_req.registration_remark=remark
+    sem_end_date = Semdates.objects.latest('start_date').end_date
+    
     reg_req.save()
     message=''
     if(status=='accept'):
@@ -726,25 +729,26 @@ def handle_reg_response(request):
         mess = request.POST['mess_no']
         try :
             reg_main = Reg_main.objects.get(student_id=student)
-            reg_main.current_mess_status="Registered"
+            if(start_date == datetime.today()):
+                reg_main.current_mess_status="Registered"
+            else:
+                reg_main.current_mess_status = "Deregistered"
             reg_main.mess_option=mess
             reg_main.balance=reg_main.balance+amount
             reg_main.save()
         except:
             program = student.programme
-            mess_status = "Registered"
+            if(start_date == datetime.today()):
+                mess_status = "Registered"
+            else:
+                mess_status  = "Deregistered"
             new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
             new_reg.save()
-        new_reg_record = Reg_records(student_id=student, start_date=start_date)
+        new_reg_record = Reg_records(student_id=student, start_date=start_date, end_date=sem_end_date)
         new_reg_record.save()
-        try:
-            existing_student = Payments.objects.get(student_id=student, payment_month=current_month(), payment_year=current_year())
-            new_amount = existing_student.amount_paid + amount
-            existing_student.amount_paid = new_amount
-            existing_student.save()
-        except:
-            new_payment_record = Payments(student_id = student, amount_paid = amount)
-            new_payment_record.save()
+       
+        new_payment_record = Payments(student_id = student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year=current_year())
+        new_payment_record.save()
         message="Your registeration request has been accepted"
     else:
         message="Your registeration request has been rejected"            
@@ -774,6 +778,7 @@ def handle_dreg_response(request):
     status = request.POST['status']
     remark = request.POST['remark']
     dreg_req = Deregistration_Request.objects.get(pk=id)
+    end_date = dreg_req.end_date
     student = dreg_req.student_id
     dreg_req.status = status
     dreg_req.deregistration_remark=remark
@@ -783,6 +788,9 @@ def handle_dreg_response(request):
         try :
             reg_main = Reg_main.objects.get(student_id=student)
             reg_main.current_mess_status="Deregistered"
+            reg_record_obj = Reg_records.objects.filter(student_id = student).latest('start_date')
+            reg_record_obj.end_date = end_date
+            reg_record_obj.save()
             reg_main.save()
         except:
             data = {'message': 'Student does not exist in database'}
@@ -794,6 +802,44 @@ def handle_dreg_response(request):
             
     receiver = dreg_req.student_id.id.user
     central_mess_notif(request.user, receiver, 'leave_request', message)
+    data = {
+        'message': 'success'
+    }
+    return data
+
+def update_month_bill(request):
+    """
+        This function is used to update the monthly bill of student by caretaker if any discrepancy arises. 
+    """
+    student = str(request.POST.get("rollNo")).upper()
+    studentHere = Student.objects.get(id = student)
+    rebate_count = int(request.POST.get("RebateCount"))
+    print(rebate_count)
+    rebate_amount = int(request.POST.get("RebateAmount"))
+    print(rebate_amount)
+    new_amount = int(request.POST.get("new_amount"))
+    month = request.POST.get("Month")
+    year = int(request.POST.get("Year"))
+    bill_base_amount = int(MessBillBase.objects.latest('timestamp').bill_amount)
+    fixed_amount_per_month = int(bill_base_amount)*int(30)
+
+    reg_main_obj = Reg_main.objects.get(student_id=student)
+    curr_balance = reg_main_obj.balance
+    try:
+        existing_monthly_bill_object = Monthly_bill.objects.get(student_id = studentHere, month=month, year=year)
+        previous_total_bill = existing_monthly_bill_object.total_bill
+        curr_balance = curr_balance + previous_total_bill
+        existing_monthly_bill_object.total_bill = new_amount
+        curr_balance = curr_balance - int(new_amount)
+        reg_main_obj.balance = curr_balance
+        reg_main_obj.save() 
+        existing_monthly_bill_object.save()
+    except:
+        new_monthly_bill_obj = Monthly_bill(student_id = studentHere, rebate_amount=rebate_amount, rebate_count=rebate_count, month=month, year= year, total_bill = new_amount, amount=fixed_amount_per_month)
+        curr_balance = curr_balance - new_amount
+        reg_main_obj.balance = curr_balance
+        reg_main_obj.save()
+        new_monthly_bill_obj.save()
     data = {
         'message': 'success'
     }
@@ -835,4 +881,4 @@ def handle_add_reg(request):
     #     new_payment_record.save()
     message="Your registeration request has been accepted"
             
-            
+           

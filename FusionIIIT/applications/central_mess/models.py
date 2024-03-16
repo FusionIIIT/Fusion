@@ -156,9 +156,10 @@ class Payments(models.Model):
     amount_paid = models.IntegerField(default=0)
     payment_month = models.CharField(max_length=20, default=current_month)
     payment_year = models.IntegerField(default = current_year)
+    payment_date = models.DateField(default= datetime.date.today())
 
     class Meta:
-        unique_together = (('student_id', 'payment_month', 'payment_year'),)
+        unique_together = (('student_id',  'payment_date'))
 
     def __str__(self):
         return '{}'.format(self.student_id.id)
@@ -289,6 +290,8 @@ class Registration_Request(models.Model):
     status=models.CharField(max_length=10,default='pending')
     registration_remark=models.CharField(max_length=50,default='NA')
     start_date=models.DateField(default=None, null=True)
+    # end_date=models.DateField(default=None, null=True)
+    payment_date= models.DateField(default=None, null=True)
     def __str__(self):
         return str(self.student_id.id)        
 
@@ -311,6 +314,7 @@ class Deregistration_Request(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     status=models.CharField(max_length=10,default='pending')
     deregistration_remark=models.CharField(max_length=50,default='NA')
+    end_date = models.DateField(default=None, null=True)
     def __str__(self):
         return str(self.student_id.id) 
 

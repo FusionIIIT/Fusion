@@ -59,12 +59,6 @@ def check_registration(student):
             try:
                 reg_object = Reg_main.objects.get(student_id = student)
                 reg_object.current_mess_status = "Registered"
-                try: 
-                    payment_obj = Payments.objects.get(student_id = student, payment_month= this_month, year= this_year)
-                    reg_object.balance = reg_object.balance + payment_obj.amount_paid
-                    reg_object.save()
-                except:
-                    pass
             except:
                 pass
     except: 
@@ -102,7 +96,7 @@ def generate_per_day_bill():
     per_day_cost_obj = MessBillBase.objects.latest('timestamp')
     per_day_cost = per_day_cost_obj.bill_amount
     amount = int(30) * int(per_day_cost)
-    print(per_day_cost)
+    # print(per_day_cost)
     deregistered_students = Reg_main.objects.filter(current_mess_status = "Deregistered")
     for student in deregistered_students:
         student_id = student.student_id
@@ -159,6 +153,6 @@ def generate_per_day_bill():
         
 
 
-def my_scheduled_task():
+# def my_scheduled_task():
     # Your task code goes here
-    Monthly_bill.objects.all().delete()
+    # Monthly_bill.objects.all().delete()

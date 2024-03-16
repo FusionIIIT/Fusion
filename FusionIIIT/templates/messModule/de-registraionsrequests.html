@@ -22,6 +22,8 @@
                   <th>Transaction No</th>
                   <th>Image</th>
                   <th>Amount</th>
+                  <th>Start Date</th>
+                  <th>Payment Date</th>
                   <th>Remark</th>
                   <th>Mess</th>
                   <th>Accept/Reject</th>
@@ -45,7 +47,12 @@
                     <td class="one wide">
                         {{var.amount}}
                     </td>
-                    
+                    <td class="one wide">
+                        {{var.start_date}}
+                    </td>
+                    <td class="one wide">
+                        {{var.payment_date}}
+                    </td>
                     <td class="one wide">
                         <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
                     </td>
@@ -98,6 +105,7 @@
               <thead>
                 <tr>
                   <th>Student Id</th>
+                  <th>End Date</th>
                   <th>Remark</th>
                   <th>Accept/Reject</th>
                 </tr>
@@ -105,9 +113,12 @@
               <tbody>
                   {% for var in de_reg_request %}
                 <tr id="dreg-{{var.pk}}">
-                    <th class="two wide">
+                    <td class="two wide">
                         {{var.student_id}}
-                    </th>
+                    </td>
+                    <td class="dreg-{{var.pk}}">
+                        {{var.end_date}}
+                    </td>
                     <td class="one wide">
                         <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
                     </td>
