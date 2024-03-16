@@ -276,9 +276,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
 
-CRONJOBS = [
-    ('* * * * *', 'central_mess.tasks.generate_bill')
-]
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 ALLOW_PASS_RESET = True

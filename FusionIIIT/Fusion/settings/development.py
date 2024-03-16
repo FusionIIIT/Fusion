@@ -67,10 +67,3 @@ CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"media/")
-
-CRONJOBS = [
-    ('* * * * *', 'applications.central_mess.tasks.my_scheduled_task'),
-    # Add more cron jobs as needed
-]
-
-CRONTAB_DJANGO_MANAGE_PATH = '/home/bankai/Desktop/virtual_env/Fusion/FusionIIIT/manage.py'
