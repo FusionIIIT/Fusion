@@ -19,7 +19,7 @@ from .tasks import *
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request,Semdates)
 from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -1323,7 +1323,6 @@ def update_menu1(request):
 
 @csrf_exempt
 def searchAddOrRemoveStudent(request):
-   
     if request.method=='GET':
         submitType=request.GET.get('type')
         msg=""
@@ -1405,22 +1404,34 @@ def searchAddOrRemoveStudent(request):
         return JsonResponse({'message':msg})
     else:
         if(request.FILES):
-            if 'excelUpload1' in request.POST:
-                messNo='mess1'
-                excel_file = request.FILES['excel_file1']
-            else: 
-                messNo='mess2'
-                excel_file = request.FILES['excel_file2']
-            
+            # if 'excelUpload1' in request.POST:
+            #     messNo='mess1'
+            #     excel_file = request.FILES['excel_file1']
+            # else: 
+            #     messNo='mess2'
+            #     excel_file = request.FILES['excel_file2']
+            try:
+                latest = Semdates.objects.latest('end_date')
+                latest_end_date=latest.end_date
+                print(latest_end_date)
+            except:
+                latest_end_date=None
+            excel_file = request.FILES['excel_file1']
             wb = openpyxl.load_workbook(excel_file)
-
+            flag = False
             for row in wb.active:
+                if(flag==False):
+                    flag=True
+                    continue
                 studentId=(str(row[0].value)).upper()
-                try:
-                    studentHere = Student.objects.get(id=studentId)
+                studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+                balance=row[1].value
+                messNo = row[2].value
+                try:                    
                     reg_main = Reg_main.objects.get(student_id=studentId)
                     reg_main.current_mess_status="Registered"
                     reg_main.mess_option=str(messNo)
+                    reg_main.balance=reg_main.balance+balance
                     reg_main.save()
                     # if Messinfo.objects.filter(student_id=studentId).exists():
                     #     Messinfo.objects.filter(student_id=studentId).update(mess_option=str(messNo))
@@ -1428,9 +1439,13 @@ def searchAddOrRemoveStudent(request):
                     #     newData=Messinfo(student_id=studentHere,mess_option=str(messNo))
                     #     newData.save()
                 except:
-                    1
-        messages.success(request,"Done.")
-        return HttpResponseRedirect("/mess")
+                    reg_main = Reg_main(student_id=reg_main.student_id,program=studentHere.programme,current_mess_status="Registered",mess_option=str(messNo),balance=balance)
+                    reg_main.save()
+
+                new_reg_record = Reg_records(student_id=reg_main.student_id,start_date=today_g,end_date=latest_end_date)
+                new_reg_record.save()
+    # messages.success(request,"Done.")
+    return HttpResponseRedirect("/mess")
         
 @csrf_exempt
 def uploadPaymentDue(request):
@@ -1525,3 +1540,38 @@ def de_reg_request(request):
         new_req=Deregistration_Request(student_id=student)
         new_req.save()
         return JsonResponse(data)             
+
+@csrf_exempt
+def update_bill(request):
+    if(request.FILES):   
+            excel_file = request.FILES['excel_file_bill']
+            wb = openpyxl.load_workbook(excel_file)
+            flag = False
+            for row in wb.active:
+                if(flag==False):
+                    flag=True
+                    continue
+                studentId=(str(row[0].value)).upper()
+                studentHere = Student.objects.select_related('id','id__user','id__department').get(id=studentId)
+                month=str(row[1].value)
+                year = row[2].value
+                amt = row[3].value
+                rebate_cnt = row[4].value
+                rebate_amt = row[5].value
+                total_amt = row[6].value
+                try:                    
+                    bill = Monthly_bill.objects.get(student_id=studentId,month=month,year=year)
+                    reg_main = Reg_main.objects.get(student_id=studentId)
+                    reg_main.balance=reg_main.balance+bill.total_bill
+                    bill.amount=amt
+                    bill.rebate_count=rebate_cnt
+                    bill.rebate_amount=rebate_amt
+                    bill.total_bill=total_amt
+                    reg_main.balance=reg_main.balance-total_amt
+                    bill.save()
+                    reg_main.save()
+                except:
+                    bill = Monthly_bill(student_id=studentHere,month=month,year=year,amount=amt,rebate_count=rebate_cnt,rebate_amount=rebate_amt,total_bill=total_amt)
+                    bill.save()
+    # messages.success(request,"Done.")
+    return HttpResponseRedirect("/mess")

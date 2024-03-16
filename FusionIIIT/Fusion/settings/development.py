@@ -34,7 +34,6 @@ if DEBUG:
     INSTALLED_APPS += (
         'debug_toolbar',
         'django_extensions',
-        'django_crontab',
         )
 
 

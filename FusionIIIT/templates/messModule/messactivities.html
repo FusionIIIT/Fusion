@@ -62,6 +62,46 @@
                 
 
             </div>
+
+            <div class="ui form" style="margin-top: 10px;">
+                <form
+                    method="POST"
+                    action="/mess/updatemonthlybill"
+                    enctype="multipart/form-data"
+                  >
+                    {% csrf_token %}
+                    <div class="field">
+                      <div class="ui label" style="display: block;">Update Monthly bill by uploading Excel</div>
+                      <input
+                        type="file"
+                        title="Upload excel file"
+                        name="excel_file_bill"
+                        accept=".xlsx,.xls"
+                        style="max-width: 15rem; margin-bottom: 1rem"
+                        required
+                      />
+                      <br />
+                    </div>
+                    <div class="field">
+                      <button
+                        class="ui primary fluid button"
+                        style="max-width: 10rem"
+                        type="submit"
+                        name="excelUpload1"
+                      >
+                        <i class="upload icon"></i>
+                        Update bills
+                      </button>
+                      <ul>
+                        <li>
+                          The excel sheet should contain seven columns including the heading - Roll no, month of bill, year of bill, amount without rebate,rebate count, rebate amount, final bill
+                        </li>
+                        <li>File should be in .xlsx or .xls format.</li>
+                        <li>This registration will update the Students bill for the provided month and year.</li>
+                      </ul>
+                    </div>
+                  </form>
+            </div>
         </div>
         {% comment %} Committee sections starts here {% endcomment %}
 
