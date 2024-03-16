@@ -13,11 +13,9 @@ from timeit import default_timer as time
 from notification.views import office_module_notif,file_tracking_notif
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import LeaveFormTable,GraduateSeminarForm,BonafideFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimForm
+from .models import LeaveFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd
 from django.shortcuts import render, get_object_or_404
-# from .utils import *
-
-# Create your views here.
+from datetime import date 
 def otheracademic(request):
     return  render(request, "otheracademic/leaveform.html")
 
@@ -178,61 +176,51 @@ def assistantship(request):
 def assistantship_form_submission(request):
     if request.method == 'POST':
         # Retrieve form data
-        roll_no = request.user.extrainfo
+
         student_name = request.POST.get('student_name')
+        roll_no = request.POST.get('roll_no')
         discipline = request.POST.get('discipline')
-        month = request.POST.get('month')
-        year = request.POST.get('year')
-        bank_account = request.POST.get('bank_account')
-        student_signature = request.POST.get('student_signature')
+        date_from = request.POST.get('date_from')
+        date_to = request.POST.get('date_to')
+        bank_account_no = request.POST.get('bank_account_no')
+        signature = request.FILES.get('signature')
+        applicability = request.POST.get('applicability')
         ta_supervisor = request.POST.get('ta_supervisor')
         thesis_supervisor = request.POST.get('thesis_supervisor')
-        date_str = request.POST.get('date')
+        date_applied = request.POST.get('date_of_application')
+
+        current_date = date.today()
         
         # Save form data to the database
-        assistantship_claim = AssistantshipClaimForm(
-            roll_no=roll_no,
+        assistantship_claim = AssistantshipClaimFormStatusUpd(
             student_name=student_name,
+            roll_no=request.user.extrainfo,
             discipline=discipline,
-            month=month,
-            year=year,
-            bank_account=bank_account,
-            student_signature=student_signature,
+            dateFrom=date_from,
+            dateTo=date_to,
+            bank_account=bank_account_no,
+            student_signature=signature,
+            dateApplied= current_date ,
             ta_supervisor=ta_supervisor,
             thesis_supervisor=thesis_supervisor,
-            date=date_str,
-            approved = False
+            applicability=applicability,
+            TA_approved=False,
+            TA_rejected=False,
+            Ths_approved=False,
+            Ths_rejected=False,
+            HOD_approved=False,
+            HOD_rejected=False,
+            Acad_approved=False,
+            Acad_rejected=False
         )
         assistantship_claim.save()
         
-        # file_id = create_file(uploader="21BCS112", 
-        # uploader_designation="student", 
-        # receiver="21BCS087",
-        # receiver_designation="CSE HOD", 
-        # src_module="assistantship", 
-        # src_object_id= str(assistantship_claim.id), 
-        # file_extra_JSON= None, 
-        # attached_file = None)
-        # inbox_files = view_inbox(username="vkjain", designation="CSE HOD",src_module="assistantship")
-        # print(inbox_files)
-        # print(file_id)
-       
-    
-
         # Redirect to a success page or return a success message
-        return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/success-url/' with the actual URL of your success page
+        return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
+
     else:
         # Return an error response for invalid request method
         return HttpResponse('Invalid request method')
-
-        
-          
-# def  assistantship_form_approval(request):
-#     en = FormEntry.objects.all()
-#     return render(request,'assistantship/assistantship_approve.html')
-         
-# views.py
-
 
 
 def assistantship_form_approval(request):

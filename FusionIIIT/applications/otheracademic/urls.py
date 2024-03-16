@@ -10,8 +10,6 @@ urlpatterns = [
     url(r'^leaveform/$', views.leave_form_submit, name='leave_form_submit'),
     url(r'^leaveApproveForm/$', views.leaveApproveForm, name='leaveApproveForm'),
     url(r'^leaveStatus/$', views.leaveStatus, name='leaveStatus'),
-    # url(r'^approve_leave/<int:leave_id>/$', views.approve_leave, name='approve_leave'),
-    # url(r'^reject_leave/<int:leave_id>/$', views.reject_leave, name='reject_leave'),
     url(r'^approve_leave/(?P<leave_id>\d+)/$', views.approve_leave, name='approve_leave'),
     url(r'^reject_leave/(?P<leave_id>\d+)/$', views.reject_leave, name='reject_leave'),
     url(r'^graduateseminar/$', views.graduateseminar, name='graduateseminar'),
@@ -28,4 +26,6 @@ urlpatterns = [
      url(r'^submitform/$', views.assistantship_form_submission, name='assistantship_form_submission'),
      url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
       url(r'^noduesverification/$', views.nodues, name='nodues'),
+
 ]
+
