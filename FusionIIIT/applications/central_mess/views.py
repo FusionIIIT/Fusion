@@ -24,7 +24,7 @@ from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_reque
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response)
+                       handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response,handle_add_reg)
 from notification.views import central_mess_notif
 
 import csv
@@ -67,6 +67,7 @@ def mess(request):
     count6 = 0
     count7 = 0
     count8 = 0
+    reg_form = RegistrationRequest()
     if extrainfo.user_type == 'student':
         student = Student.objects.select_related('id','id__user','id__department').get(id=extrainfo)
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
@@ -75,7 +76,6 @@ def mess(request):
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
-        reg_form = RegistrationRequest()
         reg_request = Registration_Request.objects.filter(student_id=student)
 
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
@@ -412,7 +412,8 @@ def mess(request):
                     'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig,
                     'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
                     'de_reg_request':de_reg_request,
-                    'bill': bills
+                    'bill': bills,
+                    'reg_form':reg_form
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -1519,15 +1520,30 @@ def reg_request(request):
 
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
-    student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-    if request.method == 'POST':
-        form = RegistrationRequest(request.POST, request.FILES)
+    try:
+        if request.POST['input_roll']:
+            print(request.POST)
+            studentID = request.POST['input_roll']
+            student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
+            form = RegistrationRequest(request.POST, request.FILES)
 
-        if form.is_valid():
-            temp=form.save(commit=False)
-            temp.student_id=student
-            temp.save()
+            if form.is_valid():
+                temp=form.save(commit=False)
+                temp.student_id=student
+                temp.status='accept'
+                temp.save()
+            handle_add_reg(request,student)
             return HttpResponseRedirect("/mess")  
+    except:
+        student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+        if request.method == 'POST':
+            form = RegistrationRequest(request.POST, request.FILES)
+
+            if form.is_valid():
+                temp=form.save(commit=False)
+                temp.student_id=student
+                temp.save()
+                return HttpResponseRedirect("/mess")  
 
 def de_reg_request(request):
     if request.method == 'POST':

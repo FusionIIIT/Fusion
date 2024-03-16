@@ -293,14 +293,13 @@ class Registration_Request(models.Model):
         return str(self.student_id.id)        
 
 class Reg_main(models.Model):
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE, primary_key= True)
     program = models.CharField(max_length=10)
     current_mess_status = models.CharField(max_length=20,default='Deregistered') 
     balance = models.IntegerField(default=0)
     mess_option = models.CharField(max_length=20,default='mess2')
     def __str__(self):
         return str(self.student_id.id)
-
 class Reg_records(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField(default=datetime.date.today)
