@@ -90,6 +90,18 @@ def check_next_month_status(per_day_cost, current_balance, amount):
         central_mess_notif()
 
 
+def check_daily(student, per_day_cost):
+    two_day_amount = int(2)*int(per_day_cost)
+    reg_main_obj = Reg_main.objects.get(student_id=student)
+    balance = reg_main_obj.balance
+    if(balance <= two_day_amount):
+        #TODO add the notification for the student
+        central_mess_notif()
+
+        reg_end_date_obj = Reg_records.objects.filter(student_id = student).latest('start_date')
+        reg_end_date = tomorrow_g + timedelta(days=1)
+        reg_end_date_obj.end_date = reg_end_date
+        reg_end_date_obj.save()
 
 
 def generate_per_day_bill():
@@ -111,6 +123,7 @@ def generate_per_day_bill():
     for student in registered_students:
         student_id = student.student_id
         current_balance = student.balance
+        check_daily(student_id, per_day_cost)
         if(int(today_g.day) == 25):
             check_next_month_status(per_day_cost, current_balance, amount)
         try:
