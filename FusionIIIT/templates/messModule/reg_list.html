@@ -72,6 +72,8 @@
     </table>
   </div>
 </div>
+<div class="ui modal" id="student-reg-modal" style="height: 60vh; max-height: 60vh; overflow-x: scroll;">
+</div>
 
 
 
@@ -154,20 +156,20 @@
 
   function get_reg_details(id){
     const student = document.getElementById('uniq-'+id).querySelector('#roll').textContent
-    const mess_students=document.getElementById('mess_students_table');
+    const mess_students=document.getElementById('student-reg-modal');
     $.ajax({
                    type: 'POST',
-                   url: 'api/get_reg_records',
+                   url: 'api/get_student_all_details',
                    dataType: 'json',
                    data: {
                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
                       'student_id':student,
                    },
                    success: function(data) {
-
-                          //  console.log(data.payload)
-                          //  alert('data updated successfully')
+                           data=data.payload
                            var students_data=`
+                           <div>
+                           <div>Student Registration Records</div>
                            <table class="ui celled table">
                                 <thead>
                                   <th>Reg Start date</th>
@@ -175,7 +177,7 @@
                                 </tr></thead>
                                 <tbody>`;
 
-                                  data.payload.forEach(element => {
+                                  data.reg_records.forEach(element => {
 
                                     students_data=students_data+`
                                     <tr>
@@ -190,10 +192,73 @@
                                               </tbody>
                                             </table>
                                         `
+                                students_data=students_data+`
+                                <div><button class="ui button primary" id="payment-details-button" onclick="handlepaymentbutton()">Show Payment Details</button></div>
+                                `;
 
-                                mess_students.innerHTML=students_data;        
-   
-   
+                                students_data=students_data+`
+                                <table class="ui celled table" id="payments-table-student">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Amount Paid</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payment.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.payment_month}</td>
+                                    <td data-label="Year">${element.payment_year}</td>
+                                    <td data-label="Initial Amount">${element.amount_paid}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                              students_data=students_data+`
+                                <div><button class="ui button primary" id="payment-details-button" onclick="handlebillsbutton()">Show Student Bills</button></div>
+                                <table class="ui celled table">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Amount</th>
+                                  <th>Rebate Count</th>
+                                  <th>Rebate Amount</th>
+                                  <th>Total Amount</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.bill.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.month}</td>
+                                    <td data-label="Year">${element.year}</td>
+                                    <td data-label="Initial Amount">${element.amount}</td>
+                                    <td data-label="rebate count">${element.rebate_count}</td>
+                                    <td data-label="rebate amount">${element.rebate_amount}</td>
+                                    <td data-label="Total amount">${element.total_bill}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                            </div>
+                                        `      
+
+
+                                mess_students.innerHTML=students_data;
+                                $('#student-reg-modal').modal('show');        
                    },
                    error: function(data, err) {
                        alert(err.message);
