@@ -118,7 +118,12 @@
     <form class="ui form" method = "post" action="registrationRequest" enctype="multipart/form-data">
         {% csrf_token %}
         <label>Roll No</label>
-        <input type="text" id="input_roll" name="input_roll">
+        <input type="text" id="input_roll" name="input_roll" style="margin-bottom: 10px;">
+        <label>Mess No</label>
+        <select name="mess_option_form">
+            <option value="mess1">mess1</option>
+            <option value="mess2">mess2</option>
+        </select>
         {{reg_form.as_p}}
         <button class="ui primary button"  type="submit">
             Add student
@@ -126,6 +131,34 @@
     </form>
 </div>
 
+<div class="ui modal" id="remove_modal" style="padding: 10px;">
+    <form class="ui form" method="post" action="{% url 'mess:deregistrationRequest' %}" >
+        {% csrf_token %}
+
+        <label>Roll No</label>
+        <input type="text" id="input_roll_remove" name="input_roll" style="margin-bottom: 10px;">
+
+        <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+            {#                <p style="text-align:center;"><strong>Update </strong></p>#}
+            <div class="two fields">
+                <div class="field">
+                    <label for="End Date">End Date*</label>
+                    <div class="ui calendar" id="dereg_end_date">
+                        <div>
+                            <input name="end_date" type="date" placeholder="From" required="true"
+                                id="dereg_end_date">
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" name="submit">Deregister 
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 
 {% endblock %}
 {% endblock %}
@@ -142,7 +175,7 @@ function searchOrRemovefun(event){
     const mess_option=document.getElementById('mess_add_dropdown_option').value;
 
     submitType=event.submitter.id;
-    if(submitType==='searchStudent'||(submitType==='removeStudent'&&window.confirm("Do you want to remove "+S_id+"?"))){
+    if(submitType==='searchStudent'){
         $.ajax({
                 type: 'GET',
                 url: 'registeredstudent',
@@ -199,6 +232,10 @@ function searchOrRemovefun(event){
         //             alert(err)
         //         }
         //     });
+    }
+    else if(submitType==='removeStudent'){
+        input_roll=document.getElementById('input_roll_remove').value = S_id
+        $('#remove_modal').modal('show')
     }
 }
 </script>

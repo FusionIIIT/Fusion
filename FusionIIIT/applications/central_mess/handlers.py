@@ -857,7 +857,7 @@ def handle_add_reg(request):
     except:
         latest_end_date= None
     
-    mess='mess2'
+    mess=request.POST['mess_option_form']
     try :
         reg_main = Reg_main.objects.get(student_id=studentID)
         reg_main.current_mess_status='Registered'

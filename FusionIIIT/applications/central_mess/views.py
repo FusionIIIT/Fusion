@@ -93,7 +93,7 @@ def mess(request):
             current_rem_balance = mess_optn.balance
             current_mess_status = mess_optn.current_mess_status
         except:
-            reg_main={}
+            mess_optn={}
             mess_optn={'mess_option':'no-mess'}
             y = Menu.objects.filter(mess_option="mess1")
             current_rem_balance = 0
@@ -246,7 +246,7 @@ def mess(request):
                     'desig': desig,
                     'reg_form':reg_form,
                     'reg_request':reg_request,
-                    'reg_main':reg_main,
+                    'reg_main':mess_optn,
                     'reg_record':reg_record,
                     'de_reg_request':de_reg_request,
 
@@ -317,7 +317,7 @@ def mess(request):
                     'desig': desig,
                     'reg_form':reg_form,
                     'reg_request':reg_request,
-                    'reg_main':reg_main,
+                    'reg_main':mess_optn,
                     'reg_record':reg_record,
                     'de_reg_request':de_reg_request,
                 }
@@ -343,7 +343,7 @@ def mess(request):
                    'minutes': minutes,
                    'meeting': meeting,
                    'reg_form':reg_form,
-                   'reg_main_stud':reg_main,
+                   'reg_main_stud':mess_optn,
                    'reg_request':reg_request,
                    'reg_record':reg_record,
                    'de_reg_request':de_reg_request,
@@ -1547,19 +1547,20 @@ def reg_request(request):
 
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
-    if request.POST['input_roll']:
-        # print(request.POST)
-        studentID = str(request.POST['input_roll']).upper()
-        handle_add_reg(request)
-        form = RegistrationRequest(request.POST, request.FILES)
-        student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
-        if form.is_valid():
-            temp=form.save(commit=False)
-            temp.student_id=student
-            temp.status='accept'
-            temp.save()
-        return HttpResponseRedirect("/mess")  
-    else:
+    try:
+        if request.POST['input_roll']:
+            # print(request.POST)
+            studentID = str(request.POST['input_roll']).upper()
+            handle_add_reg(request)
+            form = RegistrationRequest(request.POST, request.FILES)
+            student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
+            if form.is_valid():
+                temp=form.save(commit=False)
+                temp.student_id=student
+                temp.status='accept'
+                temp.save()
+            return HttpResponseRedirect("/mess")  
+    except:
         student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
         if request.method == 'POST':
             form = RegistrationRequest(request.POST, request.FILES)
@@ -1608,16 +1609,30 @@ def update_bill_excel(request):
     return HttpResponseRedirect("/mess")
   
 def de_reg_request(request):
-
-    data={
-        'message':'request submitted successfully'
-    }
-    user = request.user
-    end_date = request.POST.get("end_date")
-    print(end_date)
-    extra_info = ExtraInfo.objects.select_related().get(user=user)
-    student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-    new_req=Deregistration_Request(student_id=student, end_date=end_date)
-    new_req.save()
-    return  HttpResponseRedirect('/mess')
+    try:
+        if request.POST['input_roll']:
+            # print(request.POST)
+            studentID = str(request.POST['input_roll']).upper()
+            end_date = request.POST.get("end_date")
+            reg_main = Reg_main.objects.get(student_id=studentID)
+            
+            if(end_date == str(date.today())):
+                reg_main.current_mess_status = 'Deregistered'
+                reg_main.save()
+            reg_record = Reg_records.objects.filter(student_id=studentID).latest('start_date')
+            reg_record.end_date=end_date
+            reg_record.save()
+            return  HttpResponseRedirect('/mess')
+    except:
+        data={
+            'message':'request submitted successfully'
+        }
+        user = request.user
+        end_date = request.POST.get("end_date")
+        print(end_date)
+        extra_info = ExtraInfo.objects.select_related().get(user=user)
+        student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+        new_req=Deregistration_Request(student_id=student, end_date=end_date)
+        new_req.save()
+        return  HttpResponseRedirect('/mess')
 
