@@ -1552,7 +1552,7 @@ def reg_request(request):
         studentID = str(request.POST['input_roll']).upper()
         handle_add_reg(request)
         form = RegistrationRequest(request.POST, request.FILES)
-
+        student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
         if form.is_valid():
             temp=form.save(commit=False)
             temp.student_id=student
@@ -1607,8 +1607,8 @@ def update_bill_excel(request):
     # messages.success(request,"Done.")
     return HttpResponseRedirect("/mess")
   
-  def de_reg_request(request):
-    
+def de_reg_request(request):
+
     data={
         'message':'request submitted successfully'
     }

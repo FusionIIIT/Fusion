@@ -850,7 +850,7 @@ def handle_add_reg(request):
     amount = int(request.POST['amount'])
     studentID = str(request.POST['input_roll']).upper()
     student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
-    
+    payment_date = request.POST['payment_date']
     try:
         latest=Semdates.objects.latest('start_date')
         latest_end_date = latest.end_date
@@ -872,13 +872,9 @@ def handle_add_reg(request):
 
     new_reg_record = Reg_records(student_id=student, start_date=start_date,end_date = latest_end_date)
     new_reg_record.save()
-    # try:
-    #     existing_student = Payments.objects.get(student_id=student, payment_month=current_month(), payment_year=current_year())
-    #     existing_student.amount_paid = existing_student.amount_paid + amount
-    #     existing_student.save()
-    # except:
-    #     new_payment_record = Payments(student_id = student, amount_paid = amount)
-    #     new_payment_record.save()
+   
+    new_payment_record = Payments(student_id = student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year=current_year())
+    new_payment_record.save()
     message="Your registeration request has been accepted"
             
            

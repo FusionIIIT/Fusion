@@ -151,8 +151,6 @@ class Monthly_bill(models.Model):
 
 class Payments(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    # sem = models.IntegerField()   
-    # year = models.IntegerField(default=current_year)
     amount_paid = models.IntegerField(default=0)
     payment_month = models.CharField(max_length=20, default=current_month)
     payment_year = models.IntegerField(default = current_year)
