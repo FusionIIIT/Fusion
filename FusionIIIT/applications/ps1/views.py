@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif
 from django.utils import timezone
+from datetime import datetime
 
 
 
@@ -366,26 +367,22 @@ def draftview(request,id):
 
 @login_required(login_url = "/accounts/login")
 def indentview2(request,id):
-
-
-
-    indent_files = IndentFile.objects.all().values('file_info')
-    in_file = Tracking.objects.filter(file_id__in=indent_files,receiver_id=request.user).order_by("-receive_date")
-
-    #print (File.designation)
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
-
+     
     data = view_inbox(request.user.username, designations, "ps1")
-    # print("===================")
-    # print(data)
-    # print("===================")
+
+    outboxd = view_outbox(request.user.username, designations, "ps1")
+
+    data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+
+    for item in data:
+        item['upload_date'] = datetime.fromisoformat(item['upload_date'])
+        
     context = {
         'receive_design':abcd,
-        'in_file': in_file,
-        # 'in_file': data,
-        'designations': designations,
+        'in_file': data,
     }
     return render(request, 'ps1/indentview2.html', context)
 
@@ -404,11 +401,7 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
     designation = HoldsDesignation.objects.filter(user=request.user)
-    in_file=Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
-
-
     context = {
-        'in_file': in_file,
         'designation': designation,
     }
 
@@ -514,7 +507,7 @@ def forwardindent(request, id):
                 )
 
 
-                if (receive_design in ["dept_admin ME", "dept_admin ECE", "dept_admin CSE", "dept_admin Design", "dept_admin NS"]):
+                if (receive_design == "dept_admin"):
                         indent.head_approval=True
                 elif ((sender_designation_name =="Director" or sender_designation_name =="Registrar") and (receive_design == "Accounts Admin")):
                         indent.director_approval=True
@@ -957,3 +950,30 @@ def stock_transfer(request):
             return render(request,'ps1/stock_transfer.html',{'StockEntry':stocks})        
 
     return HttpResponseRedirect('../stock_transfer')   
+
+@login_required(login_url = "/accounts/login")
+def outboxview2(request,id):
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    data = view_outbox(request.user.username, designations, "ps1")
+    data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+
+    for item in data:
+        item['upload_date'] = datetime.fromisoformat(item['upload_date'])
+        
+    context = {
+        'receive_design':abcd,
+        'in_file': data,
+    }
+    return render(request, 'ps1/outboxview2.html', context)
+
+@login_required(login_url = "/accounts/login")
+def outboxview(request):
+
+    designation = HoldsDesignation.objects.filter(user=request.user)
+    context = {
+        'designation': designation,
+    }
+
+    return render(request, 'ps1/outboxview.html', context)

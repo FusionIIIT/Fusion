@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'^report/$', views.report, name='report'),
     url(r'view-bill/<int:stock_entry_id>/$', views.view_bill, name='view_bill'),
     url(r'^perform_transfer/$', views.perform_transfer, name='perform_transfer'),
-    url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer')
+    url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer'),
+    url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
+    url(r'^outboxview/$', views.outboxview, name='outboxview')
 
 ]
