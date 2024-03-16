@@ -8,3 +8,4 @@ admin.site.register(BonafideFormTableUpdated)
 admin.site.register(GraduateSeminarFormTable)
 
 admin.site.register(AssistantshipClaimFormStatusUpd)
+
