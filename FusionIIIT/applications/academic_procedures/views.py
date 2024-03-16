@@ -42,6 +42,11 @@ from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDa
 from .api import serializers
 from django.core.serializers import serialize
 
+
+"""every newfuncitons that have been created with name auto_ in start of their original name is to implement new logic of registraion .. 
+unlike the previous registration logic that was done with priority """
+
+
 demo_date = timezone.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 180)
@@ -54,12 +59,7 @@ available_cse_seats = 100
 available_ece_seats = 100
 available_me_seats = 100
 
-# assistantship_status = Assistantship_status.objects.all()
 
-# for obj in assistantship_status:
-#     student_status = obj.student_status
-#     hod_status = obj.hod_status
-#     account_status = obj.account_status
 
 
 @login_required(login_url='/accounts/login')
@@ -1434,6 +1434,7 @@ def auto_pre_registration(request):
                 print(e)
 
             reg_curr = []
+            final_reg_curr = []
             for course_slot in course_slots :
                 course_priorities = request.POST.getlist("course_priority-"+course_slot)
                 if(course_priorities[0] == 'NULL'):
@@ -1453,9 +1454,12 @@ def auto_pre_registration(request):
                         course_slot_id = course_slot_id_for_model,
                         priority = priority_of_current_course
                     )
+                    f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
+                    final_reg_curr.append(f)
                     reg_curr.append(p)
             try:
                 InitialRegistration.objects.bulk_create(reg_curr)
+                FinalRegistration.objects.bulk_create(final_reg_curr)
                 registration_check = StudentRegistrationChecks(
                             student_id = current_user,
                             pre_registration_flag = True,
@@ -2340,13 +2344,13 @@ def student_list(request):
         batch_id = Batch.objects.get(id = batch)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id = batch_id)
         if (student_obj):
-            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True , student_id__finalregistration__verified=False).select_related(
+            reg_table = student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id = student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag = True , student_id__finalregistration__verified=False , student_id__finalregistration__semester_id= student_obj[0].semester_id ).select_related(
                 'student_id','student_id__id','student_id__id__user','student_id__id__department').values(
                     'student_id__id','student_id__id__user__first_name','student_id__id__user__last_name','student_id__batch','student_id__id__department__name',
                     'student_id__programme','student_id__curr_semester_no','student_id__id__sex','student_id__id__phone_no','student_id__category',
                     'student_id__specialization','mode','transaction_id','deposit_date','fee_paid','utr_number','reason','fee_receipt','actual_fee',
                     'student_id__id__user__username').order_by('student_id__id__user').distinct()
-            print('------------------------------------------------------------------------------------------------------------------------------------------',reg_table)
+            # print('------------------------------------------------------------------------------------------------------------------------------------------',reg_table)
         else :
             reg_table = []
 
@@ -2444,6 +2448,12 @@ def process_verification_request(request):
         return verify_registration(request)
     return JsonResponse({'status': 'Failed'}, status=400)
 
+
+def auto_process_verification_request(request):
+    if request.is_ajax():
+        return auto_verify_registration(request)
+    return JsonResponse({'status': 'Failed'}, status=400)
+    
 @transaction.atomic
 def verify_registration(request):
 
@@ -2500,8 +2510,53 @@ def verify_registration(request):
             academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
-
-
+@transaction.atomic
+def auto_verify_registration(request):
+    if request.POST.get('status_req') == "accept" :
+        student_id = request.POST.get('student_id')
+        student = Student.objects.get(id = student_id)
+        batch = student.batch_id
+        curr_id = batch.curriculum
+        
+        if(student.curr_semester_no+1 >= 9):
+            # print('----------------------------------------------------------------' , student.curr_semester_no)
+            sem_no = 8
+        else:
+            # print('----------------------------------------------------------------' , student.curr_semester_no)
+            sem_no = student.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
+        # print('----------------------------------------------------------------' , student.curr_semester_no)
+        
+        final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
+        
+        # final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False)
+        
+        with transaction.atomic():
+            for obj in final_register_list:
+                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+            academics_module_notif(request.user, student.id.user, 'registration_approved')
+            
+            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
+            return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
+         
+    elif request.POST.get('status_req') == "reject" :
+        reject_reason = request.POST.get('reason')
+        student_id = request.POST.get('student_id')
+        student_id = Student.objects.get(id = student_id)
+        batch = student_id.batch_id
+        curr_id = batch.curriculum
+        if(student_id.curr_semester_no+1 >= 9):
+            sem_no = 8
+        else:
+            sem_no = student_id.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
+        with transaction.atomic():
+            academicadmin = get_object_or_404(User, username = "acadadmin")
+            FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
+            StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
+            FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
+            academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
+            return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
 def get_registration_courses(courses):
     x = [[]]
@@ -2566,8 +2621,8 @@ def course_marks_data(request):
     try:
         course_id = request.POST.get('course_id')
         course = Courses.objects.select_related().get(id = course_id)
-        print(course)
-        print(course_id)
+        # print(course)
+        # print(course_id)
         student_list = course_registration.objects.filter(course_id__id=course_id).select_related(
             'student_id__id__user','student_id__id__department').only('student_id__batch', 
             'student_id__id__user__first_name', 'student_id__id__user__last_name',
@@ -3627,7 +3682,6 @@ def get_next_sem_courses(request):
         
         if next_sem_id:
             next_sem_registration_courses = get_detailed_sem_courses(next_sem_id )
-            # next_sem_registration_courses = serializers.CourseSlotSerializer(next_sem_registration_courses).data
             # print(next_sem_registration_courses)
             return JsonResponse(next_sem_registration_courses, safe=False)
     return JsonResponse({'error': 'Invalid request'})
