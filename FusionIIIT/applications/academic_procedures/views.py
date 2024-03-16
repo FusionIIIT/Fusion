@@ -413,12 +413,13 @@ def academic_procedures_student(request):
                 final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
             drop_courses_options = get_drop_course_options(currently_registered_course)
-            
+            replace_courses_options = get_replace_course_options(currently_registered_course, batch.year)
         except Exception as e:
             final_registered_courses = None
             final_registered_course_show = None
             # drop_courses_options = None
             add_courses_options = None
+            replace_courses_options = None
 
         fee_payment_mode_list = dict(Constants.PaymentMode)
 
@@ -549,6 +550,7 @@ def academic_procedures_student(request):
                            # 'add_course': add_course,
                             'add_courses_options': add_courses_options,
                             'drop_courses_options' : drop_courses_options,
+                            'replace_courses_options' : replace_courses_options,
                            # 'pre_register': pre_register,
                             'pre_registration_timestamp': pre_registration_timestamp,
                             'prd': pre_registration_date_flag,
@@ -1744,6 +1746,52 @@ def drop_course(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
+def replace_courses(request):
+    """
+    This function is used to replace elective courses which have been registered
+    @param:
+        request - contains metadata about the requested page
+    @variables:
+        current_user - contains current logged in user
+        sem_id - contains current semester id
+        count - no of courses to be replaced
+        course_id - contains course id for a particular course
+        course_slot_id - contains course slot id for a particular course
+        choice - contains choice of a particular course
+        slot - contains slot of a particular course
+    """
+
+    if request.method == 'POST' :       
+        try:
+            current_user = get_object_or_404(User, username=request.POST.get('user'))
+            current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
+
+            # sem_id = Semester.objects.get(id = request.POST.get('semester'))
+            count = request.POST.get('ct')
+            count = int(count)
+
+            for i in range(1, count+1):
+                choice = "choice["+str(i)+"]"
+                slot = "slot["+str(i)+"]"
+                try :
+
+                    course_id = Courses.objects.get(id = request.POST.get(choice))
+                    courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
+
+                    registered_course = course_registration.objects.filter(student_id=current_user, course_slot_id = courseslot_id).first()
+
+                    if registered_course:
+                        registered_course.course_id = course_id 
+                        registered_course.save()
+                except Exception as e:
+                    continue
+            return HttpResponseRedirect('/academic-procedures/main')
+        except Exception as e:
+            return HttpResponseRedirect('/academic-procedures/main')
+    else :
+        return HttpResponseRedirect('/academic-procedures/main')
+
 
 
 
@@ -1843,7 +1891,7 @@ def get_final_registration_choices(branch_courses,batch):
         max_limit = courseslot.max_registration_limit
         lis = []
         for course in courseslot.courses.all():
-            if FinalRegistration .objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
+            if FinalRegistration.objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
                 lis.append(course)
             else:
                 unavailable_courses.append(course)
@@ -1874,7 +1922,24 @@ def get_drop_course_options(current_register):
             courses.append(item[1])
     return courses
 
+def get_replace_course_options( current_register, batch):
+    replace_options = []
 
+    for registered_course in current_register:
+        courseslot_id = registered_course[0]
+        course_id = registered_course[1]
+
+        courseslot = courseslot_id
+        coursename = course_id.name
+        lis = []
+
+        if 'Elective' in courseslot.type:
+            for course in courseslot.courses.all():
+                if course != course_id:
+                    lis.append(course)
+            replace_options.append((courseslot, coursename, lis))
+
+    return replace_options
 
 
 

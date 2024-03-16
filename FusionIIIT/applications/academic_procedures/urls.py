@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^addCourse/', views.add_courses, name='addCourse'),
     url(r'^add_one_course/' , views.add_one_course , name = 'add_one_course'),
     url(r'^drop_course/', views.drop_course, name='drop_course'),
+    url(r'^replaceCourse/', views.replace_courses, name='drop_course'),
     url(r'^branch-change/', views.approve_branch_change, name='branch_change'),
     url(r'^brach-change-request/', views.branch_change_request,
         name='branch_change_request'),
