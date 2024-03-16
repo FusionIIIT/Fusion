@@ -72,7 +72,7 @@
     </table>
   </div>
 </div>
-<div class="ui modal" id="student-reg-modal" style="height: 60vh; max-height: 60vh; overflow-x: scroll;">
+<div class="ui modal" id="student-reg-modal" style="height: 70vh; max-height: 70vh; overflow-x: scroll;padding: 10px;">
 </div>
 
 
@@ -167,9 +167,38 @@
                    },
                    success: function(data) {
                            data=data.payload
+                           console.log(data)
                            var students_data=`
                            <div>
-                           <div>Student Registration Records</div>
+                          <h2 class="ui header">Student Details</h2>
+                           <table class="ui celled table">
+                           <thead>
+                             <th>Name</th>
+                             <th>Roll No</th>
+                             <th>Program</th>
+                             <th>Balance</th>
+                             <th>Mess</th>
+                           </tr></thead>
+                           <tbody>`
+                            element=data.student_details
+
+                               students_data=students_data+`
+                               <tr id="uniq-${element.id}">
+                               <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                               <td data-label="Roll No" id="roll">${element.student_id}</td>
+                               <td data-label="Program">${element.program}</td>
+                               <td data-label="Balance">${element.balance}</td>
+                               <td data-label="Mess"> ${element.mess_option}</td>
+                               </tr>
+                               `
+
+                            students_data=students_data+`
+                            </tbody>
+                            </table>
+                            <hr>
+                              `
+                           students_data= students_data+`
+                           <h2 class="ui header">Student Registration Records</h2>
                            <table class="ui celled table">
                                 <thead>
                                   <th>Reg Start date</th>
@@ -191,9 +220,10 @@
                                   students_data=students_data+`
                                               </tbody>
                                             </table>
+                                            <hr>
                                         `
                                 students_data=students_data+`
-                                <div><button class="ui button primary" id="payment-details-button" onclick="handlepaymentbutton()">Show Payment Details</button></div>
+                                <h2 style="margin-top:30px;margin-bottom:10px" class="ui header">Payment Details</h2>
                                 `;
 
                                 students_data=students_data+`
@@ -220,10 +250,11 @@
                                   students_data=students_data+`
                                               </tbody>
                                             </table>
+                                            <hr>
                                         `
 
                               students_data=students_data+`
-                                <div><button class="ui button primary" id="payment-details-button" onclick="handlebillsbutton()">Show Student Bills</button></div>
+                                <h2 style="margin-top:30px;margin-bottom:10px class="ui header">Monthly Bill</h2>
                                 <table class="ui celled table">
                                 <thead>
                                   <th>Month</th>
@@ -254,6 +285,7 @@
                                               </tbody>
                                             </table>
                                             </div>
+                                            <hr>
                                         `      
 
 
@@ -279,9 +311,6 @@
         'student_id':student
       },
       success: function(data) {
-
-        // console.log(data.payload)
-      //  alert('data updated successfully')
         var students_data=`
         <table class="ui celled table">
             <thead>

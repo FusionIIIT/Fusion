@@ -481,5 +481,7 @@ class Get_Student_Details(APIView):
         payment_serialized_obj = PaymentsSerializer(payment_details,many=True)
         bill_serialized_obj = Monthly_billSerializer(bill_details,many=True)
         reg_record_serialized_obj = reg_recordSerialzer(reg_record,many=True)
-        data={'payment':payment_serialized_obj.data,'bill':bill_serialized_obj.data,'reg_records':reg_record_serialized_obj.data}
+        reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+        serialized_obj = GetFilteredSerialzer(reg_main)
+        data={'payment':payment_serialized_obj.data,'bill':bill_serialized_obj.data,'reg_records':reg_record_serialized_obj.data,'student_details':serialized_obj.data}
         return Response({'payload':data}) 

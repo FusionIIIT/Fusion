@@ -31,3 +31,16 @@ class RegistrationRequest(forms.ModelForm):
             'img':forms.FileInput(attrs={'class':'ui big input'}),
             'start_date':forms.widgets.DateInput(attrs={'type':'date'})
         }  
+
+
+class UpdateBalanceRequest(forms.ModelForm):
+
+    class Meta:
+        model = Registration_Request
+        fields = ('Txn_no','amount','img')  
+
+        widgets={
+            'Txn_no':forms.TextInput(attrs={'class':'ui big input','style':'border-radius:4px'}),
+            'amount':forms.TextInput(attrs={'class':'ui big input'}),
+            'img':forms.FileInput(attrs={'class':'ui big input'}),
+        }  
