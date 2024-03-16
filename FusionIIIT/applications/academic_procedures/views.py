@@ -3794,7 +3794,7 @@ def remove_course_from_slot(request):
 def add_one_course(request):
     if request.method == 'POST':
         try:
-            print(request.POST)
+            # print(request.POST)
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
@@ -3823,10 +3823,37 @@ def add_one_course(request):
                     p.save()
                     return JsonResponse({'message': 'Course added successfully'})
                 else:
-                    return JsonResponse({'message': 'Course not added because seats are full'}, status=400)
+                    return JsonResponse({'message': 'Course not added because seats are full!'}, status=200)
             except Exception as e:
                 return JsonResponse({'message': 'Error adding course'}, status=500)
         except Exception as e:
             return JsonResponse({'message': 'Error adding course'}, status=500)
     else:
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+    
+def replace_one_course(request):
+    if request.method == 'POST' :       
+        try:
+            current_user = get_object_or_404(User, username=request.POST.get('user'))
+            current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+            current_user = Student.objects.all().filter(id=current_user.id).first()
+
+
+            course_id = Courses.objects.get(id = request.POST.get('choice'))
+            courseslot_id = CourseSlot.objects.get(id = request.POST.get('slot'))
+            if course_registration.objects.filter(student_id__batch_id__year=current_user.batch_id.year, course_id=course_id).count() < courseslot_id.max_registration_limit and \
+                (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
+                # print('---------------------------------------------------------------------------------' , course_registration.objects.filter(student_id__batch_id__year=current_user.batch_id.year, course_id=course_id).count() ,  courseslot_id.max_registration_limit )
+                registered_course = course_registration.objects.filter(student_id=current_user, course_slot_id = courseslot_id).first()
+
+                if registered_course:
+                    registered_course.course_id = course_id 
+                    registered_course.save()
+            else:
+                return JsonResponse({'message': 'Cannot Replace to this course seats are full!'}, status=200)
+                
+            return JsonResponse({'message': 'Course Replaced Successfully'}, status=200)
+        except Exception as e:
+            return JsonResponse({'message': 'Error Replacing course'}, status=500)
+    else :
         return JsonResponse({'message': 'Invalid request method'}, status=405)

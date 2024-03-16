@@ -2069,14 +2069,15 @@ def view_all_student_data(request):
                     "specailization": student.specialization,
                     "gender" : student.id.sex,
                     "category": student.category,
-                    "pwd_status": student.pwd_status,
+                    # "pwd_status": student.pwd_status,
+                    "pwd_status": False,
                     "Mobile": student.id.phone_no,
                     "dob" : student.id.date_of_birth,
                     "emailid" : student.id.user.email,
                     "father_name": student.father_name,
-                    "father_mobile_no": student.father_mobile_no,
+                    # "father_mobile_no": student.father_mobile_no,
                     "mother_name": student.mother_name,
-                    "mother_mobile_no": student.mother_mobile_no,
+                    # "mother_mobile_no": student.mother_mobile_no,
                     "address": student.id.address
                 }
                 data.append(obj)

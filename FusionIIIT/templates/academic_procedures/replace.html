@@ -1,6 +1,9 @@
 
 <style>
-
+.disabled-dropdown {
+    opacity: 0.5; /* Example: Reduce opacity to visually indicate disabled */
+    pointer-events: none; /* Disable pointer events to prevent interaction */
+}
 </style>
 
 
@@ -49,10 +52,10 @@
                     <td>{{item.0.courses.all.0.credit}} </td>
                     <td>{{item.1}}</td>
                     <td>
-                        <select class="ui dropdown" required="True" name="choice[{{forloop.counter}}]">
+                        <select class="ui dropdown replaceitems" required="True" name="choice[{{forloop.counter}}]" data-value-slot-id='{{ item.0.id }}'>
                             <option value="0">Select course</option>
                             {% for items in item.2 %}
-                            <option value='{{items.id}}' class="values" data-value2="{{items.credit}}">
+                            <option value='{{items.id}}' class="values" data-value2="{{items.credit}}" >
                                 {{items.code}}-{{ items.name }}</option>
                             {% endfor %}
                         </select>
@@ -91,25 +94,6 @@
 <script type="text/javascript">
     $(function () {
         $("#replace_course_form").submit(function (event) {
-
-            // var credits = parseInt(document.getElementById("credit_count").value) + parseInt(document.getElementById("req_credit_count").value);
-            // var inp = document.getElementsByClassName("values");
-            // var test = 0;
-            // for (var i = 0; i < inp.length; i++) {
-            //     if (inp[i].selected) {
-            //         // credits = credits + parseInt(inp[i].getAttribute("data-value2"));
-            //         // test = test + 1
-
-            //     }
-            // }
-            // if (credits >= 27) {
-            //     alert("You Can not earn more than 26 credits in one semester");
-            //     window.location = "/academic-procedures/main/";
-            // } else if (test == 0) {
-            //     alert("please Select a course");
-            //     window.location = "/academic-procedures/main/";
-            // } else {
-
             event.preventDefault();
             var friendForm = $(this);
 
@@ -124,5 +108,73 @@
             });
             // }
         });
+    });
+</script>
+
+<script>
+    function replaceCourse(dropdown, successCallback) {
+        var selectedOption = dropdown.querySelector('select').value;
+        var slotId = dropdown.querySelector('select').getAttribute('data-value-slot-id');
+        var semesterId = $('[name="semester"]').val();
+        var userId = $('[name="user"]').val();
+        // console.log(selectedOption,
+        //         slotId,
+        //        semesterId,
+        //         userId,)
+        $.ajax({
+            type: "POST",
+            url: "/academic-procedures/replace_one_course/",
+            data: {
+                choice: selectedOption,
+                slot: slotId,
+                semester: semesterId,
+                user: userId,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.message === 'Course Replaced Successfully') {
+                successCallback(response);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(err , errmsg , xhr)
+                alert('Failed to replace course, some error occurred');
+            }
+        });
+    }
+
+
+
+
+    function handleDropdownChangeReplace(event) {
+        var dropdown = event.target.closest('.ui.dropdown.replaceitems');
+        if (dropdown) {
+            var optionCount = dropdown.querySelector('select').options.length;
+            if (optionCount > 1) {
+                var selectedOption = dropdown.querySelector('select').value;
+                
+                if (selectedOption !== "NULL") {
+                    var selectedCourseName = dropdown.querySelector('select option:checked').text;
+                    if (confirm("Are you sure you want to Replace with " + selectedCourseName + "?")) {
+                        replaceCourse(dropdown , function(response) {
+                            dropdown.classList.add("disabled-dropdown");
+                        });
+                    } else {
+                        dropdown.querySelector('select').selectedIndex = 0;
+                    }
+                }
+            }
+        }
+        }
+
+
+    var dropdowns = document.querySelectorAll('.ui.dropdown.replaceitems');
+    dropdowns.forEach(function (dropdown) {
+        dropdown.addEventListener('change', function () {
+        handleDropdownChangeReplace(event);
+    });
+        
     });
 </script>

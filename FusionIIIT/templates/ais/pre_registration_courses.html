@@ -154,15 +154,7 @@
                                     padding-bottom: 1.5%;
                                     margin: auto;
                                     width: 95%;">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Slot name</th>
-                    <th>Slot type</th>
-                    <th>Semester</th>
-                    <th>Credits</th>
-                    <th>Courses</th>
-                </tr>
+            <thead id = "courseTableHead">
             </thead>
             
             <tbody id = "courseTableBody">
@@ -185,7 +177,7 @@
         var branchId = document.getElementById('branch_curr').value;
         var batchId = document.getElementById('batch_curr').value;
         var programmeId = document.getElementById('programme_curr').value;
-        console.log(nextSemId , branchId , batchId , programmeId)
+        // console.log(nextSemId , branchId , batchId , programmeId)
         fetch('/academic-procedures/acad_person/get_next_sem_courses/', {
             method: 'POST',
             headers: {
@@ -197,8 +189,21 @@
         .then(response => response.json())
         .then(data => {
             var courseTable = document.getElementById('courseTableBody');
+            var courseTableHead = document.getElementById('courseTableHead');
             courseTable.innerHTML = ''; // Clear previous content
+            courseTableHead.innerHTML = '';
             i = 1
+            var headRow = courseTableHead.insertRow();
+            headRow.innerHTML = `
+                <tr>
+                    <th>#</th>
+                    <th>Slot name</th>
+                    <th>Slot type</th>
+                    <th>Semester</th>
+                    <th>Credits</th>
+                    <th>Courses</th>
+                </tr>
+                `;
             data.forEach(course_slot => {
                 var newRow = courseTable.insertRow();
                 newRow.innerHTML = `

@@ -286,7 +286,7 @@
 </script>
 <script>
     var credit = 0
-    var handleDropdownChangeEvent = true;
+    var handleDropdownChangePreRegistrationEvent = true;
     function addCourse(dropdown , courseSlotId , successCallback ) {
         // Retrieve courseSlotId, semesterId, and userId from hidden input fields
         // var courseSlotId = document.querySelector('[name="course_slot"]').value;
@@ -315,21 +315,14 @@
                 if(response.message === "Course added successfully"){
                     // console.log(response)
                     successCallback(response);
+                }else if(response.message === "Course not added because seats are full!"){
+                    alert(response.message)
                 }else{
                     // will tell if course is already registered and its name
                     var selectedCourseName = response.message.split(": ")[1];
-                    handleDropdownChangeEvent = false;
+                    handleDropdownChangePreRegistrationEvent = false;
                     $(dropdown).dropdown('set selected', selectedCourseName);
-                    handleDropdownChangeEvent = true;
-                    // dropdown.addEventListener('change', handleDropdownChange);
-                    // var options = dropdown.querySelectorAll('select option');
-                    // for (var i = 0; i < options.length; i++) {
-                    //     if (options[i].text === selectedCourseName) {
-                    //         console.log(options[i].text)
-                    //         options[i].selected = true;
-                    //         break;
-                    //     }
-                    // }
+                    handleDropdownChangePreRegistrationEvent = true;
                     successCallback(response);
                     // alert(response.message)
                 }
@@ -342,8 +335,8 @@
         });
     }
 
-    function handleDropdownChange(event) {
-        if (!handleDropdownChangeEvent) {
+    function handleDropdownChangePreRegistration(event) {
+        if (!handleDropdownChangePreRegistrationEvent) {
             return; // If the flag is false, do nothing
         }
         var dropdown = event.target.closest('.ui.dropdown.choicesBox');
@@ -357,7 +350,7 @@
                 var selectedCourseCredit = parseInt(dropdown.querySelector('select option:checked').getAttribute("data-value2"));
                 var courseSlotId = dropdown.querySelector('select').getAttribute("name").split('-')[1];
                 if (confirm("Are you sure you want to register for " + selectedCourseName + "?")) {
-                    // handleDropdownChangeEvent = false;
+                    // handleDropdownChangePreRegistrationEvent = false;
                     addCourse(dropdown , courseSlotId, function(response) {
                         credit += selectedCourseCredit;
                         // console.log("credits : " + credit);
@@ -378,7 +371,7 @@
     var dropdowns = document.querySelectorAll('.ui.dropdown.choicesBox');
     dropdowns.forEach(function (dropdown) {
         dropdown.addEventListener('change', function () {
-        handleDropdownChange(event);
+        handleDropdownChangePreRegistration(event);
     });
         
     });
