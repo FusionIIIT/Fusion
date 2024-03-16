@@ -19,6 +19,7 @@ from .models import StudentDetails
 from rest_framework.exceptions import APIException
 
 
+
 from django.shortcuts import render, redirect
 
 from .models import HostelLeave
@@ -32,6 +33,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+
 
 
 from django.contrib.auth.decorators import login_required
@@ -73,6 +75,7 @@ from Fusion.settings.common import LOGIN_URL
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
 from .forms import HallForm
+from notification.views import hostel_notifications
 
 
 def is_superuser(user):
@@ -706,6 +709,7 @@ def create_hostel_leave(request):
         reason = data.get('reason')
         start_date = data.get('start_date', timezone.now())
         end_date = data.get('end_date')
+        
 
         # Create HostelLeave object and save to the database
         leave = HostelLeave.objects.create(
@@ -713,8 +717,19 @@ def create_hostel_leave(request):
             roll_num=roll_num,
             reason=reason,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            
         )
+        caretakers = HallCaretaker.objects.all()
+        sender = request.user
+        type = "leave_request"
+        for caretaker in caretakers:
+            try:
+                # Send notification
+                hostel_notifications(sender, caretaker.staff.id.user, type)
+            except Exception as e:
+                # Handle notification sending error
+                print(f"Error sending notification to caretaker {caretaker.staff.user.username}: {e}")
 
         return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
 
@@ -865,7 +880,6 @@ class AssignCaretakerView(APIView):
 
             # Retrieve the previous caretaker for the hall, if any
             prev_hall_caretaker = HallCaretaker.objects.filter(hall=hall).first()
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             # print(prev_hall_caretaker.staff.id)
             # Delete any previous assignments of the caretaker in HallCaretaker table
             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
@@ -1018,7 +1032,6 @@ class AssignWardenView(APIView):
             # Assign the new warden to the hall in Hallwarden table
             hall_warden = HallWarden.objects.create(hall=hall, faculty=warden)
 
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             #current caretker
             current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
             print(current_caretaker)
@@ -1541,6 +1554,14 @@ def request_guest_room(request):
                                                          arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality)
             newBooking.save()
             messages.success(request, "Room request submitted successfully!")
+
+            
+            # Get the caretaker for the selected hall
+            hall_caretaker = HallCaretaker.objects.get(hall=hall)
+            caretaker = hall_caretaker.staff.id.user
+            # Send notification to caretaker
+            hostel_notifications(sender=request.user, recipient=caretaker, type='guestRoom_request')
+
             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
         else:
             messages.error(request, "Something went wrong")
@@ -1576,6 +1597,9 @@ def update_guest_room(request):
             guest_room_request.save()
             messages.success(request, "Request accepted successfully!")
 
+            hostel_notifications(sender=request.user,recipient=guest_room_request.intender,type='guestRoom_accept')
+
+
         elif 'reject_request' in request.POST:
             guest_room_request = GuestRoomBooking.objects.get(
                 pk=request.POST['reject_request'])
@@ -1583,6 +1607,9 @@ def update_guest_room(request):
             guest_room_request.save()
 
             messages.success(request, "Request rejected successfully!")
+
+            hostel_notifications(sender=request.user,recipient=guest_room_request.intender,type='guestRoom_reject')
+
         else:
             messages.error(request, "Invalid request!")
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
@@ -1597,8 +1624,18 @@ def update_leave_status(request):
         try:
             leave = HostelLeave.objects.get(id=leave_id)
             leave.status = status
+            leave.remark = request.POST.get('remark')
             leave.save()
-            return JsonResponse({'status': status, 'message': 'Leave status updated successfully.'})
+
+            # Send notification to the student
+            sender = request.user  # Assuming request.user is the caretaker
+            
+            student_id = leave.roll_num  # Assuming student is a foreign key field in HostelLeave model
+            recipient = User.objects.get(username=student_id)
+            type = "leave_accept" if status == "Approved" else "leave_reject"
+            hostel_notifications(sender, recipient, type)
+
+            return JsonResponse({'status': status,'remarks':leave.remark,'message': 'Leave status updated successfully.'})
         except HostelLeave.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Leave not found.'}, status=404)
     else:
@@ -1663,6 +1700,17 @@ class HostelFineView(APIView):
                 reason=reason,
                 hall_id=hall_id
             )
+            # Sending notification to the student about the imposed fine
+           
+            
+            
+            recipient = User.objects.get(username=student_id)
+            
+            sender = request.user
+            
+            type = "fine_imposed"
+            hostel_notifications(sender, recipient, type)
+
             return HttpResponse({'message': 'Fine imposed successfully.'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
