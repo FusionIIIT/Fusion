@@ -709,6 +709,7 @@ def create_hostel_leave(request):
         reason = data.get('reason')
         start_date = data.get('start_date', timezone.now())
         end_date = data.get('end_date')
+        
 
         # Create HostelLeave object and save to the database
         leave = HostelLeave.objects.create(
@@ -716,7 +717,8 @@ def create_hostel_leave(request):
             roll_num=roll_num,
             reason=reason,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            
         )
         caretakers = HallCaretaker.objects.all()
         sender = request.user
@@ -878,7 +880,6 @@ class AssignCaretakerView(APIView):
 
             # Retrieve the previous caretaker for the hall, if any
             prev_hall_caretaker = HallCaretaker.objects.filter(hall=hall).first()
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             # print(prev_hall_caretaker.staff.id)
             # Delete any previous assignments of the caretaker in HallCaretaker table
             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
@@ -1031,7 +1032,6 @@ class AssignWardenView(APIView):
             # Assign the new warden to the hall in Hallwarden table
             hall_warden = HallWarden.objects.create(hall=hall, faculty=warden)
 
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
             #current caretker
             current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
             print(current_caretaker)
@@ -1624,6 +1624,7 @@ def update_leave_status(request):
         try:
             leave = HostelLeave.objects.get(id=leave_id)
             leave.status = status
+            leave.remark = request.POST.get('remark')
             leave.save()
 
             # Send notification to the student
@@ -1634,7 +1635,7 @@ def update_leave_status(request):
             type = "leave_accept" if status == "Approved" else "leave_reject"
             hostel_notifications(sender, recipient, type)
 
-            return JsonResponse({'status': status, 'message': 'Leave status updated successfully.'})
+            return JsonResponse({'status': status,'remarks':leave.remark,'message': 'Leave status updated successfully.'})
         except HostelLeave.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Leave not found.'}, status=404)
     else:
