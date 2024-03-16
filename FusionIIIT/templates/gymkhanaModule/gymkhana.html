@@ -341,10 +341,6 @@ Gymkhana Module
             </a>
             {% endif %} -->
 
-            
-            
-
-
 
             <a class="item" href="/filetracking">
                 Submit Event report To Convener
@@ -402,7 +398,33 @@ Gymkhana Module
             </a>
 
             {% endif %}
+            {% if "fic" in Curr_desig %}
 
+            <a class="item" data-tab="first">
+                Generate No-dues
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+
+            {% if "fic" in Curr_desig %}
+
+            <a class="item" data-tab="first">
+                Manage Inventory
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+
+
+            {% if "fic" in Curr_desig %}
+
+            <a class="item" data-tab="first">
+                Send Inventory Report
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
