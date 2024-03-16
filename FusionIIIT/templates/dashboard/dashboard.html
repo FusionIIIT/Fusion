@@ -20,29 +20,28 @@ Dashboard
 
 
 {% comment %}The grid starts here!{% endcomment %}
-<div class="ui stackable doubling grid">
+<div class="ui stackable doubling grid" style="justify-content: space-around;">
 
     {% comment %}The left-margin segment!{% endcomment %}
-    <div class="column"></div>
+    {% comment %} <div class="column"></div> {% endcomment %}
 
     {% comment %}
     The left-rail segment starts here!
     {% endcomment %}
-    <div class="three wide column">
+    <div class="four wide column">
 
         {% comment %}The user image card starts here!{% endcomment %}
         {% block usercard %}
-        {% include 'globals/usercard.html' %}
+        {% comment %} {% include 'globals/usercard.html' %} {% endcomment %}
         {% endblock %}
         {% comment %}The user image card ends here!{% endcomment %}
 
-        <div class="ui divider"></div>
-
+        {% if 'staff' != request.user.extrainfo.user_type %}
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+        <div class="ui huge fluid vertical pointing menu" ">
 
-            <a class="item disabled" href="{% url 'globals:profile' %}">
-                View Professional Profile
+            <a class="item" href="{% url 'globals:profile' %}">
+                View Professional Profile 
                 <i class="right floated chevron right icon"></i>
             </a>
             {% if "dean_rspc" in designation %}
@@ -60,13 +59,14 @@ Dashboard
 
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
-
+        {% endif %}
 
         {% if 'student' != request.user.extrainfo.user_type %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-            <a class="item disabled" href="/hr2/administrativeProfile">
+        <div class="ui huge fluid vertical pointing menu" ">
+            <a class="item
+            " href="/hr2/administrativeProfile">
                 View Administrative Profile
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -77,12 +77,12 @@ Dashboard
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
 
-
+        
         {% if request.user.extrainfo.user_type == 'faculty' %}
         {%for desig in designat%}
         {% if 'hradmin' == desig.designation.name %}
 
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+        <div class="ui huge fluid vertical pointing menu" ">
 
             <a class="item" href="{% url 'hr2:hradmin' %}">
                 Hr-Admin
@@ -167,7 +167,7 @@ Dashboard
     {% comment %}The right-rail segment ends here!{% endcomment %}
 
     {% comment %}The right-margin segment!{% endcomment %}
-    <div class="column"></div>
+    {% comment %} <div class="column"></div> {% endcomment %}
 
 </div>
 {% comment %}The grid ends here!{% endcomment %}
