@@ -799,22 +799,22 @@ def handle_dreg_response(request):
     }
     return data
 
-def handle_add_reg(request,student):
-
+def handle_add_reg(request):
     start_date = request.POST['start_date']
-    amount = request.POST['amount']
+    amount = int(request.POST['amount'])
+    studentID = str(request.POST['input_roll']).upper()
+    student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
     
     try:
-        latest = Semdates.objects.latest('end_date')
-        latest_end_date=latest.end_date
-        print(latest_end_date)
+        latest=Semdates.objects.latest('start_date')
+        latest_end_date = latest.end_date
     except:
-        latest_end_date=None
-   
-    mess = 'mess2'
+        latest_end_date= None
+    
+    mess='mess2'
     try :
-        reg_main = Reg_main.objects.get(student_id=student)
-        reg_main.current_mess_status="Registered"
+        reg_main = Reg_main.objects.get(student_id=studentID)
+        reg_main.current_mess_status='Registered'
         reg_main.mess_option=mess
         reg_main.balance=reg_main.balance+amount
         reg_main.save()
@@ -823,6 +823,7 @@ def handle_add_reg(request,student):
         mess_status = "Registered"
         new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
         new_reg.save()
+
     new_reg_record = Reg_records(student_id=student, start_date=start_date,end_date = latest_end_date)
     new_reg_record.save()
     # try:

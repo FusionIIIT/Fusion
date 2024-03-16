@@ -1520,21 +1520,19 @@ def reg_request(request):
 
     user = request.user
     extra_info = ExtraInfo.objects.select_related().get(user=user)
-    try:
-        if request.POST['input_roll']:
-            print(request.POST)
-            studentID = request.POST['input_roll']
-            student = Student.objects.select_related('id','id__user','id__department').get(id=studentID)
-            form = RegistrationRequest(request.POST, request.FILES)
+    if request.POST['input_roll']:
+        # print(request.POST)
+        studentID = str(request.POST['input_roll']).upper()
+        handle_add_reg(request)
+        form = RegistrationRequest(request.POST, request.FILES)
 
-            if form.is_valid():
-                temp=form.save(commit=False)
-                temp.student_id=student
-                temp.status='accept'
-                temp.save()
-            handle_add_reg(request,student)
-            return HttpResponseRedirect("/mess")  
-    except:
+        if form.is_valid():
+            temp=form.save(commit=False)
+            temp.student_id=student
+            temp.status='accept'
+            temp.save()
+        return HttpResponseRedirect("/mess")  
+    else:
         student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
         if request.method == 'POST':
             form = RegistrationRequest(request.POST, request.FILES)
@@ -1558,7 +1556,7 @@ def de_reg_request(request):
         return JsonResponse(data)             
 
 @csrf_exempt
-def update_bill(request):
+def update_bill_excel(request):
     if(request.FILES):   
             excel_file = request.FILES['excel_file_bill']
             wb = openpyxl.load_workbook(excel_file)
