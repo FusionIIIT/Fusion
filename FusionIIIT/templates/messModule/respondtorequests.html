@@ -2,13 +2,13 @@
 
 <div class="ui top attached tabular menu">
   <a class="active item" data-tab="" id="rlr"> Respond to Rebate </a>
-  <a class="item" data-tab="" id="rvr"> Respond to Vacation Food Requests </a>
+  <!-- <a class="item" data-tab="" id="rvr"> Respond to Vacation Food Requests </a> -->
 </div>
 
 <div class="ui bottom attached segment">
   <div class="ui active tab" data-tab="" id="rlrtab">
     <div class="ui vertical segment" style="overflow-y: scroll;">
-      <div>
+      <!-- <div>
         <button class="ui primary button right floated" onclick="getLeave()">
           Leave Statistics
         </button>
@@ -18,11 +18,11 @@
           onclick="dateVacation()">
           Accept Rebate Requests
         </button>
-        <!-- <button class="ui primary button right floated" onclick="showLeaveDiv()">
+        <button class="ui primary button right floated" onclick="showLeaveDiv()">
                     Add Leave
-                </button> -->
-      </div>
-      <br />
+                </button>
+      </div> -->
+      <!-- <br />
       <br />
       <div id="leave-form-t" style="display: none">
         <form method="post" action="{% url 'mess:addleavet' %}">
@@ -86,7 +86,7 @@
       </div>
 
       <br />
-      <br />
+      <br /> -->
       <table
         class="ui very basic collapsing celled large sortable table"
         style="
@@ -242,7 +242,7 @@
     <div class="ui divider"></div>
   </div>
 
-  <div class="ui small modal" id="leavedata" style="padding: 0.5%">
+  <!-- <div class="ui small modal" id="leavedata" style="padding: 0.5%">
     <div class="ui vertical segment">
       <table
         class="ui very basic collapsing celled large sortable table"
@@ -263,9 +263,9 @@
         </tbody>
       </table>
     </div>
-  </div>
+  </div> -->
 
-  <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%">
+  <!-- <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%">
     <div class="ui vertical segment">
       <header><strong>Accept Vacation Leave between dates:</strong></header>
       <br />
@@ -314,7 +314,7 @@
         </div>
       </form>
     </div>
-  </div>
+  </div> -->
 </div>
 {% endblock %} {% endblock %} {% block javascript %}
 <script>

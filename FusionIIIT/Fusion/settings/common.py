@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
-    'django_crontab',
+    # 'django_crontab',
     'corsheaders',
 
     'applications.eis',

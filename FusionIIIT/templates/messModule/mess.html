@@ -77,7 +77,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="Registration">
+        <div class="ui tab segment" data-tab="Registration">
             {% block Registration %}
             {% include 'messModule/registration.html' %}
             {% endblock %}
@@ -85,7 +85,7 @@ Central Mess
         {% comment %}The ... end here!{% endcomment %}
 
         {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="Deregistration">
+        <div class="ui tab segment" data-tab="Deregistration">
             {% block Deregistration %}
             {% include 'messModule/de-registration.html' %}
             {% endblock %}

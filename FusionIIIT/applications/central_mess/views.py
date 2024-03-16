@@ -86,9 +86,21 @@ def mess(request):
         reg_request = Registration_Request.objects.filter(student_id=student)
 
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
-        reg_main = Reg_main.objects.get(student_id=student)
-        current_rem_balance = reg_main.balance
-        current_mess_status = reg_main.current_mess_status
+
+        try:
+            mess_optn = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+            y = Menu.objects.filter(mess_option=mess_optn.mess_option)
+            current_rem_balance = mess_optn.balance
+            current_mess_status = mess_optn.current_mess_status
+        except:
+            reg_main={}
+            mess_optn={'mess_option':'no-mess'}
+            y = Menu.objects.filter(mess_option="mess1")
+            current_rem_balance = 0
+            current_mess_status = 'Deregistered'
+      
+        
+
         reg_record = Reg_records.objects.filter(student_id=student)
         monthly_bill=monthly_bill[::-1]
 
@@ -125,9 +137,9 @@ def mess(request):
         minutes = Mess_minutes.objects.all()
         count = 0
 
-        try:
-            mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
-            y = Menu.objects.filter(mess_option=mess_optn.mess_option)
+        # try:
+        #     mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+        #     y = Menu.objects.filter(mess_option=mess_optn.mess_option)
 
         
             # bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
@@ -165,9 +177,9 @@ def mess(request):
             #                             month=month_g_l,
             #                             year=year_g)
             #     bill_object.save()
-        except:
-            mess_optn={'mess_option':'no-mess'}
-            y = Menu.objects.filter(mess_option="mess1")
+        # except:
+        #     mess_optn={'mess_option':'no-mess'}
+        #     y = Menu.objects.filter(mess_option="mess1")
 
         for d in desig:
             if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener':
