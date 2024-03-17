@@ -21,7 +21,7 @@ class MessInfoForm(forms.Form, ):
 
 
 class RegistrationRequest(forms.ModelForm):
-    end_date = Semdates.objects.latest('start_date')
+    
     class Meta:
         model = Registration_Request
         fields = ('Txn_no','amount','img','start_date','payment_date')  

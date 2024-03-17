@@ -720,8 +720,10 @@ def handle_reg_response(request):
     student = reg_req.student_id
     reg_req.status = status
     reg_req.registration_remark=remark
-    sem_end_date = Semdates.objects.latest('start_date').end_date
-    
+    try:
+        sem_end_date = Semdates.objects.latest('start_date').end_date
+    except:
+        sem_end_date= None
     reg_req.save()
     message=''
     if(status=='accept'):
@@ -729,7 +731,7 @@ def handle_reg_response(request):
         mess = request.POST['mess_no']
         try :
             reg_main = Reg_main.objects.get(student_id=student)
-            if(start_date == datetime.today()):
+            if(start_date == date.today()):
                 reg_main.current_mess_status="Registered"
             else:
                 reg_main.current_mess_status = "Deregistered"
@@ -738,7 +740,7 @@ def handle_reg_response(request):
             reg_main.save()
         except:
             program = student.programme
-            if(start_date == datetime.today()):
+            if(start_date == date.today()):
                 mess_status = "Registered"
             else:
                 mess_status  = "Deregistered"
@@ -787,7 +789,8 @@ def handle_dreg_response(request):
     if(status=='accept'):
         try :
             reg_main = Reg_main.objects.get(student_id=student)
-            reg_main.current_mess_status="Deregistered"
+            if(end_date == date.today()):
+                reg_main.current_mess_status="Deregistered"
             reg_record_obj = Reg_records.objects.filter(student_id = student).latest('start_date')
             reg_record_obj.end_date = end_date
             reg_record_obj.save()
@@ -860,13 +863,17 @@ def handle_add_reg(request):
     mess=request.POST['mess_option_form']
     try :
         reg_main = Reg_main.objects.get(student_id=studentID)
-        reg_main.current_mess_status='Registered'
+        if(start_date==str(date.today())):
+            reg_main.current_mess_status='Registered'
         reg_main.mess_option=mess
         reg_main.balance=reg_main.balance+amount
         reg_main.save()
     except:
         program = student.programme
-        mess_status = "Registered"
+        if(start_date==str(date.today())):
+            mess_status = "Registered"
+        else:
+            mess_status = "Deregistered"
         new_reg = Reg_main(student_id=student,program=program,current_mess_status=mess_status,balance=amount,mess_option=mess)
         new_reg.save()
 

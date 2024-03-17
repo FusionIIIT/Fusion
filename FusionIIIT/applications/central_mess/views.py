@@ -80,8 +80,8 @@ def mess(request):
         payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
-        sem_end_date = Semdates.objects.latest('start_date')
-        reg_form = RegistrationRequest(initial={})
+        
+        reg_form = RegistrationRequest()
 
         reg_request = Registration_Request.objects.filter(student_id=student)
 
@@ -1614,14 +1614,17 @@ def de_reg_request(request):
             # print(request.POST)
             studentID = str(request.POST['input_roll']).upper()
             end_date = request.POST.get("end_date")
-            reg_main = Reg_main.objects.get(student_id=studentID)
-            
-            if(end_date == str(date.today())):
-                reg_main.current_mess_status = 'Deregistered'
-                reg_main.save()
-            reg_record = Reg_records.objects.filter(student_id=studentID).latest('start_date')
-            reg_record.end_date=end_date
-            reg_record.save()
+            try:
+                reg_main = Reg_main.objects.get(student_id=studentID)
+                
+                if(end_date == str(date.today())):
+                    reg_main.current_mess_status = 'Deregistered'
+                    reg_main.save()
+                reg_record = Reg_records.objects.filter(student_id=studentID).latest('start_date')
+                reg_record.end_date=end_date
+                reg_record.save()
+            except:
+                pass
             return  HttpResponseRedirect('/mess')
     except:
         data={
