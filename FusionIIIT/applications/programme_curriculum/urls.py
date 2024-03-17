@@ -19,6 +19,7 @@ urlpatterns = [
     path('course/<course_id>/', views.view_a_course, name='view_a_course'),
     path('disciplines/', views.view_all_discplines, name='view_all_discplines'),
     path('batches/', views.view_all_batches, name='view_all_batches'),
+    
 
     path('admin_programmes/', views.admin_view_all_programmes, name='admin_view_all_programmes'),
     path('admin_working_curriculums/', views.admin_view_all_working_curriculums, name='admin_view_all_working_curriculums'),
