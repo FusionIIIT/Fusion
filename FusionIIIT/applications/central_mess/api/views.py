@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from applications.central_mess.models import *
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-
+from django.http import JsonResponse
 
 class FeedbackApi(APIView):
 
@@ -109,7 +109,7 @@ class Monthly_billApi(APIView):
         amount = data['amount']
         rebate_count = data['rebate_count']
         rebate_amount = data['rebate_amount']
-        nonveg_total_bill = data['nonveg_total_bill']
+        #nonveg_total_bill = data['nonveg_total_bill']
         paid = data['paid']
 
         username = get_object_or_404(User,username=request.user.username)
@@ -124,7 +124,7 @@ class Monthly_billApi(APIView):
             amount = amount,
             rebate_count = rebate_count,
             rebate_amount = rebate_amount,
-            nonveg_total_bill = nonveg_total_bill,
+            # nonveg_total_bill = nonveg_total_bill,
             paid = paid
         )
         obj.save()
@@ -139,8 +139,8 @@ class PaymentsApi(APIView):
     def post(self, request):
         data = request.data
         
-        sem = data['sem']
-        year = data['year']
+        # sem = data['sem']
+        # year = data['year']
         amount_paid = data['amount_paid']
 
 
@@ -151,8 +151,8 @@ class PaymentsApi(APIView):
         
         obj = Payments(
             student_id = student,
-            sem = sem,
-            year = year,
+            # sem = sem,
+            # year = year,
             amount_paid = amount_paid,
         )
         obj.save()
@@ -364,12 +364,12 @@ class Mess_minutesApi(APIView):
     def post(self, request):
         data = request.data
 
-        meeting_date  = data['meeting_date']
+        # meeting_date  = data['meeting_date']
         mess_minutes  = data['mess_minutes']
         meeting_date_obj = Mess_meeting.objects.get(meet_date=meeting_date)
 
         obj = Mess_minutes(
-            meeting_date = meeting_date_obj,
+            # meeting_date = meeting_date_obj,
             mess_minutes = mess_minutes,
         )
         obj.save()
@@ -405,3 +405,83 @@ class Menu_change_requestApi(APIView):
         )
         obj.save()
         return Response({'status':200})      
+
+class Get_Filtered_Students(APIView): 
+
+    def post(self,request):
+        type = request.data['type']
+        if(type=='filter'):
+            reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
+            status=request.data['status']
+            program=request.data['program']
+            mess_option=request.data['mess_option']
+
+            if(status!='all'):
+
+                reg_main=reg_main.filter(current_mess_status=status)
+
+            if(program!='all'):
+                reg_main=reg_main.filter(program=program)
+
+            if(mess_option!='all'):
+
+                reg_main=reg_main.filter(mess_option=mess_option)        
+
+            serialized_obj = GetFilteredSerialzer(reg_main,many=True)
+            return Response({'payload':serialized_obj.data})
+
+        elif(type=='search'):
+            student = request.data['student_id']
+            student = str(student).upper()
+            try:
+                reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+                serialized_obj = GetFilteredSerialzer(reg_main)
+                return Response({'payload':serialized_obj.data})
+            except:
+                response = JsonResponse({"error": "student does not exist"})
+                response.status_code = 404 
+                return response
+
+class Get_Reg_Records(APIView):
+
+    def post(self,request):
+        student = request.data['student_id']
+        reg_record = Reg_records.objects.filter(student_id=student)
+
+        serialized_obj = reg_recordSerialzer(reg_record,many=True)
+        return Response({'payload':serialized_obj.data}) 
+
+
+class Get_Student_bill(APIView):
+
+    def post(self,request):
+        student = request.data['student_id'] 
+        bill_details = Monthly_bill.objects.filter(student_id=student)
+
+        serialized_obj = Monthly_billSerializer(bill_details,many=True)
+        return Response({'payload':serialized_obj.data}) 
+
+
+class Get_Student_Payments(APIView):
+
+    def post(self,request):
+        student = request.data['student_id'] 
+        payment_details = Payments.objects.filter(student_id=student)
+
+        serialized_obj = PaymentsSerializer(payment_details,many=True)
+        return Response({'payload':serialized_obj.data}) 
+    
+class Get_Student_Details(APIView):
+
+    def post(self,request):
+        student = request.data['student_id'] 
+        bill_details = Monthly_bill.objects.filter(student_id=student)
+        payment_details = Payments.objects.filter(student_id=student)
+        reg_record = Reg_records.objects.filter(student_id=student)
+        payment_serialized_obj = PaymentsSerializer(payment_details,many=True)
+        bill_serialized_obj = Monthly_billSerializer(bill_details,many=True)
+        reg_record_serialized_obj = reg_recordSerialzer(reg_record,many=True)
+        reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+        serialized_obj = GetFilteredSerialzer(reg_main)
+        data={'payment':payment_serialized_obj.data,'bill':bill_serialized_obj.data,'reg_records':reg_record_serialized_obj.data,'student_details':serialized_obj.data}
+        return Response({'payload':data}) 

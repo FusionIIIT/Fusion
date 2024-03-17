@@ -43,15 +43,15 @@ class Vacation_foodSerializer(serializers.ModelSerializer):
         model = Vacation_food
         fields=('__all__')
 
-class Nonveg_menuSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Nonveg_menu
-        fields=('__all__')
+# class Nonveg_menuSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Nonveg_menu
+#         fields=('__all__')
 
-class Nonveg_dataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Nonveg_data
-        fields=('__all__')
+# class Nonveg_dataSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model=Nonveg_data
+#         fields=('__all__')
 
 class Special_requestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,3 +78,14 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model=Feedback
         fields=('__all__')
 
+class GetFilteredSerialzer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='student_id.id.user.first_name')
+    last_name = serializers.CharField(source='student_id.id.user.last_name')
+    class Meta:
+        model=Reg_main
+        fields=('__all__')
+
+class reg_recordSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = Reg_records
+        fields=('__all__')

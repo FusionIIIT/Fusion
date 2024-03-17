@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
-    
+    'django_crontab',
     'corsheaders',
 
     'applications.eis',
@@ -275,6 +275,7 @@ CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
+
 
 
 CORS_ORIGIN_ALLOW_ALL = True
