@@ -7,6 +7,7 @@ from django.db.models import CheckConstraint, Q, F
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo
+from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
 
 # Create your models here.
 
@@ -26,7 +27,8 @@ COURSESLOT_TYPE_CHOICES = [
     ('Design', 'Design'),
     ('Manufacturing', 'Manufacturing'),
     ('Management Science', 'Management Science'),
-    ('Optional Elective', 'Optional Elective'),
+    ('Open Elective', 'Open Elective'),
+    ('Swayam','Swayam'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
     ('Others', 'Others')
@@ -117,7 +119,13 @@ class Curriculum(models.Model):
     '''
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    version = models.PositiveIntegerField(default=1, null=False)
+    # version = models.FloatField(default=1.0, null=False)
+    # version = models.PositiveIntegerField(default=1, null=False)
+    version = models.DecimalField(
+    max_digits=2, 
+    decimal_places=1,  
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
@@ -207,8 +215,13 @@ class Course(models.Model):
 
 
     '''
-    code = models.CharField(max_length=10, null=False, unique=True, blank=False)
-    name = models.CharField(max_length=100, null=False, unique=True, blank=False)
+    code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    version = models.DecimalField(
+    max_digits=5, 
+    decimal_places=1, 
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     lecture_hours = PositiveIntegerField(null=True, )
     tutorial_hours = PositiveIntegerField(null=True)
@@ -228,12 +241,14 @@ class Course(models.Model):
     ref_books = models.TextField()
     working_course = models.BooleanField(default=True)
     disciplines = models.ManyToManyField(Discipline, blank=True)
+    latest_version = models.BooleanField(default=True)
     
     class Meta:
-        unique_together = ('code', 'name',)        
+        unique_together = ('code','version')        
     
     def __str__(self):
-        return str(self.code + " - " +self.name)
+        return str(self.code + " - " +self.name+"- v"+str(self.version))
+
 
     @property
     def courseslots(self):
@@ -398,12 +413,7 @@ class CourseProposal(models.Model):
 
 class UpdateCourseProposal(models.Model):
     '''
-        Current Purpose : To store the details regarding a course
-        
-
-        
-        
-
+        Current Purpose : To store the details regarding a update course proposal forms
         ATTRIBUTES :
 
         code(char) -  the course code (eg CS3005)

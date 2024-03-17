@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,CourseProposal,UpdateCourseProposal
 from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,Course_Proposal,Update_Course_Proposal,CourseProposalForm
 from .filters import CourseFilter, BatchFilter, CurriculumFilter
+from django.db import IntegrityError
 
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -746,17 +747,28 @@ def update_course_form(request, course_id):
         pass
     
     course = get_object_or_404(Course, Q(id=course_id))
+    previous = Course.objects.all().filter(code=course.code).order_by('version').last()
+    course.version=previous.version
+    version_error=''
     form = CourseForm(instance=course)
     submitbutton= request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
-            form = CourseForm(request.POST, instance=course)  
-            if form.is_valid():
-                form.save()
-                messages.success(request, "Updated "+ course.name +" successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course_id) + "/")  
-
-    return render(request,'programme_curriculum/acad_admin/add_course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton})
+            form = CourseForm(request.POST)  
+            if form.is_valid() :
+                previous.latest_version=False
+                previous.save()
+                form.latest_version=True
+                new_course = form.save(commit=False)
+                if(new_course.version>previous.version):
+                    form.save()
+                    course = Course.objects.last()
+                    messages.success(request, "Added successful")
+                    return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                else:
+                    version_error+=f'The version should be greater than {previous.version}'
+                    
+    return render(request,'programme_curriculum/acad_admin/update_course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
 
 
 @login_required(login_url='/accounts/login')
@@ -991,7 +1003,7 @@ def replicate_curriculum(request, curriculum_id):
 
 
 
-
+  
 
 
 
@@ -1112,35 +1124,55 @@ def faculty_view_a_course(request, course_id):
 #     proposal = get_object_or_404(CourseProposal, Q(id=proposal_id))
 #     return render(request, 'programme_curriculum/hod/head_view_a_course.html', {'proposal': proposal})
 
-
-
-
-###new
-
 def head_view_a_course_proposal(request,CourseProposal_id):
-
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    
+
     if str(request.user) == "CSE HOD" :
         pass
     proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
-    
+
     if(str(des.designation) == "Dean Academic"):
-        return render(request, 'programme_curriculum/faculty/dean_view_a_course_proposal.html', {'course': proposalform})
+        # poposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
+        form = CourseProposalForm(instance=proposalform)
+        submitbutton= request.POST.get('Submit')
+        if submitbutton:
+            if request.method == 'POST':
+                form = CourseProposalForm(request.POST)
+                if form.is_valid():
+                    proposalform.status = 3
+                    proposalform.save()
+                    form.save()
+                    course = get_object_or_404(Course, Q(code=proposalform.code))
+                    messages.success(request, "Updated "+ proposalform.name +" successful")
+                    return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
+        return render(request, 'programme_curriculum/faculty/dean_view_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})
     return render(request, 'programme_curriculum/faculty/head_view_a_course_proposal.html', {'proposal': proposalform})
 
 def head_view_a_update_course_proposal(request,UpdateCourseProposal_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    
+
     if str(request.user) == "CSE HOD" :
         pass
     proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
-    
+
     if(str(des.designation) == "Dean Academic"):
-        return render(request, 'programme_curriculum/faculty/dean_view_update_a_course_proposal.html', {'course': proposalform})
+
+        course = get_object_or_404(Course, Q(code=proposalform.code))
+        form = CourseProposalForm(instance=proposalform)
+        submitbutton= request.POST.get('Submit')
+        if submitbutton:
+            if request.method == 'POST':
+                form = CourseProposalForm(request.POST,instance=course)
+                if form.is_valid():
+                    proposalform.status = 3
+                    proposalform.save()
+                    form.save()
+                    messages.success(request, "Updated "+ proposalform.name +" successful")
+                    return HttpResponseRedirect("/programme_curriculum/course/"+ str(course.id) + "/")  
+        return render(request, 'programme_curriculum/faculty/dean_view_update_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})
     return render(request, 'programme_curriculum/faculty/head_view_update_a_course_proposal.html', {'proposal': proposalform})
 
 def forward_form(request,CourseProposal_id):
@@ -1220,22 +1252,22 @@ def reject_update_form(request,UpdateCourseProposal_id):
         return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
 
 
-def approve_form(request,CourseProposal_id):
-    proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
-    proposalform.status = 3
-    proposalform.save()
-    courses = CourseProposal.objects.all()
-    Updatecourses = UpdateCourseProposal.objects.all()
+# def approve_form(request,CourseProposal_id):
+#     proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
+#     proposalform.status = 3
+#     proposalform.save()
+#     courses = CourseProposal.objects.all()
+#     Updatecourses = UpdateCourseProposal.objects.all()
     
-    return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
-def approve_update_form(request,UpdateCourseProposal_id):
-    proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
-    proposalform.status = 3
-    proposalform.save()
-    courses = CourseProposal.objects.all()
-    Updatecourses = UpdateCourseProposal.objects.all()
+#     return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
+# def approve_update_form(request,UpdateCourseProposal_id):
+#     proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
+#     proposalform.status = 3
+#     proposalform.save()
+#     courses = CourseProposal.objects.all()
+#     Updatecourses = UpdateCourseProposal.objects.all()
     
-    return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
+#     return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
 
 
 @login_required(login_url='/accounts/login')
@@ -1293,69 +1325,3 @@ def update_course_proposal_form(request, course_id):
                 messages.success(request, "Updated "+ course.name +" successful")
                 return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
     return render(request,'programme_curriculum/faculty/update_course_proposal_form.html',{'faculty_details':faculty_details,'form':form, 'submitbutton': submitbutton})
-
-
-
-def admin_view_course_proposal_forms(request):
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).last()
-    
-    if str(request.user) == "acadadmin" :
-        pass
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic":
-            return HttpResponseRedirect('/programme_curriculum/programmes/')
-
-    courses = CourseProposal.objects.all()
-    updatecourses=UpdateCourseProposal.objects.all()
-    
-    
-    return render(request, 'programme_curriculum/acad_admin/admin_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals':updatecourses})
-    # return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal})
-
-
-def admin_view_a_course_proposal(request,CourseProposal_id):
-
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    
-    proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
-    form = CourseProposalForm(instance=proposalform)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CourseProposalForm(request.POST) 
-            if form.is_valid():
-                proposalform.status = 6
-                proposalform.save()
-                form.save()
-                course = get_object_or_404(Course, Q(code=proposalform.code))
-                
-                messages.success(request,  proposalform.name +"Added Successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")  
-    return render(request, 'programme_curriculum/acad_admin/admin_view_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})
-
-
-def admin_view_a_update_course_proposal(request,UpdateCourseProposal_id):
-
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student":  # or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" 
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    
-    proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
-    
-    course = get_object_or_404(Course, Q(code=proposalform.code))
-    form = CourseProposalForm(instance=proposalform)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CourseProposalForm(request.POST,instance=course) 
-            if form.is_valid():
-                proposalform.status = 6
-                proposalform.save()
-                form.save()
-                messages.success(request, "Updated "+ proposalform.name +" successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")  
-    return render(request, 'programme_curriculum/acad_admin/admin_view_a_update_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})

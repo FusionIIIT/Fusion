@@ -43,7 +43,7 @@ class CurriculumForm(ModelForm):
         widgets = {
             'name' : forms.TextInput(attrs={'placeholder': 'Enter New Curriculum Name','max_length': 70,'class':'field'}),
             'programme' : forms.Select(attrs={'class':'ui fluid search selection dropdown',}),
-            'version' : forms.NumberInput(attrs={'placeholder': 'Enter the latest version',' class': 'field'}, ),
+            'version' : forms.NumberInput(attrs={'placeholder': 'Enter the latest version',' class': 'field','min': '1.0'}, ),
             'working_curriculum' : forms.CheckboxInput(attrs={'class': 'ui checkbox'}),
             'no_of_semester' : forms.NumberInput(attrs={'placeholder': 'Enter the number of semesters',' class': 'field'}, ),
             'min_credit' : forms.NumberInput(attrs={'placeholder': 'Minimum Number of Credits',' class': 'field'}, ),
@@ -123,15 +123,19 @@ class CourseForm(ModelForm):
             self.add_error('percent_project', msg)
             self.add_error('percent_lab_evaluation', msg)
             self.add_error('percent_course_attendance', msg)
-
+            
+        # version = cleaned_data.get('version')
+        # previous_version = self.instance.version if self.instance else None
+        # if  version < previous_version:
+        #     self.add_error('version', 'The version should be greater than the previous version.')
         return cleaned_data
-
     class Meta:
         model = Course
         fields = '__all__'
         widgets = {
             'code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,}),
             'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,}),
+            'version' : forms.NumberInput(attrs={'placeholder': 'version_no'}, ), 
             'credit' : forms.NumberInput(attrs={'placeholder': 'Course Credits',}, ), 
             'lecture_hours' : forms.NumberInput(attrs={'placeholder': 'Lecture hours',}, ), 
             'tutorial_hours' : forms.NumberInput(attrs={'placeholder': 'Tutorial hours',}, ), 
@@ -155,6 +159,7 @@ class CourseForm(ModelForm):
         labels = {
             'code' : 'Course Code',
             'name' : 'Course Name',
+            'version':'version',
             'credit' : 'Credits',
             'lecture_hours' : 'Academic Loads', 
             'tutorial_hours' : '',

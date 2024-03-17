@@ -57,24 +57,14 @@ urlpatterns = [
     path('update_course_proposal_form/<course_id>/',views.update_course_proposal_form,name='update_course_proposal_form'),
     path('faculty_view_all_courses/', views.faculty_view_all_courses, name='faculty_view_all_courses'),
     path('faculty_view_a_course/<course_id>/',views.faculty_view_a_course,name="faculty_view_a_course"),
-    # path('hod_view_all_courses/', views.hod_view_all_courses, name='faculty_view_all_courses'),
-    # path('hod_view_a_course/<course_id>/',views.hod_view_a_course,name="faculty_view_a_course"),
-    # path('course_proposal_form/', views.course_proposal_form, name='course_proposal_form'),
-    # path('view_course_proposal_forms/', views.view_course_proposal_forms, name='view_course_proposal_forms'),
     path('head_view_a_course_proposal/<CourseProposal_id>/', views.head_view_a_course_proposal, name='head_view_a_course_proposal'),
     path('head_view_a_update_course_proposal/<UpdateCourseProposal_id>/', views.head_view_a_update_course_proposal, name='head_view_a_update_course_proposal'),
     
     path('forward_form/<CourseProposal_id>', views.forward_form, name='forward_form'),
     path('reject_form/<CourseProposal_id>', views.reject_form, name='reject_form'),
-    path('approve_form/<CourseProposal_id>', views.approve_form, name='approve_form'),
+    # path('approve_form/<CourseProposal_id>', views.approve_form, name='approve_form'),
     
     path('forward_update_form/<UpdateCourseProposal_id>/', views.forward_update_form, name='forward_update_form'),
     path('reject_update_form/<UpdateCourseProposal_id>', views.reject_update_form, name='reject_update_form'),
-    path('approve_update_form/<UpdateCourseProposal_id>', views.approve_update_form, name='approve_update_form'),
-    
-    
-    path('admin_view_course_proposal_forms/', views.admin_view_course_proposal_forms, name='admin_view_course_proposal_forms'),
-    path('admin_view_a_course_proposal/<CourseProposal_id>/', views.admin_view_a_course_proposal, name='admin_view_a_course_proposal'),
-    path('admin_view_a_update_course_proposal/<UpdateCourseProposal_id>/', views.admin_view_a_update_course_proposal, name='admin_view_a_update_course_proposal')
-    
+    # path('approve_update_form/<UpdateCourseProposal_id>', views.approve_update_form, name='approve_update_form'),
 ]
