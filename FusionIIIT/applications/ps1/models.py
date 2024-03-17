@@ -36,6 +36,9 @@ class StockEntry(models.Model):
     current_stock=models.IntegerField(blank=False)
     recieved_date=models.DateField(blank=False)
     bill=models.FileField(blank=False)
+    transfer = models.BooleanField(default = False, null=True)
+    dept = models.CharField(max_length=250,null=True, blank=False)
+    to_dept = models.CharField(max_length=250,null=True, blank=False)
 
     class Meta:
         db_table = 'StockEntry'
