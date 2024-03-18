@@ -957,7 +957,7 @@
                             <div class="field">
                               <a class="right floated item">
                                         <label><br></label>
-                                        <button type="submit" name="Submit_Silver" class="ui primary large right floated button">
+                                        <button type="submit" name="Submit_Silver" class="ui primary large right floated button" id="submit_silver">
                                             Submit
                                         </button>
                                 </a>
@@ -1104,6 +1104,12 @@
                                 }
                             });
                         });
+
+                    $(document).on('click', '#submit_silver', function (event){
+                        event.preventDefault();
+                        $.ajax()
+                    })
+                    
         </script>
     <script>
     function dis(aval) {
