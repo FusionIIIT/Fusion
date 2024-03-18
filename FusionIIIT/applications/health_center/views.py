@@ -38,7 +38,7 @@ def healthcenter(request):
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     print(usertype)
 
-    if usertype == 'student' or usertype=='faculty' or usertype=='staff':
+    if usertype == 'student' or usertype=='fx' or usertype=='staff':
         return HttpResponseRedirect("/healthcenter/student")
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")
@@ -143,7 +143,7 @@ def student_view(request):
     '''                                                                 # student view starts here
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     print("yes")
-    if usertype == 'student' or usertype == 'faculty' or usertype == 'staff':
+    if usertype == 'student' or usertype == 'fx' or usertype == 'staff':
         if request.method == 'POST':
             return student_view_handler(request)
 
