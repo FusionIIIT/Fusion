@@ -58,12 +58,12 @@
         <a class="item" href="{% url 'examination:submit' %}">Submit
           <i class="right floated chevron right icon"></i>
         </a>
-        <a class="active item" href="{% url 'examination:verify' %}"><B>Verify</B>
+        <a class="item" href="{% url 'examination:verify' %}">Verify
           <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
-          <i class="right floated chevron right icon"></i>
-        </a>
+        <a class="active item" href="{% url 'examination:authenticate' %}"><B>Authenticate Course</B>
+            <i class="right floated chevron right icon"></i>
+          </a>
         <a class="item" href="{% url 'examination:publish' %}">Publish
           <i class="right floated chevron right icon"></i>
         </a>
@@ -82,7 +82,7 @@
 {% endblock %}
 
 {% block content %}
-<h1>Verify Result</h1>
+<h1>Authenticate Course</h1>
 <br />
 
 <div style="display: flex; flex-direction: column; gap: 30px;">
@@ -142,7 +142,7 @@
       // Check if both course and semester are selected
       if (selectedCourse && selectedSemester) {
         // Redirect to the new page with parameters
-        window.location.href = `/examination/verifygrades?course=${selectedCourse}&semester=${selectedSemester}`;
+        window.location.href = `/examination/authenticategrades?course=${selectedCourse}&semester=${selectedSemester}`;
       } else {
         alert('Please select both course and semester.');
       }

@@ -1,3 +1,4 @@
+
 {% extends 'examination/base.html' %}
 {% block sidetabmenu %}
 <style>
@@ -58,7 +59,7 @@
         <a class="item" href="{% url 'examination:submit' %}">Submit
           <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'examination:verify' %}">Verify
+        <a class="active item" href="{% url 'examination:verify' %}"><B>Verify</B>
           <i class="right floated chevron right icon"></i>
         </a>
         <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
@@ -70,9 +71,9 @@
         <a class="item" href="{% url 'examination:announcement' %}">Announcement
           <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'examination:generate_transcript_form' %}">Generate Transcript
-          <i class="right floated chevron right icon"></i>
-        </a>
+        <a class="active item" href="{% url 'examination:generate_transcript_form' %}"><B>Generate Transcript</B>
+            <i class="right floated chevron right icon"></i>
+          </a>
       </div>
 
   
@@ -80,18 +81,60 @@
   
   
 {% endblock %}
-
 
 {% block content %}
-<div class="ui segment">
-  <h1 class="ui header"></h1>
-    <div class="ui message">
-      <div class="header">
-        successfully Grades UPDATED
-      </div>
-      <p>Please check back later or contact support for assistance.</p>
+<h1>Verify Result</h1>
+<br />
+
+<div style="display: flex; flex-direction: column; gap: 30px;">
+    <div style="display: flex; flex-direction: row; gap: 50px;">
+        <div style="display: flex; flex-direction: row; gap: 10px;">
+            <div style="margin-top: 8px;">
+                <label>Course</label>
+            </div>
+            <div class="ui selection dropdown" id="course-dropdown">
+                <input type="hidden" name="gender">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select Item</div>
+                <div class="menu">
+
+                    {% for student in students %}
+                        <div class="item" data-value="{{ student.id_id }}">{{ student.id_id }}</div>
+                    {% empty %}
+                        <div class="item">No students Available</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+      
     </div>
+
+    <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px; ">
+
+      <button class="ui primary button" onclick="search()">Search</button>
   
-</div>
+  </div>
+
+  </div>
+  <script>
+    function search() {
+      // Get selected course and semester values
+      var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');
+      
+  
+      // Check if both course and semester are selected
+      if (selectedCourse) {
+        // Redirect to the new page with parameters
+        window.location.href = `/examination/generate_transcript?student=${selectedCourse}`;
+      } else {
+        alert('Please select student.');
+      }
+    }
+  </script>
+  
+
 {% endblock %}
+
+
+
 
