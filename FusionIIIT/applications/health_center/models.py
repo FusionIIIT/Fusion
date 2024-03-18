@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import date
+from datetime import date
 
 from applications.globals.models import ExtraInfo
 
@@ -28,8 +29,16 @@ class Constants:
         (1, 'Dr.Rahul'),
 
     )
+    
+    NAME_OF_PATHOLOGIST = (
+        (0, 'Dr.Ajay'),
+        (1, 'Dr.Rahul'),
+
+    )
 
 class Doctor(models.Model):
+    doctor_name = models.CharField(choices=Constants.NAME_OF_DOCTOR, max_length=50)
+    doctor_phone = models.IntegerField(max_length=10)
     doctor_name = models.CharField(choices=Constants.NAME_OF_DOCTOR, max_length=50)
     doctor_phone = models.IntegerField(max_length=10)
     specialization = models.CharField(max_length=100)
@@ -37,6 +46,16 @@ class Doctor(models.Model):
 
     def __str__(self):
         return self.doctor_name
+
+class Pathologist(models.Model):
+    pathologist_name = models.CharField(choices=Constants.NAME_OF_PATHOLOGIST, max_length=50)
+    pathologist_phone = models.IntegerField(max_length=10)
+    specialization = models.CharField(max_length=100)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.pathologist_name
+
 
 class Pathologist(models.Model):
     pathologist_name = models.CharField(choices=Constants.NAME_OF_PATHOLOGIST, max_length=50)
@@ -83,6 +102,7 @@ class Hospital(models.Model):
         return self.hospital_name
 
 
+
 class Expiry(models.Model):
     medicine_id=models.ForeignKey(Stock,on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
@@ -98,10 +118,14 @@ class Schedule(models.Model):
     doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE, default=0)
     pathologist_id = models.ForeignKey(Pathologist,on_delete=models.CASCADE)
     day = models.CharField(choices=Constants.DAYS_OF_WEEK, max_length=10)
+    doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE, default=0)
+    pathologist_id = models.ForeignKey(Pathologist,on_delete=models.CASCADE)
+    day = models.CharField(choices=Constants.DAYS_OF_WEEK, max_length=10)
     from_time = models.TimeField(null=True,blank=True)
     to_time = models.TimeField(null=True,blank=True)
     room = models.IntegerField()
     date = models.DateField(auto_now=True)
+    
     
 
 
@@ -110,8 +134,12 @@ class Counter(models.Model):
     fine=models.IntegerField(default=0)
     doc_count=models.IntegerField(default=0)
     patho_count=models.IntegerField(default=0)
+    patho_count=models.IntegerField(default=0)
 
     def doctor_count(self):
+        self.doc_count+=1
+        return ""
+    def pathologist_count(self):
         self.doc_count+=1
         return ""
     def pathologist_count(self):
@@ -129,7 +157,12 @@ class Counter(models.Model):
         elif self.count<=4:
             dif=self.doc_count-self.count
         elif self.count<=4:
+        elif self.count<=4:
             dif=self.count-self.doc_count
+        elif self.count<=4:
+            dif=self.patho_count-self.count
+        else:
+            dif=self.count-self.patho_count
         elif self.count<=4:
             dif=self.patho_count-self.count
         else:

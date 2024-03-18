@@ -1,13 +1,16 @@
 import json
 from datetime import date, datetime, timedelta, time
+from datetime import date, datetime, timedelta, time
 import xlrd
 import os
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
 from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
 from .models import *
@@ -45,6 +48,7 @@ def healthcenter(request):
 def compounder_view(request):  
     
     '''
+    This function handles post requests for compounder and render pages accordingly
     This function handles post requests for compounder and render pages accordingly
 
     @param:
@@ -87,6 +91,7 @@ def compounder_view(request):
             days = Constants.DAYS_OF_WEEK
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
             schedule=Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
+            schedule=Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
@@ -100,6 +105,7 @@ def compounder_view(request):
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
+            pathologists=Pathologist.objects.filter(active=True).order_by('id')
 
             doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
              
@@ -108,6 +114,7 @@ def compounder_view(request):
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
+                           'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 'doct': doct,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 'doct': doct,
                            'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
@@ -153,6 +160,7 @@ def student_view(request):
             schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
             doctors=Doctor.objects.filter(active=True)
             pathologists=Pathologist.objects.filter(active=True)
+            pathologists=Pathologist.objects.filter(active=True)
             count=Counter.objects.all()
 
             if count:
@@ -164,6 +172,7 @@ def student_view(request):
                                              # student view ends
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
+                           'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
                            'prescription': prescription, 'schedule': schedule, 'users': users,'doct': doct, 'curr_date': datetime.now().date(), 'usertype' : usertype})
@@ -246,6 +255,36 @@ def doctor_entry(request):
             print(i)
             pass
     return HttpResponse("Hello")
+
+def pathologist_entry(request):
+    '''
+        This function inputs new pathologist' details into Doctor class in database 
+        @param:
+            request - contains metadata about the requested page
+
+    '''
+    excel = xlrd.open_workbook(os.path.join(os.getcwd(), 'dbinsertscripts/healthcenter/Pathologist-List.xlsx'))
+    z = excel.sheet_by_index(0)
+
+    for i in range(1, 5):
+        try:
+            name = str(z.cell(i,0).value)
+            print(name)
+            phone = str(int(z.cell(i,1).value))
+            print(phone)
+            spl = str(z.cell(i,2).value)
+            u = Pathologist.objects.create(
+                        pathologist_name = name,
+                        pathologist_phone = phone,
+                        specialization=spl
+            )
+            print("Pathologist done -> ")
+        except Exception as e:
+            print(e)
+            print(i)
+            pass
+    return HttpResponse("Hello")
+
 
 def pathologist_entry(request):
     '''

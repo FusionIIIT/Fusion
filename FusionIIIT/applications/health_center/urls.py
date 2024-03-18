@@ -1,4 +1,5 @@
 from django import views
+from django import views
 from django.conf.urls import url,include
 
 from .views import *
@@ -13,6 +14,7 @@ urlpatterns = [
     #views
     url(r'^compounder/$', compounder_view, name='compounder_view'),
     url(r'^student/$', student_view, name='student_view'),
+    url(r'announcement/', announcement, name='announcement'),
     url(r'announcement/', announcement, name='announcement'),
     
     #database entry
