@@ -390,11 +390,12 @@
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                                      
-                        {% if request.user.extrainfo.user_type == "student"  or  "hall1caretaker" == global_var  or "hall2caretaker" == global_var or "hall3caretaker" == global_var%}
+                       {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden %}
+                        
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
                                 <div class="ui centered grid">   
                                     <div class="row">
                                         <i class="ui edit outline icon big"></i>

@@ -356,8 +356,7 @@ def hostel_view(request, context={}):
     }
 
     return render(request, 'hostelmanagement/hostel.html', context)
-
-
+    
 def staff_edit_schedule(request):
     """
     This function is responsible for creating a new or updating an existing staff schedule.
@@ -649,7 +648,7 @@ class GeneratePDF(View):
         hall_caretakers = HallCaretaker.objects.all()
         get_hall = ""
         get_hall = get_caretaker_hall(hall_caretakers, request.user)
-        print(get_hall)
+        
         if months < current_month:
             worker_report = WorkerReport.objects.filter(
                 hall=get_hall, month__gte=current_month-months, year=current_year)
@@ -699,7 +698,7 @@ def all_leave_data(request):
 
 @login_required
 def create_hostel_leave(request):
-    print(request.user.username)
+    
     if request.method == 'GET':
         return render(request, 'hostelmanagement/create_leave.html')
     elif request.method == 'POST':
@@ -878,7 +877,7 @@ class AssignCaretakerView(APIView):
 
             # Retrieve the previous caretaker for the hall, if any
             prev_hall_caretaker = HallCaretaker.objects.filter(hall=hall).first()
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            
             # print(prev_hall_caretaker.staff.id)
             # Delete any previous assignments of the caretaker in HallCaretaker table
             HallCaretaker.objects.filter(staff=caretaker_staff).delete()
