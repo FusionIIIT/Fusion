@@ -134,19 +134,15 @@
                                     </datalist>
                                
                             </label>
-                        </div>
-
                             <div class="field">
-                            <label>Receiver Designation:
-                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                                    <datalist  id="input_list1">
-
-                                    </datalist>
-
-
-                               
-                            </label>
+                                <label>Receiver Designation:
+                                    <select id="receiver_dropdown" name="receive">
+                                        <!-- Dropdown options will be dynamically populated here -->
+                                    </select>
+                                </label>
+                            </div>
                         </div>
+
                                 <br>
 
 
@@ -358,6 +354,38 @@
             console.log("dsfagdfdshadf");
         });
     </script>
+
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            console.log(values)
+            var dropdown = $('#receiver_dropdown');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+        }
+    });
+</script>
+
 
 
 {% endblock %}

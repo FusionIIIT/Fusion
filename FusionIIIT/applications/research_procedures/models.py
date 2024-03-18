@@ -30,9 +30,10 @@ class projects(models.Model):
     finish_date=models.DateField()
     years= models.IntegerField()
     status= models.IntegerField(default=0)
-    # project_info_file=models.FileField(upload_to='project_info_file', null=True, blank=True)
-    project_description=models.CharField(max_length=500 ,default="description")
+    project_info_file=models.FileField( null=True, blank=True)  
+    # project_description=models.CharField(max_length=500 ,default="description")
     financial_outlay_status=models.IntegerField(default=0)
+    
 
     def __str__(self):
         return str(self.project_id)
@@ -78,12 +79,26 @@ class staff_allocations(models.Model):
     qualification=models.CharField(max_length=500)
     year=models.IntegerField()
     stipend=models.IntegerField()
+    staff_type=models.CharField(max_length=100,default="research")
 
     def __str__(self):
         return str(self.staff_allocation_id)
 
     class Meta:
         ordering = ['-staff_allocation_id']
+
+class requests(models.Model):
+    request_id=models.IntegerField(primary_key=True)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+    request_type=models.CharField(max_length=500)
+    project_investigator_id=models.ForeignKey(User, related_name='rj_pi'  , on_delete= models.CASCADE)
+    approval_status= models.IntegerField(default=0) #value 0 means pending
+
+    def __str__(self):
+        return str(self.request_id)
+
+    class Meta:
+        ordering = ['-request_id']
     
 # class requests(models.Model):
 #     request_id=models.IntegerField(primary_key=True)

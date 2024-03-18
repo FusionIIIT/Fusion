@@ -29,46 +29,50 @@ IPR
             });
         });
     </script>
+    <style>
+        .active-row:hover {
+            background-color: #f4f4f4; /* Change to whatever color you want for active row */
+        }
+    </style>
 
-    
-    <div class="ui pointing secondary menu" style="font-size:25px;">
-        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
-            Financial Outlay
-        </label>
+   <div class="ui pointing secondary menu" style="font-size: 20px;">
+  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Financial Outlay Details for Project: &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+  </label>
     </div>
 
     {% for year in years %}
-    <div style="padding: 30px;"> 
-    <p style=" width: 100%; font-size:25px; text-align: center; "> Year {{year}} <p>
-    <table class="ui celled table" style="width: 100%; border-collapse: collapse; ">
-        <thead class="green-background" >
-            <tr style=" text-align: center;" >
-                <th style="background-color:#4CAF50; color:white">S.No</th>
-                   <th style="background-color:#4CAF50; color:white">Category</th>
-                <th style="background-color:#4CAF50; color:white" >Subcategory</th>
-                <th style="background-color:#4CAF50; color:white" >Alloted Amount</th>
-                <th style="background-color:#4CAF50; color:white" >Amount Utilised</th>
-                <th style="background-color:#4CAF50; color:white" >Amount Remaining</th>
+    <div style="padding: 20px;"> 
+    <!-- <p style=" width: 100%; font-size:25px; text-align: center; "> Year {{year}} <p> -->
+    <table class="ui celled striped table" style="width: 100%; border-collapse: collapse; ">
+        <thead  >
+            <tr>
+                <th colspan="5" style="text-align: center;">
+                Year {{year}} 
+                 </th>
+            </tr>
+            <tr style=" text-align: center;"  >
+                <th style="background-color:#2d4287; color:white">Category</th>
+                <th style="background-color:#2d4287; color:white" >Subcategory</th>
+                <th style="background-color:#2d4287; color:white" >Alloted Amount</th>
+                <th style="background-color:#2d4287; color:white" >Amount Utilised</th>
+                <th style="background-color:#2d4287; color:white" >Amount Remaining</th>
             </tr>
         </thead>
         <tbody>
             {% for category, subcategory_data in category_data.items %}
-                {% for item in subcategory_data %}
-                    {% if item.year == year %}
+            {% for item in subcategory_data %}
+                {% if item.year == year %}
                         <tr style="text-align: center;">
-                            <!--TODO: serial number mention cheyali  -->
-                            <td>{{ 0 }}</td>
                             <td>{{ item.category }}</td>
                             <td>{{ item.sub_category }}</td>
                             <td>{{ item.amount }}</td>
-                            <!--TODO: item ki amt utilised mention cheyali  -->
-                            <td>{{ item.amount }}</td>
-                            <!--TODO: item ki amt remaining mention cheyali  -->
+                            <td>0</td>
                             <td>{{ item.amount }}</td>
                         </tr>
-                    {% endif %}
-                {% endfor %}
+                {% endif %}
             {% endfor %}
+    {% endfor %}
         </tbody>
     </table>
 </div>

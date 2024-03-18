@@ -11,84 +11,6 @@ IPR
     $(this).closest(".message").transition("fade");
   });
 
-    
-    function addCategorySection(event,year,category_subcategory_map) {
-      event.preventDefault();
-      var category_selection_id = '.'+'category-section-'+year;
-      var originalSection = document.querySelector(category_selection_id);
-      var clonedSection = originalSection.cloneNode(true); 
-      var clonedcatselect_id = '.'+'category-select-'+ year;
-      var clonedsubcatselect_id = '.'+'subcategory-select-'+ year;  
-      var clonedamount_id = '.'+'amount-'+ year;
-      var clonedCategorySelect = clonedSection.querySelector(clonedcatselect_id);   
-      var clonedSubcategorySelect = clonedSection.querySelector(clonedsubcatselect_id);
-      var clonedAmount = clonedSection.querySelector(clonedamount_id);
-      var remove_button_id = '.'+'remove_button-'+year;
-      var remove_button = clonedSection.querySelector(remove_button_id);
-
-
-      remove_button.setAttribute('class','remove_button-'+year);
-
-      clonedSubcategorySelect.disabled = false;
-      clonedSubcategorySelect.value = '';
-      clonedCategorySelect.value = '';
-      category_select_id = '.'+'category-select-'+ year ;
-      var fieldcount= document.querySelectorAll(category_select_id).length+1;
-
-      console.log(fieldcount + " field count")
-      
-      var newName = 'category-select-'+ year+ '-' + fieldcount; // Generate unique ID
-      var newSubcategoryName =  'subcategory-select-' + year+ '-' + fieldcount; // Generate unique ID
-      var newAmountName = 'amount-'+ year+ '-' + fieldcount; // Generate unique ID
-      var newRemoveButton = 'remove_button-'+ year+ '-' + fieldcount; // Generate unique ID
-
-      var newId = newName // Generate unique ID
-      var newSubcategoryId = newSubcategoryName; // Generate unique ID
-      var newAmountId = newAmountName; // Generate unique ID
-      
-      clonedCategorySelect.setAttribute('id', newId);
-      clonedSubcategorySelect.setAttribute('id', newSubcategoryId);
-      clonedAmount.setAttribute('id', newAmountId);
-      remove_button.setAttribute('id', newRemoveButton);
-
-
-      clonedCategorySelect.setAttribute('name', newName);
-      clonedSubcategorySelect.setAttribute('name', newSubcategoryName);
-      clonedAmount.setAttribute('name', newAmountName);
-    
-      // Append the cloned section to the container 
-      
-      var container_id='container-'+year
-      console.log(container_id)
-      var clonedContainer = document.getElementById(container_id); 
-      clonedContainer.setAttribute('id',container_id)
-      clonedContainer.appendChild(clonedSection);
-
-      var category_count_id = 'category-count-'+year;
-      var category_count = document.getElementById(category_count_id);
-      category_count.setAttribute('value',fieldcount);
-  }
-
-  function removeCategorySection(event,year,category_subcategory_map) {
-    event.preventDefault();
-    var category_selection_id = '.'+'category-section-'+year;
-    var category_select_id = '.'+'category-select-'+ year ;
-    var fieldcount= document.querySelectorAll(category_select_id).length;
-    console.log(fieldcount + " field count")
-    if (fieldcount > 1) {
-      var container_id='container-'+year
-      var container = document.getElementById(container_id);
-      var currentSection = event.target.parentElement.parentElement;
-      container.removeChild(currentSection);
-      // to remove corresponding category section
-      
-      
-      var category_count_id = 'category-count-'+year;
-      var category_count = document.getElementById(category_count_id);
-      category_count.setAttribute('value',fieldcount-1);
-    }
-  }
-
   function addStaffSection(event, year, pid){
     event.preventDefault();
     var staff_selection_id = '.'+'staff-'+year;
@@ -181,19 +103,16 @@ button {
 }
 
 </style>
-<div class="ui pointing secondary menu" style="font-size: 25px">
-  <label
-    class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}"
-  >
-    Add Staff Details
+ <div class="ui pointing secondary menu" style="font-size: 25px;">
+  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Enter Staff Details for Project &nbsp;<span class="ui blue text header">{{ project_name }}</span>
   </label>
 </div>
 
 
 <form  method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_staff_details' project_id %}" >
   {% csrf_token %}
-  {% comment %} <!-- {% for year in years %} --> {% endcomment %}
-  <h3> Enter Staff Details in Year {{year}} </h3>
+ 
   <div class="container" id="container-{{year}}" >
     <div class="staff-{{year}} catt" >
         <div class="f-group">
@@ -208,10 +127,10 @@ button {
           <label for="amount">Qualification</label>
           <input name="qualification-{{year}}-1" id="qualification-{{year}}-1" class="qualification-{{year}}">
         </div>
-        <div class="f-group">
+         <div class="f-group">
           <label for="year">year</label>
           <input name="year-{{year}}-1" id="year-{{year}}-1" class="year-{{year}}">
-        </div>
+        </div> 
         <div class="f-group">
           <label for="stipend">stipend</label>
           <input name="stipend-{{year}}-1" id="stipend-{{year}}-1" class="stipend-{{year}}">
@@ -219,14 +138,15 @@ button {
         <div class="f-group">
           <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">Remove category</button>
         </div>
+        
       </div> 
       
     </div>
     <button class="f-group" onclick="addStaffSection(event,{{year}},{{project_id}})">Add Staff</button>
-    <div class="f-group">
+    {% comment %} <div class="f-group">
       <label for="staff-count-{{year}}">Staff Count</label>
       <input name="staff-count-{{year}}" id="staff-count-{{year}}" value="1">
-    </div>
+    </div> {% endcomment %}
     {% comment %} <!-- {% endfor %} --> {% endcomment %}
     <input type="submit" value="Submit" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
 </form>

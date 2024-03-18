@@ -9,129 +9,147 @@ IPR
 {% block view_projects %}
 
 {% block body %}
-   
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == "success" %}
-                <div class="ui positive message">
-                    <i class="close icon"></i>
-                        {{ message.message }}
-                </div>  
-            {% else %}
-                <div class="ui negative message">
-                    <i class="close icon"></i>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+            <div class="ui positive message">
+                <i class="close icon"></i>
                     {{ message.message }}
-                </div> 
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+            </div>  
+        {% else %}
+            <div class="ui negative message">
+                <i class="close icon"></i>
+                {{ message.message }}
+            </div> 
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-    <script>
-        $('.message .close')
-            .on('click', function() {
-                $(this)
-                    .closest('.message')
-                    .transition('fade')
-                ;
-            });
-    </script>
-    {% comment %}table for viewing projects!{% endcomment %}
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
 
-   <div class="ui pointing secondary menu" style="font-size:25px;">
-        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}" >
-            Projects             
-        </label>      
-    </div>
-    
+<style>
+    .equal-size-button {
+        width: 100px; /* Adjust the width according to your preference */
+    }
 
-    <style>
-        table {
-            /* border-collapse: collapse; */
-            width: 100%;
+    /* Responsive styling */
+     table.ui.celled.table {
+        width: 100%; /* Set table width to 100% */
+    }
+    @media only screen and (max-width: 991px) {
+        .ui.pointing.secondary.menu {
+            font-size: 20px;
+        }
+    }
+
+    @media only screen and (max-width: 767px) {
+        .ui.pointing.secondary.menu {
+            font-size: 15px;
         }
 
-        th, td {
-            text-align: left;
-            padding: 8px;
+        .equal-size-button {
+            width: auto; /* Adjust the width for smaller screens */
+            margin-bottom: 5px; /* Add margin for better spacing */
         }
+    }
+    .ui.small.grey.equal-size-button.button:hover{
+        background-color:black;
+    }
+    .ui.small.equal-size-button.button:hover{
+        background-color:#035afc;
+    }
+</style>
+<div style="width:100%">
+<div class="ui pointing secondary menu" style="font-size:25px; width:100%" >
+    <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+        Projects             
+    </label>      
+</div>
 
-        tr:nth-child(even){background-color: #f2f2f2}
-
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn{
-             background-color: #007bff;
-              color: #fff;
-               border: 2px solid white;
-               border-radius:10px; 
-               padding: 5px 2px ; 
-               cursor: pointer;
-                width: 50%;
-        }
-        .btn-disabled{
-             background-color:#63c6ff;
-              color: #fff;
-               border: 2px solid white;
-               border-radius:10px; 
-               padding: 5px 2px ; 
-                cursor: not-allowed;
-                width: 50%;
-          
-        }
-    </style>
-
-
-    <table >
-        <tr>
+<table class="ui celled table">
+    <thead>
+        <tr style="background-color: #4CAF50; color: white;">
             <th>S.No.</th>
-            <th>Project ID</th>
+            {% comment %} <th>Project ID</th> {% endcomment %}
             <th>Project Name</th>
             <th>Project Type</th>
             <th>Sponsored Agency</th>
             <th>Years</th>
             <th>Status</th>
-            <th>Fincancial Outlay</th>
+            <th>Financial Outlay</th>
             <th>Staff Details</th>
             <th>Project Info</th>
         </tr>
-
+    </thead>
+    <tbody>
         {% for project in projects %}
-
-        <tr >
+        <tr>
             <td>{{forloop.counter}}</td>
-            <td>{{project.project_id}}</td>
+            {% comment %} <td>{{project.project_id}}</td> {% endcomment %}
             <td>{{project.project_name}}</td>
             <td>{{project.project_type}}</td>
             <td>{{project.sponsored_agency}}</td>
             <td>{{project.years}}</td>
             <td>
                 {% if project.status == 0 %}
-                <div class="description">OnGoing</div>
+                <div class="ui teal label">OnGoing</div>
                 {% endif %}
                 {% if project.status == 1 %}
-                <div class="description">Completed</div>
+                <div class="ui teal label">Completed</div>
                 {% endif %}
             </td>
             <td>
                 {% if project.financial_outlay_status == 0 %}
-                <button onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'">Add</button>
+                <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
                 {% endif %}
-                <button onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'">View</button>
+                {% if project.financial_outlay_status == 1 %}
+                <button id="vhello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('vhello{{ project.project_id }}')" onmouseout="restoreText('vhello{{ project.project_id }}')" onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'"><i class="eye icon"></i></button>
+                {% endif %}
             </td>
             <td>
-                <button onclick="window.location='/research_procedures/add_staff_details/{{project.project_id}}'">Add</button>
-                <button onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'">View</button>
+                <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})" onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
+                <button id="hello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_staff_details/{{ project.project_id }}'"><i class="eye icon"></i></button>
             </td>
+            
             <td>
-                <button onclick="window.location='/research_procedures/view_project_info/{{project.project_id}}'">View</button>
+                <button class="ui small blue equal-size-button button" style="color:white" onclick="window.location='/research_procedures/view_project_info/{{project.project_id}}'">View</button>
             </td>
         </tr>
-        {% endfor %}    
-    </table>
-    
-  
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<script>
+  function changeText(pid) {
+    console.log(pid);
+    if(pid[0]=='h'){
+
+        document.getElementById(pid).innerHTML = "View";
+    }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = "Add";
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = "View";
+    else document.getElementById(pid).innerHTML = "Add";
+  }
+
+  function restoreText(pid) {
+    if(pid[0]=='h'){
+
+        document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+  }
+</script>
 {% endblock %}
 
 {% endblock %}

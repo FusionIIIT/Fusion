@@ -12,6 +12,7 @@ import datetime
 from django.utils import timezone
 from .models import *
 from collections import defaultdict
+from applications.filetracking.sdk.methods import *
 
 # Faculty can file patent and view status of it.
 
@@ -145,10 +146,12 @@ def add_projects(request):
         subd= obj.get('finish_date')
         finishd= obj.get('finish_date')
         years= obj.get('number_of_years')
-        project_description= obj.get('description')
+        # project_description= obj.get('description')
+        project_info_file= request.FILES.get('project_info_file')
 
         check = User.objects.filter(username=pid) 
-        print(check[0].username)
+        # print(check[0].username)
+
        
         
         check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
@@ -191,7 +194,20 @@ def add_projects(request):
             submission_date=finishd,
             finish_date=finishd,
             years=years,
-            project_description=project_description
+            project_info_file=project_info_file
+           
+        )
+        project_investigator_designation = HoldsDesignation.objects.get(user=userpi_instance).designation
+
+        file_x= create_file(
+            uploader=request.user.username,
+            uploader_designation="rspc_admin",
+            receiver= pid,
+            receiver_designation=project_investigator_designation, 
+            src_module="research_procedures",
+            src_object_id= projectid,
+            file_extra_JSON= { "message": "Project added successfully"},
+            attached_file= project_info_file, 
         )
 
         messages.success(request,"Project added successfully")
@@ -203,7 +219,7 @@ def add_projects(request):
             "categories": categories,
         }
        
-        # return render(request,'rs/add_financial_outlay.html', context=data)
+        return redirect("/research_procedures/financial_outlay/"+str(projectid))
     return render(request,"rs/projects.html")
 
 def add_fund_requests(request,pj_id):
@@ -307,6 +323,7 @@ def add_requests(request,id,pj_id):
     return render(request, "rs/add_requests.html")    
 
 
+
 def view_projects(request):
     queryset= projects.objects.all()
 
@@ -324,9 +341,9 @@ def view_projects(request):
         "projects": queryset,
         "username": request.user.username,
     }
-    print(data)
+    # print(data)
 
-    print(request.user.username)
+    # print(request.user.username)
 
     return render(request,"rs/view_projects_rspc.html", context= data)
 
@@ -355,13 +372,14 @@ def view_requests(request,id):
     }
 
     # print(data)
-    print(request.user.username)
+    # print(request.user.username)
 
     return render(request,"rs/view_requests.html", context= data)
 
 def view_financial_outlay(request,pid):
 
     table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
+    project= projects.objects.get(project_id=pid);
 
     years = set(table_data.values_list('year', flat=True))
 
@@ -373,11 +391,12 @@ def view_financial_outlay(request,pid):
     data = {
         'table_title': 'Total Budget Outlay',
         'table_caption': '...',  # Add caption if needed
+        'project_name':project.project_name,
         'years': list(years),
         'category_data': category_data,
     }
 
-    print(data)
+    # print(data)
     return render(request,"rs/view_financial_outlay.html", context= data)
 
 def submit_closure_report(request,id):
@@ -388,7 +407,7 @@ def submit_closure_report(request,id):
 
     queryset= projects.objects.filter(project_investigator_id = request.user.username)
 
-    print(queryset)
+    # print(queryset)
     
     data= {
         "projects": queryset,
@@ -402,7 +421,7 @@ def view_project_inventory(request,pj_id):
     queryset= requests.objects.filter(project_id=pj_id,request_type="funds")
 
 
-    print(queryset)
+    # print(queryset)
     
     data= {
         "requests": queryset,
@@ -415,7 +434,7 @@ def view_project_staff(request,pj_id):
     queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
 
 
-    print(queryset)
+    # print(queryset)
     
     data= {
         "requests": queryset,
@@ -459,49 +478,45 @@ def financial_outlay_form(request,pid):
     
     data = {
        "project_id": project.project_id,
+       "project_name":project.project_name,
        "years": list(range(1, int(project.years) + 1)),
        "category_subcategory_map": category_subcategory_map
        
     }
 
     return render(request,"rs/add_financial_outlay.html", context= data)
+# return render(request,"rs/add_financial_outlay.html", context= data)
 
 
 
-def add_staff_details(request , pid):
+def add_staff_details(request, pid):
     if request.method == 'POST':
         obj = request.POST
-        print("MG bro")
-        print(obj)
         for key, value in obj.items():
-            if key.startswith('staff'):                
+            if key.startswith('staff_id'):
                 year_count = key.split('-')[-2]
                 staff_count = key.split('-')[-1]
-                # subcategory_key = f'subcategory-select-{year_count}-{category_count}'
-                
-                 # the table name is staff_allocations, and fileds are staff_allocation_id, project_id, staff_id, staff_name, qualification,year, stipend
-                staff_id_key = f'staff_id-{year_count}-{staff_count}'    
+                staff_id_key = f'staff_id-{year_count}-{staff_count}'
                 staff_name_key = f'staff_name-{year_count}-{staff_count}'
-                qualification_key= f'qualification-{year_count}-{staff_count}'
-                year = year_count
+                qualification_key = f'qualification-{year_count}-{staff_count}'
                 stipend_key = f'stipend-{year_count}-{staff_count}'
-                staff_id = obj.get(staff_id_key, [''])
-                # staff_id = obj.get(staff_id_key, [''])[0].strip()  # Trim whitespace
-                staff_name = obj.get(staff_name_key, [''])
-                qualification = obj.get(qualification_key, [''])
-                stipend = obj.get(stipend_key, [''])
-                project_instance=projects.objects.get(project_id=pid)
-                ob= staff_allocations.objects.all()
+                year = year_count
+                staff_id = obj.get(staff_id_key, '').strip()
+                staff_name = obj.get(staff_name_key, '').strip()
+                qualification = obj.get(qualification_key, '').strip()
+                stipend = obj.get(stipend_key, '').strip()
+                project_instance = projects.objects.get(project_id=pid)
+                # print(type(staff_id))
+                ob = staff_allocations.objects.all()
 
+                if len(ob) == 0:
+                    fid = 1
+                else:
+                    fid = ob[0].staff_allocation_id + 1
 
-                
-                if len(ob)==0 :
-                    fid=1
+                staff_id_instance = User.objects.get(username=staff_id)
+         
 
-                else :
-                    fid= ob[0].staff_allocation_id+1
-                
-                staff_id_instance=User.objects.get(username=staff_id)   
                 staff_allocations.objects.create(
                     staff_allocation_id=fid,
                     project_id=project_instance,
@@ -511,21 +526,59 @@ def add_staff_details(request , pid):
                     year=year,
                     stipend=stipend
                 )
-        
-        return render(request,"rs/projects.html")
 
+        return redirect("/research_procedures/view_staff_details/"+str(pid))
 
-    project= projects.objects.get(project_id=pid);
-    
+    project = projects.objects.get(project_id=pid)
+
     years_passed = int((datetime.datetime.now().date() - project.start_date).days / 365.25)
-    
-    data={
-        "project_id":project.project_id,
-        "years":list(range(1,int(project.years)+1)),
-        "year":int(years_passed)+1,
+
+    data = {
+        "project_id": project.project_id,
+        "project_name" : project.project_name,
+        "years": list(range(1, int(project.years) + 1)),
+        "year": int(years_passed) + 1,
     }
+
+    return render(request, "rs/add_staff_details.html", context=data)
+
+
+def view_staff_details(request,pid):
+
+    staff_records = staff_allocations.objects.filter(project_id=pid)
     
-    return render(request,"rs/add_staff_details.html",context=data )
+    # Initialize a dictionary to hold data year-wise
+    data_by_year = {}
+    project = projects.objects.get(project_id=pid)
+
+    # Iterate through each staff record
+    for record in staff_records:
+        year = record.year
+        if year not in data_by_year:
+            data_by_year[year] = []
+        data_by_year[year].append({
+            'staff_id' : record.staff_id,
+            'staff_name': record.staff_name,
+            'qualification': record.qualification,
+            'stipend': record.stipend
+        })
+# Pass the organized data to the template
+    context = {
+        'data_by_year': data_by_year,
+        'project_name':project.project_name
+    }
+    filex= create_file(uploader=request.user.username,
+                uploader_designation="rspc_admin",
+                receiver= "21bcs3000",
+                receiver_designation="rspc_admin",
+                src_module="research_procedures",
+                src_object_id= pid,
+                file_extra_JSON= {"false": "false", "roll": 21},
+                attached_file= None,
+                )
+    # print(filex)
+
+    return render(request, "rs/view_staff_details.html", context)
 
 
 
@@ -549,12 +602,12 @@ def add_financial_outlay(request,pid):
                 amount = obj.get(amount_key, [''])
                 year = int(year_count)
 
-                print(year)
-                print(amount)
-                print(subcategory)
-                print(category)
+                # print(year)
+                # print(amount)
+                # print(subcategory)
+                # print(category)
                 project_instance=projects.objects.get(project_id=pid)
-
+                
 
                 ob= financial_outlay.objects.all()
                 if len(ob)==0 :
@@ -572,34 +625,128 @@ def add_financial_outlay(request,pid):
                     status=0,
                     staff_limit=0
                 )
+    
+                
+    return redirect("/research_procedures/view_financial_outlay/"+str(pid))
 
-    return render(request,"rs/projects.html")
+def inbox(request):
+    
+    
+    user_designation= HoldsDesignation.objects.get(user= request.user).designation
+    print(user_designation)
+    data = view_inbox(request.user.username,user_designation, "research_procedures")
+    files= []
+    count =0
+    for i in data:
+        count+=1
+        file1= File.objects.get(id=i['id'])
+        files.append((count, file1))
 
 
-# def add_financial_outlay(request):
-#     if request.method == 'POST':
-#         obj=request.POST
-#         projectid = obj.get('project_id')
-#         amount = obj.get('amount')
-#         desc = obj.get('description')
-#         check= projects.objects.filter(project_id=projectid)
-#         if not check.exists():
-#             messages.error(request,"Request not added, no such project exists")
-#             return render(request,"rs/add_financial_outlay.html")
+    data={
+        
+        "inbox": data,
+        "files": files
+    }
+    # print(data)
+    return render(request, "rs/inbox.html",context= data)
 
-#         obj= financial_outlay.objects.all()
-#         if len(obj)==0 :
-#             requestid=1
-            
-#         else :
-#             requestid= obj[0].request_id+1
+def add_staff_request(request,id):
+    if request.method == 'POST':
+        obj= request.POST
+        projectid = int(id)
+        receiver = obj.get('receiver')
 
-#         financial_outlay.objects.create(
-#             request_id=requestid,
-#             project_id=projectid,
-#             amount= amount,
-#             description= desc
-#         )
-#         messages.success(request,"Financial outlay added successfully")
-#         return redirect("/research_procedures")
-#     return render(request,"rs/add_financial_outlay.html")
+
+        sender = request.user.username
+        file_to_forward= request.FILES.get('file_to_forward')
+        project_instance=projects.objects.get(project_id=projectid)
+        receiver_instance=User.objects.get(username=receiver)
+        sender_designation= HoldsDesignation.objects.get(user= request.user).designation
+        receiver_designation = HoldsDesignation.objects.get(user= receiver_instance).designation
+
+        file_x= create_file(
+            uploader=sender,    
+            uploader_designation=sender_designation,
+            receiver= receiver_instance.username,
+            receiver_designation=receiver_designation, 
+            src_module="research_procedures",
+            src_object_id= projectid,
+            file_extra_JSON= { "message": "Staff request added ("+ str(projectid)+ ")"},
+            attached_file= file_to_forward, 
+        )
+        messages.success(request,"Staff request added successfully")
+
+    return redirect("/research_procedures/view_project_info/"+ str(projectid))
+
+def view_request_inbox(request):
+    user_designation= get_designation(request.user.username)
+    print(user_designation)
+    data = view_inbox(request.user.username,user_designation, "research_procedures")
+    files= []
+    count =0
+    for i in data:
+        count+=1
+        file1= File.objects.get(id=i['id'])
+        files.append((count, file1))
+
+
+    data={
+        
+        "inbox": data,
+        "files": files
+    }
+    # print(data)
+    return render(request, "rs/view_request_inbox.html",context= data)
+
+def forward_request(request):
+    if request.method == 'POST':
+        obj= request.POST
+        fileid = int(obj.get('file_id'))
+        receiver = obj.get('receiver')
+        message= obj.get('message')
+        receiver_instance= User.objects.get(username=receiver)
+        receiver_designation= HoldsDesignation.objects.get(user=receiver_instance).designation
+        sender = request.user.username
+        
+        filex= get_file_by_id(fileid)
+
+        file2=create_file(
+            uploader=sender,
+            uploader_designation= get_designation(sender),
+            receiver= receiver,
+            receiver_designation=receiver_designation, 
+            src_module="research_procedures",
+            src_object_id= filex.src_object_id,
+            file_extra_JSON= { "message": message},
+            attached_file= filex.upload_file, 
+        )
+        
+        delete_file(fileid)
+        messages.success(request,"Request forwarded successfully")
+    return redirect("/research_procedures/view_request_inbox")
+
+
+    return redirect("/research_procedures/view_request_inbox")
+
+def get_designation(us):
+    
+    user_designation= HoldsDesignation.objects.get(user__username=us).designation
+    return user_designation
+
+def get_file_by_id(id):
+    file1= File.objects.get(id=id)
+    print(file1)
+    return file1
+
+def delete_file(id):
+    file1= File.objects.get(id=id)
+    tracking= Tracking.objects.get(file_id=file1)
+    tracking.delete()
+    file1.delete()
+    return
+
+    
+
+
+
