@@ -319,7 +319,7 @@
 
                             {% for d in pathologists %}
                             {{count.empty_fine}}
-                            {% for s in schedule %}
+                            {% for s in schedule1 %}
                             {% if s.day == day %}
                             {% if d.id == s.pathologist_id.id %}
                             <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>

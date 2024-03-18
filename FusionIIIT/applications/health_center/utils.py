@@ -77,13 +77,6 @@ def compounder_view_handler(request):
         specialization=specialization,
         active=True
         )
-        # File.objects.create(
-        #         uploader=doctor,
-        #         description="1",
-        #         subject="2",
-        #         designation="abc",
-        #         upload_file="1"
-        # )
         data={'status':1, 'pathologist_name':doctor, 'specialization':specialization, 'pathologist_phone':phone}
         return JsonResponse(data)
     
@@ -145,7 +138,7 @@ def compounder_view_handler(request):
         data = {'status': 1}
         return JsonResponse(data)
 
-    # edit schedule for doctors                                       
+    # edit schedule for doctors
     elif 'edit_1' in request.POST:                                             
         doctor = request.POST.get('doctor')
         day = request.POST.get('day')
@@ -165,47 +158,14 @@ def compounder_view_handler(request):
         return JsonResponse(data)
 
 
-
     # remove schedule for a doctor
     elif 'rmv' in request.POST:  
         doctor = request.POST.get('doctor')
-        
         
         day = request.POST.get('day')
         Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day).delete()
         data = {'status': 1}
         return JsonResponse(data)
-    
-    
-     # edit schedule for pathologists
-    elif 'edit12' in request.POST:                                             
-        doctor = request.POST.get('pathologist')
-        day = request.POST.get('day')
-        time_in = request.POST.get('time_in')
-        time_out = request.POST.get('time_out')
-        room = request.POST.get('room')
-        pathologist_id = Pathologist.objects.get(id=doctor)
-        schedule = Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day)
-        if schedule.count() == 0:
-            Schedule.objects.create(pathologist_id=pathologist_id, day=day, room=room,
-                                    from_time=time_in, to_time=time_out)
-        else:
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(room=room)
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(from_time=time_in)
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(to_time=time_out)
-        data={'status':1}
-        return JsonResponse(data)
-    
-    
-    # remove schedule for a doctor
-    elif 'rmv1' in request.POST:  
-        doctor = request.POST.get('pathologist')
-        
-        day = request.POST.get('day')
-        Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day).delete()
-        data = {'status': 1}
-        return JsonResponse(data)
-    
     
     
      # edit schedule for pathologists
@@ -530,8 +490,6 @@ def student_view_handler(request):
         return JsonResponse(data)
     
     
-    
-    
     elif 'doctor' in request.POST:
         doctor_id = request.POST.get('doctor')
         days = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
@@ -552,8 +510,6 @@ def student_view_handler(request):
         schedule = sch.filter(doctor_id=doctor_id).order_by('date')
         schedules = serializers.serialize('json', schedule)
         return HttpResponse(schedules, content_type='json')
-    
-    
     
     
     elif 'feed_submit' in request.POST:

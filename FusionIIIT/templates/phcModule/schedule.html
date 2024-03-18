@@ -86,7 +86,7 @@
                             {% for s in schedule %}
                             {% if s.day == day %}
                             
-                            {% if d.id == s.doctor_id.id %}
+                            {% if d.id == s.doctor_id_id %}
                             <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
                             {{count.increment}}
                             {% else %}
@@ -281,9 +281,6 @@
     });
 
 </script>
-
-
-
             <div id="patho1_sc" class="field">
                   <table  border=1 class="ui definition padded table" style="margin: auto;">
                   </br>
@@ -319,11 +316,11 @@
 
                             {% for d1 in pathologists %}
                             {{ count.empty_fine }}
-                            {% for s1 in schedule %}
+                            {% for s1 in schedule1 %}
                             {% if s1.day == day %}
                             {% comment %} {{ s1.doctor_id.id }} {% endcomment %}
-                            {{ s1.pathologist_id  }}
-                            {% if d1.id == s1.pathologist_id.id %}
+                            
+                            {% if d1.id == s1.pathologist_id_id %}
                             <td style="white-space:nowrap;">{{s1.from_time}}--{{s1.to_time}}</td>
                             {{ count.increment }}
                             {% endif %}
