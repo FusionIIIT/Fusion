@@ -30,7 +30,7 @@ def healthcenter(request):
     '''
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
 
-    if usertype == 'student' or usertype=='faculty' or usertype=='staff':
+    if usertype == 'student' or usertype=='fx' or usertype=='staff':
         return HttpResponseRedirect("/healthcenter/student")
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")
