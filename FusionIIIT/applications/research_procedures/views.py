@@ -327,8 +327,9 @@ def add_requests(request,id,pj_id):
 def view_projects(request):
     queryset= projects.objects.all()
 
-
-    if request.user.username == "21bcs3000":
+    rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
+    rspc_admin =rspc_admin.user.username
+    if request.user.username == rspc_admin:
         data= {
         "projects": queryset,
         "username": request.user.username,
@@ -352,7 +353,9 @@ def view_requests(request,id):
     if id== '1':
         queryset= requests.objects.filter(request_type= "staff")
     elif id== '0':
-        if request.user.username == "21bcs3000" :
+        rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
+        rspc_admin =rspc_admin.user.username
+        if request.user.username == rspc_admin :
             queryset= rspc_inventory.objects.all()
             data= {
             "requests": queryset,
@@ -567,9 +570,10 @@ def view_staff_details(request,pid):
         'data_by_year': data_by_year,
         'project_name':project.project_name
     }
+    rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
     filex= create_file(uploader=request.user.username,
                 uploader_designation="rspc_admin",
-                receiver= "21bcs3000",
+                receiver= rspc_admin.user.username,
                 receiver_designation="rspc_admin",
                 src_module="research_procedures",
                 src_object_id= pid,
