@@ -1,20 +1,15 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from notifications.utils import slug2id
-from django.shortcuts import get_object_or_404
+from notifications.utils import id2slug, slug2id
+from django.shortcuts import get_object_or_404, redirect
 from notifications.models import Notification
-import settings as FusionIIIT_settings
+import Fusion.settings as FusionIIIT_settings
 def delete(request, slug=None):
     notification_id = slug2id(slug)
     notification = get_object_or_404(
         Notification, recipient=request.user, id=notification_id)
-    if FusionIIIT_settings.get_config()['SOFT_DELETE']:
-        notification.deleted = True
-        notification.save()
-    else:
-        notification.delete()
+    notification.delete()
     previous_page = request.META.get('HTTP_REFERER', '/')
-
     # Redirect to the previous page or the home page if the referrer is not available
     return HttpResponseRedirect(previous_page)
     # return HttpResponseRedirect('dashboard/')
