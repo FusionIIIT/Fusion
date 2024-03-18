@@ -754,7 +754,7 @@ def dashboard(request):
         return render(request, "dashboard/dashboard.html", context)
     else:
         print ("inside2")
-
+        
         return render(request, "dashboard/dashboard.html", context)
 
 
@@ -773,7 +773,6 @@ def   profile(request, username=None):
     """
     user = get_object_or_404(User, Q(username=username)) if username else request.user
 
-
     editable = request.user == user
     print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
@@ -784,6 +783,7 @@ def   profile(request, username=None):
     if(str(user.extrainfo.department)=='department: Academics'):
         print("profile2")
         return HttpResponseRedirect('/aims')
+    
     array = [
      "student",
     "CC convenor",
@@ -810,7 +810,7 @@ def   profile(request, username=None):
     # for obj in queryset:
     #     designation_name = obj.designation.name
     #     print("designation_name",designation_name)
-
+        
     # design = False
     # if designation_name in array:
     #     design = True
@@ -820,7 +820,7 @@ def   profile(request, username=None):
     #     current = HoldsDesignation.objects.select_relapted('user','working','designation').filter(Q(working=user, designation__name=designation_name))
     #     for obj in current:
     #         obj.designation.name = obj.designation.name.replace(designation_name, 'student')
-
+    
     designation_name = ""
     design = False
 
@@ -836,7 +836,7 @@ def   profile(request, username=None):
         current = HoldsDesignation.objects.filter(working=user, designation__name=designation_name)
         for obj in current:
             obj.designation.name = obj.designation.name.replace(designation_name, 'student')
-
+    
     print(user.extrainfo.user_type)
     print("current",current)
     if current:
@@ -1044,7 +1044,7 @@ def   profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
-        print("context",context)
+        # print("context",context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
