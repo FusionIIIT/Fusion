@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, time
 import xlrd
 import os
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import serializers
