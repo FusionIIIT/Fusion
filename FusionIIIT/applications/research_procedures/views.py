@@ -632,7 +632,7 @@ def add_financial_outlay(request,pid):
 def inbox(request):
     
     
-    user_designation= HoldsDesignation.objects.get(user= request.user).designation
+    user_designation= getDesignation(request.user.username)
     print(user_designation)
     data = view_inbox(request.user.username,user_designation, "research_procedures")
     files= []
@@ -680,7 +680,7 @@ def add_staff_request(request,id):
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
 
 def view_request_inbox(request):
-    user_designation= get_designation(request.user.username)
+    user_designation= getDesignation(request.user.username)
     print(user_designation)
     data = view_inbox(request.user.username,user_designation, "research_procedures")
     files= []
@@ -713,7 +713,7 @@ def forward_request(request):
 
         file2=create_file(
             uploader=sender,
-            uploader_designation= get_designation(sender),
+            uploader_designation= getDesignation(sender),
             receiver= receiver,
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
@@ -729,9 +729,9 @@ def forward_request(request):
 
     return redirect("/research_procedures/view_request_inbox")
 
-def get_designation(us):
-    
-    user_designation= HoldsDesignation.objects.get(user__username=us).designation
+def getDesignation(us):
+    user_inst = User.objects.get(username= us)
+    user_designation= HoldsDesignation.objects.get(user= user_inst).designation
     return user_designation
 
 def get_file_by_id(id):
