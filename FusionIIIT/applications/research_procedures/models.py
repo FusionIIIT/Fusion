@@ -12,13 +12,9 @@ class Constants:
     )
 
 
-
-
-
-
 class projects(models.Model):       
     project_id= models.IntegerField(primary_key= True)
-    project_name= models.CharField(max_length=500)
+    project_name= models.CharField(max_length=600)
     project_type= models.CharField(max_length=500)
     # financial_outlay= models.IntegerField()
     project_investigator_id=models.ForeignKey(User,related_name='pi_id', on_delete=models.CASCADE)
