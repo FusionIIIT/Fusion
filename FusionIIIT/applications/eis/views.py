@@ -275,11 +275,12 @@ countries = {
 
 # Main profile landing view
 def profile(request, username=None):
+    print("eis",username)
     user = get_object_or_404(User, username=username) if username else request.user
-    print("eir", user, username)
+
     extra_info = get_object_or_404(ExtraInfo, user=user)
-    if extra_info.user_type != 'fx':
-        return redirect('/')
+#     if extra_info.user_type != 'fx':
+#         return redirect('/')
     pf = extra_info.id
 
     form = ConfrenceForm()

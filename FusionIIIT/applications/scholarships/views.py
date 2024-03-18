@@ -27,6 +27,9 @@ from jsonschema.exceptions import ValidationError
 # Create your views here.
 
 
+
+
+
 @login_required(login_url='/accounts/login')
 def spacs(request):
     convener = Designation.objects.get(name='spacsconvenor')
@@ -402,37 +405,52 @@ def convenerCatalogue(request):
             context['result'] = 'Failure'
         return HttpResponse(json.dumps(context), content_type='convenerCatalogue/json')
 
+
+
+#below function is refactored and changed as it is not used by the user interface 
+#it will be changed later for other testing and download of winners
 def getWinners(request):
+    # Extract parameters from the request
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
     programme_name = request.GET.get('programme')
-    award = Award_and_scholarship.objects.get(award_name=award_name)
-    winners = Previous_winner.objects.select_related('student','award_id').filter(
-        year=batch_year, award_id=award, programme=programme_name)
-    context = {}
-    context['student_name'] = []
-    context['student_program'] = []
-    context['roll'] = []
+    
+    # Get the Award_and_scholarship object based on the provided award name
+    try:
+        award = Award_and_scholarship.objects.get(award_name=award_name)
+    except Award_and_scholarship.DoesNotExist:
+        return JsonResponse({'result': 'Failure', 'message': 'Award not found'})
 
-#  If-Else Condition for previous winner if there is or no data in the winner table
+    # Query for previous winners based on the provided criteria
+    winners = Previous_winner.objects.select_related('student__extra_info').filter(
+        year=batch_year, award_id=award, programme=programme_name)
+
+    context = {
+        'result': 'Success',
+        'winners': [],
+    }
+
+    # Process the winners if any found
     if winners:
         for winner in winners:
-
-            extra_info = ExtraInfo.objects.get(id=winner.student_id)
-            student_id = Student.objects.get(id=extra_info)
+            # Fetch extra information for the student
+            extra_info = winner.student.extra_info
             student_name = extra_info.user.first_name
             student_roll = winner.student_id
-            student_program = student_id.programme
-            context['student_name'].append(student_name)
-            context['roll'].append(student_roll)
-            context['student_program'].append(student_program)
-
-        context['result'] = 'Success'
+            student_program = winner.student.programme
+            
+            # Append student details to the context
+            context['winners'].append({
+                'student_name': student_name,
+                'roll': student_roll,
+                'student_program': student_program,
+            })
 
     else:
         context['result'] = 'Failure'
+        context['message'] = 'No winners found for the provided criteria'
 
-    return HttpResponse(json.dumps(context), content_type='getWinners/json')
+    return JsonResponse(context)
 
 def get_MCM_Flag(request):  # Here we are extracting mcm_flag
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)

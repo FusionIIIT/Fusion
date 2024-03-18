@@ -76,12 +76,15 @@ def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
     user_detail = serializers.UserSerializer(user).data
     profile = serializers.ExtraInfoSerializer(user.extrainfo).data
+
+    print(user)
+    
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
         skills = serializers.HasSerializer(student.has_set.all(),many=True).data
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
-        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
+        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).datap
         project = serializers.ProjectSerializer(student.project_set.all(), many=True).data
         achievement = serializers.AchievementSerializer(student.achievement_set.all(), many=True).data
         publication = serializers.PublicationSerializer(student.publication_set.all(), many=True).data
@@ -102,6 +105,7 @@ def profile(request, username=None):
         }
         return Response(data=resp, status=status.HTTP_200_OK)
     elif profile['user_type'] == 'faculty':
+        print(username)
         return redirect('/eis/api/profile/' + (username+'/' if username else ''))
 
 @api_view(['PUT'])
