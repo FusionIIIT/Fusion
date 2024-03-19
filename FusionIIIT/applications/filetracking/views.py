@@ -145,22 +145,19 @@ def filetracking(request):
 
 @login_required(login_url="/accounts/login")
 def draft_design(request):
+    """ 
+    This function redirects the user to the drafts page of designation selected in dropdown 
+     @param:
+            request - trivial.
     """
-        The function is used to get the designation of the user and renders it on draft template.
 
-        @param:
-                request - trivial.
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
 
-        @variables:
-
-
-                context - Holds data needed to make necessary changes in the template.
-    """
-    designation = get_designation(request.user)
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/draft_design.html', context)
+    return redirect('/filetracking/drafts/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url="/accounts/login")
@@ -300,40 +297,37 @@ def inbox_view(request, id):
 @login_required(login_url="/accounts/login")
 def outward(request):
     """ 
-    This function fetches the different designations of the user and renders it on outward template 
+    This function redirects the user to the outbox page of designation selected in dropdown 
      @param:
             request - trivial.
-
-    @variables:
-            context - Holds the different designation data of the user
-
     """
-    designation = get_designation(request.user)
 
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/outward.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/outbox/' + str(dropdown_HoldsDesignation_obj.id))
+
+
 
 
 @login_required(login_url="/accounts/login")
 def inward(request):
-    """
-     This function fetches the different designations of the user and renders it on inward template 
-
-
+    """ 
+    This function redirects the user to the inbox page of designation selected in dropdown 
      @param:
             request - trivial.
-
-    @variables:
-            context - Holds the different designation data of the user
     """
-    designation = get_designation(request.user)
-    context = {
 
-        'designation': designation,
-    }
-    return render(request, 'filetracking/inward.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/inbox/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url = "/accounts/login")
@@ -527,13 +521,19 @@ def forward(request, id):
 
 @login_required(login_url="/accounts/login")
 def archive_design(request):
-    designation = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').filter(user=request.user)
+    """ 
+    This function redirects the user to the archive page of designation selected in dropdown 
+     @param:
+            request - trivial.
+    """
 
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/archive_design.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/archive/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url="/accounts/login")
