@@ -357,7 +357,7 @@ def academic_procedures_student(request):
         details = {
                 'current_user': current_user,
                 'year': acad_year,
-                'user_sem': user_sem,
+                'user_sem': user_sem - 1,
                 'user_branch' : str(user_branch),
                 'cpi' : cpi,
                 }
@@ -880,12 +880,16 @@ def dropcourseadmin(request):
     '''
     data = request.GET.get('id')
     data = data.split(" - ")
+    student_id = data[0]
     course_code = data[1]
+    course = Courses.objects.get(code=course_code , version = 1.0)
     # need to add batch and programme
-    curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
+    # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
     try:
-        Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
-    except:
+        # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
+        course_registration.objects.filter(student_id = student_id , course_id = course.id).delete()
+    except Exception as e:
+        print(str(e))
         pass
         # print("hello ")
     response_data = {}
