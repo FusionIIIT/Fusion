@@ -7,17 +7,9 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-<<<<<<< HEAD
-from ..models import ExtraInfo, Student, Faculty
-from django.shortcuts import get_object_or_404, redirect, render
-import json
-from applications.gymkhana.models import Club_info,Club_member,Core_team,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
-from .serializers import Club_memberSerializer,Core_teamSerializer,Club_infoSerializer,Club_DetailsSerializer,Session_infoSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer, NewClubSerializer
-=======
 from django.shortcuts import render
 from applications.gymkhana.models import Voting_choices, Registration_form, Student ,Club_info,Club_member,Core_team,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
 from .serializers import Club_memberSerializer,Core_teamSerializer,Club_infoSerializer,Club_DetailsSerializer,Session_infoSerializer, Voting_choicesSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer
->>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
 
@@ -181,17 +173,6 @@ class Voting_Polls(APIView):
         serializer=Voting_pollSerializer(votingpolls, many=True)
         return Response(serializer.data)
 
-<<<<<<< HEAD
-class New_Club(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-    def post(self,request):
-        serializer = NewClubSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-=======
 class ClubMemberAPIView(APIView):
     def get(self, request):
         club_members = Club_member.objects.all()
@@ -440,4 +421,3 @@ class AddMemberToClub(APIView):
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
->>>>>>> 9be658cd97171601e5ac1e39081adc42db098745

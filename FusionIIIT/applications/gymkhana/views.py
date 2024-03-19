@@ -1,13 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
+from django.contrib import messages
 from django.shortcuts import *
 from applications.filetracking.models import  File, Tracking
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
@@ -657,12 +661,9 @@ def retrun_content(request, roll, name, desig , club__ ):
 			venue.append(room[0])
 	curr_club=[]
 	if 'student' in desig:
-		try :
-			user_name = get_object_or_404(User, username = str(roll))
-			extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
-			student = get_object_or_404(Student, id = extra)
-		except :
-			curr_club = []
+		user_name = get_object_or_404(User, username = str(roll))
+		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
+		student = get_object_or_404(Student, id = extra)
 	else :
 		curr_club = []
 
@@ -773,11 +774,9 @@ def gymkhana(request):
 	designation_data = [element for designation in designations for element in designation]
 	roll_ = []
 	for designation in designation_data :
-		try:
-			name_ = get_object_or_404(Designation, id = designation)
-			roll_.append(str(name_.name))
-		except:
-			pass
+		name_ = get_object_or_404(Designation, id = designation)
+		# #    #    print name_
+		roll_.append(str(name_.name))
 	for club_data in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
 		lines =str("")
 		Types = lines.split(" ")
@@ -835,6 +834,7 @@ def club_membership(request):
 		# messages.success(request,"Successfully sent the application !!!")
 
 	# return redirect('/gymkhana/')
+
 
 @login_required
 def core_team(request):
@@ -916,6 +916,7 @@ def event_report(request):
 
 	return redirect('/gymkhana/')
 
+
 @login_required
 def club_budget(request):
 	"""
@@ -951,6 +952,7 @@ def club_budget(request):
 
 	return redirect('/gymkhana/')
 
+
 @login_required
 def act_calender(request):
 	"""
@@ -984,10 +986,7 @@ def act_calender(request):
 		content = json.dumps(content)
 		return HttpResponse(content)
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
 @login_required
 def club_report(request):
     """
@@ -1257,6 +1256,7 @@ def fest_budget(request):
 
 	return redirect('/gymkhana/')
 
+
 @login_required
 def approve(request):
     """
@@ -1327,6 +1327,7 @@ def club_approve(request):
             )
 
     return redirect("/gymkhana/")
+
 
 @login_required
 def club_reject(request):
@@ -1414,6 +1415,7 @@ def cancel(request):
 		messages.success(request, "Successfully deleted !!!")
 
 	return redirect('/gymkhana/')
+
 
 @login_required
 @csrf_exempt
@@ -1872,8 +1874,4 @@ def forward(request, id):
 		'track': track,
 	}
 
-<<<<<<< HEAD
 	return render(request, 'filetracking/forward.html', context)
-=======
-	return render(request, 'filetracking/forward.html', context)
->>>>>>> 9be658cd97171601e5ac1e39081adc42db098745

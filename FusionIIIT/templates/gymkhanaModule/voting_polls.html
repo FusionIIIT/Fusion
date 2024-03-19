@@ -1,31 +1,3 @@
-<<<<<<< HEAD
-{% block voting_polls %}
-    {% comment %}The tab menu starts here!{% endcomment %}
-    {% comment %} <div class="ui pointing secondary menu">
-  <a class="active item" data-tab="active">Active Polls</a>
-  {% if "CONVENER" in Curr_desig|upper  %}
-  <a class="item" data-tab="create">Create Poll</a>
-  <a class="item" data-tab="status">Poll Status</a>
-  {% endif %}
-    </div> {% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="active">Active Polls</a>
-        {% if "Convener" in Curr_desig %}
-            <a class="item" data-tab="create">Create Poll</a>
-            <a class="item" data-tab="status">Poll Status</a>
-        {% endif %}
-    </div>
-    {% block active_poll %}
-        {% include 'gymkhanaModule/active_poll.html' %}
-    {% endblock active_poll %}
-    {% block create_poll %}
-        {% include 'gymkhanaModule/create_poll.html' %}
-    {% endblock create_poll %}
-    {% block poll_status %}
-        {% include 'gymkhanaModule/poll_status.html' %}
-    {% endblock poll_status %}
-{% endblock voting_polls %}
-=======
 {% block voting_polls %} {% comment %}The tab menu starts here!{% endcomment %}
 
 {% comment %} <div class="ui pointing secondary menu">
@@ -67,4 +39,3 @@
 {% endblock poll_status %}
 
 {% endblock voting_polls %}
->>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
