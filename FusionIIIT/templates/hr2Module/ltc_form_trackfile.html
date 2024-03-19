@@ -1,0 +1,48 @@
+<!-- jQuery Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Table Segment -->
+<div class="ui bottom attached tab segment" data-tab="second">
+    <div id="textSegmentDiv">
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+            <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <!-- Table to display file history -->
+                    <table class="ui celled medium table" style="text-align: center; margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <th><h4>Record Id</h4></th>
+                                <th><h4>Receive Date</h4></th>
+                                <th><h4>Forward Date</h4></th>
+                                <th><h4>Remarks</h4></th>
+                                <th><h4>Current ID</h4></th>
+                                <th><h4>Current Designation</h4></th>
+                                <th><h4>Receiver ID</h4></th>
+                                <th><h4>Receive Designation</h4></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through file history and display in table -->
+                            {% for history_entry in file_history %}
+                                <tr>
+                                    <td><h4>{{ history_entry.id }}</h4></td>
+                                    <td>{{ history_entry.receive_date }}</td>
+                                    <td>{{ history_entry.forward_date }}</td>
+                                    <td>{{ history_entry.remarks }}</td>
+                                    <td>{{ history_entry.current_id }}</td>
+                                    <td>{{ history_entry.current_design }}</td>
+                                    <td>{{ history_entry.receiver_id }}</td>
+                                    <td>{{ history_entry.receive_design }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8">No file history found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
