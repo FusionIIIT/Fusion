@@ -1,0 +1,88 @@
+{% extends 'globals/base.html' %}
+
+{% load static %}
+
+{% block title %}
+IPR
+{% endblock %}
+
+{% block view_projects %}
+
+{% block body %}
+   
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "success" %}
+                <div class="ui positive message">
+                    <i class="close icon"></i>
+                        {{ message.message }}
+                </div>  
+            {% else %}
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    {{ message.message }}
+                </div> 
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        $('.message .close')
+            .on('click', function() {
+                $(this)
+                    .closest('.message')
+                    .transition('fade')
+                ;
+            });
+        
+        function openFile(event, index) {
+            var file = files[index-1];
+            var url = file.index
+            console.log(url);
+            window.location.href = "media/" + file.index;
+        }
+    </script>
+
+    <style>
+        .equal-size-button {
+            width: 100px; /* Adjust the width according to your preference */
+        }
+    </style>
+
+    <div class="ui pointing secondary menu" style="font-size:25px;">
+        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Inbox             
+        </label>      
+    </div>
+
+    <table class="ui celled table">
+        <thead>
+            <tr style="background-color: #4CAF50; color: white;">
+                <th>S.No.</th>
+                <th>from</th>
+                <th>context</th>
+                <th>attachments</th>
+                <th>Forward</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% comment %} {{files}} {% endcomment %}
+            {% for data in inbox %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{data.uploader}}</td>
+                <td>{{data.file_extra_JSON.message}}</td>
+                {% comment %} <td><button></button></td> {% endcomment %}
+                 <td><button class="ui small blue equal-size-button button" onclick="openFile(event,{{forloop.counter}})" >{{data.id}}</button> </td> 
+                 <td><button class="ui small blue equal-size-button button" onclick="window.location='/research_procedures/forward_request/{{data.id}}/{{request.user.username}}'">Forward</td>
+
+                 {% comment %} <td><a href="{{ files }}"   >{{ data.id }}</a></td> {% endcomment %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+{% endblock %}
+
+{% endblock %}

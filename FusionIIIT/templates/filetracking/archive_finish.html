@@ -2,51 +2,39 @@
 {% load static %}
 
 {% block filetracking_tab %}
-    {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item">
-            Note Sheet
+                Note Sheet
             </a>
         </h3>
     </div>
-    {% comment %}the ambulance schedule tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="composefile">
         <div class="ui vertical segment" style="padding-left: 3.5%; padding-right: 3.5%;">
-
-            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            <form class="ui large form" method="POST" action="{% url 'filetracking:finish_file' file.id %}" enctype="multipart/form-data" id="finish_form">
             {% csrf_token %}
-
                 <div class="field">
-                        {% comment %}The Dropdown field starts here!{% endcomment %}
                         <div class="ui fluid card">
                             <div class="content" style=" background-color: #f4f4f4;">
                                 <center><span class="ui header">File Details</span></center>
                                     <div class="ui divider"></div>
-
                                         <div class="ui very relaxed fluid selection list" style=" background-color: #f4f4f4; padding-left: 18px; padding-top: 4px; padding-bottom: 0px; height: 200px; overflow-y: auto;">
                                             <div class="item">
                                                 <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
                                                 <div class="content" style="text-indent: 5em;">
-
                                                     <a class="header"><span>Uploader -</span>
                                                         <span class="meta" style="color: #1B1C1D">{{file.uploader}}</span>
                                                     </a>
-
                                                     <a class="header"><span>File ID -</span>
                                                         <span class="meta" style="color: #1B1C1D;">{{file.ref_id}}</span>
                                                     </a>
-
                                                     <a class="header"><span>Subject -</span>
                                                         <span class="meta" style="color: #1B1C1D">{{file.subject}}</span>
                                                     </a>
-
                                                     <a class="header"><span>Date -</span>
                                                         <span class="meta" style="color: #1B1C1D">{{file.upload_date}}</span>
                                                     </a>
-
                                                 </div>
-
                                                 <div class="ui divider"></div>
                                                 <a class="header"><center>File Description</center></a>
                                                 <div class="description">
@@ -55,16 +43,11 @@
                                             </div>
 
                                         </div>
-
-
-                                            <a href="/media/{{file.upload_file}}" target="_">
-                                                <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u>{{file.upload_file}}</u></span>
-                                            </a>
-
-
-
-                            </div>
-                        </div>
+                                        <a href="/media/{{file.upload_file}}" target="_">
+                                            <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u>{{file.upload_file}}</u></span>
+                                        </a>
+                                    </div>
+                                </div>
 
                         <div class="ui fluid card">
                              <div class="content" style=" background-color: #f4f4f4;">
@@ -130,32 +113,16 @@
                                 </div>
                         </div>
                 </div>
-
-                <br>
-
+                <br> 
             <br>
             <br>
-
-            
-
+                <div class="ui center aligned container">
+                    <button class = "ui large primary button" type="submit" form="finish_form">Finish</button>
+                </div>
             </form>
 
             <br>
-
         </div>
-
-
         <br>
-        <div class="extra content"></div>
     </div>
-    {% comment %}the compounder prescription tab ends here {% endcomment %}
 {% endblock %}
-
-
-<script type="text/javascript">
-    function ShowHideDiv() {
-        var chkAddress = document.getElementById("chkAddress");
-        var leaveAddress = document.getElementById("leaveAddress");
-        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
-    }
-</script>
