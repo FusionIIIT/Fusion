@@ -43,10 +43,12 @@ Academic
         {% load static %}
         {% comment %}the main tab starts here {% endcomment %}
         <div>
-            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
+            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Go to dashboard</button></a>
+            <a href="{% url 'iwdModuleV2:Add Items View' %}"><button class="ui button back-button">Add items</button></a>
+            <a href="{% url 'iwdModuleV2:Edit Inventory View' %}"><button class="ui button back-button">Edit Inventory</button></a>
         </div>
         <div class="ui header">
-            Created Requests
+            Inventory
         </div>
         <div class="ui one cards" style="padding: 2px;">
             <div class="ui blue card" id="noti">
@@ -54,15 +56,12 @@ Academic
 
                     <table class="ui orange table">
                         <thead>
-                            <th>Details:-</th>
+                            <!-- <th>Details:-</th> -->
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
-                                <th>Description</th>
-                                <th>Area</th>
-                                <th>Created By</th>
-                                <th>Send to</th>
-                                <th></th>
+                                <th>Quantity</th>
+                                <th>Cost (in Rupees)</th>
                             </tr>
                         </thead>
                         {% for f in obj %}
@@ -70,24 +69,8 @@ Academic
                             <tr>
                                 <td>{{f.0}}</td>
                                 <td>{{f.1}}</td>
-                                <td>{{f.3}}</td>
                                 <td>{{f.2}}</td>
-                                <td>{{f.4}}</td>
-                                <td>
-                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                    <form method="POST" action="{% url 'iwdModuleV2:Engineer-Process-Requests' %}">
-                                        {% csrf_token %}
-                                        <select name="designation">
-                                            {% for queryset in holdsDesignations %}
-                                                {% for hd in queryset %}
-                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Process</button>
-                                    </form>
-                                </td>
+                                <td>{{f.3}}</td>
                             </tr>
                         </tbody>
                         {% endfor %}

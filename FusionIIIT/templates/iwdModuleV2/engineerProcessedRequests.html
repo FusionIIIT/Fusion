@@ -78,6 +78,13 @@
                             <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
                             <form method="POST" action="{% url 'iwdModuleV2:Dean-Process-Requests' %}">
                                 {% csrf_token %}
+                                <select name="designation">
+                                    {% for queryset in holdsDesignations %}
+                                        {% for hd in queryset %}
+                                            <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </select>
                                 <input type="hidden" name="id" value="{{ f.0 }}">
                                 <button type="submit" class="ui small primary button">Process</button>
                             </form>

@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import date
 
 # Create your models here.
 
@@ -170,6 +170,24 @@ class Requests(models.Model):
     directorApproval = models.IntegerField()
     deanProcessed = models.IntegerField()
     status = models.CharField(max_length=200)
+    issuedWorkOrder = models.IntegerField()
+    workCompleted = models.IntegerField()
+
+class WorkOrder(models.Model):
+    request_id = models.IntegerField()
+    name = models.CharField(max_length=200)
+    date = models.DateField(default=date.today)
+    agency = models.CharField(max_length=200)
+    amount = models.IntegerField()
+    deposit = models.IntegerField()
+    alloted_time = models.CharField(max_length=200)
+    start_date = models.DateField()
+    completion_date = models.DateField()
+
+class Inventory(models.Model):
+    name = models.CharField(max_length=200)
+    quantity = models.IntegerField()
+    cost = models.IntegerField()
     
 class Bills(models.Model):
     key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)

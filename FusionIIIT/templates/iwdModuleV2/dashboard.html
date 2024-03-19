@@ -38,13 +38,23 @@
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
-                    <a class="active item" data-tab="first">
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
                         Create Request
                         <i class="right floated chevron right icon"></i>
                     </a>
 
                     <a class="active item"  href="{% url 'iwdModuleV2:Created Requests view' %}">
                         Created Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Issue Work Order' %}">
+                        Issue Work Order
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Requests In Progress' %}">
+                        Requests In Progress
                         <i class="right floated chevron right icon"></i>
                     </a>
 
@@ -58,18 +68,6 @@
 
             </div>
             {% comment %}ROW #2 ends here!{% endcomment %}
-
-        </div>
-        {% comment %}The left-rail segment ends here!{% endcomment %}
-
-        {% comment %}The central-rail segment starts here!{% endcomment %}
-        <div class="eight wide column">
-            {% comment %}The Appointments Form starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="first">
-                {% block appointment %}
-                    {% include 'iwdModuleV2/requestsView.html' %}
-                {% endblock %}
-            </div>
 
         </div>
         {% endif %}
@@ -109,6 +107,26 @@
 
                     <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
                         Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Admin IWD" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Inventory' %}">
+                        Inventory
                         <i class="right floated chevron right icon"></i>
                     </a>
 

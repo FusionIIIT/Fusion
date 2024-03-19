@@ -61,7 +61,6 @@ Academic
                                 <th>Description</th>
                                 <th>Area</th>
                                 <th>Created By</th>
-                                <th>Send to</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -74,19 +73,26 @@ Academic
                                 <td>{{f.2}}</td>
                                 <td>{{f.4}}</td>
                                 <td>
-                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                    <form method="POST" action="{% url 'iwdModuleV2:Engineer-Process-Requests' %}">
-                                        {% csrf_token %}
-                                        <select name="designation">
-                                            {% for queryset in holdsDesignations %}
-                                                {% for hd in queryset %}
-                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Process</button>
-                                    </form>
+                                    {% if f.5 == 1 %}
+                                        <form method="POST" action="{% url 'iwdModuleV2:Engineer-Process-Requests' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ f.0 }}">
+                                            <button type="submit" class="ui small primary button">Generate Final Bill</button>
+                                        </form>
+                                    {% endif %}
+                                    {% if f.5 == 0 %}
+                                        <form method="POST" action="{% url 'iwdModuleV2:Work Completed' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ f.0 }}">
+                                            <button type="submit" class="ui small primary button">Completed</button>
+                                        </form>
+                                        <br>
+                                        <form method="POST" action="{% url 'iwdModuleV2:Request From Inventory' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ f.0 }}">
+                                            <button type="submit" class="ui small primary button">Inventory</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                         </tbody>

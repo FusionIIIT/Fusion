@@ -46,7 +46,7 @@ Academic
             <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
         </div>
         <div class="ui header">
-            Created Requests
+            Issue Work Order
         </div>
         <div class="ui one cards" style="padding: 2px;">
             <div class="ui blue card" id="noti">
@@ -61,7 +61,6 @@ Academic
                                 <th>Description</th>
                                 <th>Area</th>
                                 <th>Created By</th>
-                                <th>Send to</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -75,17 +74,10 @@ Academic
                                 <td>{{f.4}}</td>
                                 <td>
                                     <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                    <form method="POST" action="{% url 'iwdModuleV2:Engineer-Process-Requests' %}">
+                                    <form method="POST" action="{% url 'iwdModuleV2:Fetch-Request' %}">
                                         {% csrf_token %}
-                                        <select name="designation">
-                                            {% for queryset in holdsDesignations %}
-                                                {% for hd in queryset %}
-                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </select>
                                         <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Process</button>
+                                        <button type="submit" class="ui small primary button">Issue Work Order</button>
                                     </form>
                                 </td>
                             </tr>
