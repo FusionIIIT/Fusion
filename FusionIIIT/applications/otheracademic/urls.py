@@ -26,4 +26,6 @@ urlpatterns = [
      url(r'^submitform/$', views.assistantship_form_submission, name='assistantship_form_submission'),
      url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
       url(r'^noduesverification/$', views.nodues, name='nodues'),
+
 ]
+

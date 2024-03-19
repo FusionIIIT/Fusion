@@ -16,7 +16,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import LeaveFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd
 from django.shortcuts import render, get_object_or_404
 from datetime import date 
-
 def otheracademic(request):
     return  render(request, "otheracademic/leaveform.html")
 
@@ -177,6 +176,7 @@ def assistantship(request):
 def assistantship_form_submission(request):
     if request.method == 'POST':
         # Retrieve form data
+
         student_name = request.POST.get('student_name')
         roll_no = request.POST.get('roll_no')
         discipline = request.POST.get('discipline')
@@ -217,6 +217,7 @@ def assistantship_form_submission(request):
         
         # Redirect to a success page or return a success message
         return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
+
     else:
         # Return an error response for invalid request method
         return HttpResponse('Invalid request method')
@@ -230,3 +231,4 @@ def assistantship_form_approval(request):
 
 def nodues(request):
     return render(request,'otheracademic/noduesverification.html')
+
