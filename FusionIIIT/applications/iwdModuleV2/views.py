@@ -116,7 +116,8 @@ def page2_1(request):
 
 def corrigendumInput(request):
     if request.method == 'POST':
-        existingObject = CorrigendumTable.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = CorrigendumTable.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = CorrigendumTable()
@@ -137,7 +138,8 @@ def corrigendumInput(request):
 
 def addendumInput(request):
     if request.method == 'POST':
-        existingObject = Addendum.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = Addendum.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = Addendum()
@@ -154,7 +156,8 @@ def addendumInput(request):
 
 def PreBidForm(request):
     if request.method == 'POST':
-        existingObject = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = PreBidDetails.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = PreBidDetails()
@@ -170,9 +173,11 @@ def PreBidForm(request):
 
 def noOfEntriesTechnicalBid(request):
     formNoTechnicalObjects = NoOfTechnicalBidTimes()
-    formNoTechnicalObjects.key = Projects.objects.get(id=request.session['projectId'])
+    formNoTechnicalObjects.key = Projects.objects.get(
+        id=request.session['projectId'])
     if request.method == 'POST':
-        existingObject = NoOfTechnicalBidTimes.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = NoOfTechnicalBidTimes.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formNoTechnicalObjects.number = int(request.POST['number'])
@@ -183,9 +188,11 @@ def noOfEntriesTechnicalBid(request):
 
 def TechnicalBidForm(request):
     formObject = TechnicalBidDetails()
-    numberOfTechnicalBidTimes = NoOfTechnicalBidTimes.objects.get(key=Projects.objects.get(id=request.session['projectId'])).number
+    numberOfTechnicalBidTimes = NoOfTechnicalBidTimes.objects.get(
+        key=Projects.objects.get(id=request.session['projectId'])).number
     if request.method == 'POST':
-        existingObject = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = TechnicalBidDetails.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = TechnicalBidDetails()
@@ -193,12 +200,14 @@ def TechnicalBidForm(request):
         formObject.sNo = request.POST['sNo']
         formObject.requirements = request.POST['requirements']
         formObject.save()
-        TechnicalBidContractorDetails.objects.filter(key=formObject).all().delete()
+        TechnicalBidContractorDetails.objects.filter(
+            key=formObject).all().delete()
         for w in range(numberOfTechnicalBidTimes):
             formContractorObject = TechnicalBidContractorDetails()
             formContractorObject.key = formObject
             formContractorObject.name = request.POST[str(w) + 'name']
-            formContractorObject.description = request.POST[str(w) + 'Description']
+            formContractorObject.description = request.POST[str(
+                w) + 'Description']
             formContractorObject.save()
         return redirect('iwdModuleV2/noOfEntriesFinancialBid')
     return render(request, 'iwdModuleV2/page2_support_4_technicalbid.html',
@@ -207,12 +216,15 @@ def TechnicalBidForm(request):
 
 def noOfEntriesFinancialBid(request):
     listOfContractors = []
-    objectTechnicalBid = TechnicalBidDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-    objects = TechnicalBidContractorDetails.objects.filter(key=objectTechnicalBid)
+    objectTechnicalBid = TechnicalBidDetails.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
+    objects = TechnicalBidContractorDetails.objects.filter(
+        key=objectTechnicalBid)
     for t in objects:
         listOfContractors.append(t.name)
     if request.method == 'POST':
-        existingObject = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = FinancialBidDetails.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = FinancialBidDetails()
@@ -226,7 +238,8 @@ def noOfEntriesFinancialBid(request):
             formContractorObject.name = listOfContractors[f]
             formContractorObject.totalCost = request.POST[listOfContractors[f] + 'totalCost']
             formContractorObject.estimatedCost = request.POST[listOfContractors[f] + 'estimatedCost']
-            formContractorObject.percentageRelCost = request.POST[listOfContractors[f] + 'percentageRelCost']
+            formContractorObject.percentageRelCost = request.POST[
+                listOfContractors[f] + 'percentageRelCost']
             formContractorObject.perFigures = request.POST[listOfContractors[f] + 'perFigures']
             formContractorObject.save()
         return redirect('iwdModuleV2/letterOfIntent')
@@ -236,7 +249,8 @@ def noOfEntriesFinancialBid(request):
 
 def letterOfIntent(request):
     if request.method == 'POST':
-        existingObject = LetterOfIntentDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = LetterOfIntentDetails.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = LetterOfIntentDetails()
@@ -253,7 +267,8 @@ def letterOfIntent(request):
 
 def workOrderForm(request):
     if request.method == 'POST':
-        existingObject = WorkOrderForm.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = WorkOrderForm.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = WorkOrderForm()
@@ -276,7 +291,8 @@ def workOrderForm(request):
 
 def AgreementInput(request):
     if request.method == 'POST':
-        existingObject = Agreement.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+        existingObject = Agreement.objects.filter(
+            key=Projects.objects.get(id=request.session['projectId']))
         if existingObject.count() == 1:
             existingObject.delete()
         formObject = Agreement()
@@ -300,7 +316,8 @@ def milestonesForm(request):
         formObject.timeAllowed = request.POST['timeAllowed']
         formObject.save()
         return redirect('iwdModuleV2/page3_1')
-    Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId'])).all().delete()
+    Milestones.objects.filter(key=Projects.objects.get(
+        id=request.session['projectId'])).all().delete()
     return render(request, 'iwdModuleV2/page2_support_9_milestone.html', {})
 
 
@@ -330,35 +347,42 @@ def ExtensionOfTimeForm(request):
 
 
 def page1View(request):
-    request.session['projectId'] = request.POST['id']
-    projectPageOne = PageOneDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    if request.POST:
+        request.session['projectId'] = request.POST['id']
+    projectPageOne = PageOneDetails.objects.get(
+        id=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page1.html', {'x': projectPageOne})
 
 
 def page2View(request):
-    projectPageTwo = PageTwoDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    projectPageTwo = PageTwoDetails.objects.get(
+        id=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2.html', {'x': projectPageTwo})
 
 
 def AESView(request):
-    objects = AESDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    objects = AESDetails.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/AA&ES.html', {'AES': objects})
 
 
 def financialBidView(request):
     elements = []
-    objects = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    objects = FinancialBidDetails.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     for f in objects:
         contractorObjects = FinancialContractorDetails.objects.filter(key=f)
         for w in contractorObjects:
-            obj = [f.sNo, f.description, w.name, w.estimatedCost, w.percentageRelCost, w.perFigures, w.totalCost]
+            obj = [f.sNo, f.description, w.name, w.estimatedCost,
+                   w.percentageRelCost, w.perFigures, w.totalCost]
             elements.append(obj)
     return render(request, 'iwdModuleV2/Page2_financialbid.html', {'financial': elements})
 
 
 def technicalBidView(request):
     elements = []
-    objects = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    objects = TechnicalBidDetails.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     for f in objects:
         contractorObjects = TechnicalBidContractorDetails.objects.filter(key=f)
         for w in contractorObjects:
@@ -368,47 +392,56 @@ def technicalBidView(request):
 
 
 def preBidDetailsView(request):
-    preBidObjects = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    preBidObjects = PreBidDetails.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2_pre-bid.html', {'preBidDetails': preBidObjects})
 
 
 def corrigendumView(request):
-    corrigendumObject = CorrigendumTable.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    corrigendumObject = CorrigendumTable.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/corrigendum.html', {'corrigendum': corrigendumObject})
 
 
 def addendumView(request):
-    addendumObject = Addendum.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    addendumObject = Addendum.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Addendum.html', {'x': addendumObject})
 
 
 def letterOfIntentView(request):
-    letterOfIntentObject = LetterOfIntentDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    letterOfIntentObject = LetterOfIntentDetails.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/letterOfIntent.html', {'x': letterOfIntentObject})
 
 
 def workOrderFormView(request):
-    workOrderFormObject = WorkOrderForm.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    workOrderFormObject = WorkOrderForm.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/WorkOrderForm.html', {'x': workOrderFormObject})
 
 
 def agreementView(request):
-    agreementObject = Agreement.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+    agreementObject = Agreement.objects.get(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Agreement.html', {'agreement': agreementObject})
 
 
 def milestoneView(request):
-    milestoneObjects = Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    milestoneObjects = Milestones.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2_milestones.html', {'milestones': milestoneObjects})
 
 
 def page3View(request):
-    pageThreeDetails = PageThreeDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+    pageThreeDetails = PageThreeDetails.objects.get(
+        id=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page3.html', {'x': pageThreeDetails})
 
 
 def extensionFormView(request):
-    extensionObjects = ExtensionOfTimeDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+    extensionObjects = ExtensionOfTimeDetails.objects.filter(
+        key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
 
 def fetchDesignations(request):
