@@ -16,6 +16,7 @@ from django.utils.dateparse import parse_datetime
 from .sdk.methods import *
 from .decorators import *
 
+
 @login_required(login_url="/accounts/login/")
 @user_is_student
 def filetracking(request):
@@ -39,7 +40,7 @@ def filetracking(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
-    print(request.POST)
+
     if request.method == "POST":
         try:
             if 'save' in request.POST:
@@ -47,6 +48,7 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
+                print("design=", design)
                 designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
                     'user', 'working', 'designation').get(id=design).designation_id)
                 upload_file = request.FILES.get('myfile')
@@ -102,7 +104,6 @@ def filetracking(request):
                     return redirect('/filetracking/')
                 receive = request.POST.get('receive')
                 try:
-                    print(receive)
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -132,13 +133,18 @@ def filetracking(request):
     extrainfo = ExtraInfo.objects.select_related('user', 'department').all()
     holdsdesignations = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').all()
-    designations = get_designation(request.user)
+
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    username = request.user
+    designation_id  = get_HoldsDesignation_obj(
+        username, designation_name).id
 
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
-        'designations': designations,
+        'designation_name': designation_name,
+        'designation_id': designation_id
     }
     return render(request, 'filetracking/composefile.html', context)
 
@@ -513,11 +519,13 @@ def forward(request, id):
             )
         messages.success(request, 'File sent successfully')
 
-    designations = get_designation(request.user)
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        designation_name)
 
     context = {
-
-        'designations': designations,
+        'designation_name': designation_name,
+        'designation_id': designation_id,
         'file': file,
         'track': track,
     }
