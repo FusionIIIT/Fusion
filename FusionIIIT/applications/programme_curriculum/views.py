@@ -29,9 +29,13 @@ def programme_curriculum(request):
         user_details - Gets the information about the logged in user.
         des - Gets the designation about the looged in user.
     """
+    user=request.user
+    
+    # print(context)
+    print(user.extrainfo.user_type + "Programme and curriculum")
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
@@ -55,10 +59,10 @@ def view_all_programmes(request):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
         
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
     
     ug = Programme.objects.filter(category='UG')
@@ -85,10 +89,10 @@ def view_curriculums_of_a_programme(request, programme_id):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
         
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
     
     program = get_object_or_404(Programme, Q(id=programme_id))
@@ -110,10 +114,10 @@ def view_all_working_curriculums(request):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
 
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
 
         url+='faculty/'
     curriculums = Curriculum.objects.filter(working_curriculum=1)
@@ -139,11 +143,11 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
     
         
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
     curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
     semesters = curriculum.semesters
@@ -183,10 +187,10 @@ def view_a_semester_of_a_curriculum(request, semester_id):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
 
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
 
     semester = get_object_or_404(Semester, Q(id=semester_id))
@@ -200,9 +204,9 @@ def view_a_courseslot(request, courseslot_id):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/') 
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
     course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot})
@@ -213,9 +217,9 @@ def view_all_courses(request):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
 
         url+='faculty/'
     courses = Course.objects.all()
@@ -231,9 +235,9 @@ def view_a_course(request, course_id):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
 
         url+='faculty/'
     course = get_object_or_404(Course, Q(id=course_id))
@@ -245,9 +249,9 @@ def view_all_discplines(request):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
         url+='faculty/'
 
     disciplines = Discipline.objects.all()
@@ -259,9 +263,9 @@ def view_all_batches(request):
     url='programme_curriculum/'
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if  str(des.designation) == "acadadmin":
+    if  request.session['currentDesignationSelected']== "acadadmin":
         return render(request, 'programme_curriculum/admin_programmes/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation) == "Dean Academic" or str(des.designation) == "CSE HOD":
+    elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or request.session['currentDesignationSelected']== "Dean Academic" or request.session['currentDesignationSelected']== "CSE HOD":
 
         url+='faculty/'
 
@@ -294,7 +298,7 @@ def admin_view_all_programmes(request):
     """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -322,7 +326,7 @@ def admin_view_curriculums_of_a_programme(request, programme_id):
     """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -346,7 +350,7 @@ def admin_view_all_working_curriculums(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -366,7 +370,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -420,7 +424,7 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
     """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -438,7 +442,7 @@ def admin_view_a_courseslot(request, courseslot_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -457,7 +461,7 @@ def admin_view_all_courses(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -478,7 +482,7 @@ def admin_view_a_course(request, course_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -493,7 +497,7 @@ def admin_view_all_discplines(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -508,7 +512,7 @@ def admin_view_all_batches(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -532,7 +536,7 @@ def add_discipline_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -554,7 +558,7 @@ def edit_discipline_form(request, discipline_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -577,7 +581,7 @@ def add_programme_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -601,7 +605,7 @@ def edit_programme_form(request, programme_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -630,7 +634,7 @@ def add_curriculum_form(request):
     """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -671,7 +675,7 @@ def edit_curriculum_form(request, curriculum_id):
     """
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -717,7 +721,7 @@ def add_course_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -741,7 +745,7 @@ def update_course_form(request, course_id):
 
     #user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student":  # or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" 
+    if request.session['currentDesignationSelected']== "student":  # or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" 
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -776,7 +780,7 @@ def add_courseslot_form(request):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -802,7 +806,7 @@ def edit_courseslot_form(request, courseslot_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -825,7 +829,7 @@ def delete_courseslot(request, courseslot_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -848,7 +852,7 @@ def add_batch_form(request):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -871,7 +875,7 @@ def edit_batch_form(request, batch_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -905,7 +909,7 @@ def instigate_semester(request, semester_id):
     """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -945,7 +949,7 @@ def replicate_curriculum(request, curriculum_id):
     """    
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -1013,15 +1017,14 @@ def replicate_curriculum(request, curriculum_id):
 def course_proposal_form(request):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" :
         pass
-    elif str(request.user) == "acadadmin":
+    elif request.session['currentDesignationSelected'] == "acadadmin":
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
     faculty_id=user_details.user_id
     details=User.objects.get(id=faculty_id)
     faculty_name=details.first_name +' '+ details.last_name
 
-    
     
     
 
@@ -1031,7 +1034,9 @@ def course_proposal_form(request):
         if request.method == 'POST':
             form = Course_Proposal(request.POST)  
             if form.is_valid():
-                form.save()
+                new_course = form.save(commit=False)
+                new_course.status=0
+                new_course.save()
                 messages.success(request, " Proposal Added successful")
                 return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
 
@@ -1043,11 +1048,11 @@ def course_proposal_form(request):
 
 #     user_details = ExtraInfo.objects.get(user = request.user)
 #     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-#     if str(des.designation) == "student":
+#     if request.session['currentDesignationSelected']== "student":
 #         return HttpResponseRedirect('/programme_curriculum/programmes/')
 #     elif str(request.user) == "acadadmin" :
 #         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-#     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
+#     elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor":
 #         pass
     
 #     course = get_object_or_404(Course, Q(id=course_id))
@@ -1069,11 +1074,11 @@ def faculty_view_all_courses(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" :
+    if request.session['currentDesignationSelected'] == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
+    elif request.session['currentDesignationSelected'] == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
+    elif request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
         pass
 
     # discipline=user_details.department
@@ -1095,11 +1100,11 @@ def faculty_view_a_course(request, course_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student" :
+    if request.session['currentDesignationSelected'] == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
+    elif request.session['currentDesignationSelected'] == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    elif request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" :
         pass
     course = get_object_or_404(Course, Q(id=course_id))
     return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course})
@@ -1115,11 +1120,11 @@ def faculty_view_a_course(request, course_id):
 
 #     user_details = ExtraInfo.objects.get(user = request.user)
 #     des = HoldsDesignation.objects.all().filter(user = request.user).last()
-#     if str(des.designation) == "CSE HOD" :
+#     if request.session['currentDesignationSelected']== "CSE HOD" :
 #         pass
 #     elif str(request.user) == "acadadmin" :
 #         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-#     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" or str(des.designation)=="student"  :
+#     elif request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" or str(des.designation)=="student"  :
 #         return HttpResponseRedirect('/programme_curriculum/programmes')
 #     proposal = get_object_or_404(CourseProposal, Q(id=proposal_id))
 #     return render(request, 'programme_curriculum/hod/head_view_a_course.html', {'proposal': proposal})
@@ -1128,13 +1133,13 @@ def head_view_a_course_proposal(request,CourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
 
-    if str(request.user) == "CSE HOD" :
+    if request.session['currentDesignationSelected'] == "CSE HOD" :
         pass
     proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
 
-    if(str(des.designation) == "Dean Academic"):
-        # poposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
-        form = CourseProposalForm(instance=proposalform)
+    if (request.session['currentDesignationSelected'] == "Dean Academic"):
+        proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
+        form = CourseProposalForm(instance=proposalform,initial={'version':1.0})
         submitbutton= request.POST.get('Submit')
         if submitbutton:
             if request.method == 'POST':
@@ -1154,26 +1159,56 @@ def head_view_a_update_course_proposal(request,UpdateCourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
 
-    if str(request.user) == "CSE HOD" :
+    if request.session['currentDesignationSelected'] == "CSE HOD" :
         pass
     proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
 
-    if(str(des.designation) == "Dean Academic"):
-
-        course = get_object_or_404(Course, Q(code=proposalform.code))
-        form = CourseProposalForm(instance=proposalform)
+    if(request.session['currentDesignationSelected'] == "Dean Academic"):
+        
+        # course = get_object_or_404(Course, Q(code=proposalform.code))
+        course =Course.objects.all().filter(code=proposalform.code).order_by('version').last()
+        previous = Course.objects.all().filter(code=course.code).order_by('version').last()
+        course.version=previous.version
+        version_error=''
+        form = CourseProposalForm(instance=proposalform,initial={'version':course.version})
         submitbutton= request.POST.get('Submit')
         if submitbutton:
             if request.method == 'POST':
-                form = CourseProposalForm(request.POST,instance=course)
-                if form.is_valid():
-                    proposalform.status = 3
-                    proposalform.save()
-                    form.save()
-                    messages.success(request, "Updated "+ proposalform.name +" successful")
-                    return HttpResponseRedirect("/programme_curriculum/course/"+ str(course.id) + "/")  
-        return render(request, 'programme_curriculum/faculty/dean_view_update_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})
+                form = CourseForm(request.POST)  
+                if form.is_valid() :
+                    previous.latest_version=False
+                    previous.save()
+                    form.latest_version=True
+                    new_course = form.save(commit=False)
+                    if(new_course.version>previous.version):
+                        proposalform.status = 3
+                        proposalform.save()
+                        form.save()
+                        course = Course.objects.last()
+                        messages.success(request, "Added successful")
+                        return HttpResponseRedirect("/programme_curriculum/course/"+ str(course.id) + "/")
+                    else:
+                        version_error+=f'The version should be greater than {previous.version}'
+        return render(request, 'programme_curriculum/faculty/dean_view_update_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton,'version_error':version_error})
     return render(request, 'programme_curriculum/faculty/head_view_update_a_course_proposal.html', {'proposal': proposalform})
+                
+        #return render(request,'programme_curriculum/acad_admin/update_course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
+
+
+        
+        
+    #     submitbutton= request.POST.get('Submit')
+    #     if submitbutton:
+    #         if request.method == 'POST':
+    #             form = CourseProposalForm(request.POST,instance=course)
+    #             if form.is_valid():
+    #                 proposalform.status = 3
+    #                 proposalform.save()
+    #                 form.save()
+    #                 messages.success(request, "Updated "+ proposalform.name +" successful")
+    #                 return HttpResponseRedirect("/programme_curriculum/course/"+ str(course.id) + "/")  
+    #     return render(request, 'programme_curriculum/faculty/dean_view_update_a_course_proposal.html', {'course': proposalform ,'form':form,'submitbutton': submitbutton})
+    # return render(request, 'programme_curriculum/faculty/head_view_update_a_course_proposal.html', {'proposal': proposalform})
 
 def forward_form(request,CourseProposal_id):
     proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
@@ -1197,9 +1232,9 @@ def reject_form(request,CourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
     
-    if str(des.designation) == "CSE HOD" or str(des.designation) == "Dean Academic":
+    if request.session['currentDesignationSelected']  == "CSE HOD" or request.session['currentDesignationSelected']  == "Dean Academic":
             pass
-    elif str(request.user) == "acadadmin" or str(request.user) == "student" :
+    elif request.session['currentDesignationSelected']  == "acadadmin" or request.session['currentDesignationSelected'] == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
@@ -1208,13 +1243,13 @@ def reject_form(request,CourseProposal_id):
     courses = CourseProposal.objects.all()
     Updatecourses = UpdateCourseProposal.objects.all()
     
-    if str(des.designation) == "CSE HOD":
+    if request.session['currentDesignationSelected']  == "CSE HOD":
         proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
         proposalform.status = 2 
         proposalform.save()
         courses = CourseProposal.objects.all()
         return render(request, 'programme_curriculum/faculty/head_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
-    if str(des.designation) == "Dean Academic" :
+    if request.session['currentDesignationSelected']  == "Dean Academic" :
         proposalform = get_object_or_404(CourseProposal, Q(id=CourseProposal_id))
         proposalform.status = 4
         proposalform.save()
@@ -1227,23 +1262,23 @@ def reject_update_form(request,UpdateCourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
     
-    if str(des.designation) == "CSE HOD" or str(des.designation) == "Dean Academic":
+    if request.session['currentDesignationSelected']  == "CSE HOD" or request.session['currentDesignationSelected']  == "Dean Academic":
             pass
-    elif str(request.user) == "acadadmin" or str(request.user) == "student" :
+    elif request.session['currentDesignationSelected']  == "acadadmin" or request.session['currentDesignationSelected']  == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
     proposalform.status = 2 
     proposalform.save()
     courses = UpdateCourseProposal.objects.all()
-    if str(des.designation) == "CSE HOD":
+    if request.session['currentDesignationSelected']== "CSE HOD":
         proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
         proposalform.status = 2 
         proposalform.save()
         Updatecourses = UpdateCourseProposal.objects.all()
         courses=CourseProposal.objects.all()
         return render(request, 'programme_curriculum/faculty/head_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals': Updatecourses})
-    if str(des.designation) == "Dean Academic" :
+    if request.session['currentDesignationSelected']== "Dean Academic" :
         proposalform = get_object_or_404(UpdateCourseProposal, Q(id=UpdateCourseProposal_id))
         proposalform.status = 4
         proposalform.save()
@@ -1275,9 +1310,9 @@ def view_course_proposal_forms(request):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
     
-    if str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
             pass
-    elif str(request.user) == "acadadmin" or str(request.user) == "student" :
+    elif request.session['currentDesignationSelected']  == "acadadmin" or request.session['currentDesignationSelected']  == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     courseProposal = CourseProposal.objects.filter(faculty_code=des.user)
@@ -1288,9 +1323,9 @@ def view_course_proposal_forms(request):
     
     updatecourseProposal = UpdateCourseProposal.objects.filter(faculty_code=des.user)
     
-    if(str(des.designation) == "CSE HOD"):
+    if(request.session['currentDesignationSelected']  == "CSE HOD"):
         return render(request, 'programme_curriculum/faculty/head_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals':updatecourses})
-    elif(str(des.designation) == "Dean Academic"):
+    elif(request.session['currentDesignationSelected']  == "Dean Academic"):
         return render(request, 'programme_curriculum/faculty/dean_view_course_proposal_forms.html',{'courseProposals': courses,'updateProposals':updatecourses})
     return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal,'updateProposals':updatecourseProposal})
 
@@ -1302,12 +1337,13 @@ def view_course_proposal_forms(request):
 def update_course_proposal_form(request, course_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if str(des.designation) == "student": 
+    if request.session['currentDesignationSelected']  == "student": 
         return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
+    elif request.session['currentDesignationSelected']  == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    elif request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" :
         pass
+    
     faculty_id=user_details.user_id
     details=User.objects.get(id=faculty_id)
     faculty_name=details.first_name +' '+ details.last_name

@@ -432,6 +432,7 @@ class CourseProposalForm(ModelForm):
         widgets = {
             'code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,'readonly':'readonly'}),
             'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,'readonly':'readonly'}),
+            'version' : forms.NumberInput(attrs={'placeholder': 'version_no',}, ), 
             'credit' : forms.NumberInput(attrs={'placeholder': 'Course Credits','readonly':'readonly'}, ), 
             'lecture_hours' : forms.NumberInput(attrs={'placeholder': 'Lecture hours','readonly':'readonly'}, ), 
             'tutorial_hours' : forms.NumberInput(attrs={'placeholder': 'Tutorial hours','readonly':'readonly'}, ), 
