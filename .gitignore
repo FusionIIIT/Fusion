@@ -72,4 +72,8 @@ node_modules/
 
 FusionIIIT/static/
 package-lock.json
+<<<<<<< HEAD
 # **/**/migrations/*
+=======
+**/**/migrations/*
+>>>>>>> 58494bef (chore: added migrations to gitignore)

@@ -747,6 +747,7 @@ def registration_form(request):
     # return redirect('/gymkhana/')
 
 
+<<<<<<< HEAD
 def return_content(request, roll, name, desig, club__):
     """
     return_content
@@ -769,6 +770,18 @@ def return_content(request, roll, name, desig, club__):
             club_session      : All info of the Session_info
             club_event        : All info of the Event_info
             club_event_report : All info of the Club_report
+=======
+	for rooms in Constants.venue:
+		for room in rooms[1]:
+			venue.append(room[0])
+	curr_club=[]
+	if 'student' in desig:
+		user_name = get_object_or_404(User, username = str(roll))
+		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
+		student = get_object_or_404(Student, id = extra)
+	else :
+		curr_club = []
+>>>>>>> 58494bef (chore: added migrations to gitignore)
 
     """
     students = ExtraInfo.objects.select_related("user", "department").filter(
@@ -1062,6 +1075,24 @@ def gymkhana(request):
         return_content(request, roll, name, roll_, club__),
     )
 
+<<<<<<< HEAD
+=======
+	"""
+	roll = request.user
+	name = request.user.first_name +"_"+ request.user.last_name
+	designations = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
+	designation_data = [element for designation in designations for element in designation]
+	roll_ = []
+	for designation in designation_data :
+		name_ = get_object_or_404(Designation, id = designation)
+		# #    #    print name_
+		roll_.append(str(name_.name))
+	for club_data in Club_info.objects.select_related('co_ordinator','co_ordinator__id','co_ordinator__id__user','co_ordinator__id__department','co_coordinator','co_coordinator__id','co_coordinator__id__user','co_coordinator__id__department','faculty_incharge','faculty_incharge__id','faculty_incharge__id__user','faculty_incharge__id__department').all():
+		lines =str("")
+		Types = lines.split(" ")
+	club__ = coordinator_club(request)
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
+>>>>>>> 58494bef (chore: added migrations to gitignore)
 
 @login_required
 def club_membership(request):
@@ -1112,6 +1143,7 @@ def club_membership(request):
         # messages.success(request,"Successfully sent the application !!!")
 
     # return redirect('/gymkhana/')
+
 
 @login_required
 def core_team(request):
@@ -1201,6 +1233,7 @@ def event_report(request):
     return redirect("/gymkhana/")
 
 
+
 @login_required
 def club_budget(request):
     """
@@ -1242,6 +1275,7 @@ def club_budget(request):
         messages.success(request, "Successfully requested for the budget !!!")
 
     return redirect("/gymkhana/")
+
 
 
 @login_required
@@ -1604,6 +1638,7 @@ def fest_budget(request):
     return redirect("/gymkhana/")
 
 
+
 @login_required
 def approve(request):
     """
@@ -1783,6 +1818,7 @@ def cancel(request):
         messages.success(request, "Successfully deleted !!!")
 
     return redirect("/gymkhana/")
+
 
 
 @login_required
@@ -2421,4 +2457,8 @@ def forward(request, id):
         "track": track,
     }
 
+<<<<<<< HEAD
     return render(request, "filetracking/forward.html", context)
+=======
+	return render(request, 'filetracking/forward.html', context)
+>>>>>>> 58494bef (chore: added migrations to gitignore)
