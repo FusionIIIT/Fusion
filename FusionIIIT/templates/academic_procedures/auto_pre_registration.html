@@ -48,6 +48,16 @@
         background-color: rgb(140, 140, 151);
         color: white;
     }
+    #registration_courses_table>tbody>tr{
+        max-height: 1rem !important;
+    }
+    #registration_courses_table>tbody>tr>td{
+        /* max-height: 1rem !important; */
+        /* background-color: red; */
+        /* height: 50%; */
+        padding-top: 1px;
+        padding-bottom: 1px;
+    }
 </style>
 
 
@@ -122,10 +132,10 @@
     {% else %}
     <form id='student_register' action='/academic-procedures/auto_pre_registration/'>
         {% csrf_token %}
-        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+        <table id="registration_courses_table" class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
                                     padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
+                                    padding-top: .25%;
+                                    padding-bottom: .25%;
                                     margin: auto;">
             <thead>
                 <tr>
@@ -141,33 +151,63 @@
             <tbody>
                 <input type="text" hidden="true" id="mincr" value="{{curr_sem.curriculum.min_credit}}">
                 {% for course_slot in next_sem_registration_courses %}
-                <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
-                    data-value2='{{course_slot.type}}'>
-                <tr>
-                    <td>{{forloop.counter}}.</td>
-                    <td>{{course_slot.name}}</td>
-                    <td>{{course_slot.type}}</td>
-                    <td>{{next_sem.semester_no}}
-                        <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
-                    </td>
-                    <td class="credit_values">{{course_slot.courses.all.0.credit}} </td>
-                    <td>
-                      
-                        
-                        <div style="margin-top: 20px;margin-bottom:20px;">
-                            <select  class="ui dropdown choicesBox" required="True" name="course_priority-{{course_slot.id}}">
-                                <option value="NULL">Choices</option>
-                                {% for course in course_slot.courses.all %}
-                                <option value='{{1}}-{{course.id}}' class="Prechoices"
-                                data-value2="{{course.credit}}">
-                                {{course.code}}-{{ course.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                    </td>
-                </tr>
-                <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                    {% if course_slot.type == "Swayam" %}
+                        {% with "x"|ljust:swayam_courses_count as dummy_range %}
+                            {% for _ in dummy_range %}
+                                <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
+                                    data-value2='{{course_slot.type}}'>
+                                <tr>
+                                    <td>{{ forloop.counter0|add:forloop.parentloop.counter0|add:"+1" }}.</td>
+                                    <td>{{course_slot.name}}</td>
+                                    <td>{{course_slot.type}}</td>
+                                    <td>{{next_sem.semester_no}}
+                                        <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
+                                    </td>
+                                    <td id="credit_values_course" class="credit_values">{{course_slot.courses.all.0.credit}} </td>
+                                    <td> 
+                                        <div style="margin-top: 5px;margin-bottom:5px;">
+                                            <select  class="ui dropdown choicesBox" required="True" name="course_priority-{{course_slot.id}}">
+                                                <option value="NULL">Choices</option>
+                                                {% for course in course_slot.courses.all %}
+                                                <option value='{{1}}-{{course.id}}' class="Prechoices"
+                                                data-value2="{{course.credit}}">
+                                                {{course.code}}-{{ course.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                            {% endfor %}
+                        {% endwith %}
+                    {% else %}
+                    
+                        <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
+                            data-value2='{{course_slot.type}}'>
+                        <tr>
+                            <td>{{forloop.counter}}.</td>
+                            <td>{{course_slot.name}}</td>
+                            <td>{{course_slot.type}}</td>
+                            <td>{{next_sem.semester_no}}
+                                <input type="text" name='semester' value='{{ next_sem.id }}' hidden="True">
+                            </td>
+                            <td id="credit_values_course" class="credit_values">{{course_slot.courses.all.0.credit}} </td>
+                            <td> 
+                                <div style="margin-top: 5px;margin-bottom:5px;">
+                                    <select  class="ui dropdown choicesBox" required="True" name="course_priority-{{course_slot.id}}">
+                                        <option value="NULL">Choices</option>
+                                        {% for course in course_slot.courses.all %}
+                                        <option value='{{1}}-{{course.id}}' class="Prechoices"
+                                        data-value2="{{course.credit}}">
+                                        {{course.code}}-{{ course.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                    
+                    {% endif %}
                 {% endfor %}
                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
 
@@ -230,25 +270,25 @@
                 let unique_choices = new Set();
                 for (let j = 0; j < course_priority.length; j++) {
                     // console.log("course_priority-" + course_slot_id , course_priority[j].value  )
-                    if (!course_slot_type.startsWith("Optional") && course_priority[j].value == "NULL") {
+                    if ((!course_slot_type.startsWith("Optional") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
                         alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
                         return false;
                     }
                     let selected_course = course_priority[j].value.split("-");
                     unique_choices.add(selected_course[1]);
                 }
-
-                if (unique_choices.size > 0) {
+                
+                if (course_priority[0].value != "NULL" ) {
                     count = count + parseInt(credits[i].innerHTML);
                 }
 
-                if (unique_choices.size != course_priority.length) {
+                if (unique_choices.size != course_priority.length && course_slot_type != "Swayam" ) {
                     alert("Please select unique courses for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
                     return false;
                 }
             }
 
-            alert("Total Credits for Registered Courses :" + count);
+            // alert("Total Credits for Registered Courses :" + count);
 
             var minimum_credits = parseInt(document.getElementById("mincr").value);
             if (count < minimum_credits) {
@@ -292,14 +332,21 @@
         // var courseSlotId = document.querySelector('[name="course_slot"]').value;
         var semesterId = document.querySelector('[name="semester"]').value;
         var userId = document.querySelector('[name="user"]').value;
-
+        var selectedOption = dropdown.querySelector('select').value;
+        var selectedOptionElement = dropdown.querySelector('select option:checked');
+        var courseSlotType; 
+        var td = dropdown.closest('tr').querySelector('td:nth-child(3)');
+        if (td) {
+            courseSlotType = td.textContent.trim();
+        }
         // Extract courseId from the selected option in the dropdown
-        var courseId = document.querySelector('[name="course_priority-' + courseSlotId + '"]').value.split('-')[1];
+        var courseId = selectedOption.split('-')[1];
+        // var courseId = document.querySelector('[name="course_priority-' + courseSlotId + '"]').value.split('-')[1];
         var slotId = courseSlotId;
-        // console.log(courseId,
-        //         slotId,
-        //        semesterId,
-        //         userId,)
+        console.log(courseId,
+                slotId,
+               semesterId,
+                userId,)
         $.ajax({
             type: "POST",
             url: "/academic-procedures/add_one_course/",
@@ -316,15 +363,21 @@
                     // console.log(response)
                     successCallback(response);
                 }else if(response.message === "Course not added because seats are full!"){
+                    successCallback(response);
                     alert(response.message)
+                }else if(response.message === "Already registered in this course!"){
+                    if(courseSlotType === "Swayam"){
+                        selectedOptionElement.remove();
+                        alert(response.message)
+                    }
                 }else{
-                    // will tell if course is already registered and its name
+                    // will tell if course is already registered and its name (this condition will run if courseslot type not swayam)
                     var selectedCourseName = response.message.split(": ")[1];
                     handleDropdownChangePreRegistrationEvent = false;
                     $(dropdown).dropdown('set selected', selectedCourseName);
                     handleDropdownChangePreRegistrationEvent = true;
                     successCallback(response);
-                    // alert(response.message)
+                    alert(response.message)
                 }
             },
             error: function (xhr, errmsg, err) {
@@ -347,15 +400,21 @@
             // console.log(dropdown)
             if (selectedOption !== "NULL") {
                 var selectedCourseName = dropdown.querySelector('select option:checked').text;
+                var selectedOptionElement = dropdown.querySelector('select option:checked');
                 var selectedCourseCredit = parseInt(dropdown.querySelector('select option:checked').getAttribute("data-value2"));
                 var courseSlotId = dropdown.querySelector('select').getAttribute("name").split('-')[1];
                 if (confirm("Are you sure you want to register for " + selectedCourseName + "?")) {
                     // handleDropdownChangePreRegistrationEvent = false;
                     addCourse(dropdown , courseSlotId, function(response) {
-                        credit += selectedCourseCredit;
-                        // console.log("credits : " + credit);
-                        dropdown.classList.add("disabled-dropdown");
-                        alert(response.message); 
+                        if(response.message === 'Course not added because seats are full!'){
+                            // console.log(selectedOptionElement)
+                            selectedOptionElement.remove();
+                        }else{
+                            // console.log("credits : " + credit);
+                            credit += selectedCourseCredit;
+                            dropdown.classList.add("disabled-dropdown");
+                            // alert(response.message); 
+                        }
                     });
                 } else {
                     // Reset the dropdown to its initial state if user cancels

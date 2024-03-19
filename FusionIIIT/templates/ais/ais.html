@@ -47,7 +47,7 @@ Academic Information System
 
         <div class="ui large fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="active item" data-tab="first">
+            <a class="active item" data-tab="generateStudenList">
                 Generate Student List
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -57,6 +57,10 @@ Academic Information System
             </a>
             <a class="item" data-tab="nine">
                 Allot Courses
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" data-tab="allot_swayam">
+                Allot Swayam
                 <i class="right floated chevron right icon"></i>
             </a>
             <a class="item" data-tab="third">
@@ -142,7 +146,7 @@ Academic Information System
 
     <div class="eight wide column">
 
-        <div class="ui active tab segment" data-tab="first">
+        <div class="ui active tab segment" data-tab="generateStudenList">
             {% block generateSheet %}
             {% include 'ais/generateSheet.html' %}
             {% endblock %}
@@ -184,7 +188,7 @@ Academic Information System
         <!-- {% endblock %} -->
         <!-- </div> -->
 
-        <div class="ui tab segment" style="width: 150%;" data-tab="fifth">
+        <div class="ui tab segment" style="width: 100%;" data-tab="fifth">
             {% block config_pre_registration %}
             {% include 'ais/pre_registration_courses.html' %}
             {% endblock %}
@@ -221,6 +225,13 @@ Academic Information System
             {% include 'ais/student_dashboard.html' %}
             {% endblock %}
         </div>
+        
+        <div class="ui tab segment" data-tab="allot_swayam">
+            {% block allot_swayam %}
+            {% include 'academic_procedures/swayam_list.html' %}
+            {% endblock %}
+        </div>
+
 
         <div class="ui tab segment" data-tab="tenth">
             {% block curriculum %}

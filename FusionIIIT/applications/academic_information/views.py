@@ -841,14 +841,16 @@ def generatexlsheet(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-    
+    # print(request.POST)
     try:
-        batch = request.POST['batch']
-        # print('-------------------------------------------------------------------------------------' , request.POST['course'])
-        course_name = Course.objects.get(id = request.POST['course']).course_name
-        course = Courses.objects.get(name = course_name )
+        batch = request.POST['batch']#batch hai year wala (2020 , 21)
+        course_id = int(request.POST['course']) # id of course in integer
+        course = course = Courses.objects.get(id=course_id)
+        
+        # print(course.name)
         obj = course_registration.objects.all().filter(course_id = course)
     except Exception as e:
+        print(str(e))
         batch=""
         course=""
         curr_key=""
@@ -2147,9 +2149,9 @@ def generatestudentxlsheet(request):
         data = None
     else:
         if(request_rollno != ""):
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         else:
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         for i in students:
             obj = []
             obj.append(i.batch)
@@ -2160,14 +2162,17 @@ def generatestudentxlsheet(request):
             obj.append(i.specialization)
             obj.append(i.id.sex)
             obj.append(i.category)
-            obj.append(i.pwd_status)
+            #obj.append(i.pwd_status)
+            obj.append(None)
             obj.append(i.id.phone_no)
             obj.append(i.id.date_of_birth)
             obj.append(i.id.user.email)
             obj.append(i.father_name)
-            obj.append(i.father_mobile_no)
+            #obj.append(i.father_mobile_no)
+            obj.append(None)
             obj.append(i.mother_name)
-            obj.append(i.mother_mobile_no)
+            # obj.append(i.mother_mobile_no)
+            obj.append(None)
             obj.append(i.id.address)
             data.append(obj)
     data.sort()

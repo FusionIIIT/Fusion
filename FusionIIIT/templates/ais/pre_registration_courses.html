@@ -95,45 +95,50 @@
 
 {% load static %}
 {% block config_pre_registration %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="this">
+      Pre Registration Courses Info
+    </a>
+  </div>
 
 
-<center><h2> Pre-Registration Courses for upcoming Semester  </h2></center>
-<div class="ui-form get-info">
-    <div class="field">
+<div class="ui active tab ui-form get-info"  data-tab="this" style="max-width: 75%;">
+    <div style="display: flex; flex-direction: row;">
+    <div style="padding-right:6rem ;" >
         <!-- <label>Programme</label> -->
-        <select name="programme" id="programme_curr">
-            <option value="B.Tech">B.Tech</option>
-            <option value="B.Des">B.Des</option>
-            <option value="M.Des">M.Des</option>
-            <option value="M.Tech">M.Tech</option>
-            <option value="Phd">PhD</option>
+        <select class="ui dropdown" name="programme" id="programme_curr">
+            <option class="Prechoices"  value="B.Tech">B.Tech</option>
+            <option class="Prechoices"  value="B.Des">B.Des</option>
+            <option class="Prechoices"  value="M.Des">M.Des</option>
+            <option class="Prechoices"  value="M.Tech">M.Tech</option>
+            <option class="Prechoices" value="Phd">PhD</option>
         </select>
+    </div>
+    
+    <div >
+        <!-- <label>Branch</label> -->
+        <select class="ui dropdown" name="branch" id="branch_curr">
+            <option class="Prechoices" value="CSE">CSE</option>
+            <option class="Prechoices" value="ECE">ECE</option>
+            <option class="Prechoices" value="ME">ME</option>
+            <option class="Prechoices" value="Des.">Design</option>
+            <option class="Prechoices" value="Common">Common</option>
+            <option class="Prechoices" value="Smart Manufacturing">Smart Manufacturing</option>
+        </select>
+    </div>
     </div>
     
     <div class="field">
         <!-- <label>Semester</label>     -->
-        <input placeholder="Semester" type="number" name="semester" id="semester_curr">
+        <input class="ui input" placeholder="Semester" type="number" name="semester" id="semester_curr">
     </div>
 
-    <div class="field">
+    <div >
         <!-- <label>Batch</label>     -->
-        <input placeholder="Batch" type="number" name="batch" id="batch_curr">
+        <input class="ui input" placeholder="Batch" type="number" name="batch" id="batch_curr">
     </div>
 
-
-    <div class="field">
-        <!-- <label>Branch</label> -->
-        <select name="branch" id="branch_curr">
-            <option value="CSE">CSE</option>
-            <option value="ECE">ECE</option>
-            <option value="ME">ME</option>
-            <option value="Des.">Design</option>
-            <option value="Common">Common</option>
-            <option value="Smart Manufacturing">Smart Manufacturing</option>
-        </select>
-    </div>
-    
-    <div class="field">
+    <div class="field" >
         <button class="ui primary button" onclick="fetchCourses()">Get Courses</button>
     </div>
 </div>
@@ -166,7 +171,7 @@
     <br>
 </div>
             
-            
+</center>          
             
 {% endblock %}
             

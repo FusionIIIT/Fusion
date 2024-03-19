@@ -42,9 +42,13 @@
 {% load static %}
 {% block config_courseslot_courses %}
 
+<div class="ui pointing secondary menu" >
+    <a class="active item" data-tab="this">
+        Update Courses in Course-Slot for upcoming Semester
+    </a>
+  </div>
 
-<center><h2> Update Courses in Course-Slot for upcoming Semester  </h2></center>
-<div class="ui-form get-info">
+<div class="ui active tab ui-form get-info" data-tab="this" style="max-width: 50%;" >
     
     <div class="field">
         <input placeholder="Course Slot Here" type="text" name="course_slot_name" id="course_slot_name">
@@ -55,7 +59,7 @@
     </div>
 
     <div class = "buttons">
-        <div class="field">
+        <div class="field" style="padding-right:8rem ;">
             <button class="ui primary button" onclick="addCourse()">Add Course in Slot</button>
         </div>
 

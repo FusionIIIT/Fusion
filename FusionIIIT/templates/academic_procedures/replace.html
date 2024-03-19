@@ -115,6 +115,7 @@
     function replaceCourse(dropdown, successCallback) {
         var selectedOption = dropdown.querySelector('select').value;
         var slotId = dropdown.querySelector('select').getAttribute('data-value-slot-id');
+        var selectedOptionElement = dropdown.querySelector('select option:checked');
         var semesterId = $('[name="semester"]').val();
         var userId = $('[name="user"]').val();
         // console.log(selectedOption,
@@ -135,6 +136,7 @@
                 if (response.message === 'Course Replaced Successfully') {
                 successCallback(response);
                 } else {
+                    selectedOptionElement.remove();
                     alert(response.message);
                 }
             },
