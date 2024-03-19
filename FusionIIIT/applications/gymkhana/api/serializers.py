@@ -2,8 +2,13 @@ from attr import fields
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from applications.gymkhana.models import Club_info,Session_info,Event_info
+from applications.gymkhana.models import Club_info,Session_info,Event_info, Voting_choices
 from applications.gymkhana.models import Club_member,Core_team,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
+
+class Voting_choicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voting_choices
+        fields = ['poll_event', 'title', 'description', 'votes']
 
 class Club_infoSerializer(serializers.ModelSerializer):
 
@@ -25,7 +30,7 @@ class Core_teamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Core_team
-        fields=('_all_')
+        fields=('all')
 
 class Club_DetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,13 +40,18 @@ class Club_DetailsSerializer(serializers.ModelSerializer):
 class Session_infoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session_info
-        fields= ['venue','date','start_time','details']
+        fields = [ 'venue', 'date', 'start_time', 'end_time', 'details','status']
+
+class Club_memberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Club_member
+        fields = ['member','club','description', 'status','remarks']
 
 class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','date']
+        fields=['club','event_name','incharge','date','venue','start_time','end_time','details']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
