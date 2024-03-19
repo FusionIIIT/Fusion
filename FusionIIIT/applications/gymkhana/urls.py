@@ -1,6 +1,12 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
+<<<<<<< HEAD
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form, New_Club, session_details, Voting_Polls
+=======
+from applications.gymkhana.api.views import AddMemberToClub, ClubMemberAPIView, DeleteEventsView, DeleteSessionsView, NewEventAPIView, NewSessionAPIView, Voting_Polls
+from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
+from applications.gymkhana.api.views import session_details
+>>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -29,14 +35,19 @@ urlpatterns = [
     url(r'^api/new_club/$',New_Club.as_view()),
     # api for "New Club" method="get" with TokenAuthentication
 
+    url(r'^api/new_event/$',NewEventAPIView.as_view(), name='new_event_api'),
+    url(r'^api/club_membership/$', AddMemberToClub.as_view(), name='new_club_member'),
 
-
+    url(r'^api/delete_event/$', DeleteEventsView.as_view(), name='delete_events_api'),
+    url(r'^api/delete_sessions/$', DeleteSessionsView.as_view(), name='delete_sessions_api'),
+    url(r'^api/new_session/$',NewSessionAPIView.as_view(), name='new_session_api'),
     url(r'^clubname/$', clubname.as_view()),
     url(r'^$', views.gymkhana, name='gymkhana'),
     url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
     url(r'^form_avail/$', views.form_avail, name='form_avail'),
     url(r'^registration_form/$', views.registration_form, name='registration_form'),
     url(r'^new_club/$', views.new_club, name='new_club'),
+    url(r'^api/members_records/$', ClubMemberAPIView.as_view(), name='club_members'),
 
     #club_head 
     url(r'^approve/$', views.approve, name='approve'),

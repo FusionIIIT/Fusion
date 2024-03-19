@@ -469,7 +469,6 @@ def new_club(request):
 		return redirect('/gymkhana/')
 
 
-
 @login_required()
 def form_avail(request):
 	"""
@@ -985,9 +984,13 @@ def act_calender(request):
 		content = json.dumps(content)
 		return HttpResponse(content)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
 @login_required
 def club_report(request):
-	"""
+    """
      This function is used to add the details of the club event along with a report.
 	 It adds the club event details to the database.
 	 And also uploads report file.
@@ -1005,31 +1008,32 @@ def club_report(request):
 			report - the club_report file on the event uploads by the user who adds data
             
 	"""
-	if request.method == 'POST' and request.FILES['report']:
-		# getting form data
-		club = request.POST.get('club')
-		user = request.POST.get("s_inc")
-		event = request.POST.get("event")
-		d_d = request.POST.get("d_d")
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		report = request.FILES["report"]
-		report.name = club+"_"+event+"_report"
+    if request.method == 'POST' and request.FILES['report']:
+        # getting form data
+        club = request.POST.get('club')
+        user = request.POST.get("s_inc")
+        event = request.POST.get("event")
+        d_d = request.POST.get("d_d")
+        date = request.POST.get("date")
+        time = request.POST.get("time")
+        report = request.FILES["report"]
+        report.name = club+"_"+event+"_report"
 
-		# getting queryset class objects
-		USER = user.split(' - ')
-		user_name = get_object_or_404(User, username=USER[1])
-		extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
+        # getting queryset class objects
+        USER = user.split(' - ')
+        user_name = get_object_or_404(User, username=USER[1])
+        extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
 
-		club_name = get_object_or_404(Club_info, club_name=club)
+        club_name = get_object_or_404(Club_info, club_name=club)
 
-		# saving data to the database
-		club_report = Club_report(club=club_name, incharge=extra, event_name=event,
+        # saving data to the database
+        club_report = Club_report(club=club_name, incharge=extra, event_name=event,
 								  date=date+" "+time, event_details=report, description=d_d)
-		club_report.save()
-		messages.success(request, "Successfully updated the report !!!")
+        club_report.save()
+        messages.success(request, "Successfully updated the report !!!")
 
-	return redirect('/gymkhana/')
+    return redirect('/gymkhana/')
+
 
 @login_required
 def change_head(request):
@@ -1059,9 +1063,8 @@ def change_head(request):
 		club = request.POST.get("club")
 		co_ordinator = request.POST.get('co')
 		co_coordinator = request.POST.get('coco')
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
+		
+		desc = "co-ordinator and co co-ordinator changed on " + str(timezone.now())
 		message = ""
 
 		# club_name = get_object_or_404(Club_info, club_name=club)
@@ -1076,6 +1079,7 @@ def change_head(request):
 		old_co_coordinator = club_info.co_coordinator
 		club_info.co_ordinator = co_ordinator_student
 		club_info.co_coordinator = co_coordinator_student
+		club_info.head_changed_on = timezone.now()
 		club_info.save()
 
 		message += "Successfully changed !!!"
@@ -1255,55 +1259,74 @@ def fest_budget(request):
 
 @login_required
 def approve(request):
-	"""
-	This view is used by the clubs to approve the students who wants to join the club and changes status of student to  confirmed.
-	It gets a list of students who has to be approved and checks them and approves accordingly.
-	 
-	@variables:
-	          approve_list - list of students who has to be checked and approved.
-			  remarks - gets remarks list if any remarks present
-              club_member - gets the object(club and student) and the confirms the status of student in the club.
-	"""
-	approve_list = list(request.POST.getlist('check'))
-	for user in approve_list:
-		# pos = lis.index(user)
-		remark = "remarks" + user
-		remarks = request.POST.getlist(remark)
-		user = user.split(',')
-		info = user[0].split(' - ')
+    """
+    This view is used by the clubs to approve the students who want to join the club and changes the status of the student to 'confirmed'.
+    It gets a list of students who have to be approved and approves them accordingly.
+    """
+    approve_list = list(request.POST.getlist("check"))
 
-		# getting queryset class objects
-		user_name = get_object_or_404(User, username=info[1])
-		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-		student = get_object_or_404(Student, id=extra1)
+    for user in approve_list:
+        remark = "remarks" + user
+        remarks = request.POST.getlist(remark)
+        user = user.split(",")
+        info = user[0].split(" - ")
 
-		club_member = get_object_or_404(Club_member, club=user[1], member=student)
-		club_member.status = "confirmed"
-		club_member.remarks = remarks[0]
-		club_member.save()
-		messages.success(request, "Successfully Approved !!!")
+        # Retrieve User, ExtraInfo, and Student objects
+        user_name = get_object_or_404(User, username=info[1])
+        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+        student = get_object_or_404(Student, id=extra1)
 
-	return redirect('/gymkhana/')
+        # Check if the user is already a member of the club
+        existing_club_member = Club_member.objects.filter(
+            club=user[1], member=student
+        ).first()
+
+        if existing_club_member:
+            # If the user is already a member, update the existing entry and delete past entry
+            existing_club_member.status = "confirmed"
+            existing_club_member.remarks = remarks[0]
+            existing_club_member.save()
+
+            # Delete past entries
+            Club_member.objects.filter(club=user[1], member=student).exclude(
+                id=existing_club_member.id
+            ).delete()
+
+        else:
+            # If the user is not already a member, create a new entry
+            new_club_member = Club_member.objects.create(
+                club=user[1], member=student, status="confirmed", remarks=remarks[0]
+            )
+            new_club_member.save()
+
+        messages.success(request, "Successfully Approved !!!")
+
+    return redirect("/gymkhana/")
+
 
 @login_required
 def club_approve(request):
-	"""
+    """
     This view is used by the administration to approve the clubs.
-	It gets a list of clubs and then approves if they want to.
+    It gets a list of clubs and then approves if they want to.
 
-	@variables:
-	          club_approve_list - list of clubs which has to be approved
-			  club_name - gets the object and then confirms the club
+    @variables:
+              club_approve_list - list of clubs which has to be approved
+              club_name - gets the object and then confirms the club
 
-	"""
-	club_approve_list = list(request.POST.getlist('check'))
-	for club in club_approve_list:
-		club_name = get_object_or_404(Club_info, club_name=club)
-		club_name.status = "confirmed"
-		club_name.save()
-		messages.success(request, "Successfully Approved !!!")
+    """
+    if request.method == "POST":
+        club_approve_list = request.POST.getlist("check")
+        for club in club_approve_list:
+            club_name = get_object_or_404(Club_info, club_name=club)
+            club_name.status = "confirmed"
+            club_name.created_on = timezone.now()
+            club_name.save()
+            messages.success(
+                request, f"Successfully approved {club_name.club_name} club."
+            )
 
-	return redirect('/gymkhana/')
+    return redirect("/gymkhana/")
 
 @login_required
 def club_reject(request):
@@ -1440,7 +1463,7 @@ def date_events(request):
 		return HttpResponse(dates)
 	return HttpResponse("Hurray")
 
-#this algorithm checks if the passed slot time coflicts with any of already booked sessions
+# this algorithm checks if the passed slot time coflicts with any of already booked sessions
 def conflict_algorithm_session(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	"""
@@ -1618,7 +1641,7 @@ def delete_poll(request, poll_id):
 
 	return redirect('/gymkhana/')
 
-#this algorithm checks if the passed slot time coflicts with any of already booked events
+# this algorithm checks if the passed slot time coflicts with any of already booked events
 
 def conflict_algorithm_event(date, start_time, end_time, venue):
 	"""
@@ -1644,7 +1667,7 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 	#placing start time and end time in tuple fashion inside this list
 	slots = [(start_time, end_time)]
 	for value in booked_Events:
-		slots.append((value.start_time, value.end_time))
+		slots.append((value.start_time, value.end_time))	
 	slots.sort()
 	#if there isn't any slot present for the selected day just book the event
 	if (len(slots) == 1):
@@ -1709,8 +1732,6 @@ def filetracking(request):
 				)
 
 			if 'send' in request.POST:
-
-
 				uploader = request.user.extrainfo
 				logger.info(uploader)
 				#ref_id = request.POST.get('fileid')
@@ -1730,14 +1751,10 @@ def filetracking(request):
 					designation=designation,
 					upload_file=upload_file
 				)
-
-
 				current_id = request.user.extrainfo
 				remarks = request.POST.get('remarks')
-
 				sender = request.POST.get('design')
 				current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
 				receiver = request.POST.get('receiver')
 				receiver_id = User.objects.get(username=receiver)
 				logger.info("Receiver_id = ")
@@ -1762,12 +1779,9 @@ def filetracking(request):
 				)
 				office_module_notif(request.user, receiver_id)
 				messages.success(request,'File sent successfully')
-
 		except IntegrityError:
 			message = "FileID Already Taken.!!"
 			return HttpResponse(message)
-
-
 
 	file = File.objects.select_related('uploader','uploader__user','uploader__department','designation').all()
 	extrainfo = ExtraInfo.objects.select_related('user','department').all()
@@ -1858,4 +1872,8 @@ def forward(request, id):
 		'track': track,
 	}
 
+<<<<<<< HEAD
 	return render(request, 'filetracking/forward.html', context)
+=======
+	return render(request, 'filetracking/forward.html', context)
+>>>>>>> 9be658cd97171601e5ac1e39081adc42db098745
