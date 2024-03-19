@@ -43,8 +43,6 @@ class LeaveFormTable(models.Model):
 
 
 
-
-
 class GraduateSeminarFormTable(models.Model):
    
     roll_no = models.CharField(max_length=20)
@@ -55,9 +53,6 @@ class GraduateSeminarFormTable(models.Model):
     class Meta:
         db_table='GraduateSeminarFormTable'
         
-
-
-
 
 class BonafideFormTableUpdated(models.Model):
    
@@ -78,8 +73,6 @@ class BonafideFormTableUpdated(models.Model):
     class Meta:
         db_table='BonafideFormTableUpdated'
         
-
-
 
 class AssistantshipClaimFormStatusUpd(models.Model):
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -107,3 +100,4 @@ class AssistantshipClaimFormStatusUpd(models.Model):
 
     class Meta:
         db_table = 'AssistantshipClaimFormStausUpd'
+

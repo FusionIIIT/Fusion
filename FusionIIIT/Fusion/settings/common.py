@@ -127,7 +127,7 @@ INSTALLED_APPS = [
     'applications.ps1',
     'applications.programme_curriculum',
     'applications.placement_cell',
-      'applications.otheracademic',
+    'applications.otheracademic',
     'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
@@ -164,6 +164,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Fusion.middleware.custom_middleware.user_logged_in_middleware',
 ]
 
 ROOT_URLCONF = 'Fusion.urls'
@@ -179,6 +180,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Fusion.context_processors.global_vars',
             ],
         },
     },
