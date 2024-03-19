@@ -9,7 +9,7 @@
 
         <div class="ui active tab" data-tab="additem" style="padding: 16px;">
             <div class="ui vertical segment">
-                <form class="ui form" id="add-item-form">
+                <form class="ui form">
                     <div id="item" class="reset-this-form">
                         <div class="two fields">
                             <div class="ten wide field">
@@ -20,13 +20,13 @@
                             </div>
                         </div>
 
-                        <h5 class="ui dividing header">Add Items</h5>
+                        <h5 class="ui dividing header">Add Item</h5>
 
                         <div class="four fields">
                             <div class="field">
                                 <label>Item Name</label>
                                 <div class="ui input large">
-                                    <input placeholder="Item Name" name="item-name">
+                                    <input placeholder="Item Name" name="item_name">
                                 </div>
                             </div>
 
@@ -47,7 +47,9 @@
                             <div class="field">
                                 <label>Consumable</label>
                                 <div class="ui fitted toggle checkbox">
-                                    <input type="checkbox" name="consumable"> <label></label>
+
+                                <div>
+                                    <input type="checkbox" value="True" id="consumable" name="consumable"> <label> </label>
                                 </div>
                             </div>
                         </div>
@@ -61,19 +63,32 @@
                             </div> -->
                         </div>
                         <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                    </form>
                         <div class=" two wide field">
-                            <div class="ui primary button" id="add-item-form-submit">
+                            <button class="ui primary button" id="submit_inventory"
+                            onclick="add_inventory_item(event); ll()">
+                                <script type='text/javascript'>
+                                ll = function () {
+                                    document.getElementById("submit_inventory").disabled=true; 
+                                    console.log("1111111111111111111");    
+                                    setTimeout('jj()', 5000);
+                                    }
+                                
+                                jj=function(){
+                                    document.getElementById("submit_inventory").disabled=false; 
+                                    console.log("00000000000"); 
+                                }
+                                </script>
                                 Submit
-                            </div>
+                            </button>
                         </div>
                         <div class=" two wide field"></div>
                     </div>
 
                     <br>
                     <br>
-                </form>
+                <!-- </form> -->
             </div>
         </div>
     </div>
-
 {% endblock %}
