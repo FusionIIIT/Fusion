@@ -48,7 +48,6 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                print("design=", design)
                 designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
                     'user', 'working', 'designation').get(id=design).designation_id)
                 upload_file = request.FILES.get('myfile')
@@ -520,8 +519,9 @@ def forward(request, id):
         messages.success(request, 'File sent successfully')
 
     designation_name = request.session.get('currentDesignationSelected', 'default_value')
-    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
-        designation_name)
+    username = request.user
+    designation_id  = get_HoldsDesignation_obj(
+        username, designation_name).id
 
     context = {
         'designation_name': designation_name,
