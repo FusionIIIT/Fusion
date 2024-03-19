@@ -19,9 +19,6 @@
         <a class="item" href="{% url 'programme_curriculum:admin_view_all_courses' %}">Courses
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_course_proposal_forms' %}">Course Proposal_Forms
-            <i class="right floated chevron right icon"></i>
-        </a>
     </div>
 {% endblock %}
 
@@ -128,7 +125,7 @@
         </div>
     </a>
     <br>
-    <a class="fluid ui large primary animated button" tabindex="0"
+    {% comment %} <a class="fluid ui large primary animated button" tabindex="0"
         href="{% url 'programme_curriculum:add_discipline_form' %}"
         type="Submit" name="Submit" target="_blank" rel="noopener">
         <div class="visible content">ADD DISCIPLINE</div>
@@ -144,6 +141,6 @@
         <div class="hidden content">
         <i class="add icon"></i>
         </div>
-    </a>
+    </a> {% endcomment %}
 </div>
 {% endblock %}

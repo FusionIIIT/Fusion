@@ -68,13 +68,10 @@
                                 {% if courseProposal.status == 2 %}
                                     <B>Rejected</B>
                                 {% endif %} 
-                                {% if courseProposal.status == 3 %}
-                                    <B>Approved by Dean</B>
-                                {% endif %} 
                                 {% if courseProposal.status == 4 %}
                                     <B>Rejected by Dean</B>
                                 {% endif %} 
-                                {% if courseProposal.status == 6%}
+                                {% if courseProposal.status == 3%}
                                     <B>Course Added!</B>
                                 {% endif %} 
 
@@ -133,15 +130,12 @@
                                 {% endif %} 
                                 {% if updateProposal.status == 2 %}
                                     <B>Rejected</B>
-                                {% endif %} 
-                                {% if updateProposal.status == 3 %}
-                                    <B>Approved by Dean</B>
-                                {% endif %} 
+                                {% endif %}  
                                 {% if updateProposal.status == 4 %}
                                     <B>Rejected by Dean</B>
                                 {% endif %}
-                                {% if updateProposal.status == 6%}
-                                    <B>Course Added!</B>
+                                {% if updateProposal.status == 3%}
+                                    <B>Course Updated!</B>
                                 {% endif %}  
 
                                 
