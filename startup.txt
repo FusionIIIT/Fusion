@@ -1,3 +1,0 @@
-sudo service postgresql start
-cd FusionIIIT
-python manage.py runserver
