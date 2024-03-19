@@ -1,6 +1,11 @@
 {% extends 'filetracking/filetracking.html' %}
 {% load static %} 
 {% block filetracking_tab %}
+
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:inward' %}";</script>
+{% endif %}
+
 <div class="ui pointing secondary menu">
   <h3>
     <a class="active item" data-tab="inward">
