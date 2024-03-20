@@ -75,3 +75,7 @@ package-lock.json
 
 # migrations
 */migrations/
+
+# Disallow migration files
+**/migrations/*
+!**/migrations/__init__.py
