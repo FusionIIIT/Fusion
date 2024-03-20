@@ -1,0 +1,373 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="ltc_form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="block_year">Block Year</label>
+                        <input type="number" name="block_year" maxlength="30" id="id_block_year">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="pf_no">P.F. No.</label>
+                        <input type="number" name="pf_no" maxlength="30" id="id_pf_no">
+                    </div>
+
+                </div>    
+
+                <div class="eight wide field" style="float: right;">
+                    <label for="basic_pay_salary">Basic Pay Rs.</label>
+                    <input type="number" name="basic_pay_salary" maxlength="20" id="id_basic_pay_salary">
+                </div>
+                <br><br><br><br>
+                <div class="two fields">    
+                    <div class="eight wide field">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" maxlength="40" id="id_name">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="designation">Designation</label>
+                        <input type="text" name="designation" maxlength="40" id="id_designation">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="department_info">Department/Section</label>
+                        <input type="text" name="department_info" maxlength="40" id="id_department_info">
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="leave_availability">(a) Whether leave is required for availing L.T.C.?</label>
+                        <div class="field">
+                            <select class="ui dropdown" name="leave_availability" id="id_leave_availability">
+                                <option value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="leave_dates">(b) (i) If so, duration of leave applied for From</label>
+                        <input type="date" name="leave_start_date">
+                        <label for="leave_dates">To:</label>
+                        <input type="date" name="leave_end_date">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="date_of_leave_for_family">(ii) Date of departure of family, if not availing himself</label>
+                        <input type="date" name="date_of_leave_for_family">
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="nature_of_leave">(c) Nature of leave</label>
+                        <input type="text" name="nature_of_leave" maxlength="40" id="id_nature_of_leave">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="purpose">(d) Purpose</label>
+                        <input type="text" name="purpose_of_leave" maxlength="40" id="id_purpose">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="hometown_or_not">Whether L.T.C. is desired for going to home town or elsewhere?</label>
+                        <div class="two fields">
+                            <div class="eight wide field">
+                                <label for="hometown_or_not">Select Place:</label>
+                                <div class="field">
+                                    <select class="ui dropdown" name="hometown_or_not" id="id_hometown_or_not">
+                                        <option value="True">Home Town</option>
+                                        <option value="False">Elsewhere</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ten wide field">
+                            <label for="place_of_visit">
+                                <input type="text" name="place_of_visit" maxlength="40" id="id_place_of_visit" placeholder="Place where you are visiting">
+                            </label>    
+                        </div>
+                    </div>
+                </div>  
+
+                <div class="twenty wide field">
+                    <label for="address_ltc">Address during leave</label>
+                    <input type="text" name="address_during_leave" maxlength="80" id="id_address_during_leave">
+                </div>
+            
+                
+                <div class="eight wide field">
+                    <label for="mode_for_vacation">Mode: </label>  
+                    <div class="two fields" style="justify-content: space-around;">
+                        <select class="ui dropdown" name="leave_availability" id="id_leave_availability">
+                            <option value="True">rail</option>
+                            <option value="False">road</option>
+                        </select>
+                        <!-- <div class="two fields one" style="justify-content:center ;">
+                            <input type="radio" name="mode_for_vacation" id="id_rail" checked>
+                            <label for="rail" padding="320px">Rail</label>
+                        </div>
+                        <div class="two fields one" style="justify-content:center ;">
+                            <input type="radio" name="mode_for_vacation" id="id_road">
+                            <label for="road" padding="320px">Road</label> -->
+                        <!-- </div> -->
+                    </div>
+                </div>
+
+                <div class="twenty wide field">
+                    <label for="details_of_family_members_already_done">(i) Details of family members for whom L.T.C. for this block has already been availed:</label>
+                    <div class="three fields">
+                        <div class="eight wide field">
+                            <label for="family_mem_a">a</label>
+                            <input type="text" name="details_of_family_members_already_done" maxlength="40" id="id_family_mem_a">
+                        </div>
+                        <div class="eight wide field">
+                            <label for="family_mem_b">b</label>
+                            <input type="text" name="details_of_family_members_already_done" maxlength="40" id="id_family_mem_b">
+                        </div>
+                        <div class="eight wide field">
+                            <label for="family_mem_c">c</label>
+                            <input type="text" name="details_of_family_members_already_done" maxlength="40" id="id_family_mem_c">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eight wide field">
+                    <label for="family_members_about_to_avail">(ii) Details of family members who will avail L.T.C. <br> &nbsp; &nbsp; &nbsp; &nbsp; (a) Self &nbsp; (b) Spouse &nbsp;(c) Children</label>
+                </div>
+                
+                <div>
+                    <table style="border: 1px solid black">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Full Name</th>
+                            <th>Age</th>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"></td>
+                            <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2"></td>
+                            <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"></td>
+                            <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2"></td>
+                            <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1"></td>
+                            <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2"></td>
+                            <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_4_1" maxlength="40" id="id_info_4_1"></td>
+                            <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2"></td>
+                            <td><input type="number" name="info_4_3" maxlength="40" id="id_info_4_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_5_1" maxlength="40" id="id_info_5_1"></td>
+                            <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2"></td>
+                            <td><input type="number" name="info_5_3" maxlength="40" id="id_info_5_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_6_1" maxlength="40" id="id_info_6_1"></td>
+                            <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2"></td>
+                            <td><input type="number" name="info_6_3" maxlength="40" id="id_info_6_3"></td>
+                        </tr>
+                    </table>
+                    
+                </div>
+                <br>
+                <div class="ten wide field">
+                    <label for="details_of_dependents">(d)Dependent parents, minor brothers, and sisters residing with the applicant: </label>
+                </div>
+                <div>
+                    <table style="border: 1px solid black">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Full Name</th>
+                            <th>Age</th>
+                            <th>Why fully dependent?</th>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_1_1" maxlength="40" id="id_d_info_1_1"></td>
+                            <td><input type="text" name="d_info_1_2" maxlength="40" id="id_d_info_1_2"></td>
+                            <td><input type="number" name="d_info_1_3" maxlength="40" id="id_d_info_1_3"></td>
+                            <td><input type="text" name="d_info_1_4" maxlength="40" id="id_d_info_1_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_2_1" maxlength="40" id="id_d_info_2_1"></td>
+                            <td><input type="text" name="d_info_2_2" maxlength="40" id="id_d_info_2_2"></td>
+                            <td><input type="number" name="d_info_2_3" maxlength="40" id="id_d_info_2_3"></td>
+                            <td><input type="text" name="d_info_2_4" maxlength="40" id="id_d_info_2_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_3_1" maxlength="40" id="id_d_info_3_1"></td>
+                            <td><input type="text" name="d_info_3_2" maxlength="40" id="id_d_info_3_2"></td>
+                            <td><input type="number" name="d_info_3_3" maxlength="40" id="id_d_info_3_3"></td>
+                            <td><input type="text" name="d_info_3_4" maxlength="40" id="id_d_info_3_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_4_1" maxlength="40" id="id_d_info_4_1"></td>
+                            <td><input type="text" name="d_info_4_2" maxlength="40" id="id_d_info_4_2"></td>
+                            <td><input type="number" name="d_info_4_3" maxlength="40" id="id_d_info_4_3"></td>
+                            <td><input type="text" name="d_info_4_4" maxlength="40" id="id_d_info_4_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_5_1" maxlength="40" id="id_d_info_5_1"></td>
+                            <td><input type="text" name="d_info_5_2" maxlength="40" id="id_d_info_5_2"></td>
+                            <td><input type="number" name="d_info_5_3" maxlength="40" id="id_d_info_5_3"></td>
+                            <td><input type="text" name="d_info_5_4" maxlength="40" id="id_d_info_5_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="d_info_6_1" maxlength="40" id="id_d_info_6_1"></td>
+                            <td><input type="text" name="d_info_6_2" maxlength="40" id="id_d_info_6_2"></td>
+                            <td><input type="number" name="d_info_6_3" maxlength="40" id="id_d_info_6_3"></td>
+                            <td><input type="text" name="d_info_6_4" maxlength="40" id="id_d_info_6_4"></td>
+                        </tr>
+                    </table>
+                    
+                </div>
+
+                <div class="eight wide field">
+                    <label for="amount_of_advance_required">Amount of advance required, if any:</label>
+                    <input type="number" name="amount_of_advance_required" maxlength="10" id="id_advance_amount">
+                </div>
+                <div class="two fields">
+                <div class="eight wide field">
+                    <label for="certified_family_dependents">(i) Certified that family members for whom the L.T.C. is claimed are residing with me and are wholly dependent upon me. </label>
+                    <input type="text" name="certified_family_dependents" maxlength="40" id="id_certified_family_dependents">
+                </div>
+                
+                <div class="eight wide field">
+                    <label for="certified_advance">(ii) Certified that the previous L.T.C. advance drawn by me on </label>
+                    <input type="text" name="certified_advance" maxlength="40" id="id_certified_advance_1">
+                    <label for="adjusted_month">has been adjusted in the month of  </label>
+                    <input type="text" name="adjusted_month" maxlength="40" id="id_adjusted_month">
+
+                </div>
+                </div>
+
+                <div class="eight wide field">
+                    <label for="date">Date</label>
+                    <input type="date" name="date" id="id_date">
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="phone_number_for_contact">Phone Number for contact</label>
+                        <input type="number" name="phone_number_for_contact" maxlength="40" id="id_phone_number_for_contact">
+                    </div>
+                </div>
+
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="username_employee">Username:</label>
+                        <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="designation_employee">Designation:</label>
+                        <input type="text" name="designation_employee" id="designation_employee" readonly>
+                    </div>
+                    <div class="field">
+                        <button id="check_button" class="ui primary button right floated">Check</button>
+                    </div>
+                </div>
+
+                <!-- <div class="one fields">
+                    <div class="field">
+                        <label for="file_attachment">File Attachment:</label>
+                        <input type="file" id="file_attachment" name="file_attachment">
+                    </div>
+                </div> -->
+                
+                
+                
+
+                <!-- <div class="eight wide field">
+                    <label for="recommendation">Specific recommendation of the Head of Department/Section</label>
+                </div>
+
+                <hr>
+
+                <div class="two fields" style="justify-content: space-around;">
+                    <div class="two fields " style="justify-content:center ;">
+                        <input type="radio" name="recommendation" maxlength="40" id="id_recommendation_1" >
+                        <label for="home-town" padding="320px">Approved</label>
+                    </div>
+                    <div class="two fields" style="justify-content:center ;">
+                        <input type="radio" name="recommendation" maxlength="40" id="id_recommendation_2">
+                        <label for="elsewhere" padding="320px">Not Approved</label>
+                    </div>
+                </div> -->
+
+                <!-- <div class="four wide field" style="float: right;">
+                    <label for="sign_director_registrar">Director/Registrar Signature</label>
+                    <input type="image" name="sign_director_registrar" maxlength="40" id="id_sign_director_registrar">
+                </div> -->
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+
+
+
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+    });
+</script>
