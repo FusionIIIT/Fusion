@@ -17,5 +17,18 @@ urlpatterns = [
     url(r'^administrativeProfile/$', views.administrative_profile,
         name='administrativeProfile'),
     url(r'^addnew/$', views.add_new_user, name='addnew'),
-
+    url(r'^ltc_form/(?P<id>\d+)/$', views.ltc_form,
+        name='ltcForm'),
+    url(r'^cpda_form/(?P<id>\d+)/$', views.ltc_form,
+        name='ltcForm'),
+    url(r'^view_ltc_form/(?P<id>\d+)/$', views.view_ltc_form,
+        name='view_ltc_form'),
+    url(r'^form_mangement_ltc/',views.form_mangement_ltc, name='form_mangement_ltc'),
+    url(r'dashboard/', views.dashboard, name='dashboard'),
+    url(r'^form_mangement_ltc_hr/(?P<id>\d+)/$',views.form_mangement_ltc_hr, name='form_mangement_ltc_hr'),
+    url(r'^form_mangement_ltc_hod/',views.form_mangement_ltc_hod, name='form_mangement_ltc_hod'),
+    url(r'^search_employee/', views.search_employee, name='search_employee'),
+    url(r'^track_file/(?P<id>\d+)/$', views.track_file, name='track_file'),
+    url('form_view_ltc/(?P<id>\d+)/$', views.form_view_ltc, name='form_view_ltc'),
+    url('file_handle/', views.file_handle, name='file_handle')
 ]
