@@ -1,423 +1,134 @@
 {% load static %}
 
-{% block modules %}
-{% comment %}The Modules start here!{% endcomment %}
-<div class="stackable doubling ui internally celled grid">
-    <div class="column">
-        <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px; max-width: 18vw;">
-            <a class="ui top attached black label">
-                <span class="ui inverted header">Modules</span>
-                <i class="setting icon right floated"></i>
-                <i class="chevron up icon right floated" id="toggleIcon" onclick="toggleContent()"></i>
-            </a>
+    {% block navBar %}
+        {% include 'dashboard/sidenavbar.html' %}
 
-            <div class="content modulesContent">
-                <div style="display: flex; flex-wrap: wrap;">
-                    {% comment %}A single modules row starts here!{% endcomment %}
+        <div>
+            <div class="ui stackable massive inverted top attached menu" id="navbar">
+                <a class="item" id="sidebartrigger">
+                    <i class="sidebar icon"></i>
+                </a>
 
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                 
-                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var or "corelabcaretaker" == global_var %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" style="height: 120px; width:100%" href="/academic-procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
+                <a class="item" href="{% url 'globals:dashboard' %}">
+                    {% load notifications_tags %}
+                    {% register_notify_callbacks badge_class='badge' callbacks='fill_notification_badge' %}
+                    <i class="ui active inverted large home icon"></i>
+                    Dashboard
+                    <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
+                </a>
+            
+                <div class="right inverted menu">
+                    <form method="POST" action="/update_global_variable/">
+                        {% csrf_token %}
+                        <div class="item">
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Academics</span>
-                                    </div>
-                                </div>
-                            </a>
+                            <select class="ui dropdown"  name="dropdown" onchange="this.form.submit()">
+                            {% for d in global_var2 %}
+                                <option value="{{ d }}" {% if global_var == d %}selected{% endif %}>{{ d|capfirst }}</option>
+                            {% endfor %}
+                            </select>
                         </div>
-                        {% endif %}
-                        {% if request.user.extrainfo.user_type == "student" or "acadadmin" == global_var  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/programme_curriculum">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui book icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Programme And Curriculum </span>
-                                    </div>
-                                </div>
-                            </a>
+                    </form>
+                    <a class="item" href="{% url 'globals:profile' %}">
+                        {% comment %}
+                            TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
+                        {% endcomment %}
+                        <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+                        {{request.user.first_name}} {{request.user.last_name}}
+                    </a>
+                    {% comment %}
+                    <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
+                        <div class="text">Notifications</div>
+                        <i class="dropdown"></i>
+                        <div class="ui red circular label">22</div>
+                            TODO: Make dropdown menu
+                        <div class="menu">
+                            <div class="item">Notification1</div>
+                            <div class="item">Notification1</div>
                         </div>
-                        {% endif %}
-                    
-
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                  
-                        {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/mess">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui food icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Central Mess</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/visitorhostel">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui hotel icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Visitor's Hostel</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                  
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                                       
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui first aid icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Healthcare Center</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% if request.user.extrainfo.user_type != "student"  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/filetracking">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui wpforms icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">File Tracking</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
-               
-                        {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Scholarship Portal</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui line chart icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Complaint System</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                   
-                    {% comment %}A single modules row ends here!{% endcomment %}
-                  
-                        {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var  or "placement officer" == global_var  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/placement">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui bitcoin icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Placement Cell</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label disabled "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui line industry icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Estate Management</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                   
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    
-                        {% if request.user.extrainfo.user_type != "staff"   %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dep">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Department Portal</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/research_procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Research Module</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                   
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                                     
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/counselling">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Counselling Cell</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% if request.user.extrainfo.user_type != "student"  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/leave">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui file icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Leave Module</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                         {% endif %}
-                 
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                          
-                        {% if request.user.extrainfo.user_type != "student"  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Purchase and Store</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        {% if request.user.extrainfo.user_type != "student"  %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="ui file icon big"></i>
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="ui sub header centered">Human Resource</span>
-                                        </div>
-                                    </div>
-                                </a>
+                        {% endcomment %}
+                    </a>
+                        
+                    <div class="ui fluid popup bottom left transition">
+                        <div class="ui four column relaxed equal height stackable doubling grid">
+                            <div class="row">
+                                <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
                             </div>
-                        {% endif %}
-                 
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
-                  
-                        {% if request.user.extrainfo.user_type == "faculty" or  "acadadmin" == global_var  %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
+                            <div class="row">
+                                <div class="column">
+                                    <div class="ui secondary vertical pointing compact menu">
+                                        <a class="active item" data-tab="leaveModule">
+                                            <span style="color: #000;">
+                                                Leave
+                                            </span>
+                                        </a>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Examination </span>
+                                        <a class="item" data-tab="complaintModule">
+                                            <span style="color: #000;">
+                                                Complaint
+                                            </span>
+                                        </a>
+
+                                        <a class="item" data-tab="messModule">
+                                            <span style="color: #000;">
+                                                Mess
+                                            </span>
+                                        </a>
+
+                                        <a class="item" data-tab="placementModule">
+                                            <span style="color: #000;">
+                                                Placement
+                                            </span>
+                                        </a>
                                     </div>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        {% if request.user.extrainfo.user_type != "staff"  %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="ui file icon big"></i>
-                                        </div>
 
-                                        <div class="row">
-                                            <span class="ui sub header centered">Course Management</span>
+                                <div class="three wide column">
+                                    <div class="ui active tab" data-tab="leaveModule">
+                                        <div class="ui animated fluid list"
+                                            id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
                                         </div>
                                     </div>
-                                </a>
+
+                                    <div class="ui tab"  data-tab="complaintModule">
+                                    </div>
+
+                                    <div class="ui tab"  data-tab="messModule">
+                                    </div>
+
+                                    <div class="ui tab"  data-tab="placementModule">
+                                    </div>
+                                </div>
                             </div>
-                        {% endif %}
-                
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                          
-                        {% if request.user.extrainfo.user_type == "student" or  "Dean_s" == global_varor or   "DeanPnD" == global_var or "dean_rspc" == global_var or "mess_warden" == global_var or "dean_s" == global_var%}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Gymkhana </span>
-                                    </div>
-                                </div>
-                            </a>
                         </div>
-                        {% endif %}
-                        {% if "Executive Engineer (Civil)" == global_var or  "EE" == global_var or  "Admin IWD" == global_var or  "Electrical_AE" == global_var or  "Electrical_JE" == global_var or  "Civil_AE" == global_var or  "Civil_JE" == global_var or "Director" == global_var or  "Dean_s" == global_var or  "dean_s" == global_var or  "DeanPnD" == global_var    %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="ui file icon big"></i>
-                                        </div>
 
-                                        <div class="row">
-                                            <span class="ui sub header centered">IWD</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        {% endif %}
-                 
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    </div>
 
-                                     
-                        {% if request.user.extrainfo.user_type == "student"  or  "hall1caretaker" == global_var  or "hall2caretaker" == global_var or "hall3caretaker" == global_var%}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
-                                <div class="ui centered grid">   
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
+                    <a class="right item" href="/accounts/logout">
+                        {% comment %}
+                            TODO: LOGOUT!
+                        {% endcomment %}
+                        <i class="ui inverted sign out icon"></i>
+                        Logout
+                    </a>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Hostel Management </span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                   
-                    {% comment %}A single modules row ends here!{% endcomment %}
                 </div>
-            {% comment %}
-            <a class="ui bottom attached blue label">
-                <i class="right arrow icon right floated"></i>
-            </a>
-            {% endcomment %}
             </div>
+
+            <div class="ui divider"></div>
+
+
+
+
+            {% block data%}
+
+            {% endblock %}
+
+
+
         </div>
-    </div>
-</div>
-{% comment %}The Modules End here!{% endcomment %}
-{% endblock %}
+
+
+    {% endblock %}
