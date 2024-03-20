@@ -58,7 +58,6 @@ class VisitorDetail(models.Model):
     visitor_address = models.TextField(blank=True)
     nationality = models.CharField(max_length=20, blank=True)
 
-
     def __str__(self):
         return '{} - {}'.format(self.id, self.visitor_name, self.visitor_email, self.visitor_organization, self.visitor_address, self.visitor_phone)
 
@@ -71,7 +70,7 @@ class RoomDetail(models.Model):
     room_status  = models.CharField(max_length=20, choices=ROOM_STATUS, default='Available')
 
     def __str__(self):
-        return self.room_number
+        return '{} - {}'.format(self.id, self.room_number , self.room_type, self.room_status, self.room_floor)
 
 
 class BookingDetail(models.Model):
@@ -100,7 +99,7 @@ class BookingDetail(models.Model):
     number_of_rooms_alloted =  models.IntegerField(default=1,null=True,blank=True)
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
     bill_to_be_settled_by = models.CharField(max_length=15, choices=BILL_TO_BE_SETTLED_BY ,default ="Intender")
-    
+
     def __str__(self):
         return '%s ----> %s - %s id is %s and category is %s' % (self.id, self.visitor, self.status, self.id, self.visitor_category)
 
@@ -108,13 +107,12 @@ class BookingDetail(models.Model):
 class MealRecord(models.Model):
     booking = models.ForeignKey(BookingDetail, on_delete=models.CASCADE)
     visitor = models.ForeignKey(VisitorDetail, on_delete=models.CASCADE)
-    room = models.ForeignKey(RoomDetail, on_delete=models.CASCADE, default=0)
     meal_date = models.DateField()
-    morning_tea = models.BooleanField(default=False)
-    eve_tea = models.BooleanField(default=False)
-    breakfast = models.BooleanField(default=False)
-    lunch = models.BooleanField(default=False)
-    dinner = models.BooleanField(default=False)
+    morning_tea = models.IntegerField(default=0)
+    eve_tea = models.IntegerField(default=0)
+    breakfast = models.IntegerField(default=0)
+    lunch = models.IntegerField(default=0)
+    dinner = models.IntegerField(default=0)
     persons=models.IntegerField(default=0)
 
 
@@ -125,6 +123,7 @@ class Bill(models.Model):
     meal_bill = models.IntegerField(default=0)
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)
+    bill_date = models.DateField(default=timezone.now, blank=True)
 
     def __str__(self):
         return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
@@ -154,5 +153,3 @@ class InventoryBill(models.Model):
 
     def __str__(self):
         return str(self.bill_number)
-
-
