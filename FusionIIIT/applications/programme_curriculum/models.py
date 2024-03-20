@@ -334,11 +334,11 @@ class CourseInstructor(models.Model):
           unique_together = ('course_id', 'instructor_id', 'batch_id')
       
 
+
       def __self__(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
         
 
-#new
 
 
 class CourseProposal(models.Model):
@@ -474,3 +474,4 @@ class UpdateCourseProposal(models.Model):
     # @property
     # def courseslots(self):
     #     return CourseSlot.objects.filter(courses=self.id)
+
