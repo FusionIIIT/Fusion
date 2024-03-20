@@ -10,7 +10,7 @@ from applications.globals.models import ExtraInfo
 from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
 
 # Create your models here.
-
+#Can add new models below
 PROGRAMME_CATEGORY_CHOICES = [
     ('UG', 'Undergraduate'),
     ('PG', 'Postgraduate'),
