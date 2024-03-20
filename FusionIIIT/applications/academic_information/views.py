@@ -1177,9 +1177,9 @@ def add_new_profile (request):
     }
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['profiles']
-        excel = xlrd.open_workbook(file_contents=profiles.read())
+        excel = xlrd.open_workbook(profiles.name,file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(sheet.nrows):
+        for i in range(1,sheet.nrows):
             roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
@@ -1199,7 +1199,7 @@ def add_new_profile (request):
             category=""
             phone_no=0
             address=""
-            dept=str(sheet.cell(i,12).value)
+            dept=str(sheet.cell(i,11).value)
             specialization=str(sheet.cell(i,12).value)
             hall_no=None
 
@@ -1217,7 +1217,6 @@ def add_new_profile (request):
             batch_year=request.POST['Batch']
 
             batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
-
             user = User.objects.create_user(
                 username=roll_no,
                 password='hello123',
@@ -1225,6 +1224,7 @@ def add_new_profile (request):
                 last_name=last_name,
                 email=email,
             )
+            
 
             einfo = ExtraInfo.objects.create(
                 id=roll_no,
@@ -1261,6 +1261,11 @@ def add_new_profile (request):
                 working=user,
                 designation=desig,
             )
+            
+            user.save()
+            einfo.save()
+            stud_data.save()
+            hold_des.save()
 
             sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
             course_slots = CourseSlot.objects.all().filter(semester = sem_id)
