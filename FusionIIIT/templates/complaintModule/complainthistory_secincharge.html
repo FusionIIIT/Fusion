@@ -1,7 +1,7 @@
 
 <!--HTML file for user to view the history of the Resolved complaints that were took care by him-->
 {% load static %}
-{% block complainthistory_caretaker.html %}
+{% block complainthistory_secincharge.html %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -18,10 +18,12 @@
 
     <div class="ui active  tab" data-tab="complainthistory">
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
-
+            
+            
+        
        
             {% csrf_token %}
-            <table class="ui very basic collapsing celled sortable table" id="resolved_care"
+            <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -47,18 +49,15 @@
                         <b>Location</b>
                     </td>
 
-                   <!--  <th>
-                        Specific <br> Location
-                    </th> -->
 
                     <td class="three wide column">
                         <b>Details</b>
                     </td>
 
                     
-                    <!-- <td class="four large column">
+                    <td class="four large column">
                         <b>Worker <br> Name</b>
-                    </td> -->
+                    </td>
                     <td class="four large column">
                         <b>Feedback</b>
                     </td>
@@ -98,12 +97,12 @@
                     </td>
                     
                     <td>
-                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
                    
 
                   
-                    <!-- <td>
+                    <td>
                         {% if a.worker_id == NULL %}
                             NOT ASSIGN
                             <td></td>
@@ -112,7 +111,7 @@
                           
                             
                         {% endif %}
-                    </td> -->
+                    </td>
                     {% if a.feedback != "" %}
                     <td>
                         <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="View feedback" ><i class="large green comments icon"></i></button></a>
@@ -131,7 +130,7 @@
                     {%endif%}
                 {% endfor %}
             </table>
-            <div id="paginationresolved_care" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+
                 <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
             <br>
             <div class="ui divider"></div>
@@ -146,17 +145,4 @@
             </div>
         </div>
     </div>
-  
-
-
-
-
-
-
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            paginate('resolved_care', 2, 'paginationresolved_care'); // Call the pagination function with table ID and rows per page
-        });
-    </script>
 {% endblock %}
