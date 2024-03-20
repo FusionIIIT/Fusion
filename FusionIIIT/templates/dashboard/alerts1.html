@@ -14,6 +14,9 @@
                 <div class="content">
                     <div class="header">
                         <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+                        <div class="ui right floated white button notif-status" style="background:white">
+                            <a href="{% url 'notifications:delete' notice.slug %}" style="color:black" > &#10006;</a>
+                        </div>
                     </div>
                     <div class="meta">
                         {{ notice.timesince }} ago
@@ -26,7 +29,6 @@
                             -by {{ notice.actor.first_name }} {{ notice.actor.last_name }}
                             {% endifnotequal %}
                         </div>
-
 
                     {% if notice.unread %}
                     <div class="ui right floated blue button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}"  slug="{{notice.slug}}">
@@ -55,10 +57,10 @@
                     var status = document.getElementById("notif-sp"+id).innerHTML;
                     var url;
                     if(status=="Mark as Unread"){
-                        url = '{% url 'notifications:mark_as_unread' 0 %}'.replace('0', slug);
+                        url = `{% url 'notifications:mark_as_unread' 0 %}`.replace('0', slug);
                     }
                     else{
-                        url = '{% url 'notifications:mark_as_read' 0 %}'.replace('0', slug);
+                        url = `{% url 'notifications:mark_as_read' 0 %}`.replace('0', slug);
                     }
                         $.ajax(
                             {

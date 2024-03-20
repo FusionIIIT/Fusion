@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hostel Inventory Form</title>
+</head>
+
+<body>
+  <h1>Hostel Edit Inventory Form</h1>
+  <form id="inventoryForm" action="/hostelmanagement/inventory/{{ inventory.inventory_id }}/modify/" method="POST">
+    <!-- Remove hidden input for _method -->
+    {% csrf_token %}
+    <label for="hall_id">Hall ID:</label>
+    <!-- <input
+        type="number"
+        id="hall_id"
+        name="hall_id"
+        value="{{ inventory.hall_id }}"
+      /><br /><br /> -->
+      <h1></h1>
+    <select id="hall_id" name="hall_id">
+      {% for hall in halls %}
+        <option value="{{ hall.id }}" {% if hall.id == inventory.hall_id %} selected {% endif %}>
+          {{ hall.hall_id }}
+        </option>
+      {% endfor %}
+    </select><br /><br />
+
+
+    <label for="inventory_name">Inventory Name:</label>
+    <input type="text" id="inventory_name" name="inventory_name" value="{{ inventory.inventory_name }}" /><br /><br />
+
+    <label for="cost">Cost:</label>
+    <input type="number" id="cost" name="cost" value="{{ inventory.cost }}" /><br /><br />
+
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" value="{{ inventory.quantity }}" /><br /><br />
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="responseMessage"></div>
+
+  <script>
+    document
+      .getElementById("inventoryForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        fetch(this.action, {
+          method: "POST", // Method should be POST
+          body: formData,
+        })
+          .then((response) => {
+            if (response.ok) {
+              // Redirect to the inventory page
+              window.location.href =
+                "/hostelmanagement/inventory/{{ inventory.hall_id }}/";
+            } else {
+              throw new Error("Failed to update inventory");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      });
+  </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@ services:
     image: postgres:13-alpine
     restart: always
     volumes:
-      - /private/var/lib/postgresql:/var/lib/postgresql/data
+      - ~/private/var/lib/postgresql:/var/lib/postgresql/data
     environment:
       - PGDATA=/var/lib/postgresql/data/some_name/
       - POSTGRES_DB=fusionlab

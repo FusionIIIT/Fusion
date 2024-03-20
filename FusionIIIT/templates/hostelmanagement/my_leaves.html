@@ -1,0 +1,48 @@
+{% block leave_status %}
+<h2 align="center">My Leaves</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table class="ui table" border="1">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Reason</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Remark</th> <!-- Add this column for the remark -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for leave in my_leaves %}
+            <tr>
+                <td>{{ leave.student_name }}</td>
+                <td>{{ leave.reason }}</td>
+                <td>{{ leave.start_date }}</td>
+                <td>{{ leave.end_date }}</td>
+                <td
+                    class="{% if leave.status == 'Approved' %}approved-status{% elif leave.status == 'Rejected' %}rejected-status{% elif leave.status == 'pending' %}pending-status{%endif%}">
+                    {{ leave.status }}
+                </td>
+                <td>{{ leave.remark }}</td> <!-- Display the remark here -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<style>
+    /* Add this CSS block to your existing stylesheet or in a separate style tag */
+    /* Adjust the selector as needed based on your HTML structure */
+    .approved-status {
+        background-color: rgb(16, 244, 16);
+    }
+
+    .rejected-status {
+        background-color: red;
+        color: white;
+    }
+
+    .pending-status {
+        background-color: yellow;
+    }
+</style>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.db.models import CheckConstraint, Q, F
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo
+from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
 
 # Create your models here.
 
@@ -26,7 +27,8 @@ COURSESLOT_TYPE_CHOICES = [
     ('Design', 'Design'),
     ('Manufacturing', 'Manufacturing'),
     ('Management Science', 'Management Science'),
-    ('Optional Elective', 'Optional Elective'),
+    ('Open Elective', 'Open Elective'),
+    ('Swayam','Swayam'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
     ('Others', 'Others')
@@ -59,7 +61,7 @@ class Programme(models.Model):
     name = models.CharField(max_length=70, null=False, unique=True, blank=False)
     programme_begin_year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
 
-    def __str__(self):
+    def _str_(self):
         return str(self.category + " - "+ self.name)
 
     @property
@@ -90,7 +92,7 @@ class Discipline(models.Model):
     acronym = models.CharField(max_length=10, null=False, default="", blank=False)
     programmes = models.ManyToManyField(Programme, blank=True)    
     
-    def __str__(self):
+    def _str_(self):
         return str(self.name) + " " + str(self.acronym)
 
     @property
@@ -117,7 +119,11 @@ class Curriculum(models.Model):
     '''
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    version = models.PositiveIntegerField(default=1, null=False)
+    version = models.DecimalField(
+    max_digits=2, 
+    decimal_places=1, 
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
@@ -125,7 +131,7 @@ class Curriculum(models.Model):
     class Meta:
         unique_together = ('name', 'version',)
     
-    def __str__(self):
+    def _str_(self):
         return str(self.name + " v" + str(self.version))
 
     @property
@@ -166,8 +172,8 @@ class Semester(models.Model):
     class Meta:
         unique_together = ('curriculum', 'semester_no',)
     
-    def __str__(self):
-        return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
+    def _str_(self):
+        return str(Curriculum._str_(self.curriculum) + ", sem-" + str(self.semester_no))
 
     @property
     def courseslots(self):
@@ -207,8 +213,13 @@ class Course(models.Model):
 
 
     '''
-    code = models.CharField(max_length=10, null=False, unique=True, blank=False)
-    name = models.CharField(max_length=100, null=False, unique=True, blank=False)
+    code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    version = models.DecimalField(
+    max_digits=2, 
+    decimal_places=1, 
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     lecture_hours = PositiveIntegerField(null=True, )
     tutorial_hours = PositiveIntegerField(null=True)
@@ -228,12 +239,14 @@ class Course(models.Model):
     ref_books = models.TextField()
     working_course = models.BooleanField(default=True)
     disciplines = models.ManyToManyField(Discipline, blank=True)
+    latest_version = models.BooleanField(default=True)
     
     class Meta:
-        unique_together = ('code', 'name',)        
+        unique_together = ('code','version')        
     
-    def __str__(self):
-        return str(self.code + " - " +self.name)
+    def _str_(self):
+        return str(self.code + " - " +self.name+"- v"+str(self.version))
+
 
     @property
     def courseslots(self):
@@ -268,7 +281,7 @@ class Batch(models.Model):
     class Meta:
         unique_together = ('name', 'discipline', 'year',)
 
-    def __str__(self):
+    def _str_(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
 
     
@@ -277,11 +290,6 @@ class CourseSlot(models.Model):
         Current Purpose : To store the details regarding a course slot 
             Course slot : is defined as per the curriculum for a programme to have specific type of courses 
                             for a given semester
-        
-
-        
-        
-
         ATTRIBUTES :
 
         semester(programme_curriculum.Semester) - [not nullable] to denote link to the semester details for which the courseslot is made
@@ -304,8 +312,8 @@ class CourseSlot(models.Model):
     max_registration_limit = models.PositiveIntegerField(default = 1000)
 
 
-    def __str__(self):
-        return str(Semester.__str__(self.semester) + ", " + self.name)
+    def _str_(self):
+        return str(Semester._str_(self.semester) + ", " + self.name)
 
     class Meta:
         unique_together = ('semester', 'name', 'type')
@@ -324,6 +332,5 @@ class CourseInstructor(models.Model):
           unique_together = ('course_id', 'instructor_id', 'batch_id')
       
 
-      def __self__(self):
+      def _self_(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
-        
