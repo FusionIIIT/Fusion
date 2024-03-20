@@ -22,39 +22,6 @@
     }
 
 </style>
-
-<style>
-    .dashboard-container {
-        margin: 0 3rem;
-        display: grid;
-        gap: 3rem;
-        grid-template-columns: 1fr;
-    }
-
-    .card-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    @media (min-width:800px) {
-        .dashboard-container {
-            grid-template-columns: 3fr 7fr;
-        }
-        .module-container {
-            grid-column: 1/-1;
-        }
-    }
-
-    @media (min-width:1200px) {
-        .dashboard-container {
-            grid-template-columns: 3fr 7fr 3fr;
-        }
-        .module-container {
-            grid-column:auto;
-        }
-    }
-</style>
 {% endblock css %}
 
 
@@ -63,12 +30,13 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    <div class="dashboard-container">
+    <div class="ui stackable doubling grid">
 
-        
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
 
         {% comment %}The left-rail segment starts here!{% endcomment %}
-        <div class="card-container">
+        <div class="three wide column">
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -78,8 +46,8 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu" style="max-width: 25rem;">
-
+            <div class="ui huge fluid vertical pointing menu" id="vtab" 
+                 style="max-width: 320px;">
                 {% if student_flag %}
                     <a class="active item" data-tab="one">
                         <B>Current Semester</B>
