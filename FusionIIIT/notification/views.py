@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from requests import Response
 from notifications.signals import notify
-
 # Create your views here.
 
 def leave_module_notif(sender, recipient, type, date=None):

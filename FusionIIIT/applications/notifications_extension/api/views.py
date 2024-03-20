@@ -31,7 +31,7 @@ from notification.views import (leave_module_notif,
     office_module_DeanRSPC_notif,
     research_procedures_notif)
 
-# import user
+
 
 class LeaveModuleNotificationAPIView(APIView):
     def post(self, request, *args, **kwargs):
