@@ -48,4 +48,23 @@ urlpatterns = [
     path('admin_edit_discipline/<discipline_id>/', views.edit_discipline_form, name='edit_discipline_form'),
     path('admin_instigate_semester/<semester_id>/', views.instigate_semester, name='instigate_semester'),
     path('admin_replicate_curriculum/<curriculum_id>/', views.replicate_curriculum, name='replicate_curriculum'),
+    
+    
+    
+    #new
+    path('course_proposal_form/',views.course_proposal_form,name='course_proposal_form'),
+    path('view_course_proposal_forms/',views.view_course_proposal_forms,name='view_course_proposal_forms'),
+    path('update_course_proposal_form/<course_id>/',views.update_course_proposal_form,name='update_course_proposal_form'),
+    path('faculty_view_all_courses/', views.faculty_view_all_courses, name='faculty_view_all_courses'),
+    path('faculty_view_a_course/<course_id>/',views.faculty_view_a_course,name="faculty_view_a_course"),
+    path('head_view_a_course_proposal/<CourseProposal_id>/', views.head_view_a_course_proposal, name='head_view_a_course_proposal'),
+    path('head_view_a_update_course_proposal/<UpdateCourseProposal_id>/', views.head_view_a_update_course_proposal, name='head_view_a_update_course_proposal'),
+    
+    path('forward_form/<CourseProposal_id>', views.forward_form, name='forward_form'),
+    path('reject_form/<CourseProposal_id>', views.reject_form, name='reject_form'),
+    # path('approve_form/<CourseProposal_id>', views.approve_form, name='approve_form'),
+    
+    path('forward_update_form/<UpdateCourseProposal_id>/', views.forward_update_form, name='forward_update_form'),
+    path('reject_update_form/<UpdateCourseProposal_id>', views.reject_update_form, name='reject_update_form'),
+    # path('approve_update_form/<UpdateCourseProposal_id>', views.approve_update_form, name='approve_update_form'),
 ]
