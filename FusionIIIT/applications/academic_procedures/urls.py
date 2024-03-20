@@ -6,19 +6,23 @@ urlpatterns = [
     url(r'^main/', views.academic_procedures, name='procedures'),
     url(r'^register/', views.register, name='register'),
     url(r'^pre_registration/', views.pre_registration, name='pre_register'),
+    url(r'^auto_pre_registration/', views.auto_pre_registration, name='automatic_pre_register'),
+
     url(r'^final_registration/', views.final_registration, name='final_register'),
     url(r'^addCourse/', views.add_courses, name='addCourse'),
+    url(r'^add_one_course/' , views.add_one_course , name = 'add_one_course'),
     url(r'^drop_course/', views.drop_course, name='drop_course'),
+    url(r'^replaceCourse/', views.replace_courses, name='replace_courses'),
+    url(r'^replace_one_course/', views.replace_one_course, name='replace_one_course'),
     url(r'^branch-change/', views.approve_branch_change, name='branch_change'),
     url(r'^brach-change-request/', views.branch_change_request,
         name='branch_change_request'),
+    url(r'^acad_person/verifyCourse/drop/$',views.dropcourseadmin, name='dropcourseadmin'),
     url(r'^acad_person/verifyCourse/', views.verify_course, name='verifyCourse'),
     url(r'^acad_person/addCourse/', views.acad_add_course, name="acad_add_course"),
     url(r'^acad_person/student_list$', views.student_list, name='studentlist'),
     url(r'^acad_person/course_list$', views.course_list, name='courseList'),
     url(r'^acad_person/$', views.acad_person, name='acad_person'),
-    url(r'^acad_person/verifyCourse/drop/$',
-        views.dropcourseadmin, name='dropcourseadmin'),
     url(r'^branch-validate', views.approve_branch_change, name='branch_validate'),
     url(r'^acad_person/branch_change/$',
         views.acad_branch_change, name='acad_branch_change'),
@@ -27,6 +31,7 @@ urlpatterns = [
     url(r'^account/$', views.account),
     url(r'^addThesis/$', views.add_thesis, name='add_thesis'),
     url(r'^process_verification_request/$', views.process_verification_request),
+    url(r'^auto_process_verification_request/$', views.auto_process_verification_request),
     url(r'^teaching_credit/$', views.teaching_credit_register),
     url(r'^course_marks_data/$', views.course_marks_data),  # --
     url(r'^submit_marks/$', views.submit_marks),  # --
@@ -65,6 +70,7 @@ urlpatterns = [
 
     url(r'^acad_person/remove_course_from_slot/' , views.remove_course_from_slot , name = 'remove_course_from_slot'),
     url(r'^acad_person/add_course_to_slot/' , views.add_course_to_slot , name = 'add_course_to_slot'),
-
+    url(r'^acad_person/replaceSwayam/', views.replaceSwayam, name='replaceSwayam'),
+    url(r'^acad_person/swayam_replace/', views.swayam_replace, name='swayam_replace'),
 
 ]
