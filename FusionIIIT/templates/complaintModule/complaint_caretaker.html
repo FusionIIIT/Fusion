@@ -58,6 +58,10 @@
                 {% endif %}
         </div>
             {% comment %}The Tab-Menu starts here!{% endcomment %}
+            {% comment %}A single modules row starts here!{% endcomment %}
+               
+                        {% if  request.user.extrainfo.user_type == "staff"    %}
+             
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
                 <a class="active item" data-tab="first">
@@ -74,8 +78,11 @@
                     Feedback
                     <i class="right floated chevron right icon"></i>
                 </a>
-
-
+                {% endif %}
+                
+                {% comment %}A single modules row ends here!{% endcomment %}
+                
+                {% if  global_var == "hall4caretaker" or global_var == "hall3caretaker" or global_var == "shyams"  %}
                 <a class=" item" data-tab="fourth">
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i>
@@ -89,6 +96,7 @@
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
                 </a> -->
+                {% endif %}
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
