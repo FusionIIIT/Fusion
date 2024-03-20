@@ -1,22 +1,25 @@
-{% extends 'programme_curriculum/acad_admin/common.html' %}
+{% extends 'programme_curriculum/common.html' %}
 
 {% block sidetabmenu %}
-    <div class="ui medium fluid vertical pointing menu"
-            style="max-width: 320px;">
-        
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_programmes' %}">Programmes & Curriculums
+    <div class="ui huge fluid vertical pointing menu"
+        style="max-width: 320px;">
+
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_working_curriculums' %}">Working Curriculums
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_discplines' %}">Discipline
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_batches' %}">Batch
+        <a class="item" href="{% url 'programme_curriculum:view_all_discplines' %}">Disciplines
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_courses' %}">Courses
+        <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
             <i class="right floated chevron right icon"></i>
         </a>
     </div>
@@ -30,7 +33,7 @@
             <thead>
                 <tr style="font-size: medium;
                 background-color: aliceblue;">
-                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }} - v{{course.version}}</h2>
+                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }}-v{{course.version}}</h2>
                     </td>
                 </tr>
                 {% if course.disciplines.all %}
@@ -53,10 +56,6 @@
                 <tr>
                     <td colspan="2"  class="collapsing"><B>Course Name</B></td>
                     <td>{{ course.name }}</td>
-                </tr>
-                <tr>
-                    <td colspan="2"  class="collapsing"><B>Version</B></td>
-                    <td>{{ course.version }}</td>
                 </tr>
                 <tr>
                     <td rowspan="6"  class="collapsing"><B>Contact hours</B></td>
@@ -97,7 +96,7 @@
                     <td colspan="1">
                         <p>
                         {% for p_course in course.pre_requisit_courses.all %}
-                            <a href="{% url 'programme_curriculum:admin_view_a_course' p_course.id %}">{{ p_course }}</a>,<br>
+                            <a href="{% url 'programme_curriculum:view_a_course' p_course.id %}">{{ p_course }}</a>,<br>
                         {% endfor %}
                         </p>
                     </td>
@@ -144,31 +143,6 @@
             </tbody>
             </table>
         </div>
-    </div>
-</div>
-{% endblock %}
-{% block rightcontent %}
-<br>
-<br>
-<div class="ui center aligned segment">
-    <div class="extra content">
-        <a class="fluid ui large positive animated button"  tabindex="0"
-            href="{% url 'programme_curriculum:update_course_form' course.id %}"
-            type="Submit" name="Submit">
-            <div class="visible content">EDIT COURSE</div>
-            <div class="hidden content">
-            <i class="edit icon"></i>
-            </div>
-        </a>
-        <br>
-        <a class="fluid ui large primary animated button" tabindex="0"
-            href="{% url 'programme_curriculum:add_course_form' %}"
-            type="Submit" name="Submit">
-            <div class="visible content">ADD COURSE</div>
-            <div class="hidden content">
-            <i class="add icon"></i>
-            </div>
-        </a>
     </div>
 </div>
 {% endblock %}

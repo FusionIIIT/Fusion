@@ -19,7 +19,6 @@
         <a class="item" href="{% url 'programme_curriculum:admin_view_all_courses' %}">Courses
             <i class="right floated chevron right icon"></i>
         </a>
-    
     </div>
 {% endblock %}
 
@@ -45,22 +44,36 @@
             <div class="ui error message">
                 <p>{{ form.name.errors }}</p>
                 <p>{{ form.code.errors }}</p>
+                <p>{{ form.version.errors }}</p>
                 <p>{{ form.credit.errors }}</p>
             </div>
             {% endif %}
         </div>
         <div class="field">
+            {% if version_error %}
+            <div class="ui error message">
+                <p>{{version_error}}</p>
+            </div>
+            {% endif %}
+        </div> 
+        <div class="field">
             <label for="{{ form.name.id_for_label }}">Name:</label>
             {{ form.name }}
+            
         </div>
+
         <div class="fields">
-            <div class="eight wide field">
+            <div class="six wide field">
                 <label for="{{ form.code.id_for_label }}">Code:</label>
             {{ form.code }}
             </div>
-            <div class="eight wide field">
+            <div class="five wide field">
                 <label for="{{ form.credit.id_for_label }}">Credit:</label>
                 {{ form.credit }}
+            </div>
+            <div class="five wide field">
+                <label for="{{ form.version.id_for_label }}">Version:</label>
+                {{ form.version }}
             </div>
         </div>
         <div class="field">
@@ -71,6 +84,7 @@
                 <p>{{ form.pratical_hours.errors }}</p>
                 <p>{{ form.discussion_hours.errors }}</p>
                 <p>{{ form.project_hours.errors }}</p>
+
             </div>
             {% endif %}
         </div>
@@ -87,6 +101,8 @@
                 <label for="{{ form.pratical_hours.id_for_label }}">Pratical Hours (P):</label>
                 {{ form.pratical_hours }}
             </div>
+            
+            
         </div>
         <div class="fields">
             <div class="eight wide field">
