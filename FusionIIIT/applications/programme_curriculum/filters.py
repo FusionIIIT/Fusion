@@ -34,4 +34,10 @@ class CurriculumFilter(django_filters.FilterSet):
     class Meta:
         model = Curriculum
         fields = {'name': ['icontains'],
+                  'version': ['exact'],
                  }
+        widgets = {
+                'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,}),
+                'name' : django_filters.CharFilter(forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,})),
+                'code' : django_filters.CharFilter(forms.TextInput(attrs={'placeholder': 'Version','max_length': 10,})),
+            }
