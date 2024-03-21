@@ -61,7 +61,7 @@ class Programme(models.Model):
     name = models.CharField(max_length=70, null=False, unique=True, blank=False)
     programme_begin_year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
 
-    def __str__(self):
+    def _str_(self):
         return str(self.category + " - "+ self.name)
 
     @property
@@ -92,7 +92,7 @@ class Discipline(models.Model):
     acronym = models.CharField(max_length=10, null=False, default="", blank=False)
     programmes = models.ManyToManyField(Programme, blank=True)    
     
-    def __str__(self):
+    def _str_(self):
         return str(self.name) + " " + str(self.acronym)
 
     @property
@@ -119,6 +119,7 @@ class Curriculum(models.Model):
     '''
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
+
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
@@ -133,7 +134,7 @@ class Curriculum(models.Model):
     class Meta:
         unique_together = ('name', 'version',)
     
-    def __str__(self):
+    def _str_(self):
         return str(self.name + " v" + str(self.version))
 
     @property
@@ -174,8 +175,8 @@ class Semester(models.Model):
     class Meta:
         unique_together = ('curriculum', 'semester_no',)
     
-    def __str__(self):
-        return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
+    def _str_(self):
+        return str(Curriculum._str_(self.curriculum) + ", sem-" + str(self.semester_no))
 
     @property
     def courseslots(self):
@@ -246,7 +247,9 @@ class Course(models.Model):
     class Meta:
         unique_together = ('code','version')        
     
+
     def __str__(self):
+
         return str(self.code + " - " +self.name+"- v"+str(self.version))
 
 
@@ -283,7 +286,7 @@ class Batch(models.Model):
     class Meta:
         unique_together = ('name', 'discipline', 'year',)
 
-    def __str__(self):
+    def _str_(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
 
     
@@ -314,8 +317,8 @@ class CourseSlot(models.Model):
     max_registration_limit = models.PositiveIntegerField(default = 1000)
 
 
-    def __str__(self):
-        return str(Semester.__str__(self.semester) + ", " + self.name)
+    def _str_(self):
+        return str(Semester._str_(self.semester) + ", " + self.name)
 
     class Meta:
         unique_together = ('semester', 'name', 'type')
@@ -333,6 +336,7 @@ class CourseInstructor(models.Model):
       class Meta:
           unique_together = ('course_id', 'instructor_id', 'batch_id')
       
+
 
 
       def __self__(self):
@@ -474,3 +478,4 @@ class UpdateCourseProposal(models.Model):
     # @property
     # def courseslots(self):
     #     return CourseSlot.objects.filter(courses=self.id)
+
