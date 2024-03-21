@@ -50,21 +50,10 @@
                     <textarea rows="3" name="desc" required></textarea>
                 </div>
 
+
                 <div class="field">
-                    <label>Create as:
-                        <select required class="ui fluid search selection dropdown" name="design">
-                           <option selected hidden>Select</option>
-
-                           <!--  {% for designations in designations %}
-                            <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
-                            {% endfor %} -->
-
-                             {% for designations in designations %}
-                            <option value="{{designations.id}}">{{designations}}</option>
-                            {% endfor %}
-
-                        </select>
-                    </label>
+                    <label>Create as: {{ designation_name }}</label>
+                    <input type="hidden" name="design" value="{{ designation_id }}">
                 </div>
 
                 <br>
@@ -104,13 +93,9 @@
 
                 <div class="field">
                     <label>Receiver Designation:
-                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                            <datalist  id="input_list1">
-
-                            </datalist>
-
-
-                       
+                        <select id="receiver_dropdown" name="receive">
+                            <!-- Dropdown options will be dynamically populated here -->
+                        </select>
                     </label>
                 </div>
 
@@ -208,6 +193,37 @@
             });
             console.log("dsfagdfdshadf");
         });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            console.log(values)
+            var dropdown = $('#receiver_dropdown');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+        }
+    });
 </script>
 
 {% endblock %}
