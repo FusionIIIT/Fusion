@@ -36,7 +36,7 @@
                             </a>
                         </div>
                         {% endif %}
-                        {% if request.user.extrainfo.user_type == "student" or "acadadmin" == global_var  %}
+                     {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var or "corelabcaretaker" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
