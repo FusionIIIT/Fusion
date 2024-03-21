@@ -10,11 +10,12 @@ DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-        'HOST': os.environ.get("DB_HOST"),
+        'HOST': os.environ.get("DB_HOST", default='localhost'),
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
 }
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
