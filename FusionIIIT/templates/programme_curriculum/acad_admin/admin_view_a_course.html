@@ -30,7 +30,7 @@
             <thead>
                 <tr style="font-size: medium;
                 background-color: aliceblue;">
-                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }}</h2>
+                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }} - v{{course.version}}</h2>
                     </td>
                 </tr>
                 {% if course.disciplines.all %}
@@ -53,6 +53,10 @@
                 <tr>
                     <td colspan="2"  class="collapsing"><B>Course Name</B></td>
                     <td>{{ course.name }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"  class="collapsing"><B>Version</B></td>
+                    <td>{{ course.version }}</td>
                 </tr>
                 <tr>
                     <td rowspan="6"  class="collapsing"><B>Contact hours</B></td>
