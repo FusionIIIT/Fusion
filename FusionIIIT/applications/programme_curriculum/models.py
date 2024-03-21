@@ -119,12 +119,12 @@ class Curriculum(models.Model):
     '''
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
     max_digits=2, 
     decimal_places=1,  
+
     default=1.0, 
     validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
@@ -219,10 +219,12 @@ class Course(models.Model):
     code = models.CharField(max_length=10, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     version = models.DecimalField(
+
     max_digits=5, 
     decimal_places=1, 
     default=1.0, 
     validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
+
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     lecture_hours = PositiveIntegerField(null=True, )
     tutorial_hours = PositiveIntegerField(null=True)
@@ -249,7 +251,6 @@ class Course(models.Model):
     
 
     def __str__(self):
-
         return str(self.code + " - " +self.name+"- v"+str(self.version))
 
 
@@ -336,8 +337,6 @@ class CourseInstructor(models.Model):
       class Meta:
           unique_together = ('course_id', 'instructor_id', 'batch_id')
       
-
-
 
       def __self__(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
@@ -478,4 +477,5 @@ class UpdateCourseProposal(models.Model):
     # @property
     # def courseslots(self):
     #     return CourseSlot.objects.filter(courses=self.id)
+
 
