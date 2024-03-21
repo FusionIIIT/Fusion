@@ -9,10 +9,10 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
-        'HOST': os.environ.get("DB_HOST", default='localhost'),
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'NAME': 'fusiondb',
+        'HOST': os.environ.get("DB_HOST"),
+        'USER': 'fusionuser',
+        'PASSWORD': 'password',
     }
 }
 
@@ -62,8 +62,3 @@ CRONJOBS = [
     #the below job which we need to add in production server, to update the mess bill of student everyday at 10 pm in night
     ('0 22 * * *', 'applications.central_mess.tasks.generate_bill'),
 ]
-
-CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT=os.path.join(BASE_DIR,"media/")
