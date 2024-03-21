@@ -1,0 +1,48 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+{% if viewer_designation != global_var %}
+  <script>window.location.href = "{% url 'filetracking:outward' %}";</script>
+{% endif %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="outward">
+            Outward Files  <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{viewer_designation}}</i>
+            </a>
+        </h3>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <table class="ui sortable very basic celled table">
+        <thead>
+        <tr>
+            <th>File ID</th>
+            <th>Sent To</th>
+            <th>Subject</th>
+            <th>Last Sent</th>
+            <th>View File</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for f in out_files %}
+                <tr>
+                    <td>{{f.uploader_department}}-{{f.upload_date.year}}-{{f.upload_date.month}}-#{{f.id}}</td>
+                    <td>{{f.sent_to_user}}-{{f.sent_to_design}}</td>
+                    <td>{{f.subject|default:"None"}}</td>
+                    <td>{{f.last_sent_date}}</td>
+                    <td>
+                        <a href="{% url 'filetracking:view_file_view' f.id %}"
+                        ><button class="ui primary button">View</button></a
+                        >
+                    </td>
+                </tr>
+            {% endfor %}
+    
+        </tbody>
+
+    </table>
+    <br>
+
+{% endblock %}

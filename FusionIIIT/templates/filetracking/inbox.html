@@ -1,0 +1,54 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %} 
+{% block filetracking_tab %}
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:inward' %}";</script>
+{% endif %}
+
+<div class="ui pointing secondary menu">
+  <h3>
+    <a class="active item" data-tab="inward">
+      Inward Files  <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{designations}}</i>
+    </a>
+  </h3>
+</div>
+<div class="ui divider"></div>
+
+<table class="ui very basic celled sortable table">
+  <thead>
+    <tr>
+        <!-- should show the following fields on inbox page
+            Sent By : exactly who sent it to the user last
+            File ID : department-year-month-#id
+            Subject : subject of the file
+            Date : date of receiving
+        -->
+      <th>Sent by</th>
+      <th>File ID</th>
+      <th>Subject</th>
+      <th>Last Received</th>
+      <th>View File</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for f in in_file %}
+        <tr>
+        <td>{{f.sent_by_user}}-{{f.sent_by_designation}}</td>
+        <td>{{f.uploader_department}}-{{f.upload_date.year}}-{{f.upload_date.month}}-#{{f.id}}  </td>
+        <td>{{f.subject|default:"None"}}</td>
+        <td>{{f.receive_date}}</td>
+        <td>
+            <a href="{% url 'filetracking:view_file_view' f.id %}"
+            ><button class="ui primary button">View</button></a
+            >
+        </td>
+        </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+<br>
+
+{% endblock %}
