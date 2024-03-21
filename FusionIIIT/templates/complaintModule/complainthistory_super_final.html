@@ -26,7 +26,7 @@ Resolved, Declined-->
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
 
 
-            <table class="ui very basic collapsing celled sortable table" id="pending_user"
+            <table class="ui very basic collapsing celled sortable table" id="pending_super"
             style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -72,7 +72,7 @@ Resolved, Declined-->
                 </tr>
                 </thead>
                 
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 0 %}
                         
                     
@@ -118,7 +118,7 @@ Resolved, Declined-->
                    {% endif %}
                 {% endfor %}
             </table>
-            <div id="paginationpending_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+            <div id="paginationpending_super" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
         </div>
@@ -153,7 +153,7 @@ Resolved, Declined-->
             <div class="ui divider"></div> -->
             
 
-            <table class="ui very basic collapsing celled sortable table" id="resolve_user"
+            <table class="ui very basic collapsing celled sortable table" id="resolve_super"
                    style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -196,7 +196,7 @@ Resolved, Declined-->
                      
                     </tr>
                 </thead>
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 2 %}
                 <tbody>
                 <tr>
@@ -238,7 +238,7 @@ Resolved, Declined-->
                    {% endif %}
                 {% endfor %}
             </table>
-            <div id="paginationresolve_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+            <div id="paginationresolve_super" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
         </div>
@@ -265,7 +265,7 @@ Resolved, Declined-->
              <div class="ui divider"></div> -->
         
              
-            <table class="ui very basic collapsing celled sortable table" id="decline_user"
+            <table class="ui very basic collapsing celled sortable table" id="decline_super"
                    style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -310,7 +310,7 @@ Resolved, Declined-->
                    
                 </tr>
             </thead>
-                {% for a in history %}
+                {% for a in outbox %}
                 {% if a.status == 3 %}
                 <tbody>
                 <tr>
@@ -352,7 +352,7 @@ Resolved, Declined-->
             {% endif %}
             {% endfor %}
         </table>
-        <div id="paginationdecline_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+        <div id="paginationdecline_super" class="pagination" style="text-align: center; margin-top: 10px;"></div>
     </div>
             <br>
             <div class="ui divider"></div>
@@ -360,13 +360,13 @@ Resolved, Declined-->
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('pending_user', 3, 'paginationpending_user'); // Call the pagination function with table ID and rows per page
+            paginate('pending_super', 3, 'paginationpending_super'); // Call the pagination function with table ID and rows per page
         });
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('resolve_user', 3, 'paginationresolve_user'); // Call the pagination function with table ID and rows per page
+            paginate('resolve_super', 3, 'paginationresolve_super'); // Call the pagination function with table ID and rows per page
         });
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('decline_user', 3, 'paginationdecline_user'); // Call the pagination function with table ID and rows per page
+            paginate('decline_super', 3, 'paginationdecline_super'); // Call the pagination function with table ID and rows per page
         });
     </script>
     {% endblock%}

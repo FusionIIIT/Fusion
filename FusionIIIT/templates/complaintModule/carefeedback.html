@@ -15,7 +15,7 @@
     <div class="ui active tab " data-tab="feedback">
         <div class="ui vertical segment" style="overflow-y: auto";>
 
-            <table class="ui very basic collapsing celled sortable table" id="feedback_user"
+            <table class="ui very basic collapsing celled sortable table" id="feedback_care"
                    style="padding-left: 0.5%;
                                                           padding-right: 0.5%;
                                                           padding-top: 1%;
@@ -59,7 +59,7 @@
                 </tr>
                 </thead>
 
-                {% for a in history %}
+                {% for a in carehistory %}
                     {% if a.status == 2 %}
 
                 <tbody>
@@ -80,7 +80,7 @@
                     </td>
 
                     <td>
-                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                        <a href="./detail/{{ a.id }}/feedback"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
 
                     <td>
@@ -93,7 +93,7 @@
                         {% if a.feedback == '' %}
                             <div class="field">
                                 <center>
-                                    <a href="./{{ a.id }}">
+                                    <a href="./{{ a.id }}/feedback">
                                     <button class="ui green icon button" data-tooltip="Give FeedBack" >
                                        <i class="large comments icon"></i>
                                     </button>
@@ -115,7 +115,7 @@
                     {% endif %}
                 {% endfor %}
             </table>
-            <div id="paginationfeedback_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+            <div id="paginationfeedback_care" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
             <div class="extra content">
@@ -127,7 +127,7 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('feedback_user', 3, 'paginationfeedback_user'); // Call the pagination function with table ID and rows per page
+            paginate('feedback_care', 3, 'paginationfeedback_care'); // Call the pagination function with table ID and rows per page
         });
     </script>
 {% endblock %}
