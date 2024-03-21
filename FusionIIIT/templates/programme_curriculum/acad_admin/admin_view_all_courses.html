@@ -38,6 +38,7 @@
                         <td><h4>index</h4></td>
                         <td><h4>Course Code</h4></td>
                         <td><h4>Course Name</h4></td>
+                        <td><h4>Version No.</h4></td>
                         <td><h4>Credits</h4></td>
                         <td></td>
                     </tr>
@@ -48,6 +49,7 @@
                             <td>{{ forloop.counter }}</td>
                             <td><a href="{% url 'programme_curriculum:admin_view_a_course' course.id %}">{{ course.code }}</a></td>
                             <td>{{ course.name }}</td>
+                            <td>{{ course.version }}</td>
                             <td>{{ course.credit }}</td>
                             <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
                                 href="{% url 'programme_curriculum:update_course_form' course.id%}"
