@@ -14,8 +14,6 @@ class File(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
-
-
     # additions for API
     src_module = models.CharField(max_length=100, default='filetracking')
     src_object_id = models.CharField(max_length=100,null=True) 
@@ -24,8 +22,8 @@ class File(models.Model):
     class Meta:
         db_table = 'File'
 
-    #def __str__(self):
-        #return str(self.ref_id)
+    # def __str__(self):
+    #     return str(self.ref_id)
 
 
 class Tracking(models.Model):

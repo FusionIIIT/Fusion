@@ -5,52 +5,48 @@
 
 
 
-<div class="ui pointing secondary menu">
-    <h3>
-        <a class="active item" data-tab="composefile">
-        Stocks present in database
-        </a>
-    </h3>
-</div>
+
 <div class="ui active tab" data-tab="composefile">
     <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
             padding-right: 3.5%;">
 <div class="ui pointing secondary menu" >
     <h3>
         <a class="active item" data-tab="inward">
-       Stocks Information
+      Indent Files Information
         </a>
     </h3>
+
+   
 
 </div>       
 
    
     <div class="ui divider"></div>
-    {% if ent %}
+    {% if IndentFiles %}
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
-            <th>File Info</th>
-            <th>Quantity</th>
-            <th>Item Name</th>
+            <th>Indent File Info</th>
+            <th>Quantity Required</th>
+            <th>Item Type</th>
             
-            <th>Enter Stock details</th>
             
         </tr>
         </thead>
         <tbody>
-            {% for s in ent %}
+            {% for s in IndentFiles %}
+            <!-- this condition is to display only those indent files which have approved by higher authorities  -->
             {% if s.head_approval == True and s.director_approval == True and s.financial_approval == True and s.purchased == False %}
             <tr>
                  <td>{{s.file_info.id}}</td>
                  <td>{{s.quantity}}</td>
                  <td>{{s.item_name}}</td>
                  
+                
                  <td><form action="/purchase-and-store/entry/" method="POST" id="file_info">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.file_info.id}}"><button class="ui primary button">
-                              Enter stock details
-                    </button></form</td>
-
+                        Enter stock details
+                    </button></form></td>
                 
               </tr>
               {% endif %}       

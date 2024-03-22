@@ -17,11 +17,22 @@
 
         <form class="ui large form" method="POST" action="/purchase-and-store/StockEntry/" enctype="multipart/form-data" id="stock1">
             {% csrf_token %}
+
+            <div class="field">
+                <label>Indent File Creator</label><br>
+                <input type="text" name="item_name"  value="{{RequestFile.uploader.user.username}}" readonly>
+            </div>
+
             <input hidden  name = 'id' value="{{id}}">
              <div class="field">
-                        <label>Name of the purchasing Item/Equipment</label><br>
+                        <label>Type of the purchasing Item/Equipment</label><br>
                         <input type="text" name="item_name"  value="{{indent.item_name}}" readonly>
                 </div>
+
+                <div class="field">
+                    <label>Transfer to Department</label><br>
+                    <input type="text" name="department" value="{{RequestFile.uploader.department}}" readonly>
+            </div>
 
 
         
@@ -39,9 +50,21 @@
         
                 <div class="field">
                         <label>Received date</label><br>
-                        <input type="date" name="recieved_date"  >
+                        <input type="date" name="recieved_date"  required>
                 </div>
 
+
+                <div class="field">
+                    <label>Location of Storage</label><br>
+                    <select name="item_type">  
+                        <option value = "H1">Vashistha Hostel</option>  
+                        <option value = "H3">Vivekananda Hostel</option>  
+                        <option value = "H4">AryaBhatta Hostel</option>  
+                        <option value = "SR1">Storage Room 1</option>  
+                        <option value = "SR2">Storage Room 2</option>  
+                        <option value = "SR3">Storage Room 3</option>  
+                    </select>  
+                </div>
 
                 <br>
 

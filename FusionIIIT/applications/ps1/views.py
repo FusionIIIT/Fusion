@@ -13,6 +13,7 @@ from timeit import default_timer as time
 from notification.views import office_module_notif
 from django.utils import timezone
 from datetime import datetime
+from applications.globals.models import DepartmentInfo
 
 
 
@@ -54,7 +55,7 @@ def create_proposal(request):
                 estimated_cost=request.POST.get('estimated_cost')
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
-                indent_type=request.POST.get('indent_type')
+                item_type=request.POST.get('item_type')
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -83,7 +84,7 @@ def create_proposal(request):
                 estimated_cost=request.POST.get('estimated_cost')
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
-                indent_type=request.POST.get('indent_type')
+                item_type=request.POST.get('item_type')
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -111,7 +112,7 @@ def create_proposal(request):
                     estimated_cost=estimated_cost,
                     purpose=purpose,
                     specification=specification,
-                    indent_type=indent_type,
+                    item_type=item_type,
                     nature=nature,
                     indigenous=indigenous, 
                     replaced = replaced ,
@@ -138,7 +139,7 @@ def create_proposal(request):
                 estimated_cost=request.POST.get('estimated_cost')
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
-                indent_type=request.POST.get('indent_type')
+                item_type=request.POST.get('item_type')
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -150,6 +151,7 @@ def create_proposal(request):
                 financial_approval=False
                 purchased = False
                 designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
+
                 for des in designations:         
                     if str(des.designation) == "Director":
                         head_approval=True
@@ -160,8 +162,8 @@ def create_proposal(request):
 
 
 
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
+                # current_id = request.user.extrainfo
+                # remarks = request.POST.get('remarks')
 
                 sender = request.POST.get('design')
                 current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
@@ -201,7 +203,7 @@ def create_proposal(request):
                     estimated_cost=estimated_cost,
                     purpose=purpose,
                     specification=specification,
-                    indent_type=indent_type,
+                    item_type=item_type,
                     nature=nature,
                     indigenous=indigenous, 
                     replaced = replaced ,
@@ -249,6 +251,9 @@ def create_proposal(request):
 #     }
 #     return render(request, 'ps1/composeIndent.html', context)
     
+    
+
+
 
 @login_required(login_url = "/accounts/login")
 def composed_indents(request):
@@ -275,7 +280,7 @@ def composed_indents(request):
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
-          return redirect('/dashboard')
+        return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         # 'draft': draft,
@@ -476,6 +481,7 @@ def inward(request):
     }
 
     return render(request, 'ps1/inwardIndent.html', context)
+
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
@@ -720,7 +726,6 @@ def createdindent(request, id):
 
 
 
-
 def AjaxDropdown1(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
@@ -829,12 +834,12 @@ def Stock_Entry(request):
             IndentFile.objects.filter(file_info=temp).update(purchased=True)         
         
             return HttpResponseRedirect('../stock_view')
-
-       
+        
 
     
 
-   
+
+# stock Edit will provide the prepoulated form for updation of information.
 @login_required(login_url = "/accounts/login")
 def stock_edit(request): 
     # stocks=StockEntry.objects.get(pk=id)
@@ -848,22 +853,22 @@ def stock_edit(request):
             id=request.POST.get('id')
             temp=File.objects.get(id=id) 
             temp1=IndentFile.objects.get(file_info=temp)   
-            stocks=StockEntry.objects.get(item_id=temp1)
-            return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})        
-            
-            # if 'save' in request.POST:
-            #     stocks.item_name=request.POST.get('item_name')
-            #     stocks.vendor=request.POST.get('vendor')
-            #     stocks.current_stock=request.POST.get('current_stock')
-            #     stocks.recieved_date=request.POST.get('recieved_date')
-            #     stocks.bill=request.FILES.get('bill')
-            #     stocks.save() 
+            Stock_Entry=StockEntry.objects.get(item_id=temp1)
+
+            print(Stock_Entry.recieved_date);
+            formatted_received_date = Stock_Entry.recieved_date.strftime("%Y-%m-%d")
+
+            persons = ExtraInfo.objects.filter(user_type__in=["staff"])
+            return render(request,'ps1/stock_edit.html',{'StockEntry':Stock_Entry,'persons':persons,'formatted_received_date': formatted_received_date})        
 
     return HttpResponseRedirect('../stock_view')   
     #else: 
     #    print("ELSE")
     #    return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
-        
+
+
+# This view defines the logic for stock 
+@login_required(login_url = "/accounts/login")
 def stock_update(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
@@ -875,12 +880,24 @@ def stock_update(request):
             temp1=IndentFile.objects.get(file_info=temp)   
             stocks=StockEntry.objects.get(item_id=temp1)
             
-            stocks.item_name=request.POST.get('item_name')
+            # Retrieve the ExtraInfo instance based on the provided string value
+
+            print(request.POST);
+            
+            dealing_assistant_id_str = request.POST.get('dealing_assistant_id').split('-')[0].strip();
+            print({dealing_assistant_id_str})
+
+            dealing_assistant_instance = ExtraInfo.objects.get(id=dealing_assistant_id_str)
+
+            stocks.dealing_assistant_id = dealing_assistant_instance
+            
             stocks.vendor=request.POST.get('vendor')
             stocks.current_stock=request.POST.get('current_stock')
-            #stocks.recieved_date=request.POST.get('recieved_date')
+            # stocks.recieved_date=request.POST.get('recieved_date')
             stocks.bill=request.FILES.get('bill')
-            stocks.dept = request.POST.get('dept')
+            stocks.location = request.POST.get('location')
+            stocks.recieved_date = request.POST.get('recieved_date')
+
             stocks.save() 
     return HttpResponseRedirect('../stock_view')   
   
@@ -891,7 +908,8 @@ def stock_update(request):
 # def stock_view(request):
 #     sto=StockEntry.objects.all()
 #     return render(request,'ps1/stock_view.html',{'StockEntry':sto})
-# @login_required(login_url = "/accounts/login")
+
+@login_required(login_url = "/accounts/login")
 def stock_view(request):
 
     # stock_entries = StockEntry.objects.filter(
@@ -903,18 +921,21 @@ def stock_view(request):
     department = request.user.extrainfo.department.name
 
     if  str(des.designation) == "dept_admin":
-        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+        # if department admin then only show the stocks of that department to them 
+        stocks=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
     else:
-        sto=StockEntry.objects.all()
-    # print(request.user)
-          
-    if sto:
-        temp=sto.first()
+        stocks=StockEntry.objects.all()
         
+    if stocks:
+        temp=stocks.first()
+
+        print("temp : ", temp);
         if temp.item_id.purchased:
             print("Purchase Succesful")
+
         
-    return render(request,'ps1/stock_view.html',{'sto':sto})
+    return render(request,'ps1/stock_view.html',{'sto':stocks})
+
 
 @login_required(login_url = "/accounts/login")    
 def stock_delete(request):
@@ -931,18 +952,31 @@ def stock_delete(request):
         temp1=IndentFile.objects.get(file_info=temp)
         stocks=StockEntry.objects.get(item_id=temp1)
         stocks.delete()
-    return HttpResponseRedirect('../stock_view')   
+    return HttpResponseRedirect('../stock_view')
+
+
+
+
+
 @login_required(login_url = "/accounts/login")   
 def entry(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
         return redirect('/dashboard')
-
+    
+    # ! Logic not clear 
     if request.method=='POST':
+        # id is the id of the File Object here
         id=request.POST.get('id')
-        temp=File.objects.get(id=id)
-        temp1=IndentFile.objects.get(file_info=temp)
-        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':temp1})
+        RequestFile = File.objects.select_related('uploader').get(id=id)
+
+        # Requester is the person who uploaded the IndentFile Initially and you can access all of the requesters info available in User model (AbstractUser) like username ,email etc.
+        Requester = RequestFile.uploader.user 
+        
+        # RequestFile.uploader contains the Extra information about the uploader of the RequestFile (using ExtraInfo Foreign key)
+
+        CorrespondingIndentFile=IndentFile.objects.get(file_info=RequestFile)
+        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':CorrespondingIndentFile,'RequestFile':RequestFile})
         
         
 
@@ -950,13 +984,16 @@ def entry(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     department = request.user.extrainfo.department.name
 
+    # this is to filter out the indent files only specific to a department like if A is a department Admin then he should only see the indent files corresponding to his department.
     if  str(des.designation) == "dept_admin":
-        ent=IndentFile.objects.filter(file_info__uploader__department__name=department)
-        # sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+        IndentFiles=IndentFile.objects.filter(file_info__uploader__department__name=department)
     else:
-        ent=IndentFile.objects.all()
-    return render(request,'ps1/entry.html',{'ent':ent})
-    
+        # otherwise all the indent files will be shown.
+        IndentFiles=IndentFile.objects.all()
+    return render(request,'ps1/entry.html',{'IndentFiles':IndentFiles})
+
+
+
 def dealing_assistant(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
@@ -1023,7 +1060,7 @@ def view_bill(request, stock_entry_id):
 
 
 
-
+#  This is to return a list of stocks available for transfer.
 @login_required(login_url = "/accounts/login")
 def perform_transfer(request):
 
@@ -1038,19 +1075,30 @@ def perform_transfer(request):
     return render(request,'ps1/perform_transfer1.html',{'sto':sto})
 
 
-
+# This is to execute the transfer itself.
 @login_required(login_url = "/accounts/login")
 def stock_transfer(request): 
     # stocks=StockEntry.objects.get(pk=id)
     # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
-   
+
+    departments = DepartmentInfo.objects.all();
+
+    departmentsNames = []
+    for dept in departments:
+        dept_str = str(dept).split(':')[1]
+        departmentsNames.append(dept_str)
+
+    indentFiles = IndentFile.objects.all();
+
+    print(indentFiles);
+
 
     if request.method =="POST":
             id=request.POST.get('id')
             temp=File.objects.get(id=id) 
             temp1=IndentFile.objects.get(file_info=temp)   
             stocks=StockEntry.objects.get(item_id=temp1)
-            return render(request,'ps1/stock_transfer.html',{'StockEntry':stocks})        
+            return render(request,'ps1/stock_transfer.html',{'StockEntry':stocks,'departments':departmentsNames,'indentFiles': indentFiles})        
 
     return HttpResponseRedirect('../stock_transfer')   
 

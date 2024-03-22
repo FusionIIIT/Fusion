@@ -6,13 +6,14 @@ from applications.filetracking.models import File
 class IndentFile(models.Model):
     
     file_info=models.OneToOneField(File, on_delete=models.CASCADE,primary_key=True)
-    item_name=models.CharField(max_length=250,blank=False)
+    item_name=models.CharField(max_length=250,blank=False) # Apple pro vision 3.0
     quantity= models.IntegerField(blank=False)
     present_stock=models.IntegerField(blank=False)
     estimated_cost=models.IntegerField(null=True, blank=False)
     purpose=models.CharField(max_length=250,blank=False )
     specification=models.CharField(max_length=250)
-    indent_type=models.CharField(max_length=250)
+    grade = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C')],default='A')
+    item_type=models.CharField(max_length=250)
     nature=models.BooleanField(default = False)
     indigenous= models.BooleanField(default = False)
     replaced =models.BooleanField(default = False)
@@ -58,7 +59,7 @@ class IndentFile(models.Model):
 #     estimated_cost = models.IntegerField(null=True, blank=False)
 #     purpose = models.CharField(max_length=250, blank=False)
 #     specification = models.CharField(max_length=250)
-#     indent_type = models.CharField(max_length=250)
+#     item_type = models.CharField(max_length=250)
 #     nature = models.BooleanField(default=False)
 #     indigenous = models.BooleanField(default=False)
 #     replaced = models.BooleanField(default=False)
@@ -68,18 +69,34 @@ class IndentFile(models.Model):
 #         db_table = 'Item'
 
 
+class Constants:
+    Locations = (
+        ('H1', 'Vashistha Hostel'),
+        ('H4', 'Vivekananda Hostel'),
+        ('H3', 'AryaBhatta Hostel'),
+        ('SR1', 'Storage Room 1'),
+        ('SR2', 'Storage Room 2'),
+        ('SR3', 'Storage Room 3'),
+        ('SR4', 'Storage Room 4'),
+        ('SR5', 'Storage Room 5'),
+    )
+
 class StockEntry(models.Model):
 
     item_id=models.OneToOneField(IndentFile, on_delete=models.CASCADE,primary_key=True)
     dealing_assistant_id=models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     vendor=models.CharField(max_length=250, blank=False)
-    item_name=models.CharField(max_length=250, blank=False)
+    itemType=models.CharField(max_length=250, blank=False,default='Computers')
     current_stock=models.IntegerField(blank=False)
     recieved_date=models.DateField(blank=False)
     bill=models.FileField(blank=False)
-    transfer = models.BooleanField(default = False, null=True)
-    dept = models.CharField(max_length=250,null=True, blank=False)
-    to_dept = models.CharField(max_length=250,null=True, blank=False)
-
+    location = models.CharField(max_length=100 ,choices=Constants.Locations,default='SR1')
     class Meta:
         db_table = 'StockEntry'
+
+# Individual Stock Item
+class StockItem(models.Model):
+    StockEntryId = models.OneToOneField(StockEntry,on_delete=models.CASCADE)
+    
+    class Meta: 
+        db_table = 'StockItem'

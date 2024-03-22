@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="field">
-                    <label>Estimated Cost*</label>
+                    <label>Estimated Cost Per Piece*</label>
                     <input type="number"  name="estimated_cost" required></input>
                 </div>
 
@@ -61,16 +61,26 @@
                     <textarea rows="3" name="purpose" required></textarea>
                 </div>
 
-
+                <!-- this is for mentioning very specific specifications  -->
                 <div class="field">
                     <label>Specification</label>
                     <textarea rows="3" name="specification"></textarea>
                 </div>
 
+                <!-- grade will classify item based on it's configuration like a 32 GB Ram computer = A ,8 GB Ram  = B  -->
+                <div class="field">
+                    <label>Item Grade Required*</label>
+                    <select name="item_type">  
+                        <option value = "A">A</option>  
+                        <option value = "B">B</option>  
+                        <option value = "C">C</option>  
+                    </select>  
+                </div>
+
 
                 <div class="field">
                     <label>Item Type*</label>
-                    <select name="indent_type">  
+                    <select name="item_type">  
                         <option value = "Equipment">Equipment</option>  
                         <option value = "Machinery">Machinery</option>  
                         <option value = "Furniture">Furniture</option>  

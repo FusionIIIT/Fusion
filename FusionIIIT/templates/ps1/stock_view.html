@@ -140,14 +140,19 @@
      -->
      <div class="ui divider"></div>
      {% if sto %}
+     <div class="table-container" style="overflow-x: scroll;">
+
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
-            <th>item_id</th>
-                <th>item_Name</th>
+            <th>Indent file Id</th>
+                <th>item Type</th>
                 <th>dealing assistant id</th>
                 <th>vendor</th>
+                <th>Department</th>
                 <th >current_stock  </th>
+                <th >Grade  </th>
+                <th >current location </th>
                     <th >recieved_date  </th>
                     <th >bill  </th>
                    
@@ -161,11 +166,15 @@
                 {% if s.item_id.purchased %}
              <tr>
                 <td > {{s.item_id.file_info.id}}</td>
-                <td>{{s.item_name}}</td>
+                <td>{{s.itemType}}</td>
                
                 <td>{{s.dealing_assistant_id}}</td>
                 <td>{{s.vendor}}</td>
+                <td>{{s.item_id.file_info.uploader.department}}</td>
+                
                 <td>{{s.current_stock}}</td>
+                <td>{{s.item_id.grade}}</td>
+                <td>{{s.location}}</td>
                 <td>{{s.recieved_date}}</td>
                 <td>{{s.bill}}</td>
                  
@@ -190,6 +199,8 @@
         </tbody>
 
     </table>
+</div>
+
 
     <br>
     {% else %}
