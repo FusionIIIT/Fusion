@@ -24,93 +24,35 @@
 
                     <div class="eight wide field">
                         <label>Complaint Type<sup><i class="small red asterisk icon"></i></sup></label>
-                        <div class="ui selection dropdown">
-                            <input name="complaint_type" type="hidden" name="complaint_type" required="True">
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select Complaint Type</div>
-
-                            <div class="menu" >
-                                <div class="item" data-value="Electricity" >
-                                    Electricity
-                                </div>
-
-                                <div class="item" data-value="carpenter" >
-                                    Carpenter
-                                </div>
-
-                                <div class="item" data-value="plumber">
-                                    Plumber
-                                </div>
-                                <div class="item" data-value="garbage" >
-                                    Garbage
-                                </div>
-                                <div class="item" data-value="dustbin" >
-                                    Dustbin
-                                </div>
-                                <div class="item" data-value="internet" >
-                                    Internet
-                                </div>
-                                <div class="item" data-value="other" >
-                                    Other
-                                </div>
-                            </div>
-
-                        </div>
+                        <select name="complaint_type" class="ui dropdown" required>
+                            <option selected disabled value="">Select Complaint Type</option>
+                            <option data-value="Electricity" value="Electricity">Electricity</option>
+                            <option data-value="carpenter" value="carpenter">Carpenter</option>
+                            <option data-value="plumber" value="plumber">Plumber</option>
+                            <option data-value="garbage" value="garbage">Garbage</option>
+                            <option data-value="dustbin" value="dustbin">Dustbin</option>
+                            <option data-value="internet" value="internet">Internet</option>
+                            <option data-value="other" value="other">Other</option>
+                        </select>
                     </div>
 
                     <div class="eight wide field">
                         <label>Location<sup><i class="small red asterisk icon"></i></sup></label>
-                        <div class="ui selection dropdown">
-                            <input name="Location" type="hidden" required>
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select Location</div>
-
-                            <div class="menu" id="Location">
-                                <div class="item" data-value="hall-1">
-                                    Hall-1
-                                </div>
-
-                                <div class="item" data-value="hall-3">
-                                    Hall-3
-                                </div>
-
-                                <div class="item" data-value="hall-4">
-                                    Hall-4
-                                </div>
-
-                                <div class="item" data-value="CC1">
-                                    CC1
-                                </div>
-
-                                <div class="item" data-value="CC2">
-                                    CC2
-                                </div>
-                                 <div class="item" data-value="core_lab">
-                                    CORE LAB
-                                </div>
-                                 <div class="item" data-value="LHTC" >
-                                    LHTC
-                                </div>
-                                 <div class="item" data-value="NR2" >
-                                    NR2
-                                </div>
-                                 <div class="item" data-value="Rewa_Residency" >
-                                    Rewa Residency
-                                </div>
-                                 <div class="item" data-value="Maa Saraswati Hostel" >
-                                    Maa Saraswati Hostel
-                                </div>
-                                 <div class="item" data-value="Nagarjun Hostel" >
-                                    Nagarjun Hostel
-                                </div>
-                                 <div class="item" data-value="Panini Hostel" >
-                                    Panini Hostel
-                                </div>
-                            </div>
-
-                        </div>
+                        <select name="Location" class="ui dropdown" required>
+                            <option selected disabled value="">Select Location</option>
+                            <option data-value="hall-1" value="hall-1">Hall-1</option>
+                            <option data-value="hall-3" value="hall-3">Hall-3</option>
+                            <option data-value="hall-4" value="hall-4">Hall-4</option>
+                            <option data-value="CC1" value="CC1">CC1</option>
+                            <option data-value="CC2" value="CC2">CC2</option>
+                            <option data-value="core_lab" value="core_lab">Core Lab</option>
+                            <option data-value="LHTC" value="LHTC">LHTC</option>
+                            <option data-value="NR2" value="NR2">NR2</option>
+                            <option data-value="Rewa_Residency" value="Rewa_Residency">Rewa Residency</option>
+                            <option data-value="Maa Saraswati Hostel" value="Maa Saraswati Hostel">Maa Saraswati Hostel</option>
+                            <option data-value="Nagarjun Hostel" value="Nagarjun Hostel">Nagarjun Hostel</option>
+                            <option data-value="Panini Hostel" value="Panini Hostel">Panini Hostel</option>
+                        </select>
                     </div>
                 </div>
 
@@ -127,8 +69,8 @@
                 </div>
 
                 <div class = "field">
-                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
-                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG less than 200KB)(Optional)</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png">
                 </div> 
                     Complaint Will be Register with your User ID : {{ comp_id }}
                 <input type="text"  name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >

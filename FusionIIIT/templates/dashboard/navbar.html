@@ -16,10 +16,10 @@
                 Dashboard
                 <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
             </a>
-            <div class="item">
-                <a class="icon mail" href = '/feedback'>
-                <i class="comment icon"></i>Feedback</a>
-            </div>
+            <a class="item" href = '/feedback'>
+                <div class="icon mail" >
+                <i class="comment icon"></i>Feedback</div>
+            </a>
             <div class="item">
                 <form method="GET" action="{% url 'globals:search' %}">
                     <div class="ui search">

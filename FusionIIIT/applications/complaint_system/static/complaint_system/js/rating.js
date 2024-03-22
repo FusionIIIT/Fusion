@@ -10,7 +10,7 @@
 
 
 $(document).ready(function(){
-  console.log("TTTTTTTT");
+  /*console.log("TTTTTTTT");*/
 });
 
 
@@ -22,6 +22,16 @@ $(document).ready(function(){
         var complaint_type =  $('input[name="complaint_type"]').val() ;
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
+        var fileUpload = document.getElementById("file");
+        var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
+        
+        
+        if(size>200)
+        {
+            alert("File size should be less than 200 KB requied");
+            window.location.reload();
+            return;
+        }
         if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
         {
             alert("Please fill all the details!");
@@ -42,19 +52,14 @@ $(document).ready(function(){
 
                 },
                 success : function (data){
-
-                    // alert("Complaint successfully lodged");
-                    setTimeout(function() {
-                window.location.replace('http://localhost:8000/complaint/user');
-            }, 1500);
-
-                    
+                    alert("Complaint successfully lodged");
+                    setTimeout(function() {window.location.replace('http://localhost:8000/complaint/user');}, 1500);
                 },
                 error : function (data,err){
                     alert('Complaint successfully lodged ... ');
-
                 }
             });
+
        }
     };
 
@@ -92,14 +97,18 @@ function addwork(event) {
     if (complaint_type == "" || name == "" || str_phone_no == "" || age == "")
     {
       alert('Please fill all the details');
+      window.location.replace();
       return;
     }
     else if(intpn<1999999999){
       alert('invalid phone number!');
+      window.location.replace();
+      return;
     }
 
     else if (str_phone_no.length != 10){
         alert('Oops! The Phone Number Should Be Of 10 Digits');
+        window.location.replace();
         return;
     }
 /*
@@ -110,6 +119,7 @@ function addwork(event) {
 
    else if (intage < 20 || intage > 50) {
         alert("Oops! Age of the worker should be between 20 and 50.");
+        window.location.replace();
         return;
     }
 
@@ -172,11 +182,10 @@ function assignworkersubmit()
 {
 
    var assign_worker = $('input[name="assign_worker"]').val();
-  
    if (assign_worker == "")
    {
     alert("Please fill all the details");
-   
+    return;
    }
    else
    {
@@ -244,29 +253,47 @@ function redirectsubmit()
 }
 
 
-function resolvependingsubmit()
+function resolvependingsubmit(event)
 {
-  
    var yesorno = $('input[name="yesorno"]').val();
-  
-   if (yesorno == "")
+   var comment = $('input[name="comment"]').val();
+   var myfile = $('input[name="myfile"]').val();
+   var fileUpload = document.getElementById("file1");
+    var size = parseFloat(fileUpload.files[0].size / 1024).toFixed(2);
+    if(size>200)
+    {
+        alert("File size should be less than 200 KB requied");
+        window.location.reload();
+        return 2;
+    }
+   if (yesorno === "")
    {
-    alert("Please fill all the details");
-event.preventDefault();
+    alert("Please fill the details");
+    return;
     }
     else
    {
-            alert("Thank You for resolving the complaint");
-            return;
+    alert('Thankyou for resolving this complaint');
+    event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'yesorno' : yesorno,
+                    'comment' : comment,
+                    'myfile' : myfile,
+                },
+                success : function (data){
+                    alert("Thankyou for resolving this complaint");
+                    setTimeout(function() {window.location.replace('http://localhost:8000/complaint/caretaker/');}, 1500);
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+                }
+            });
+
 }
 }
-
-
-
-
-
-
-
 
 
 ;(function ($, window, document, undefined) {
