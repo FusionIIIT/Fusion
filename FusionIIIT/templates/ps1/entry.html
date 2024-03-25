@@ -28,7 +28,9 @@
         <tr>
             <th>Indent File Info</th>
             <th>Quantity Required</th>
-            <th>Item Type</th>
+            <th>Item Name</th>
+            <th>Add New Stock</th>
+            <th>Look for Transfer Options</th>
             
             
         </tr>
@@ -45,7 +47,12 @@
                 
                  <td><form action="/purchase-and-store/entry/" method="POST" id="file_info">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.file_info.id}}"><button class="ui primary button">
-                        Enter stock details
+                        Add New Stock
+                    </button></form></td>
+
+                 <td><form action="/purchase-and-store/stock_transfer/" method="POST" id="file_info">{% csrf_token %}
+                    <input hidden  name = 'id' value="{{ s.file_info.id}}"><button class="ui primary button">
+                        Explore
                     </button></form></td>
                 
               </tr>

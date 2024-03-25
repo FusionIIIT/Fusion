@@ -7,7 +7,7 @@
 <div class="ui pointing secondary menu">
     <h3>
         <a class="active item" data-tab="composefile">
-            Compose New Procurement File
+            Stock Transfer Options
         </a>
     </h3>
 </div>
@@ -15,87 +15,78 @@
     <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form"
-            action="/purchase-and-store/stock_update/">
-            <input hidden name='id' value="{{ StockEntry.item_id.file_info.id }}">
+        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form" action="/purchase-and-store/perform_transfer/">
+            <!-- <input hidden name='indentId' value="{{ indentFile.id }}"> -->
+            <label>File ID :{{indentFile}} </label><br>
 
-            <!-- dropdown for choosing which department to transfer stocks to  -->
             <div class="field">
-                <label>Choose Indent File</label><br>
-                <!--* should i remove the current Deparment from the list or local transfer thing  -->
-                <select>
-                    {% for file in indentFiles %}
-                    <option value={{file}}>{{file.item_name}} - {{file.file_info_id}}</option>
-                    {% endfor %}
-                </select>
+                <label>File ID :{{indentFile.file_info}} </label><br>
             </div>
 
             {% csrf_token %}
 
+            
 
+            <div class="table-container" style="overflow-x: scroll;">
+            <table class="ui very basic celled sortable table">
+                <thead>
+                <tr>
+                        <th>Stock Item ID</th>
+                        <th>Item Name</th>
+                        <th>Nomenclature</th>
+                        <th>Item Type</th>
+                        <th>Current Location</th>
+                        <th>Current Department</th>
+                        <th>Vendor</th>
+                        <th>Grade</th>
+                        <th>Choose For Transfer</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in available_items %}
+                    <tr>
 
+                        <!-- StockEntryId__item_id__item_type -->
+                        <td > {{item.id}}</td>
+                        <td> {{item.StockEntryId.item_id.item_name}} </td>
+                        <td> {{item.nomenclature}} </td>
+                    
+                        <td>{{item.StockEntryId.item_id.item_type}}</td>
+                        <td>{{item.StockEntryId.location}}</td>
+                        <td>{{item.department}}</td>
+                        <td>{{item.StockEntryId.vendor}}</td>
+                        
+                        <td>{{item.StockEntryId.item_id.grade}}</td>
 
-
-
-            <div class="field">
-                <label>Name of the Item/Equipment: {{StockEntry.item_name}}</label>
-            </div>
-
-
-
-            <div class="field">
-                <label>Vendor: {{StockEntry.vendor}}</label>
-            </div>
-
-
-            <div class="field">
-                <label>Current stock: {{StockEntry.current_stock}}</label><br>
-            </div>
-
-
-            <div class="field">
-                <label>Current department: {{StockEntry.department}}</label><br>
-            </div>
-
-
-            <!-- dropdown for choosing which department to transfer stocks to  -->
-            <div class="field">
-                <label>Choose Department to transfer to </label><br>
-                <!--* should i remove the current Deparment from the list or local transfer thing  -->
-                <select>
-                    {% for dept in departments %}
-                    <option value={{dept}}>{{dept}}</option>
+                        <td><input type="checkbox" value="{{item.id}}" name="selected_stock_item"></td>
+                    </tr>
                     {% endfor %}
+                </tbody>
+            </table>
+
+            </div>
+
+            <br>
+
+            <div class="field">
+                <label>Location of Storage</label><br>
+                <select name="dest_location">
+                    <option value="H1" selected>Vashistha Hostel</option>
+                    <option value="H3">Vivekananda Hostel</option>
+                    <option value="H4">AryaBhatta Hostel</option>
+                    <option value="SR1">Storage Room 1</option>
+                    <option value="SR2">Storage Room 2</option>
+                    <option value="SR3">Storage Room 3</option>
                 </select>
             </div>
 
-            <!-- specify the Quantity  -->
-            <div class="field">
-                <label>Quantity to Transfer</label><br>
-                <input type="number" min="0" max={{StockEntry.current_stock}}>
-            </div>
-
-            <br>
-
-
-            <div class="left floated item">
-                <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
-                <input type="file" id="file" name="bill" value={{StockEntry.bill}} accept=".pdf, .jpg, .jpeg, .png">
-            </div>
-
-            <br>
-
-
             <div>
-                <a class="right floated item">
+                <a class="right floated item" >
                     <button type="submit" name="save" class="ui large right floated primary button">
-                        Modify<i class="ui save icon right floated"></i>
+                        Transfer<i class="ui random icon right floated"></i>
                     </button>
                 </a>
             </div>
-
-            <br>
-            <br>
 
 
         </form>
@@ -104,84 +95,45 @@
 
     </div>
 
-    <script type="text/javascript">
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#form').on('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+            var selectedItems = []; // Array to store selected item IDs
 
+            // Iterate over each checked checkbox and add its value to the array
+            $('input[name="selected_stock_item"]:checked').each(function () {
+                selectedItems.push($(this).val());
+            });
 
-        $('#input_search1').keyup(function () {
+            let location =$('select[name="dest_location"]').val();
 
-            console.log('asdasd');
-            value = $('#input_search1').val();
+            console.log('location : ', location);
 
+            // console.log({selectedItems})
+
+            // Send the selected item IDs to the view using AJAX
             $.ajax({
                 type: 'POST',
-                url: '/filetracking/ajax/',
+                url: $(this).attr('action'), // Form action URL
+                dataType: 'json',
                 data: {
-                    'value': value,
+                    'selected_stock_items': selectedItems,
+                    'indentId':"{{ indentFile.file_info }}",
+                    'dest_location':location,
                     'csrfmiddlewaretoken': '{{csrf_token}}'
                 },
-                dataType: 'json',
                 success: function (response) {
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for (var i = 0; i < all_designations.length; i++) {
-                        $('#input_list1').append('<option value="' + all_designations[i].fields.name + '">' + all_designations[i].fields.name + '</option>');
-                    }
+                    // Handle success response
+                    console.log("success in sending stock items information");
                 },
-                error: function (rs, e) {
-                    console.log('error-------');
-                },
+                error: function (xhr, errmsg, err) {
+                    // Handle error response
+                    console.log("failure in sending stock items information");
+                }
             });
-            console.log("dsfagdfdshadf");
         });
-    </script>
-
-    <script type="text/javascript">
-        $('#input_search').keyup(function () {
-
-            console.log('asdasd');
-            value = $('#input_search').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax_dropdown/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function (response) {
-                    console.log('coming-----------------------');
-
-
-
-                    all_users = JSON.parse(response.users);
-                    console.log(all_users[0].fields.username);
-                    app = []
-                    $('#input_list').html('');
-                    for (var i = 0; i < all_users.length; i++) {
-                        $('#input_list').append('<option value="' + all_users[i].fields.username + '">' + all_users[i].fields.username + '</option>');
-                    }
-                },
-                error: function (rs, e) {
-                    console.log('error-------');
-                },
-            });
-            console.log("dsfagdfdshadf");
-        });
-    </script>
+    });
+</script>
 
     {% endblock %}
-
-    <script type="text/javascript">
-        function ShowHideDiv() {
-            var chkAddress = document.getElementById("chkAddress");
-            var leaveAddress = document.getElementById("leaveAddress");
-            leaveAddress.style.display = chkAddress.checked ? "block" : "none";
-        }
-    </script>

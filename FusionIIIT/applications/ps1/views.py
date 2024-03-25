@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from applications.filetracking.sdk.methods import *
-from applications.ps1.models import IndentFile,StockEntry
+from applications.ps1.models import IndentFile,StockEntry,StockItem,StockTransfer
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -14,6 +14,7 @@ from notification.views import office_module_notif
 from django.utils import timezone
 from datetime import datetime
 from applications.globals.models import DepartmentInfo
+import re
 
 
 
@@ -23,9 +24,13 @@ def ps1(request):
 
     if des_obj:
         designations = [des.designation.name for des in des_obj]
+    
+    # request.session['currentDesignationSelected']
+    currentDes = request.session['currentDesignationSelected'] 
+    
+    print('currentDes : ',currentDes);
 
-
-    if "ps_admin" in designations or "dept_admin" in designations:
+    if(currentDes == "dept_admin" or currentDes=="ps_admin" ):
         return redirect('/purchase-and-store/entry/')
     elif not("student" in designations) and str((request.user.extrainfo.department.name)):
         return redirect('/purchase-and-store/create_proposal/')
@@ -67,7 +72,7 @@ def create_proposal(request):
                 financial_approval=False
                 purchased =request.POST.get('purchased')
     """
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    print("request.user.id : ", request.user.id) 
     
     if request.method =="POST":
         try:
@@ -153,7 +158,7 @@ def create_proposal(request):
                 designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
 
                 for des in designations:         
-                    if str(des.designation) == "Director":
+                    if request.session['currentDesignationSelected'] == "Director":
                         head_approval=True
                         director_approval=True
                         financial_approval=True
@@ -279,7 +284,7 @@ def composed_indents(request):
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
@@ -303,7 +308,7 @@ def drafts_for_multiple_item(request):
                 context - Holds data needed to make necessary changes in the template.
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
@@ -335,7 +340,7 @@ def drafts(request):
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
@@ -387,7 +392,7 @@ def indentview(request,id):
 
 
 #     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-#     if  str(des.designation) == "student":
+#     if  request.session['currentDesignationSelected'] == "student":
 #         return redirect('/dashboard')
 
 #     indents= IndentFile2.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
@@ -415,7 +420,7 @@ def indentview(request,id):
 def draftview(request,id):
 
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
 
     indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
@@ -442,7 +447,6 @@ def indentview2(request,id):
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
-     
     data = view_inbox(request.user.username, designations, "ps1")
 
     outboxd = view_outbox(request.user.username, designations, "ps1")
@@ -457,6 +461,14 @@ def indentview2(request,id):
         'in_file': data,
     }
     return render(request, 'ps1/indentview2.html', context)
+
+
+
+
+
+
+
+
 
 
 @login_required(login_url = "/accounts/login")
@@ -475,6 +487,7 @@ def inward(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  str(des.designation) == "student":
         return redirect('/dashboard')
+    
     designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
         'designation': designation,
@@ -482,10 +495,15 @@ def inward(request):
 
     return render(request, 'ps1/inwardIndent.html', context)
 
+
+
+
+
+
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     file = File.objects.get(pk = id)
 
@@ -522,8 +540,7 @@ def forwardindent(request, id):
     # start = timer()
     
     # end = timer()
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     indent=IndentFile.objects.select_related('file_info').get(file_info=id)
     file=indent.file_info
@@ -532,9 +549,6 @@ def forwardindent(request, id):
 'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
     # end = timer()
     
-
-
-
     if request.method == "POST":
             if 'finish' in request.POST:
                 file.complete_flag = True
@@ -642,7 +656,7 @@ def createdindent(request, id):
                     context - Holds data needed to make necessary changes in the template.
     """
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     # start = timer()
     
@@ -728,7 +742,7 @@ def createdindent(request, id):
 
 def AjaxDropdown1(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     if request.method == 'POST':
         value = request.POST.get('value')
@@ -756,7 +770,7 @@ def AjaxDropdown(request):
     # for h in hold:
     #     arr.append(ExtraInfo.objects.filter(user=h.user))
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
 
     if request.method == 'POST':
@@ -776,8 +790,8 @@ def test(request):
 
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
         return redirect('/dashboard')
     file = File.objects.get(pk = id)
     file.delete()
@@ -797,57 +811,14 @@ def delete(request,id):
     return redirect('/ps1/composed_indents/')
 
 
-@login_required(login_url = "/accounts/login")
-def Stock_Entry(request):
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
-        return redirect('/dashboard')
-    else :
-        if request.method=='GET' :
-            return HttpResponseRedirect('../stock_view')
+
         
-        if request.method =="POST":
-            
-            
-            #dealing_assistant_id=request.POST.get('dealing_assistant_id')
-            id=request.POST.get('id')
-            
-            
-            temp1=File.objects.get(id=id)
-            temp=IndentFile.objects.get(file_info=temp1)
-            
-
-            
-            dealing_assistant_id=request.user.extrainfo
-
-            item_id=temp
-            item_name=request.POST.get('item_name')
-            vendor=request.POST.get('vendor')
-            current_stock=request.POST.get('current_stock')
-            recieved_date=request.POST.get('recieved_date')
-            bill=request.FILES.get('bill')
-            
-                    
-                # staff=Staff.objects.get(id=request.user.extrainfo)
-
-            StockEntry.objects.create(item_id=item_id,item_name= item_name,vendor=vendor,current_stock=current_stock,dealing_assistant_id=dealing_assistant_id,bill=bill,recieved_date=recieved_date,)
-            IndentFile.objects.filter(file_info=temp).update(purchased=True)         
-        
-            return HttpResponseRedirect('../stock_view')
-        
-
-    
-
-
 # stock Edit will provide the prepoulated form for updation of information.
 @login_required(login_url = "/accounts/login")
 def stock_edit(request): 
-    # stocks=StockEntry.objects.get(pk=id)
-    # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
         return redirect('/dashboard')
-   
 
     if request.method =="POST":
             id=request.POST.get('id')
@@ -861,7 +832,7 @@ def stock_edit(request):
             persons = ExtraInfo.objects.filter(user_type__in=["staff"])
             return render(request,'ps1/stock_edit.html',{'StockEntry':Stock_Entry,'persons':persons,'formatted_received_date': formatted_received_date})        
 
-    return HttpResponseRedirect('../stock_view')   
+    return HttpResponseRedirect('../stock_entry_view')   
     #else: 
     #    print("ELSE")
     #    return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
@@ -870,9 +841,10 @@ def stock_edit(request):
 # This view defines the logic for stock 
 @login_required(login_url = "/accounts/login")
 def stock_update(request):
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
         return redirect('/dashboard')
+    
     if request.method =="POST":
         if 'save' in request.POST:
             id=request.POST.get('id')
@@ -899,48 +871,100 @@ def stock_update(request):
             stocks.recieved_date = request.POST.get('recieved_date')
 
             stocks.save() 
-    return HttpResponseRedirect('../stock_view')   
-  
-
-    
+    return HttpResponseRedirect('../stock_entry_view')   
 
 
-# def stock_view(request):
-#     sto=StockEntry.objects.all()
-#     return render(request,'ps1/stock_view.html',{'StockEntry':sto})
+# this is know the current situation of stocks present in any department.
 
 @login_required(login_url = "/accounts/login")
-def stock_view(request):
+def current_stock_view(request):
 
-    # stock_entries = StockEntry.objects.filter(
-    #     item_id__file_info__designation__name='Professor'
-    # )
-    # print(stock_entries)
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+    
+    # for handling the search after submission of filters form 
+    if request.method=="POST":
+        department = request.POST.get('department')
+        grade = request.POST.get('grade')
+        type = request.POST.get('type')
 
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    department = request.user.extrainfo.department.name
+        # print('department : ',department,'grade :',grade,'type : ',type)
 
-    if  str(des.designation) == "dept_admin":
-        # if department admin then only show the stocks of that department to them 
-        stocks=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
-    else:
+        # StockEntryId__item_id__file_info_grade
+        StockItems = StockItem.objects.filter(
+            department=department,
+            StockEntryId__item_id__grade=grade,
+            StockEntryId__item_id__item_type=type
+        )
+
+        firstStock=StockItems.first()
+        
+        return render(request,'ps1/current_stock_view.html',{'stocks':StockItems,'first_stock':firstStock,'quantity':StockItems.count()})
+    
+
+    department = request.user.extrainfo.department
+
+    itemsTypes=['Equipment','Machinery','Furniture','Fixture']
+    grades=['A','B','C','D']
+
+    if  request.session['currentDesignationSelected'] == "dept_admin":
+        # if department admin then only show the stocks of that department to them
+        departments=[department]
+    elif request.session['currentDesignationSelected'] == "ps_admin":
+        departments=DepartmentInfo.objects.all();
+    else :
+        return redirect('/dashboard')
+
+    
+    return render(request,'ps1/current_stock_view_filter.html',{'itemsTypes':itemsTypes,'grades':grades,'departments':departments})
+
+
+@login_required(login_url = "/accounts/login")
+def stock_entry_view(request):
+
+    # ! CHALLENGE HERE IS HOW TO SHOW THE TRANSFERRED STOCKS AND CURRENTLY PRESENT.
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+
+    department = request.user.extrainfo.department
+
+    if  request.session['currentDesignationSelected'] == "dept_admin":
+        # if department admin then only show the stocks of that department to them
+        print("I am a department admin ");
+        stocks=StockEntry.objects.filter(item_id__file_info__uploader__department=department)
+    elif request.session['currentDesignationSelected'] == "ps_admin":
+        print("I am a PS admin ");
         stocks=StockEntry.objects.all()
-        
-    if stocks:
-        temp=stocks.first()
+    else :
+        return redirect('/dashboard')
 
-        print("temp : ", temp);
-        if temp.item_id.purchased:
-            print("Purchase Succesful")
+    print('stocks : ',stocks)
+    
+    return render(request,'ps1/stock_entry_view.html',{'stocks':stocks})
 
-        
-    return render(request,'ps1/stock_view.html',{'sto':stocks})
+@login_required(login_url = "/accounts/login")
+def stock_entry_item_view(request):
+
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+
+    department = request.user.extrainfo.department
+    file_id = request.POST.get('id')
+    temp=File.objects.get(id=file_id)
+    temp1=IndentFile.objects.get(file_info=temp)
+    Stock_Entry=StockEntry.objects.get(item_id=temp1)
+
+
+    stocks=StockItem.objects.filter(StockEntryId=Stock_Entry)
+
+    return render(request,'ps1/stock_entry_item_view.html',{'stocks':stocks,'first_stock':stocks.first()})
+
+
 
 
 @login_required(login_url = "/accounts/login")    
 def stock_delete(request):
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
         return redirect('/dashboard')
     
     if request.method=='POST':
@@ -952,7 +976,7 @@ def stock_delete(request):
         temp1=IndentFile.objects.get(file_info=temp)
         stocks=StockEntry.objects.get(item_id=temp1)
         stocks.delete()
-    return HttpResponseRedirect('../stock_view')
+    return HttpResponseRedirect('../stock_entry_view')
 
 
 
@@ -960,11 +984,10 @@ def stock_delete(request):
 
 @login_required(login_url = "/accounts/login")   
 def entry(request):
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
         return redirect('/dashboard')
     
-    # ! Logic not clear 
+    # To Add stock corresponding to 'id' indent File. 
     if request.method=='POST':
         # id is the id of the File Object here
         id=request.POST.get('id')
@@ -975,8 +998,11 @@ def entry(request):
         
         # RequestFile.uploader contains the Extra information about the uploader of the RequestFile (using ExtraInfo Foreign key)
 
+
+        persons = ExtraInfo.objects.filter(user_type__in=["staff"])
+
         CorrespondingIndentFile=IndentFile.objects.get(file_info=RequestFile)
-        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':CorrespondingIndentFile,'RequestFile':RequestFile})
+        return render(request,'ps1/StockEntry.html',{'id':id, 'indent':CorrespondingIndentFile,'RequestFile':RequestFile,'persons':persons})
         
         
 
@@ -985,18 +1011,56 @@ def entry(request):
     department = request.user.extrainfo.department.name
 
     # this is to filter out the indent files only specific to a department like if A is a department Admin then he should only see the indent files corresponding to his department.
-    if  str(des.designation) == "dept_admin":
+    if  request.session['currentDesignationSelected'] == "dept_admin":
         IndentFiles=IndentFile.objects.filter(file_info__uploader__department__name=department)
-    else:
+    else :
         # otherwise all the indent files will be shown.
         IndentFiles=IndentFile.objects.all()
     return render(request,'ps1/entry.html',{'IndentFiles':IndentFiles})
 
 
+@login_required(login_url = "/accounts/login")
+def Stock_Entry(request):
+
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+    else :
+        if request.method=='GET' :
+            return HttpResponseRedirect('../stock_entry_view')
+        
+        if request.method =="POST":
+            
+            id=request.POST.get('id')
+            temp1=File.objects.get(id=id)
+            temp=IndentFile.objects.get(file_info=temp1)
+
+            item_id=temp
+            dealing_assistant_id=request.user.extrainfo
+            vendor=request.POST.get('vendor')
+            current_stock=request.POST.get('current_stock')
+            recieved_date=request.POST.get('recieved_date')
+            bill=request.FILES.get('bill')
+            location= request.POST.get('location')
+
+            StockEntry.objects.create(
+                item_id=item_id,
+                vendor=vendor,
+                current_stock=current_stock,
+                dealing_assistant_id=dealing_assistant_id,
+                bill=bill,
+                recieved_date=recieved_date,
+                location=location
+            )
+
+            # marking the indent file as done 
+            IndentFile.objects.filter(file_info=temp).update(purchased=True)         
+        
+            return HttpResponseRedirect('../stock_entry_view')
+
 
 def dealing_assistant(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     print(request.user.extrainfo.id)
     print(type(request.user.extrainfo.id))
@@ -1009,10 +1073,13 @@ def dealing_assistant(request):
 @login_required(login_url = "/accounts/login")
 def generate_report(request):
 
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     department = request.user.extrainfo.department.name
 
-    if  str(des.designation) == "dept_admin":
+    if  request.session['currentDesignationSelected'] == "dept_admin":
         sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
     else:
         sto=StockEntry.objects.all()
@@ -1043,6 +1110,9 @@ def report(request):
 
 
 def view_bill(request, stock_entry_id):
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+    
     stock_entry = get_object_or_404(StockEntry, pk=stock_entry_id)
     
     # Check if the bill file exists
@@ -1064,43 +1134,98 @@ def view_bill(request, stock_entry_id):
 @login_required(login_url = "/accounts/login")
 def perform_transfer(request):
 
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    department = request.user.extrainfo.department.name
+    if request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+            return redirect('/dashboard')
+    
+    if request.method == "POST":
+        selected_stock_items = request.POST.getlist('selected_stock_items[]')
+        indentId = request.POST.get('indentId')
+        dest_location = request.POST.get('dest_location')
 
-    if  str(des.designation) == "dept_admin":
-        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
-    else:
-        sto=StockEntry.objects.all()
+        print(selected_stock_items)
+        print('dest_location : ',dest_location);
+
+        # Use regular expression to extract the number
+        match = re.search(r'\((\d+)\)', indentId)
+
+        number = match.group(1)  # Extract the number from the match
+
+        myIndent = IndentFile.objects.get(file_info=number)
+
+        moreStocksRequired = myIndent.quantity - len(selected_stock_items)  
+        # print('dest_destination : ', myIndent.file_info.uploader.department)
         
-    return render(request,'ps1/perform_transfer1.html',{'sto':sto})
+        for item in selected_stock_items:
+            stock_item  = StockItem.objects.get(id=item)
+            # print('src dest : ', stock_item.department)
 
+            store_cur_dept = stock_item.department;
+            store_cur_location = stock_item.location;
+            
+            # changing the attributes for this stock item as being transferred.
+            stock_item.department=myIndent.file_info.uploader.department;
+            stock_item.location=dest_location;
+            stock_item.inUse= True
+            # if a stock_item is been transferred then obviously it will be put into use.
+            stock_item.save();
+
+            StockTransfer.objects.create(
+                indent_file = myIndent,
+                src_dept=store_cur_dept,
+                dest_dept=myIndent.file_info.uploader.department,
+                stockItem=stock_item,
+                src_location=store_cur_location,
+                dest_location=dest_location
+            )
+
+            messages.success(request,'Stock Transfer Done Successfully.!')
+
+        # if the quantity required for this indent file is fulfilled we should mark this indentfile as done.
+        if(moreStocksRequired==0):
+            myIndent.purchased=True
+        else :
+            myIndent.quantity=moreStocksRequired;
+        
+        myIndent.save();
+        
+        department = request.user.extrainfo.department.name
+
+        if  request.session['currentDesignationSelected'] == "dept_admin":
+            sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+        else:
+            sto=StockEntry.objects.all()
+            
+        return render(request,'ps1/perform_transfer1.html',{'sto':sto})
 
 # This is to execute the transfer itself.
 @login_required(login_url = "/accounts/login")
 def stock_transfer(request): 
-    # stocks=StockEntry.objects.get(pk=id)
-    # return render(request,'ps1/stock_edit.html',{'StockEntry':stocks})
-
-    departments = DepartmentInfo.objects.all();
-
-    departmentsNames = []
-    for dept in departments:
-        dept_str = str(dept).split(':')[1]
-        departmentsNames.append(dept_str)
-
-    indentFiles = IndentFile.objects.all();
-
-    print(indentFiles);
-
+    if request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
 
     if request.method =="POST":
+            # id is the of File instance id in db.
             id=request.POST.get('id')
-            temp=File.objects.get(id=id) 
-            temp1=IndentFile.objects.get(file_info=temp)   
-            stocks=StockEntry.objects.get(item_id=temp1)
-            return render(request,'ps1/stock_transfer.html',{'StockEntry':stocks,'departments':departmentsNames,'indentFiles': indentFiles})        
 
-    return HttpResponseRedirect('../stock_transfer')   
+            temp=File.objects.get(id=id) 
+            temp1=IndentFile.objects.get(file_info=temp)
+
+            item_type_required =temp1.item_type
+            item_grade_required = temp1.grade
+
+            available_items = StockItem.objects.filter(
+                StockEntryId__item_id__item_type=item_type_required,  # Foreign key traversal to IndentFile model
+                StockEntryId__item_id__grade=item_grade_required,  # Foreign key traversal to IndentFile model
+                inUse=False  # Filter for inUse=False
+            )
+
+            print(available_items)
+            return render(request,'ps1/stock_transfer.html',{'indentFile': temp1,'available_items':available_items})        
+
+    return HttpResponseRedirect('../stock_transfer') 
+
+
+
 
 @login_required(login_url = "/accounts/login")
 def outboxview2(request,id):

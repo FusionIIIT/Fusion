@@ -16,18 +16,29 @@ urlpatterns = [
     url(r'^inwardIndent/$', views.inward, name='inward'),
     url(r'^indentview2/(?P<id>\d+)$', views.indentview2, name='indentview2'),
     url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
-    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
+    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'), 
     url(r'^forwardindent/(?P<id>\d+)/$', views.forwardindent, name='forwardindent'),
     url(r'^createdindent/(?P<id>\d+)/$', views.createdindent, name='createdindent'),
+    url(r'^entry/$', views.entry, name='entry'),
     url(r'^StockEntry/$', views.Stock_Entry, name='Stock_Entry'),
-    url(r'^stock_view/$', views.stock_view, name='stock_view'),
+
+    # stock_view is now stock_entry_view which will tell us about the new stock that is entered in any department.
+    url(r'^stock_entry_view/$', views.stock_entry_view, name='stock_view'),
+
+    # current_stock_view will tell us about the current situation of stocks present in any department (both transferred to the department and new stocks added to the department)
+    url(r'^current_stock_view/$', views.current_stock_view, name='current_stock_view'),
+
+    # to display individual items situation from stock_entry_view page.
+    url(r'^stock_entry_item_view/$', views.stock_entry_item_view, name='stock_entry_item_view'),
+
+
+
     url(r'^stock_delete/$', views.stock_delete, name='stock_delete'),
     url(r'^stock_edit/$', views.stock_edit, name='stock_edit'),
     url(r'^stock_update/$', views.stock_update, name='stock_update'),
-    url(r'^entry/$', views.entry, name='entry'),
     url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant'),
     url(r'^generate_report/$', views.generate_report, name='generate_report'),
-    url(r'^report/$', views.report, name='report'),
+    url(r'^report/$', views.report, name='report'), # !not clear 
     url(r'view-bill/<int:stock_entry_id>/$', views.view_bill, name='view_bill'),
     url(r'^perform_transfer/$', views.perform_transfer, name='perform_transfer'),
     url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer'),
