@@ -1,0 +1,28 @@
+name: "mypy check"  # Name of the GitHub Actions workflow
+
+on: [push, pull_request]  # Trigger the workflow
+
+jobs:
+
+  static-type-check:
+    runs-on: ubuntu-latest  # Executes the job on the latest version of Ubuntu
+
+    steps:
+    - uses: actions/checkout@v2  # Checks out your repository's code
+    - uses: actions/setup-python@v3  # Sets up Python for the job
+      with:
+        python-version: '3.x'  # Specifies Python version 3.x
+
+    - run: pip install mypy  # Installs mypy for static type checking, you can specify a version here
+
+    - name: Get Python changed files  # Identifies changed Python files
+      id: changed-py-files
+      uses: tj-actions/changed-files@v23
+      with:
+        files: |
+          *.py
+          **/*.py
+
+    - name: Run if any of the listed files above is changed  # Runs mypy on changed files
+      if: steps.changed-py-files.outputs.any_changed == 'true'  # Conditional execution if any Python files changed
+      run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --ignore-missing-imports
