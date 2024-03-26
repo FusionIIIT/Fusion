@@ -80,7 +80,7 @@
                     </td>
 
                     <td>
-                        <a href="./detail/{{ a.id }}/feedback"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
 
                     <td>
@@ -127,7 +127,7 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('feedback_care', 3, 'paginationfeedback_care'); // Call the pagination function with table ID and rows per page
+            paginate('feedback_care', 10, 'paginationfeedback_care'); // Call the pagination function with table ID and rows per page
         });
     </script>
 {% endblock %}

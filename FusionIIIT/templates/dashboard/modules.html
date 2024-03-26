@@ -133,8 +133,7 @@
 
                     {% comment %}A single modules row starts here!{% endcomment %}
                
-                        {% if request.user.extrainfo.user_type == "student"  or request.user.extrainfo.user_type == "staff" or request.user.extrainfo.user_type == "faculty"   or "spacsconvenor" == global_var  or "spacsassistant" == global_var or "hall1caretaker" == global_var or "hall4caretaker" == global_var or "shyams" == global_var or "ccsupervisor" == global_var%}
-                        <div style="width: calc(50% - 10px);
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
@@ -142,16 +141,19 @@
                                     <div class="row">
                                         <i class="ui student icon big"></i>
                                     </div>
-
+                                    
                                     <div class="row">
                                         <span class="ui sub header centered">Scholarship Portal</span>
                                     </div>
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label" href="/complaint">
+                        
+                        {% if request.user.extrainfo.user_type == "student"  or request.user.extrainfo.user_type == "staff" or request.user.extrainfo.user_type == "faculty"   or "spacsconvenor" == global_var  or "spacsassistant" == global_var or "hall1caretaker" == global_var or "hall4caretaker" == global_var or "shyams" == global_var or "ccsupervisor" == global_var%}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;" >
+                            <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui line chart icon big"></i>
