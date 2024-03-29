@@ -19,7 +19,7 @@
     <div class="ui pointing secondary menu" >
         <h3>
             <a class="active item" data-tab="inward">
-           Stock View
+            Stock View
             </a>
         </h3>
     
@@ -30,76 +30,74 @@
     {% if stocks %}
     <div class="table-container" style="overflow-x: scroll;">
 
-        <div class="field">
-            <label >Item Type :{{first_stock.StockEntryId.item_id.item_type}}</label><br>
-        </div>
 
-        <div class="field">
-            <label >Department :{{first_stock.StockEntryId.item_id.file_info.uploader.department}}</label><br>
-        </div>
-
-        <div class="field">
-            <label >Grade :{{first_stock.StockEntryId.item_id.grade}} </label><br>
-        </div>
-
-        <div class="field">
-            <label >Quantity :{{quantity}} </label><br>
-        </div>
-
-        <!-- <div class="field">
-            <label >Vendor Name: :{{first_stock.StockEntryId.vendor}} </label><br>
-        </div> -->
-        <!-- <div class="field">
-            <label >Bill: :{{first_stock.StockEntryId.bill}} </label><br>
-        </div> -->
-
-        <!-- <div class="field">
-            <label >Received Date: :{{first_stock.StockEntryId.recieved_date}} </label><br>
-        </div> -->
-
-
-    <table class="ui very basic celled sortable table">
-        <thead>
-        <tr>
-                <th>File Id</th>
-                <th>Item Name</th>
-                <th>Nomenclature</th>
-                <th>Dealing Assistant</th>
-                <th >Current Location</th>
-                <th >Transferred</th>
-            
-        </tr>
-
-        </thead>
-        <!-- -->
-        <tbody>
-            {% for s in stocks %}
-                {% if s.StockEntryId.item_id.purchased %}
+        <table class="ui very basic celled sortable table">
+            <thead>
             <tr>
-                <td> {{s.StockEntryId.item_id.file_info}} </td>
-                <td> {{s.StockEntryId.item_id.item_name}} </td>
-                <td> {{s.nomenclature}} </td>
-                <td>{{s.StockEntryId.dealing_assistant_id}}</td>
-                <td>{{s.location}}</td>
-                <td>{{s.isTransferred}}</td>
-            
-              </tr>
-              {% endif %}
-
+                    <th>Item Type</th>
+                    <th>Item Grade</th>
+                    <th>department</th>
+                    <th>Quantity</th>
+                
+            </tr>
+            </thead>
+            <tbody>
+                {% for s in stocks %}
+                <tr>
+                    
+                    <td> {{s.item_type}} </td>
+                    <td> {{s.grade}} </td>
+                    <td> {{s.department}} </td>
+                    <td>{{s.total_quantity}}</td>
+                </tr>
                 {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 
 </div>
 
+<!-- for displaying the stocks  -->
+<div class="ui divider"></div>
+    <div class="table-container" style="overflow-x: scroll;">
+
+
+        <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                    <th>Nomenclature</th>
+                    <th>Item Name</th>
+                    <th >Current Location</th>
+                    <th >Transferred</th>
+                    <th >Vendor</th>
+                    <th >Bill</th>
+                
+            </tr>
+            </thead>
+            <!-- -->
+            <tbody>
+                {% for s in stockItems %}
+                    {% if s.StockEntryId.item_id.purchased %}
+                <tr>
+                    <td> {{s.nomenclature}} </td>
+                    <td> {{s.StockEntryId.item_id.item_name}} </td>
+                    <td>{{s.location}}</td>
+                    <td>{{s.isTransferred}}</td>
+                    <td>{{s.StockEntryId.vendor}}</td>
+                    <td>{{s.StockEntryId.bill}}</td>
+                
+                  </tr>
+                  {% endif %}
+    
+                    {% endfor %}
+            </tbody>
+        </table>
+
+</div>
 
     <br>
     {% else %}
         <h4 >No Records present in database</h4>
-     {% endif %}
-
-
-
+    {% endif %}
 
     </div>  
 

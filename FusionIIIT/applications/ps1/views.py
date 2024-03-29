@@ -15,6 +15,8 @@ from django.utils import timezone
 from datetime import datetime
 from applications.globals.models import DepartmentInfo
 import re
+from django.db.models import Q,Count
+
 
 
 
@@ -888,8 +890,6 @@ def current_stock_view(request):
         grade = request.POST.get('grade')
         type = request.POST.get('type')
 
-        # print('department : ',department,'grade :',grade,'type : ',type)
-
         # StockEntryId__item_id__file_info_grade
         StockItems = StockItem.objects.filter(
             department=department,
@@ -897,26 +897,81 @@ def current_stock_view(request):
             StockEntryId__item_id__item_type=type
         )
 
+        grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'StockEntryId__item_id__grade','department').annotate(total_quantity=Count('id'))
+
+        grouped_items_list = [
+            {
+                'item_type': item['StockEntryId__item_id__item_type'],
+                'grade': item['StockEntryId__item_id__grade'],
+                'department': DepartmentInfo.objects.get(id=department),
+                'total_quantity': item['total_quantity']
+            }
+            for item in grouped_items
+        ]
+
+
         firstStock=StockItems.first()
         
-        return render(request,'ps1/current_stock_view.html',{'stocks':StockItems,'first_stock':firstStock,'quantity':StockItems.count()})
+        return render(request,'ps1/current_stock_view.html',{'stocks':grouped_items_list,'first_stock':firstStock,
+                                                            'stockItems':StockItems})
+        # return render(request,'ps1/current_stock_view.html',{'stocks':StockItems,'quantity':StockItems.count()})
     
 
-    department = request.user.extrainfo.department
-
+    # THIS IS HARDCODED FOR NOW .
     itemsTypes=['Equipment','Machinery','Furniture','Fixture']
-    grades=['A','B','C','D']
+    grades=['A','B','C']
+    departmentUser=request.user.extrainfo.department
 
     if  request.session['currentDesignationSelected'] == "dept_admin":
         # if department admin then only show the stocks of that department to them
-        departments=[department]
+        departments=[departmentUser]
+        StockItems = StockItem.objects.filter(department=departmentUser)
+
     elif request.session['currentDesignationSelected'] == "ps_admin":
-        departments=DepartmentInfo.objects.all();
+        departments=DepartmentInfo.objects.all()
+        StockItems = StockItem.objects.all()
     else :
         return redirect('/dashboard')
 
+
+    grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'StockEntryId__item_id__grade','department').annotate(total_quantity=Count('id'))
+
+    grouped_items_list = [
+        {
+            'item_type': item['StockEntryId__item_id__item_type'],
+            'grade': item['StockEntryId__item_id__grade'],
+            'department':  DepartmentInfo.objects.get(id=item['department']),
+            'departmentId': item['department'],
+            'total_quantity': item['total_quantity']
+        }
+        for item in grouped_items
+    ]
+
+    print('Stockitems :' , grouped_items_list)
+
+    return render(request,'ps1/current_stock_view_filter.html',{'itemsTypes':itemsTypes,'grades':grades,'departments':departments,'stocks':grouped_items_list})
+
+# to display stock items which are having similar item_type ,grade and department.(used in current_stock_view)
+
+@login_required(login_url = "/accounts/login")
+def stock_item_view(request):
+
+    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+
+    if request.method=="POST":
+        departmentId = request.POST.get('departmentId')
+        grade = request.POST.get('grade')
+        type = request.POST.get('item_type')
+
+        # StockEntryId__item_id__file_info_grade
+        StockItems = StockItem.objects.filter(
+            department=departmentId,
+            StockEntryId__item_id__grade=grade,
+            StockEntryId__item_id__item_type=type
+        )
     
-    return render(request,'ps1/current_stock_view_filter.html',{'itemsTypes':itemsTypes,'grades':grades,'departments':departments})
+        return render(request,'ps1/stock_item_view.html',{'stocks':StockItems})
 
 
 @login_required(login_url = "/accounts/login")
@@ -1138,12 +1193,13 @@ def perform_transfer(request):
             return redirect('/dashboard')
     
     if request.method == "POST":
+    
         selected_stock_items = request.POST.getlist('selected_stock_items[]')
         indentId = request.POST.get('indentId')
         dest_location = request.POST.get('dest_location')
 
-        print(selected_stock_items)
-        print('dest_location : ',dest_location);
+        # print(selected_stock_items)
+        # print('dest_location : ',dest_location);
 
         # Use regular expression to extract the number
         match = re.search(r'\((\d+)\)', indentId)
@@ -1166,6 +1222,7 @@ def perform_transfer(request):
             stock_item.department=myIndent.file_info.uploader.department;
             stock_item.location=dest_location;
             stock_item.inUse= True
+            stock_item.isTransferred= True
             # if a stock_item is been transferred then obviously it will be put into use.
             stock_item.save();
 
@@ -1179,7 +1236,6 @@ def perform_transfer(request):
             )
 
             messages.success(request,'Stock Transfer Done Successfully.!')
-
         # if the quantity required for this indent file is fulfilled we should mark this indentfile as done.
         if(moreStocksRequired==0):
             myIndent.purchased=True
@@ -1189,15 +1245,10 @@ def perform_transfer(request):
         myIndent.save();
         
         department = request.user.extrainfo.department.name
-
-        if  request.session['currentDesignationSelected'] == "dept_admin":
-            sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
-        else:
-            sto=StockEntry.objects.all()
             
-        return render(request,'ps1/perform_transfer1.html',{'sto':sto})
+        return HttpResponseRedirect('../view_transfer') 
 
-# This is to execute the transfer itself.
+# This is to get the list of all the available stock items for transfer.
 @login_required(login_url = "/accounts/login")
 def stock_transfer(request): 
     if request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
@@ -1225,6 +1276,25 @@ def stock_transfer(request):
     return HttpResponseRedirect('../stock_transfer') 
 
 
+# to view the transfers
+@login_required(login_url = "/accounts/login")
+def view_transfer(request): 
+    curr_desg = request.session['currentDesignationSelected']
+    if curr_desg not in ["dept_admin","ps_admin"]:
+        return redirect('/dashboard')
+    
+    if curr_desg=="ps_admin":
+        stockTransfers = StockTransfer.objects.all(); 
+
+    elif curr_desg=="dept_admin":
+        user_dept = request.user.extrainfo.department
+        stockTransfers = StockTransfer.objects.filter(
+            Q(src_dept=user_dept) | Q(dest_dept=user_dept)
+        )
+
+    # print('stock Transfers : ',stockTransfers);
+
+    return render(request,'ps1/view_transfer.html',{'stockTransfers': stockTransfers})  
 
 
 @login_required(login_url = "/accounts/login")

@@ -22,14 +22,19 @@ urlpatterns = [
     url(r'^entry/$', views.entry, name='entry'),
     url(r'^StockEntry/$', views.Stock_Entry, name='Stock_Entry'),
 
-    # stock_view is now stock_entry_view which will tell us about the new stock that is entered in any department.
+    # stock_view is now stock_entry_view which will tell us about the new stock that is entered in any department via a new StockEntry
     url(r'^stock_entry_view/$', views.stock_entry_view, name='stock_view'),
 
-    # current_stock_view will tell us about the current situation of stocks present in any department (both transferred to the department and new stocks added to the department)
+    # current_stock_view will tell us about the current situation of stocks present in any department (both transferred to the department and new stocks added in the department)
     url(r'^current_stock_view/$', views.current_stock_view, name='current_stock_view'),
 
-    # to display individual items situation from stock_entry_view page.
+    # to display individual items belonging to a certain stock entry record.
     url(r'^stock_entry_item_view/$', views.stock_entry_item_view, name='stock_entry_item_view'),
+
+    # to display stock items which are having similar item_type ,grade and department.(used in current_stock_view)
+    url(r'^stock_item_view/$', views.stock_item_view, name='stock_item_view'),
+
+
 
 
 
@@ -37,11 +42,17 @@ urlpatterns = [
     url(r'^stock_edit/$', views.stock_edit, name='stock_edit'),
     url(r'^stock_update/$', views.stock_update, name='stock_update'),
     url(r'^stock_login/$', views.dealing_assistant, name='dealing_assistant'),
+
+
     url(r'^generate_report/$', views.generate_report, name='generate_report'),
     url(r'^report/$', views.report, name='report'), # !not clear 
     url(r'view-bill/<int:stock_entry_id>/$', views.view_bill, name='view_bill'),
+    
+
     url(r'^perform_transfer/$', views.perform_transfer, name='perform_transfer'),
     url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer'),
+    url(r'^view_transfer/$', views.view_transfer, name='view_transfer'),
+
     url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
     url(r'^outboxview/$', views.outboxview, name='outboxview')
 

@@ -73,6 +73,59 @@
         <br>
         <div class="extra content"></div>
     </div>
+
+    <div class="ui divider"></div>
+    {% if stocks %}
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+            Stock View
+            </a>
+        </h3>
+    
+    </div> 
+    <div class="table-container" style="overflow-x: scroll;">
+
+
+        <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                    <th>Item Type</th>
+                    <th>Item Grade</th>
+                    <th>department</th>
+                    <th>Quantity</th>
+                    <th>View Stocks</th>
+                
+            </tr>
+            </thead>
+            <tbody>
+                {% for s in stocks %}
+
+                <tr>
+                    
+                    <td> {{s.item_type}} </td>
+                    <td> {{s.grade}} </td>
+                    <td> {{s.department}} </td>
+                    <td>{{s.total_quantity}}</td>
+
+                    <td>
+                        <form action="/purchase-and-store/stock_item_view/" method="POST" >{% csrf_token %}
+                        <input hidden  name = 'item_type' value="{{ s.item_type}}">
+                        <input hidden  name = 'grade' value="{{ s.grade}}">
+                        <input hidden  name = 'departmentId' value="{{ s.departmentId}}">
+                        <button class="ui primary button" >View Stocks</button>
+                        </form>
+                    </td>
+                    <td>
+                
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+</div>
+{% endif %}
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 
