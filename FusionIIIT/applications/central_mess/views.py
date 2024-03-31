@@ -72,7 +72,7 @@ def mess(request):
         vaca_obj = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         feedback_obj = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-fdate')
         monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
-        # payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
+        payments = Payments.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
         rebates = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         reg_form = RegistrationRequest()
@@ -327,6 +327,8 @@ def mess(request):
                    'reg_request':reg_request,
                    'reg_record':reg_record,
                    'de_reg_request':de_reg_request,
+                   'payments': payments,
+                  
                    'notifications':notifs
                   }
 

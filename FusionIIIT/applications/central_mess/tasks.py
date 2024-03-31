@@ -56,24 +56,38 @@ def generate_bill():
     
     
 def check_registration(student):
-    reg_date = Reg_records.objects.filter(student_id = student).latest('start_date')
-    if(reg_date.start_date == today_g):
-        reg_object = Reg_main.objects.get(student_id = student)
-        reg_object.current_mess_status = "Registered"
-        # payment_obj = Payments.objects.get(student_id = student, payment_month= this_month, year= this_year)
-        # reg_object.balance = reg_object.balance + payment_obj.amount_paid
-        reg_object.save() 
+    try:
+        reg_date = Reg_records.objects.filter(student_id = student).latest('start_date')
+        if(reg_date.start_date == today_g):
+            try:
+                reg_object = Reg_main.objects.get(student_id = student)
+                reg_object.current_mess_status = "Registered"
+                try: 
+                    payment_obj = Payments.objects.get(student_id = student, payment_month= this_month, year= this_year)
+                    reg_object.balance = reg_object.balance + payment_obj.amount_paid
+                    reg_object.save()
+                except:
+                    pass
+            except:
+                pass
+    except: 
+        pass 
     
     
     
 
 def check_deregistration(student):
-    reg_end_date = Reg_records.objects.filter(student_id = student).latest('start_date')
-    if(reg_end_date.end_date == today_g):
-        reg_object = Reg_main.objects.get(student_id = student)
-        reg_object.current_mess_status = "Deregistered"
-        reg_object.save()
-    
+    try:
+        reg_end_date = Reg_records.objects.filter(student_id = student).latest('start_date')
+        if(reg_end_date.end_date == today_g):
+            try:
+                reg_object = Reg_main.objects.get(student_id = student)
+                reg_object.current_mess_status = "Deregistered"
+                reg_object.save()
+            except:
+                pass
+    except:
+        pass 
 
 
 
@@ -91,16 +105,16 @@ def generate_per_day_bill():
     per_day_cost_obj = MessBillBase.objects.latest('timestamp')
     per_day_cost = per_day_cost_obj.bill_amount
     amount = int(30) * int(per_day_cost)
-
+    print(per_day_cost)
     deregistered_students = Reg_main.objects.filter(current_mess_status = "Deregistered")
     for student in deregistered_students:
         student_id = student.student_id
-        # check_registration(student_id)    
+        check_registration(student_id)    
     
     registered_students = Reg_main.objects.filter(current_mess_status = "Registered")
     for student in registered_students:
         student_id = student.student_id
-        # check_deregistration(student_id)
+        check_deregistration(student_id)
     
     registered_students = Reg_main.objects.filter(current_mess_status = "Registered")
     for student in registered_students:
@@ -120,19 +134,28 @@ def generate_per_day_bill():
                     new_monthly_bill_object.save()
         except:
                 try:
-                    monthly_bill_object = Monthly_bill.objects.get(student_id=student_id, month= this_month, year=this_year)                    
+                    monthly_bill_object = Monthly_bill.objects.get(student_id=student_id, month= this_month, year=this_year) 
+                    print(monthly_bill_object.total_bill)                   
                     monthly_bill_object.total_bill = monthly_bill_object.total_bill + per_day_cost
+                    print(monthly_bill_object.total_bill)                   
+                    
                     current_balance = current_balance - per_day_cost
+                    student.balance = current_balance
                     monthly_bill_object.save()
                 except: 
                     new_monthly_bill_object = Monthly_bill(student_id=student_id, month = this_month, year=this_year, amount= amount, total_bill = per_day_cost, rebate_count = 0, rebate_amount= 0)
                     current_balance = current_balance - per_day_cost
+                    student.balance = current_balance
                     new_monthly_bill_object.save()
         if(today_g == last_day_of_this_month and current_balance < amount):
             student.current_mess_status = "Deregistered"
-            reg_record_end_date = Reg_records.objects.filter(student_id = student).latest('start_date')
-            reg_record_end_date.end_date = today_g
-            reg_record_end_date.save()
+            try:
+                reg_record_end_date = Reg_records.objects.filter(student_id = student_id).order_by('start_date')[0]                
+                reg_record_end_date.end_date = first_day_of_next_month
+                print(reg_record_end_date)
+                reg_record_end_date.save()
+            except:
+                pass
         student.save()
         
         
@@ -141,4 +164,4 @@ def generate_per_day_bill():
 
 def my_scheduled_task():
     # Your task code goes here
-    print("Executing scheduled task now...")
+    Monthly_bill.objects.all().delete()

@@ -34,7 +34,6 @@ if DEBUG:
     INSTALLED_APPS += (
         'debug_toolbar',
         'django_extensions',
-        'background_task',
         )
 
 
@@ -57,7 +56,11 @@ if DEBUG:
     }
     
 CRONJOBS = [
-    ('* * * * *', 'applications.central_mess.tasks.generate_bill')
+    # the below job will update the bill at every minute can be used for testing
+    # ('* * * * *', 'applications.central_mess.tasks.generate_bill'), 
+    
+    #the below job which we need to add in production server, to update the mess bill of student everyday at 10 pm in night
+    ('0 22 * * *', 'applications.central_mess.tasks.generate_bill'),
 ]
 
 CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'

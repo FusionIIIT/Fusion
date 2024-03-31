@@ -12,11 +12,12 @@
         <a class="item" id="billm">
             Bill
         </a>
-<!--
+        
+
         <a class="item" id="ph">
             Payment History
         </a>
-        -->
+        
         {% comment %} <a class="item" id="regm">
             Register for Mess
         </a> {% endcomment %}
@@ -115,13 +116,15 @@
 
                     {% for item in reg_menu %}
                             {% if item.meal_time == 'THB' %}
-                                <td>{{item.dish}}</td>
+                                <td>{{item.d                    <th></th>
+                                    ish}}</td>
                             {% endif %}
                     {% endfor %}
 
                     {% for item in reg_menu %}
                             {% if item.meal_time == 'THL' %}
-                                <td>{{item.dish}}</td>
+                                <td>{{item.d                    <th></th>
+                                    ish}}</td>
                             {% endif %}
                     {% endfor %}
 
@@ -292,12 +295,21 @@
         <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
             <thead>
                 <tr>
-                    <th>Student</th>
-                    <th>Sem</th>
+                    
                     <th>Amount</th>
-                    <th>Status</th>
+                    <th>Month</th>
+                    <th>Year</th>
                 </tr>
             </thead>
+            <tbody>
+                {% for student in payments %}
+                <tr>
+                    <td>{{student.amount_paid}}</td>
+                    <td>{{student.payment_month}}</td>
+                    <td>{{student.payment_year}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
 
         </table>
 
