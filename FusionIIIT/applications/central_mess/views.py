@@ -20,7 +20,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
                      Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request)
-from .handlers import (add_mess_feedback, add_vacation_food_request,
+from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
