@@ -21,7 +21,7 @@
             success: function(jsondata)
             {
               $("#loading").hide();
-              console.log(jsondata);
+              // console.log(jsondata);
               $('#course_list').html(jsondata.html);
             },
             error: function(data)
@@ -33,7 +33,7 @@
 </script>
 
 <div class="ui pointing secondary menu">
-    <a class="active item" data-tab="this">
+    <a class="active item" data-tab="this-sem">
         This Semester
     </a>
     <a class="item" data-tab="prereg">
@@ -41,7 +41,7 @@
     </a>
 </div> 
 
-<div class="ui active tab segment" data-tab="this">
+<div class="ui active tab segment" data-tab="this-sem">
     <form class="ui form" action="/academic-procedures/acad_person/gen_course_list" method="post" id="gen_form">
         {% csrf_token %}
         <div class="field">
