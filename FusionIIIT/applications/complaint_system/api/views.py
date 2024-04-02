@@ -43,19 +43,23 @@ def complaint_details_api(request,detailcomp_id1):
 def student_complain_api(request):
     user = get_object_or_404(User,username = request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
-    if user.user_type == 'student':
+
+    user_type = 'student'
+    extra_info_id = ExtraInfo.objects.get(id=user.id)
+    caretaker = Caretaker.objects.filter(staff_id=extra_info_id)
+    supervisor = Supervisor.objects.filter(sup_id=extra_info_id)
+    if caretaker.exists():
+        complain = StudentComplain.objects.filter(location = caretaker.first().area)
+        user_type = 'caretaker'
+    elif supervisor.exists():
+        complain = StudentComplain.objects.filter(location = supervisor.first().area)
+        user_type = 'supervisor'
+    else:
         complain = StudentComplain.objects.filter(complainer = user)
-    elif user.user_type == 'staff':
-        staff = ExtraInfo.objects.get(id=user.id)
-        staff = Caretaker.objects.get(staff_id=staff)
-        complain = StudentComplain.objects.filter(location = staff.area)
-    elif user.user_type == 'faculty':
-        faculty = ExtraInfo.objects.get(id=user.id)
-        faculty = Supervisor.objects.get(sup_id=faculty)
-        complain = StudentComplain.objects.filter(location = faculty.area)
     complains = serializers.StudentComplainSerializers(complain,many=True).data
     resp = {
         'student_complain' : complains,
+        'user_type': user_type,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
@@ -63,6 +67,8 @@ def student_complain_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def create_complain_api(request):
+    print(request.FILES)
+    print(request.data)
     serializer = serializers.StudentComplainSerializers(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -141,9 +147,16 @@ def edit_worker_api(request,w_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def caretaker_api(request):
-
     if request.method == 'GET':
-        caretaker = Caretaker.objects.all()
+        caretakers = None
+        user = get_object_or_404(User,username = request.user.username)
+        user = ExtraInfo.objects.get(user = user)
+        extra_info_id = ExtraInfo.objects.get(id=user.id)
+        supervisor = Supervisor.objects.filter(sup_id=extra_info_id)
+        if supervisor.exists():
+            caretaker = Caretaker.objects.filter(area = supervisor.first().area)
+        else:
+            caretaker = Caretaker.objects.all()
         caretakers = serializers.CaretakerSerializers(caretaker,many=True).data
         resp = {
             'caretakers' : caretakers,

@@ -20,6 +20,14 @@ class CaretakerSerializers(serializers.ModelSerializer):
     class Meta:
         model = Caretaker
         fields=('__all__')
+        depth=2
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        # get caretaker complaints and filter by status = 0
+        complaints = StudentComplain.objects.filter(location = instance.area, status = 0)
+        response['complaints'] = StudentComplainSerializers(complaints, many=True).data
+        return response
 
 class SupervisorSerializers(serializers.ModelSerializer):
     class Meta:
