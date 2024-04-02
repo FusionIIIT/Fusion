@@ -98,7 +98,7 @@
                     </td>
                     
                     <td>
-                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
                    
 
@@ -156,7 +156,7 @@
     
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            paginate('resolved_care', 2, 'paginationresolved_care'); // Call the pagination function with table ID and rows per page
+            paginate('resolved_care', 10, 'paginationresolved_care'); // Call the pagination function with table ID and rows per page
         });
     </script>
 {% endblock %}

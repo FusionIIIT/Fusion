@@ -58,6 +58,93 @@ $(document).ready(function(){
        }
     };
 
+ function sub2(event)
+        {
+        var specific_location= $('input[name="specific_location"]').val();
+        var Location = $('input[name="Location"]').val();
+        var complaint_type =  $('input[name="complaint_type"]').val() ;
+        var details =$('input[name="details"]').val() ;
+        var myfile = $('input[name="myfile"]').val();
+        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
+        {
+            alert("Please fill all the details!");
+            return;
+        }
+        else
+        {
+            event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'specific_location' : specific_location,
+                    'Location' : Location,
+                    'complaint_type' : complaint_type,
+                    'details' : details,
+                    'myfile' : myfile,
+
+                },
+                success : function (data){
+
+                    // alert("Complaint successfully lodged");
+                    setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint/caretaker');
+            }, 1500);
+
+                    
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+
+                }
+            });
+       }
+    };
+ function sub3(event)
+        {
+        var specific_location= $('input[name="specific_location"]').val();
+        var Location = $('input[name="Location"]').val();
+        var complaint_type =  $('input[name="complaint_type"]').val() ;
+        var details =$('input[name="details"]').val() ;
+        var myfile = $('input[name="myfile"]').val();
+        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
+        {
+            alert("Please fill all the details!");
+            return;
+        }
+        else
+        {
+            event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'specific_location' : specific_location,
+                    'Location' : Location,
+                    'complaint_type' : complaint_type,
+                    'details' : details,
+                    'myfile' : myfile,
+
+                },
+                success : function (data){
+
+                    // alert("Complaint successfully lodged");
+                    setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint/supervisor');
+            }, 1500);
+
+                    
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+
+                }
+            });
+       }
+    };
+
+
+
 
 
 
