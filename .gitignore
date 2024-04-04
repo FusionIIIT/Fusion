@@ -77,7 +77,7 @@ package-lock.json
 docker-entrypoint.sh
 
 
-FusionIIIT/applications/eis/migrations/
+# FusionIIIT/applications/eis/migrations/
 
 postgres_data
 
@@ -85,5 +85,5 @@ postgres_data
 !media/Administrator/academic_procedures/sample_courses_allotment.xls
 !media/Administrator/academic_procedures/sample_student_profile.xlsx
 
-migrations/
+# migrations/
 
