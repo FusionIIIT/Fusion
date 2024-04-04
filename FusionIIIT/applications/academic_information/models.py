@@ -69,7 +69,7 @@ class Student(models.Model):
     '''
         Current Purpose : To store information pertinent to a user who is also a student
         
-         
+        
 
         ATTRIBUTES :
 
