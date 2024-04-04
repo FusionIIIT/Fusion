@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
-                     Prescribed_medicine, Prescription, Schedule,
+                     Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
                      Stock, Announcements, SpecialRequest, Pathologist)
 
 def datetime_handler(date):
@@ -81,15 +81,15 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     
     # making announcements from compounder 
-    # elif 'add' in request.POST:                                         
-    #     ven=request.POST.get('venue')
-    #     announcement=request.POST.get('announcement')
-    #     Announcement.objects.create(
-    #     venue=ven,
-    #     announcement=announcement,
-    #     )
-    #     data={ 'venue':ven, 'announcement':announcement }
-    #     return JsonResponse(data)
+    elif 'add' in request.POST:                                         
+        ven=request.POST.get('venue')
+        announcement=request.POST.get('announcement')
+        Announcement.objects.create(
+        venue=ven,
+        announcement=announcement,
+        )
+        data={ 'venue':ven, 'announcement':announcement }
+        return JsonResponse(data)
 
     # remove doctor by changing active status
     elif 'remove_doctor' in request.POST:                              
@@ -145,15 +145,15 @@ def compounder_view_handler(request):
         time_in = request.POST.get('time_in')
         time_out = request.POST.get('time_out')
         room = request.POST.get('room')
-        schedule = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day)
+        schedule = Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day)
         doctor_id = Doctor.objects.get(id=doctor)
         if schedule.count() == 0:
-            Schedule.objects.create(doctor_id=doctor_id, day=day, room=room,
+            Doctors_Schedule.objects.create(doctor_id=doctor_id, day=day, room=room,
                                     from_time=time_in, to_time=time_out)
         else:
-            Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(room=room)
-            Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(from_time=time_in)
-            Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(to_time=time_out)
+            Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(room=room)
+            Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(from_time=time_in)
+            Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=day).update(to_time=time_out)
         data={'status':1}
         return JsonResponse(data)
 
@@ -163,7 +163,7 @@ def compounder_view_handler(request):
         doctor = request.POST.get('doctor')
         
         day = request.POST.get('day')
-        Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day).delete()
+        Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor, day=day).delete()
         data = {'status': 1}
         return JsonResponse(data)
     
@@ -176,14 +176,14 @@ def compounder_view_handler(request):
         time_out = request.POST.get('time_out')
         room = request.POST.get('room')
         pathologist_id = Pathologist.objects.get(id=doctor)
-        schedule = Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day)
+        schedule = Pathologist_Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day)
         if schedule.count() == 0:
-            Schedule.objects.create(pathologist_id=pathologist_id, day=day, room=room,
+            Pathologist_Schedule.objects.create(pathologist_id=pathologist_id, day=day, room=room,
                                     from_time=time_in, to_time=time_out)
         else:
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(room=room)
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(from_time=time_in)
-            Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(to_time=time_out)
+            Pathologist_Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(room=room)
+            Pathologist_Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(from_time=time_in)
+            Pathologist_Schedule.objects.select_related('pathologist_id').filter(pathologist_id=pathologist_id, day=day).update(to_time=time_out)
         data={'status':1}
         return JsonResponse(data)
     
@@ -193,7 +193,7 @@ def compounder_view_handler(request):
         doctor = request.POST.get('pathologist')
         
         day = request.POST.get('day')
-        Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day).delete()
+        Pathologist_Schedule.objects.select_related('pathologist_id').filter(pathologist_id=doctor, day=day).delete()
         data = {'status': 1}
         return JsonResponse(data)
     
@@ -372,21 +372,21 @@ def compounder_view_handler(request):
             doctor = Doctor.objects.get(id=doctor_id)
         details = request.POST.get('details')
         tests = request.POST.get('tests')
-        app = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id,date=datetime.now())
-        if app:
-            appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(user_id=user_id,date=datetime.now())
-        else:
-            appointment = None
+        # app = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id,date=datetime.now())
+        # if app:
+        #     appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(user_id=user_id,date=datetime.now())
+        # else:
+        #     appointment = None
         Prescription.objects.create(
             user_id=user,
             doctor_id=doctor,
             details=details,
             date=datetime.now(),
             test=tests,
-            appointment=appointment
+            # appointment=appointment
         )
         query = Medicine.objects.select_related('patient','patient__user','patient__department').filter(patient=user)
-        prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().last()
+        prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().last()
         for medicine in query:
             medicine_id = medicine.medicine_id
             quantity = medicine.quantity
@@ -431,7 +431,7 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
-        Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').filter(pk=presc_id).delete()
+        Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(pk=presc_id).delete()
         data = {'status': 1}
         return JsonResponse(data)
     elif 'medicine' in request.POST:
@@ -492,10 +492,10 @@ def student_view_handler(request):
     
     elif 'doctor' in request.POST:
         doctor_id = request.POST.get('doctor')
-        days = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
+        days =Dotors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
         today = datetime.today()
         time = datetime.today().time()
-        sch = Schedule.objects.select_related('doctor_id').filter(date__gte=today)
+        sch = Doctors_Schedule.objects.select_related('doctor_id').filter(date__gte=today)
 
         for day in days:
             for i in range(0, 7):
@@ -504,7 +504,7 @@ def student_view_handler(request):
                 d = day.get('day')
                 if dayi == d:
 
-                    Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=dayi).update(date=date)
+                    Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=dayi).update(date=date)
 
         sch.filter(date=today, to_time__lt=time).delete()
         schedule = sch.filter(doctor_id=doctor_id).order_by('date')
