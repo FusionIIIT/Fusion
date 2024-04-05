@@ -94,7 +94,7 @@ class Student(models.Model):
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
     father_name = models.CharField(max_length=40, default='',null=True, blank=True)
-    mother_name = models.CharField(max_length=40, default='',null=True, blank=True,)
+    mother_name = models.CharField(max_length=40, default='',null=True, blank=True)
     hall_no = models.IntegerField(default=0)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
