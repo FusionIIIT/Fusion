@@ -33,11 +33,11 @@ Module
                 {% endblock %}
 
                 <!-- <div class="ui divider"></div> -->
-                    <!-- <div class="content"> -->
-                        {% comment %}
-                        TODO: Add a If-Else here!
-                        {% endcomment %}
-                        <!-- {% if employee %}
+                <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                <!-- {% if employee %}
                         <div class="ui large header" href="">
                             {{ employee.user.first_name}}
                             {{ employee.user.last_name}}
@@ -56,7 +56,7 @@ Module
                         </div>
                         {% endif %} -->
 
-                        <!-- <div class="meta">
+                <!-- <div class="meta">
                             {% for i in Curr_desig %}
                             <span> {% comment %}Should this be inside if else?{% endcomment %}
                                 {% if i == "co-ordinator" or i == "co co-ordinator" %}
@@ -68,11 +68,11 @@ Module
                             <br>
                             {% endfor %}
                         </div> -->
-                    <!-- </div> -->
-                </div>
+                <!-- </div> -->
+            </div>
 
-            
-                <!-- <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <!-- <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
                     <a class="item" href="http://127.0.0.1:8000/hr2/cpda_form/{{ user_id }}">
                         CPDA
                         <i class="right floated chevron right icon"></i>
@@ -82,7 +82,7 @@ Module
                         <i class="right floated chevron right icon"></i>
                     </a>
                 </div> -->
-            </div>
+        </div>
 
 
 
@@ -127,287 +127,374 @@ Module
                 {% endcomment %}
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                     {% block alerts %}
-                        
-<div style="margin: 2rem;">
-    <div class="ui vertical segment">
-        <form method="post" id="ltc_form" enctype="multipart/form-data">
-            {% csrf_token %}
 
-            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                <div class="two fields">    
-                    <div class="eight wide field">
-                        <label for="block_year">Block Year</label>
-                        <input type="number" name="block_year" maxlength="30" id="id_block_year" value="{{ ltc_request.block_year}}" readonly>
-                    </div>
-                    <div class="eight wide field">
-                        <label for="pf_no">P.F. No.</label>
-                        <input type="number" name="pf_no" maxlength="30" id="id_pf_no" value="{{ ltc_request.pf_no }}" readonly>
-                    </div>
-                    
-                </div>    
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+                            <form method="post" id="ltc_form" enctype="multipart/form-data">
+                                {% csrf_token %}
 
-                <div class="eight wide field" style="float: right;">
-                    <label for="basic_pay_salary">Basic Pay Rs.</label>
-                    <input type="number" name="basic_pay_salary" maxlength="20" id="id_basic_pay_salary" value="{{ ltc_request.basic_pay_salary}}" readonly>
-                </div>
-                <br><br><br><br>
-                <div class="two fields">    
-                    <div class="eight wide field">
-                        <label for="name">Name</label>
-                        <input type="text" name="name" maxlength="40" id="id_name" value="{{ ltc_request.name }}" readonly>
-                    </div>
-                </div>
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="block_year">Block Year</label>
+                                            <input type="number" name="block_year" maxlength="30" id="id_block_year"
+                                                value="{{ ltc_request.block_year}}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="pf_no">P.F. No.</label>
+                                            <input type="number" name="pf_no" maxlength="30" id="id_pf_no"
+                                                value="{{ ltc_request.pf_no }}" readonly>
+                                        </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="designation">Designation</label>
-                        <input type="text" name="designation" maxlength="40" id="id_designation"  value="{{ ltc_request.designation }}" readonly>
-                    </div>
-                </div>
+                                    </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="department_info">Department/Section</label>
-                        <input type="text" name="department_info" maxlength="40" id="id_department_info" value="{{ ltc_request.department_info }}" readonly>
-                    </div>
-                </div>  
+                                    <div class="eight wide field" style="float: right;">
+                                        <label for="basic_pay_salary">Basic Pay Rs.</label>
+                                        <input type="number" name="basic_pay_salary" maxlength="20"
+                                            id="id_basic_pay_salary" value="{{ ltc_request.basic_pay_salary}}" readonly>
+                                    </div>
+                                    <br><br><br><br>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="name">Name</label>
+                                            <input type="text" name="name" maxlength="40" id="id_name"
+                                                value="{{ ltc_request.name }}" readonly>
+                                        </div>
+                                    </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="leave_availability">(a) Whether leave is required for availing L.T.C.?</label>
-                        <div class="field">
-                            <select class="ui dropdown" name="leave_availability" id="id_leave_availability">
-                                <option value="True">Yes</option>
-                                <option value="False">No</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="designation">Designation</label>
+                                            <input type="text" name="designation" maxlength="40" id="id_designation"
+                                                value="{{ ltc_request.designation }}" readonly>
+                                        </div>
+                                    </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="leave_dates">(b) (i) If so, duration of leave applied for From</label>
-                       
-                        <input type="date" name="leave_start_date" value="{{ ltc_request.leave_start_date|date:'Y-m-d' }}" readonly>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="department_info">Department/Section</label>
+                                            <input type="text" name="department_info" maxlength="40"
+                                                id="id_department_info" value="{{ ltc_request.department_info }}"
+                                                readonly>
+                                        </div>
+                                    </div>
 
-                        <label for="leave_dates">To:</label>
-                        <input type="date" name="leave_end_date" value="{{ ltc_request.leave_end_date|date:'Y-m-d' }}" readonly>
-                    </div>
-                    <div class="eight wide field">
-                        <label for="date_of_leave_for_family">(ii) Date of departure of family, if not availing himself</label>
-                        <input type="date" name="date_of_leave_for_family" value="{{ ltc_request.date_of_leave_for_family|date:'Y-m-d'}}" readonly>
-                    </div>
-                </div>  
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="leave_availability">(a) Whether leave is required for availing
+                                                L.T.C.?</label>
+                                            <div class="field">
+                                                <select class="ui dropdown" name="leave_availability"
+                                                    id="id_leave_availability">
+                                                    <option value="True">Yes</option>
+                                                    <option value="False">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="nature_of_leave">(c) Nature of leave</label>
-                        <input type="text" name="nature_of_leave" maxlength="40" id="id_nature_of_leave" value="{{ ltc_request.nature_of_leave }}" readonly>
-                    </div>
-                </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="purpose">(d) Purpose</label>
-                        <input type="text" name="purpose_of_leave" maxlength="40" id="id_purpose" value="{{ ltc_request.purpose_of_leave }}" readonly>
-                    </div>
-                </div>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="leave_dates">(b) (i) If so, duration of leave applied for
+                                                From</label>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="hometown_or_not">Whether L.T.C. is desired for going to home town or elsewhere?</label>
-                        <div class="two fields">
-                            <div class="eight wide field">
-                                <label for="hometown_or_not">Select Place:</label>
-                                <div class="field">
-                                    <select class="ui dropdown" name="hometown_or_not" id="id_hometown_or_not" >
-                                        <option value="True">Home Town</option>
-                                        <option value="False">Elsewhere</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="ten wide field">
-                            <label for="place_of_visit">
-                                <input type="text" name="place_of_visit" maxlength="40" id="id_place_of_visit" placeholder="Place where you are visiting" value="{{ ltc_request.place_of_visit }}" readonly>
-                            </label>    
-                        </div>
-                    </div>
-                </div>  
+                                            <input type="date" name="leave_start_date"
+                                                value="{{ ltc_request.leave_start_date|date:'Y-m-d' }}" readonly>
 
-                <div class="twenty wide field">
-                    <label for="address_ltc">Address during leave</label>
-                    <input type="text" name="address_during_leave" maxlength="80" id="id_address_during_leave" value="{{ ltc_request.address_during_leave }}" readonly>
-                </div>
-            
-                
-                <div class="eight wide field">
-                    <label for="mode_for_vacation">Mode: </label>  
-                    <div class="two fields" style="justify-content: space-around;">
-                        <select class="ui dropdown" name="leave_availability" id="id_leave_availability">
-                            <option value="True">rail</option>
-                            <option value="False">road</option>
-                        </select>
-                        <!-- <div class="two fields one" style="justify-content:center ;">
+                                            <label for="leave_dates">To:</label>
+                                            <input type="date" name="leave_end_date"
+                                                value="{{ ltc_request.leave_end_date|date:'Y-m-d' }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="date_of_leave_for_family">(ii) Date of departure of family, if
+                                                not availing himself</label>
+                                            <input type="date" name="date_of_leave_for_family"
+                                                value="{{ ltc_request.date_of_leave_for_family|date:'Y-m-d'}}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="nature_of_leave">(c) Nature of leave</label>
+                                            <input type="text" name="nature_of_leave" maxlength="40"
+                                                id="id_nature_of_leave" value="{{ ltc_request.nature_of_leave }}"
+                                                readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="purpose">(d) Purpose</label>
+                                            <input type="text" name="purpose_of_leave" maxlength="40" id="id_purpose"
+                                                value="{{ ltc_request.purpose_of_leave }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="hometown_or_not">Whether L.T.C. is desired for going to home
+                                                town or elsewhere?</label>
+                                            <div class="two fields">
+                                                <div class="eight wide field">
+                                                    <label for="hometown_or_not">Select Place:</label>
+                                                    <div class="field">
+                                                        <select class="ui dropdown" name="hometown_or_not"
+                                                            id="id_hometown_or_not">
+                                                            <option value="True">Home Town</option>
+                                                            <option value="False">Elsewhere</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="ten wide field">
+                                                <label for="place_of_visit">
+                                                    <input type="text" name="place_of_visit" maxlength="40"
+                                                        id="id_place_of_visit"
+                                                        placeholder="Place where you are visiting"
+                                                        value="{{ ltc_request.place_of_visit }}" readonly>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="twenty wide field">
+                                        <label for="address_ltc">Address during leave</label>
+                                        <input type="text" name="address_during_leave" maxlength="80"
+                                            id="id_address_during_leave" value="{{ ltc_request.address_during_leave }}"
+                                            readonly>
+                                    </div>
+
+
+                                    <div class="eight wide field">
+                                        <label for="mode_for_vacation">Mode: </label>
+                                        <div class="two fields" style="justify-content: space-around;">
+                                            <select class="ui dropdown" name="leave_availability"
+                                                id="id_leave_availability">
+                                                <option value="True">rail</option>
+                                                <option value="False">road</option>
+                                            </select>
+                                            <!-- <div class="two fields one" style="justify-content:center ;">
                             <input type="radio" name="mode_for_vacation" id="id_rail" checked>
                             <label for="rail" padding="320px">Rail</label>
                         </div>
                         <div class="two fields one" style="justify-content:center ;">
                             <input type="radio" name="mode_for_vacation" id="id_road">
                             <label for="road" padding="320px">Road</label> -->
-                        <!-- </div> -->
-                    </div>
-                </div>
+                                            <!-- </div> -->
+                                        </div>
+                                    </div>
 
-                <div class="twenty wide field">
-                    <label for="details_of_family_members_already_done">(i) Details of family members for whom L.T.C. for this block has already been availed:</label>
-                    <div class="three fields">
-                        {% for member in ltc_request.details_of_family_members_already_done %}
-                        <div class="eight wide field">
-                            <label for="family_mem_{{ forloop.counter }}">{{ forloop.counter }}</label>
-                            <input type="text" name="details_of_family_members_already_done[]" maxlength="40" id="id_family_mem_{{ forloop.counter }}" value="{{ member }}" readonly>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                
+                                    <div class="twenty wide field">
+                                        <label for="details_of_family_members_already_done">(i) Details of family
+                                            members for whom L.T.C. for this block has already been availed:</label>
+                                        <div class="three fields">
+                                            {% for member in ltc_request.details_of_family_members_already_done %}
+                                            <div class="eight wide field">
+                                                <label for="family_mem_{{ forloop.counter }}">{{ forloop.counter
+                                                    }}</label>
+                                                <input type="text" name="details_of_family_members_already_done[]"
+                                                    maxlength="40" id="id_family_mem_{{ forloop.counter }}"
+                                                    value="{{ member }}" readonly>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
 
-                <div class="eight wide field">
-                    <label for="family_members_about_to_avail">(ii) Details of family members who will avail L.T.C. <br> &nbsp; &nbsp; &nbsp; &nbsp; (a) Self &nbsp; (b) Spouse &nbsp;(c) Children</label>
-                </div>
-                
-                <div>
-                    <table style="border: 1px solid black">
-                        <tr>
-                            <th>S.No</th>
-                            <th>Full Name</th>
-                            <th>Age</th>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1" value="{{ ltc_request.info_1_1 }}" readonly></td>
-                            <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2" value="{{ ltc_request.info_1_2 }}" readonly></td>
-                            <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3" value="{{ ltc_request.info_1_3 }}" readonly></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1" value="{{ ltc_request.info_2_1 }}" readonly></td>
-                            <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2" value="{{ ltc_request.info_2_2 }}" readonly></td>
-                            <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3" value="{{ ltc_request.info_2_3 }}" readonly></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1" value="{{ ltc_request.info_3_1 }}" readonly></td>
-                            <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2" value="{{ ltc_request.info_3_2 }}" readonly></td>
-                            <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3" value="{{ ltc_request.info_3_3 }}" readonly></td>
-                        </tr>
-                        <tr>    
-                            <td><input type="number" name="info_4_1" maxlength="40" id="id_info_4_1" value="{{ ltc_request.info_4_1 }}"></td>
-                            <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2" value="{{ ltc_request.info_4_2 }}"></td>
-                            <td><input type="number" name="info_4_3" maxlength="40" id="id_info_4_3" value="{{ ltc_request.info_4_3 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="info_5_1" maxlength="40" id="id_info_5_1" value="{{ ltc_request.info_5_1 }}"></td>
-                            <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2" value="{{ ltc_request.info_5_2 }}"></td>
-                            <td><input type="number" name="info_5_3" maxlength="40" id="id_info_5_3" value="{{ ltc_request.info_5_3 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="info_6_1" maxlength="40" id="id_info_6_1" value="{{ ltc_request.info_6_1 }}"></td>
-                            <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2" value="{{ ltc_request.info_6_2 }}"></td>
-                            <td><input type="number" name="info_6_3" maxlength="40" id="id_info_6_3" value="{{ ltc_request.info_6_3 }}"></td>
-                        </tr>
-                    </table>
-                    
-                </div>
-                <br>
-                <div class="ten wide field">
-                    <label for="details_of_dependents">(d)Dependent parents, minor brothers, and sisters residing with the applicant: </label>
-                </div>
 
-                <div>
-                    <table style="border: 1px solid black">
-                        <tr>
-                            <th>S.No</th>
-                            <th>Full Name</th>
-                            <th>Age</th>
-                            <th>Why fully dependent?</th>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_1_1" maxlength="40" id="id_d_info_1_1"  value="{{ ltc_request.d_info_1_1 }}"></td>
-                            <td><input type="text" name="d_info_1_2" maxlength="40" id="id_d_info_1_2"  value="{{ ltc_request.d_info_1_2 }}"></td>
-                            <td><input type="number" name="d_info_1_3" maxlength="40" id="id_d_info_1_3"  value="{{ ltc_request.d_info_1_3 }}"></td>
-                            <td><input type="text" name="d_info_1_4" maxlength="40" id="id_d_info_1_4"  value="{{ ltc_request.d_info_1_4 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_2_1" maxlength="40" id="id_d_info_2_1"  value="{{ ltc_request.d_info_2_1 }}"></td>
-                            <td><input type="text" name="d_info_2_2" maxlength="40" id="id_d_info_2_2"  value="{{ ltc_request.d_info_2_2 }}"></td>
-                            <td><input type="number" name="d_info_2_3" maxlength="40" id="id_d_info_2_3" value="{{ ltc_request.d_info_2_3 }}"></td>
-                            <td><input type="text" name="d_info_2_4" maxlength="40" id="id_d_info_2_4" value="{{ ltc_request.d_info_2_4 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_3_1" maxlength="40" id="id_d_info_3_1" value="{{ ltc_request.d_info_3_1 }}"></td>
-                            <td><input type="text" name="d_info_3_2" maxlength="40" id="id_d_info_3_2" value="{{ ltc_request.d_info_3_2 }}"></td>
-                            <td><input type="number" name="d_info_3_3" maxlength="40" id="id_d_info_3_3" value="{{ ltc_request.d_info_3_3 }}"></td>
-                            <td><input type="text" name="d_info_3_4" maxlength="40" id="id_d_info_3_4" value="{{ ltc_request.d_info_3_4 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_4_1" maxlength="40" id="id_d_info_4_1" value="{{ ltc_request.d_info_4_1 }}"></td>
-                            <td><input type="text" name="d_info_4_2" maxlength="40" id="id_d_info_4_2" value="{{ ltc_request.d_info_4_2 }}"></td>
-                            <td><input type="number" name="d_info_4_3" maxlength="40" id="id_d_info_4_3" value="{{ ltc_request.d_info_4_3 }}"></td>
-                            <td><input type="text" name="d_info_4_4" maxlength="40" id="id_d_info_4_4" value="{{ ltc_request.d_info_4_4 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_5_1" maxlength="40" id="id_d_info_5_1" value="{{ ltc_request.d_info_5_1 }}"></td>
-                            <td><input type="text" name="d_info_5_2" maxlength="40" id="id_d_info_5_2" value="{{ ltc_request.d_info_5_2 }}"></td>
-                            <td><input type="number" name="d_info_5_3" maxlength="40" id="id_d_info_5_3" value="{{ ltc_request.d_info_5_3 }}"></td>
-                            <td><input type="text" name="d_info_5_4" maxlength="40" id="id_d_info_5_4" value="{{ ltc_request.d_info_5_4 }}"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="d_info_6_1" maxlength="40" id="id_d_info_6_1" value="{{ ltc_request.d_info_6_1 }}"></td>
-                            <td><input type="text" name="d_info_6_2" maxlength="40" id="id_d_info_6_2" value="{{ ltc_request.d_info_6_2 }}"></td>
-                            <td><input type="number" name="d_info_6_3" maxlength="40" id="id_d_info_6_3" value="{{ ltc_request.d_info_6_3 }}"></td>
-                            <td><input type="text" name="d_info_6_4" maxlength="40" id="id_d_info_6_4" value="{{ ltc_request.d_info_6_4 }}"></td>
-                        </tr>
-                    </table>
-                    
-                </div>
+                                    <div class="eight wide field">
+                                        <label for="family_members_about_to_avail">(ii) Details of family members who
+                                            will avail L.T.C. <br> &nbsp; &nbsp; &nbsp; &nbsp; (a) Self &nbsp; (b)
+                                            Spouse &nbsp;(c) Children</label>
+                                    </div>
 
-                <div class="eight wide field">
-                    <label for="amount_of_advance_required">Amount of advance required, if any:</label>
-                    <input type="number" name="amount_of_advance_required" maxlength="10" id="id_advance_amount" value="{{ ltc_request.amount_of_advance_required}}" readonly>
-                </div>
-                <div class="two fields">
-                <div class="eight wide field">
-                    <label for="certified_family_dependents">(i) Certified that family members for whom the L.T.C. is claimed are residing with me and are wholly dependent upon me. </label>
-                    <input type="text" name="certified_family_dependents" maxlength="40" id="id_certified_family_dependents" value="{{ ltc_request.certified_family_dependents}}" readonly>
-                </div>
-                
-                <div class="eight wide field">
-                    <label for="certified_advance">(ii) Certified that the previous L.T.C. advance drawn by me on </label>
-                    <input  name="certified_advance"  id="id_certified_advance_1" value="{{ ltc_request.certified_advance}}">
-                    <label for="adjusted_month">has been adjusted in the month of  </label>
-                    <input type="text" name="adjusted_month" maxlength="40" id="id_adjusted_month" value="{{ ltc_request.adjusted_month}}" readonly>
+                                    <div>
+                                        <table style="border: 1px solid black">
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Full Name</th>
+                                                <th>Age</th>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"
+                                                        value="{{ ltc_request.info_1_1 }}" readonly></td>
+                                                <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2"
+                                                        value="{{ ltc_request.info_1_2 }}" readonly></td>
+                                                <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"
+                                                        value="{{ ltc_request.info_1_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"
+                                                        value="{{ ltc_request.info_2_1 }}" readonly></td>
+                                                <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2"
+                                                        value="{{ ltc_request.info_2_2 }}" readonly></td>
+                                                <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"
+                                                        value="{{ ltc_request.info_2_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1"
+                                                        value="{{ ltc_request.info_3_1 }}" readonly></td>
+                                                <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2"
+                                                        value="{{ ltc_request.info_3_2 }}" readonly></td>
+                                                <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3"
+                                                        value="{{ ltc_request.info_3_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_4_1" maxlength="40" id="id_info_4_1"
+                                                        value="{{ ltc_request.info_4_1 }}"></td>
+                                                <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2"
+                                                        value="{{ ltc_request.info_4_2 }}"></td>
+                                                <td><input type="number" name="info_4_3" maxlength="40" id="id_info_4_3"
+                                                        value="{{ ltc_request.info_4_3 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_5_1" maxlength="40" id="id_info_5_1"
+                                                        value="{{ ltc_request.info_5_1 }}"></td>
+                                                <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2"
+                                                        value="{{ ltc_request.info_5_2 }}"></td>
+                                                <td><input type="number" name="info_5_3" maxlength="40" id="id_info_5_3"
+                                                        value="{{ ltc_request.info_5_3 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_6_1" maxlength="40" id="id_info_6_1"
+                                                        value="{{ ltc_request.info_6_1 }}"></td>
+                                                <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2"
+                                                        value="{{ ltc_request.info_6_2 }}"></td>
+                                                <td><input type="number" name="info_6_3" maxlength="40" id="id_info_6_3"
+                                                        value="{{ ltc_request.info_6_3 }}"></td>
+                                            </tr>
+                                        </table>
 
-                </div>
-                </div>
+                                    </div>
+                                    <br>
+                                    <div class="ten wide field">
+                                        <label for="details_of_dependents">(d)Dependent parents, minor brothers, and
+                                            sisters residing with the applicant: </label>
+                                    </div>
 
-                <div class="eight wide field">
-                    <label for="date">Date</label>
-                    <input type="date" name="date" id="id_date" value="{{ ltc_request.date|date:'Y-m-d'}}" readonly>
-                </div>
+                                    <div>
+                                        <table style="border: 1px solid black">
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Full Name</th>
+                                                <th>Age</th>
+                                                <th>Why fully dependent?</th>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_1_1" maxlength="40"
+                                                        id="id_d_info_1_1" value="{{ ltc_request.d_info_1_1 }}"></td>
+                                                <td><input type="text" name="d_info_1_2" maxlength="40"
+                                                        id="id_d_info_1_2" value="{{ ltc_request.d_info_1_2 }}"></td>
+                                                <td><input type="number" name="d_info_1_3" maxlength="40"
+                                                        id="id_d_info_1_3" value="{{ ltc_request.d_info_1_3 }}"></td>
+                                                <td><input type="text" name="d_info_1_4" maxlength="40"
+                                                        id="id_d_info_1_4" value="{{ ltc_request.d_info_1_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_2_1" maxlength="40"
+                                                        id="id_d_info_2_1" value="{{ ltc_request.d_info_2_1 }}"></td>
+                                                <td><input type="text" name="d_info_2_2" maxlength="40"
+                                                        id="id_d_info_2_2" value="{{ ltc_request.d_info_2_2 }}"></td>
+                                                <td><input type="number" name="d_info_2_3" maxlength="40"
+                                                        id="id_d_info_2_3" value="{{ ltc_request.d_info_2_3 }}"></td>
+                                                <td><input type="text" name="d_info_2_4" maxlength="40"
+                                                        id="id_d_info_2_4" value="{{ ltc_request.d_info_2_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_3_1" maxlength="40"
+                                                        id="id_d_info_3_1" value="{{ ltc_request.d_info_3_1 }}"></td>
+                                                <td><input type="text" name="d_info_3_2" maxlength="40"
+                                                        id="id_d_info_3_2" value="{{ ltc_request.d_info_3_2 }}"></td>
+                                                <td><input type="number" name="d_info_3_3" maxlength="40"
+                                                        id="id_d_info_3_3" value="{{ ltc_request.d_info_3_3 }}"></td>
+                                                <td><input type="text" name="d_info_3_4" maxlength="40"
+                                                        id="id_d_info_3_4" value="{{ ltc_request.d_info_3_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_4_1" maxlength="40"
+                                                        id="id_d_info_4_1" value="{{ ltc_request.d_info_4_1 }}"></td>
+                                                <td><input type="text" name="d_info_4_2" maxlength="40"
+                                                        id="id_d_info_4_2" value="{{ ltc_request.d_info_4_2 }}"></td>
+                                                <td><input type="number" name="d_info_4_3" maxlength="40"
+                                                        id="id_d_info_4_3" value="{{ ltc_request.d_info_4_3 }}"></td>
+                                                <td><input type="text" name="d_info_4_4" maxlength="40"
+                                                        id="id_d_info_4_4" value="{{ ltc_request.d_info_4_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_5_1" maxlength="40"
+                                                        id="id_d_info_5_1" value="{{ ltc_request.d_info_5_1 }}"></td>
+                                                <td><input type="text" name="d_info_5_2" maxlength="40"
+                                                        id="id_d_info_5_2" value="{{ ltc_request.d_info_5_2 }}"></td>
+                                                <td><input type="number" name="d_info_5_3" maxlength="40"
+                                                        id="id_d_info_5_3" value="{{ ltc_request.d_info_5_3 }}"></td>
+                                                <td><input type="text" name="d_info_5_4" maxlength="40"
+                                                        id="id_d_info_5_4" value="{{ ltc_request.d_info_5_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_6_1" maxlength="40"
+                                                        id="id_d_info_6_1" value="{{ ltc_request.d_info_6_1 }}"></td>
+                                                <td><input type="text" name="d_info_6_2" maxlength="40"
+                                                        id="id_d_info_6_2" value="{{ ltc_request.d_info_6_2 }}"></td>
+                                                <td><input type="number" name="d_info_6_3" maxlength="40"
+                                                        id="id_d_info_6_3" value="{{ ltc_request.d_info_6_3 }}"></td>
+                                                <td><input type="text" name="d_info_6_4" maxlength="40"
+                                                        id="id_d_info_6_4" value="{{ ltc_request.d_info_6_4 }}"></td>
+                                            </tr>
+                                        </table>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label for="phone_number_for_contact">Phone Number for contact</label>
-                        <input type="number" name="phone_number_for_contact" maxlength="40" id="id_phone_number_for_contact" value="{{ ltc_request.phone_number_for_contact}}" readonly>
-                    </div>
-                    <!-- <div class="eight wide field">
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="amount_of_advance_required">Amount of advance required, if
+                                            any:</label>
+                                        <input type="number" name="amount_of_advance_required" maxlength="10"
+                                            id="id_advance_amount" value="{{ ltc_request.amount_of_advance_required}}"
+                                            readonly>
+                                    </div>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="certified_family_dependents">(i) Certified that family members
+                                                for whom the L.T.C. is claimed are residing with me and are wholly
+                                                dependent upon me. </label>
+                                            <input type="text" name="certified_family_dependents" maxlength="40"
+                                                id="id_certified_family_dependents"
+                                                value="{{ ltc_request.certified_family_dependents}}" readonly>
+                                        </div>
+
+                                        <div class="eight wide field">
+                                            <label for="certified_advance">(ii) Certified that the previous L.T.C.
+                                                advance drawn by me on </label>
+                                            <input name="certified_advance" id="id_certified_advance_1"
+                                                value="{{ ltc_request.certified_advance}}">
+                                            <label for="adjusted_month">has been adjusted in the month of </label>
+                                            <input type="text" name="adjusted_month" maxlength="40"
+                                                id="id_adjusted_month" value="{{ ltc_request.adjusted_month}}" readonly>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="date">Date</label>
+                                        <input type="date" name="date" id="id_date"
+                                            value="{{ ltc_request.date|date:'Y-m-d'}}" readonly>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="phone_number_for_contact">Phone Number for contact</label>
+                                            <input type="number" name="phone_number_for_contact" maxlength="40"
+                                                id="id_phone_number_for_contact"
+                                                value="{{ ltc_request.phone_number_for_contact}}" readonly>
+                                        </div>
+                                        <!-- <div class="eight wide field">
                         <label for="sign_faculty">Signature</label>
                         <input type="image" name="sign_faculty" maxlength="40" id="id_sign_faculty">
                     </div> -->
-                </div>
-                
+                                    </div>
 
-                <!-- <div class="eight wide field">
+
+                                    <!-- <div class="eight wide field">
                     <label for="recommendation">Specific recommendation of the Head of Department/Section</label>
                 </div>
 
@@ -424,54 +511,59 @@ Module
                     </div>
                 </div> -->
 
-                <!-- <div class="four wide field" style="float: right;">
+                                    <!-- <div class="four wide field" style="float: right;">
                     <label for="sign_director_registrar">Director/Registrar Signature</label>
                     <input type="image" name="sign_director_registrar" maxlength="40" id="id_sign_director_registrar">
                 </div> -->
-                {% if button == 1 %}
-                    <div class="two fields">
-                        <div class="eight wide field">
-                            <label for="username_employee">Username:</label>
-                            <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                                    {% if button == 1 %}
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="username_employee">Username:</label>
+                                            <input type="text" name="username_employee" id="username_employee"
+                                                class="ui search" placeholder="Enter Username">
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="designation_employee">Designation:</label>
+                                            <input type="text" name="designation_employee" id="designation_employee"
+                                                readonly>
+                                        </div>
+                                        <button id="check_button" class="ui primary button right floated">Check</button>
+                                    </div>
+                                    <div class="two fields">
+                                        <button id="forward-btn" class="ui primary button right floated" type="submit"
+                                            value="Forward">
+                                            Forward
+                                        </button>
+                                        <button id="reject-btn" class="ui primary red button right floated"
+                                            type="submit" value="Reject">
+                                            Reject
+                                        </button>
+                                    </div>
+
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+                                <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+                                <input type="hidden" id="from_designation" name="from_designation"
+                                    value="{{ from_designation }}">
+                            </form>
+
+
+
+
+                            <br>
+                            <br>
+
+
                         </div>
-                        <div class="eight wide field">
-                            <label for="designation_employee">Designation:</label>
-                            <input type="text" name="designation_employee" id="designation_employee" readonly>
-                        </div>
-                        <button id="check_button" class="ui primary button right floated">Check</button>
+                        <br>
+                        <div class="extra content"></div>
                     </div>
-                    <div class="two fields">
-                        <button id="forward-btn" class="ui primary button right floated" type="submit" value="Forward">
-                            Forward
-                        </button>
-                        <button id="reject-btn" class="ui primary red button right floated" type="submit" value="Reject">
-                            Reject
-                        </button>
-                    </div>
-
-                {% endif %}
-            </div>
-            <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
-            <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
-            <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
-        </form>
-
-
-
-
-        <br>
-        <br>
-
-
-    </div>
-    <br>
-    <div class="extra content"></div>
-</div>
                     {% endblock %}
                 </div>
             </div>
         </div>
-                
+
 
     </div>
 
@@ -538,8 +630,8 @@ Module
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#check_button').click(function(event) {
+    $(document).ready(function () {
+        $('#check_button').click(function (event) {
             event.preventDefault();
             var selectedUsername = $('#username_employee').val();
 
@@ -548,7 +640,7 @@ Module
                 url: '/hr2/search_employee/',
                 type: 'GET',
                 data: { search: selectedUsername }, // Pass search text as query parameter
-                success: function(data) {
+                success: function (data) {
                     if (data.designation) {
                         // Employee exists, update designation
                         $('#designation_employee').val(data.designation);
@@ -558,7 +650,7 @@ Module
                         alert("Employee doesn't exist");
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error(error);
                     // Show error message
                     alert("An error occurred while processing your request.");
@@ -570,16 +662,16 @@ Module
 </script>
 
 <script>
-    $(document).ready(function() {
-       
+    $(document).ready(function () {
+
         // Handle Forward and Reject button clicks
-        $('#forward-btn').click(function(event) {
+        $('#forward-btn').click(function (event) {
             event.preventDefault();
             // Perform actions for forwarding
             handleForwardOrReject(0);
         });
 
-        $('#reject-btn').click(function(event) {
+        $('#reject-btn').click(function (event) {
             event.preventDefault();
             // Perform actions for rejecting
             handleForwardOrReject(1);
@@ -602,12 +694,12 @@ Module
                 url: '/hr2/file_handle/',
                 type: 'POST',
                 data: formData, // Send the serialized form data
-                success: function(data) {
+                success: function (data) {
                     // Handle success response, if needed
                     alert("Request it succefull.");
                     console.log(data);
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error(error);
                     // Show error message, if needed
                     alert("An error occurred while processing your request.");
