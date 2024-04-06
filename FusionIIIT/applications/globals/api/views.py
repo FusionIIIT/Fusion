@@ -84,7 +84,7 @@ def profile(request, username=None):
         skills = serializers.HasSerializer(student.has_set.all(),many=True).data
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
-        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).datap
+        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
         project = serializers.ProjectSerializer(student.project_set.all(), many=True).data
         achievement = serializers.AchievementSerializer(student.achievement_set.all(), many=True).data
         publication = serializers.PublicationSerializer(student.publication_set.all(), many=True).data
