@@ -5,7 +5,6 @@ from applications.health_center.models import *
 from datetime import datetime, timedelta, time,date
 from django.db import transaction
 from notification.views import  healthcare_center_notif
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -58,7 +57,7 @@ def student_request_api(request):
                 doctor_id = request.data['doctor_id']
             except:
                 return Response({'message': 'Please enter doctor id'}, status=status.HTTP_404_NOT_FOUND)
-            request.data['schedule'] =get_object_or_404(Schedule,doctor_id=request.data['doctor_id'],day=day).id
+            request.data['schedule'] =get_object_or_404(Doctors_Schedule,doctor_id=request.data['doctor_id'],day=day).id
             comp_id = ExtraInfo.objects.filter(user_type='compounder')
             serializer = serializers.AppointmentSerializer(data=request.data)
             if serializer.is_valid():
@@ -110,7 +109,7 @@ def student_view_api(request):                                                  
         medicines = serializers.PrescribedMedicineSerializer(Prescribed_medicine.objects.all(),many=True).data
         complaints = serializers.ComplaintSerializer(Complaint.objects.filter(user_id=user_id).order_by('-date'),many=True).data
         days = Constants.DAYS_OF_WEEK
-        schedule=serializers.ScheduleSerializer(Schedule.objects.all().order_by('doctor_id'),many=True).data
+        schedule=serializers.ScheduleSerializer(Doctors_Schedule.objects.all().order_by('doctor_id'),many=True).data
         doctors=serializers.DoctorSerializer(Doctor.objects.filter(active=True),many=True).data
         count=Counter.objects.all()
         if count:
@@ -171,11 +170,11 @@ def compounder_request_api(request):
                 day = request.data['day']
             except:
                 return Response({'message': 'Please enter valid day'}, status=status.HTTP_404_NOT_FOUND)
-            sc =  Schedule.objects.filter(doctor_id=doctor_id, day=day)
+            sc =  Doctor.objects.filter(doctor_id=doctor_id, day=day)
             if sc.count() == 0:
                 serializer = serializers.ScheduleSerializer(data=request.data)
             else:
-                sc = get_object_or_404(Schedule,doctor_id=doctor_id,day=day)
+                sc = get_object_or_404(Doctors_Schedule,doctor_id=doctor_id,day=day)
                 serializer = serializers.ScheduleSerializer(sc,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -191,7 +190,7 @@ def compounder_request_api(request):
                 day = request.data['day']
             except:
                 return Response({'message': 'Please enter valid day'}, status=status.HTTP_404_NOT_FOUND)
-            sc = get_object_or_404(Schedule,doctor_id=doctor_id,day=day)
+            sc = get_object_or_404(Doctors_Schedule,doctor_id=doctor_id,day=day)
             sc.delete()
             resp={'message':'Schedule Deleted successfully'}
             return Response(data=resp,status=status.HTTP_200_OK)
@@ -327,7 +326,7 @@ def compounder_view_api(request):                                               
         appointments_future= serializers.AppointmentSerializer(Appointment.objects.filter(date__gt=datetime.now()).order_by('date'),many=True).data
         stocks = serializers.StockSerializer(Stock.objects.all(),many=True).data
         days = Constants.DAYS_OF_WEEK
-        schedule= serializers.ScheduleSerializer(Schedule.objects.all().order_by('doctor_id'),many=True).data
+        schedule= serializers.ScheduleSerializer(Doctors_Schedule.objects.all().order_by('doctor_id'),many=True).data
         expired= serializers.ExpirySerializer(Expiry.objects.filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date'),many=True).data
         live_meds= serializers.ExpirySerializer(Expiry.objects.filter(returned=False).order_by('quantity'),many=True).data
         count= Counter.objects.all()
@@ -339,7 +338,7 @@ def compounder_view_api(request):                                               
         Counter.objects.create(count=0,fine=0)
         count= serializers.CounterSerializer(Counter.objects.get()).data
         hospitals=serializers.HospitalSerializer(Hospital.objects.all(),many=True).data
-        schedule= serializers.ScheduleSerializer(Schedule.objects.all().order_by('day','doctor_id'),many=True).data
+        schedule= serializers.ScheduleSerializer(Doctors_Schedule.objects.all().order_by('day','doctor_id'),many=True).data
         doctors= serializers.DoctorSerializer(Doctor.objects.filter(active=True).order_by('id'),many=True).data
 
         resp= {'days': days, 'count': count,'expired':expired,
@@ -352,5 +351,3 @@ def compounder_view_api(request):                                               
     else:
         resp = {'message': 'invalid request'}
         return Response(data=resp,status=status.HTTP_404_NOT_FOUND)                                   # compounder view ends
-
-

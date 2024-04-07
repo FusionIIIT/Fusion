@@ -1,18 +1,19 @@
 import json
-from datetime import datetime, timedelta, time
+from datetime import date, datetime, timedelta, time
 import xlrd
 import os
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
-                     Counter, Doctor, Expiry, Hospital, Hospital_admit,
-                     Medicine, Prescribed_medicine, Prescription, Schedule,
-                     Stock)
+                     Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
+                     Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
+                     Stock,SpecialRequest,Announcements)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
 
 
@@ -40,7 +41,7 @@ def healthcenter(request):
 def compounder_view(request):  
     
     '''
-    This function handles post reques for compounder and render pages accordingly
+    This function handles post requests for compounder and render pages accordingly
 
     @param:
         request - contains metadata about the requested page
@@ -79,19 +80,23 @@ def compounder_view(request):
             users = ExtraInfo.objects.select_related('user','department').filter(user_type='student')
             stocks = Stock.objects.all()
             days = Constants.DAYS_OF_WEEK
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
-            presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().order_by('-date')
-            medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
+            presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-date')
+            medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
             count=Counter.objects.get()
             hospitals=Hospital.objects.all()
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('day','pathologist_id')
+            
             doctors=Doctor.objects.filter(active=True).order_by('id')
+            pathologists=Pathologist.objects.filter(active=True).order_by('id')
 
             doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
              
@@ -100,8 +105,8 @@ def compounder_view(request):
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors, 'doct': doct,
-                           'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
+                           'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 'doct': doct,
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -137,12 +142,15 @@ def student_view(request):
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
             appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
-            prescription = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').filter(user_id=user_id).order_by('-date')
-            medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
+            prescription = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-date')
+            medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
             complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
             days = Constants.DAYS_OF_WEEK
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             doctors=Doctor.objects.filter(active=True)
+            pathologists=Pathologist.objects.filter(active=True)
+            
             count=Counter.objects.all()
 
             if count:
@@ -155,9 +163,9 @@ def student_view(request):
 
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
-                           'ambulances': ambulances, 'doctors': doctors, 'days': days,'count':count,
+                           'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule, 'users': users,'doct': doct, 'curr_date': datetime.now().date()})
+                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users,'doct': doct, 'curr_date': datetime.now().date()})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
@@ -238,6 +246,36 @@ def doctor_entry(request):
             pass
     return HttpResponse("Hello")
 
+def pathologist_entry(request):
+    '''
+        This function inputs new pathologist' details into Doctor class in database 
+        @param:
+            request - contains metadata about the requested page
+
+    '''
+    excel = xlrd.open_workbook(os.path.join(os.getcwd(), 'dbinsertscripts/healthcenter/Pathologist-List.xlsx'))
+    z = excel.sheet_by_index(0)
+
+    for i in range(1, 5):
+        try:
+            name = str(z.cell(i,0).value)
+            print(name)
+            phone = str(int(z.cell(i,1).value))
+            print(phone)
+            spl = str(z.cell(i,2).value)
+            u = Pathologist.objects.create(
+                        pathologist_name = name,
+                        pathologist_phone = phone,
+                        specialization=spl
+            )
+            print("Pathologist done -> ")
+        except Exception as e:
+            print(e)
+            print(i)
+            pass
+    return HttpResponse("Hello")
+
+
 def compounder_entry(request):
     '''
         This function inputs new compounder details into Doctor class in database 
@@ -311,3 +349,114 @@ def compounder_entry(request):
             print(i)
             pass
     return HttpResponse("Hello")
+
+@login_required(login_url='/accounts/login')      
+def publish(request):
+    return render(request,'../templates/health_center/publish.html' ,{})
+
+
+def browse_announcements():
+    """
+    This function is used to browse Announcements Department-Wise
+    made by different faculties and admin.
+
+    @variables:
+        cse_ann - Stores CSE Department Announcements
+        ece_ann - Stores ECE Department Announcements
+        me_ann - Stores ME Department Announcements
+        sm_ann - Stores SM Department Announcements
+        all_ann - Stores Announcements intended for all Departments
+        context - Dictionary for storing all above data
+
+    """
+    cse_ann = Announcements.objects.filter(department="CSE")
+    ece_ann = Announcements.objects.filter(department="ECE")
+    me_ann = Announcements.objects.filter(department="ME")
+    sm_ann = Announcements.objects.filter(department="SM")
+    all_ann = Announcements.objects.filter(department="ALL")
+
+    context = {
+        "cse" : cse_ann,
+        "ece" : ece_ann,
+        "me" : me_ann,
+        "sm" : sm_ann,
+        "all" : all_ann
+    }
+
+    return context
+
+def get_to_request(username):
+    """
+    This function is used to get requests for the receiver
+
+    @variables:
+        req - Contains request queryset
+
+    """
+    req = SpecialRequest.objects.filter(request_receiver=username)
+    return req
+
+
+
+@login_required(login_url='/accounts/login')
+def announcement(request):
+    """
+    This function is contains data for Requests and Announcement Related methods.
+    Data is added to Announcement Table using this function.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        usrnm, user_info, ann_anno_id - Stores data needed for maker
+        batch, programme, message, upload_announcement,
+        department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
+
+    """
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    num = 1
+    ann_anno_id = user_info.id
+    requests_received = get_to_request(usrnm)
+    if request.method == 'POST':
+        formObject = Announcements()
+        # formObject.key = Projects.objects.get(id=request.session['projectId'])
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)
+        # formObject.anno_id=1
+        formObject.anno_id=user_info
+        formObject.batch = request.POST['batch']
+        formObject.programme = request.POST['programme']
+        formObject.message = request.POST['announcement']
+        formObject. upload_announcement = request.FILES.get('upload_announcement')
+        formObject.department = request.POST['department']
+        formObject.ann_date = date.today()
+        #formObject.amount = request.POST['amount']
+        formObject.save()
+        return redirect('../../compounder/')    
+        
+        # batch = request.POST.get('batch', '')
+        # programme = request.POST.get('programme', '')
+        # message = request.POST.get('announcement', '')
+        # upload_announcement = request.FILES.get('upload_announcement')
+        # department = request.POST.get('department')
+        # ann_date = date.today()
+        # user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
+        # getstudents = ExtraInfo.objects.select_related('user')
+        # recipients = User.objects.filter(extrainfo__in=getstudents)
+
+        # obj1, created = Announcements.objects.get_or_create(anno_id=user_info,
+        #                             batch=batch,
+        #                             programme=programme,
+        #                             message=message,
+        #                             upload_announcement=upload_announcement,
+        #                             department = department,
+        #                             ann_date=ann_date)
+        # # department_notif(usrnm, recipients , message)
+        
+    context = browse_announcements()
+    return render(request, 'health_center/make_announce_comp.html', {"user_designation":user_info.user_type,
+                                                            "announcements":context,
+                                                            "request_to":requests_received
+                                                        })  
