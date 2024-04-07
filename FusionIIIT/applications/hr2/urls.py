@@ -49,4 +49,27 @@ urlpatterns = [
     url(r'^form_mangement_appraisal/',views.form_mangement_appraisal, name='form_mangement_appraisal'),
     url(r'^form_mangement_appraisal_hr/(?P<id>\d+)/$',views.form_mangement_appraisal_hr, name='form_mangement_appraisal_hr'),
     url(r'^form_mangement_appraisal_hod/',views.form_mangement_appraisal_hod, name='form_mangement_appraisal_hod'),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ]
