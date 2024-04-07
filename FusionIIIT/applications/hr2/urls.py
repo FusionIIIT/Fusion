@@ -36,12 +36,16 @@ urlpatterns = [
     url(r'^form_mangement_cpda/',views.form_mangement_cpda, name='form_mangement_cpda'),
     url(r'^form_mangement_cpda_hr/(?P<id>\d+)/$',views.form_mangement_cpda_hr, name='form_mangement_cpda_hr'),
     url(r'^form_mangement_cpda_hod/',views.form_mangement_cpda_hod, name='form_mangement_cpda_hod'),
+    url('form_view_cpda/(?P<id>\d+)/$', views.form_view_cpda, name='form_view_cpda'),
+
 
     url(r'^leave_form/(?P<id>\d+)/$', views.leave_form,name='leaveForm'),
     url(r'^view_leave_form/(?P<id>\d+)/$', views.view_leave_form,name='view_leave_form'),
     url(r'^form_mangement_leave/',views.form_mangement_leave, name='form_mangement_leave'),
     url(r'^form_mangement_leave_hr/(?P<id>\d+)/$',views.form_mangement_leave_hr, name='form_mangement_leave_hr'),
     url(r'^form_mangement_leave_hod/',views.form_mangement_leave_hod, name='form_mangement_leave_hod'),
+    url('form_view_leave/(?P<id>\d+)/$', views.form_view_leave, name='form_view_leave'),
+
 
 
     url(r'^appraisal_form/(?P<id>\d+)/$', views.appraisal_form,name='appraisalForm'),
@@ -49,6 +53,8 @@ urlpatterns = [
     url(r'^form_mangement_appraisal/',views.form_mangement_appraisal, name='form_mangement_appraisal'),
     url(r'^form_mangement_appraisal_hr/(?P<id>\d+)/$',views.form_mangement_appraisal_hr, name='form_mangement_appraisal_hr'),
     url(r'^form_mangement_appraisal_hod/',views.form_mangement_appraisal_hod, name='form_mangement_appraisal_hod'),
+    url('form_view_appraisal/(?P<id>\d+)/$', views.form_view_appraisal, name='form_view_appraisal'),
+
 
 
 

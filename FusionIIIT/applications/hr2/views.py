@@ -1441,6 +1441,8 @@ def leave_pre_processing(request):
     
     data['office_use'] = office_use.rstrip(',')
 
+    print(data['office_use'])
+
     return data
 
 def reverse_leave_pre_processing(data):
@@ -1471,6 +1473,8 @@ def reverse_leave_pre_processing(data):
         
 
     office_use = getattr(data, 'office_use')
+    print(office_use)
+    print(data.dealing_assistant)
 
     if office_use is not None:
         office_use = office_use.split(',')
@@ -1657,10 +1661,10 @@ def form_view_leave(request , id):
 
 # ek or bna lena
 def view_leave_form(request, id):
-
     leave_request = get_object_or_404(LeaveForm, id=id)
+
     
-    print(leave_request)
+    print("1",leave_request.dealing_assistant)
     leave_request = reverse_leave_pre_processing(leave_request)
 
     print(leave_request)
