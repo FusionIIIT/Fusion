@@ -1,0 +1,253 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+
+
+
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                
+
+                <div class="eight wide field">
+                    <label for="post_title">Name</label>
+                    <input type="text" name="name" maxlength="40" required id="id_name">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Designation</label>
+                    <input type="text" name="designation" maxlength="40" required id="id_designation">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">P.F. No.</label>
+                    <input type="number" name="pf_no" maxlength="30" required id="id_pf_no">
+                </div>
+                <div class="fifteen wide field">
+                    <label for="post_title">Purpose</label>
+                    <input type="text" name="purpose" maxlength="40" required id="id_purpose">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Amount Required</label>
+                    <input type="number" name="amount_required" maxlength="40" required id="id_amount_required">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Advance (PDA) due for adjustment, if any</label>
+                    <input type="number" name="adjusted_pda" maxlength="40" required id="id_adjusted_pda">
+                </div>
+
+
+                <div>
+                    <label for="text" >I hereby declare that I have uploaded all my achievements (including publications, visits, projects etc.) on <b>Institute's website and EIS module on</b></label>
+                    <div class="three wide field">
+                        <input type="date" name="achievements_uploaded_date">
+                    </div>
+                    <br>
+                </div>
+                
+                
+                <div class="eight wide field" style="float: right;">
+                    <!-- <div class="eight wide field">
+                        <label for="post_title">Signature of Applicant</label>
+                        <input type="image" name="sign_applicant" maxlength="40" required id="id_sign_faculty">
+                    </div> -->
+                    <div class="eight wide field">
+                        <label for="post_title">Date</label>
+                        <input type="date" name="submission_date" maxlength="40" required id="id_contact">
+                    </div>
+                </div>
+                <br><br><br><br><br><br><br><br>
+                    
+                <div class="three fields ">
+                    <label for="post_title"><b>1. Recommended & Forwarded by HOD: </b></label>
+                    <div class="field">
+                        <label for="recomm_hod_confirm">Recommended & Forwarded by HOD:</label>
+                        <select class="ui dropdown" id="recomm_hod_confirm" name="recomm_hod_confirm">
+                            <option value="True">Yes</option>
+                            <option value="False">No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="three fields">
+                    <label for="post_title"><b>2. Date of Module on EIS module is verified: (Dean RSPC) </b></label>
+                    <div class="field">
+                        <label for="date_rspc_confirm">Date of Module on EIS module is verified (Dean RSPC):</label>
+                        <select class="ui dropdown" id="date_rspc_confirm" name="date_rspc_confirm">
+                            <option value="True">Yes</option>
+                            <option value="False">No</option>
+                        </select>
+                    </div>
+                    
+                </div>
+
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Estt. Section</u></h4>
+                </div>
+                <br><br>
+                 
+                <div class="eight wide field">
+                    <label for="post_title">Balance available as on date:</label>
+                    <input type="number" name="balance_available" maxlength="40" required id="id_balance_available">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Advance amount entered in PDA Register Page no.</label>
+                    <input type="number" name="advance_amount_pda" maxlength="40" required id="id_advance_amount_pda">
+                </div>
+                <br><br>
+               
+                <div class="two fields">
+                    <div class="fifteen wide field" style="float: left;">
+                        <label>Dealing Asstt. (Estt.) <br> Name</label>
+                        <input type="text" name="dealing_asstt_name" maxlength="40" required id="id_dealing_asstt_name">
+                    </div>
+                    <div class="fifteen wide field" style="float: right;">
+                        <label>AR/DR (Estt.) <br> Name</label>
+                        <input type="text" name="ar_dr_name" maxlength="40" required id="id_ar_dr_name">
+                    </div>
+                </div>
+                
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Internal Audit</u></h4>
+                </div>
+                <br><br>
+
+                <div class="eight wide field">
+                    <label for="post_title">Entry checked in PDA Register for Rs.</label>
+                    <input type="number" name="check_amount" maxlength="40" required id="id_check_amount">
+                </div>
+                <br><br>
+               
+                <div class="two fields">
+                    <div class="fifteen wide field" style="float: left;">
+                        <label>Dealing Asstt. (IA) <br> Name</label>
+                        <input type="text" name="dealing_asstt_ia_name" maxlength="40" required id="id_dealing_asstt_ia_name">
+                    </div>
+                    <div class="fifteen wide field" style="float: right;">
+                        <label>AR/DR (IA) <br> Name</label>
+                        <input type="text" name="ar_dr_ia_name" maxlength="40" required id="id_ar_dr_ia_name">
+                    </div>
+                </div>
+
+                <hr>
+
+               <div style="text-align: center;">
+                <div class="field">
+                    <label for="sanction_status">Sanction Status:</label>
+                    <select id="sanction_status" name="sanction_status">
+                        <option value="True">Sanctioned</option>
+                        <option value="False">Not Sanctioned</option>
+                    </select>
+                </div>
+                
+                </div>
+
+                <br>
+                <!-- <div class="fifteen wide field" style="text-align: center;">
+                    <label for="post-title"><h4>Director</h4> </label>
+                    <input type="image" name="sign_director" maxlength="40" required id="id_sign_director">
+                </div> -->
+                <div class="eight wide field">
+                    <label for="post_title"><u>AR(F&A)</u> for payment of advance <br> Copy to:</label>
+                    <input type="number" name="copy_to" maxlength="40" required id="id_copy_to">
+                    <label for="post-title">for records</label>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="username_employee">Username:</label>
+                        <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="designation_employee">Designation:</label>
+                        <input type="text" name="designation_employee" id="designation_employee" readonly>
+                    </div>
+                    <div class="field">
+                        <button id="check_button" class="ui primary button right floated">Check</button>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+    });
+
+    // Check if the global variable 'global_var' equals 'faculty'
+    if ("faculty" === "{{ global_var }}") {
+        // If it equals 'faculty', enable the input fields
+        document.getElementById("id_balance_available").disabled = true;
+        document.getElementById("id_advance_amount_pda").disabled = true;
+        document.getElementById("id_dealing_asstt_name").disabled = true;
+        document.getElementById("id_ar_dr_name").disabled = true;
+
+        document.getElementById("id_check_amount").disabled = true;
+        document.getElementById("id_dealing_asstt_ia_name").disabled = true;
+        document.getElementById("id_ar_dr_ia_name").disabled = true;
+        document.getElementById("sanction_status").disabled = true;
+        document.getElementById("id_copy_to").disabled = true;
+    } else {
+        // If it doesn't equal 'faculty', disable the input fields
+        document.getElementById("id_balance_available").disabled = false;
+        document.getElementById("id_advance_amount_pda").disabled = false;
+        document.getElementById("id_dealing_asstt_name").disabled = false;
+        document.getElementById("id_ar_dr_name").disabled = false;
+
+        document.getElementById("id_check_amount").disabled = false;
+        document.getElementById("id_dealing_asstt_ia_name").disabled = false;
+        document.getElementById("id_ar_dr_ia_name").disabled = false;
+        document.getElementById("sanction_status").disabled = false;
+        document.getElementById("id_copy_to").disabled = false;
+    }
+
+    
+</script>

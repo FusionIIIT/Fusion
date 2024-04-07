@@ -1,0 +1,462 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+            <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                <!-- {% if employee %}
+                <div class="ui large header" href="">
+                    {{ employee.user.first_name}}
+                    {{ employee.user.last_name}}
+                    <span class="right floated meta">
+                        {{ employee.department.name}}
+                    </span>
+                </div>
+                {% else %}
+                <div class="ui large header" href="">
+                    {{ request.user.first_name}}
+                    {{ request.user.last_name}}
+                    <span class="right floated meta">
+                        {{ request.user.extrainfo.department.name}}
+                    </span>
+                </div>
+                {% endif %} -->
+
+                <!-- <div class="meta">
+                    {% for i in Curr_desig %}
+                    <span> {% comment %}Should this be inside if else?{% endcomment %}
+                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                        {% else %}
+                        {{ i }}
+                        {% endif %}
+                    </span>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div> -->
+        </div>
+
+
+
+
+
+        </div>
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">CPDA Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+
+
+
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                
+
+                <div class="eight wide field">
+                    <label for="post_title">Name</label>
+                    <input type="text" name="name" maxlength="40" required id="id_name" value="{{ cpda_request.name }}" readonly>
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Designation</label>
+                    <input type="text" name="designation" maxlength="40" required id="id_designation" value="{{ cpda_request.designation }}" readonly>
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">P.F. No.</label>
+                    <input type="number" name="pf_no" maxlength="30" required id="id_pf_no" value="{{ cpda_request.pf_no }}" readonly>
+                </div>
+                <div class="fifteen wide field">
+                    <label for="post_title">Purpose</label>
+                    <input type="text" name="purpose" maxlength="40" required id="id_purpose" value="{{ cpda_request.purpose }}" readonly>
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Amount Required</label>
+                    <input type="number" name="amount_required" maxlength="40" required id="id_amount_required" value="{{ cpda_request.amount_required }}" readonly>
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Advance (PDA) due for adjustment, if any</label>
+                    <input type="number" name="adjusted_pda" maxlength="40" required id="id_adjusted_pda" value="{{ cpda_request.adjusted_pda }}" readonly>
+                </div>
+
+
+                <div>
+                    <label for="text" >I hereby declare that I have uploaded all my achievements (including publications, visits, projects etc.) on <b>Institute's website and EIS module on</b></label>
+                    <div class="three wide field">
+                        <input type="date" name="achievements_uploaded_date" value="{{ cpda_request.achievements_uploaded_date|date:'Y-m-d' }}" readonly>
+                    </div>
+                    <br>
+                </div>
+                
+                
+                <div class="eight wide field" style="float: right;">
+                    <!-- <div class="eight wide field">
+                        <label for="post_title">Signature of Applicant</label>
+                        <input type="image" name="sign_applicant" maxlength="40" required id="id_sign_faculty">
+                    </div> -->
+                    <div class="eight wide field">
+                        <label for="post_title">Date</label>
+                        <input type="date" name="submission_date" maxlength="40" required id="id_contact" value="{{ cpda_request.submission_date|date:'Y-m-d' }}" readonly>
+                    </div>
+                </div>
+                <br><br><br><br><br><br><br><br>
+                    
+                <div class="three fields ">
+                    <label for="post_title"><b>1. Recommended & Forwarded by HOD: </b></label>
+                    <div class="field">
+                        <label for="recomm_hod_confirm">Recommended & Forwarded by HOD:</label>
+                        <select class="ui dropdown" id="recomm_hod_confirm" name="recomm_hod_confirm">
+                            <option value="True">Yes</option>
+                            <option value="False">No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="three fields">
+                    <label for="post_title"><b>2. Date of Module on EIS module is verified: (Dean RSPC) </b></label>
+                    <div class="field">
+                        <label for="date_rspc_confirm">Date of Module on EIS module is verified (Dean RSPC):</label>
+                        <select class="ui dropdown" id="date_rspc_confirm" name="date_rspc_confirm">
+                            <option value="True">Yes</option>
+                            <option value="False">No</option>
+                        </select>
+                    </div>
+                    
+                </div>
+
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Estt. Section</u></h4>
+                </div>
+                <br><br>
+
+                <div class="eight wide field">
+                    <label for="post_title">Balance available as on date:</label>
+                    <input type="number" name="balance_available" maxlength="40" required id="id_balance_available" value="{{ cpda_request.balance_available}}" readonly>
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Advance amount entered in PDA Register Page no.</label>
+                    <input type="number" name="advance_amount_pda" maxlength="40" required id="id_advance_amount_pda" value="{{ cpda_request.advance_amount_pda}}" readonly>
+                </div>
+                <br><br>
+               
+                <div class="two fields">
+                    <div class="fifteen wide field" style="float: left;">
+                        <label>Dealing Asstt. (Estt.) <br> Name</label>
+                        <input type="text" name="dealing_asstt_name" maxlength="40" required id="id_dealing_asstt_name" value="{{ cpda_request.dealing_asstt_name}}" readonly>
+                    </div>
+                    <div class="fifteen wide field" style="float: right;">
+                        <label>AR/DR (Estt.) <br> Name</label>
+                        <input type="text" name="ar_dr_name" maxlength="40" required id="id_ar_dr_name" value="{{ cpda_request.ar_dr_name}}" readonly>
+                    </div>
+                </div>
+                
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Internal Audit</u></h4>
+                </div>
+                <br><br>
+
+                <div class="eight wide field">
+                    <label for="post_title">Entry checked in PDA Register for Rs.</label>
+                    <input type="number" name="check_amount" maxlength="40" required id="id_check_amount" value="{{ cpda_request.check_amount}}" readonly>
+                </div>
+                <br><br>
+               
+                <div class="two fields">
+                    <div class="fifteen wide field" style="float: left;">
+                        <label>Dealing Asstt. (IA) <br> Name</label>
+                        <input type="text" name="dealing_asstt_ia_name" maxlength="40" required id="id_dealing_asstt_ia_name" value="{{ cpda_request.dealing_asstt_ia_name}}" readonly>
+                    </div>
+                    <div class="fifteen wide field" style="float: right;">
+                        <label>AR/DR (IA) <br> Name</label>
+                        <input type="text" name="ar_dr_ia_name" maxlength="40" required id="id_ar_dr_ia_name" value="{{ cpda_request.ar_dr_ia_name}}" readonly>
+                    </div>
+                </div>
+
+                <hr>
+
+               <div style="text-align: center;">
+                <div class="field">
+                    <label for="sanction_status">Sanction Status:</label>
+                    <select class="ui dropdown" id="sanction_status" name="sanction_status">
+                        <option value="True">Sanctioned</option>
+                        <option value="False">Not Sanctioned</option>
+                    </select>
+                </div>
+                
+                </div>
+
+                <br>
+                <!-- <div class="fifteen wide field" style="text-align: center;">
+                    <label for="post-title"><h4>Director</h4> </label>
+                    <input type="image" name="sign_director" maxlength="40" required id="id_sign_director">
+                </div> -->
+                <div class="eight wide field">
+                    <label for="post_title"><u>AR(F&A)</u> for payment of advance <br> Copy to:</label>
+                    <input type="number" name="copy_to" maxlength="40" required id="id_copy_to" value="{{ cpda_request.copy_to}}" readonly>
+                    <label for="post-title">for records</label>
+                </div>
+
+               
+                {% if button == 1 %}
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label for="username_employee">Username:</label>
+                            <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                        </div>
+                        <div class="eight wide field">
+                            <label for="designation_employee">Designation:</label>
+                            <input type="text" name="designation_employee" id="designation_employee" readonly>
+                        </div>
+                        <button id="check_button" class="ui primary button right floated">Check</button>
+                    </div>
+                    <div class="two fields">
+                        <button id="forward-btn" class="ui primary button right floated" type="submit" value="Forward">
+                            Forward
+                        </button>
+                        <button id="reject-btn" class="ui primary red button right floated" type="submit" value="Reject">
+                            Reject
+                        </button>
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </form>
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+        
+        
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    /*$(document).ready(function(){
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        setTimeout(loader, 1750);
+    });
+
+    function loader() {
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        $("#loader").removeClass("active");
+        $("#loader").addClass("disabled");
+    }*/
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+       
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function(event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function(event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            handleForwardOrReject(1);
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#cpda_form').serialize(); // Serialize the form data
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation
+            });
+            // Fire an AJAX request to handle the action
+            $.ajax({
+                url: '/hr2/file_handle/',
+                type: 'POST',
+                data: formData, // Send the serialized form data
+                success: function(data) {
+                    // Handle success response, if needed
+                    alert("Request it succefull.");
+                    console.log(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

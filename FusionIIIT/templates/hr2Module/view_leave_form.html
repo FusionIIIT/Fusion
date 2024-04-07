@@ -1,0 +1,607 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+                <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                <!-- {% if employee %}
+                <div class="ui large header" href="">
+                    {{ employee.user.first_name}}
+                    {{ employee.user.last_name}}
+                    <span class="right floated meta">
+                        {{ employee.department.name}}
+                    </span>
+                </div>
+                {% else %}
+                <div class="ui large header" href="">
+                    {{ request.user.first_name}}
+                    {{ request.user.last_name}}
+                    <span class="right floated meta">
+                        {{ request.user.extrainfo.department.name}}
+                    </span>
+                </div>
+                {% endif %} -->
+
+                <!-- <div class="meta">
+                    {% for i in Curr_desig %}
+                    <span> {% comment %}Should this be inside if else?{% endcomment %}
+                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                        {% else %}
+                        {{ i }}
+                        {% endif %}
+                    </span>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div> -->
+            </div>
+
+
+
+
+
+        </div>
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Leave Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+
+
+
+
+
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        th,
+                        td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: center;
+                        }
+
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+
+
+
+                            <form method="post" id="editDetail" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                                    value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Name</label>
+                                        <input type="text" name="name" maxlength="40" required id="id_name"
+                                            value="{{ leave_request.name }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Designation</label>
+                                        <input type="text" name="designation" maxlength="40" id="id_designation"
+                                            value="{{ leave_request.designation }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Application Date</label>
+                                        <input type="Date" name="application_date" id="application_date"
+                                            value="{{ leave_request.application_date|date:'Y-m-d' }}" readonly>
+                                    </div>
+                                    <div class="fifteen wide field">
+                                        <label for="post_title">PF Number</label>
+                                        <input type="number" name="application_pf_no" maxlength="40" id="pf_no"
+                                            value="{{ leave_request.application_pf_no }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Department/Discipline</label>
+                                        <input type="text" name="discipline" maxlength="40" id="discipline"
+                                            value="{{ leave_request.discipline }}" readonly>
+                                    </div>
+
+
+
+                                    <div style="text-align: center;">
+                                        <div class="field">
+                                            <label for="nature_of_leave">Nature of leave :</label>
+                                            <select id="nature_of_leave" name="nature_of_leave">
+                                                <option value="Casual">Casual</option>
+                                                <option value="vacaction">Vacation</option>
+                                                <option value="earned">Earned</option>
+                                                <option value="commuted leave">Commuted Leave</option>
+                                                <option value="specail casual leave">Special Casual Leave</option>
+                                                <option value="restricted leave">Restricted Holiday</option>
+                                                <option value="station leave">Station Leave</option>
+
+                                            </select>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> </label>
+                                        <input type="date" name="nature_leave_start_date" maxlength="40"
+                                            id="nature_leave_start_date"
+                                            value="{{ leave_request.nature_leave_start_date|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> </label>
+                                        <input type="date" name="nature_leave_end_date" maxlength="40"
+                                            id="nature_leave_end_date"
+                                            value="{{ leave_request.nature_leave_end_date|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> Station Leave </label>
+                                        <input type="text" name="station_leave" maxlength="40" id="station_leave"
+                                            value="{{ leave_request.station_leave }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> </label>
+                                        <input type="date" name="station_leave_start_date" maxlength="40"
+                                            id="station_leave_start_date"
+                                            value="{{ leave_request.station_leave_start_date|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> </label>
+                                        <input type="date" name="station_leave_end_date" maxlength="40"
+                                            id="station_leave_end_date"
+                                            value="{{ leave_request.station_leave_end_date|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Purpose</label>
+                                        <input type="text" name="purpose" maxlength="40" id="purpose"
+                                            value="{{ leave_request.purpose }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Leave Address</label>
+                                        <input type="text" name="leave_address" maxlength="40" id="leave_address"
+                                            value="{{ leave_request.purpose }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Academic Responsibility Assigned to </label>
+                                        <input type="text" name="academic_responsibility" maxlength="40"
+                                            id="academic_responsibility"
+                                            value="{{ leave_request.academic_responsibility }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Administrative Responsibility Assigned to </label>
+                                        <input type="text" name="addministrative_responsibilty_assigned" maxlength="40"
+                                            id="addministrative_responsibilty_assigned"
+                                            value="{{ leave_request.addministrative_responsibilty_assigned }}" readonly>
+                                    </div>
+
+
+
+                                    <div class="four wide field" style="float: right;">
+                                        <label for="sign_director_registrar">Head/Officer/Convener/In-Charge of
+                                            Discipline</label>
+                                        <input type="text" name="sign_dir_reg_r_name" maxlength="40"
+                                            placeholder="Name of reccomendor" id="sign_dir_reg_r_name"
+                                            value="{{ leave_request.sign_dir_reg_r_name }}" readonly>
+                                        <input type="text" name="sign_dir_reg_r_desgination" maxlength="40"
+                                            placeholder="Designation" id="sign_dir_reg_r_desgination"
+                                            value="{{ leave_request.sign_dir_reg_r_desgination  }}" readonly>
+
+                                    </div>
+
+
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <hr>
+
+                                    <div>
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <h3 style="text-align: center;">For Office Use</h3>
+                                    </div>
+
+                                    <label for="office_use"></label>
+                                    <div>
+                                        <table>
+                                            <tr>
+                                                <th rowspan="2"></th>
+                                                <th colspan="6"></th>
+                                            </tr>
+                                            <tr>
+                                                <th>CL</th>
+                                                <th>RH</th>
+                                                <th>EL/VL</th>
+                                                <th>SCL</th>
+                                                <th>SCL(Project)</th>
+                                                <th>Commuted Leave</th>
+                                            </tr>
+                                            <tr>
+                                                <td>Credit Leave</td>
+                                                <td><input type="number" name="info_1_1" maxlength="40" 
+                                                        id="id_info_1_1" value="{{ leave_request.info_1_1 }}"
+                                                        readonly></td>
+                                                <td><input type="number" name="info_1_2" maxlength="40"
+                                                        id="id_info_1_2" value="{{ leave_request.info_1_2 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_1_3" maxlength="40"
+                                                        id="id_info_1_3" value="{{ leave_request.info_1_3 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_1_4" maxlength="40"
+                                                        id="id_info_1_4" value="{{ leave_request.info_1_4 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_1_5" maxlength="40"
+                                                        id="id_info_1_5" value="{{ leave_request.info_1_5 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_1_6" maxlength="40"
+                                                        id="id_info_1_6" value="{{ leave_request.info_1_6 }}"
+                                            readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Leave Applied</td>
+                                                <td><input type="number" name="info_2_1" maxlength="40"
+                                                        id="id_info_2_1" value="{{ leave_request.info_2_1 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_2_2" maxlength="40"
+                                                        id="id_info_2_2" value="{{ leave_request.info_2_2 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_2_3" maxlength="40"
+                                                        id="id_info_2_3" value="{{ leave_request.info_2_3 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_2_4" maxlength="40"
+                                                        id="id_info_2_4" value="{{ leave_request.info_2_4 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_2_5" maxlength="40"
+                                                        id="id_info_2_5" value="{{ leave_request.info_2_5 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_2_6" maxlength="40"
+                                                        id="id_info_2_6" value="{{ leave_request.info_2_6 }}"
+                                            readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Balance after availing Leave Applied</td>
+                                                <td><input type="number" name="info_3_1" maxlength="40"
+                                                        id="id_info_3_1" value="{{ leave_request.info_3_1 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_3_2" maxlength="40"
+                                                        id="id_info_3_2" value="{{ leave_request.info_3_2 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_3_3" maxlength="40"
+                                                        id="id_info_3_3" value="{{ leave_request.info_3_3 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_3_4" maxlength="40"
+                                                        id="id_info_3_4" value="{{ leave_request.info_3_4 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_3_5" maxlength="40"
+                                                        id="id_info_3_5" value="{{ leave_request.info_3_5 }}"
+                                            readonly></td>
+                                                <td><input type="number" name="info_3_6" maxlength="40"
+                                                        id="id_info_3_6" value="{{ leave_request.info_3_6 }}"
+                                            readonly></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+
+                                    <br>
+                                    <br>
+
+
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Dealing Assistant : </label>
+                                        <input type="text" name="dealing_assistant" placeholder="Enter name"
+                                            maxlength="40" id="dealing_assistant"
+                                            value="{{ leave_request.dealing_assistant }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Deputy Registrar (Estt.)</label>
+                                        <input type="text" name="deputy_registrar" placeholder="Enter name"
+                                            maxlength="40" id="deputy_registrar"
+                                            value="{{ leave_request.deputy_registrar }}" readonly>
+                                    </div>
+
+                                    <div style="text-align: center;">
+                                        <div class="field">
+                                            <label for="sanction_status">Leave Sanction Status:</label>
+                                            <select id="sanction_status" name="sanction_status">
+                                                <option value="True">Sanctioned</option>
+                                                <option value="False">Not Sanctioned</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="four wide field" style="float: right;">
+                                        <label for="sign_director_registrar">Dean / Head of Discipline / Registrar /
+                                            Deputy Registrar</label>
+                                        <input type="text" name="r_name" maxlength="40"
+                                            placeholder="Name of reccomendor" id="r_name"
+                                            value="{{ leave_request.r_name }}" readonly>
+                                        <input type="text" name="r_desgination" maxlength="40" placeholder="Designation"
+                                            id="r_desgination" value="{{ leave_request.r_desgination }}" readonly>
+
+                                    </div>
+
+
+                                    <br>
+                                    {% if button == 1 %}
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="username_employee">Username:</label>
+                                            <input type="text" name="username_employee" id="username_employee"
+                                                class="ui search" placeholder="Enter Username">
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="designation_employee">Designation:</label>
+                                            <input type="text" name="designation_employee" id="designation_employee"
+                                                readonly>
+                                        </div>
+                                        <button id="check_button" class="ui primary button right floated">Check</button>
+                                    </div>
+                                    <div class="two fields">
+                                        <button id="forward-btn" class="ui primary button right floated" type="submit"
+                                            value="Forward">
+                                            Forward
+                                        </button>
+                                        <button id="reject-btn" class="ui primary red button right floated"
+                                            type="submit" value="Reject">
+                                            Reject
+                                        </button>
+                                    </div>
+
+                                    {% endif %}
+                                </div>
+                            </form>
+
+                            <br>
+                            <br>
+
+
+                        </div>
+                        <br>
+                        <div class="extra content"></div>
+                    </div>
+
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    /*$(document).ready(function(){
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        setTimeout(loader, 1750);
+    });
+
+    function loader() {
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        $("#loader").removeClass("active");
+        $("#loader").addClass("disabled");
+    }*/
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#check_button').click(function (event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function (data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            handleForwardOrReject(1);
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#leave_form').serialize(); // Serialize the form data
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation
+            });
+            // Fire an AJAX request to handle the action
+            $.ajax({
+                url: '/hr2/file_handle/',
+                type: 'POST',
+                data: formData, // Send the serialized form data
+                success: function (data) {
+                    // Handle success response, if needed
+                    alert("Request it succefull.");
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

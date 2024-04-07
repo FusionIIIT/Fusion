@@ -1146,3 +1146,1088 @@ def dashboard(request):
     print("context",user_id)
     return render(request, 'hr2Module/dashboard.html',context)
 
+
+# cpda form -----------------------------------------------------------
+
+
+def reverse_cpda_pre_processing(data):
+    reversed_data = {}
+
+    simple_keys = [
+        'name', 'designation', 'pf_no', 'purpose', 'amount_required', 'adjusted_pda',
+        'achievements_uploaded_date', 'submission_date', 'recomm_hod_confirm', 'date_rspc_confirm',
+        'balance_available', 'advance_amount_pda', 'dealing_asstt_name', 'ar_dr_name',
+        'check_amount', 'dealing_asstt_ia_name', 'ar_dr_ia_name',
+        'sanction_status', 'copy_to'
+    ]
+
+  
+    for key in simple_keys:
+        value = getattr(data, key)
+        reversed_data[key] = value if value != 'None' else ''
+
+    return reversed_data
+
+
+def cpda_form(request, id):
+    """ Views for edit details"""
+    try:
+        employee = ExtraInfo.objects.get(user__id=id)
+    except:
+        raise Http404("Employee does not exist! id doesnt exist")
+
+    print(employee.user_type)
+
+    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'Deputy Registrar' or employee.user_type == 'asst. registrar fa' or employee.user_type == 'Director'):
+        template = 'hr2Module/cpda_form.html'
+
+        if request.method == "POST":
+            try:
+                print("Creating cpda object!")
+
+                # data = ltc_pre_processing(request) #isko dekhege
+
+                form_2 = {
+                    'employee_id' : id,
+                    'name' : request.POST.get('name'),
+                    'designation' :  request.POST.get('designation'),
+                    'pf_no' : request.POST.get('pf_no'),
+                    'purpose' : request.POST.get('purpose'),
+                    'amount_required' : request.POST.get('amount_required'),
+                    'adjusted_pda' : request.POST.get('adjusted_pda'),
+                    'achievements_uploaded_date' : request.POST.get('achievements_uploaded_date'),
+                    'submission_date' : request.POST.get('submission_date'),
+                    'recomm_hod_confirm' : request.POST.get('recomm_hod_confirm'),
+                    'date_rspc_confirm' : request.POST.get('date_rspc_confirm'),
+                    'balance_available' : request.POST.get('balance_available'),
+                    'advance_amount_pda' : request.POST.get('advance_amount_pda'),
+                    'dealing_asstt_name' : request.POST.get('dealing_asstt_name'),
+                    'ar_dr_name' : request.POST.get('ar_dr_name'),
+                    'check_amount' : request.POST.get('check_amount'),
+                    'dealing_asstt_ia_name' : request.POST.get('dealing_asstt_ia_name'),
+                    'ar_dr_ia_name' : request.POST.get('ar_dr_ia_name'),
+                    'sanction_status' : request.POST.get('sanction_status'),
+                    'copy_to' : request.POST.get('copy_to')
+
+                }
+                
+                cpda_form = CPDAform.objects.create(
+                    employee_id = id,
+                    name = request.POST.get('name'),
+                    designation =  request.POST.get('designation'),
+                    pf_no = request.POST.get('pf_no'),
+                    purpose = request.POST.get('purpose'),
+                    amount_required = request.POST.get('amount_required'),
+                    adjusted_pda = request.POST.get('adjusted_pda'),
+                    achievements_uploaded_date = request.POST.get('achievements_uploaded_date'),
+                    submission_date = request.POST.get('submission_date'),
+                    recomm_hod_confirm = request.POST.get('recomm_hod_confirm'),
+                    date_rspc_confirm = request.POST.get('date_rspc_confirm'),
+                    balance_available = request.POST.get('balance_available'),
+                    advance_amount_pda = request.POST.get('advance_amount_pda'),
+                    dealing_asstt_name = request.POST.get('dealing_asstt_name'),
+                    ar_dr_name = request.POST.get('ar_dr_name'),
+                    check_amount = request.POST.get('check_amount'),
+                    dealing_asstt_ia_name = request.POST.get('dealing_asstt_ia_name'),
+                    ar_dr_ia_name = request.POST.get('ar_dr_ia_name'),
+                    sanction_status = request.POST.get('sanction_status'),
+                    copy_to = request.POST.get('copy_to')
+                )
+
+                print("Created CPDA Object!")
+
+                uploader = employee.user
+                uploader_designation = 'Assistant Professor'
+
+                get_designation = get_designation_by_user_id(employee.user)
+                if(get_designation):
+                    uploader_designation = get_designation
+
+                receiver = request.POST.get('username_employee')
+                receiver_designation = request.POST.get('designation_employee')
+                src_module = "HR" #dikkat 
+                src_object_id = str(cpda_form.id)
+                file_extra_JSON = {"key": "value"}
+
+                print("uploader",uploader)
+                print("uploader_designation",uploader_designation)
+                print("receiver",receiver)
+                print("receiver_designation",receiver_designation)
+
+                # Create a file representing the CPDA form 
+                file_id = create_file(
+                    uploader=uploader,
+                    uploader_designation=uploader_designation,
+                    receiver=receiver,
+                    receiver_designation=receiver_designation,
+                    src_module=src_module,
+                    src_object_id=src_object_id,
+                    file_extra_JSON=file_extra_JSON,
+                    attached_file=None  # Attach any file if necessary
+                )
+
+                print("Sent the file to Hradmin!") #isko dekhege
+
+                messages.success(request, "CPDA form filled successfully")
+
+                return redirect(request.path_info)
+
+            except Exception as e:
+                print("error" , e)
+                messages.warning(request, "Fill not correctly")
+                context = {'employee': employee}
+                return render(request, template, context)
+
+        cpda_requests = CPDAform.objects.filter(employee_id=id)
+
+        username = employee.user
+        uploader_designation = 'Assistant Professor'
+
+        designation = get_designation_by_user_id(employee.user)
+        if(designation):
+            uploader_designation = designation
+
+        print("username",username)
+        print("uploader_designation",uploader_designation)
+        
+        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        print(inbox)
+
+        context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox}
+
+        messages.success(request, "CPDA form filled successfully!")
+        return render(request, template, context)
+    else:
+        return render(request, 'hr2Module/edit.html')
+    
+
+def form_view_cpda(request , id):
+    ltc_request = get_object_or_404(CPDAform, id=id)
+
+    # isko recheck krna h
+    from_user = request.GET.get('param1')
+    from_designation = request.GET.get('param2')
+    file_id = request.GET.get('param3')
+
+    print(file_id)
+    print(from_user)
+    print(from_designation)
+
+    template = 'hr2Module/view_cpda_form.html'
+    print(cpda_request)
+    cpda_request = reverse_cpda_pre_processing(cpda_request)#isko bnana h
+    print(cpda_request)
+    
+    context = {'cpda_request' : cpda_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+
+    return render(request , template , context)
+
+def view_cpda_form(request, id):
+    cpda_request = get_object_or_404(CPDAform, id=id)
+   
+    print(cpda_request)
+    cpda_request = reverse_cpda_pre_processing(cpda_request)
+
+    print(cpda_request)
+
+    context = {
+        'cpda_request': cpda_request
+    }
+    return render(request,'hr2Module/view_cpda_form.html',context)
+
+def form_mangement_cpda(request):
+    if(request.method == "GET"):
+        username = "21BCS185"
+        designation = "hradmin"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        src_object_ids = [14,15,19]
+        
+        cpda_requests = []
+
+        for src_object_id in src_object_ids:
+            cpda_request = get_object_or_404(CPDAform, id=src_object_id)
+            cpda_requests.append(cpda_request)
+
+        context= {
+            'cpda_requests' : cpda_requests,
+            'hr' : "1",
+        }
+
+        print(cpda_requests[0].name)
+
+        return render(request, 'hr2Module/cpda_form.html',context)
+    
+def form_mangement_cpda_hr(request,id):
+    print("Request of forward!")
+    uploader = "21BCS183"
+    uploader_designation = "student"
+    receiver = "21BCS181"
+    receiver_designation = "HOD"
+    src_module = "HR"
+    src_object_id = id,
+    file_extra_JSON = {"key": "value"}
+
+    # Create a file representing the CPDA form and send it to HR admin
+    file_id = create_file(
+        uploader=uploader,
+        uploader_designation=uploader_designation,
+        receiver=receiver,
+        receiver_designation=receiver_designation,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        attached_file=None  # Attach any file if necessary
+    )
+
+    print("Sent the file to Hod!")
+
+    messages.success(request, "CPda form filled successfully")
+
+    return HttpResponse("Sucess")
+
+
+def form_mangement_cpda_hod(request):
+    if(request.method == "GET"):
+        username = "21BCS181"
+        designation = "HOD"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        # src_object_ids = [14,15]
+        
+        cpda_requests = []
+
+        for src_object_id in src_object_ids:
+            cpda_request = get_object_or_404(CPDAform, id=src_object_id)
+            cpda_requests.append(cpda_request)
+
+        context= {
+            'cpda_requests' : cpda_requests,
+            'hr' : "1",
+        }
+
+        print(cpda_requests[0].name)
+
+        return render(request, 'hr2Module/cpda_form.html',context)
+    
+
+#  Leave form -------------------------------------------------------------
+    
+def leave_pre_processing(request):
+    data = {}
+
+    office_use = ""
+    
+    for i in range(1,4):
+        for j in range(1,7):
+            key_is = f'info_{i}_{j}'
+            if(request.POST.get(key_is) == ""):
+                office_use = office_use + 'None' + ','
+            else:
+                office_use = office_use + request.POST.get(key_is) + ','
+    
+    data['office_use'] = office_use.rstrip(',')
+
+    print(data['office_use'])
+
+    return data
+
+def reverse_leave_pre_processing(data):
+    reversed_data = {}
+
+    # Copying over simple key-value pairs
+    # dalna h
+    simple_keys = [
+        'name', 'designation', 'application_date', 'application_pf_no', 'discipline', 'nature_of_leave',
+        'nature_leave_start_date', 'nature_leave_end_date', 'station_leave', 'station_leave_start_date',
+        'station_leave_end_date', 'purpose', 'leave_address', 'academic_responsibility',
+        'addministrative_responsibilty_assigned', 'sign_dir_reg_r_name', 'sign_dir_reg_r_desgination',
+        'dealing_assistant', 'deputy_registrar', 'sanction_status', 'r_name', 'r_desgination'
+    ]
+
+  
+    for key in simple_keys:
+        value = getattr(data, key)
+        reversed_data[key] = value if value != 'None' else ''
+
+    # # Reversing details_of_dependents
+    # office_use = getattr(data,'office_use').split(',')
+    # for i in range(1, 4):
+    #     for j in range(1, 7):
+    #         key = f'info_{i}_{j}'
+    #         value = office_use.pop(0)
+    #         reversed_data[key] = value if value != 'None' else ''
+        
+
+    office_use = getattr(data, 'office_use')
+    print(office_use)
+    print(data.dealing_assistant)
+
+    if office_use is not None:
+        office_use = office_use.split(',')
+    else:
+        office_use = []
+
+    for i in range(1, 4):
+        for j in range(1, 7):
+            key = f'info_{i}_{j}'
+            if office_use:
+                value = office_use.pop(0)
+                reversed_data[key] = value if value != 'None' else ''
+            else:
+                reversed_data[key] = ''
+
+
+    return reversed_data
+
+    
+def leave_form(request, id):
+    """ Views for edit details"""
+    try:
+        employee = ExtraInfo.objects.get(user__id=id)
+    except:
+        raise Http404("Employee does not exist! id doesnt exist")
+
+    print(employee.user_type)
+
+    
+    if(employee.user_type == 'faculty' or employee.user_type == 'student'):
+        template = 'hr2Module/leave_form.html'
+
+        if request.method == "POST":
+            try:
+                print("Creating leave object!")
+
+                data = leave_pre_processing(request) 
+
+                form_3 = {
+                    'employee_id' : id,
+                    'name' : request.POST.get('name'),
+                    'designation' :  request.POST.get('designation'),
+                    'application_date' : request.POST.get('application_date'),
+                    'application_pf_no' : request.POST.get('application_pf_no'),
+                    'discipline' : request.POST.get('discipline'),
+                    'nature_of_leave' : request.POST.get('nature_of_leave'),
+                    'nature_leave_start_date' : request.POST.get('nature_leave_start_date'),
+                    'nature_leave_end_date' : request.POST.get('nature_leave_end_date'),
+                    'station_leave' : request.POST.get('station_leave'),
+                    'station_leave_start_date' : request.POST.get('station_leave_start_date'),
+                    'station_leave_end_date' : request.POST.get('station_leave_end_date'),
+                    'purpose' : request.POST.get('purpose'),
+                    'leave_address' : request.POST.get('leave_address'),
+                    'academic_responsibility' : request.POST.get('academic_responsibility'),
+                    'addministrative_responsibilty_assigned' : request.POST.get('addministrative_responsibilty_assigned'),
+                    'sign_dir_reg_r_name' : request.POST.get('sign_dir_reg_r_name'),
+                    'sign_dir_reg_r_desgination' : request.POST.get('sign_dir_reg_r_desgination'),
+                    'office_use' : data['office_use'],
+                    'dealing_assistant' : request.POST.get('dealing_assistant'),
+                    'deputy_registrar' : request.POST.get('deputy_registrar'),
+                    'sanction_status' : request.POST.get('sanction_status'),
+                    'r_name' : request.POST.get('r_name'),
+                    'r_desgination' : request.POST.get('r_desgination')
+
+                }
+                
+                leave_form = LeaveForm.objects.create(
+                    employee_id = id,
+                    name = request.POST.get('name'),
+                    designation =  request.POST.get('designation'),
+                    application_date = request.POST.get('application_date'),
+                    application_pf_no = request.POST.get('application_pf_no'),
+                    discipline = request.POST.get('discipline'),
+                    nature_of_leave = request.POST.get('nature_of_leave'),
+                    nature_leave_start_date = request.POST.get('nature_leave_start_date'),
+                    nature_leave_end_date = request.POST.get('nature_leave_end_date'),
+                    station_leave = request.POST.get('station_leave'),
+                    station_leave_start_date = request.POST.get('station_leave_start_date'),
+                    station_leave_end_date = request.POST.get('station_leave_end_date'),
+                    purpose = request.POST.get('purpose'),
+                    leave_address = request.POST.get('leave_address'),
+                    academic_responsibility = request.POST.get('academic_responsibility'),
+                    addministrative_responsibilty_assigned = request.POST.get('addministrative_responsibilty_assigned'),
+                    sign_dir_reg_r_name = request.POST.get('sign_dir_reg_r_name'),
+                    sign_dir_reg_r_desgination = request.POST.get('sign_dir_reg_r_desgination'),
+                    office_use = data['office_use'],
+                    dealing_assistant = request.POST.get('dealing_assistant'),
+                    deputy_registrar = request.POST.get('deputy_registrar'),
+                    sanction_status = request.POST.get('sanction_status'),
+                    r_name = request.POST.get('r_name'),
+                    r_desgination = request.POST.get('r_desgination')
+
+                )
+
+                print("Created Leave Object!")
+
+                uploader = employee.user
+                uploader_designation = 'Assistant Professor'
+
+                get_designation = get_designation_by_user_id(employee.user)
+                if(get_designation):
+                    uploader_designation = get_designation
+
+                receiver = request.POST.get('username_employee')
+                receiver_designation = request.POST.get('designation_employee')
+                src_module = "HR"
+                src_object_id = str(leave_form.id)
+                file_extra_JSON = {"key": "value"}
+
+                print("uploader",uploader)
+                print("uploader_designation",uploader_designation)
+                print("receiver",receiver)
+                print("receiver_designation",receiver_designation)
+
+                # Create a file representing the CPDA form 
+                file_id = create_file(
+                    uploader=uploader,
+                    uploader_designation=uploader_designation,
+                    receiver=receiver,
+                    receiver_designation=receiver_designation,
+                    src_module=src_module,
+                    src_object_id=src_object_id,
+                    file_extra_JSON=file_extra_JSON,
+                    attached_file=None  # Attach any file if necessary
+                )
+
+                print("Sent the file to Hradmin!")
+
+                messages.success(request, "Leave form filled successfully")
+
+                return redirect(request.path_info)
+
+            except Exception as e:
+                print("error" , e)
+                messages.warning(request, "Fill not correctly")
+                context = {'employee': employee}
+                return render(request, template, context)
+
+         # Query all Leave requests
+        leave_requests = LeaveForm.objects.filter(employee_id=id)
+
+        username = employee.user
+        uploader_designation = 'Assistant Professor'
+
+        designation = get_designation_by_user_id(employee.user)
+        if(designation):
+            uploader_designation = designation
+
+        print("username",username)
+        print("uploader_designation",uploader_designation)
+        
+        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        print(inbox)
+
+        context = {'employee': employee, 'leave_requests': leave_requests, 'inbox': inbox}
+
+        messages.success(request, "Leave form filled successfully!")
+        return render(request, template, context)
+    else:
+        return render(request, 'hr2Module/edit.html')
+    
+
+def form_view_leave(request , id):
+
+    leave_request = get_object_or_404(LeaveForm, id=id)
+
+    from_user = request.GET.get('param1')
+    from_designation = request.GET.get('param2')
+    file_id = request.GET.get('param3')
+
+    print(file_id)
+    print(from_user)
+    print(from_designation)
+
+    template = 'hr2Module/view_leave_form.html'
+    print(leave_request)
+    leave_request = reverse_leave_pre_processing(leave_request)
+    print(leave_request)
+    
+    context = {'leave_request' : leave_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+
+    return render(request , template , context)
+
+# ek or bna lena
+def view_leave_form(request, id):
+    leave_request = get_object_or_404(LeaveForm, id=id)
+
+    
+    print("1",leave_request.dealing_assistant)
+    leave_request = reverse_leave_pre_processing(leave_request)
+
+    print(leave_request)
+
+    context = {
+        'leave_request': leave_request
+    }
+    return render(request,'hr2Module/view_leave_form.html',context)
+
+
+def form_mangement_leave(request):
+    if(request.method == "GET"):
+        username = "21BCS185"
+        designation = "hradmin"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        src_object_ids = [14,15,19]
+        
+        leave_requests = []
+
+        for src_object_id in src_object_ids:
+            leave_request = get_object_or_404(LeaveForm, id=src_object_id)
+            leave_requests.append(leave_request)
+
+        context= {
+            'leave_requests' : leave_requests,
+            'hr' : "1",
+        }
+
+        print(leave_requests[0].name)
+
+        return render(request, 'hr2Module/leave_form.html',context)
+    
+
+def form_mangement_leave_hr(request,id):
+    print("Request of forward!")
+    uploader = "21BCS183"
+    uploader_designation = "student"
+    receiver = "21BCS181"
+    receiver_designation = "HOD"
+    src_module = "HR"
+    src_object_id = id,
+    file_extra_JSON = {"key": "value"}
+
+    # Create a file representing the Leave form and send it to HR admin
+    file_id = create_file(
+        uploader=uploader,
+        uploader_designation=uploader_designation,
+        receiver=receiver,
+        receiver_designation=receiver_designation,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        attached_file=None  # Attach any file if necessary
+    )
+
+    print("Sent the file to Hod!")
+
+    messages.success(request, "Leave form filled successfully")
+
+    return HttpResponse("Sucess")
+
+def form_mangement_leave_hod(request):
+    if(request.method == "GET"):
+        username = "21BCS181"
+        designation = "HOD"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        # src_object_ids = [14,15]
+        
+        leave_requests = []
+
+        for src_object_id in src_object_ids:
+            leave_request = get_object_or_404(LeaveForm, id=src_object_id)
+            leave_requests.append(leave_request)
+
+        context= {
+            'leave_requests' : leave_requests,
+            'hr' : "1",
+        }
+
+        print(leave_requests[0].name)
+
+        return render(request, 'hr2Module/leave_form.html',context)
+    
+
+
+
+def appraisal_form(request, id):
+    """ Views for edit details"""
+    try:
+        employee = ExtraInfo.objects.get(user__id=id)
+    except:
+        raise Http404("Employee does not exist! id doesnt exist")
+
+    print(employee.user_type)
+
+    
+    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student'):
+        template = 'hr2Module/appraisal_form.html'
+
+        if request.method == "POST":
+            try:
+                print("Creating appraisal object!")
+
+                data = appraisal_pre_processing(request)
+                # print(request.POST.getlist('details_of_family_members_already_done'))
+                # print(request.POST.get('d1'))
+
+                # print(request.POST)
+                # print(data)
+
+                form_4 = {
+                    'employee_id': id,
+                    'name': request.POST.get('name'),
+                    'designation': request.POST.get('designation'),
+                    'discipline': request.POST.get('discipline'),
+                    'field_knowledge': request.POST.get('field_knowledge'),
+                    'current_res_int': request.POST.get('current_res_int'),
+                    'courses_taught': data['courses_taught'],
+                    'new_courses_introduced': data['new_courses_introduced'],
+                    'new_courses_developed': data['new_courses_developed'],
+                    'instructional_tasks': request.POST.get('instructional_tasks'),
+                    'thesis_reasearch': data['thesis_reasearch'],
+                    'sponsored_research': data['sponsored_research'],
+                    'research_element': request.POST.get('research_element'),
+                    'publication': request.POST.get('publication'),
+                    'referred_conf': request.POST.get('referred_conf'),
+                    'conf_organised': request.POST.get('conf_organised'),
+                    'memberships': request.POST.get('memberships'),
+                    'honours ' :   request.POST.get('honours'),
+                    'edt_of_rep_pub':  request.POST.get('edt_of_rep_pub'),
+                    'expert_lec_del': request.POST.get('expert_lec_del'),
+                    'mem_of_bos': request.POST.get('mem_of_bos'),
+                    'extention_tasks': request.POST.get('extention_tasks'),
+                    'add_assign': request.POST.get('add_assign'),
+                    'service_inst_community': request.POST.get('service_inst_community'),
+                    'other_contri': request.POST.get('other_contri'),
+                    'your_comments' : request.POST.get('your_comments'),
+                    'date' : request.POST.get('date'),
+                    'sign_faculty' : request.POST.get('sign_faculty'),
+                    'remarks' : request.POST.get('remarks'),
+                    'sign_hod' : request.POST.get('sign_hod'),
+                    'sign_director' : request.POST.get('sign_director')
+                }
+
+                # attached_file = None
+
+                # print(request.FILES.get('file_attachment'))
+
+                # if(request.FILES.get('file_attachment') != ""):
+                #     attached_file = open(request.FILES.get('file_attachment'), "rb")
+                #     attached_file = DjangoFile(attached_file)
+                
+
+                # print(attached_file)
+
+                appraisal_form = Appraisalform.objects.create(
+                    employee_id= id,
+                    name= request.POST.get('name'),
+                    designation= request.POST.get('designation'),
+                    discipline= request.POST.get('discipline'),
+                    field_knowledge= request.POST.get('field_knowledge'),
+                    current_res_int= request.POST.get('current_res_int'),
+                    courses_taught= data['courses_taught'],
+                    new_courses_introduced= data['new_courses_introduced'],
+                    new_courses_developed= data['new_courses_developed'],
+                    instructional_tasks= request.POST.get('instructional_tasks'),
+                    thesis_reasearch= data['thesis_reasearch'],
+                    sponsored_research= data['sponsored_research'],
+                    research_element= request.POST.get('research_element'),
+                    publication= request.POST.get('publication'),
+                    referred_conf= request.POST.get('referred_conf'),
+                    conf_organised= request.POST.get('conf_organised'),
+                    memberships= request.POST.get('memberships'),
+                    honours  = request.POST.get('honours'),
+                    edt_of_rep_pub= request.POST.get('edt_of_rep_pub'),
+                    expert_lec_del= request.POST.get('expert_lec_del'),
+                    mem_of_bos= request.POST.get('mem_of_bos'),
+                    extention_tasks= request.POST.get('extention_tasks'),
+                    add_assign= request.POST.get('add_assign'),
+                    service_inst_community= request.POST.get('service_inst_community'),
+                    other_contri= request.POST.get('other_contri'),
+                    your_comments = request.POST.get('your_comments'),
+                    date = request.POST.get('date'),
+                    sign_faculty = request.POST.get('sign_faculty'),
+                    remarks = request.POST.get('remarks'),
+                    sign_hod = request.POST.get('sign_hod'),
+                    sign_director = request.POST.get('sign_director')   
+                
+                )
+                print("Created Appraisal Object!")
+
+                uploader = employee.user
+                uploader_designation = 'Assistant Professor'
+
+                get_designation = get_designation_by_user_id(employee.user)
+                if(get_designation):
+                    uploader_designation = get_designation
+
+                receiver = request.POST.get('username_employee')
+                receiver_designation = request.POST.get('designation_employee')
+                src_module = "HR"
+                src_object_id = str(appraisal_form.id)
+                file_extra_JSON = {"key": "value"}
+
+                print("uploader",uploader)
+                print("uploader_designation",uploader_designation)
+                print("receiver",receiver)
+                print("receiver_designation",receiver_designation)
+
+                # Create a file representing the AppraisL form and send it to HR admin
+                file_id = create_file(
+                    uploader=uploader,
+                    uploader_designation=uploader_designation,
+                    receiver=receiver,
+                    receiver_designation=receiver_designation,
+                    src_module=src_module,
+                    src_object_id=src_object_id,
+                    file_extra_JSON=file_extra_JSON,
+                    attached_file=None  # Attach any file if necessary
+                )
+
+                print("Sent the file to Hradmin!")
+
+                messages.success(request, "Appraisal form filled successfully")
+
+                return redirect(request.path_info)
+
+            except Exception as e:
+                print("error" , e)
+                messages.warning(request, "Fill not correctly")
+                context = {'employee': employee}
+                return render(request, template, context)
+
+    
+
+        appraisal_requests = Appraisalform.objects.filter(employee_id=id)
+
+        username = employee.user
+        uploader_designation = 'Assistant Professor'
+
+        designation = get_designation_by_user_id(employee.user)
+        if(designation):
+            uploader_designation = designation
+
+        print("username",username)
+        print("uploader_designation",uploader_designation)
+        
+        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        print(inbox)
+
+        context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': inbox}
+
+        messages.success(request, "Appraisal form filled successfully!")
+        return render(request, template, context)
+    else:
+        return render(request, 'hr2Module/edit.html')
+    
+
+   
+def form_view_appraisal(request , id):
+    appraisal_request = get_object_or_404(Appraisalform, id=id)
+
+    from_user = request.GET.get('param1')
+    from_designation = request.GET.get('param2')
+    file_id = request.GET.get('param3')
+
+    print(file_id)
+    print(from_user)
+    print(from_designation)
+
+
+
+    template = 'hr2Module/view_appraisal_form.html'
+    print(appraisal_request)
+    appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
+    print(appraisal_request)
+    
+    context = {'appraisal_request' : appraisal_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+
+    return render(request , template , context)
+
+
+def view_appraisal_form(request, id):
+    appraisal_request = get_object_or_404(Appraisalform, id=id)
+    # print("ltc object: ", ltc_request)
+    # print("ltc object: ", reverse_ltc_pre_processing(ltc_request))
+    print(appraisal_request)
+    appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
+
+    print(appraisal_request)
+
+    context = {
+        'appraisal_request': appraisal_request
+    }
+    return render(request,'hr2Module/view_appraisal_form.html',context)
+
+
+
+def form_mangement_appraisal(request):
+    if(request.method == "GET"):
+        username = "21BCS185"
+        designation = "hradmin"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        src_object_ids = [14,15,19]
+        
+        appraisal_requests = []
+
+        for src_object_id in src_object_ids:
+            appraisal_request = get_object_or_404(Appraisalform, id=src_object_id)
+            appraisal_requests.append(appraisal_request)
+
+        context= {
+            'appraisal_requests' : appraisal_requests,
+            'hr' : "1",
+        }
+
+        print(appraisal_requests[0].name)
+
+        return render(request, 'hr2Module/appraisal_form.html',context)
+
+
+def form_mangement_appraisal_hr(request,id):
+    print("Request of forward!")
+    uploader = "21BCS183"
+    uploader_designation = "student"
+    receiver = "21BCS181"
+    receiver_designation = "HOD"
+    src_module = "HR"
+    src_object_id = id,
+    file_extra_JSON = {"key": "value"}
+
+    # Create a file representing the Appraisal form and send it to HR admin
+    file_id = create_file(
+        uploader=uploader,
+        uploader_designation=uploader_designation,
+        receiver=receiver,
+        receiver_designation=receiver_designation,
+        src_module=src_module,
+        src_object_id=src_object_id,
+        file_extra_JSON=file_extra_JSON,
+        attached_file=None  # Attach any file if necessary
+    )
+
+    print("Sent the file to Hod!")
+
+    messages.success(request, "Appraisal form filled successfully")
+
+    return HttpResponse("Sucess")    
+
+def form_mangement_appraisal_hod(request):
+    if(request.method == "GET"):
+        username = "21BCS181"
+        designation = "HOD"
+        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
+
+        # print(inbox)
+
+        # Extract src_object_id values
+        src_object_ids = [item['src_object_id'] for item in inbox]
+        print(src_object_ids)
+
+        # src_object_ids = [14,15]
+        
+        appraisal_requests = []
+
+        for src_object_id in src_object_ids:
+            appraisal_request = get_object_or_404(Appraisalform, id=src_object_id)
+            appraisal_requests.append(appraisal_request)
+
+        context= {
+            'appraisal_requests' : appraisal_requests,
+            'hr' : "1",
+        }
+
+        print(appraisal_requests[0].name)
+
+        return render(request, 'hr2Module/appraisal_form.html',context)
+    
+def appraisal_pre_processing(request):
+    data = {}
+    
+
+    courses_taught = ""
+
+    for i in range(1,3):
+        for j in range(1,8):
+            key_is = f'info_{i}_{j}'
+            print(key_is)
+            
+            print(request.POST.get(key_is))
+            if(request.POST.get(key_is) == ""):
+                courses_taught = courses_taught + 'None' + ','
+            else:
+                courses_taught = courses_taught + request.POST.get(key_is) + ','
+    
+    data['courses_taught'] = courses_taught.rstrip(',')
+
+    new_courses_introduced = ""
+
+    for i in range(3,5):
+        for j in range(1,4):
+            key_is = f'info_{i}_{j}'
+            print(key_is)
+            
+            print(request.POST.get(key_is))
+            if(request.POST.get(key_is) == ""):
+                new_courses_introduced = new_courses_introduced + 'None' + ','
+            else:
+                new_courses_introduced = new_courses_introduced + request.POST.get(key_is) + ','
+    
+    data['new_courses_introduced'] = new_courses_introduced.rstrip(',')
+
+
+    new_courses_developed = ""
+
+    for i in range(5,7):
+        for j in range(1,5):
+            key_is = f'info_{i}_{j}'
+            print(key_is)
+            
+            print(request.POST.get(key_is))
+            if(request.POST.get(key_is) == ""):
+                new_courses_developed = new_courses_developed + 'None' + ','
+            else:
+                new_courses_developed = new_courses_developed + request.POST.get(key_is) + ','
+    
+    data['new_courses_developed'] = new_courses_developed.rstrip(',')
+
+
+
+    thesis_reasearch = ""
+
+    for i in range(7,9):
+        for j in range(1,6):
+            key_is = f'info_{i}_{j}'
+            print(key_is)
+            
+            print(request.POST.get(key_is))
+            if(request.POST.get(key_is) == ""):
+                thesis_reasearch = thesis_reasearch + 'None' + ','
+            else:
+                thesis_reasearch = thesis_reasearch + request.POST.get(key_is) + ','
+    
+    data['thesis_reasearch'] = thesis_reasearch.rstrip(',')
+
+
+
+    sponsored_research = ""
+
+    for i in range(9,10):
+        for j in range(1,8):
+            key_is = f'info_{i}_{j}'
+            print(key_is)
+            
+            print(request.POST.get(key_is))
+            if(request.POST.get(key_is) == ""):
+                sponsored_research = sponsored_research + 'None' + ','
+            else:
+                sponsored_research = sponsored_research + request.POST.get(key_is) + ','
+    
+    data['sponsored_research'] = sponsored_research.rstrip(',')
+
+
+    return data
+
+
+
+
+def reverse_appraisal_pre_processing(data):
+    reversed_data = {}
+
+    # Copying over simple key-value pairs
+    simple_keys = [
+        'name', 'designation', 'discipline', 'field_knowledge', 'designation', 'current_res_int',
+        'instructional_tasks', 'research_element', 'publication', 'referred_conf',
+        'conf_organised', 'memberships', 'honours', 'edt_of_rep_pub', 
+        'expert_lec_del', 'mem_of_bos', 'extention_tasks',
+        'add_assign', 'service_inst_community', 'other_contri', 'your_comments',
+        'date', 'sign_faculty', 'remarks', 'sign_hod', 'sign_director'
+    ]
+
+  
+    for key in simple_keys:
+        value = getattr(data, key)
+        reversed_data[key] = value if value != 'None' else ''
+
+    # Reversing array-like values
+    # reversed_data['details_of_family_members_already_done'] = getattr(data,'details_of_family_members_already_done').split(',')
+    
+    courses_taught = getattr(data,'courses_taught').split(',')
+    for index, value in enumerate(courses_taught):
+        courses_taught[index] = value if value != 'None' else ''
+    
+    reversed_data['info_1_1'] = courses_taught[0]
+    reversed_data['info_1_2'] = courses_taught[1]
+    reversed_data['info_1_3'] = courses_taught[2]
+    reversed_data['info_1_4'] = courses_taught[3]
+    reversed_data['info_1_5'] = courses_taught[4]
+    reversed_data['info_1_6'] = courses_taught[5]
+    reversed_data['info_1_7'] = courses_taught[6]
+    reversed_data['info_2_1'] = courses_taught[7]
+    reversed_data['info_2_2'] = courses_taught[8]
+    reversed_data['info_2_3'] = courses_taught[9]
+    reversed_data['info_2_4'] = courses_taught[10]
+    reversed_data['info_2_5'] = courses_taught[11]
+    reversed_data['info_2_6'] = courses_taught[12]
+    reversed_data['info_2_7'] = courses_taught[13]
+
+    # # Reversing details_of_dependents
+    new_courses_introduced = getattr(data,'new_courses_introduced').split(',')
+    for i in range(3, 5):
+        for j in range(1, 4):
+            key = f'info_{i}_{j}'
+            value = new_courses_introduced.pop(0)
+            reversed_data[key] = value if value != 'None' else ''
+        
+
+        
+    new_courses_developed = getattr(data,'new_courses_developed').split(',')
+    for i in range(5, 7):
+        for j in range(1, 5):
+            key = f'info_{i}_{j}'
+            value = new_courses_developed.pop(0)
+            reversed_data[key] = value if value != 'None' else ''
+
+
+
+    thesis_reasearch = getattr(data,'thesis_reasearch').split(',')
+    for i in range(7, 9):
+        for j in range(1, 6):
+            key = f'info_{i}_{j}'
+            value = thesis_reasearch.pop(0)
+            reversed_data[key] = value if value != 'None' else ''
+
+
+
+    sponsored_research = getattr(data,'sponsored_research').split(',')
+    for i in range(9, 10):
+        for j in range(1, 8):
+            key = f'info_{i}_{j}'
+            value = sponsored_research.pop(0)
+            reversed_data[key] = value if value != 'None' else ''
+
+    return reversed_data

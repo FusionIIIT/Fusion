@@ -1,0 +1,659 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+                        {% comment %}
+                        TODO: Add a If-Else here!
+                        {% endcomment %}
+                    
+                </div>
+
+            
+            </div>
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">LTC Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+
+
+
+
+
+
+
+
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+
+
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="ltc_form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                  
+
+                <br><br>
+                <div class="two fields">    
+                    <div class="eight wide field">
+                        <label name="name">Name</label>
+                        <input type="text" name="name" maxlength="40" id="id_name" value="{{ appraisal_request.name}}" readonly>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="designation">Designation</label>
+                        <input type="text" name="designation" maxlength="40" id="id_designation"  value="{{ appraisal_request.designation}}" readonly>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Disipline</label>
+                        <input type="text" name="discipline" maxlength="40" id="discipline"  value="{{ appraisal_request.discipline}}" readonly>
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Specific field of knowledge</label>
+                        <input type="text" name="field_knowledge" maxlength="40" id="field_knowledge" value="{{ appraisal_request.field_knowledge}}" readonly>
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Current Research Interests</label>
+                        <input type="text" name="current_res_int" maxlength="40" id="current_res_int" value="{{ appraisal_request.current_res_int}}" readonly>
+                    </div>
+                </div>  
+
+                <div> <p> Please give information pertaining to the period of appraisal as per the format given below :- </p></div>
+                <br>
+
+                <div >
+                    <h2 style="text-align: center;">1. INSTRUCTION ELEMENT</h2>
+
+                    <P>1.1 Teaching</P>
+                    <p name="courses_taught">1.1.1 Courses taught at UG/PG level</p>
+
+
+                    <table>
+                        <tr>
+                          <th>Semester</th>
+                          <th>Course Name and Number</th>
+                          <th>Lecture Hrs/wk</th>
+                          <th>Tutorial Hrs/wk</th>
+                          <th>Lab Hrs/wk</th>
+                          <th>No of Registererd Students</th>
+                          <th>Co-Instructor/ Instructor In charge(if any)</th>
+                        </tr>
+                        <tr>
+                          <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1" value="{{ appraisal_request.info_1_1}}" readonly></td>
+                          <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2" value="{{ appraisal_request.info_1_2}}" readonly></td>
+                          <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3" value="{{ appraisal_request.info_1_3}}" readonly></td>
+                          <td><input type="number" name="info_1_4" maxlength="40" id="id_info_1_4" value="{{ appraisal_request.info_1_4}}" readonly></td>
+                          <td><input type="number" name="info_1_5" maxlength="40" id="id_info_1_5" value="{{ appraisal_request.info_1_5}}" readonly></td>
+                          <td><input type="number" name="info_1_6" maxlength="40" id="id_info_1_6" value="{{ appraisal_request.info_1_6}}" readonly></td>
+                          <td><input type="text" name="info_1_7" maxlength="40" id="id_info_1_7" value="{{ appraisal_request.info_1_7}}" readonly></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1" value="{{ appraisal_request.info_2_1}}" readonly></td>
+                            <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2" value="{{ appraisal_request.info_2_2}}" readonly></td>
+                            <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3" value="{{ appraisal_request.info_2_3}}" readonly></td>
+                            <td><input type="number" name="info_2_4" maxlength="40" id="id_info_2_4" value="{{ appraisal_request.info_2_4}}" readonly></td>
+                            <td><input type="number" name="info_2_5" maxlength="40" id="id_info_2_5" value="{{ appraisal_request.info_2_5}}" readonly></td>
+                            <td><input type="number" name="info_2_6" maxlength="40" id="id_info_2_6" value="{{ appraisal_request.info_2_6}}" readonly></td>
+                            <td><input type="text" name="info_2_7" maxlength="40" id="id_info_2_7" value="{{ appraisal_request.info_2_7}}" readonly></td>
+                        </tr>
+                        
+                      </table>
+
+                      <p name="new_courses_introduced">1.1.2 New Courses/ laboratory experiments introduced and taught</p>
+                      
+
+                      <table>
+                        <tr>
+                          <th>Course Name and Number</th>
+                          <th>UG/PG</th>
+                          <th> Year and Semester of first offering</th>
+                        </tr>
+                        <tr>
+                          <td><input type="text" name="info_3_1" maxlength="40" id="id_info_3_1" value="{{ appraisal_request.info_3_1}}" readonly></td>
+                          <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2" value="{{ appraisal_request.info_3_2}}" readonly></td>
+                          <td><input type="text" name="info_3_3" maxlength="40" id="id_info_3_3" value="{{ appraisal_request.info_3_3}}" readonly></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="info_4_1" maxlength="40" id="id_info_4_1" value="{{ appraisal_request.info_4_1}}" readonly></td>
+                            <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2" value="{{ appraisal_request.info_4_2}}" readonly></td>
+                            <td><input type="text" name="info_4_3" maxlength="40" id="id_info_4_3" value="{{ appraisal_request.info_4_3}}" readonly></td>
+                          </tr>
+                        </table>
+
+
+
+                        <p name="new_courses_developed">1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)</p>
+                      
+
+                      <table>
+                        <tr>
+                          <th>Course Name and Number</th>
+                          <th>UG/PG</th>
+                          <th>Type of activity</th>
+                          <th> Web/Public</th>
+                        </tr>
+                        <tr>
+                          <td><input type="text" name="info_5_1" maxlength="40" id="id_info_5_1" value="{{ appraisal_request.info_5_1}}" readonly></td>
+                          <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2" value="{{ appraisal_request.info_5_2}}" readonly></td>
+                          <td><input type="text" name="info_5_3" maxlength="40" id="id_info_5_3" value="{{ appraisal_request.info_5_3}}" readonly></td>
+                          <td><input type="text" name="info_5_4" maxlength="40" id="id_info_5_4" value="{{ appraisal_request.info_5_4}}" readonly></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="info_6_1" maxlength="40" id="id_info_6_1" value="{{ appraisal_request.info_6_1}}" readonly></td>
+                            <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2" value="{{ appraisal_request.info_6_2}}" readonly></td>
+                            <td><input type="text" name="info_6_3" maxlength="40" id="id_info_6_3" value="{{ appraisal_request.info_6_3}}" readonly></td>
+                            <td><input type="text" name="info_6_4" maxlength="40" id="id_info_6_4" value="{{ appraisal_request.info_6_4}}" readonly></td>
+                          </tr>
+                        </table>
+
+                        <p>1.1.4 Any other instructional tasks :- </p>
+                        
+                        <input type="text" name="instructional_tasks" maxlength="40" id="instructional_tasks" value="{{ appraisal_request.instructional_tasks}}" readonly>
+
+                        <div>
+
+                            <div>
+
+                                <h2 style="text-align: center;">2. RESEARCH ELEMENT</h2>
+
+                            <P name="thesis_reasearch">2.1 Thesis/Research Supervision</P>
+                            <table>
+                                <tr>
+                                  <th>Name of student (M.tech/Phd)</th>
+                                  <th>Title of thesis/ Thesis topic</th>
+                                  <th>Year and Semester of first registration</th>
+                                  <th> Completed/Submitted/Inprogress</th>
+                                  <th> Co-suppervisors(if-any)</th>
+                                </tr>
+                                <tr>
+                                  <td><input type="text" name="info_7_1" maxlength="40" id="id_info_7_1" value="{{ appraisal_request.info_7_1}}" readonly></td>
+                                  <td><input type="text" name="info_7_2" maxlength="40" id="id_info_7_2" value="{{ appraisal_request.info_7_2}}" readonly></td>
+                                  <td><input type="text" name="info_7_3" maxlength="40" id="id_info_7_3" value="{{ appraisal_request.info_7_3}}" readonly></td>
+                                  <td><input type="text" name="info_7_4" maxlength="40" id="id_info_7_4" value="{{ appraisal_request.info_7_4}}" readonly></td>
+                                  <td><input type="text" name="info_7_5" maxlength="40" id="id_info_7_5" value="{{ appraisal_request.info_7_5}}" readonly></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="info_8_1" maxlength="40" id="id_info_8_1" value="{{ appraisal_request.info_8_1}}" readonly></td>
+                                    <td><input type="text" name="info_8_2" maxlength="40" id="id_info_8_2" value="{{ appraisal_request.info_8_2}}" readonly></td>
+                                    <td><input type="text" name="info_8_3" maxlength="40" id="id_info_8_3" value="{{ appraisal_request.info_8_3}}" readonly></td>
+                                    <td><input type="text" name="info_8_4" maxlength="40" id="id_info_8_4" value="{{ appraisal_request.info_8_4}}" readonly></td>
+                                    <td><input type="text" name="info_8_5" maxlength="40" id="id_info_8_5" value="{{ appraisal_request.info_8_5}}" readonly></td>
+                                  </tr>
+                            </table>
+
+                            <P name="sponsored_research">2.2 Sponsored Research and Consultancy projects</P>
+                            <table>
+                                <tr>
+                                  <th>Title of project</th>
+                                  <th>Sponsering agency/oganisation</th>
+                                  <th>Project funding (rs)</th>
+                                  <th>Project duration</th>
+                                  <th>Co-investigators(if any)</th>
+                                  <th>Status(Submitted/ongoing/Completed)</th>
+                                  <th>Remarks</th>
+                                </tr>
+                                <tr>
+                                  <td><input type="text" name="info_9_1" maxlength="40" id="id_info_9_1" value="{{ appraisal_request.info_9_1}}" readonly></td>
+                                  <td><input type="text" name="info_9_2" maxlength="40" id="id_info_9_2" value="{{ appraisal_request.info_9_2}}" readonly></td>
+                                  <td><input type="number" name="info_9_3" maxlength="40" id="id_info_9_3" value="{{ appraisal_request.info_9_3}}" readonly></td>
+                                  <td><input type="number" name="info_9_4" maxlength="40" id="id_info_9_4" value="{{ appraisal_request.info_9_4}}" readonly></td>
+                                  <td><input type="text" name="info_9_5" maxlength="40" id="id_info_9_5" value="{{ appraisal_request.info_9_5}}" readonly></td>
+                                  <td><input type="text" name="info_9_6" maxlength="40" id="id_info_9_6" value="{{ appraisal_request.info_9_6}}" readonly></td>
+                                  <td><input type="text" name="info_9_7" maxlength="40" id="id_info_9_7" value="{{ appraisal_request.info_9_7}}" readonly></td>
+                                </tr>
+                                
+                            </table>
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.3 Other Research element(such as development of reseach facilities, patenet(applied for / granted) / transfer of technology, etc)</label>
+                                    <input type="text" name="research_element" maxlength="40" id="research_element" value="{{ appraisal_request.research_element}}" readonly>
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.4 Publication(s) (Journal, conference, book, book chapter, technical report,etc) (Kindly provide the details in the standered format as filled in EIS system )</label>
+                                    <input type="text" name="publication" maxlength="40" id="publication" value="{{ appraisal_request.publication}}" readonly>
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.5 Referred Conferences/ Symposia/ Seminars/ Workshops / Specialist's meetings attended</label>
+                                    <input type="text" name="referred_conf" maxlength="40" id="referred_conf" value="{{ appraisal_request.referred_conf}}" readonly>
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.6 Conference / Workshop / STP etc Organised </label>
+                                    <input type="text" name="conf_organised" maxlength="40" id="conf_organised" value="{{ appraisal_request.conf_organised}}" readonly>
+                                </div>
+                            </div> 
+
+                            <p><b>2.7 Professional Recognition</b></p>
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.1 Memberships of Professional Socities(National/International) </label>
+                                    <input type="text" name="memberships" maxlength="40" id="memberships" value="{{ appraisal_request.memberships}}" readonly>
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.2 Honours/ Prizes/ Awards/ Fell0wship etc</label>
+                                    <input type="text" name="honours" maxlength="40" id="honours" value="{{ appraisal_request.honours}}" readonly>
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.3 Editors/ Guest Editor etc of Reputed Publication</label>
+                                    <input type="text" name="edt_of_rep_pub" maxlength="40" id="edt_of_rep_pub" value="{{ appraisal_request.edt_of_rep_pub}}" readonly>
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.4 Expert/ Invited lecture delivered</label>
+                                    <input type="text" name="expert_lec_del" maxlength="40" id="expert_lec_del" value="{{ appraisal_request.expert_lec_del}}" readonly>
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.5 Membership of BoS/ BoG / Senate etc</label>
+                                    <input type="text" name="mem_of_bos" maxlength="40" id="mem_of_bos" value="{{ appraisal_request.mem_of_bos}}" readonly>
+                                </div>
+                            </div> 
+
+                            <p><b>2.8 Other Extention Taks</b></p>
+                            <p>eg. involvement in government , industry and public community service</p>
+                            <input type="text" name="extention_tasks" id="extention_tasks" value="{{ appraisal_request.extention_tasks}}" readonly>
+
+                            </div>
+
+
+                            <div>
+                                <div>
+                                    <h2 style="text-align: center;">3. ADMINISTRATION ASSIGNMENT</h2>
+                                    <p>(Please indicate duration of each assignment)</p>
+                                </div>
+    
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">3.1 Adminitrative assignment: (please mention institue/discipline level)</label>
+                                        <input type="text" name="add_assign" maxlength="40" id="add_assign" value="{{ appraisal_request.add_assign}}" readonly>
+                                    </div>
+                                </div> 
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">3.2 Service to institute community(if any): (please mention institute/others)</label>
+                                        <input type="text" name="service_inst_community" maxlength="40" id="service_inst_community" value="{{ appraisal_request.service_inst_community}}" readonly>
+                                    </div>
+                                </div> 
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">Any other contribution</label>
+                                        <input type="text" name="other_contri" maxlength="40" id="other_contri" value="{{ appraisal_request.other_contri}}" readonly>
+                                    </div>
+                                </div> 
+                            </div>
+
+                            <div>
+
+                                <h2 style="text-align: center;">4. SELF-APPRAISAL BY FACULTY</h2>
+
+                                <div class="two fields">
+                                    <div >
+                                        <label name="department_info">Your comments on your performance so far and this academic year particularly.</label>
+                                        <input type="text" name="your_comments" id="your_comments" value="{{ appraisal_request.your_comments}}" readonly>
+                                    </div>
+                                </div> 
+
+                            </div>
+
+                        </div>
+                        
+                </div>
+
+
+                
+
+               
+             
+               <br><br><br>
+               <div>
+                <div class="eight wide field">
+                    <label name="date">Date</label>
+                    <input type="date" name="date" id="id_date" value="{{ appraisal_request.date|date:'Y-m-d' }}" readonly>
+                </div>
+                <div class="two fields" style="float: right;">
+                    <div class="eight wide field">
+                        <label name="department_info">Signature of Faculty</label>
+                        <input type="text" name="sign_faculty" maxlength="40" id="sign_faculty" value="{{ appraisal_request.sign_faculty}}" readonly>
+                    </div>
+                </div> 
+
+               </div>
+
+
+               <div >
+
+                <div class="two fields" style="float: right;">
+                    <div class="eight wide field">
+                        <label name="department_info">Remarks by HOD</label>
+                        <input type="text" name="remarks" maxlength="40" id="remarks" value="{{ appraisal_request.remarks}}" readonly>
+                    </div>
+                </div> 
+                <div class="two fields" >
+                    <div class="eight wide field">
+                        <label name="department_info">Signature</label>
+                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod" value="{{ appraisal_request.sign_hod}}" readonly>
+                    </div>
+                </div> 
+
+
+                
+
+               </div>
+
+               <div class="two fields">
+                <div class="eight wide field">
+                    <label name="department_info">Director</label>
+                    <input type="text" name="sign_director" maxlength="40" id="sign_director" value="{{ appraisal_request.sign_director}}" readonly>
+                </div>
+            </div> 
+
+                
+                
+                    
+                
+                
+            {% if button == 1 %}
+            <div class="two fields">
+                <div class="eight wide field">
+                    <label for="username_employee">Username:</label>
+                    <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                </div>
+                <div class="eight wide field">
+                    <label for="designation_employee">Designation:</label>
+                    <input type="text" name="designation_employee" id="designation_employee" readonly>
+                </div>
+                <button id="check_button" class="ui primary button right floated">Check</button>
+            </div>
+            <div class="two fields">
+                <button id="forward-btn" class="ui primary button right floated" type="submit" value="Forward">
+                    Forward
+                </button>
+                <button id="reject-btn" class="ui primary red button right floated" type="submit" value="Reject">
+                    Reject
+                </button>
+            </div>
+
+            {% endif %}
+        </div>
+        <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+        <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+        <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
+    </form>
+
+
+
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+
+
+
+
+{% endblock %}
+                </div>
+            </div>
+        </div>
+                
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    /*$(document).ready(function(){
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        setTimeout(loader, 1750);
+    });
+
+    function loader() {
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        $("#loader").removeClass("active");
+        $("#loader").addClass("disabled");
+    }*/
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+       
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function(event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function(event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            handleForwardOrReject(1);
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#appraisal_form').serialize(); // Serialize the form data
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation
+            });
+            // Fire an AJAX request to handle the action
+            $.ajax({
+                url: '/hr2/file_handle/',
+                type: 'POST',
+                data: formData, // Send the serialized form data
+                success: function(data) {
+                    // Handle success response, if needed
+                    alert("Request it succefull.");
+                    console.log(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+
+{% endblock %}
