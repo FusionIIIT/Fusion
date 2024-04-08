@@ -101,7 +101,8 @@
                           var student_id = $(this).attr('data');
                           $.ajax({
                               type: 'post',
-                              url: '/academic-procedures/process_verification_request/',
+                              // url: '/academic-procedures/process_verification_request/',
+                              url: '/academic-procedures/auto_process_verification_request/',
                               data: {
                                   student_id: student_id,
                                   status_req: 'accept',
@@ -132,7 +133,8 @@
                           var reason = $('#fname').val();
                           $.ajax({
                               type: 'post',
-                              url: '/academic-procedures/process_verification_request/',
+                              // url: '/academic-procedures/process_verification_request/',
+                              url: '/academic-procedures/auto_process_verification_request/',
                               data: {
                                   student_id: student_id,
                                   status_req: 'reject',

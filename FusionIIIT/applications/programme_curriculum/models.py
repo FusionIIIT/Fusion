@@ -119,6 +119,7 @@ class Curriculum(models.Model):
     '''
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
+
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
@@ -185,7 +186,7 @@ class Semester(models.Model):
 class Course(models.Model):
     '''
         Current Purpose : To store the details regarding a course
-        
+
 
         
         
@@ -251,6 +252,7 @@ class Course(models.Model):
     
 
     def __str__(self):
+
         return str(self.code + " - " +self.name+"- v"+str(self.version))
 
 
