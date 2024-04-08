@@ -285,7 +285,11 @@ def announcement(request):
                                                             upload_announcement=upload_announcement,
                                                             department=department,
                                                             ann_date=ann_date)
-        examination_notif(usrnm, recipients, message)
+        examination_notif(usrnm, recipients, message )
+        print("test1")
+        
+        
+    print("test2")
 
     context = browse_announcements()
     return render(request, 'examination/announcement_req.html', {"user_designation": user_info.user_type,
@@ -347,6 +351,7 @@ class Updatehidden_gradesMultipleView(APIView):
         return response
         return render(request, '../templates/examination/grades_updated.html', {})
 
+
 class Submithidden_gradesMultipleView(APIView):
     permission_classes = [AllowAny]
 
@@ -382,7 +387,6 @@ class Submithidden_gradesMultipleView(APIView):
                 f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
             hidden_grade.save()
 
-        
         return render(request, '../templates/examination/grades_updated.html', {})
 
 
@@ -463,7 +467,15 @@ def generate_transcript(request):
 
     # Initialize a dictionary to store course grades
     course_grades = {}
+    student_details = Student.objects.filter(id_id=student_id)
+    totalCpi=0
 
+    for student in student_details:
+        # print(student.cpi)
+        totalCpi = totalCpi + student.cpi
+
+
+    print(totalCpi)
     # Fetch grades for the courses registered by the student
     for course in courses_registered:
         try:
@@ -477,7 +489,9 @@ def generate_transcript(request):
             course_grades[course] = "Grading not done yet"
 
     context = {
-        'courses_grades': course_grades
+        'courses_grades': course_grades,
+        'student_details': student_details
+        
     }
 
     return render(request, 'examination/generate_transcript.html', context)
