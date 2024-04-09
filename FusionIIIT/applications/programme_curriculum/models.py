@@ -186,7 +186,6 @@ class Semester(models.Model):
 class Course(models.Model):
     '''
         Current Purpose : To store the details regarding a course
-         
 
         
         
@@ -339,7 +338,6 @@ class CourseInstructor(models.Model):
       class Meta:
           unique_together = ('course_id', 'instructor_id', 'batch_id')
       
-
 
       def __self__(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
