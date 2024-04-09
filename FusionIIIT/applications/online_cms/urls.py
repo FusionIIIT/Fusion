@@ -20,6 +20,8 @@ urlpatterns = [
         name='ajax_remove'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/upload_assignment$', views.upload_assignment,
         name='upload_assignment'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_modules$', views.add_modules,
+        name='add_modules'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_documents$', views.add_document,
         name='add_document'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_assignment$',
@@ -70,6 +72,14 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_bank/(?P<qb_code>[0-9]+)$',
         views.edit_bank, name='edit_bank'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/attendance$', views.submit_attendance,
-        name='submit_attendance'),] 
-    
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        name='submit_attendance'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_attendance$', views.add_attendance,
+        name='add_attendance'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/create_grading_scheme$',
+        views.create_grading_scheme, name='Create_grading_scheme'),
+    url(r'^add_academic_calendar', views.add_academic_calendar, name='Add Calendar'),
+    url(r'^update_calendar', views.update_calendar, name='Add Calendar'),
+    url(r'^add_timetable', views.add_timetable, name="add_timetable"),
+    url(r'^delete_timetable', views.delete_timetable, name='delete_timetable'),
+    url(r'^(?P<course_code>[A-z0-9]+)/submit_marks$',views.submit_marks, name='submit_marks'),
+        ]
