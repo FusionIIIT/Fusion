@@ -28,6 +28,7 @@ Hostel
 
         <div class="row">
             <div class="ui large fluid vertical pointing menu">
+
                 {% if user.username in all_students_id or user in hall_caretaker or user in hall_warden %}
                 <a class="active item" data-tab="first">
                     Students' Alloted Room
@@ -43,90 +44,171 @@ Hostel
                 {% endif %}
 
                 {% if user.username in all_students_id or user in hall_caretaker or user in hall_warden %}
-
                 <a class="item" data-tab="third">
                     Notice Board
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+              
+              
+        {% if user.username in all_students_id %}
+        <a class="item" data-tab="fine3">
+          My Fine
+          <i class="right floated chevron right icon"></i>
+        </a>
+        {% endif %}
 
-                {% if user in hall_caretaker %}
-                <a class="item" data-tab="fourth">
-                    Student Attendance
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
+                
+<!-- Start here -->
                 {% if user.username in all_students_id %}
-                <a class="item" data-tab="fifth">
-                    Complaint Form
+                <div class="ui dropdown item">
                     <i class="right floated chevron right icon"></i>
-                </a>
+                        Leave
+                    <div class="ui vertical pointing menu">
+
+                        <!-- {% if user.username in all_students_id %}
+                        <a class="item" data-tab="fifth" >
+                            Complaint Form
+                        </a>
+                        {% endif %} -->
+
+                        {% if user.username in all_students_id %}
+                        <a class="item active" data-tab="sixth" >
+                            Leave Form
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if user.username in all_students_id %}
+                        <a class="item" data-tab="seventh" >
+                            Leave Status
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
                 {% endif %}
 
-                {% if user.username in all_students_id %}
-                <a class="item" data-tab="sixth">
-                    Leave Form
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                {% if user.username in all_students_id %}
-                <a class="item" data-tab="seventh">
-                    Leave Status
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                {% if user in hall_caretaker or user in hall_warden %}
-                <a class="item" data-tab="eighth">
-                    Leave Requests
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                {% if user in hall_caretaker or user in hall_warden %}
-                <a class="item" data-tab="nineth">
-                    Complaints
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                <!-- This should be only in hall_caretaker -->
-                {% if user in hall_caretaker %}
-                <a class="item" data-tab="tenth">
-                    Inventory Form
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                {% if user in hall_caretaker or user in hall_warden %}
-                <a class="item" data-tab="eleventh">
-                    Hall Students
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-                {% if user.username in all_students_id %}
-                <a class="item" data-tab="guest1">
-                    Book Guest Room
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
+<!-- End here -->
                 {% if user in hall_caretaker%}
-                <a class="item" data-tab="guest2">
-                    Guest Room requests
+                <div class="ui dropdown item">
                     <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
+                        Fine
+                    <div class="ui vertical pointing menu">
 
-                {% if user.username in all_students_id %}
-                <a class="item" data-tab="guest3">
-                    Your Bookings
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                        {% if user in hall_caretaker%}
+                        <a class="item" data-tab="fine1">
+                            Impose Fine
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if user in hall_caretaker%}
+                        <a class="item" data-tab="fine2">
+                            All Fines
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
                 {% endif %}
+                    
+<!-- Ends here  -->
+                {% if user in hall_caretaker or user in hall_warden %}
+                <div class="ui dropdown item">
+                    <i class="right floated chevron right icon"></i>
+                        Student
+                    <div class="ui vertical pointing menu">
+                        
+                        {% if user in hall_caretaker or user in hall_warden %}
+                        <a class="item" data-tab="eleventh" >
+                            Hall Students
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if user in hall_caretaker %}
+                        <a class="item" data-tab="fourth">
+                            Student Attendance
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endif %}
+                    
+<!-- Ends here  -->
+                {% if user in hall_caretaker or user in hall_warden %}
+                <div class="ui dropdown item">
+                    <i class="right floated chevron right icon"></i>
+                        Requests
+                    <div class="ui vertical pointing menu">
+
+                        {% if user in hall_caretaker or user in hall_warden %}
+                        <a class="item" data-tab="eighth" >
+                            Leave Requests
+                            <i class="right floated chevron right icon"></i>
+                         </a>
+                        {% endif %}
+
+                        {% if user in hall_caretaker%}
+                        <a class="item" data-tab="guest2">
+                            Guest Room requests
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endif %}
+                    
+<!-- Ends here  -->
+                {% if user.username in all_students_id %}
+                <div class="ui dropdown item">
+                    Guest Room
+                    <i class="right floated chevron right icon"></i>
+                    <div class="ui vertical pointing menu">
+                        
+                        {% if user.username in all_students_id %}
+                        <a class="item" data-tab="guest1">
+                            Book Guest Room
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if user.username in all_students_id %}
+                        <a class="item" data-tab="guest3">
+                            Your Bookings
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endif %}
+                    
+<!-- Ends here  -->
+                    
+
+                    {% if user in hall_caretaker or user in hall_warden %}
+                    <a class="item" data-tab="nineth" >
+                        Complaints
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+
+                    <!-- This should be only in hall_caretaker -->
+                    {% if user in hall_caretaker %}
+                    <a class="item" data-tab="tenth" >
+                        Inventory Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+
+                
 
                 {% if is_superuser %}
                 <a class="item" data-tab="superUser1">
@@ -163,6 +245,7 @@ Hostel
                 </a>
                 {% endif %}
 
+
                 {% if is_superuser %}
                 <a class="item" data-tab="superUser6">
                     Transactions
@@ -170,19 +253,13 @@ Hostel
                 </a>
                 {% endif %}
 
-                {% if user in hall_caretaker%}
-                <a class="item" data-tab="fine1">
-                    Impose Fine
+                {% if is_superuser %}
+                <a class="item" data-tab="superUser7">
+                    Hostel History
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
 
-                {% if user in hall_caretaker%}
-                <a class="item" data-tab="fine2">
-                    All Fines
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
 
                 {% if user in hall_caretaker%}
                 <a class="item" data-tab="inventory1">
@@ -195,7 +272,8 @@ Hostel
 
         </div>
 
-    </div>
+  </div>
+
 
     <div class="eight wide column">
         <div class="ui active tab segment" data-tab="first">
@@ -203,14 +281,16 @@ Hostel
             {% include 'hostelmanagement/alloted_hostel_room.html'%}
             {% endblock %}
         </div>
-
+      
+          
         {% if user in hall_caretaker or user in hall_warden%}
-        <div class="ui tab segment" data-tab="second">
-            {% block staff_schedule %}
+          <div class="ui tab segment" data-tab="second">
+           {% block staff_schedule %}
             {% include 'hostelmanagement/staff_schedule.html'%}
-            {% endblock %}
-        </div>
-        {% endif %}
+           {% endblock %}
+           </div>
+          {% endif %}
+      
 
         <div class="ui tab segment" data-tab="third">
             {% block notice_board %}
@@ -236,11 +316,11 @@ Hostel
             {% endblock %}
         </div>
 
-        <div class="ui tab segment" data-tab="seventh">
-            {% block leave_status %}
-            {% include 'hostelmanagement/my_leaves.html' %}
-            {% endblock %}
-        </div>
+            <div class="ui tab segment" data-tab="seventh">
+                {% block leave_status %}
+                    {% include 'hostelmanagement/my_leaves.html' %}
+                {% endblock %}
+            </div>
 
         <div class="ui tab segment" data-tab="eighth">
             {% block leave_requests %}
@@ -260,11 +340,13 @@ Hostel
             {% endblock %}
         </div>
 
-        <div class="ui tab segment" data-tab="eleventh">
-            {% block hall_all_students %}
-            {% include 'hostelmanagement/student_details.html' %}
-            {% endblock %}
-        </div>
+
+            <div class="ui tab segment" data-tab="eleventh">
+                {% block hall_all_students %}
+                    {% include 'hostelmanagement/student_details.html' %}
+                {% endblock %}
+            </div>
+          
 
         {% if user.username in all_students_id %}
         <div class="ui tab segment" data-tab="guest1">
@@ -325,6 +407,7 @@ Hostel
         
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser6">
+            
             {% block Hostel_Transactions %}
             {% include 'hostelmanagement/hostel_transactions.html' %}
             {% endblock %}
@@ -333,12 +416,22 @@ Hostel
         
 
         {% if is_superuser %}
+        <div class="ui tab segment" data-tab="superUser7">
+            {% block Hostel_history %}
+            {% include 'hostelmanagement/hostel_history.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser5">
             {% block View_Hostels %}
             {% include 'hostelmanagement/admin_hostel_list.html' %}
             {% endblock %}
         </div>
         {% endif %}
+
+        
 
         
 
@@ -359,47 +452,54 @@ Hostel
         </div>
         {% endif %}
 
-        {% if user in hall_caretaker %}
+          {% if user in hall_caretaker %}
         <div class="ui tab segment" data-tab="inventory1">
-            {% block inventory_list %}
-            {% include 'hostelmanagement/inventory_list.html' %}
-            {% endblock %}
-        </div>
+          {% block inventory_list %}
+         {% include 'hostelmanagement/inventory_list.html' %}
+          {% endblock %}
+          </div>
         {% endif %}
 
-        
+    {% if user.username in all_students_id %}
+    <div class="ui tab segment" data-tab="fine3">
+      {% block my_fine %}
+      {% include 'hostelmanagement/student_fine_details.html' %}
+      {% endblock %}
+    </div>
+    {% endif %}
+
+      </div>
 
     </div>
-
-</div>
+  
 
 {% endblock %}
 {% block javascript %}
 <script>
-    function checkInputs(form_id) {
-        var inputs = document.getElementById(form_id).elements;
+  function checkInputs(form_id) {
+    var inputs = document.getElementById(form_id).elements;
 
-        // Iterate over the form controls
-        for (i = 0; i < inputs.length; i++) {
-            if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
-                alert("Please fill the required details");
-                return;
-            }
-        }
-    };
-
-    function checkTimes() {
-        const start_time = document.getElementsByName("start_time")[0].value;
-        const end_time = document.getElementsByName("end_time")[0].value;
-
-        const [start_hour, start_mins] = start_time.split(':').map(x => parseInt(x, 10));
-        const [end_hour, end_mins] = end_time.split(':').map(x => parseInt(x, 10));
-
-        if (start_hour * 60 + start_mins >= end_hour * 60 + end_mins) {
-            alert("Start time cannot be later than end time of the worker shift!");
-            return false;
-        }
-        return true;
+    // Iterate over the form controls
+    for (i = 0; i < inputs.length; i++) {
+      if (inputs[i].hasAttribute('required') && inputs[i].value === "") {
+        alert("Please fill the required details");
+        return;
+      }
     }
+  };
+
+  function checkTimes() {
+    const start_time = document.getElementsByName("start_time")[0].value;
+    const end_time = document.getElementsByName("end_time")[0].value;
+
+    const [start_hour, start_mins] = start_time.split(':').map(x => parseInt(x, 10));
+    const [end_hour, end_mins] = end_time.split(':').map(x => parseInt(x, 10));
+
+    if (start_hour * 60 + start_mins >= end_hour * 60 + end_mins) {
+      alert("Start time cannot be later than end time of the worker shift!");
+      return false;
+    }
+    return true;
+  }
 </script>
 {% endblock %}

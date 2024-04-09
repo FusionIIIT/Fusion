@@ -1,6 +1,7 @@
 {% block fine_list  %}
-    <h1 align ="center">Hostel Fine List</h1>
-    <table  class= "ui form" border="1">
+    <h2 align ="center">Hostel Fine List</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table  class= "ui table" border="1">
         <thead>
             <tr>
                 <th>Fine ID</th>
@@ -33,6 +34,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
  <style>
     td,th{
         text-align: center;

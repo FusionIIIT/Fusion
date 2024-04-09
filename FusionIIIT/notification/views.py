@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from requests import Response
 from notifications.signals import notify
 
 # Create your views here.
@@ -69,6 +70,7 @@ def central_mess_notif(sender, recipient, type, message=None):
     sender = sender
     recipient = recipient
     verb = ''
+
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
     elif type == 'menu_change_accepted':
@@ -124,8 +126,6 @@ def healthcare_center_notif(sender, recipient, type):
         verb = "You have a new appointment request"
     if type == 'amb_req':
         verb = "You have a new ambulance request"
-
-
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -336,7 +336,21 @@ def department_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = type
-    flag = "department"
+    flag = "announcement"
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                flag=flag)
+def examination_notif(sender, recipient, type):
+    url='examination:examination'
+    module='examination'
+    sender = sender
+    recipient = recipient
+    verb = type
+    flag = "announcement"
 
     notify.send(sender=sender,
                 recipient=recipient,
@@ -384,4 +398,28 @@ def research_procedures_notif(sender,recipient,type):
     elif type == "created":
         verb = "A new Patent has been Created"
 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+def hostel_notifications(sender, recipient, type):
+    url = 'hostelmanagement:hostel_view'
+    module = 'Hostel Management'
+    
+    sender = sender
+    recipient = recipient
+    verb = ""
+    if type == "leave_accept":
+        verb = "Your leave request has been Accepted."
+    elif type == "leave_reject":
+        verb = "Your leave request has been Rejected."
+    elif type == "guestRoom_accept":
+        verb = "Your Guest Room request has been Accepted."
+    elif type == "guestRoom_reject":
+        verb = "Your Guest Room request has been Rejected."
+    elif type == "leave_request":
+        verb = "You have a new Leave Request."
+    elif type == "guestRoom_request":
+        verb = "You have a new Guest Room Request."
+    elif type == "fine_imposed":
+        verb = "A fine has been imposed on you."
+    
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)

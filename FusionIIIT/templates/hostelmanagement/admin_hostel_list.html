@@ -1,14 +1,16 @@
 
 {% block View_Hostels %}
-        <h1 align="center">Hostel List</h1>
-
+        <h2 align="center">Hostel List</h2>
+        <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
         <table class ="ui table">
             <thead>
                 <tr>
                     <th>Hall ID</th>
                     <th>Hall Name</th>
+                    <th>Seater Type</th>
                     <th>Max Accommodation</th>
                     <th>Occupied</th>
+                    <th>Vacant Seats</th>
                     <th>Assigned Batch</th>
                     <th>Assigned Caretaker</th>
                     <th>Assigned Warden</th>
@@ -20,8 +22,10 @@
                 <tr>
                     <td>{{ detail.hall_id }}</td>
                     <td>{{ detail.hall_name }}</td>
+                    <td>{{ detail.seater_type}}</td>
                     <td>{{ detail.max_accomodation }}</td>
                     <td>{{ detail.number_students }}</td>
+                    <td>{{ detail.vacant_seat}}
                     <td>{{ detail.assigned_batch }}</td>
                     <td>{{ detail.assigned_caretaker }}</td>
                     <td>{{ detail.assigned_warden }}</td>
@@ -39,6 +43,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
     </div>
     <!-- <script>

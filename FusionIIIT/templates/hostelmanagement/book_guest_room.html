@@ -23,11 +23,11 @@
                                 <div class="two fields">
                                   <div class="field">
                                       <label>Arrival Date</label>
-                                      <input type="date" name="arrival_date" >
+                                      <input type="date" name="arrival_date" id="arrival_date" min="" required value="">
                                   </div>
                                   <div class="field">
                                       <label>Departure Date</label>
-                                      <input type="date" name="departure_date" >
+                                      <input type="date" name="departure_date" id="departure_date" min="" required value="">
                                   </div>
                                 </div>
                             <div class="two fields">
@@ -121,4 +121,15 @@
                     </div>
                 </div>
             </form>
+
+            <script>
+                // // Get today's date in YYYY-MM-DD format
+                var today = new Date().toISOString().split('T')[0];
+                document.getElementById("arrival_date").value = "";
+                document.getElementById("departure_date").value = "";
+                document.getElementById("arrival_date").min = today;
+                document.getElementById("arrival_date").addEventListener("change", function () {
+                    document.getElementById("departure_date").min = document.getElementById("arrival_date").value;
+                });
+            </script>
 {% endblock %}

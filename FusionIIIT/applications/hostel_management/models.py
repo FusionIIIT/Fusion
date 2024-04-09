@@ -49,7 +49,13 @@ class Hall(models.Model):
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
     assigned_batch = models.CharField(max_length=50, null=True, blank=True)
+    TYPE_OF_SEATER_CHOICES = [
+        ('single', 'Single Seater'),
+        ('double', 'Double Seater'),
+        ('triple', 'Triple Seater'),
+    ]
 
+    type_of_seater = models.CharField(max_length=50, choices=TYPE_OF_SEATER_CHOICES, default='single')
     def __str__(self):
         return self.hall_id 
 
@@ -251,6 +257,7 @@ class HostelLeave(models.Model):
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
     status = models.CharField(max_length=20, default='pending')
+    remark = models.TextField(blank=True, null=True)
 
 
     def __str__(self):
@@ -340,3 +347,13 @@ class HostelTransactionHistory(models.Model):
 
     def __str__(self):
         return f"{self.change_type} change in {self.hall} at {self.timestamp}"
+    
+class HostelHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    caretaker = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, related_name='caretaker_history')
+    batch = models.CharField(max_length=50, null=True)
+    warden = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, related_name='warden_history')
+
+    def __str__(self):
+        return f"History for {self.hall.hall_name} - {self.timestamp}"
