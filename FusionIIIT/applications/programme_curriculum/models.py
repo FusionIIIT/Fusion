@@ -187,7 +187,6 @@ class Course(models.Model):
     '''
         Current Purpose : To store the details regarding a course
 
-
         
         
 
