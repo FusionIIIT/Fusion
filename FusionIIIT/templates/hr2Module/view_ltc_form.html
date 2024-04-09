@@ -538,6 +538,10 @@ Module
                                             type="submit" value="Reject">
                                             Reject
                                         </button>
+                                        <button id="approve-btn" class="ui primary red button right floated"
+                                            type="submit" value="Approve">
+                                            Approve
+                                        </button>
                                     </div>
 
                                     {% endif %}
@@ -673,20 +677,38 @@ Module
         $('#reject-btn').click(function (event) {
             event.preventDefault();
             // Perform actions for rejecting
-            handleForwardOrReject(1);
+            var confirmation = confirm("Do you want to reject the request?")
+
+            if(confirmation){
+                handleForwardOrReject(1);
+            } 
+        });
+
+        $('#approve-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to approve the request?")
+
+            if(confirmation){
+                handleForwardOrReject(2);   
+            }
         });
 
         function handleForwardOrReject(action) {
             // Prepare the data to be sent to the server
             var formData = $('#ltc_form').serialize(); // Serialize the form data
-            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject , 2 for Approve)
             var file_id = $('#file_id').val();
             var from_user = $('#from_user').val();
             var from_designation = $('#from_designation').val();
+            var username_employee = $('#username_employee').val();
+            var designation_employee = $('#designation_employee').val();
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
-                from_designation: from_designation
+                from_designation: from_designation,
+                username_employee:username_employee,
+                designation_employee:designation_employee
             });
             // Fire an AJAX request to handle the action
             $.ajax({

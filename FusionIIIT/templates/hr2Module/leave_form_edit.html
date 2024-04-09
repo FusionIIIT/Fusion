@@ -31,11 +31,11 @@
 
                 <div class="eight wide field">
                     <label for="post_title">Name</label>
-                    <input type="text" name="name" maxlength="40" required id="id_name">
+                    <input type="text" name="name" maxlength="40" required id="id_name" value="{{ employee.user }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Designation</label>
-                    <input type="text" name="designation" maxlength="40" id="id_designation">
+                    <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ employee.user_type }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Application Date</label>

@@ -23,6 +23,7 @@ from django.shortcuts import (get_object_or_404, redirect, render,
 from django.http import JsonResponse
 from applications.filetracking.sdk.methods import *
 from django.core.files.base import File as DjangoFile
+from django.views.decorators.csrf import csrf_exempt
 
 
 def edit_employee_details(request, id):
@@ -716,14 +717,9 @@ def reverse_ltc_pre_processing(data):
 
 def get_designation_by_user_id(user_id):
     try:
-        
         # Query HoldsDesignation model to get the user's designation
-        designation_obj = HoldsDesignation.objects.get(user=user_id)
-        
-        # Access the designation field in the HoldsDesignation object
-        designation = designation_obj.designation
-        
-        return designation
+        designation_objs = HoldsDesignation.objects.filter(user=user_id)
+        return designation_objs.first().designation
     except ExtraInfo.DoesNotExist:
         return None
     except HoldsDesignation.DoesNotExist:
@@ -911,7 +907,8 @@ def ltc_form(request, id):
 
         print(inbox)
 
-        context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox}
+
+        context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox, }
 
         messages.success(request, "Ltc form filled successfully!")
         return render(request, template, context)
@@ -957,16 +954,19 @@ def track_file(request, id):
 
 def file_handle(request):
     if request.method == 'POST':
-        form_data = request.POST
-        action = form_data.get('action')
-        username_employee = form_data.get('username_employee')
-        designation_employee = form_data.get('designation_employee')
+        form_data2 = request.POST
+        form_data=request.POST.get('context')
+        print(request.POST.get('context'))
+        action = form_data2.get('action')
+        
+        form_data=json.loads(form_data)
+        print(form_data)
+        file_id = form_data['file_id']
+        from_user = form_data['from_user']
+        from_designation = form_data['from_designation']
+        username_employee = form_data['username_employee']
+        designation_employee = form_data['designation_employee']
 
-    
-
-        file_id = form_data.get('file_id')
-        from_user = form_data.get('from_user')
-        from_designation = form_data.get('from_designation')
 
         print("file_id",file_id)
         print("from_user",from_user)
@@ -978,12 +978,16 @@ def file_handle(request):
 
         if(action == '0'):
             track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = "Forwared", file_extra_JSON = "None")
-            print("done",track_id)
+            print("done1",track_id)
             messages.success(request, "File forwarded successfully")
-        else:
+        elif(action == '1'):
             track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Rejected", file_extra_JSON = "None")
             print("done2")
             messages.success(request, "File rejected successfully")
+        else:
+            track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Approved", file_extra_JSON = "None")
+            print("done3")
+            messages.success(request, "File approved successfully")
 
         
         return HttpResponse("Success")
@@ -1178,7 +1182,7 @@ def cpda_form(request, id):
 
     print(employee.user_type)
 
-    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'Deputy Registrar' or employee.user_type == 'asst. registrar fa' or employee.user_type == 'Director'):
+    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'Deputy Registrar' or employee.user_type == 'asst. registrar fa' or employee.user_type == 'Director'  ):
         template = 'hr2Module/cpda_form.html'
 
         if request.method == "POST":
@@ -1267,6 +1271,7 @@ def cpda_form(request, id):
                 )
 
                 print("Sent the file to Hradmin!") #isko dekhege
+                print(file_id)
 
                 messages.success(request, "CPDA form filled successfully")
 
@@ -1287,8 +1292,8 @@ def cpda_form(request, id):
         if(designation):
             uploader_designation = designation
 
-        print("username",username)
-        print("uploader_designation",uploader_designation)
+        # print("username",username)
+        # print("uploader_designation",uploader_designation)
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
@@ -1303,7 +1308,8 @@ def cpda_form(request, id):
     
 
 def form_view_cpda(request , id):
-    ltc_request = get_object_or_404(CPDAform, id=id)
+    print(id)
+    cpda_request = get_object_or_404(CPDAform, id=id)
 
     # isko recheck krna h
     from_user = request.GET.get('param1')
@@ -1315,7 +1321,6 @@ def form_view_cpda(request , id):
     print(from_designation)
 
     template = 'hr2Module/view_cpda_form.html'
-    print(cpda_request)
     cpda_request = reverse_cpda_pre_processing(cpda_request)#isko bnana h
     print(cpda_request)
     
@@ -1388,8 +1393,10 @@ def form_mangement_cpda_hr(request,id):
     )
 
     print("Sent the file to Hod!")
+    print(file_id)
 
     messages.success(request, "CPda form filled successfully")
+
 
     return HttpResponse("Sucess")
 
@@ -1504,7 +1511,7 @@ def leave_form(request, id):
     print(employee.user_type)
 
     
-    if(employee.user_type == 'faculty' or employee.user_type == 'student'):
+    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'staff'):
         template = 'hr2Module/leave_form.html'
 
         if request.method == "POST":

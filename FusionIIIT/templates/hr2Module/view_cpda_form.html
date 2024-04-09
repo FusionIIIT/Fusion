@@ -116,8 +116,6 @@ Module
 <div style="margin: 2rem;">
     <div class="ui vertical segment">
 
-
-
         <form method="post" id="editDetail" enctype="multipart/form-data">
             {% csrf_token %}
             <!-- <input type="hidden" name="csrfmiddlewaretoken"
@@ -212,7 +210,8 @@ Module
                     <input type="number" name="advance_amount_pda" maxlength="40" required id="id_advance_amount_pda" value="{{ cpda_request.advance_amount_pda}}" readonly>
                 </div>
                 <br><br>
-               
+
+               <!-- {% if global_var == "dealing assistant" %} -->
                 <div class="two fields">
                     <div class="fifteen wide field" style="float: left;">
                         <label>Dealing Asstt. (Estt.) <br> Name</label>
@@ -223,6 +222,8 @@ Module
                         <input type="text" name="ar_dr_name" maxlength="40" required id="id_ar_dr_name" value="{{ cpda_request.ar_dr_name}}" readonly>
                     </div>
                 </div>
+
+                <!-- {%endif%} -->
                 
                 <hr>
 
@@ -292,11 +293,19 @@ Module
                         <button id="reject-btn" class="ui primary red button right floated" type="submit" value="Reject">
                             Reject
                         </button>
+                        
+                        <button id="approve-btn" class="ui primary red button right floated"
+                                            type="submit" value="Approve">
+                                            Approve
+                                        </button>
                     </div>
 
                 {% endif %}
 
             </div>
+            <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+            <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+            <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
         </form>
 
         <br>
@@ -424,7 +433,21 @@ Module
         $('#reject-btn').click(function(event) {
             event.preventDefault();
             // Perform actions for rejecting
-            handleForwardOrReject(1);
+            var confirmation = confirm("Do you want to reject the request?")
+
+            if(confirmation){
+                handleForwardOrReject(1);   
+            }
+        });
+
+        $('#approve-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to approve the request?")
+
+            if(confirmation){
+                handleForwardOrReject(2);   
+            }
         });
 
         function handleForwardOrReject(action) {
@@ -434,19 +457,28 @@ Module
             var file_id = $('#file_id').val();
             var from_user = $('#from_user').val();
             var from_designation = $('#from_designation').val();
+            var username_employee = $('#username_employee').val();
+            var designation_employee = $('#designation_employee').val();
+            console.log(file_id)
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
-                from_designation: from_designation
+                from_designation: from_designation,
+                username_employee:username_employee,
+                designation_employee:designation_employee
             });
-            // Fire an AJAX request to handle the action
+           
             $.ajax({
                 url: '/hr2/file_handle/',
                 type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                 },  
                 data: formData, // Send the serialized form data
                 success: function(data) {
+
                     // Handle success response, if needed
-                    alert("Request it succefull.");
+                    alert("Request successful.");
                     console.log(data);
                 },
                 error: function(xhr, status, error) {

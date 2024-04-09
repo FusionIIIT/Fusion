@@ -24,14 +24,14 @@
                 <div class="two fields">    
                     <div class="eight wide field">
                         <label for="name">Name</label>
-                        <input type="text" name="name" maxlength="40" id="id_name">
+                        <input type="text" name="name" maxlength="40" id="id_name" value="{{ employee.user }}">
                     </div>
                 </div>
 
                 <div class="two fields">
                     <div class="eight wide field">
                         <label for="designation">Designation</label>
-                        <input type="text" name="designation" maxlength="40" id="id_designation">
+                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ employee.user_type }}">
                     </div>
                 </div>
 
@@ -270,7 +270,7 @@
                 <div class="two fields">
                     <div class="eight wide field">
                         <label for="phone_number_for_contact">Phone Number for contact</label>
-                        <input type="number" name="phone_number_for_contact" maxlength="40" id="id_phone_number_for_contact">
+                        <input type="number" name="phone_number_for_contact" maxlength="40" id="id_phone_number_for_contact" value="{{ employee.phone_no }}">
                     </div>
                 </div>
 
