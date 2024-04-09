@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from requests import Response
 from notifications.signals import notify
+
 # Create your views here.
 
 def leave_module_notif(sender, recipient, type, date=None):
@@ -69,7 +69,6 @@ def central_mess_notif(sender, recipient, type, message=None):
     sender = sender
     recipient = recipient
     verb = ''
-
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
     elif type == 'menu_change_accepted':
@@ -125,6 +124,8 @@ def healthcare_center_notif(sender, recipient, type):
         verb = "You have a new appointment request"
     if type == 'amb_req':
         verb = "You have a new ambulance request"
+
+
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -337,21 +338,7 @@ def department_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = type
-    flag = "announcement"
-
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
-def examination_notif(sender, recipient, type):
-    url='examination:examination'
-    module='examination'
-    sender = sender
-    recipient = recipient
-    verb = type
-    flag = "announcement"
+    flag = "department"
 
     notify.send(sender=sender,
                 recipient=recipient,
@@ -400,4 +387,3 @@ def research_procedures_notif(sender,recipient,type):
         verb = "A new Patent has been Created"
 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
-
