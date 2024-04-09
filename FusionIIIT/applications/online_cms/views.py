@@ -35,19 +35,16 @@ def viewcourses(request):
     user = request.user
 
     extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
-    print(extrainfo)
     if extrainfo.user_type == 'student':         #if student is using
         student = Student.objects.select_related('id').get(id=extrainfo)
         roll = student.id.id[:2]                       #get the roll no. of the student
-        print(roll)
-        register = Register.objects.select_related().filter(student_id=student, semester=semester(roll)) 
-        print(semester(roll))
-        print(register) #info of registered student
+        register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))
+        #info of registered student
         courses = collections.OrderedDict()   #courses in which student is registerd
         for reg in register:   #info of the courses
             instructor = Curriculum_Instructor.objects.select_related().get(curriculum_id=reg.curr_id)
             courses[reg] = instructor
-        print(courses)
+
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
 
@@ -58,7 +55,6 @@ def viewcourses(request):
         for x in instructor:
             c = Curriculum.objects.select_related().get(curriculum_id = x.curriculum_id.curriculum_id)
             curriculum_list.append(c)
-        print(instructor)
 
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'instructor': instructor,
@@ -179,9 +175,27 @@ def course(request, course_code):
             #     videos.append(video_data)
             # print(videos)
 
+        modules = Modules.objects.select_related().filter(course_id=course)
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
+
+        modules_with_slides = collections.OrderedDict()
+        for m in modules:
+            sl = []
+            for slide in slides:
+                if slide.module_id.id == m.id:
+                    sl.append(slide)
+            if len(sl) == 0:
+                modules_with_slides[m] = 0
+            else:
+                modules_with_slides[m] = sl
+
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = Assignment.objects.select_related().filter(course_id=course)
+        submitable_assignments = []
+        for assi in assignment:
+            if assi.submit_date >= timezone.now():
+                submitable_assignments.append(assi)
+                
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
@@ -231,13 +245,13 @@ def course(request, course_code):
                 answers[comment] = fr1
         return render(request, 'coursemanagement/viewcourse.html',
                       {'course': course,
-                       
-                       'videos': videos,
+                       'modules': modules_with_slides,
                        'instructor': instructor,
                        'slides': slides,
                        'extrainfo': extrainfo,
                        'answers': answers,
                        'assignment': assignment,
+                       'submitable_assignment':submitable_assignments,
                        'student_assignment': student_assignment,
                        'total_attendance' : total_attendance,
                        'present_attendance':present_attendance,
@@ -270,15 +284,23 @@ def course(request, course_code):
                 else:
                     topics = None
                 present_attendance = {}
-        total_attendance=None
-        for x in registered_students:
-            a = Student_attendance.objects.select_related().filter(student_id=x.student_id , instructor_id = ins)
-            total_attendance = len(a)
-            count =0
-            for row in a:
-                if(row.present):
-                    count += 1
-            present_attendance[x.student_id.id.id] = count
+                total_attendance=None
+                for x in registered_students:
+                    a = Student_attendance.objects.select_related().filter(student_id=x.student_id , instructor_id = ins)
+                    total_attendance = len(a)
+                    count =0
+                    for row in a:
+                        if(row.present):
+                            count += 1
+                    
+                    attendance_percent = 0
+                    if(total_attendance):
+                        attendance_percent = count/total_attendance*100
+                        attendance_percent = round(attendance_percent,2)
+                    present_attendance[x.student_id.id.id] = {
+                        'count': count,
+                        'attendance_percent': attendance_percent
+                    }
 
         lec = 1
         videos = []
@@ -325,7 +347,18 @@ def course(request, course_code):
         #     }
 
         #     videos.append(video_data)
+        modules = Modules.objects.select_related().filter(course_id=course)
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
+        modules_with_slides = collections.OrderedDict()
+        for m in modules:
+            sl = []
+            for slide in slides:
+                if slide.module_id.id == m.id:
+                    sl.append(slide)
+            if len(sl) == 0:
+                modules_with_slides[m] = 0
+            else:
+                modules_with_slides[m] = sl
         # quiz = Quiz.objects.select_related().filter(course_id=course)
         # marks = []
         # quizs = []
@@ -348,14 +381,26 @@ def course(request, course_code):
             if not fr:
                 answers[comment] = fr1
         # qb = QuestionBank.objects.select_related().filter(instructor_id=extrainfo, course_id=course)
+
+        gradingscheme = GradingScheme.objects.select_related().filter(course_id=course)
+        try:
+            gradingscheme_grades = GradingScheme_grades.objects.select_related().get(course_id=course)
+        except GradingScheme_grades.DoesNotExist:
+            gradingscheme_grades = {}
+
+        try:
+            student_grades = Student_grades.objects.select_related().filter(course_id=course)
+        except Student_grades.DoesNotExist:
+            student_grades = {}
+
+
         return render(request, 'coursemanagement/viewcourse.html',
                       {'instructor': instructor,
                        'extrainfo': extrainfo,
                        'curriculum': curriculum,
                        'students' : students,
                        'registered_students': registered_students,
-                    
-                       'videos': videos,
+                       'modules': modules_with_slides,
                        'slides': slides,
                        'topics':topics,
                        'course': course,
@@ -367,8 +412,12 @@ def course(request, course_code):
                        'students': students,
                        'total_attendance' : total_attendance,
                        'present_attendance':present_attendance,
-                       'test_marks': test_marks
+                       'test_marks': test_marks,
+                       'gradingscheme':gradingscheme,
+                       'gradingscheme_grades': gradingscheme_grades,
+                       'student_grades' : student_grades
                        })
+
 
 #when student uploads the assignment's solution
 @login_required
@@ -408,6 +457,30 @@ def upload_assignment(request, course_code):
     else:
         return HttpResponse("not found")
 
+# when faculty creates modules
+@login_required
+def add_modules(request, course_code):
+    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    if extrainfo.user_type == "faculty":  #user should be faculty only
+        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)  #get the course information
+
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+
+        try:
+            module_name = request.POST.get('module_name')
+        except:
+            return HttpResponse("Please fill each and every field correctly!")
+        
+        Modules.objects.create(
+            course_id=course,
+            module_name=module_name
+        )
+        return HttpResponse("Module creation successful")
+    else:
+        return HttpResponse("Not found", status=400)
+
 # when faculty uploads the slides, ppt
 @login_required
 def add_document(request, course_code):
@@ -423,9 +496,10 @@ def add_document(request, course_code):
             description = request.POST.get('description')
             doc = request.FILES.get('img')
             name = request.POST.get('name')
+            module_id = request.POST.get('module_id')
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
-            return HttpResponse("Please fill each and every field correctly!")
+            return HttpResponse("Please fill each and every field correctly!",status=400)
         #for storing the media files properly
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/doc/"
@@ -443,11 +517,51 @@ def add_document(request, course_code):
             upload_time=datetime.datetime.now(),
             description=description,
             document_url=uploaded_file_url,
-            document_name=name+file_extenstion
+            document_name=name+file_extenstion,
+            module_id_id=module_id
         )
         return HttpResponse("Upload successful.")
     else:
-        return HttpResponse("not found")
+        return HttpResponse("Not found")
+
+# if faculty uploads the attendance file
+@login_required
+def add_attendance(request, course_code):
+    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    if extrainfo.user_type == "faculty":  #user should be faculty only
+        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)  #get the course information
+
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+
+        try:
+            doc = request.FILES.get('img')
+            name = request.POST.get('name')
+            filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
+        except:
+            return HttpResponse("Please fill each and every field correctly!",status=400)
+        #for storing the media files properly
+        filename = name
+        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/attendance/"
+        url = settings.MEDIA_URL + filename + file_extenstion
+        if not os.path.isdir(full_path):
+            cmd = "mkdir " + full_path
+            subprocess.call(cmd, shell=True)
+        fs = FileSystemStorage(full_path, url)
+        fs.save(filename + file_extenstion, doc)
+        # uploaded_file_url = full_path + filename + file_extenstion
+        uploaded_file_url = "/media/online_cms/" + course_code + "/attendance/" + filename + file_extenstion
+        #save the info/details in the database
+        AttendanceFiles.objects.create(
+            course_id=course,
+            upload_time=datetime.datetime.now(),
+            file_url=uploaded_file_url,
+            file_name=name+file_extenstion
+        )
+        return HttpResponse("Upload successful.")
+    else:
+        return HttpResponse("Not found")
 
 #it is to delete things(assignment, slides, videos, ) from the dustin icon or delete buttons
 @login_required
@@ -469,11 +583,15 @@ def delete(request, course_code):
         course1 = curriculum_details[0].course_id
         curriculum1 = course[0]
     pk = request.POST.get('pk')
+    path = ""
     #to delete videos
     if data_type == 'video':
         video = CourseVideo.objects.get(pk=pk, course_id=course)
         path = video.video_url
         video.delete()
+    elif data_type == 'module':
+        module = Modules.objects.select_related().get(pk=pk, course_id=course)
+        module.delete()
     #to delete slides/documents
     elif data_type == 'slide':
         slide = CourseDocuments.objects.select_related().get(pk=pk, course_id=course)
@@ -489,8 +607,10 @@ def delete(request, course_code):
         lec_assi = Assignment.objects.select_related().get(pk=pk)
         path = lec_assi.assignment_url
         lec_assi.delete()
-    cmd = "rm "+path
-    subprocess.call(cmd, shell=True)
+    if path:    
+        cmd = "rm "+path
+        subprocess.call(cmd, shell=True)
+    
     data = { 'msg': 'Data Deleted successfully'}
     return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -688,7 +808,7 @@ def add_assignment(request, course_code):                 #from faculty side
             assignment_name=name
         )
         assign.save()
-        return HttpResponse("Upload successful.")
+        return HttpResponse("Assignment created successfully.")
     else:
         return HttpResponse("not found")
 
@@ -1407,9 +1527,10 @@ def submit_attendance(request, course_code):
 
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    course_id = Curriculum.objects.select_related().get(course_code=course_code)
 
     if extrainfo.user_type == 'faculty':   #only faculty can change the attendance of the students
-        instructor_old = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo)
+        instructor_old = Curriculum_Instructor.objects.select_related().filter(instructor_id=extrainfo, curriculum_id_id=course_id)
     for x in instructor_old:
         instructor = x
 
@@ -1419,7 +1540,10 @@ def submit_attendance(request, course_code):
         if form.is_valid():
         #     for item in form.cleaned_data['Present_absent']:
         #         print(item)
-            date =  request.POST['date']
+            try:
+                date =  request.POST['date']
+            except:
+                return HttpResponse("Please Enter The Form Properly")
 
 
             #mark the attendance according to the student roll no.
@@ -1444,36 +1568,95 @@ def submit_attendance(request, course_code):
 
     return HttpResponse("Feedback uploaded")
 
-#to store the attendance of the student by taking from templates (attendance.html)
+#to store the grading scheme created by the faculty
 @login_required
 def create_grading_scheme(request, course_code):
-
+ 
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     course_id = Curriculum.objects.select_related().get(course_code=course_code)
-    print(course_id)
     if extrainfo.user_type == 'faculty':   #only faculty can change the attendance of the students
         if request.method == 'POST':
-            form = GradingSchemeForm(request.POST)
-            if form.is_valid():
-                quiz_weightage = form.cleaned_data['quiz_weightage']
-                midsem_weightage = form.cleaned_data['midsem_weightage']
-                assignment_weightage = form.cleaned_data['assignment_weightage']
-                endsem_weightage = form.cleaned_data['endsem_weightage']
-                project_weightage = form.cleaned_data['project_weightage']
-                # Assuming course_code is a foreign key to your course model
-                course = Course.objects.select_related().get(id=course_id.course_id_id)
-                # Saving data to the database
-                grading_scheme = GradingScheme.objects.create(
-                    course_id=course,
-                    quiz=quiz_weightage,
-                    midsem=midsem_weightage,
-                    assignment=assignment_weightage,
-                    endsem=endsem_weightage,
-                    projects=project_weightage
+                         
+            form_data = {}
+            form_data = request.POST.copy()
+            del form_data['add_item_wtg']
+            del form_data['add_eval_type']
+            del form_data['csrfmiddlewaretoken']
+ 
+            # data to be sent to the gradingscheme table
+            key_list = list(form_data.keys())
+ 
+            course_id = Course.objects.select_related().get(id=course_id.course_id_id)    
+            no_of_evaluation_types = len(form_data) - 20
+            
+            for i in range(no_of_evaluation_types):
+                already_existing_data = GradingScheme.objects.filter(course_id=course_id, type_of_evaluation=key_list[i])
+                if already_existing_data.exists():
+                    grading_scheme_object = already_existing_data.first()
+                    grading_scheme_object.weightage = form_data[key_list[i]]
+                    grading_scheme_object.save()
+                else:
+                    grading_scheme = GradingScheme.objects.create(
+                        course_id=course_id,
+                        type_of_evaluation=key_list[i],
+                        weightage=form_data[key_list[i]]
+                    )
+                    grading_scheme.save()
+ 
+            # data to be sent to gradingscheme_grades table
+            already_existing_data2 = GradingScheme_grades.objects.filter(course_id=course_id)
+            if already_existing_data2.exists():
+                already_existing_data2.update(
+                    course_id = course_id,
+                    O_Lower = form_data['O_Lower'],
+                    O_Upper = form_data['O_Upper'],
+                    A_plus_Lower = form_data['A_plus_Lower'],
+                    A_plus_Upper = form_data['A_plus_Upper'],
+                    A_Lower = form_data['A_Lower'],
+                    A_Upper = form_data['A_Upper'],
+                    B_plus_Lower = form_data['B_plus_Lower'],
+                    B_plus_Upper = form_data['B_plus_Upper'],
+                    B_Lower = form_data['B_Lower'],
+                    B_Upper = form_data['B_Upper'],
+                    C_plus_Lower = form_data['C_plus_Lower'],
+                    C_plus_Upper = form_data['C_plus_Upper'],
+                    C_Lower = form_data['C_Lower'],
+                    C_Upper = form_data['C_Upper'],
+                    D_plus_Lower = form_data['D_plus_Lower'],
+                    D_plus_Upper = form_data['D_plus_Upper'],
+                    D_Lower = form_data['D_Lower'],
+                    D_Upper = form_data['D_Upper'],
+                    F_Lower = form_data['F_Lower'],
+                    F_Upper = form_data['F_Upper']
                 )
-                grading_scheme.save()
-                return HttpResponse("Upload successful.")
+            else:
+                grading_scheme_grades = GradingScheme_grades.objects.create(
+                        course_id = course_id,
+                        O_Lower = form_data['O_Lower'],
+                        O_Upper = form_data['O_Upper'],
+                        A_plus_Lower = form_data['A_plus_Lower'],
+                        A_plus_Upper = form_data['A_plus_Upper'],
+                        A_Lower = form_data['A_Lower'],
+                        A_Upper = form_data['A_Upper'],
+                        B_plus_Lower = form_data['B_plus_Lower'],
+                        B_plus_Upper = form_data['B_plus_Upper'],
+                        B_Lower = form_data['B_Lower'],
+                        B_Upper = form_data['B_Upper'],
+                        C_plus_Lower = form_data['C_plus_Lower'],
+                        C_plus_Upper = form_data['C_plus_Upper'],
+                        C_Lower = form_data['C_Lower'],
+                        C_Upper = form_data['C_Upper'],
+                        D_plus_Lower = form_data['D_plus_Lower'],
+                        D_plus_Upper = form_data['D_plus_Upper'],
+                        D_Lower = form_data['D_Lower'],
+                        D_Upper = form_data['D_Upper'],
+                        F_Lower = form_data['F_Lower'],
+                        F_Upper = form_data['F_Upper']
+                    )
+                grading_scheme_grades.save()
+                course(request, course_code)
+            return HttpResponse("Upload successful.")
     
 
 @login_required
@@ -1628,3 +1811,46 @@ def delete_timetable(request):
             t = Timetable.objects.get(time_table=data)
             t.delete()
             return HttpResponse("TimeTable Deleted")
+
+@login_required
+def submit_marks(request, course_code):
+ 
+    user = request.user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    course_id = Curriculum.objects.select_related().get(course_code=course_code)
+    if extrainfo.user_type == 'faculty':
+        if request.method == 'POST':
+                         
+            form_data = {}
+            form_data = request.POST.copy()
+            del form_data['csrfmiddlewaretoken']
+            year = datetime.datetime.now().year
+            
+            # print('number is ', int(len(form_data.getlist('stu_marks'))/3))
+            for i in range(int(len(form_data.getlist('stu_marks'))/3)):
+                student = Student.objects.select_related().get(id=str(form_data.getlist('stu_marks')[(i*3)]))
+                batch = str(student.batch)
+                # print(batch)
+                already_existing_data = Student_grades.objects.filter(roll_no=str(form_data.getlist('stu_marks')[(i*3)]))
+                if already_existing_data.exists():
+                    already_existing_data.update(
+                        semester = semester(str(form_data.getlist('stu_marks')[(i*3)])[:2]),
+                        year = year,
+                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
+                        total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
+                        grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
+                        batch = batch,
+                        course_id = course_id.course_id,
+                    )
+                else:
+                    student_grades = Student_grades.objects.create(
+                        semester = semester('21'),
+                        year = year,
+                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
+                        total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
+                        grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
+                        batch = batch,
+                        course_id = course_id.course_id,
+                    )
+                    student_grades.save()
+            return HttpResponse("Upload successful.")

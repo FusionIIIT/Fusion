@@ -1,6 +1,6 @@
 {% load static %} {% block viewperformance %}
 
-<div class="ui pointing secondary menu">
+<div class="ui pointing secondary menu" style="margin-top: 14px;">
     <a class="item active tab vptab" id="assignmenttab" data-tab="assignment">Assignment</a>
 
     <!-- <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a> -->
@@ -36,7 +36,6 @@
                 <tr>
                   <td>
                     <h4 class="ui image header">
-                      <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
                         <div class="content">
                           <p style="text-align:center">{{request.user.first_name}}  {{request.user.last_name}}</p>
                         </div>
@@ -251,14 +250,23 @@
   <!-- <p> Total Attendance = {{total_attendance}} </p>
 	<p> Total Present = {{present_attendance}} </p>
   <p> Total Absent = {{absent_attendance}} </p> -->
-  <h4> Total Attendance = {{total_attendance}} </h4>
-  <h4>Attendance % = {{attendance_percent}}</h4>
+  <div style="display: flex; align-items: center; height: 200px; width: 100%; margin-bottom: 20px;">
+    <canvas id="attendanceChart" width="200" height="200"></canvas>
+    <div style="margin-left: 20px;">
+      <h4> Total Attendance = {{total_attendance}} </h4>
+      <h4>Attendance % = {{attendance_percent}}</h4>
+    </div>
+      
+    
+    
+  </div>
+  
 	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
     <table class="ui fixed single line sortable celled table">
         <thead>
             <tr>
                 <th style="width: 30%;">Date.</th>
-                <th style="width: 30%;">Present(1) / Absent(0)</th>
+                <th style="width: 30%;">Status</th>
                       
             </tr>
         </thead>
@@ -275,11 +283,13 @@
 			{% for date, present in present_attendance.items %}    
 			<tr>
         			<td>{{date}}</td>
-        			<td>{{present}}</td>
+              {% if present == 1%}
+        			<td style="color: green;">Present</td>
+              {% else %}
+              <td style="color: rgba(255, 99, 132, 1);">Absent</td>
+              {% endif %}
         		</tr>
         	{% endfor %}
-
-                  
         </tbody>
     </table>  
     
@@ -291,8 +301,39 @@
 {% endblock %}
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="text/javascript">
     $("#viewmarkstabdata").click(function(){
       $("#marks_table").unbind();
+  });
+</script>
+
+<script>
+  const attendancePercent = {{ attendance_percent }};
+  const totalAtt = {{ total_attendance}};
+  const canvas = document.getElementById('attendanceChart');
+  const ctx = canvas.getContext('2d');
+  const myChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Present', 'Absent'],
+      datasets: [{
+        data: [attendancePercent*totalAtt/100, totalAtt-(attendancePercent*totalAtt/100)],
+        backgroundColor: [
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+        ],
+        borderColor: [
+          'rgba(75, 192, 192, 1)',
+          'rgba(255, 99, 132, 1)',
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      legend: {
+        display: false,
+      },
+    }
   });
 </script>

@@ -1,22 +1,46 @@
 {% load static %}
 {% block gradingScheme %}
-<div class="ui segment" style="height:45em;overflow:scroll;overflow-x:hidden;width:100%;">
+<div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
     <h3 class="ui dividing header">Create Grading Scheme</h3>
 
     <form class="ui form" id="gradingScheme_submit" method="post" action="/ocms/{{ curriculum.course_code }}/create_grading_scheme">
     {% csrf_token %}
 
-	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+	<div style="overflow:auto;overflow-x:hidden; margin-right:0.75em;">
     <table class="ui fixed single line sortable celled table">
 	        <thead>
 	            <tr>
 	                <th style="width: 30%;">Type of Evaluation</th>
 	                <th style="width: 30%;">Weightage (%)</th>
-	                      
 	            </tr>
 	        </thead>
-	        <tbody>
-        		<tr>
+	        <tbody id="grading_scheme_table">
+                {% comment %} {% if gradingscheme is defined %} {% endcomment %}
+                {% for eval in gradingscheme %}
+                <tr><td style="padding-left:28px;">{{eval.type_of_evaluation}}</td><td> <input type="number" name="{{eval.type_of_evaluation}}" id="{{eval.type_of_evaluation}}" value= {{eval.weightage}} /></tr>
+                {% endfor %}
+                {% comment %} {% endif %} {% endcomment %}
+
+                <tr id="addItem_Row">
+                    <td style="overflow:visible; display:flex; ">
+                        <input type="text" style="width:80%;" name="add_eval_type" id="add_eval_type" value="" placeholder="Enter New Evaluation" />
+                        {% comment %} <select class="ui selection dropdown"  id="add_item" >;
+                            <option class="item" name="add_item" value="Assignment">Assignment</option>
+                            <option class="item" name="add_item" value="Lab">Lab</option>
+                            <option class="item" name="add_item" value="Project">Project</option>
+                            <option class="item" name="add_item" value="Quiz">Quiz</option>
+                            <option class="item" name="add_item" value="Quiz_2">Quiz_2</option>
+                            <option class="item" name="add_item" value="Mid-Sem Exam">Mid-Sem Exam</option>
+                            <option class="item" name="add_item" value="End-Sem Exam">End-Sem Exam</option>
+                            <option class="item" name="add_item" value="Attendance">Attendance</option>
+                        </select> {% endcomment %}
+                    </td>
+                    <td >
+                        <input type="number" style="width:80%; float:left;" name="add_item_wtg" id="" value="" placeholder="Enter Weightage" />
+                        <input type="button" style="float:right;" class="ui primary button" id="add_item_btn" style="display: flex; justify-content: center;" value="Add">
+                    </td>
+                </tr>
+        		{% comment %} <tr>
         			<td>Quiz</td>
                		<td>
                         	<input type="number" name="quiz_weightage" id="quiz_weightage" value="{{ quiz_weightage }}" />
@@ -45,13 +69,117 @@
                		<td>
                         	<input type="number" name="project_weightage" id="project_weightage" value="{{ project_weightage }}" />
                     </td>
-           		</tr>
+           		</tr> {% endcomment %}
                
             </tbody>
 	    </table>
 	</div>
+    <div style="overflow-x:hidden; margin-top:15px; margin-right:0.75em;">
+        <table class="ui fixed single line sortable celled table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Grade</th>
+                        <th style="width: 30%;">Lower Bound (%)</th>
+                        <th style="width: 30%;">Upper Bound (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="grade_table">
+                    <tr>
+                        <td>O</td>
+                        <td>
+                            <input type="number" name="O_Lower" id="O_Lower" value="{{ gradingscheme_grades.O_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="O_Upper" id="O_Upper" value="{{ gradingscheme_grades.O_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>A+</td>
+                        <td>
+                            <input type="number" name="A_plus_Lower" id="A_plus_Lower" value="{{ gradingscheme_grades.A_plus_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="A_plus_Upper" id="A_plus_Upper" value="{{ gradingscheme_grades.A_plus_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                        <td>
+                            <input type="number" name="A_Lower" id="A_Lower" value="{{ gradingscheme_grades.A_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="A_Upper" id="A_Upper" value="{{ gradingscheme_grades.A_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>B+</td>
+                        <td>
+                            <input type="number" name="B_plus_Lower" id="B_plus_Lower" value="{{ gradingscheme_grades.B_plus_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="B_plus_Upper" id="B_plus_Upper" value="{{ gradingscheme_grades.B_plus_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>B</td>
+                        <td>
+                            <input type="number" name="B_Lower" id="B_Lower" value="{{ gradingscheme_grades.B_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="B_Upper" id="B_Upper" value="{{ gradingscheme_grades.B_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>C+</td>
+                        <td>
+                            <input type="number" name="C_plus_Lower" id="C_plus_Lower" value="{{ gradingscheme_grades.C_plus_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="C_plus_Upper" id="C_plus_Upper" value="{{ gradingscheme_grades.C_plus_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>C</td>
+                        <td>
+                            <input type="number" name="C_Lower" id="C_Lower" value="{{ gradingscheme_grades.C_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="C_Upper" id="C_Upper" value="{{ gradingscheme_grades.C_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>D+</td>
+                        <td>
+                            <input type="number" name="D_plus_Lower" id="D_plus_Lower" value="{{ gradingscheme_grades.D_plus_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="D_plus_Upper" id="D_plus_Upper" value="{{ gradingscheme_grades.D_plus_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>D</td>
+                        <td>
+                            <input type="number" name="D_Lower" id="D_Lower" value="{{ gradingscheme_grades.D_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="D_Upper" id="D_Upper" value="{{ gradingscheme_grades.D_Upper }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>F</td>
+                        <td>
+                            <input type="number" name="F_Lower" id="F_Lower" value="{{ gradingscheme_grades.F_Lower }}" />
+                        </td>
+                        <td>
+                            <input type="number" name="F_Upper" id="F_Upper" value="{{ gradingscheme_grades.F_Upper }}" />
+                        </td>
+                    </tr> 
+                   
+                </tbody>
+            </table>
+        </div>
 
-    <input type="button" class="ui primary button" id="submit_gradingScheme" style="display: flex; justify-content: center;" value="Upload">
+    <input type="button" class="ui primary button" id="submit_gradingScheme" style="float:right; margin-top:15px; margin-right:0.75em;" value="Upload">
 
 	</form>
 
@@ -61,6 +189,33 @@
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
 
 <script type="text/javascript">
+    // Function to handle add_item_btn
+    //var no_of_items = 0;
+    add_item_btn.addEventListener('click', function() {
+        //no_of_items=no_of_items+1;
+        // Your code to execute when the input is clicked
+        const add_item_btn = document.getElementById('add_item_btn');
+        const tbody = document.getElementById('grading_scheme_table');
+        const addItem_Row = document.getElementById('addItem_Row');
+    
+        const itemType = document.getElementById('addItem_Row').childNodes[1].childNodes[1] ;
+        const itemWtg = document.getElementById('addItem_Row').childNodes[3].childNodes[1] ;
+
+        if (itemType.value == '') {return}
+        if (itemWtg.value == '') {return}
+    
+        const newElement = document.createElement('tr');
+        newElement.id = 'new_row';
+        newElement.innerHTML = `<td style="padding-left:28px;"><input value="` + itemType.value + `"></input></td> <td> <input style="width:85%;" type="number" name="`+itemType.value+`" id="`+itemType.value+`" value= `+itemWtg.value+` /> <div class="ui button" style="width:10px; margin-right:5px; float:right;" onclick="const new_row = document.getElementById('new_row'); new_row.parentNode.removeChild(new_row);" > <i style="margin-left:-8px;" class="close icon"></i> </div> </td> `;
+        //console.log(itemType.value + ` has weightage `+ itemWtg.value +`%`);
+        //console.log(newElement.innerHTML = `<td>` + itemType.value + `</td> <td> <input type="number" name="`+itemType.value+`_weightage" id="`+itemType.value+`_weightage" value="`+itemWtg.value+`" /> `);
+        //console.log('Input clicked!');
+        tbody.insertBefore(newElement, addItem_Row);
+        itemType.value = ''
+        itemWtg.value = ''
+    });
+
+
     // Function to handle form submission
     function submitForm() {
         var form = document.getElementById("gradingScheme_submit");
@@ -84,5 +239,7 @@
     // Attach submitForm function to the click event of the submit button
     document.getElementById("submit_gradingScheme").addEventListener("click", submitForm);
 </script>
+
+
 
 {% endblock %}
