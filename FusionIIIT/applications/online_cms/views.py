@@ -47,7 +47,6 @@ def viewcourses(request):
 
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
-
                        'extrainfo': extrainfo})
     elif extrainfo.user_type == 'faculty':   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
@@ -69,6 +68,7 @@ def viewcourses(request):
                       {'acadTtForm': acadTtForm,
                        'academic_calendar':calendar,
                        'timetable':timetable})
+
 
 
 
@@ -188,7 +188,6 @@ def course(request, course_code):
                 modules_with_slides[m] = 0
             else:
                 modules_with_slides[m] = sl
-
         quiz = Quiz.objects.select_related().filter(course_id=course)
         assignment = Assignment.objects.select_related().filter(course_id=course)
         submitable_assignments = []
@@ -260,6 +259,7 @@ def course(request, course_code):
                        'curriculum': curriculum})
 
     else:
+
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -363,6 +363,7 @@ def course(request, course_code):
         # marks = []
         # quizs = []
         assignment = Assignment.objects.select_related().filter(course_id=course)
+        assignment1 = CourseAssignment.objects.select_related().filter(course_id=course)
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
@@ -406,6 +407,7 @@ def course(request, course_code):
                        'course': course,
                        'answers': answers,
                        'assignment': assignment,
+                       'assignment1': assignment1,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
                        
@@ -512,7 +514,8 @@ def add_document(request, course_code):
         # uploaded_file_url = full_path + filename + file_extenstion
         uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename + file_extenstion
         #save the info/details in the database
-        CourseDocuments.objects.create(
+        print(settings.MEDIA_ROOT)
+        CourseSlide.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
             description=description,
@@ -520,6 +523,13 @@ def add_document(request, course_code):
             document_name=name+file_extenstion,
             module_id_id=module_id
         )
+        # CourseDocuments.objects.create(
+        #     course_id=course,
+        #     upload_time=datetime.datetime.now(),
+        #     description=description,
+        #     document_url=uploaded_file_url,
+        #     document_name=name+file_extenstion
+        # )
         return HttpResponse("Upload successful.")
     else:
         return HttpResponse("Not found")
@@ -793,6 +803,7 @@ def add_assignment(request, course_code):                 #from faculty side
             return HttpResponse("Please Enter The Form Properly")
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
+        print(full_path)
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
             cmd = "mkdir " + full_path
@@ -804,7 +815,7 @@ def add_assignment(request, course_code):                 #from faculty side
         assign = Assignment(
             course_id=course,
             submit_date=request.POST.get('myDate'),
-            assignment_url=uploaded_file_url,
+            doc=assi,
             assignment_name=name
         )
         assign.save()
