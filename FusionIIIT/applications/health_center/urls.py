@@ -16,7 +16,8 @@ urlpatterns = [
     url(r'announcement/', announcement, name='announcement'),
     
     #database entry
-    url(r'^schedule_entry', schedule_entry, name='schedule_entry'),
+
+    
     url(r'^doctor_entry', doctor_entry, name='doctor_entry'),
     url(r'^compounder_entry', compounder_entry, name='compounder_entry'),  
    
