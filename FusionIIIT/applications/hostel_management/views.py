@@ -1547,10 +1547,33 @@ def request_guest_room(request):
             departure_date = form.cleaned_data['departure_date']
             departure_time = form.cleaned_data['departure_time']
             nationality = form.cleaned_data['nationality']
+            room_type = form.cleaned_data['room_type']  # Add room type
+
+
+            max_guests = {
+                'single': 1,
+                'double': 2,
+                'triple': 3,
+            }
+            # Fetch available room count based on room type and hall
+            available_rooms_count = GuestRoom.objects.filter(
+                hall=hall, room_type=room_type, vacant=True
+            ).count()
+            
+             # Check if there are enough available rooms
+            if available_rooms_count < rooms_required:
+                messages.error(request, "Not enough available rooms.")
+                return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+            
+            # Check if the number of guests exceeds the capacity of selected rooms
+            if total_guest > rooms_required * max_guests.get(room_type, 1):
+                messages.error(request, "Number of guests exceeds the capacity of selected rooms.")
+                return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+            
 
             newBooking = GuestRoomBooking.objects.create(hall=hall, intender=request.user, guest_name=guest_name, guest_address=guest_address,
                                                          guest_phone=guest_phone, guest_email=guest_email, rooms_required=rooms_required, total_guest=total_guest, purpose=purpose,
-                                                         arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality)
+                                                         arrival_date=arrival_date, arrival_time=arrival_time, departure_date=departure_date, departure_time=departure_time, nationality=nationality,room_type=room_type)
             newBooking.save()
             messages.success(request, "Room request submitted successfully!")
 
@@ -1612,6 +1635,21 @@ def update_guest_room(request):
         else:
             messages.error(request, "Invalid request!")
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+def available_guestrooms_api(request):
+    if request.method == 'GET':
+        
+        hall_id = request.GET.get('hall_id')
+        print(hall_id)
+        room_type = request.GET.get('room_type')
+
+        if hall_id and room_type:
+            available_rooms_count = GuestRoom.objects.filter(hall_id=hall_id, room_type=room_type, vacant=True).count()
+            print('~~~~~~~~~~~~~~~~~~`',available_rooms_count)
+            return JsonResponse({'available_rooms_count': available_rooms_count})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 # //Caretaker can approve or reject leave applied by the student

@@ -93,6 +93,7 @@ urlpatterns = [
     #guest room
     path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
     path('update_guest_room/', views.update_guest_room, name="update_guest_room"),
+    path('available_guest_rooms/', views.available_guestrooms_api, name='available_guestrooms_api'),
 
 
     # !!todo: Add Fine Functionality
