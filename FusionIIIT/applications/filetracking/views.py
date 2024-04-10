@@ -19,6 +19,7 @@ from .decorators import *
 
 @login_required(login_url="/accounts/login/")
 @user_is_student
+@dropdown_designation_valid
 def filetracking(request):
     """
         The function is used to create files by current user(employee).
