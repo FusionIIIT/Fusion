@@ -190,25 +190,26 @@ Hostel
                 </div>
                 {% endif %}
 
-                <!-- Ends here  -->
+                    
+<!-- Ends here  -->
+                    
 
+                    <!-- {% if user in hall_caretaker or user in hall_warden %}
+                    <a class="item" data-tab="nineth" >
+                        Complaints
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %} -->
 
-                {% if user in hall_caretaker or user in hall_warden %}
-                <a class="item" data-tab="nineth">
-                    Complaints
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
+                    <!-- This should be only in hall_caretaker -->
+                    <!-- {% if user in hall_caretaker %}
+                    <a class="item" data-tab="tenth" >
+                        Inventory Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %} -->
 
-                <!-- This should be only in hall_caretaker -->
-                {% if user in hall_caretaker %}
-                <a class="item" data-tab="tenth">
-                    Inventory Form
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-
-
+                
 
                 {% if is_superuser %}
                 <a class="item" data-tab="superUser1">
@@ -261,12 +262,12 @@ Hostel
                 {% endif %}
 
 
-                {% if user in hall_caretaker%}
+                <!-- {% if user in hall_caretaker%}
                 <a class="item" data-tab="inventory1">
                     Inventory list
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                {% endif %} -->
 
             </div>
 
