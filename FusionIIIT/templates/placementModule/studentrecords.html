@@ -773,7 +773,7 @@
 
                             <tbody>
                               {% for student in placementstatus_placement %}
-                                {% if student.notify_id.placement_type == 'PLACEMENT' %}
+                                {% if student.notify_id.placement_type == 'PLACEMENT' and student.invitation == "ACCEPTED" %}
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">
