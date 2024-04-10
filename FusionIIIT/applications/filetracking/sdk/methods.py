@@ -377,7 +377,13 @@ def add_uploader_department_to_files_list(files: list) -> list:
     '''
     for file in files:
         uploader_Extrainfo = file['uploader']
-        file['uploader_department'] = (str(uploader_Extrainfo.department)).split(': ')[1]
+        # print(uploader_Extrainfo.department)
+        if uploader_Extrainfo.department is None:
+            # for files created by staff or users that dont have department
+            file['uploader_department'] = 'FTS'
+        else:
+            file['uploader_department'] = (
+                str(uploader_Extrainfo.department)).split(': ')[1]
 
     return files
 

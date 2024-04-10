@@ -135,16 +135,28 @@ def filetracking(request):
         'user', 'working', 'designation').all()
 
     designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
+
+
     username = request.user
-    designation_id  = get_HoldsDesignation_obj(
+    # designation_id = ''
+    designation_id = get_HoldsDesignation_obj(
         username, designation_name).id
+    # try:
+    #     designation_id = get_HoldsDesignation_obj(
+    #     username, designation_name).id
+    # except:
+    #     designation_id = get_HoldsDesignation_obj(
+    #     username, all_available_designations[1]).id
 
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
         'designation_name': designation_name,
-        'designation_id': designation_id
+        'designation_id': designation_id,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/composefile.html', context)
 
@@ -223,6 +235,7 @@ def drafts_view(request, id):
         'designations': designation,
         'draft_files': draft_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/drafts.html', context)
 
@@ -295,6 +308,7 @@ def outbox_view(request, id):
         'viewer_designation': designation,
         'out_files': outward_files,
         'viewer_designation': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/outbox.html', context)
 
@@ -362,6 +376,8 @@ def inbox_view(request, id):
         
     inward_files = add_uploader_department_to_files_list(inward_files)
 
+    notifs = request.user.notifications.all()
+    print('notifs ', notifs)
 
     context = {
 
@@ -369,8 +385,8 @@ def inbox_view(request, id):
         'designations': designation,
         'in_file': inward_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
-    return render(request, 'filetracking/inbox.html', context)
     return render(request, 'filetracking/inbox.html', context)
 
 
@@ -478,6 +494,7 @@ def view_file(request, id):
         'track': track,
         'forward_enable': forward_enable, 
         'archive_enable': archive_enable,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/viewfile.html', context)
 
@@ -594,6 +611,7 @@ def forward(request, id):
         'designations': designations,
         'file': file,
         'track': track,
+        'notifications': request.user.notifications.all()
     }
 
     return render(request, 'filetracking/forward.html', context)
@@ -653,6 +671,7 @@ def archive_view(request, id):
     context = {
         'archive_files': archive_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/archive.html', context)
 
@@ -675,6 +694,7 @@ def finish_design(request):
 
     context = {
         'designation': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/finish_design.html', context)
 
@@ -692,6 +712,7 @@ def finish_fileview(request, id):
 
         'out': out,
         'abcd': abcd,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/finish_fileview.html', context)
 
@@ -708,7 +729,8 @@ def finish(request, id):
             track.update(is_read=True)
             messages.success(request, 'File Archived')
 
-    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id})
+    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id,
+                                                        'notifications': request.user.notifications.all()})
 
 
 def AjaxDropdown1(request):
@@ -802,6 +824,7 @@ def forward_inward(request,id):
         'designations': designations,
         'file': file,
         'track': track,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/forward.html', context)
 
@@ -878,6 +901,7 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'notifications': request.user.notifications.all()
                 }
                 return render(request, 'filetracking/editdraft.html', context)
             receive = request.POST.get('receive')
@@ -891,6 +915,7 @@ def edit_draft_view(request, id, *args, **kwargs):
 
                     'designations': designations,
                     'file': file,
+                    'notifications': request.user.notifications.all()
                 }
                 return render(request, 'filetracking/editdraft.html', context)
 
@@ -914,6 +939,7 @@ def edit_draft_view(request, id, *args, **kwargs):
         'designations': designations,
         'file': file,
         'track': track,
+        'notifications': request.user.notifications.all()
     }
 
     return render(request, 'filetracking/editdraft.html', context)
