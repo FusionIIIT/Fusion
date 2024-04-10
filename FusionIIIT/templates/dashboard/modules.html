@@ -36,9 +36,13 @@
                             </a>
                         </div>
                         {% endif %}
+<<<<<<< HEAD
 
                         {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var or "corelabcaretaker" == global_var %}
 
+=======
+                        {% if request.user.extrainfo.user_type == "student" or "acadadmin" == global_var  %}
+>>>>>>> sa-2
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -169,16 +173,24 @@
                         </div>
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
+<<<<<<< HEAD
 
                   
 
                     {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var or "faculty" == global_var or "placement officer" == global_var  %}
 
+=======
+                  
+                        {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var  or "placement officer" == global_var  %}
+>>>>>>> sa-2
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/placement">
+<<<<<<< HEAD
 
+=======
+>>>>>>> sa-2
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui bitcoin icon big"></i>

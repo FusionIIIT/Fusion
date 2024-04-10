@@ -6,9 +6,23 @@
             View Menu
         </a>
 
+<<<<<<< HEAD
         <!-- <a class="item" data-tab="fifteenth">
             Meeting information
         </a> -->
+
+        {% comment %} <a class="item" data-tab="sixteenth">
+            Feedback Statistics
+        </a> {% endcomment %}
+=======
+        <a class="item" data-tab="twentythree">
+            View Registrations
+        </a>
+
+        <a class="item" data-tab="twelfth">
+            View Bills
+        </a>
+>>>>>>> sa-2
 
         {% comment %} <a class="item" data-tab="sixteenth">
             Feedback Statistics
@@ -23,12 +37,22 @@
 {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
         
+<<<<<<< HEAD
 
             <a class="active item"  data-tab="fourth">
             Menu | Bill 
+=======
+            <a class="active item" data-tab="thirteenth">
+                View Menu
+>>>>>>> sa-2
             </a>
 
-            <a class=" item" data-tab="first">
+            <a class="item"  data-tab="fourth">
+            View Bill and Payments 
+            </a>
+
+            <a class=" item" data-tab="first" {%if reg_main_stud.current_mess_status == "Deregistered" %} style="display: none;" {% endif %}
+            >
                 Feedback
             </a>
 
@@ -37,7 +61,11 @@
                 Apply For Non-veg | Check History
             </a> {% endcomment %}
 
+<<<<<<< HEAD
             <a class="item" data-tab="second">
+=======
+            <a class="item" data-tab="second" {%if reg_main_stud.current_mess_status == "Deregistered" %} style="display: none;" {% endif %}>
+>>>>>>> sa-2
                 Applications
             </a>
 

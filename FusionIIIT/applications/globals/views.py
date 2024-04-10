@@ -1047,7 +1047,11 @@ def   profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
+<<<<<<< HEAD
         # print("context",context)
+=======
+        print("context",context)
+>>>>>>> sa-2
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")

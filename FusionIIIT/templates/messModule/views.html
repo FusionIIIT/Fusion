@@ -5,11 +5,8 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" id="menu1">
-            Menu 
-        </a>
-
-        <a class="item" id="billm">
+        
+        <a class="active item" id="billm">
             Bill
         </a>
         
@@ -23,21 +20,28 @@
         </a> {% endcomment %}
     </div>
 
+<<<<<<< HEAD
     <div class="ui active tab  " id="menu1tab">
+=======
+    
+
+    <div class="ui active tab" id="billmtab">
+>>>>>>> sa-2
         <div class="ui vertical segment">
-            <table class="ui definition table" style="padding: 8px; padding-left: 8px; padding-right: 8px;">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>
-                    <th></th>
-                    <th style="cursor:pointer;">Breakfast </th>
-                    <th style="cursor:pointer;">Lunch</th>
-                    <th style="cursor:pointer;">Dinner</th> 
-                </tr>
-                </thead>
-
+                    <th>Month</th>
+                    <th>Monthly Amount</th>
+                    <th>Rebate Count</th>
+                    <th>Rebate Amount</th>
+                    <th>Total Bill </th>
+                </tr></thead>
                 <tbody>
-
+                {% for stu in monthly_bill %}
                 <tr>
+<<<<<<< HEAD
                     
                     <td>Monday</td>
 
@@ -206,15 +210,48 @@
                 </tr>
                     
                 
-                </tbody>
+=======
+                    <td>{{stu.month}} - {{ stu.year }}</td>
+                    <td>{{stu.amount}}</td>
+                    <td>{{stu.rebate_count}}</td>
+                    <td>{{stu.rebate_amount}}</td>
+                    <td>{{stu.total_bill}}</td>
+                    {% comment %} <td>
+                        {% if stu.paid %}
+                            <i class="large green checkmark icon"></i>
+                        {% else %}
+                         <i class="large red x icon"></i>
+                        {% endif %}
+                    </td> {% endcomment %}
+                     {% comment %} <td>
+                        {% if stu.paid %}
+                            0
+                        {% else  %}
+                            {{stu.due_amount}}
+                        {% endif %}
+                    </td> {% endcomment %}
 
+                </tr>
+                {% endfor %}
+>>>>>>> sa-2
+                </tbody>
             </table>
 
+
+            <h2>Total Remaining Balance : {{curr_balance}}</h2>
+            <h2>Current Mess Status: {{curr_status}}</h2>
             <br>
+            <br>
+
             <div class="ui divider"></div>
+            
             <div class="extra content">
                 <!-- TODO add code to direct to a function which renders the template as a pdf file -->
+<<<<<<< HEAD
                 <form method="post" target="_blank" action="{% url 'mess:MenuPDF1' %}">
+=======
+                <form method="post" target="_blank" action="{% url 'mess:BillPDFStudent' %}">
+>>>>>>> sa-2
                     {% csrf_token %}
                 <button type="submit" class="ui primary button right floated">
                     <!-- Download -->
@@ -227,6 +264,7 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="ui tab" id="billmtab">
         <div class="ui vertical segment">
 
@@ -290,6 +328,8 @@
         </div>
     </div>
 
+=======
+>>>>>>> sa-2
     <div class="ui tab" id="phtab">
         <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
             <thead>
