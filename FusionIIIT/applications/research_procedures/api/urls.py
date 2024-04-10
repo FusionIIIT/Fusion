@@ -1,13 +1,10 @@
 from rest_framework.routers import DefaultRouter
 from .views import *
-<<<<<<< HEAD
 from django.urls import include,path
 from django.conf.urls import url
 from . import views
 
 app_name="research_procedures"
-=======
->>>>>>> upstream/rspc
 
 router = DefaultRouter()
 # router.register(r'patent', PatentViewSet)

@@ -1,11 +1,7 @@
 {% block menucard %}
 
 {% comment %} <a class="item"  data-tab="fourth">Patents</a> {% endcomment %}
-<<<<<<< HEAD
 {% if request.user.extrainfo.user_type == "staff" %}
-=======
-{% if request.user.username == "21bcs3000" %}
->>>>>>> upstream/rspc
 <a class="item"  href="/research_procedures/add_projects">Add Projects</a>
 {% endif %}
 <a class="item"  href="/research_procedures/view_projects" >View Projects</a>

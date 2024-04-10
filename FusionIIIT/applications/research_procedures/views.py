@@ -343,10 +343,6 @@ def view_projects(request):
         "username": request.user.username,
     }
     # print(data)
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/rspc
     # print(request.user.username)
 
     return render(request,"rs/view_projects_rspc.html", context= data)
@@ -360,10 +356,6 @@ def view_requests(request,id):
         rspc_admin =rspc_admin.user.username
         if request.user.username == rspc_admin :
             queryset= rspc_inventory.objects.all()
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/rspc
             data= {
             "requests": queryset,
             "username": request.user.username
@@ -383,11 +375,7 @@ def view_requests(request,id):
 
     # print(data)
     # print(request.user.username)
-<<<<<<< HEAD
     
-=======
-
->>>>>>> upstream/rspc
     return render(request,"rs/view_requests.html", context= data)
 
 def view_financial_outlay(request,pid):
@@ -582,20 +570,7 @@ def view_staff_details(request,pid):
         'project_name':project.project_name
     }
     rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
-<<<<<<< HEAD
     
-=======
-    filex= create_file(uploader=request.user.username,
-                uploader_designation="rspc_admin",
-                receiver= rspc_admin.user.username,
-                receiver_designation="rspc_admin",
-                src_module="research_procedures",
-                src_object_id= pid,
-                file_extra_JSON= {"false": "false", "roll": 21},
-                attached_file= None,
-                )
-    # print(filex)
->>>>>>> upstream/rspc
 
     return render(request, "rs/view_staff_details.html", context)
 
@@ -653,7 +628,6 @@ def inbox(request):
     
     user_designation= getDesignation(request.user.username)
     print(user_designation)
-<<<<<<< HEAD
     # data = view_inbox(request.user.username,user_designation, "research_procedures")
     user_obj = get_user_by_username(request.user.username)
 
@@ -669,21 +643,6 @@ def inbox(request):
 
     data={
         "inbox": data,
-=======
-    data = view_inbox(request.user.username,user_designation, "research_procedures")
-    files= []
-    count =0
-    for i in data:
-        count+=1
-        file1= File.objects.get(id=i['id'])
-        files.append((count, file1))
-
-
-    data={
-        
-        "inbox": data,
-        "files": files
->>>>>>> upstream/rspc
     }
     # print(data)
     return render(request, "rs/inbox.html",context= data)
@@ -720,10 +679,7 @@ def view_request_inbox(request):
     user_designation= getDesignation(request.user.username)
     print(user_designation)
     data = view_inbox(request.user.username,user_designation, "research_procedures")
-<<<<<<< HEAD
     print(data)
-=======
->>>>>>> upstream/rspc
     files= []
     count =0
     for i in data:
@@ -787,13 +743,10 @@ def delete_file(id):
     file1.delete()
     return
 
-<<<<<<< HEAD
 def get_user_by_username(username):
     return User.objects.get(username=username)
 
 
-=======
->>>>>>> upstream/rspc
     
 
 
