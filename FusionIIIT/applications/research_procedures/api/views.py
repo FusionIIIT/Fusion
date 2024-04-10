@@ -750,3 +750,10 @@ def view_projects(request):
 
 
 
+<<<<<<< HEAD
+=======
+# class PatentViewSet(ModelViewSet):
+#     queryset = Patent.objects.all()
+#     serializer_class = PatentSerializer
+#     permission_classes = [ IsAuthenticatedOrReadOnly ]
+>>>>>>> upstream/rspc

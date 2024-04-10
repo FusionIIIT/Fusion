@@ -1,10 +1,14 @@
 from rest_framework.serializers import ModelSerializer
+<<<<<<< HEAD
 from rest_framework import serializers
 
+=======
+>>>>>>> upstream/rspc
 from applications.research_procedures.models import *
 
 # Create a Serializer for Model Patent
 class ProjectSerializer(ModelSerializer):
+<<<<<<< HEAD
     class Meta:
         # model = projects
         fields = '__all__'
@@ -49,3 +53,13 @@ class requests_serializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return requests.objects.create(**validated_data)
     
+=======
+    class Meta:
+        model = projects
+        fields = '__all__'
+
+class PatentSerializer(ModelSerializer):
+    class Meta:
+        # model = projects
+        fields = '__all__'
+>>>>>>> upstream/rspc

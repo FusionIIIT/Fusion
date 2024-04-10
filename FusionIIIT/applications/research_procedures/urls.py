@@ -5,7 +5,11 @@ from . import tests
 app_name="research_procedures"
 
 urlpatterns = [
+<<<<<<< HEAD
       url(r'^$', views.view_projects, name='patent_registration'),
+=======
+      url(r'^$', views.projectss, name='patent_registration'),
+>>>>>>> upstream/rspc
       url(r'^update$', views.patent_status_update, name='patent_status_update'),
       url(r'^research_group$', views.research_group_create, name='research_group_create'),
       url(r'^project_insert$',views.project_insert,name='project_insert'),
