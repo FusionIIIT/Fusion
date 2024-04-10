@@ -9,9 +9,9 @@
         <a class="active item" data-tab="pendingcomplaints">
             Pending Complaints
         </a>
-        <a class="item" data-tab="onholdcomplaints">
+        <!-- <a class="item" data-tab="onholdcomplaints">
             On Hold Complaints
-        </a>
+        </a> -->
         
     </div>
 
@@ -19,7 +19,7 @@
 
     <div class="ui active tab" data-tab="pendingcomplaints">
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="unresolved_care"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -28,7 +28,7 @@
              
              <thead>
                 <tr>
-                    <td>
+                    <td >
                        <b> Student </b>
                     </td>
 
@@ -55,18 +55,22 @@
                    <!-- <th class="four wide column">
                         Status
                     </th>-->
-                    <td class="two large column">
+                    <!-- <td class="two large column">
                        <b> Worker </br> Name</b>
-                    </td>
+                    </td> -->
                     
                     <td>
-                        <b>Assign worker</b>
+                        <b>Change status</b>
                     </td>
-                   
+                    <td>
+                        <b>Redirect</b>
+                    </td>
+               
+                    
                 </tr>
                 </thead>
                 {% for a in history %}
-                    {% if a.status == 0 %}
+                    {% if a.status == 0 or a.status == 1 %}
                 <tbody>
                 <tr>
                     <td>
@@ -95,19 +99,36 @@
                    <!-- <td>
                           <i class="large green checkmark icon"></i>
                     </td>-->
-                    <td>
+                    <!-- <td>
                         <b>{{ a.worker_id }}</b>
-                    </td>
+                    </td> -->
                     <td>
                         <div class="field">
                                 <center>
+                                    <a href="./pending/{{ a.id }}">
+                                    <button class="ui inverted basic button" data-tooltip="Change status">
+                                       <i class="extra large green edit icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
+                            </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            {% if a.status == 0 %}
+                                <center>
                                     <a href="./{{ a.id }}">
-                                    <button class="ui inverted basic button" data-tooltip="Assign Worker" >
+                                    <button class="ui inverted basic button" data-tooltip="Redirect to supervisor" >
                                         <i class="large green plus icon"></i>
                                     </button>
                                     </a>
                                    
                                 </center>
+                            {%elif a.status == 1 %}
+                                <center>
+                                    <p>Redirected</p>
+                                </center>
+                            {% endif %}
                             </div>
                     </td>
 </tr>
@@ -117,18 +138,13 @@
                    {% endif %}
                 {% endfor %}
             </table>
-
+            <div id="paginationunresolved_care" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
 
 
     
-    <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large orange warning icon"></i> : These Complaints Are YET TO BE ASSIGNED To A Worker ! &ensp;&ensp;&ensp;&ensp;&ensp;
-
-                </div>
-            </div>
+   
             </div>
         </div>
 
@@ -177,21 +193,21 @@
                         Specific </br> Location
                     </th> -->
 
-                    <td class="two wide column">
+                    <!-- <td class="two wide column">
                         <b>Details</b>
-                    </td>
+                    </td> -->
 
                    <!-- <th class="four wide column">
                         Status
                     </th>-->
-                    <td class="two large column">
+                    <!-- <td class="two large column">
                         <b>Worker </br> Name</b>
-                    </td>
+                    </td> -->
                     
-                    <td>
+                    <!-- <td>
                         <b>change status</b>
                     </td>
-                   
+                    -->
                 </tr>
                 </thead>
                 {% for a in history %}
@@ -225,10 +241,10 @@
                    <!-- <td>
                           <i class="large green checkmark icon"></i>
                     </td>-->
-                    <td>
+                    <!-- <td>
                         <b>{{ a.worker_id }}</b>
-                    </td>
-                    <td>
+                    </td> -->
+                    <!-- <td>
                         <div class="field">
                                 <center>
                                     <a href="./pending/{{ a.id }}">
@@ -238,7 +254,7 @@
                                     </a>
                                 </center>
                             </div>
-                    </td>
+                    </td> -->
 </tr>
 
 
@@ -260,5 +276,9 @@
             </div>
             </div>
         </div>
-
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                paginate('unresolved_care', 10, 'paginationunresolved_care'); // Call the pagination function with table ID and rows per page
+            });
+        </script>
 {% endblock %}

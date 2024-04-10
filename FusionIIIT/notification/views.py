@@ -156,6 +156,8 @@ def scholarship_portal_notif(sender, recipient, type):
 
     if type.startswith('award'):
         s = type.split('_')
+        # print("psss")
+        # print(type, s)
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "

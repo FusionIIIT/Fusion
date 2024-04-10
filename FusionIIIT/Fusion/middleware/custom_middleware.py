@@ -19,7 +19,7 @@ def user_logged_in_middleware(get_response):
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
                 designation=[]
-
+                
                 designation.append(str(user.extrainfo.user_type))
                 for i in design:
                     if str(i.designation) != str(user.extrainfo.user_type):
@@ -35,14 +35,14 @@ def user_logged_in_middleware(get_response):
                 request.session['currentDesignationSelected'] = designation[0]
                 request.session['allDesignations'] = designation               
                 print("logged iN")
-
+                
             # Set the flag in the session to indicate that the function has bee+n executed
             request.session['function_executed'] = True
-
+        
     def middleware(request):
         if request.user.is_authenticated:
             user_logged_in_handler(request.user, request.user, request)
         response = get_response(request)
         return response
-
+    
     return middleware
