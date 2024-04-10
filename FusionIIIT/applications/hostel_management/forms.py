@@ -29,5 +29,6 @@ class GuestRoomBookingForm(forms.ModelForm):
             'arrival_time',
             'departure_date',
             'departure_time',
-            'nationality'
+            'nationality',
+            'room_type'
         )
