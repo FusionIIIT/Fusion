@@ -768,6 +768,7 @@ def create_hostel_leave(request):
         data = request.POST  # Assuming you are sending form data via POST request
         student_name = data.get('student_name')
         roll_num = data.get('roll_num')
+        phone_number = data.get('phone_number')  # Retrieve phone number from form data
         reason = data.get('reason')
         start_date = data.get('start_date', timezone.now())
         end_date = data.get('end_date')
@@ -777,6 +778,7 @@ def create_hostel_leave(request):
         leave = HostelLeave.objects.create(
             student_name=student_name,
             roll_num=roll_num,
+            phone_number=phone_number,  # Include phone number in the object creation
             reason=reason,
             start_date=start_date,
             end_date=end_date,
@@ -794,7 +796,6 @@ def create_hostel_leave(request):
                 print(f"Error sending notification to caretaker {caretaker.staff.user.username}: {e}")
 
         return JsonResponse({'message': 'HostelLeave created successfully'}, status=status.HTTP_201_CREATED)
-
 
 # hostel_complaints_list caretaker can see all hostel complaints
 

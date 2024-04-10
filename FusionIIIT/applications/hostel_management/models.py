@@ -261,14 +261,15 @@ class HostelLeave(models.Model):
     student_name = models.CharField(max_length=100)
     roll_num = models.CharField(max_length=20)
     reason = models.TextField()
+    phone_number = models.CharField(max_length=20, null=True,blank=True)
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
     status = models.CharField(max_length=20, default='pending')
     remark = models.TextField(blank=True, null=True)
+    file_upload = models.FileField(upload_to='hostel_management/', null=True, blank=True)
 
-
-    def __str__(self):
-        return f"{self.student_name}'s Leave"   
+    def _str_(self):
+        return f"{self.student_name}'s Leave"  
 
 # changes
 
