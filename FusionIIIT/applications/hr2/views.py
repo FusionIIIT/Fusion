@@ -933,7 +933,7 @@ def form_view_ltc(request , id):
     ltc_request = reverse_ltc_pre_processing(ltc_request)
     print(ltc_request)
     
-    context = {'ltc_request' : ltc_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+    context = {'ltc_request' : ltc_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation ,"id" : id}
 
     return render(request , template , context)
 
@@ -952,6 +952,89 @@ def track_file(request, id):
     # Create a JSON response
     return render(request ,template , context)
 
+
+
+# def file_handle_cpda(request):
+#     if request.method == 'POST':
+#         form_data2 = request.POST
+#         form_data=request.POST.get('context')
+#         print(request.POST.get('context'))
+#         action = form_data2.get('action')
+        
+#         form_data=json.loads(form_data)
+#         print(form_data)
+#         form_id = form_data['form_id']
+#         file_id = form_data['file_id']
+#         from_user = form_data['from_user']
+#         from_designation = form_data['from_designation']
+#         username_employee = form_data['username_employee']
+#         designation_employee = form_data['designation_employee']
+
+#         recomm_hod_confirm = form_data['recomm_hod_confirm']
+#         date_rspc_confirm = form_data['date_rspc_confirm']
+#         advance_amount_pda = form_data['advance_amount_pda']
+#         dealing_asstt_name = form_data['dealing_asstt_name']
+#         ar_dr_ia_name = form_data['ar_dr_ia_name']
+#         sanction_status = form_data['sanction_status']
+#         copy_to = form_data['copy_to']
+
+#         #change
+
+
+#         #database
+#         try:
+#             cpda_form = CPDAform.objects.get(id=form_id)
+#         except CPDAform.DoesNotExist:
+#             return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
+
+#         # Update the attribute
+#         setattr(cpda_form, recomm_hod_confirm, recomm_hod_confirm)
+#         setattr(cpda_form, date_rspc_confirm, date_rspc_confirm)
+#         setattr(cpda_form, advance_amount_pda, advance_amount_pda)
+#         setattr(cpda_form, dealing_asstt_name, dealing_asstt_name)
+#         setattr(cpda_form, ar_dr_ia_name, ar_dr_ia_name)
+#         setattr(cpda_form, sanction_status, sanction_status)
+#         setattr(cpda_form, copy_to, copy_to)
+#         cpda_form.save()
+
+
+
+
+#         print("form_id" , form_id)
+#         print("file_id",file_id)
+#         print("from_user",from_user)
+#         print("from_designation",from_designation)
+#         print("action",action)
+#         print("username_employee",username_employee)
+#         print("designation_employee",designation_employee)
+#         print("recomm_hod_confirm",recomm_hod_confirm)
+#         print("date_rspc_confirm",date_rspc_confirm)
+#         print("advance_amount_pda",advance_amount_pda)
+#         print("dealing_asstt_name",dealing_asstt_name)
+#         print("ar_dr_ia_name",ar_dr_ia_name)
+#         print("sanction_status",sanction_status)
+#         print("copy_to",copy_to)
+
+
+#         if(action == '0'):
+#             track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = "Forwared", file_extra_JSON = "None")
+#             print("done1",track_id)
+#             messages.success(request, "File forwarded successfully")
+#         elif(action == '1'):
+#             track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Rejected", file_extra_JSON = "None")
+#             print("done2")
+#             messages.success(request, "File rejected successfully")
+#         else:
+#             track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Approved", file_extra_JSON = "None")
+#             print("done3")
+#             messages.success(request, "File approved successfully")
+
+        
+#         return HttpResponse("Success")
+#     else:
+#         # Handle other HTTP methods if needed
+#         return HttpResponse("Failure")
+
 def file_handle(request):
     if request.method == 'POST':
         form_data2 = request.POST
@@ -961,6 +1044,7 @@ def file_handle(request):
         
         form_data=json.loads(form_data)
         print(form_data)
+        form_id = form_data['form_id']
         file_id = form_data['file_id']
         from_user = form_data['from_user']
         from_designation = form_data['from_designation']
@@ -968,6 +1052,9 @@ def file_handle(request):
         designation_employee = form_data['designation_employee']
 
 
+
+
+        print("form_id" , form_id)
         print("file_id",file_id)
         print("from_user",from_user)
         print("from_designation",from_designation)
@@ -1324,7 +1411,7 @@ def form_view_cpda(request , id):
     cpda_request = reverse_cpda_pre_processing(cpda_request)#isko bnana h
     print(cpda_request)
     
-    context = {'cpda_request' : cpda_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+    context = {'cpda_request' : cpda_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation,"id":id}
 
     return render(request , template , context)
 
@@ -1353,7 +1440,6 @@ def form_mangement_cpda(request):
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
-        src_object_ids = [14,15,19]
         
         cpda_requests = []
 

@@ -306,6 +306,7 @@ Module
             <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
             <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
             <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
+            <!-- <input type="hidden" id="form_id" name="file_id" value="{{ id }}"> -->
         </form>
 
         <br>
@@ -459,13 +460,33 @@ Module
             var from_designation = $('#from_designation').val();
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
+            // var form_id = $('#form_id').val();
+            // var recomm_hod_confirm = $('#recomm_hod_confirm').val();
+            // var date_rspc_confirm = $('#date_rspc_confirm').val();
+            // var balance_available = $('#id_balance_available').val();
+            // var advance_amount_pda = $('#id_advance_amount_pda').val();
+            // var dealing_asstt_name = $('#id_dealing_asstt_name').val();
+            // var ar_dr_ia_name = $('#id_ar_dr_ia_name').val();
+            // var sanction_status = $('#sanction_status').val();
+            // var copy_to = $('#id_copy_to').val();
+            // var ar_dr_ia_name = $('#id_ar_dr_ia_name').val()
             console.log(file_id)
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
                 from_designation: from_designation,
                 username_employee:username_employee,
-                designation_employee:designation_employee
+                designation_employee:designation_employee,
+                // form_id:form_id,
+                // recomm_hod_confirm : recomm_hod_confirm,
+                // date_rspc_confirm : date_rspc_confirm,
+                // advance_amount_pda : advance_amount_pda,
+                // dealing_asstt_name : dealing_asstt_name,
+                // ar_dr_ia_name : ar_dr_ia_name,
+                // sanction_status : sanction_status,
+                // copy_to : copy_to,
+
+
             });
            
             $.ajax({

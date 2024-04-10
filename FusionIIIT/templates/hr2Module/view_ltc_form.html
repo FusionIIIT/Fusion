@@ -544,12 +544,14 @@ Module
                                         </button>
                                     </div>
 
+
                                     {% endif %}
                                 </div>
                                 <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
                                 <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
                                 <input type="hidden" id="from_designation" name="from_designation"
                                     value="{{ from_designation }}">
+                                <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
                             </form>
 
 
@@ -703,17 +705,23 @@ Module
             var from_designation = $('#from_designation').val();
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
+            var form_id = $('#form_id').val();
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
                 from_designation: from_designation,
                 username_employee:username_employee,
-                designation_employee:designation_employee
+                designation_employee:designation_employee,
+                form_id:form_id,
+
             });
             // Fire an AJAX request to handle the action
             $.ajax({
                 url: '/hr2/file_handle/',
                 type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                 }, 
                 data: formData, // Send the serialized form data
                 success: function (data) {
                     // Handle success response, if needed
