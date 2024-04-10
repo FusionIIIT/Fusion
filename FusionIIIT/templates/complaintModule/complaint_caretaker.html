@@ -82,7 +82,7 @@
                 
                 {% comment %}A single modules row ends here!{% endcomment %}
                 
-                {% if  global_var == "hall4caretaker" or global_var == "hall3caretaker" or global_var == "shyams"  %}
+                {% if  "caretaker" in global_var %}
                 <a class=" item" data-tab="fourth">
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i>
@@ -190,6 +190,5 @@
     
 
 {% endblock %}
-
 
 
