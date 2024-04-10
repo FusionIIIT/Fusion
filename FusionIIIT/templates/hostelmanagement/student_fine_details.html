@@ -1,0 +1,25 @@
+{% block My_fine %}
+<h2 align="center">My Fine</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+<table class="ui table " border="1">
+  <thead>
+    <tr>
+      <th>Hall</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fine in student_fines %}
+    <tr>
+      <td>{{ fine.hall }}</td>
+      <td>{{ fine.amount }}</td>
+      <td>{{ fine.status }}</td>
+      <td>{{ fine.reason }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
