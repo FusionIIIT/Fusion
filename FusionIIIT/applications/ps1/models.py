@@ -50,13 +50,13 @@ class StockEntry(models.Model):
     dealing_assistant_id=models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     vendor=models.CharField(max_length=250, blank=False)
     current_stock=models.IntegerField(blank=False)
-    recieved_date=models.DateField(blank=False)
+    recieved_date = models.DateField(blank=False)
     bill=models.FileField(blank=False)
     location = models.CharField(max_length=100 ,choices=Constants.Locations,default='SR1')
     class Meta:
         db_table = 'StockEntry'
 
-# Individual Stock Item
+# Individual Stock Item 
 class StockItem(models.Model):
     # this represents the id of the StockEntry instance (StockEntryId_id)
 

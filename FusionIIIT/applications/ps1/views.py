@@ -134,6 +134,9 @@ def create_proposal(request):
 
             if 'send' in request.POST:
 
+
+                print('request.POST : ',request.POST);
+
                 uploader = request.user.extrainfo
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
@@ -147,6 +150,7 @@ def create_proposal(request):
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
                 item_type=request.POST.get('item_type')
+                grade=request.POST.get('grade')
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -212,6 +216,7 @@ def create_proposal(request):
                     specification=specification,
                     item_type=item_type,
                     nature=nature,
+                    grade=grade,
                     indigenous=indigenous, 
                     replaced = replaced ,
                     budgetary_head=budgetary_head,
@@ -354,7 +359,7 @@ def drafts(request):
 
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
-
+    print("id : ",id);
 
     tracking_objects=Tracking.objects.all()
     tracking_obj_ids=[obj.file_id for obj in tracking_objects]
@@ -552,6 +557,8 @@ def forwardindent(request, id):
     # end = timer()
     
     if request.method == "POST":
+            print('Mohit Will Win : ' , request.POST);
+
             if 'finish' in request.POST:
                 file.complete_flag = True
                 file.save()
@@ -886,6 +893,7 @@ def current_stock_view(request):
     
     # for handling the search after submission of filters form 
     if request.method=="POST":
+        print('the requested data : ', request.POST)
         department = request.POST.get('department')
         grade = request.POST.get('grade')
         type = request.POST.get('type')
