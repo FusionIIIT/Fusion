@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url,include
 
 from . import views
 
@@ -10,15 +10,24 @@ urlpatterns = [
     url(r'^create_proposal/$', views.create_proposal, name='create_proposal'),
     # url(r'^compose_indent/$', views.compose_indent, name='compose_indent'),
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
+
+    # here id is the Holdsdesignation id.
     url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
+
     url(r'^drafts/$', views.drafts, name='drafts'),
     url(r'^draftview/(?P<id>\d+)$', views.draftview, name='draftview'),
     url(r'^inwardIndent/$', views.inward, name='inward'),
+
+    # indentview2 is to get all the indentFiles inwarded towards the request.user.
+
     url(r'^indentview2/(?P<id>\d+)$', views.indentview2, name='indentview2'),
     url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
-    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'), 
+    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
+    # forward Indent is to see a specific forwarded indent to ourselves 
     url(r'^forwardindent/(?P<id>\d+)/$', views.forwardindent, name='forwardindent'),
     url(r'^createdindent/(?P<id>\d+)/$', views.createdindent, name='createdindent'),
+
+    
     url(r'^entry/$', views.entry, name='entry'),
     url(r'^StockEntry/$', views.Stock_Entry, name='Stock_Entry'),
 
@@ -54,6 +63,9 @@ urlpatterns = [
     url(r'^view_transfer/$', views.view_transfer, name='view_transfer'),
 
     url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
-    url(r'^outboxview/$', views.outboxview, name='outboxview')
+    url(r'^outboxview/$', views.outboxview, name='outboxview'),
+
+    # BASE API 
+    url(r'^api/',include('applications.ps1.api.urls')),
 
 ]
