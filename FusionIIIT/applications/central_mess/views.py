@@ -86,10 +86,7 @@ def mess(request):
         reg_request = Registration_Request.objects.filter(student_id=student)
 
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
-<<<<<<< HEAD
-=======
         menu_data = Menu.objects.all()
->>>>>>> sa-2
 
         try:
             mess_optn = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
@@ -195,11 +192,7 @@ def mess(request):
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
-<<<<<<< HEAD
-                menu_data = Menu.objects.all()
-=======
                 # menu_data = Menu.objects.all()
->>>>>>> sa-2
                 for f in feed:
                     if f.feedback_type == 'Maintenance' :
                         count1 += 1
@@ -270,11 +263,7 @@ def mess(request):
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
-<<<<<<< HEAD
-                menu_data = Menu.objects.all().order_by()
-=======
                 # menu_data = Menu.objects.all().order_by()
->>>>>>> sa-2
                 count5=0
                 count6=0
                 count7=0
@@ -336,10 +325,7 @@ def mess(request):
                 return render(request, "messModule/mess.html", context)
 
         context = {
-<<<<<<< HEAD
-=======
                     'menu': menu_data,
->>>>>>> sa-2
                    'reg_menu': y,
                    'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
@@ -455,51 +441,6 @@ def mess(request):
                 return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'faculty':
-<<<<<<< HEAD
-        meeting = Mess_meeting.objects.all()
-        minutes = Mess_minutes.objects.select_related().all()
-        feed1 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
-        feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
-        y = Menu.objects.all()
-
-        for f in feed1:
-            if f.feedback_type == 'Maintenance' :
-                count1 += 1
-
-            elif f.feedback_type == 'Food' :
-                count2 += 1
-
-            elif f.feedback_type == 'Cleanliness' :
-                count3 += 1
-
-            elif f.feedback_type == 'Others' :
-                count4 += 1
-
-        for f in feed2:
-            if f.feedback_type == 'Maintenance':
-                count5 += 1
-
-            elif f.feedback_type == 'Food':
-                count6 += 1
-
-            elif f.feedback_type == 'Cleanliness':
-                count7 += 1
-
-            elif f.feedback_type == 'Others':
-                count8 += 1
-        context = {
-             'info': extrainfo,
-             'menu': y,
-             'meeting': meeting,
-             'minutes': minutes,
-             'count1': count1,
-             'count2': count2, 'count3': count3, 'feed1': feed1,'feed2':feed2,
-             'count4': count4, 'form': form, 'count5': count5,
-             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
-    
-        }
-        return render(request, 'messModule/mess.html', context)
-=======
         for d in desig:
             if(d.designation.name == 'mess_warden'):
                 
@@ -547,7 +488,6 @@ def mess(request):
                     'reg_record':reg_record,'reg_main':reg_main,'bill': bills,
                 }
                 return render(request, 'messModule/mess.html', context)
->>>>>>> sa-2
 
 @login_required
 @transaction.atomic
@@ -1049,14 +989,6 @@ class BillPDFStudent(View):
         extra_info = ExtraInfo.objects.select_related().get(user=user)
         student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
         # reg_student = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id_id=student)
-<<<<<<< HEAD
-        monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
-        if monthly_bill.exists():
-            context = {
-                'student_bill': monthly_bill
-            }
-            return render_to_pdf('messModule/billpdfexport.html', context)
-=======
         try:
             monthly_bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student)
             if monthly_bill.exists():
@@ -1068,7 +1000,6 @@ class BillPDFStudent(View):
                 return HttpResponseRedirect('/mess')
         except:
             return HttpResponseRedirect('/mess')
->>>>>>> sa-2
 
 
 def menu_change_request(request):

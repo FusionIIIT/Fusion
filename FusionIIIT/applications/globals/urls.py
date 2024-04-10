@@ -25,8 +25,4 @@ urlpatterns = [
     # API urls
     url(r'^api/', include('applications.globals.api.urls')),
     url(r'^update_global_variable/$', views.update_global_variable, name='update_global_var'),
-<<<<<<< HEAD
 ]
-=======
-]
->>>>>>> sa-2
