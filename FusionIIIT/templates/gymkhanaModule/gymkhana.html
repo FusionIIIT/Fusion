@@ -269,6 +269,7 @@ Gymkhana Module
             </a>
 
             {% if "Junior Superintendent" in global_var or request.user.username == "acadadmin" %}
+<<<<<<< HEAD
 
 <<<<<<< HEAD
             <a class="item" data-tab="fourth">
@@ -282,6 +283,8 @@ Gymkhana Module
             {% endif %}
 =======
                 {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
+=======
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
             <a class="item" data-tab="fourth">
                 Fest Budget
@@ -293,14 +296,14 @@ Gymkhana Module
             </a>
             {% endif %}
             
-            {% if "Dean_s" not in Curr_desig %}
+            {% if "Dean_s" not in global_var %}
             <a class="item" data-tab="third">
                 Member Records
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
             
-            {% if "Counsellor" in Curr_desig %}
+            {% if "Counsellor" in global_var %}
             <a class="item" data-tab="seventh">
                 Approval Requests
                 <i class="right floated chevron right icon"></i>
@@ -311,7 +314,7 @@ Gymkhana Module
             </a>
             {% endif %}
 
-            {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+            {% if "co-ordinator" in global_var or "co co-ordinator" in global_var %}
             <a class=" item" data-tab="fifth">
                 New Session
                 <i class="right floated chevron right icon"></i>
@@ -334,7 +337,7 @@ Gymkhana Module
                 Submit Club report
                 <i class="right floated chevron right icon"></i>
             </a>
-            <!-- {% if "Counsellor" in Curr_desig %}
+            <!-- {% if "Counsellor" in global_var %}
             <a class="item" data-tab="second">
                 Club Budget
                 <i class="right floated chevron right icon"></i>
@@ -342,42 +345,42 @@ Gymkhana Module
             {% endif %} -->
 
 
-            <a class="item" href="/filetracking">
+            {% comment %} <a class="item" href="/filetracking">
                 Submit Event report To Convener
                 <i class="right floated chevron right icon"></i>
-            </a>
+            </a> {% endcomment %}
 
             {% endif %}
 
-            {% if "co-ordinator" not in Curr_desig and "Co-coordinator" not in Curr_desig and "Dean_s" not in Curr_desig and "Counsellor" not in Curr_desig and "student" not in Curr_desig and "Convener" not in Curr_desig %}
-            <a class="item" data-tab="last">
+            {% if "co-ordinator" not in global_var and "Co-coordinator" not in global_var and "dean_s" in global_var and "Counsellor" not in global_var and "student" not in global_var and "Convener" not in global_var %}
+            <a class="item" data-tab="seventh">
                 Submitted requests
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
 
-            {% if "Counsellor" in Curr_desig or "Convener" in Curr_desig or "co-ordinator" in Curr_desig or "Dean_s" in Curr_desig %}
+            {% if "Counsellor" in global_var or "Convener" in global_var or "co-ordinator" in global_var or "dean_s" in global_var  %}
             <a class="item" data-tab="second">
                 Club Budget
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
 
-            {% if "Convener" in Curr_desig %}
+            {% comment %} {% if "Convener" in global_var %}
 
             <a class="item" href="/filetracking">
                 Submit Event Report To counsellor
                 <i class="right floated chevron right icon"></i>
             </a>
 
-            <a class="item" href="/filetracking">
+             <a class="item" href="/filetracking">
                 Event Report To Co/Co-coordinator-(Back)
                 <i class="right floated chevron right icon"></i>
-            </a>
+            </a> 
 
-            {% endif %}
+            {% endif %} {% endcomment %}
 
-            {% if "Counsellor" in Curr_desig %}
+            {% comment %} {% if "Counsellor" in global_var %}
 
             <a class="item" href="/filetracking">
                 Submit Event Report To Dean
@@ -388,17 +391,17 @@ Gymkhana Module
                 Event Report To Convener-(Back)
                 <i class="right floated chevron right icon"></i>
             </a>
-            {% endif %}
+            {% endif %} {% endcomment %}
 
-            {% if "Dean_s" in Curr_desig %}
+            {% comment %} {% if "Dean_s" in global_var %}
 
             <a class="item" href="/filetracking">
                 Event Report To counsellor-(Back)
                 <i class="right floated chevron right icon"></i>
             </a>
 
-            {% endif %}
-            {% if "fic" in Curr_desig %}
+            {% endif %} {% endcomment %}
+            {% comment %} {% if "fic" in global_var %}
 
             <a class="item" data-tab="first">
                 Generate No-dues
@@ -407,7 +410,7 @@ Gymkhana Module
 
             {% endif %}
 
-            {% if "fic" in Curr_desig %}
+            {% if "fic" in global_var %}
 
             <a class="item" data-tab="first">
                 Manage Inventory
@@ -417,14 +420,14 @@ Gymkhana Module
             {% endif %}
 
 
-            {% if "fic" in Curr_desig %}
+            {% if "fic" in global_var %}
 
             <a class="item" data-tab="first">
                 Send Inventory Report
                 <i class="right floated chevron right icon"></i>
             </a>
 
-            {% endif %}
+            {% endif %} {% endcomment %}
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -440,7 +443,7 @@ Gymkhana Module
             {% endblock %}
         </div>
 
-        {% if "student" in Curr_desig %}
+        {% if "student" in global_var %}
 
         <div class="ui tab segment" data-tab="first">
             {% block applyform %}
@@ -456,7 +459,7 @@ Gymkhana Module
             {% endblock %}
         </div>
 
-        {% if "student" in Curr_desig and status == True %}
+        {% if "student" in global_var and status == True %}
 
         <div class="ui tab segment" data-tab="thirteenth">
             {% block convenor_form %}
@@ -466,7 +469,7 @@ Gymkhana Module
 
         {% endif %}
 
-        {% if "Convenor" in Curr_desig %}
+        {% if "Convenor" in global_var %}
 
         <div class="ui tab segment" data-tab="twentyth">
             {% block nomination_details %}
@@ -476,7 +479,7 @@ Gymkhana Module
 
         {% endif %}
 
-        {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
+        {% if "Junior Superintendent" in global_var or request.user.username == "acadadmin" %}
 
         <div class="ui tab segment" data-tab="fourth">
             {% block festbudget %}
@@ -498,7 +501,7 @@ Gymkhana Module
             {% endblock %}
         </div>
 
-        {% if "Counsellor" in Curr_desig %}
+        {% if "Counsellor" in global_var or "dean_s" in global_var%}
 
         <div class="ui tab segment" data-tab="seventh">
             {% block approvalrequests %}
@@ -514,6 +517,7 @@ Gymkhana Module
 
         {% endif %}
 
+<<<<<<< HEAD
         {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
 
             <div class="ui tab segment" data-tab="fifth">
@@ -762,6 +766,8 @@ Gymkhana Module
 
         {% endif %}
 
+=======
+>>>>>>> 206d27b8 (Sa 3 (#24))
         {% if "co-ordinator" in global_var or "co co-ordinator" in global_var or "Counsellor" in global_var or "Convener" in global_var or "dean_s" in global_var %}
 
         <div class="ui tab segment" data-tab="fifth">

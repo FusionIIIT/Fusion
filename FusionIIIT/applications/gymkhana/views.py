@@ -748,6 +748,9 @@ def registration_form(request):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 206d27b8 (Sa 3 (#24))
 def return_content(request, roll, name, desig, club__):
     """
     return_content
@@ -770,6 +773,7 @@ def return_content(request, roll, name, desig, club__):
             club_session      : All info of the Session_info
             club_event        : All info of the Event_info
             club_event_report : All info of the Club_report
+<<<<<<< HEAD
 =======
 	for rooms in Constants.venue:
 		for room in rooms[1]:
@@ -782,6 +786,8 @@ def return_content(request, roll, name, desig, club__):
 	else :
 		curr_club = []
 >>>>>>> 58494bef (chore: added migrations to gitignore)
+=======
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
     """
     students = ExtraInfo.objects.select_related("user", "department").filter(
@@ -1033,6 +1039,7 @@ def gymkhana(request):
             roll 		 : Roll number of the User
             name 		 : full name of the user
             designations : List contains all info of the user logged in
+<<<<<<< HEAD
 
     """
     roll = request.user
@@ -1093,6 +1100,50 @@ def gymkhana(request):
 	club__ = coordinator_club(request)
 	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
 >>>>>>> 58494bef (chore: added migrations to gitignore)
+=======
+
+    """
+    roll = request.user
+    name = request.user.first_name + "_" + request.user.last_name
+    designations = list(
+        HoldsDesignation.objects.select_related("user", "working", "designation")
+        .all()
+        .filter(working=request.user)
+        .values_list("designation")
+    )
+    designation_data = [
+        element for designation in designations for element in designation
+    ]
+    roll_ = []
+    for designation in designation_data:
+        name_ = get_object_or_404(Designation, id=designation)
+        # #    #    print name_
+        roll_.append(str(name_.name))
+    for club_data in Club_info.objects.select_related(
+        "co_ordinator",
+        "co_ordinator__id",
+        "co_ordinator__id__user",
+        "co_ordinator__id__department",
+        "co_coordinator",
+        "co_coordinator__id",
+        "co_coordinator__id__user",
+        "co_coordinator__id__department",
+        "faculty_incharge",
+        "faculty_incharge__id",
+        "faculty_incharge__id__user",
+        "faculty_incharge__id__department",
+    ).all():
+        lines = str("")
+        Types = lines.split(" ")
+    club__ = coordinator_club(request)
+    print(club__)
+    return render(
+        request,
+        "gymkhanaModule/gymkhana.html",
+        return_content(request, roll, name, roll_, club__),
+    )
+
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 @login_required
 def club_membership(request):
@@ -1229,9 +1280,14 @@ def event_report(request):
         )
         other_report.save()
         messages.success(request, "Successfully saved the report !!!")
+<<<<<<< HEAD
 
     return redirect("/gymkhana/")
 
+=======
+
+    return redirect("/gymkhana/")
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 
 @login_required
@@ -1273,9 +1329,14 @@ def club_budget(request):
         )
         club_budget.save()
         messages.success(request, "Successfully requested for the budget !!!")
+<<<<<<< HEAD
 
     return redirect("/gymkhana/")
 
+=======
+
+    return redirect("/gymkhana/")
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 
 @login_required
@@ -1363,7 +1424,10 @@ def club_report(request):
         messages.success(request, "Successfully updated the report !!!")
 
     return redirect("/gymkhana/")
+<<<<<<< HEAD
 
+=======
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 
 @login_required
@@ -1440,6 +1504,7 @@ def change_head(request):
             "user", "working", "designation"
         ).filter(user__username=old_co_coordinator, designation__name="co co-ordinator")
         old_co_coordinator.delete()
+<<<<<<< HEAD
 
         content = {
             "status": "success",
@@ -1450,6 +1515,19 @@ def change_head(request):
         return HttpResponse(content)
 
         # return redirect('/gymkhana/')
+=======
+
+        content = {
+            "status": "success",
+            "message": message,
+        }
+
+        content = json.dumps(content)
+        return HttpResponse(content)
+
+        # return redirect('/gymkhana/')
+
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 @login_required
 def new_session(request):
@@ -1624,6 +1702,7 @@ def fest_budget(request):
         desc = request.POST.get("d_d")
         year = request.POST.get("year")
         budget_file.name = fest + "_budget_" + year
+<<<<<<< HEAD
 
         fest_budget = Fest_budget(
             fest=fest,
@@ -1637,6 +1716,20 @@ def fest_budget(request):
 
     return redirect("/gymkhana/")
 
+=======
+
+        fest_budget = Fest_budget(
+            fest=fest,
+            budget_amt=budget_amt,
+            budget_file=budget_file,
+            description=desc,
+            year=year,
+        )
+        fest_budget.save()
+        messages.success(request, "Successfully uploaded the budget !!!")
+
+    return redirect("/gymkhana/")
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 
 @login_required
@@ -1816,9 +1909,14 @@ def cancel(request):
 
         club_member.delete()
         messages.success(request, "Successfully deleted !!!")
+<<<<<<< HEAD
 
     return redirect("/gymkhana/")
 
+=======
+
+    return redirect("/gymkhana/")
+>>>>>>> 206d27b8 (Sa 3 (#24))
 
 
 @login_required
@@ -2458,7 +2556,11 @@ def forward(request, id):
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     return render(request, "filetracking/forward.html", context)
 =======
 	return render(request, 'filetracking/forward.html', context)
 >>>>>>> 58494bef (chore: added migrations to gitignore)
+=======
+    return render(request, "filetracking/forward.html", context)
+>>>>>>> 206d27b8 (Sa 3 (#24))
