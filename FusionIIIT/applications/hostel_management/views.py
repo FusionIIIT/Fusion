@@ -307,6 +307,13 @@ def hostel_view(request, context={}):
             hostel_students_details = []
             students = Student.objects.filter(hall_no=hall_number)
 
+            a_room=[]
+            t_rooms = HallRoom.objects.filter(hall=hall_num)
+            for room in t_rooms:
+                if (room.room_cap > room.room_occupied):
+                    a_room.append(room)
+
+            print(a_room)
             # Retrieve additional information for each student
             for student in students:
                 student_info = {}
@@ -326,7 +333,12 @@ def hostel_view(request, context={}):
                 
                 hostel_students_details.append(student_info)
 
+            # Sort the hostel_students_details list by roll number
+            hostel_students_details = sorted(hostel_students_details, key=lambda x: x['student_id'])
+            
+            
             context['hostel_students_details'] = hostel_students_details
+            context['av_room'] = a_room
 
     if request.user.id in Faculty.objects.values_list('id__user', flat=True):
         staff_student_info = request.user.extrainfo.id    
@@ -1072,6 +1084,7 @@ class AssignBatchView(View):
 
                 self.update_student_hall_allotment(hall, hall.assigned_batch)
                 print("batch assigned successssssssssssssssssss")
+                messages.success(request, 'batch assigned succesfully')
                 
                 return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
 
@@ -1958,19 +1971,55 @@ class HostelFineUpdateView(APIView):
 
 
 
-def edit_student(request, student_id):
-    student = get_object_or_404(Student, id=student_id)
-    print('~~~~~~~~~~~~~~~~~~~~~~~~~`',student_id)
+class EditStudentView(View):
+    template_name = 'hostelmanagement/edit_student.html'
+
     
-    if request.method == 'POST':
-        # Process the form submission to update student details
-        # For example:
-        student.first_name = request.POST.get('first_name')
-        student.last_name = request.POST.get('last_name')
-        # Update other fields as needed
+    def get(self, request, student_id):
+        student = Student.objects.get(id=student_id)
+        
+        context = {'student': student}
+        return render(request, self.template_name, context)
+
+    def post(self, request, student_id):
+        student = Student.objects.get(id=student_id)
+       
+        # Update student details
+        student.id.user.first_name = request.POST.get('first_name')
+        student.id.user.last_name = request.POST.get('last_name')
+        student.programme = request.POST.get('programme')
+        student.batch = request.POST.get('batch')
+        student.hall_no = request.POST.get('hall_number')
+        student.room_no = request.POST.get('room_number')
+        student.specialization = request.POST.get('specialization')
+        
         student.save()
-        # Redirect to a page showing the updated details or any other desired page
-        return redirect('student_details')  # Redirect to the student details page
+
+        # Update phone number and address from ExtraInfo model
+        student.id.phone_no = request.POST.get('phone_number')
+        student.id.address = request.POST.get('address')
+        student.id.save()
+        student.save()
+        messages.success(request, 'Student details updated successfully.')
+        return redirect("hostelmanagement:hostel_view")
     
-    # If it's a GET request, render the edit student details form
-    return render(request, 'update_student_details.html', {'student': student})
+class RemoveStudentView(View):
+    def post(self, request, student_id):
+        try:
+            student = Student.objects.get(id=student_id)
+            student.hall_no = 0
+            student.save()
+            messages.success(request, 'Student removed successfully.')
+            return redirect("hostelmanagement:hostel_view")
+            return JsonResponse({'status': 'success', 'message': 'Student removed successfully'})
+        except Student.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Student not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method != 'POST':
+            return JsonResponse({'status': 'error', 'message': 'Method Not Allowed'}, status=405)
+        return super().dispatch(request, *args, **kwargs)
+    
+
