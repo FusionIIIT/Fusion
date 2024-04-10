@@ -15,6 +15,8 @@ urlpatterns = [
     #academic administration
     url(r'^club_approve/$', views.club_approve, name='club_approve'),
     url(r'^club_reject/$', views.club_reject, name='club_reject'),
+    url(r'^budget_approve/$', views.budget_approve, name='budget_approve'),
+    url(r'^budget_reject/$', views.budget_reject, name='budget_reject'),
     # This is post method which takes username and password to generates/return Token
     url(r'^login/$', obtain_auth_token, name='login'),
     # api for "clubdetails" method="get" with TokenAuthentication

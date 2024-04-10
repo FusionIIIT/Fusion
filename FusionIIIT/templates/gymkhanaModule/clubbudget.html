@@ -34,7 +34,7 @@
 
     <div class="ui  tab" data-tab="clubbudgetform">
         <div class="ui vertical segment">
-            <form method="Post" id="club_budget_form" enctype="multipart/form-data">
+            <form method="Post"  action ="{% url 'gymkhana:club_budget' %}",id="club_budget_form" enctype="multipart/form-data">
             {%csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -44,7 +44,9 @@
                         <select class="ui search fluid dropdown" name="club" required>
                             <option value="">Select</option>
                             {% for i in Club_name %}
+                               {% if i.status ==  "confirmed" %}
                                     <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                               {% endif %}  
                             {% endfor %}
                         </select>
                     </div>
@@ -72,7 +74,7 @@
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_budget','club_budget_form',event)">
+                        <button class="ui primary button right floated" type="submit">
                             Submit
                         </button>
                     </div>
@@ -125,15 +127,15 @@
                     <th>File</th>
                 </thead>
                 <tbody>
-                    {% for budget in club_budgets %}
-                    {% if budget.club.club_name == selected_club %}
-                    <tr class="clubname-{{ budget.club.club_name }}" hidden>
+                    {% for budget in Club_budget %}
+                    {% comment %} {% if budget.club_id == selected_club %} {% endcomment %}
+                    <tr class="clubname-{{ budget.club_id }}" hidden>
                         <td>{{ budget.budget_for }}</td>
                         <td>{{ budget.budget_amt }}</td>
                         <td>{{ budget.description }}</td>
                         <td><a href="{{ budget.budget_file.url }}">Download File</a></td>
                     </tr>
-                    {% endif %}
+                    {% comment %} {% endif %} {% endcomment %}
                     {% endfor %}
                 </tbody>
             </table>
