@@ -27,7 +27,7 @@ IPR
     }
     .inputf1{
         border:1px solid;
-        width:800p
+        width:800px;
     }
     .labels1{
         padding-bottom:5px;
@@ -63,15 +63,15 @@ IPR
         <div class="outer" style="margin:20px">
                 <form class="ui form" method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_projects' %}" style="width:800px;  margin-bottom: 20px;">
                     {% csrf_token %}
-                    <div style="margin-bottom: 20px;" >
-                      <div class="labels1">
-                        <label class= "labels1" for="project_name" style="font-size:18px ;font-weight:bold  ">Project Name:</label>
-                      </div>
-                        <input class="input-f1" type="text" id="project_name"placeholder="Project Name" name="project_name"style=" border: 1px solid;" >
+                    <div style="margin-bottom: 20px;"class="ui labeled input" >
+                      {% comment %} <div class="labels1"> {% endcomment %}
+                        <label class= "ui label" for="project_name" style="font-size:18px ;font-weight:bold  ">Project Name:</label>
+                      {% comment %} </div> {% endcomment %}
+                        <input class="ui label " type="text" id="project_name"placeholder="Project Name"required name="project_name"style=" border: 1px solid grey;" >
                     </div>
                     <div style="margin-bottom: 20px;" >
-                        <label class= "labels1" for="sponsored_agency"style="font-size:18px ;font-weight:bold">Sponsored Agency:</label>
-                        <input class="inputf1" type="text" id="sponsored_agency"placeholder="Sponsored Agency" name="sponsored_agency" required style="width: 100%; border: 1px solid;">
+                        <label class= "ui label" for="sponsored_agency"style="font-size:18px ;font-weight:bold">Sponsored Agency:</label>
+                        <input class="input-f1" type="text" id="sponsored_agency"placeholder="Sponsored Agency" name="sponsored_agency" required style="width: 100%; border: 1px solid grey;">
                     </div>
                         
                     <div style="margin-bottom: 20px; ">

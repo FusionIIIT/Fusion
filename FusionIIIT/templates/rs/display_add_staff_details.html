@@ -29,7 +29,7 @@ IPR
     
     var remove_button_id = '.'+'remove_button-'+year;
     var remove_button = clonedSection.querySelector(remove_button_id);
-    remove_button.setAttribute('class','remove_button-'+year);
+    remove_button.setAttribute('class','remove_button-'+year  + " ui grey button");
     var fieldcount= document.querySelectorAll(staff_selection_id).length+1;
     console.log(fieldcount + " field count")
     var newName = 'staff_id-'+ year+ '-' + fieldcount; // Generate unique ID
@@ -47,18 +47,19 @@ IPR
     clonedstaff_id.setAttribute('id', newId);
     clonedstaff_name.setAttribute('id', newstaff_name_id);
     clonedqualification.setAttribute('id', newqualification_id);
-    clonedyear.setAttribute('id', newyear_id);
+    //clonedyear.setAttribute('id', newyear_id);
     clonedstipend.setAttribute('id', newstipend_id);
     remove_button.setAttribute('id', newRemoveButton);
     clonedstaff_id.setAttribute('name', newName);
     clonedstaff_name.setAttribute('name', newstaff_name);
     clonedqualification.setAttribute('name', newqualification);
-    clonedyear.setAttribute('name', newyear);
+    //clonedyear.setAttribute('name', newyear);
     clonedstipend.setAttribute('name', newstipend);
     var container_id='container-'+year
     console.log(container_id)
     var clonedContainer = document.getElementById(container_id);
-    clonedContainer.setAttribute('id',container_id)
+    clonedContainer.setAttribute('id',container_id);
+
     clonedContainer.appendChild(clonedSection);
     var staff_count_id = 'staff-count-'+year;
     var staff_count = document.getElementById(staff_count_id);
@@ -98,8 +99,13 @@ IPR
   margin-bottom: 10px; /* Add margin between form groups */
 }
 
-button {
+.button {
+  border-radius: 5px;
   margin-left: 10px; /* Add space between form and button */
+}
+
+.ui.grey.button:hover {
+  background-color: #4c4c5c; /* Change button color on hover */
 }
 
 </style>
@@ -115,40 +121,41 @@ button {
  
   <div class="container" id="container-{{year}}" >
     <div class="staff-{{year}} catt" >
-        <div class="f-group">
-          <label for="staff_id">Staff ID</label>
+        <div class="ui labeled input" style="margin:5px">
+          <label for="staff_id" class="ui label">Staff ID</label>
           <input name="staff_id-{{year}}-1" id="staff_id-{{year}}-1" class="staff_id-{{year}}">
         </div>
-        <div class="f-group">
-          <label for="staff_name">Staff Name</label>
+        <div class="ui labeled input" style="margin:5px">
+          <label for="staff_name" class="ui label">Staff Name</label>
           <input name="staff_name-{{year}}-1" id="staff_name-{{year}}-1" class="staff_name-{{year}}">
         </div>
-        <div class="f-group">
-          <label for="amount">Qualification</label>
+        <div class="ui labeled input" style="margin:5px">
+          <label for="amount" class="ui label">Qualification</label>
           <input name="qualification-{{year}}-1" id="qualification-{{year}}-1" class="qualification-{{year}}">
         </div>
-         <div class="f-group">
+         {% comment %} <div class="f-group">
           <label for="year">year</label>
           <input name="year-{{year}}-1" id="year-{{year}}-1" class="year-{{year}}">
-        </div> 
-        <div class="f-group">
-          <label for="stipend">stipend</label>
+        </div>  {% endcomment %}
+        <div class="ui labeled input" style="margin:5px">
+          <label for="stipend" class="ui label">stipend</label>
           <input name="stipend-{{year}}-1" id="stipend-{{year}}-1" class="stipend-{{year}}">
         </div>
-        <div class="f-group">
-          <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">Remove category</button>
+        <div class="ui labeled input" style="margin:5px">
+          <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">Remove</button>
         </div>
         
       </div> 
       
     </div>
-    <button class="f-group" onclick="addStaffSection(event,{{year}},{{project_id}})">Add Staff</button>
+    <button class="f-group ui grey button" onclick="addStaffSection(event,{{year}},{{project_id}})" style="margin:8px">Add Staff</button>
     {% comment %} <div class="f-group">
       <label for="staff-count-{{year}}">Staff Count</label>
       <input name="staff-count-{{year}}" id="staff-count-{{year}}" value="1">
     </div> {% endcomment %}
     {% comment %} <!-- {% endfor %} --> {% endcomment %}
-    <input type="submit" value="Submit" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
+    <br>
+    <center><input type="submit" value="Submit" class="ui blue button" style="width:20%"></center>
 </form>
 
 {% endblock %} 
