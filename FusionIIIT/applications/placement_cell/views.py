@@ -1504,8 +1504,8 @@ def invite_status(request):
         }
 
 
-    years = PlacementRecord.objects.filter(~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
-    records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
+        years = PlacementRecord.objects.filter(~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
+        records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
 
 
         return export_to_xls_invitation_status(placementstatus)
