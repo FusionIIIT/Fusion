@@ -31,9 +31,9 @@
                 <td>{{ hostel_fine.reason }}</td>
 
                 <td>
-                    <button class="ui negative button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button>
+                    <button class="ui negative mini button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button>
 
-                    <button class="ui positive button" onclick="editFine('{{ hostel_fine.fine_id }}')">Edit</button>
+                    <button id="edit-button" class="ui positive medium button" onclick="editFine('{{ hostel_fine.fine_id }}')">Edit</button>
 
                 </td>
                 
@@ -47,6 +47,12 @@
     td,th{
         text-align: center;
         padding: 5px;
+    }
+
+    #edit-button{
+        margin-top: 2px;
+        padding: 8px;
+        width: 67px;
     }
  </style>
 

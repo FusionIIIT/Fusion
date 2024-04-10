@@ -57,12 +57,15 @@ Hostel
 
 
         <div class="field">
-            <label for="reason">Reason:</label><br />
+            <label for="reason">Reason:</label>
             <textarea id="reason" name="reason" required>{{ fines.reason }}</textarea><br />
         </div>
 
         <button type="submit" class="ui primary button">Submit</button>
+        <a href="{% url 'hostelmanagement:hostel_view' %}" class=" ui button  ">Back To Homepage</a>
     </form>
+
+    <br/>
 
     <div id="responseMessage"></div>
     </div>
