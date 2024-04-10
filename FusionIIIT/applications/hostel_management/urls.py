@@ -93,12 +93,15 @@ urlpatterns = [
     #guest room
     path('book_guest_room/', views.request_guest_room, name="book_guest_room"),
     path('update_guest_room/', views.update_guest_room, name="update_guest_room"),
+    path('available_guest_rooms/', views.available_guestrooms_api, name='available_guestrooms_api'),
 
 
     # !!todo: Add Fine Functionality
     path('fine/', views.impose_fine_view, name='fine_form_show'),
     path('fine/impose/', views.HostelFineView.as_view(), name='fine_form_show'),
     path('fine/impose/list/', views.hostel_fine_list, name='fine_list_show'),
+    path('fine/impose/edit/<int:fine_id>/', views.show_fine_edit_form, name='hostel_fine_edit'),
+    path('fine/impose/update/<int:fine_id>/', views.update_student_fine, name='update_student_fine'),
     path('fine/impose/list/update/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_update'),
     path('fine/delete/<int:fine_id>/', views.HostelFineUpdateView.as_view(), name='fine_delete'),
     path('fine/show/', views.student_fine_details, name='fine_show'),
@@ -107,5 +110,9 @@ urlpatterns = [
     
     path('student/<str:username>/name/', views.get_student_name, name='find_name'),
 
+    
+    path('edit-student/<str:student_id>/', views.EditStudentView.as_view(), name='edit_student'),
+    path('remove-student/<str:student_id>/', views.RemoveStudentView.as_view(), name='remove-student'),
+    
      
 ]

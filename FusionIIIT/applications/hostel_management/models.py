@@ -125,6 +125,13 @@ class GuestRoomBooking(models.Model):
     status = models.CharField(max_length=255, choices=HostelManagementConstants.BOOKING_STATUS ,default ="Pending")
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
     nationality = models.CharField(max_length=255, blank=True)
+    ROOM_TYPES = [
+        ('single', 'Single'),
+        ('double', 'Double'),
+        ('triple', 'Triple'),
+        # Add more room types as needed
+    ]
+    room_type = models.CharField(max_length=10, choices=ROOM_TYPES ,default='single')
     
     def __str__(self):
         return '%s ----> %s - %s' % (self.id, self.guest_name, self.status)
@@ -141,7 +148,7 @@ class StaffSchedule(models.Model):
     'start_time' stores the start time of a schedule.
     'end_time' stores the end time of a schedule.
     """    
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)   
     staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
     staff_type = models.CharField(max_length=100, default='Caretaker')
     day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
@@ -254,14 +261,15 @@ class HostelLeave(models.Model):
     student_name = models.CharField(max_length=100)
     roll_num = models.CharField(max_length=20)
     reason = models.TextField()
+    phone_number = models.CharField(max_length=20, null=True,blank=True)
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField()
     status = models.CharField(max_length=20, default='pending')
     remark = models.TextField(blank=True, null=True)
+    file_upload = models.FileField(upload_to='hostel_management/', null=True, blank=True)
 
-
-    def __str__(self):
-        return f"{self.student_name}'s Leave"   
+    def _str_(self):
+        return f"{self.student_name}'s Leave"  
 
 # changes
 
@@ -309,10 +317,16 @@ class GuestRoom(models.Model):
     'vacant' boolean value to determine if the room is vacant
     'occupied_till', date field that tells the next time the room will be vacant, null if 'vacant' == True
     """
+    ROOM_TYPES = [
+        ('single', 'Single'),
+        ('double', 'Double'),
+        ('triple', 'Triple'),
+    ]
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     room = models.CharField(max_length=255)
     occupied_till = models.DateField(null=True, blank=True)
     vacant = models.BooleanField(default=True)
+    room_type = models.CharField(max_length=10, choices=ROOM_TYPES ,default='single')
     @property
     def _vacant(self) -> bool:
         if self.occupied_till and self.occupied_till > timezone.now():
