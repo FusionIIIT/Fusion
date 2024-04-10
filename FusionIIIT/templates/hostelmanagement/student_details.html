@@ -6,28 +6,29 @@
             <tr>
                 <th>ID</th>
                 <th>First Name</th>
-                <th>Last Name</th>
+                
                 <th>Programme</th>
                 <th>Batch</th>
-                <th>Room Number</th>
+                
                 <th>Hall Number</th>
+                <th>Room Number</th>
                 <th>Specialization</th>
-                <th>Parent Contact</th>
+                <th>Contact number</th>              
                 <th>Address</th>
+                
             </tr>
         </thead>
         <tbody>
             {% for stu in hostel_students_details %}
             <tr>
-                <td>{{ stu.id }}</td>
+                <td>{{ stu.student_id }}</td>
                 <td>{{ stu.first_name }}</td>
-                <td>{{ stu.last_name }}</td>
                 <td>{{ stu.programme }}</td>
                 <td>{{ stu.batch }}</td>
-                <td>{{ stu.room_num }}</td>
-                <td>{{ stu.hall_id }}</td>
-                <td>{{ stu.specialization }}</td>
-                <td>{{ stu.parent_contact }}</td>
+                <td>hall {{ stu.hall_number }}</td>
+                <td>{{ stu.room_number }}</td>
+                <td>{{ stu.specialization }}</td>              
+                <td>{{ stu.phone_number }}</td>
                 <td>{{ stu.address }}</td>
             </tr>
             {% endfor %}
