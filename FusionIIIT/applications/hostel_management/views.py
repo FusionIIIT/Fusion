@@ -1783,6 +1783,7 @@ def show_fine_edit_form(request,fine_id):
 def update_student_fine(request,fine_id):
     if request.method == 'POST':
         fine = HostelFine.objects.get(fine_id=fine_id)
+        print("------------------------------------------------")
         print(request.POST)
         fine.amount = request.POST.get('amount')
         fine.status = request.POST.get('status')

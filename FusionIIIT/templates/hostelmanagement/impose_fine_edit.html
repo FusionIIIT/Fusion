@@ -1,13 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'globals/base.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostel Fine Form</title>
-</head>
+{% block title %}
+Hostel
+{% endblock %}
 
-<body>
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+
+    <div class="three wide column">
+
+    <div class="row">
+        {% block userCard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+    </div>
+
+    </div>
+
+
+    <div class="eight wide column">
 
     <h2 align="center">Hostel Fine Form</h2>
     <form class="ui form" id="fineForm" action="/hostelmanagement/fine/impose/update/{{fines.fine_id}}/" method="POST">
@@ -47,6 +65,8 @@
     </form>
 
     <div id="responseMessage"></div>
+    </div>
+</div>
 
     <script>
 
@@ -92,7 +112,7 @@
             })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = "/hostelmanagement/fine/impose/list/";
+                        window.location.href = "/hostelmanagement/";
                     } else {
                         console.error("Error updating status");
                     }
@@ -103,6 +123,4 @@
         });
     </script>
 
-</body>
-
-</html>
+{% endblock %}
