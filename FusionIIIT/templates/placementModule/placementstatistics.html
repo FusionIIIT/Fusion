@@ -90,10 +90,6 @@
                                  <i class="right floated chevron right icon"></i>
                              </a>
                          {% endif %}
-                    <!--<a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
-                        Manage Records
-                        <i class="right floated chevron right icon"></i>
-                    </a>(9-4-22)-->
                     {% endif %}
                 {% endfor %}
 
@@ -123,23 +119,14 @@
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
+
                            
                              <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                                  Send Notification
                                  <i class="right floated chevron right icon"></i>
                              </a>-->
+
                     {% endif %}
-
-                    <!--<a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
-                        Manage Records
-                        <i class="right floated chevron right icon"></i>
-                    </a>(9-4-22)
-                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
-                        Placement Visits
-                        <i class="right floated chevron right icon">
-
-                        </i>
-                    </a>-->
 
 
 
@@ -152,6 +139,7 @@
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
+
                 <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
                   Apply for jobs
                   <i class="right floated chevron right icon"></i>
@@ -173,19 +161,9 @@
                    <i class="right floated chevron right icon"></i>
                </a> -->
                 <!--Added for staff only-->
+
                 {% if current2 %}
-               <!-- <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
-                    Student Record
-                    <i class="right floated chevron right icon"></i>
-                </a>(9-4-22)-->
 
-
-
-                <!--Placement officers could schedule placement -->
-                <!--<a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
-                    Add Placement Schedule
-                    <i class="right floated chevron right icon"></i>
-                </a>-->
                 <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
                   Add Placement Record
                     <i class="right floated chevron right icon"></i>
@@ -201,9 +179,6 @@
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
-        {% comment %}
-            The left-rail segment ends here!
-        {% endcomment %}
 
 
         {% comment %} The central-rail segment starts here!{% endcomment %}
@@ -271,17 +246,6 @@
 
                                                   <input type="number" min="1900" max="2099" step="1" value="2016" required name="year"/>
                                               </div>
-
-                                              <div class="field">
-                                                {{ form3.ctc.errors }}
-                                                  <label for="{{ form3.ctc.id_for_label }}">
-                                                      min CTC (LPA)
-                                                  </label>
-
-                                                  <div class="ui large input">
-                                                      {{ form3.ctc }}
-                                                  </div>
-                                              </div>
                                           </div>
                                           <div class="two fields">
                                           <div class="field">
@@ -302,7 +266,7 @@
                           {% elif placementrecord %}
                               <br>
                               <br>
-                              <!-- Pagination Section starts here  --->
+                              <!-- Pagination Section starts here  -->
                     {% if pagination_placement %}
 
                         <center>
@@ -341,7 +305,7 @@
                           </div>
                         </center>
                     {% endif %}
-                    <!-- Pagination Section ends here --->
+                    <!-- Pagination Section ends here -->
                               <div class="ui divider"></div>
                               <br>
 
@@ -409,33 +373,17 @@
                                     {% if placement_search_record != " " %}
                                     <table id="tab" style="border:1px solid black; width:100%;">
                                         <tr style="border:1px solid black;">
-                                            <th style="border:1px solid black; ">id Type</th>
-                                            <th style="border:1px solid black; ">Placement Type</th>
+                                            <th style="border:1px solid black; ">Roll No.</th>
                                             <th style="border:1px solid black;">Name</th>
                                             <th style="border:1px solid black; ">CTC</th>
-                                            <th style="border:1px solid black; ">Year</th>
-                                            <th style="border:1px solid black;">Test Score</th>
-                                            <th style="border:1px solid black;">Test Type</th>
                                         </tr>
                                         {% for rec in placement_search_record %}
 
                                         <tr style="border:1px solid black; width:10rem;">
-                                            <td style="border:1px solid black;">{{ rec.id }}</td>
-                                            <td style="border:1px solid black;">{{ rec.placement_type }}</td>
-                                            <td style="border:1px solid black;">{{ rec.name }}</td>
-                                            <td style="border:1px solid black; ">{{ rec.ctc }}</td>
-                                            <td style="border:1px solid black;">{{ rec.year }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
-                                            <td>
-                                            <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
-                                              {% csrf_token %}
-                                              <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
-                                                  <i class="delete red icon"></i>
-                                              </button>
-                                            </form>
-                                          </td>
+                                            <td style="border:1px solid black; text-align:center">{{ rec.id }}</td>
 
+                                            <td style="border:1px solid black; text-align:center">{{ rec.name }}</td>
+                                            <td style="border:1px solid black; text-align:center">{{ rec.ctc }}</td>
                                         </tr>
 
                                         {% endfor %}
@@ -459,11 +407,10 @@
 
 
                                         <form method="post" class="ui form" role="form">
-                                        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                                         <div class="ui accordion field">
                                             <div class="active title">
                                                 <i class="icon dropdown"></i>
-                                                Search a Student!
+                                                Search a Student
                                             </div>
                                               {{ form3.non_field_errors }}
                                             <div class="active content">
@@ -490,16 +437,6 @@
                                                               <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
                                                           </div>
 
-                                                        <div class="field">
-                                                          {{ form3.ctc.errors }}
-                                                            <label for="{{ form3.ctc.id_for_label }}">
-                                                                min CTC (LPA)
-                                                            </label>
-
-                                                            <div class="ui large input">
-                                                                {{ form3.ctc }}
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                     <div class="two fields">
                                                     <div class="field">
@@ -512,12 +449,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+
                                     </form>
 
                                   <br>
                                   <br>
-                    <!-- Pagination Section starts here  --->
+                    <!-- Pagination Section starts here  -->
                     {% if pagination_pbi %}
 
                         <center>
@@ -556,7 +493,7 @@
                           </div>
                         </center>
                     {% endif %}
-                    <!-- Pagination Section ends here --->
+                    <!-- Pagination Section ends here -->
                                   <div class="ui divider"></div>
                                   <br>
 
@@ -719,14 +656,13 @@
                                   </div>
                               </div>
                           </div>
-                          {% comment %}The add a new skill Accordian ends here!{% endcomment %}
                       </form>
 
 
                                   <br>
                                   <br>
 
-                                  <!-- Pagination Section starts here  --->
+                                  <!-- Pagination Section starts here  -->
                     {% if pagination_higher %}
 
                         <center>
@@ -765,7 +701,7 @@
                           </div>
                         </center>
                     {% endif %}
-                    <!-- Pagination Section ends here --->
+                    <!-- Pagination Section ends here -->
                                   <div class="ui divider"></div>
                                   <br>
 
@@ -974,7 +910,6 @@
                       </div>
                   </div>
         </div>
-        {% comment %} The central-rail segment ends here!{% endcomment %}
 
         <div class="three wide column"></div>
     </div>
