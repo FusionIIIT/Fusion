@@ -76,6 +76,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
 from .forms import HallForm
 from notification.views import hostel_notifications
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import transaction
 
 
 def is_superuser(user):
@@ -295,15 +298,75 @@ def hostel_view(request, context={}):
                 staff_id=staff_student_info).hall_id
 
             hall_num = Hall.objects.get(id=hall_caretaker_id)
-            hostel_students_details = StudentDetails.objects.filter(hall_id=hall_num)
-            context['hostel_students_details']= hostel_students_details
-        elif HallWarden.objects.filter(faculty_id=staff_student_info).exists():
+            hall_number = int(''.join(filter(str.isdigit,hall_num.hall_id)))
+
+            
+            # hostel_students_details = Student.objects.filter(hall_no=hall_number)
+            # context['hostel_students_details']= hostel_students_details
+
+            hostel_students_details = []
+            students = Student.objects.filter(hall_no=hall_number)
+
+            # Retrieve additional information for each student
+            for student in students:
+                student_info = {}
+                student_info['student_id'] = student.id.id
+                student_info['first_name'] = student.id.user.first_name
+                student_info['programme'] = student.programme
+                student_info['batch'] = student.batch
+                student_info['hall_number'] = student.hall_no
+                student_info['room_number'] = student.room_no
+                student_info['specialization'] = student.specialization
+                # student_info['parent_contact'] = student.parent_contact
+                
+                # Fetch address and phone number from ExtraInfo model
+                extra_info = ExtraInfo.objects.get(user=student.id.user)
+                student_info['address'] = extra_info.address
+                student_info['phone_number'] = extra_info.phone_no
+                
+                hostel_students_details.append(student_info)
+
+            context['hostel_students_details'] = hostel_students_details
+
+    if request.user.id in Faculty.objects.values_list('id__user', flat=True):
+        staff_student_info = request.user.extrainfo.id    
+        if HallWarden.objects.filter(faculty_id=staff_student_info).exists():
             hall_warden_id = HallWarden.objects.get(
                 faculty_id=staff_student_info).hall_id
 
             hall_num = Hall.objects.get(id=hall_warden_id)
-            hostel_students_details = StudentDetails.objects.filter(hall_id=hall_num)
+
+            hall_number = int(''.join(filter(str.isdigit,hall_num.hall_id)))
+            print(hall_number)
+            
+            # hostel_students_details = Student.objects.filter(hall_no=hall_number)
+            # context['hostel_students_details']= hostel_students_details
+
+            hostel_students_details = []
+            students = Student.objects.filter(hall_no=hall_number)
+
+            # Retrieve additional information for each student
+            for student in students:
+                student_info = {}
+                student_info['student_id'] = student.id.id
+                student_info['first_name'] = student.id.user.first_name
+                student_info['programme'] = student.programme
+                student_info['batch'] = student.batch
+                student_info['hall_number'] = student.hall_no
+                student_info['room_number'] = student.room_no
+                student_info['specialization'] = student.specialization
+                # student_info['parent_contact'] = student.parent_contact
+                
+                # Fetch address and phone number from ExtraInfo model
+                extra_info = ExtraInfo.objects.get(user=student.id.user)
+                student_info['address'] = extra_info.address
+                student_info['phone_number'] = extra_info.phone_no
+                
+                hostel_students_details.append(student_info)
+
             context['hostel_students_details'] = hostel_students_details
+
+            
 
 
     # print(request.user.username);
@@ -937,6 +1000,7 @@ class AssignCaretakerView(APIView):
             return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
 
 
+
 @method_decorator(user_passes_test(is_superuser), name='dispatch')
 class AssignBatchView(View):
     authentication_classes = [SessionAuthentication]
@@ -948,49 +1012,68 @@ class AssignBatchView(View):
         hall = Hall.objects.all()
         return render(request, self.template_name, {'halls': hall})
 
+    def update_student_hall_allotment(self, hall, assigned_batch):
+        hall_number = int(''.join(filter(str.isdigit, hall.hall_id)))
+        students = Student.objects.filter(batch=int(assigned_batch))
+       
+        
+        for student in students:
+            student.hall_no = hall_number
+            student.save()
+            
+
     def post(self, request, *args, **kwargs):
         try:
-            data = json.loads(request.body.decode('utf-8'))
-            hall_id = data.get('hall_id')
+            with transaction.atomic():  # Start a database transaction
 
-            hall = Hall.objects.get(hall_id=hall_id)
-            previous_batch = hall.assigned_batch  # Get the previous batch
-            hall.assigned_batch = data.get('batch')
-            hall.save()
+                data = json.loads(request.body.decode('utf-8'))
+                hall_id = data.get('hall_id')
 
-            # Update the assignedBatch field in HostelAllotment table for the corresponding hall
-            room_allotments = HostelAllotment.objects.filter(hall=hall)
-            for room_allotment in room_allotments:
-                room_allotment.assignedBatch = hall.assigned_batch
-                room_allotment.save()
+                hall = Hall.objects.get(hall_id=hall_id)
+                previous_batch = hall.assigned_batch  # Get the previous batch
+                hall.assigned_batch = data.get('batch')
+                hall.save()
+
+                
+
+                
             
-            # retrieve the current caretaker and current warden for the hall
-            current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
-            current_warden = HallWarden.objects.filter(hall=hall).first()
+                # Update the assignedBatch field in HostelAllotment table for the corresponding hall
+                room_allotments = HostelAllotment.objects.filter(hall=hall)
+                for room_allotment in room_allotments:
+                    room_allotment.assignedBatch = hall.assigned_batch
+                    room_allotment.save()
+                
+                # retrieve the current caretaker and current warden for the hall
+                current_caretaker =HallCaretaker.objects.filter(hall=hall).first()
+                current_warden = HallWarden.objects.filter(hall=hall).first()
 
-            # Record the transaction history
-            HostelTransactionHistory.objects.create(
-                hall=hall,
-                change_type='Batch',
-                previous_value=previous_batch,
-                new_value=hall.assigned_batch
-            )
-
-            # Create hostel history
-            try:
-                HostelHistory.objects.create(
+                # Record the transaction history
+                HostelTransactionHistory.objects.create(
                     hall=hall,
-                    caretaker=current_caretaker.staff if (current_caretaker and current_caretaker.staff) else None,
-                    
-                    batch=hall.assigned_batch,
-                    warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
-
+                    change_type='Batch',
+                    previous_value=previous_batch,
+                    new_value=hall.assigned_batch
                 )
-                print("hostel hostory created succeessfully")
-            except Exception as e:
-                print ("Error creating history",e)
 
-            return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
+                # Create hostel history
+                try:
+                    HostelHistory.objects.create(
+                        hall=hall,
+                        caretaker=current_caretaker.staff if (current_caretaker and current_caretaker.staff) else None,
+                        
+                        batch=hall.assigned_batch,
+                        warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
+
+                    )
+                    print("hostel history created succeessfully")
+                except Exception as e:
+                    print ("Error creating history",e)
+
+                self.update_student_hall_allotment(hall, hall.assigned_batch)
+                print("batch assigned successssssssssssssssssss")
+                
+                return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
 
         except Hall.DoesNotExist:
             return JsonResponse({'status': 'error', 'error': f'Hall with ID {hall_id} not found'}, status=404)
@@ -1872,3 +1955,22 @@ class HostelFineUpdateView(APIView):
             raise NotFound(detail="Hostel fine not found")
 
         return Response({'message': 'Fine deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+def edit_student(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~`',student_id)
+    
+    if request.method == 'POST':
+        # Process the form submission to update student details
+        # For example:
+        student.first_name = request.POST.get('first_name')
+        student.last_name = request.POST.get('last_name')
+        # Update other fields as needed
+        student.save()
+        # Redirect to a page showing the updated details or any other desired page
+        return redirect('student_details')  # Redirect to the student details page
+    
+    # If it's a GET request, render the edit student details form
+    return render(request, 'update_student_details.html', {'student': student})

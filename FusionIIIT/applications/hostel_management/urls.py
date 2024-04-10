@@ -108,5 +108,9 @@ urlpatterns = [
     
     path('student/<str:username>/name/', views.get_student_name, name='find_name'),
 
+    
+    path('edit-student/<int:student_id>/', views.edit_student, name='edit_student'),
+
+
      
 ]
