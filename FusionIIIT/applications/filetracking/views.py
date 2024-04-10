@@ -954,7 +954,6 @@ def edit_draft_view(request, id, *args, **kwargs):
     designation_id = get_HoldsDesignation_obj(
         username, designation_name).id
 
-    context = {
     remarks = None
     receive = None
     receiver = None
