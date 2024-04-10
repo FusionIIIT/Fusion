@@ -221,6 +221,7 @@
                             </a>
                         </div>
                         {% endif %}
+                        {% if   global_var == "faculty" or  global_var == "dean_rspc" or global_var == "director" or global_var == "HOD" or global_var == "rspc_admin" or global_var == "Professor" or global_var == "Assistant Professor" %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -236,6 +237,7 @@
                                 </div>
                             </a>
                         </div>
+                        {% endif %}
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
 
