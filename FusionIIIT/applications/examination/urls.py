@@ -17,12 +17,15 @@ urlpatterns = [
     url(r'notReady_publish/', views.notReady_publish, name='notReady_publish'),
     url(r'announcement/', views.announcement, name='announcement'),
     url(r'timetable/', views.timetable, name='timetable'),
+
     
     #entering and updataing grade
+
     path('entergrades/', views.entergrades, name='entergrades'),
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
     path('verifygrades/', views.verifygrades, name='verifygrades'),
+
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
     path('submit_hidden_grades_multiple/', views.Submithidden_gradesMultipleView.as_view(),
@@ -42,5 +45,6 @@ urlpatterns = [
     path('generate_transcript/', views.generate_transcript, name='generate_transcript'),
     path('generate_transcript_form/', views.generate_transcript_form, name='generate_transcript_form'),
     # url(r'entergrades/', views.entergrades, name='entergrades'),
+
 
 ]

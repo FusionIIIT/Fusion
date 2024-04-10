@@ -285,10 +285,9 @@ def announcement(request):
                                                             upload_announcement=upload_announcement,
                                                             department=department,
                                                             ann_date=ann_date)
-        examination_notif(usrnm, recipients, message )
+        examination_notif(usrnm, recipients, message)
         print("test1")
-        
-        
+
     print("test2")
 
     context = browse_announcements()
@@ -468,12 +467,11 @@ def generate_transcript(request):
     # Initialize a dictionary to store course grades
     course_grades = {}
     student_details = Student.objects.filter(id_id=student_id)
-    totalCpi=0
+    totalCpi = 0
 
     for student in student_details:
         # print(student.cpi)
         totalCpi = totalCpi + student.cpi
-
 
     print(totalCpi)
     # Fetch grades for the courses registered by the student
@@ -483,6 +481,10 @@ def generate_transcript(request):
             grade = hidden_grades.objects.get(
                 student_id=student_id, course_id=course.course_id_id)
             print(course.course_id.code)
+            # course_autentication = authentication.objects.filter(course=course.course_id_id)
+            # print(course_autentication)
+            # check_authenticator = False
+            # print(course_autentication.authenticator_1)
             course_grades[course] = grade.grade  # Store the grade
         except hidden_grades.DoesNotExist:
             # Grade not available
@@ -491,7 +493,7 @@ def generate_transcript(request):
     context = {
         'courses_grades': course_grades,
         'student_details': student_details
-        
+
     }
 
     return render(request, 'examination/generate_transcript.html', context)
