@@ -54,7 +54,7 @@ Hostel
                 <input type="text" id="specialization" name="specialization" value="{{ student.specialization }}"><br>
 
                 <label for="phone_number">Contact Number:</label>
-                <input type="text" id="phone_number" name="phone_number" value="{{ student.id.phone_no }}"><br>
+                <input type="number" id="phone_number" name="phone_number" value="{{ student.id.phone_no }}"><br>
                 <!-- Add an element to display the error message -->
                 <span id="phone_error" style="color: red;"></span><br>
 
@@ -86,7 +86,7 @@ Hostel
             var phoneError = document.getElementById('phone_error');
 
             // Check if phone number is exactly 10 digits
-            if (phoneNumber.length !== 10) {
+            if (phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber)) {
                 phoneError.innerText = 'Phone number must be exactly 10 digits.';
                 return false; // Prevent form submission
             } else {
