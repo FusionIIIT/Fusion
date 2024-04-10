@@ -76,6 +76,7 @@ IPR
                 <td>{{data.tracking_extra_JSON.message}}</td>
                 {% comment %} <td><button></button></td> {% endcomment %}
                  <td><button class="ui small blue equal-size-button button" onclick="openFile(event,{{forloop.counter}})" >{{data.id}}</button> </td> 
+                
                  <td><button class="ui small blue equal-size-button button" onclick="window.location='/research_procedures/forward_request/{{data.id}}/{{request.user.username}}'">Forward</td>
 
                  {% comment %} <td><a href="{{ files }}"   >{{ data.id }}</a></td> {% endcomment %}

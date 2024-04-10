@@ -31,6 +31,7 @@ urlpatterns = [
       path('inbox',views.inbox, name="inbox"),
       path('view_request_inbox',views.view_request_inbox, name="view_request_inbox"),
       path('forward_request',views.forward_request, name="forward_request"),
+      #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       
       url(r'^test/$',tests.testfun,name = 'test'),
