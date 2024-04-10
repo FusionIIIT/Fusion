@@ -24,8 +24,9 @@
     </div>
 
         
+
         <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %}" data-tab="View Student Bills">
-            
+      
             {% block reg_list_bills %}
             {% include 'messModule/view_payments_bills.html' %}
             {% endblock %}
@@ -79,6 +80,7 @@
                 
             </div>
         </div>
+
         <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %}" data-tab="monthly bill" id="mbs">
             <div class="ui vertical segment">
 

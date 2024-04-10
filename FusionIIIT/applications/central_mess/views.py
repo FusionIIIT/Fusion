@@ -86,7 +86,9 @@ def mess(request):
         reg_request = Registration_Request.objects.filter(student_id=student)
 
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
+
         menu_data = Menu.objects.all()
+
 
         try:
             mess_optn = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
@@ -142,6 +144,7 @@ def mess(request):
         #     mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         #     y = Menu.objects.filter(mess_option=mess_optn.mess_option)
 
+
         
             # bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
             # amount_c = MessBillBase.objects.latest('timestamp')
@@ -192,7 +195,9 @@ def mess(request):
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+
                 # menu_data = Menu.objects.all()
+
                 for f in feed:
                     if f.feedback_type == 'Maintenance' :
                         count1 += 1
@@ -263,7 +268,9 @@ def mess(request):
                 sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
                 menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+
                 # menu_data = Menu.objects.all().order_by()
+
                 count5=0
                 count6=0
                 count7=0
@@ -488,6 +495,7 @@ def mess(request):
                     'reg_record':reg_record,'reg_main':reg_main,'bill': bills,
                 }
                 return render(request, 'messModule/mess.html', context)
+
 
 @login_required
 @transaction.atomic
@@ -1000,6 +1008,7 @@ class BillPDFStudent(View):
                 return HttpResponseRedirect('/mess')
         except:
             return HttpResponseRedirect('/mess')
+
 
 
 def menu_change_request(request):
