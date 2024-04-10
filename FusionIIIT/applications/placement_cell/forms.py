@@ -410,7 +410,7 @@ class SendInvite(forms.Form):
             company - name of company
     """
     company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
-    rollno = forms.IntegerField(label="rollno", widget=forms.NumberInput(attrs={'min': 0}), required=False)
+    rollno = forms.CharField(label="rollno", widget=forms.TextInput(attrs={'min': 0}), required=False)
     programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px",
                                                                                 'onchange': "changeDeptForSend()",
@@ -671,7 +671,7 @@ class ManagePlacementRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                               label="stuname", required=False)
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
                             label="roll", required=False)

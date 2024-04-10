@@ -119,6 +119,13 @@
                                  Placement Schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
+
+                           
+                             <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>-->
+
                     {% endif %}
 
 
@@ -132,6 +139,28 @@
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                  Apply for jobs
+                  <i class="right floated chevron right icon"></i>
+              </a>
+                 <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                Upload documents
+                  <i class="right floated chevron right icon"></i>
+              </a> -->
+              <!-- <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+               Add schedule
+                  <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                Manage Placement schedule
+                   <i class="right floated chevron right icon"></i>
+               </a>
+               <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                View Alumni Data
+                   <i class="right floated chevron right icon"></i>
+               </a> -->
+                <!--Added for staff only-->
 
                 {% if current2 %}
 
