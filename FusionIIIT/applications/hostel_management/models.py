@@ -90,7 +90,6 @@ class HallWarden(models.Model):
 
 
 
-
 class GuestRoomBooking(models.Model):
     """
     Records information related to booking of guest rooms in various Hall of Residences.
@@ -236,7 +235,6 @@ class WorkerReport(models.Model):
     absent = models.IntegerField(default= 0)
     total_day = models.IntegerField(default=31)
     remark = models.CharField(max_length=100)
-
     def str(self):
         return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
 
