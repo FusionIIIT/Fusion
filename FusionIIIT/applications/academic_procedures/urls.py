@@ -72,5 +72,5 @@ urlpatterns = [
     url(r'^acad_person/add_course_to_slot/' , views.add_course_to_slot , name = 'add_course_to_slot'),
     url(r'^acad_person/replaceSwayam/', views.replaceSwayam, name='replaceSwayam'),
     url(r'^acad_person/swayam_replace/', views.swayam_replace, name='swayam_replace'),
-
+    url(r'^register_backlog_course/' , views.register_backlog_course , name = 'register_backlog_course')
 ]

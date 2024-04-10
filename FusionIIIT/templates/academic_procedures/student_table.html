@@ -130,7 +130,8 @@
                       $('.reg-disapprove').on('click', function(e){
                           var id = $(this).attr('data-two');
                           var student_id = $(this).attr('data');
-                          var reason = $('#fname').val();
+                          // var reason = $('#fname').val();
+                          var reason = $(this).closest('.verify').find('.reason').val();
                           $.ajax({
                               type: 'post',
                               // url: '/academic-procedures/process_verification_request/',
