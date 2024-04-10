@@ -1767,6 +1767,33 @@ def update_leave_status(request):
 
 
 @login_required
+def show_fine_edit_form(request,fine_id):
+    user_id = request.user
+    staff = user_id.extrainfo.id
+    caretaker = HallCaretaker.objects.get(staff_id=staff)
+    hall_id = caretaker.hall_id
+
+    fine = HostelFine.objects.filter(fine_id=fine_id)
+
+
+
+    return render(request, 'hostelmanagement/impose_fine_edit.html', {'fines': fine[0]})
+
+@login_required
+def update_student_fine(request,fine_id):
+    if request.method == 'POST':
+        fine = HostelFine.objects.get(fine_id=fine_id)
+        print("------------------------------------------------")
+        print(request.POST)
+        fine.amount = request.POST.get('amount')
+        fine.status = request.POST.get('status')
+        fine.reason = request.POST.get('reason')
+        fine.save()
+        
+        return HttpResponse({'message': 'Fine has edited successfully'}, status=status.HTTP_200_OK)
+
+
+@login_required
 def impose_fine_view(request):
     user_id = request.user
     staff = user_id.extrainfo.id
