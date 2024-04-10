@@ -1182,7 +1182,7 @@ def cpda_form(request, id):
 
     print(employee.user_type)
 
-    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'Deputy Registrar' or employee.user_type == 'asst. registrar fa' or employee.user_type == 'Director'  ):
+    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student' ):
         template = 'hr2Module/cpda_form.html'
 
         if request.method == "POST":

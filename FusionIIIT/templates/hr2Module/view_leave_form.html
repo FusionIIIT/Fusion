@@ -381,20 +381,20 @@ Module
                                         <label for="post_title">Dealing Assistant : </label>
                                         <input type="text" name="dealing_assistant" placeholder="Enter name"
                                             maxlength="40" id="dealing_assistant"
-                                            value="{{ leave_request.dealing_assistant }}" readonly>
+                                            value="{{ leave_request.dealing_assistant }}" >
                                     </div>
 
                                     <div class="eight wide field">
                                         <label for="post_title">Deputy Registrar (Estt.)</label>
                                         <input type="text" name="deputy_registrar" placeholder="Enter name"
                                             maxlength="40" id="deputy_registrar"
-                                            value="{{ leave_request.deputy_registrar }}" readonly>
+                                            value="{{ leave_request.deputy_registrar }}" >
                                     </div>
 
                                     <div style="text-align: center;">
                                         <div class="field">
                                             <label for="sanction_status">Leave Sanction Status:</label>
-                                            <select id="sanction_status" name="sanction_status">
+                                            <select id="sanction_status" name="sanction_status" {% if global_var != "Director" and global_var != "CSE HOD" %} disabled{% endif %}>
                                                 <option value="True">Sanctioned</option>
                                                 <option value="False">Not Sanctioned</option>
                                             </select>
@@ -407,9 +407,9 @@ Module
                                             Deputy Registrar</label>
                                         <input type="text" name="r_name" maxlength="40"
                                             placeholder="Name of reccomendor" id="r_name"
-                                            value="{{ leave_request.r_name }}" readonly>
+                                            value="{{ leave_request.r_name }}" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
                                         <input type="text" name="r_desgination" maxlength="40" placeholder="Designation"
-                                            id="r_desgination" value="{{ leave_request.r_desgination }}" readonly>
+                                            id="r_desgination" value="{{ leave_request.r_desgination }}" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
 
                                     </div>
 

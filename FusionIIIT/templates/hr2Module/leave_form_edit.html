@@ -196,18 +196,18 @@
 
                 <div class="eight wide field">
                     <label for="post_title">Dealing Assistant : </label>
-                    <input type="text" name="dealing_assistant" placeholder="Enter name" maxlength="40" id="dealing_assistant">
+                    <input type="text" name="dealing_assistant" placeholder="Enter name" maxlength="40" id="dealing_assistant" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
                 
                 <div class="eight wide field">
                     <label for="post_title">Deputy Registrar (Estt.)</label>
-                    <input type="text" name="deputy_registrar" placeholder="Enter name" maxlength="40" id="deputy_registrar">
+                    <input type="text" name="deputy_registrar" placeholder="Enter name" maxlength="40" id="deputy_registrar" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
 
                 <div style="text-align: center;">
                     <div class="field">
                         <label for="sanction_status">Leave Sanction Status:</label>
-                        <select id="sanction_status" name="sanction_status">
+                        <select id="sanction_status" name="sanction_status" {% if global_var != "Director" and global_var != "CSE HOD" %} disabled{% endif %}>
                             <option value="True">Sanctioned</option>
                             <option value="False">Not Sanctioned</option>
                         </select>
@@ -217,10 +217,10 @@
 
                 <div class="four wide field" style="float: right;">
                     <label for="sign_director_registrar">Dean / Head of Discipline / Registrar / Deputy Registrar</label>
-                    <input type="text" name="r_name" maxlength="40" placeholder="Name of reccomendor"  id="r_name">
-                    <input type="text" name="r_desgination" maxlength="40" placeholder="Designation"  id="r_desgination">
-
+                    <input type="text" name="r_name" maxlength="40" placeholder="Name of recommender" id="r_name" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
+                    <input type="text" name="r_desgination" maxlength="40" placeholder="Designation" id="r_desgination" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
+                
                 
                
                 <br><br><br><br><br><br><br><br>
