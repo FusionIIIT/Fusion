@@ -8,13 +8,17 @@
   <a class="active item" href="{% url 'examination:verify' %}"><B>Verify</B>
     <i class="right floated chevron right icon"></i>
   </a>
+  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    <i class="right floated chevron right icon"></i>
+  </a>
   <a class="item" href="{% url 'examination:publish' %}">Publish
     <i class="right floated chevron right icon"></i>
   </a>
+  
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:timetable' %}">Time Table
+  <a class="item" href="{% url 'examination:generate_transcript_form' %}">Generate Transcript
     <i class="right floated chevron right icon"></i>
   </a>
 </div>
@@ -53,7 +57,9 @@
         </tbody>
       </table>
     </div>
-    <button class="ui primary button" type="submit">FINALISE Grades</button>
+    {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
+    <button class="ui primary button" id="finalize-grades" onclick="finalizeGrades()"> FINALISE Grades & Download Excel</button>
+
   </form>
   <div class="ui segment">
     <canvas id="gradesChart" width="400" height="400"></canvas>
@@ -154,5 +160,13 @@
             input.addEventListener('input', updateChart);
         });
     });
+
+    function finalizeGrades() {
+        // Submit the form
+        document.querySelector('form').submit();
+
+        // Redirect to the URL that handles Excel download
+        window.location.href = "{% url 'examination:submit' %}";
+    }
 </script>
 {% endblock %}

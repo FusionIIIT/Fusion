@@ -9,13 +9,16 @@
   <a class="item" href="{% url 'examination:verify' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
+  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    <i class="right floated chevron right icon"></i>
+  </a>
   <a class="item" href="{% url 'examination:publish' %}">Publish
     <i class="right floated chevron right icon"></i>
   </a>
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:timetable' %}">Time Table
+  <a class="item" href="{% url 'examination:generate_transcript_form' %}">Generate Transcript
     <i class="right floated chevron right icon"></i>
   </a>
 </div>
@@ -66,23 +69,7 @@
         </div>
     </div>
 
-
     <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px; ">
-
-      <a href="#">
-      <button class="ui primary button">
-
-              Search
-          </button>
-      </a>
-    
-    
-    </div>
-    
-    
-
-    
-
 
       <button class="ui primary button" onclick="search()">Search</button>
   
