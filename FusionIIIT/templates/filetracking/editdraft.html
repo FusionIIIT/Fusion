@@ -45,15 +45,9 @@
 
                         <br>
 
-                        <div class="field">
-                            <label>Send as:
-                                <select required class="ui fluid search selection dropdown" name="sender">
-                                    <option selected hidden>Select</option>
-                                    {% for designations in designations %}
-                                        <option value="{{designations.id}}">{{designations}}</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
+                        <div class="field">                                <div class="field">
+                                <label> Send as: {{ designation_name }}</label>
+                                <input type="hidden" name="sender" value="{{ designation_id }}">
                         </div>
 
                         <br>

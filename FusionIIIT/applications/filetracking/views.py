@@ -150,15 +150,8 @@ def filetracking(request):
 
 
     username = request.user
-    # designation_id = ''
     designation_id = get_HoldsDesignation_obj(
         username, designation_name).id
-    # try:
-    #     designation_id = get_HoldsDesignation_obj(
-    #     username, designation_name).id
-    # except:
-    #     designation_id = get_HoldsDesignation_obj(
-    #     username, all_available_designations[1]).id
 
     context = {
         'file': file,
@@ -623,11 +616,22 @@ def forward(request, id):
 
     designations = get_designation(request.user)
 
-    context = {
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
 
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
+
+    context = {
         'designations': designations,
         'file': file,
         'track': track,
+        'designation_name': designation_name,
+        'designation_id': designation_id,
+
         'notifications': request.user.notifications.all()
     }
 
@@ -951,6 +955,15 @@ def edit_draft_view(request, id, *args, **kwargs):
 
     designations = get_designation(request.user)
 
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
+
+
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
     remarks = None
     receive = None
     receiver = None
@@ -961,7 +974,9 @@ def edit_draft_view(request, id, *args, **kwargs):
     context = {
         'designations': designations,
         'file': file,
-        'track': track,
+        'track': track,        
+        'designation_name': designation_name,
+        'designation_id': designation_id,
         'remarks' : remarks,
         'notifications': request.user.notifications.all()
     }
