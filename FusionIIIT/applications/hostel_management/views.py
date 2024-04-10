@@ -337,7 +337,6 @@ def hostel_view(request, context={}):
             hall_num = Hall.objects.get(id=hall_warden_id)
 
             hall_number = int(''.join(filter(str.isdigit,hall_num.hall_id)))
-            print(hall_number)
             
             # hostel_students_details = Student.objects.filter(hall_no=hall_number)
             # context['hostel_students_details']= hostel_students_details
@@ -565,12 +564,12 @@ def edit_student_rooms_sheet(request):
                     continue
                 else:
                     is_valid = False
-                    print('Room  unavailable!')
+                    # print('Room  unavailable!')
                     messages.error(request, 'Room  unavailable!')
                     break
             else:
                 is_valid = False
-                print("Wrong Credentials entered!")
+                # print("Wrong Credentials entered!")
                 messages.error(request, 'Wrong credentials entered!')
                 break
 
@@ -654,34 +653,110 @@ def edit_attendance(request):
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
+# @login_required
+# def generate_worker_report(request):
+#     """
+#     This function is used to read uploaded worker report spreadsheet(.xls) and generate WorkerReport instance and save it in the database.
+#     @param:
+#       request - HttpRequest object containing metadata about the user request.
+
+#     @variables:
+#       files - stores uploaded worker report file 
+#       excel - stores the opened spreadsheet file raedy for data extraction.
+#       user_id - stores user id of the current user.
+#       sheet - stores a sheet from the uploaded spreadsheet.
+#     """
+#     if request.method == "POST":
+#         try:
+#             files = request.FILES['upload_report']
+#             excel = xlrd.open_workbook(file_contents=files.read())
+#             user_id = request.user.extrainfo.id
+#             if str(excel.sheets()[0].cell(0, 0).value)[:5].lower() == str(HallCaretaker.objects.get(staff__id=user_id).hall):
+#                 for sheet in excel.sheets():
+#                     save_worker_report_sheet(excel, sheet, user_id)
+#                     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+#         except:
+#             messages.error(
+#                 request, "Please upload a file in valid format before submitting")
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+# class GeneratePDF(View):
+#     def get(self, request, *args, **kwargs):
+#         """
+#         This function is used to generate worker report in pdf format available for download.
+#         @param:
+#           request - HttpRequest object containing metadata about the user request.
+
+#         @variables:
+#           months - stores number of months for which the authorized user wants to generate worker report.
+#           toadys_date - stores current date.
+#           current_year - stores current year retrieved from 'todays_date'.
+#           current_month - stores current month retrieved from 'todays_date'.
+#           template - stores template returned by 'get_template' method.
+#           hall_caretakers - stores all hall caretakers.
+#           worker_report - stores 'WorkerReport' instances according to 'months'.
+
+#         """
+#         months = int(request.GET.get('months'))
+#         todays_date = date.today()
+#         current_year = todays_date.year
+#         current_month = todays_date.month
+
+#         template = get_template('hostelmanagement/view_report.html')
+
+#         hall_caretakers = HallCaretaker.objects.all()
+#         get_hall = ""
+#         get_hall = get_caretaker_hall(hall_caretakers, request.user)
+        
+#         if months < current_month:
+#             worker_report = WorkerReport.objects.filter(
+#                 hall=get_hall, month__gte=current_month-months, year=current_year)
+#         else:
+#             worker_report = WorkerReport.objects.filter(Q(hall=get_hall, year=current_year, month__lte=current_month) | Q(
+#                 hall=get_hall, year=current_year-1, month__gte=12-months+current_month))
+
+#         worker = {
+#             'worker_report': worker_report
+#         }
+#         html = template.render(worker)
+#         pdf = render_to_pdf('hostelmanagement/view_report.html', worker)
+#         if pdf:
+#             response = HttpResponse(pdf, content_type='application/pdf')
+#             filename = "Invoice_%s.pdf" % ("12341231")
+#             content = "inline; filename='%s'" % (filename)
+#             download = request.GET.get("download")
+#             if download:
+#                 content = "attachment; filename='%s'" % (filename)
+#             response['Content-Disposition'] = content
+#             return response
+#         return HttpResponse("Not found")
+
 @login_required
 def generate_worker_report(request):
-    """
-    This function is used to read uploaded worker report spreadsheet(.xls) and generate WorkerReport instance and save it in the database.
-    @param:
-      request - HttpRequest object containing metadata about the user request.
-
-    @variables:
-      files - stores uploaded worker report file 
-      excel - stores the opened spreadsheet file raedy for data extraction.
-      user_id - stores user id of the current user.
-      sheet - stores a sheet from the uploaded spreadsheet.
-    """
     if request.method == "POST":
         try:
-            files = request.FILES['upload_report']
-            excel = xlrd.open_workbook(file_contents=files.read())
-            user_id = request.user.extrainfo.id
-            if str(excel.sheets()[0].cell(0, 0).value)[:5].lower() == str(HallCaretaker.objects.get(staff__id=user_id).hall):
-                for sheet in excel.sheets():
-                    save_worker_report_sheet(excel, sheet, user_id)
+            files = request.FILES.get('upload_report')
+            if files:
+                # Check if the file has a valid extension
+                file_extension = files.name.split('.')[-1].lower()
+                if file_extension not in ['xls', 'xlsx']:
+                    messages.error(request, "Invalid file format. Please upload a .xls or .xlsx file.")
                     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-        except:
-            messages.error(
-                request, "Please upload a file in valid format before submitting")
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+                
+                excel = xlrd.open_workbook(file_contents=files.read())
+                user_id = request.user.extrainfo.id
+                for sheet in excel.sheets():
+                    # print('111111111111111111111111111111111111',sheet[0])
+                    save_worker_report_sheet(excel, sheet, user_id)
+                return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+            else:
+                messages.error(request, "No file uploaded")
+        except Exception as e:
+            messages.error(request, f"Error processing file: {str(e)}")
+    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
 class GeneratePDF(View):
@@ -702,6 +777,7 @@ class GeneratePDF(View):
 
         """
         months = int(request.GET.get('months'))
+        # print('~~~~month',months)
         todays_date = date.today()
         current_year = todays_date.year
         current_month = todays_date.month
@@ -711,10 +787,12 @@ class GeneratePDF(View):
         hall_caretakers = HallCaretaker.objects.all()
         get_hall = ""
         get_hall = get_caretaker_hall(hall_caretakers, request.user)
+        # print('~~~~~ get_hall' , get_hall)
+        # print('month<curr_mn~~~~~~~',months,current_month)
         
         if months < current_month:
             worker_report = WorkerReport.objects.filter(
-                hall=get_hall, month__gte=current_month-months, year=current_year)
+                hall=get_hall,)
         else:
             worker_report = WorkerReport.objects.filter(Q(hall=get_hall, year=current_year, month__lte=current_month) | Q(
                 hall=get_hall, year=current_year-1, month__gte=12-months+current_month))
@@ -851,7 +929,7 @@ class PostComplaint(APIView):
     permission_classes = [IsAuthenticated]
 
     def dispatch(self, request, *args, **kwargs):
-        print(request.user.username)
+        # print(request.user.username)
         if not request.user.is_authenticated:
             # Redirect to the login page if user is not authenticated
             return redirect('/hostelmanagement')
@@ -967,7 +1045,6 @@ class AssignCaretakerView(APIView):
             # Retrieve the current warden for the hall
             current_warden = HallWarden.objects.filter(hall=hall).first()
 
-            print("Before creating HostelTransactionHistory")
             try:
                 history_entry = HostelTransactionHistory.objects.create(
                     hall=hall,
@@ -975,7 +1052,6 @@ class AssignCaretakerView(APIView):
                     previous_value= prev_hall_caretaker.staff.id if (prev_hall_caretaker and prev_hall_caretaker.staff) else 'None',
                     new_value=caretaker_username
                 )
-                print("HostelTransactionHistory created successfully")
             except Exception as e:
                 print("Error creating HostelTransactionHistory:", e)
 
@@ -988,7 +1064,6 @@ class AssignCaretakerView(APIView):
                     batch=hall.assigned_batch,
                     warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
                 )
-                print("hostel hostory created succeessfully")
             except Exception as e:
                 print ("Error creating history",e)
             return Response({'message': f'Caretaker {caretaker_username} assigned to Hall {hall_id} successfully'}, status=status.HTTP_201_CREATED)
@@ -1067,12 +1142,10 @@ class AssignBatchView(View):
                         warden=current_warden.faculty if( current_warden and current_warden.faculty) else None
 
                     )
-                    print("hostel history created succeessfully")
                 except Exception as e:
                     print ("Error creating history",e)
 
                 self.update_student_hall_allotment(hall, hall.assigned_batch)
-                print("batch assigned successssssssssssssssssss")
                 
                 return JsonResponse({'status': 'success', 'message': 'Batch assigned successfully'}, status=200)
 
@@ -1125,7 +1198,6 @@ class AssignWardenView(APIView):
                 hostel_allotment.assignedWarden = warden
                 hostel_allotment.save()
 
-            print("Before creating HostelTransactionHistory")
             try:
                 history_entry = HostelTransactionHistory.objects.create(
                     hall=hall,
@@ -1133,7 +1205,6 @@ class AssignWardenView(APIView):
                     previous_value= prev_hall_warden.faculty.id if (prev_hall_warden and prev_hall_warden.faculty) else 'None',
                     new_value=warden
                 )
-                print("HostelTransactionHistory created successfully")
             except Exception as e:
                 print("Error creating HostelTransactionHistory:", e)
 
@@ -1147,7 +1218,6 @@ class AssignWardenView(APIView):
                     batch=hall.assigned_batch,
                     warden=warden
                 )
-                print("hostel hostory created succeessfully")
             except Exception as e:
                 print ("Error creating history",e)
 
@@ -1390,13 +1460,11 @@ class StaffScheduleView(APIView):
         end_time = request.data.get('end_time')
         day = request.data.get('day')
 
-        # print(staff_id, start_time, end_time, day)
 
         if start_time and end_time and day and staff_type:
             # Check if staff schedule exists for the given day
             existing_schedule = StaffSchedule.objects.filter(
                 staff_id=staff_id).first()
-            # print(existing_schedule)
             if existing_schedule:
                 existing_schedule.start_time = start_time
                 existing_schedule.end_time = end_time
@@ -1612,7 +1680,6 @@ def request_guest_room(request):
     @param:
       request - HttpRequest object containing metadata about the user request.
     """
-    print("Inside book guest room")
     if request.method == "POST":
         form = GuestRoomBookingForm(request.POST)
 
@@ -1725,12 +1792,10 @@ def available_guestrooms_api(request):
     if request.method == 'GET':
         
         hall_id = request.GET.get('hall_id')
-        print(hall_id)
         room_type = request.GET.get('room_type')
 
         if hall_id and room_type:
             available_rooms_count = GuestRoom.objects.filter(hall_id=hall_id, room_type=room_type, vacant=True).count()
-            print('~~~~~~~~~~~~~~~~~~`',available_rooms_count)
             return JsonResponse({'available_rooms_count': available_rooms_count})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -1961,7 +2026,6 @@ class HostelFineUpdateView(APIView):
 
 def edit_student(request, student_id):
     student = get_object_or_404(Student, id=student_id)
-    print('~~~~~~~~~~~~~~~~~~~~~~~~~`',student_id)
     
     if request.method == 'POST':
         # Process the form submission to update student details
