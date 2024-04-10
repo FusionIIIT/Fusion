@@ -74,4 +74,6 @@ FusionIIIT/static/
 package-lock.json
 
 **/migrations/*
+**/**/migrations/*
+**/**/migrations
 .DS_Store
