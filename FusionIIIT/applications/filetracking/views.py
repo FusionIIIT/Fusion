@@ -15,6 +15,7 @@ from .utils import *
 from django.utils.dateparse import parse_datetime
 from .sdk.methods import *
 from .decorators import *
+import json
 
 
 @login_required(login_url="/accounts/login/")
@@ -57,12 +58,19 @@ def filetracking(request):
                         request, "File should not be greater than 10MB")
                     return redirect("/filetracking")
 
+                extraJSON = {
+                    'remarks': request.POST.get('remarks'),
+                    # 'receiver': request.POST.get('receiver'),
+                    # 'receive': request.POST.get('receive')
+                }
+
                 File.objects.create(
                     uploader=uploader,
                     description=description,
                     subject=subject,
                     designation=designation,
-                    upload_file=upload_file
+                    upload_file=upload_file,
+                    file_extra_JSON=extraJSON
                 )
 
                 messages.success(request, 'File Draft Saved Successfully')
@@ -225,8 +233,6 @@ def drafts_view(request, id):
     draft_files = add_uploader_department_to_files_list(draft_files)
 
     context = {
-        'draft_files': draft_files,
-        'designations': designation,
         'draft_files': draft_files,
         'designations': designation,
         'notifications': request.user.notifications.all()
@@ -949,12 +955,20 @@ def edit_draft_view(request, id, *args, **kwargs):
         username, designation_name).id
 
     context = {
+    remarks = None
+    receive = None
+    receiver = None
 
+    if file.file_extra_JSON and file.file_extra_JSON['remarks']:
+        remarks = file.file_extra_JSON['remarks']
+
+    context = {
         'designations': designations,
         'file': file,
         'track': track,        
         'designation_name': designation_name,
         'designation_id': designation_id,
+        'remarks' : remarks,
         'notifications': request.user.notifications.all()
     }
 

@@ -40,7 +40,7 @@
                         <br>
 
                         <div class="field">
-                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                            <label>Remarks:<textarea rows="2" name="remarks">{{remarks}}</textarea></label>
                         </div>
 
                         <br>
@@ -68,8 +68,12 @@
 
                         <div class="field">
                             <label for="file">Attach Files: (Maximum File Size 10 MB)</label>
-                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png">
-                        </div>
+                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" value="
+                                {% if file.upload_file %}
+                                    file.upload_file.url
+                                {% endif %}
+                            ">
+                        </div>                        
                     </div>
                 </div>
                 <button type="submit" name="send" class="ui large right floated primary button" style="float: right;">
