@@ -1,123 +1,87 @@
-{% load voters_tag %} {% block active_poll %}
+{% load voters_tag %}
+{% block active_poll %}
 <div class="ui active tab" data-tab="active">
-  <div class="ui styled fluid accordion">
-    {% for poll in voting_polls %} {% validate request.user poll.groups as car%}
-    {% if car %}
-    <div class="title" style="display: flex; align-items: center;">
-      <i class="dropdown icon"></i>
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          align-items: center;
-        "
-      >
-        <p style="margin: 0;">
-          {{poll.title}}
-        </p>
-
-        {% if poll.exp_date == 'expire' %}
-        <p style="margin: 0;">Expired</p>
-        {% else %}
-        <p style="margin: 0;">Expires in: {{poll.exp_date}} Days</p>
+    <div class="ui styled fluid accordion">
+        {% for poll in voting_polls %}
+        {% validate request.user poll.groups as can_view %}
+        {% if can_view %}
+        <div class="title" style="display: flex; align-items: center">
+            <i class="dropdown icon"></i>
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <p style="margin: 0">{{ poll.title }}</p>
+                {% if poll.exp_date > now %}
+                <p style="margin: 0">Expired</p>
+                {% else %}
+                <p style="margin: 0">Expires in: {{ poll.exp_date }} Days</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="content">
+            <p class="transition hidden" style="white-space: pre; background-color: aliceblue; padding: 10px">
+                {{ poll.desc }}
+            </p>
+            <form action="{% url 'gymkhana:vote' poll.id %}" method="POST" id="active">
+                {% csrf_token %}
+                {% if poll.exp_date > now %}
+                <div
+                    style="display: flex; justify-content: center; align-items: center; flex-direction: column; margin: 12px 0;">
+                    <p>Results</p>
+                    <p style="padding: 15px; background-color: bisque">{{ poll.max }}</p>
+                </div>
+                {% else %}
+                {% for choice in poll.choices %}
+                <div class="ui grid" style="box-shadow: 0 0 6.3px 0 rgb(230, 230, 230); margin: 5px">
+                    <div class="twelve wide column">{{ choice.title }}</div>
+                    <div class="four wide column">
+                        <input type="radio" id="{{ choice.id }}" name="choice" value="{{ choice.id }}">
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                <div class="ui grid">
+                    <div class="two column row">
+                        <div class="column">
+                            {% if poll.exp_date == 'expire' %}
+                            <button class="ui primary button" id="btn" disabled>Poll Expired</button>
+                            {% elif roll in poll.voters %}
+                            <button class="ui primary button" id="btn" disabled>
+                                Already Voted
+                            </button>
+                            {% else %}
+                            <button class="ui primary button" id="btn">Submit Vote</button>
+                            {% endif %}
+                        </div>
+                        <div class="column">
+                            <p style="margin: 0"><b>Created By:</b> {{ poll.created_by.0 }}, {{ poll.created_by.1 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
         {% endif %}
-      </div>
+        {% endfor %}
     </div>
-    <div class="content">
-      <p
-        class="transition hidden"
-        style="white-space: pre; background-color: aliceblue; padding: 10px;"
-      >
-        {{poll.desc}}
-      </p>
-
-      <form
-        action="{% url 'gymkhana:vote'  poll.id %}"
-        method="POST"
-        id="active"
-      >
-        {% csrf_token %} {% if poll.exp_date == 'expire' %}
-        <div
-          style="
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin: 12px 0;
-          "
-        >
-          <p>Results</p>
-          <p style="padding: 15px; background-color: bisque;">{{poll.max}}</p>
-        </div>
-        {% else %} {% for choice in poll.choices %}
-        <div
-          class="ui grid"
-          style="box-shadow: 0 0 6.3px 0 rgb(230, 230, 230); margin: 5px;"
-        >
-          <div class="twelve wide column">{{choice.title}}</div>
-          <div class="four wide column">
-            <input
-              type="radio"
-              id="{{choice.id}}"
-              name="choice"
-              value="{{choice.id}}"
-            />
-          </div>
-        </div>
-        {% endfor %} {% endif %}
-
-        <div class="ui grid">
-          <div class="two column row">
-            <div class="column">
-              {% if poll.exp_date == 'expire' %}
-              <button class="ui primary button" id="btn" disabled>
-                Poll Expired
-              </button>
-              {% elif roll in poll.voters %}
-              <button class="ui primary button" id="btn" disabled>
-                Already Voted
-              </button>
-              {% else %}
-              <button class="ui primary button" id="btn">Submit Vote</button>
-              {% endif %}
-            </div>
-            <div class="column">
-              <p style="margin: 0;">
-                <b>Created By:</b> {{poll.created_by.0}}, {{poll.created_by.1}}
-              </p>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    {% endif %} {% endfor %}
-  </div>
 </div>
 <script>
-  form = document.getElementById("active");
-  submit_btn = document.getElementById("btn");
+    form = document.getElementById("active");
+    submit_btn = document.getElementById("btn");
 
-  submit_btn.addEventListener("click", function (event) {
-    event.preventDefault();
-
-    var checked = false;
-    const rbs = document.querySelectorAll('input[name="choice"]');
-    let selectedValue;
-    for (const rb of rbs) {
-      if (rb.checked) {
-        checked = true;
-        break;
-      }
-    }
-    if (!checked) {
-      alert("Please select one option");
-    } else {
-      submit_btn.classList.add("loading");
-      form.submit();
-    }
-  });
+    submit_btn.addEventListener("click", function (event) {
+        event.preventDefault();
+        var checked = false;
+        const rbs = document.querySelectorAll('input[name="choice"]');
+        for (const rb of rbs) {
+            if (rb.checked) {
+                checked = true;
+                break;
+            }
+        }
+        if (!checked) {
+            alert("Please select one option");
+        } else {
+            submit_btn.classList.add("loading");
+            form.submit();
+        }
+    });
 </script>
-
 {% endblock active_poll %}

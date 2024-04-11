@@ -4,15 +4,15 @@ DEBUG = True
 TEMPLATE_DEBUG = True 
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 DATABASES = {
-     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
-        'HOST': os.environ.get("DB_HOST", default='localhost'),
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "fusionlab",
+        "HOST": os.environ.get("DB_HOST", default="localhost"),
+        "USER": "fusion_admin",
+        "PASSWORD": "hello123",
     }
 }
 
@@ -22,27 +22,22 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 if DEBUG:
-    MIDDLEWARE += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
+    MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)
 
     INSTALLED_APPS += (
-        'debug_toolbar',
-        'django_extensions',
-        )
-
+        "debug_toolbar",
+        "django_extensions",
+    )
 
     ###############################
     # DJANGO_EXTENSIONS SETTINGS: #
     ###############################
     INTERNAL_IPS = [
-        '127.0.0.1',
+        "127.0.0.1",
     ]
 
     ###############################
@@ -53,7 +48,7 @@ if DEBUG:
     SHELL_PLUS_PRINT_SQL = True
 
     DEBUG_TOOLBAR_CONFIG = {
-        'INTERCEPT_REDIRECTS': False,
+        "INTERCEPT_REDIRECTS": False,
     }
     
 CRONJOBS = [
