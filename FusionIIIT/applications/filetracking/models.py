@@ -14,6 +14,8 @@ class File(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
+
+
     # additions for API
     src_module = models.CharField(max_length=100, default='filetracking')
     src_object_id = models.CharField(max_length=100,null=True) 
@@ -33,8 +35,6 @@ class Tracking(models.Model):
     file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=True)
     current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     current_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE)
-    # receiver_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='receiver_id')
-    # receive_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE, related_name='rec_design')
     receiver_id = models.ForeignKey(User,null = True, on_delete=models.CASCADE, related_name='receiver_id')
     receive_design = models.ForeignKey(Designation, null=True, on_delete=models.CASCADE, related_name='rec_design')
 

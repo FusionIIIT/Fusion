@@ -19,10 +19,10 @@
                 </a>
             
                 <div class="right inverted menu">
-                    
                     <form method="POST" action="/update_global_variable/">
                         {% csrf_token %}
                         <div class="item">
+
                             <select class="ui dropdown"  name="dropdown" onchange="this.form.submit()">
                             {% for d in global_var2 %}
                                 <option value="{{ d }}" {% if global_var == d %}selected{% endif %}>{{ d|capfirst }}</option>
@@ -30,7 +30,6 @@
                             </select>
                         </div>
                     </form>
-
                     <a class="item" href="{% url 'globals:profile' %}">
                         {% comment %}
                             TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
@@ -130,6 +129,7 @@
 
 
         </div>
+
 
 
     {% endblock %}
