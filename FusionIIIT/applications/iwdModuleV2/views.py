@@ -1176,8 +1176,6 @@ def auditDocument(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
 
-        print(requestId)
-
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
         d1 = HoldsDesignation.objects.get(user__username=request.user)
 
@@ -1192,11 +1190,12 @@ def auditDocument(request):
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d.designation,
+            designation=d1.designation,
             src_module="IWD"
         )
 
         for result in inbox_files:
+            print(result['src_object_id'])
             if result['src_object_id'] == requestId:
                 delete_file(file_id = result['id'])
                 break
