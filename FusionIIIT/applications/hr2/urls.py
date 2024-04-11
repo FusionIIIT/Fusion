@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^track_file/(?P<id>\d+)/$', views.track_file, name='track_file'),
     url('form_view_ltc/(?P<id>\d+)/$', views.form_view_ltc, name='form_view_ltc'),
     url('file_handle/', views.file_handle, name='file_handle'),
+    url('file_handle_cpda/', views.file_handle_cpda, name='file_handle_cpda'),
 
     url(r'^cpda_form/(?P<id>\d+)/$', views.cpda_form,name='cpdaForm'),
     url(r'^view_cpda_form/(?P<id>\d+)/$', views.view_cpda_form,name='view_cpda_form'),

@@ -171,6 +171,7 @@ class LTCform(models.Model):
     adjusted_month = models.CharField(max_length=50, null=True)
     date = models.DateField(null=True)
     phone_number_for_contact = models.BigIntegerField(null=True)
+    # upload_file = models.FileField(blank=True)
 
 
 class CPDAform(models.Model):

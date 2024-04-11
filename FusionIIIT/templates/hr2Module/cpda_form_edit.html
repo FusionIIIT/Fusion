@@ -14,11 +14,11 @@
 
                 <div class="eight wide field">
                     <label for="post_title">Name</label>
-                    <input type="text" name="name" maxlength="40" required id="id_name">
+                    <input type="text" name="name" maxlength="40" required id="id_name" value="{{ employee.user }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Designation</label>
-                    <input type="text" name="designation" maxlength="40" required id="id_designation">
+                    <input type="text" name="designation" maxlength="40" required id="id_designation" value="{{ employee.user_type}}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">P.F. No.</label>
@@ -59,27 +59,28 @@
                 </div>
                 <br><br><br><br><br><br><br><br>
                     
-                <div class="three fields ">
+                <div class="three fields">
                     <label for="post_title"><b>1. Recommended & Forwarded by HOD: </b></label>
                     <div class="field">
                         <label for="recomm_hod_confirm">Recommended & Forwarded by HOD:</label>
-                        <select class="ui dropdown" id="recomm_hod_confirm" name="recomm_hod_confirm">
+                        <select class="ui dropdown" id="recomm_hod_confirm" name="recomm_hod_confirm" {% if global_var != "CSE HOD" %}disabled{% endif %}>
                             <option value="True">Yes</option>
                             <option value="False">No</option>
                         </select>
                     </div>
                 </div>
+                
                 <div class="three fields">
-                    <label for="post_title"><b>2. Date of Module on EIS module is verified: (Dean RSPC) </b></label>
+                    <label for="post_title"><b>1. Recommended & Forwarded by HOD: </b></label>
                     <div class="field">
-                        <label for="date_rspc_confirm">Date of Module on EIS module is verified (Dean RSPC):</label>
-                        <select class="ui dropdown" id="date_rspc_confirm" name="date_rspc_confirm">
+                        <label for="recomm_hod_confirm">Recommended & Forwarded by HOD:</label>
+                        <select class="ui dropdown" id="recomm_hod_confirm" name="recomm_hod_confirm" {% if global_var != "CSE HOD" %}disabled{% endif %}>
                             <option value="True">Yes</option>
                             <option value="False">No</option>
                         </select>
                     </div>
-                    
                 </div>
+                
 
                 <hr>
 
@@ -87,58 +88,61 @@
                     <h4><u>Estt. Section</u></h4>
                 </div>
                 <br><br>
-                 
-                <div class="eight wide field">
+                
+                <div class="eight wide field" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     <label for="post_title">Balance available as on date:</label>
-                    <input type="number" name="balance_available" maxlength="40" required id="id_balance_available">
+                    <input type="number" name="balance_available" maxlength="40" id="id_balance_available" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
-                <div class="eight wide field">
+                <div class="eight wide field" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     <label for="post_title">Advance amount entered in PDA Register Page no.</label>
-                    <input type="number" name="advance_amount_pda" maxlength="40" required id="id_advance_amount_pda">
+                    <input type="number" name="advance_amount_pda" maxlength="40" id="id_advance_amount_pda" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
                 <br><br>
-               
-                <div class="two fields">
+                
+                <div class="two fields" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     <div class="fifteen wide field" style="float: left;">
                         <label>Dealing Asstt. (Estt.) <br> Name</label>
-                        <input type="text" name="dealing_asstt_name" maxlength="40" required id="id_dealing_asstt_name">
+                        <input type="text" name="dealing_asstt_name" maxlength="40" id="id_dealing_asstt_name" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     </div>
                     <div class="fifteen wide field" style="float: right;">
                         <label>AR/DR (Estt.) <br> Name</label>
-                        <input type="text" name="ar_dr_name" maxlength="40" required id="id_ar_dr_name">
+                        <input type="text" name="ar_dr_name" maxlength="40" id="id_ar_dr_name" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     </div>
                 </div>
+                
                 
                 <hr>
 
                 <div style="text-align: center;">
                     <h4><u>Internal Audit</u></h4>
+                    <h1>{{gobal_var}}</h1>
                 </div>
                 <br><br>
-
-                <div class="eight wide field">
+                
+                <div class="eight wide field" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     <label for="post_title">Entry checked in PDA Register for Rs.</label>
-                    <input type="number" name="check_amount" maxlength="40" required id="id_check_amount">
+                    <input type="number" name="check_amount" maxlength="40" id="id_check_amount" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                 </div>
                 <br><br>
-               
-                <div class="two fields">
+                <div class="two fields" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
                     <div class="fifteen wide field" style="float: left;">
                         <label>Dealing Asstt. (IA) <br> Name</label>
-                        <input type="text" name="dealing_asstt_ia_name" maxlength="40" required id="id_dealing_asstt_ia_name">
+                        <input type="text" name="dealing_asstt_ia_name" maxlength="40" id="id_dealing_asstt_ia_name" {% if global_var != "asst. registrar fa" %}readonly{% endif %}>
                     </div>
-                    <div class="fifteen wide field" style="float: right;">
+                    <div class="fifteen wide field" style="float: right;">  
                         <label>AR/DR (IA) <br> Name</label>
-                        <input type="text" name="ar_dr_ia_name" maxlength="40" required id="id_ar_dr_ia_name">
+                        <input type="text" name="ar_dr_ia_name" maxlength="40" id="id_ar_dr_ia_name" {% if global_var != "asst. registrar fa" %}readonly{% endif %}>
                     </div>
                 </div>
+                
+                
 
                 <hr>
 
                <div style="text-align: center;">
                 <div class="field">
                     <label for="sanction_status">Sanction Status:</label>
-                    <select id="sanction_status" name="sanction_status">
+                    <select id="sanction_status" name="sanction_status" {% if global_var != "Director" %}disabled{% endif %}>
                         <option value="True">Sanctioned</option>
                         <option value="False">Not Sanctioned</option>
                     </select>
@@ -153,7 +157,7 @@
                 </div> -->
                 <div class="eight wide field">
                     <label for="post_title"><u>AR(F&A)</u> for payment of advance <br> Copy to:</label>
-                    <input type="number" name="copy_to" maxlength="40" required id="id_copy_to">
+                    <input type="number" name="copy_to" maxlength="40"  id="id_copy_to" {% if global_var != "Director" %}disabled{% endif %}>
                     <label for="post-title">for records</label>
                 </div>
 
@@ -222,32 +226,6 @@
         });
     });
 
-    // Check if the global variable 'global_var' equals 'faculty'
-    if ("faculty" === "{{ global_var }}") {
-        // If it equals 'faculty', enable the input fields
-        document.getElementById("id_balance_available").disabled = true;
-        document.getElementById("id_advance_amount_pda").disabled = true;
-        document.getElementById("id_dealing_asstt_name").disabled = true;
-        document.getElementById("id_ar_dr_name").disabled = true;
-
-        document.getElementById("id_check_amount").disabled = true;
-        document.getElementById("id_dealing_asstt_ia_name").disabled = true;
-        document.getElementById("id_ar_dr_ia_name").disabled = true;
-        document.getElementById("sanction_status").disabled = true;
-        document.getElementById("id_copy_to").disabled = true;
-    } else {
-        // If it doesn't equal 'faculty', disable the input fields
-        document.getElementById("id_balance_available").disabled = false;
-        document.getElementById("id_advance_amount_pda").disabled = false;
-        document.getElementById("id_dealing_asstt_name").disabled = false;
-        document.getElementById("id_ar_dr_name").disabled = false;
-
-        document.getElementById("id_check_amount").disabled = false;
-        document.getElementById("id_dealing_asstt_ia_name").disabled = false;
-        document.getElementById("id_ar_dr_ia_name").disabled = false;
-        document.getElementById("sanction_status").disabled = false;
-        document.getElementById("id_copy_to").disabled = false;
-    }
-
+   
     
 </script>
