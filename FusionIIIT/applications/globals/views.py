@@ -740,21 +740,26 @@ def dashboard(request):
         
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
+    print(context)
+    print(type(user.extrainfo.user_type))
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
     elif( "dean_rspc" in designation):
         return render(request, "dashboard/dashboard.html", context)
-    elif user.extrainfo.user_type != 'student':
+    elif user.extrainfo.user_type != "student":
+        print ("inside")
         designat = HoldsDesignation.objects.select_related().filter(user=user)
         response = {'designat':designat}
         context.update(response)
         return render(request, "dashboard/dashboard.html", context)
     else:
+        print ("inside2")
+        
         return render(request, "dashboard/dashboard.html", context)
 
 
 @login_required(login_url=LOGIN_URL)
-def profile(request, username=None):
+def   profile(request, username=None):
     """
     Generic endpoint for views.
     If it's a faculty, redirects to /eis/profile/*
@@ -768,16 +773,76 @@ def profile(request, username=None):
     """
     user = get_object_or_404(User, Q(username=username)) if username else request.user
 
-
     editable = request.user == user
+    print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
+    print("profile",profile)
     if(str(user.extrainfo.user_type)=='faculty'):
+        print("profile")
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
     if(str(user.extrainfo.department)=='department: Academics'):
+        print("profile2")
         return HttpResponseRedirect('/aims')
-    current = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user, designation__name="student"))
+    
+    array = [
+     "student",
+    "CC convenor",
+    "Mechatronic convenor",
+    "mess_committee",
+    "mess_convener",
+    "alumini",
+    "Electrical_AE",
+    "Electrical_JE",
+    "Civil_AE",
+    "Civil_JE",
+    "co-ordinator",
+    "co co-ordinator",
+    "Convenor",
+    "Convener",
+    "cc1convener",
+    "CC2 convener",
+    "mess_convener_mess2",
+    "mess_committee_mess2"
+]
+
+    # queryset = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user))
+
+    # for obj in queryset:
+    #     designation_name = obj.designation.name
+    #     print("designation_name",designation_name)
+        
+    # design = False
+    # if designation_name in array:
+    #     design = True
+    #     print("design",design)
+    #     print("designation_name",designation_name)
+    # if design:
+    #     current = HoldsDesignation.objects.select_relapted('user','working','designation').filter(Q(working=user, designation__name=designation_name))
+    #     for obj in current:
+    #         obj.designation.name = obj.designation.name.replace(designation_name, 'student')
+    
+    designation_name = ""
+    design = False
+
+    current = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(Q(working=user))
+
+    for obj in current:
+        designation_name = obj.designation.name
+        if designation_name in array:
+            design = True
+            break
+
+    if design:
+        current = HoldsDesignation.objects.filter(working=user, designation__name=designation_name)
+        for obj in current:
+            obj.designation.name = obj.designation.name.replace(designation_name, 'student')
+    
+    print(user.extrainfo.user_type)
+    print("current",current)
     if current:
+        print("profile3")
         student = get_object_or_404(Student, Q(id=profile.id))
+        print("student",student)
         if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
                 status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
@@ -979,6 +1044,7 @@ def profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
+        print("context",context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
@@ -1176,4 +1242,15 @@ def search(request):
     if len(search_results) == 0:
         search_results = []
     context = {'sresults':search_results}
-    return render(request, "globals/search.html", context)
+    return render(request, "globals/search.html", context),
+
+@login_required(login_url=LOGIN_URL)
+def update_global_variable(request):
+    if request.method == 'POST':
+        selected_option = request.POST.get('dropdown')
+        request.session['currentDesignationSelected'] = selected_option
+        print(selected_option)
+        print(request.session['currentDesignationSelected'])
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    # Redirect to home if not a POST request or some issue occurs
+    return HttpResponseRedirect(reverse('home'))
