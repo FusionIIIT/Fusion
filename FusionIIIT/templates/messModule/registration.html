@@ -1,0 +1,85 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block Registration %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="apply_registration">
+            Registration Request
+        </a>
+        <a class="item" data-tab="reg_req_status">
+            Request status
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="apply_registration">
+        <div class="ui vertical strip segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+                <form method = "post" action="registrationRequest" enctype="multipart/form-data" class="ui form">
+
+                {% csrf_token %}
+                {{ reg_form.as_p }}
+                <button class="ui primary fluid button" type="submit" style="width: '40px';">Upload</button>
+              </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+        </div>
+        
+    </div>
+
+    <div class="ui tab" data-tab="reg_req_status">
+        <div class="ui vertical strip segment">
+    
+                <table class="ui single line table" style="margin: auto;">
+                  <thead>
+                    <tr>
+                      <th>Student Id</th>
+                      <th>Txn_no</th>
+                      <th>image</th>
+                      <th>Amount</th>
+                      <th>Remark</th>
+                      <th>status</th>
+                      <th>Start Date</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                {% for var in reg_request %}
+                    <tr>
+                        <th>
+                            {{var.student_id}}
+                        </th>
+                        <td>
+                            {{var.Txn_no}}
+                        </td>
+                        <td>
+                            <a href="media/{{var.img}}" target="_blank">
+                                receipt
+                            </a>
+                        </td>
+                        <td>
+                            {{var.amount}}
+                        </td>
+                        <td>
+                            {{var.registration_remark}}
+                        </td>
+                        <td>
+                            {{var.status}}
+                        </td>
+                        <td>
+                            {{var.start_date}}
+                        </td>
+                    </tr>
+   
+            {% endfor %}
+        </tbody>
+        </table>
+
+    </tbody>
+</table>
+</div>
+
+</div>
+{% endblock %}
+
+
+
