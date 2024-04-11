@@ -1,5 +1,4 @@
 {% load static %}
-<<<<<<< HEAD
 
     {% block navBar %}
         {% include 'dashboard/sidenavbar.html' %}
@@ -39,7 +38,6 @@
                         {{request.user.first_name}} {{request.user.last_name}}
                     </a>
                     {% comment %}
-=======
 
     {% block navBar %}
         {% include 'dashboard/sidenavbar.html' %}
@@ -49,11 +47,7 @@
                 <a class="item" id="sidebartrigger">
                     <i class="sidebar icon"></i>
                 </a>
-<<<<<<< HEAD
-                
                 {% comment %}
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
 
 
                 <a class="item" href="{% url 'globals:dashboard' %}">
@@ -84,7 +78,6 @@
                         {{request.user.first_name}} {{request.user.last_name}}
                     </a>
                     {% comment %}
->>>>>>> 47af12cd (GAD -5 Dashboard Changes (#1325))
                     <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
                         <div class="text">Notifications</div>
                         <i class="dropdown"></i>
@@ -93,25 +86,18 @@
                         <div class="menu">
                             <div class="item">Notification1</div>
                             <div class="item">Notification1</div>
-<<<<<<< HEAD
-=======
                         </div>
                         {% endcomment %}
                     </a>
-<<<<<<< HEAD
                 {% endcomment %}
                     
                 <div class="ui fluid popup bottom left transition">
                     <div class="ui four column relaxed equal height stackable doubling grid">
                         <div class="row">
                             <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
                         </div>
                         {% endcomment %}
-                    </a>
-=======
->>>>>>> 47af12cd (GAD -5 Dashboard Changes (#1325))
-                        
+                    </a>                        
                     <div class="ui fluid popup bottom left transition">
                         <div class="ui four column relaxed equal height stackable doubling grid">
                             <div class="row">
@@ -165,32 +151,6 @@
                                 </div>
                             </div>
                         </div>
-<<<<<<< HEAD
-
-                    </div>
-<<<<<<< HEAD
-
-                    <a class="right item" href="/accounts/logout">
-                        {% comment %}
-                            TODO: LOGOUT!
-                        {% endcomment %}
-                        <i class="ui inverted sign out icon"></i>
-                        Logout
-                    </a>
-
-                </div>
-=======
-                </div>
-
-                <a class="right item" href="/accounts/logout">
-                    {% comment %}
-                        TODO: LOGOUT!
-                    {% endcomment %}
-                    <i class="ui inverted sign out icon"></i>
-                    Logout
-                </a>
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
 
                     </div>
 
@@ -203,7 +163,17 @@
                     </a>
 
                 </div>
->>>>>>> 47af12cd (GAD -5 Dashboard Changes (#1325))
+                    </div>
+
+                    <a class="right item" href="/accounts/logout">
+                        {% comment %}
+                            TODO: LOGOUT!
+                        {% endcomment %}
+                        <i class="ui inverted sign out icon"></i>
+                        Logout
+                    </a>
+
+                </div>
             </div>
 
             <div class="ui divider"></div>
@@ -218,18 +188,10 @@
 
 
         </div>
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-
     {% endblock %}
-=======
         <div class="ui divider"></div>
         {% block data %} {% endblock %}
     </div>
 {% endblock %}
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
 
     {% endblock %}
->>>>>>> 47af12cd (GAD -5 Dashboard Changes (#1325))

@@ -16,31 +16,18 @@
                 TODO: Add a If-Else here!
             {% endcomment %}
             {% if user %}
-<<<<<<< HEAD
-<<<<<<< HEAD
                 <div style="display:flex;justify-content:space-between;flex-direction: column;" class="ui large header">
                     <div style="padding: 0.25rem; word-wrap: break-word;">
-=======
                 <div style="display:flex;flex-wrap:wrap;justify-content:space-between;" class="ui large header">
                     <div style="padding: 0.25rem;">
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
                 <div style="display:flex;justify-content:space-between;flex-direction: column;" class="ui large header">
                     <div style="padding: 0.25rem; word-wrap: break-word;">
->>>>>>> d40e94d1 (Fixing ui bugs (#1335))
                         {{ user.first_name }}
                         {{ user.last_name }}
                     </div>
-                
-<<<<<<< HEAD
-<<<<<<< HEAD
                     <div class="meta" style="padding: 0.25rem;word-wrap: break-word;">
-=======
                     <div class="meta" style="padding: 0.25rem;">
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
                     <div class="meta" style="padding: 0.25rem;word-wrap: break-word;">
->>>>>>> d40e94d1 (Fixing ui bugs (#1335))
                         {{ user.extrainfo.department.name }}
                     </div>
                 </div>
@@ -49,7 +36,6 @@
                     {% if user.extrainfo.user_type == 'student' %}
                         {{ user.extrainfo.student.programme }}
                         {{ user.extrainfo.student.batch }}
-<<<<<<< HEAD
                         <br/>
                         Sem - {{ user.extrainfo.student.curr_semester_no }}
                     {% endif %}
@@ -71,29 +57,6 @@
                         {{ request.user.extrainfo.student.programme }}
                         {{ request.user.extrainfo.student.batch }}
                         <br/>
-=======
-                        <br/>
-                        Sem - {{ user.extrainfo.student.curr_semester_no }}
-                    {% endif %}
-                </div>
-            {% else %}
-                <div style="display:flex;flex-wrap:wrap;justify-content:space-between;" class="ui large header">
-                    <div>
-                        {{ request.user.first_name }}
-                        {{ request.user.last_name }}
-                    </div>
-                    
-                    <div class="meta">
-                        {{ request.user.extrainfo.department.name }}
-                    </div>
-                </div>
-                
-                <div class="ui large header">
-                    {% if user.extrainfo.user_type == 'student' %}
-                        {{ request.user.extrainfo.student.programme }}
-                        {{ request.user.extrainfo.student.batch }}
-                        <br/>
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
                         Sem - {{ request.user.extrainfo.student.curr_semester_no }}
                     {% endif %}
                 </div>
@@ -102,7 +65,6 @@
                     {{ user.extrainfo.student.programme }}
                     {{ user.extrainfo.student.batch }}
                     {{ user.extrainfo.student.curr_semester_no }}
-<<<<<<< HEAD
                 </span>
             {% endif %}
             <br/>
@@ -111,10 +73,8 @@
                 <span> 
                     {{global_var|capfirst}}
                 </span>
-=======
                 </span>
             {% endif %}
-<<<<<<< HEAD
             <div class="ui large header">
                 {% for i in Curr_desig %}
                     {% comment %} Should this be inside if else? {% endcomment %}
@@ -127,21 +87,14 @@
                     </span>
                     <br>
                 {% endfor %}
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
-=======
             <br/>
             <div class="meta">
                
                 <span> 
                     {{global_var|capfirst}}
                 </span>
->>>>>>> 47af12cd (GAD -5 Dashboard Changes (#1325))
             </div>
         </div>
     </div>
     {% comment %} The Employee Image Card ends here! {% endcomment %}
-<<<<<<< HEAD
 {% endblock %}
-=======
-{% endblock %}
->>>>>>> 5c61a542 (GAD-5: Fix responsiveness (#1125))
