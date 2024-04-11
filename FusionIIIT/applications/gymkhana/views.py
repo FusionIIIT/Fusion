@@ -1338,7 +1338,6 @@ def change_head(request):
     It gets the old co_ordinator and co_cordinator and replaces them with new co and co_co.
     And adds to the database.
 
-<<<<<<< HEAD
     @param:
           request - trivial
 
@@ -1397,70 +1396,6 @@ def change_head(request):
             designation=Designation.objects.get(name="co co-ordinator"),
         )
         new_co_coordinator.save()
-=======
-	@param:
-		request - trivial
-
-	@variables:
-		club - name of the club
-		co_ordinator - new co_ordinator of the club
-		co_coordinator - new co_cordinator of the club
-		date - date at which the heads of the clubs changes
-		time - time at which the heads changes
-		desc - description on change of heads
-		old_co_ordinator - HoldsDesignation object and after deletes this co_ordinator
-		old_co_coordinator - HoldsDesignation object and after deletes this co_coordinator
-		new_co_ordinator - HoldsDesignation object and after saves this object as co_ordinator
-		new_co_coordinator - HoldsDesignation object and after saves this object as co_coordinator
-	"""
-
-	if request.method == "POST":
-		club = request.POST.get("club")
-		co_ordinator = request.POST.get('co')
-		co_coordinator = request.POST.get('coco')
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		desc = f"co-ordinator and co co-ordinator changed on {date} at {time}"
-		message = ""
-
-		co_ordinator_student = get_object_or_404(Student, id__user__username=co_ordinator)
-		co_coordinator_student = get_object_or_404(Student, id__user__username=co_coordinator)
-		club_info = get_object_or_404(Club_info, club_name=club)
-
-		old_co_ordinator = club_info.co_ordinator
-		old_co_coordinator = club_info.co_coordinator
-
-		club_info.co_ordinator = co_ordinator_student
-		club_info.co_coordinator = co_coordinator_student
-		club_info.save()
-
-		message += "Successfully changed !!!"
-
-		new_co_ordinator = HoldsDesignation(
-			user=User.objects.get(username=co_ordinator),
-			working=User.objects.get(username=co_ordinator),
-			designation=Designation.objects.get(name="co-ordinator")
-		)
-		new_co_ordinator.save()
-
-		new_co_coordinator = HoldsDesignation(
-			user=User.objects.get(username=co_coordinator),
-			working=User.objects.get(username=co_coordinator),
-			designation=Designation.objects.get(name="co co-ordinator")
-		)
-		new_co_coordinator.save()
-
-		HoldsDesignation.objects.filter(user__username=old_co_ordinator, designation__name="co-ordinator").delete()
-		HoldsDesignation.objects.filter(user__username=old_co_coordinator, designation__name="co co-ordinator").delete()
-
-		content = {
-			'status': "success",
-			'message': message,
-		}
-<<<<<<< HEAD
->>>>>>> 3168445e (Error fix:Change co and coco api now working (#5))
-=======
->>>>>>> f76c7371 (change co and coco api working)
 
         old_co_ordinator = HoldsDesignation.objects.select_related(
             "user", "working", "designation"
@@ -1471,8 +1406,6 @@ def change_head(request):
         ).filter(user__username=old_co_coordinator, designation__name="co co-ordinator")
         old_co_coordinator.delete()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         content = {
             "status": "success",
             "message": message,
@@ -1482,14 +1415,6 @@ def change_head(request):
         return HttpResponse(content)
 
         # return redirect('/gymkhana/')
-=======
-    # Handle non-POST requests or redirect if needed
-    # return redirect('/gymkhana/')
->>>>>>> 3168445e (Error fix:Change co and coco api now working (#5))
-=======
-    # Handle non-POST requests or redirect if needed
-    # return redirect('/gymkhana/')
->>>>>>> f76c7371 (change co and coco api working)
 
 
 @login_required
