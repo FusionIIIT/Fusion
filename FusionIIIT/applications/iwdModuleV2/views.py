@@ -1220,14 +1220,9 @@ def settleBillsView(request):
     )
 
     obj = []
-
-    print(inbox_files)
     
     for x in inbox_files:
         requestId = x['src_object_id']
-        # req_obj = Requests.objects.filter(id=requestId)
-        print("iojrfvoioirv")
-        print(requestId)
         bills_object = Bills.objects.filter(request_id=requestId).first()
         element = [bills_object.request_id.id, bills_object.file, bills_object.file.url]
         obj.append(element)
