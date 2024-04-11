@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^student_records/$', views.student_records, name='student_records'),
     url(r'^manage_records/$', views.manage_records, name='manage_records'),
     url(r'^statistics/$', views.placement_statistics, name='placement_statistics'),
+  
     url(r'^delete_placement_statistics/$', views.delete_placement_statistics, name='delete_placement_statistics'),
     url(r'^cv/(?P<username>[a-zA-Z0-9\.]{1,20})/$', views.cv, name="cv"),
 

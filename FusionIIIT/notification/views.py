@@ -85,7 +85,15 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb = "You have been added to the mess committee. "
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    
+def placement_cellNotif(sender, recipient, type):
+    url = 'placement:placement'
+    module = 'Placement Cell'
+    sender = sender
+    recipient = recipient
+    verb = ''
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type):
     url='visitorhostel:visitorhostel'
@@ -148,6 +156,8 @@ def scholarship_portal_notif(sender, recipient, type):
 
     if type.startswith('award'):
         s = type.split('_')
+        # print("psss")
+        # print(type, s)
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
