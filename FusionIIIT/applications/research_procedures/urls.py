@@ -33,6 +33,7 @@ urlpatterns = [
       path('forward_request',views.forward_request, name="forward_request"),
       path('update_financial_outlay/<pid>/',views.update_financial_outlay,name="update_financial_outlay"),
       path('approve_request/<id>/',views.approve_request,name="approve_request"),
+      
       #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       

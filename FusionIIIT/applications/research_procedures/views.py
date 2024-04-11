@@ -649,6 +649,7 @@ def inbox(request):
     
     user_designation= getDesignation(request.user.username)
     print(user_designation)
+
     # data = view_inbox(request.user.username,user_designation, "research_procedures")
     user_obj = get_user_by_username(request.user.username)
 
@@ -822,7 +823,9 @@ def approve_request(request,id):
 
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
+
     user_designation= HoldsDesignation.objects.get(user= user_inst).designation
+    
     return user_designation
 
 def get_file_by_id(id):
