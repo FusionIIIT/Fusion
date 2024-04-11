@@ -9,13 +9,16 @@
   <a class="item" href="{% url 'examination:verify' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
+  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    <i class="right floated chevron right icon"></i>
+  </a>
   <a class="item" href="{% url 'examination:publish' %}">Publish
     <i class="right floated chevron right icon"></i>
   </a>
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:timetable' %}">Time Table
+  <a class="item" href="{% url 'examination:generate_transcript_form' %}">Generate Transcript
     <i class="right floated chevron right icon"></i>
   </a>
 </div>
@@ -27,7 +30,7 @@
   <h1 class="ui header">Enter Student Marks</h1>
 
   {% if registrations %}
-    <form method="post" action="{% url 'examination:update_hidden_grades_multiple' %}">
+    <form method="post" action="{% url 'examination:submit_hidden_grades_multiple' %}">
       {% csrf_token %}
       <div class="ui celled table">
         <table class="ui selectable striped table">
@@ -42,11 +45,11 @@
           <tbody>
             {% for registration in registrations %}
               <tr>
-                <td>{{ registration.student_id.id }}</td>
+                <td>{{ registration.student_id_id }}</td>
                 <td>{{ registration.semester_id.id }}</td>
                 <td>{{ registration.course_id.id }}</td>
                 <td>
-                  <input type="hidden" name="student_ids[]" value="{{ registration.student_id.id }}">
+                  <input type="hidden" name="student_ids[]" value="{{ registration.student_id_id }}">
                   <input type="hidden" name="semester_ids[]" value="{{ registration.semester_id.id }}">
                   <input type="hidden" name="course_ids[]" value="{{ registration.course_id.id }}">
                   <input type="text" name="grades[]" value="B">

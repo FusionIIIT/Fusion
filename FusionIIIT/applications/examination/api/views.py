@@ -24,6 +24,8 @@ from rest_framework.response import Response
 
 
 
+
+
 @api_view(['GET', 'POST'])
 def fetch_student_details(request):
     if request.method == 'GET':
@@ -249,4 +251,5 @@ def publish_grade(request):
             return JsonResponse({'error': 'Not all authenticators are True'}, status=400)
     else:
         return JsonResponse({'error': 'Authentication object not present'}, status=404)
+
 
