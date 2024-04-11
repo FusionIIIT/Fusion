@@ -4,33 +4,32 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     
     {% for i in Club_member %}
-    {% if i.status == "open" %}
-        <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
-            <i class="close icon"></i>
-            <div class="header">
-                Applicant's Info
-            </div>
-            <div class="image content">
-                <div class="ui medium image">
-                  <img src="{% static 'globals/img/zlatan.jpg' %}">
+        {% if i.status == "open" %}
+            <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
+                <i class="close icon"></i>
+                <div class="header">
+                    Applicant's Info
                 </div>
-                <div class="description">
-                    <div class="ui header">
-                    <p>{{ i.member.id.user.username }}&nbsp;&nbsp;&nbsp;&nbsp;{{ i.member.id.id }}</p>
+                <div class="image content">
+                    <div class="ui medium image">
+                      <img src="{% static 'globals/img/zlatan.jpg' %}">
                     </div>
-                    <p>{{ i.club.club_name}} &nbsp; Club</p>
-                    <p>{{ i.description }}</p>
+                    <div class="description">
+                        <div class="ui header">
+                        <p>{{ i.member.id.user.username }}&nbsp;&nbsp;&nbsp;&nbsp;{{ i.member.id.id }}</p>
+                        </div>
+                        <p>{{ i.club.club_name}} &nbsp; Club</p>
+                        <p>{{ i.description }}</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="ui black deny button">
+                        Close
+                    </div>
                 </div>
             </div>
-            <div class="actions">
-                <div class="ui black deny button">
-                    Close
-                </div>
-            </div>
-        </div>
-    {% endif %}
-{% endfor %}
-
+        {% endif %}
+    {% endfor %}
     
     <!-- modal script enable -->
     <script type="text/javascript">
@@ -84,10 +83,10 @@
                     </th>
                 </tr>
                 </thead>
-                {% comment %} <tr>{{club_details}}</tr> {% endcomment %}
+
+                <tbody>
                 {% for i in Club_member %}
-                    {% comment %} <tr>{{i.club.club_id}}</tr> {% endcomment %}
-                    {% if i.status == "open" and i.club_id == club_details.club_name %}
+                    {% if request.user.username in i.club.co_ordinator|stringformat:"s" and i.status == "open" %}
                     <tr >
                         <td class="collapsing">
                             <div class="ui fitted checkbox">
@@ -124,6 +123,8 @@
 
             <br>
 
+            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
+            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
             <div class="field">
                 <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
                     Approve Selected
