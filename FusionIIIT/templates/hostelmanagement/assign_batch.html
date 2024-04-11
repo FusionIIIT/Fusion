@@ -25,7 +25,6 @@
         function assignBatch() {
             var hall_id = document.getElementById('hall__id').value;
             var batch = document.getElementById('batch').value;
-            console.log('~~~~~~~~~~~',hall_id);
             // Perform AJAX request to assign batch
             fetch('http://0.0.0.0:8000/hostelmanagement/assign-batch/', {
                 method: 'POST',
@@ -40,7 +39,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
+                alert("batch assigned succesfully");
             })
             .catch(error => {
                 console.error('Error:', error);

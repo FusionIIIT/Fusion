@@ -29,7 +29,15 @@
                     </select>
                 </td>
                 <td>{{ hostel_fine.reason }}</td>
-                <td><button class="ui negative button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button></td> 
+
+                <td>
+                    <button class="ui negative mini button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button>
+
+                    <button id="edit-button" class="ui positive medium button" onclick="editFine('{{ hostel_fine.fine_id }}')">Edit</button>
+
+                </td>
+                
+
             </tr>
             {% endfor %}
         </tbody>
@@ -40,9 +48,20 @@
         text-align: center;
         padding: 5px;
     }
+
+    #edit-button{
+        margin-top: 2px;
+        padding: 8px;
+        width: 67px;
+    }
  </style>
 
     <script>
+        function editFine(fineId) {
+            // Redirect to the edit page for the fine
+            window.location.href = '/hostelmanagement/fine/impose/edit/' + fineId + '/';
+        }
+
         function updateStatus(fineId, status) {
             // Send an AJAX request to update the status
             fetch('/hostelmanagement/fine/impose/list/update/' + fineId + '/', {
@@ -72,6 +91,13 @@
 
 
         function cancelFine(fineId) {
+
+            var confirmation = confirm("Are you sure you want to remove this fine?");
+
+            if(!confirmation) {
+                return;
+            }
+
             // Send a DELETE request to delete the fine
             fetch('/hostelmanagement/fine/delete/' + fineId + '/', {
                 method: 'DELETE',

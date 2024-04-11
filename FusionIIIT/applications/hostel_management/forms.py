@@ -7,7 +7,6 @@ class HostelNoticeBoardForm(forms.ModelForm):
         model = HostelNoticeBoard
         fields = ('hall', 'head_line', 'content', 'description')
 
-
 class HallForm(forms.ModelForm):
     class Meta:
         model = Hall
@@ -29,5 +28,6 @@ class GuestRoomBookingForm(forms.ModelForm):
             'arrival_time',
             'departure_date',
             'departure_time',
-            'nationality'
+            'nationality',
+            'room_type'
         )
