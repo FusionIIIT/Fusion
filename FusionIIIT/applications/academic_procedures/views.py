@@ -76,17 +76,17 @@ def main(request):
 def academic_procedures(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-  
+
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
     
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
+    # des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     
-    if str(des.designation) == "student":
+    if request.session.get('currentDesignationSelected') == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
         return HttpResponseRedirect('/academic-procedures/stu/')
         # return HttpResponseRedirect('/logout/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    elif request.session.get('currentDesignationSelected') == "faculty" or request.session.get('currentDesignationSelected') == "Associate Professor" or request.session.get('currentDesignationSelected') == "Professor" or request.session.get('currentDesignationSelected') == "Assistant Professor" :
         return HttpResponseRedirect('/academic-procedures/fac/')
         # return HttpResponseRedirect('/logout/')
 
@@ -107,7 +107,7 @@ def academic_procedures(request):
 
         })
     else:
-        return HttpResponse('person not found')
+        return HttpResponseRedirect('/dashboard/')
 #
 #
 #
@@ -118,19 +118,20 @@ def academic_procedures(request):
 def academic_procedures_faculty(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-
+    if request.session.get('currentDesignationSelected') != 'faculty':
+        return HttpResponseRedirect('/dashboard/')
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     fac_id = user_details
     fac_name = user_details.user.first_name + " " + user_details.user.last_name
-    if str(des.designation) == "student":
-        return HttpResponseRedirect('/academic-procedures/main/')
+    # if str(des.designation) == "student":
+    #     return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(request.user) == "acadadmin":
-        return HttpResponseRedirect('/academic-procedures/main/')
+    # elif str(request.user) == "acadadmin":
+    #     return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
+    if request.session.get('currentDesignationSelected') == "faculty" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
        
         object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details.pk)
        
@@ -216,7 +217,8 @@ def account(request):
 def academic_procedures_student(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-
+    # if global_var != "student":
+    #     return HttpResponse("Student has no record") 
     user_details = ExtraInfo.objects.select_related('user','department').get(id = request.user)
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
 
@@ -487,9 +489,10 @@ def academic_procedures_student(request):
 
             backlogCourseList.append([i.course_id.course_name, course_details , i.semester_id.semester_no , summer_course])
         
-        Mess_bill = Monthly_bill.objects.filter(student_id = obj)
-        Mess_pay = Payments.objects.filter(student_id = obj)
-
+        # Mess_bill = Monthly_bill.objects.filter(student_id = obj)
+        # Mess_pay = Payments.objects.filter(student_id = obj)
+        Mess_bill = []
+        Mess_pay = []
         # Branch Change Form save
         if request.method=='POST':
             if True:
