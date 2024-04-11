@@ -9,9 +9,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.http import JsonResponse
 from timeit import default_timer as time
-from notification.views import office_module_notif, file_tracking_notif
 from notification.views import office_module_notif, file_tracking_notif
 from .utils import *
 from django.utils.dateparse import parse_datetime
@@ -55,8 +53,6 @@ def filetracking(request):
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
                     'user', 'working', 'designation').get(id=design).designation_id)
-                designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
-                    'user', 'working', 'designation').get(id=design).designation_id)
                 upload_file = request.FILES.get('myfile')
                 if upload_file and upload_file.size / 1000 > 10240:
                     messages.error(
@@ -69,8 +65,6 @@ def filetracking(request):
 
                 extraJSON = {
                     'remarks': request.POST.get('remarks'),
-                    # 'receiver': request.POST.get('receiver'),
-                    # 'receive': request.POST.get('receive')
                 }
 
                 File.objects.create(
@@ -83,7 +77,6 @@ def filetracking(request):
                 )
 
                 messages.success(request, 'File Draft Saved Successfully')
-                messages.success(request, 'File Draft Saved Successfully')
 
             if 'send' in request.POST:
                 uploader = request.user.extrainfo
@@ -92,13 +85,8 @@ def filetracking(request):
                 design = request.POST.get('design')
                 designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
                     'user', 'working', 'designation').get(id=design).designation_id)
-                designation = Designation.objects.get(id=HoldsDesignation.objects.select_related(
-                    'user', 'working', 'designation').get(id=design).designation_id)
 
                 upload_file = request.FILES.get('myfile')
-                if upload_file and upload_file.size / 1000 > 10240:
-                    messages.error(
-                        request, "File should not be greater than 10MB")
                 if upload_file and upload_file.size / 1000 > 10240:
                     messages.error(
                         request, "File should not be greater than 10MB")
@@ -128,10 +116,7 @@ def filetracking(request):
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
                 receive = request.POST.get('receive')
-                receive = request.POST.get('receive')
                 try:
-                    print(receive)
-                    print(receive)
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -148,9 +133,6 @@ def filetracking(request):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-                # office_module_notif(request.user, receiver_id)
-                file_tracking_notif(request.user, receiver_id, subject)
-                messages.success(request, 'File sent successfully')
                 # office_module_notif(request.user, receiver_id)
                 file_tracking_notif(request.user, receiver_id, subject)
                 messages.success(request, 'File sent successfully')
@@ -185,22 +167,6 @@ def filetracking(request):
     return render(request, 'filetracking/composefile.html', context)
 
 
-@login_required(login_url="/accounts/login")
-def draft_design(request):
-    """ 
-    This function redirects the user to the drafts page of designation selected in dropdown 
-     @param:
-            request - trivial.
-    """
-
-    dropdown_design = request.session.get(
-        'currentDesignationSelected', 'default_value')
-    username = request.user
-    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
-        username, dropdown_design)
-
-    return redirect('/filetracking/drafts/' + str(dropdown_HoldsDesignation_obj.id))
-@login_required(login_url="/accounts/login")
 def draft_design(request):
     """ 
     This function redirects the user to the drafts page of designation selected in dropdown 
@@ -219,10 +185,7 @@ def draft_design(request):
 
 @login_required(login_url="/accounts/login")
 def drafts_view(request, id):
-@login_required(login_url="/accounts/login")
-def drafts_view(request, id):
     """
-    This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
     This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
 
     @param:
@@ -233,49 +196,7 @@ def drafts_view(request, id):
       draft - file obeject containing all the files created by user
       context - holds data needed to render the template
 
-
-
-
-
-
-
-
-
     """
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
-    s = str(user_HoldsDesignation_obj).split(" - ")
-    designation = s[1]
-    draft_files = view_drafts(
-        username=user_HoldsDesignation_obj.user, 
-        designation=user_HoldsDesignation_obj.designation,
-        src_module='filetracking'
-        )
-
-    # Correct upload_date type
-    for f in draft_files:
-        f['upload_date'] = parse_datetime(f['upload_date'])
-        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
-
-    draft_files = add_uploader_department_to_files_list(draft_files)
-
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
-    s = str(user_HoldsDesignation_obj).split(" - ")
-    designation = s[1]
-    draft_files = view_drafts(
-        username=user_HoldsDesignation_obj.user, 
-        designation=user_HoldsDesignation_obj.designation,
-        src_module='filetracking'
-        )
-
-    # Correct upload_date type
-    for f in draft_files:
-        f['upload_date'] = parse_datetime(f['upload_date'])
-        f['uploader'] = get_extra_info_object_from_id(f['uploader'])
-
-    draft_files = add_uploader_department_to_files_list(draft_files)
-
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
     s = str(user_HoldsDesignation_obj).split(" - ")
@@ -299,11 +220,8 @@ def drafts_view(request, id):
         'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/drafts.html', context)
-    return render(request, 'filetracking/drafts.html', context)
 
 
-@login_required(login_url="/accounts/login")
-def outbox_view(request, id):
 @login_required(login_url="/accounts/login")
 def outbox_view(request, id):
     """
@@ -318,13 +236,7 @@ def outbox_view(request, id):
 
         @variables:
                 outward_files - File objects filtered by current_id i.e, present working user.
-                outward_files - File objects filtered by current_id i.e, present working user.
-                outward_files - File objects filtered by current_id i.e, present working user.
-                outward_files - File objects filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
-
-
-
 
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
