@@ -161,7 +161,6 @@ class NoOfTechnicalBidTimes(models.Model):
     number = models.IntegerField()
 
 class Requests(models.Model):
-    # id = models.IntegerField(primary_key=True, max_length=200)
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
     area = models.CharField(max_length=200)
@@ -172,9 +171,13 @@ class Requests(models.Model):
     status = models.CharField(max_length=200)
     issuedWorkOrder = models.IntegerField()
     workCompleted = models.IntegerField()
+    billGenerated = models.IntegerField()
+    billProcessed = models.IntegerField()
+    billSettled = models.IntegerField()
 
 class WorkOrder(models.Model):
-    request_id = models.IntegerField()
+    # request_id = models.IntegerField()
+    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     date = models.DateField(default=date.today)
     agency = models.CharField(max_length=200)
@@ -188,12 +191,19 @@ class Inventory(models.Model):
     name = models.CharField(max_length=200)
     quantity = models.IntegerField()
     cost = models.IntegerField()
+
+class UsedItems(models.Model):
+    requestId = models.IntegerField()
+    itemName = models.CharField(max_length=200)
+    cost = models.IntegerField()
+    quantity = models.IntegerField()
+    date = models.DateField()
     
 class Bills(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
+    # requestId = models.IntegerField()
+    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
+    file = models.FileField()
+
+class Budget(models.Model):
     name = models.CharField(max_length=200)
-    work = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-    agency = models.CharField(max_length=200)
-    bill_processed = models.IntegerField()
-    bill_settled = models.IntegerField()
+    budgetIssued = models.IntegerField()

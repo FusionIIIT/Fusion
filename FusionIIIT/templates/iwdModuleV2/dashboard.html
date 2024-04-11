@@ -48,6 +48,11 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
+                    <a class="active item"  href="{% url 'iwdModuleV2:Rejected Requests view' %}">
+                        Rejected Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
                     <a class="active item"  href="{% url 'iwdModuleV2:Issue Work Order' %}">
                         Issue Work Order
                         <i class="right floated chevron right icon"></i>
@@ -55,6 +60,11 @@
 
                     <a class="active item"  href="{% url 'iwdModuleV2:Requests In Progress' %}">
                         Requests In Progress
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Generated-Bills-View' %}">
+                        Generated Bills
                         <i class="right floated chevron right icon"></i>
                     </a>
 
@@ -71,12 +81,17 @@
 
         </div>
         {% endif %}
-        {% if eligible == "Dean" %}
+        {% if eligible == "Dean (P&D)" %}
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
                     <a class="active item" href="{% url 'iwdModuleV2:Engineer-Processed-Requests view' %}">
                         Process Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
                         <i class="right floated chevron right icon"></i>
                     </a>
 
@@ -96,12 +111,17 @@
 
         {% comment %}The central-rail segment starts here!{% endcomment %}
         {% endif %}
-        {% if eligible == "director" %}
+        {% if eligible == "Director" %}
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
                     <a class="active item" href="{% url 'iwdModuleV2:Dean-Processed-Requests view' %}">
                         Approve/Reject Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
                         <i class="right floated chevron right icon"></i>
                     </a>
 
@@ -125,8 +145,87 @@
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
+
                     <a class="active item" href="{% url 'iwdModuleV2:Inventory' %}">
                         Inventory
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Budget' %}">
+                        Manage Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Accounts Admin" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Settle-Bills-View' %}">
+                        Settle Bills
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Auditor" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Audit-Document-View' %}">
+                        Audit Documents
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible != "Auditor" and eligible != "Accounts Admin" and eligible != "Admin IWD" and eligible != "Director" and eligible != "Dean (P&D)" and eligible != "Engineer" and eligible != "student" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
+                        Create Request
                         <i class="right floated chevron right icon"></i>
                     </a>
 
