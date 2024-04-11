@@ -12,13 +12,7 @@ IPR
 
 
 <script>
-    $('.message .close')
-        .on('click', function () {
-            $(this)
-                .closest('.message')
-                .transition('fade')
-                ;
-        });
+   
 </script>
 <style>
     /* Hide the default file input button */
@@ -27,7 +21,7 @@ IPR
     }
 
     .inputf1 {
-        border: 1px solid;
+        border: 1px solid grey;
         width: 800px;
     }
 
@@ -112,14 +106,14 @@ IPR
                                 style="font-size:18px ;font-weight:bold">Project Investigator Id:</label>
                             <input class="input-f1" type="text" id="project_investigator_id"
                                 placeholder="Project Investigator Id" name="project_investigator_id" required
-                                style="width: 100%; border: 1px solid;">
+                                style="width: 100%; border: 1px solid grey;">
                         </div>
                         <div style="flex: 1;">
                             <label class="labels1" for="co_project_investigator_id"
                                 style="font-size:18px ;font-weight:bold">Co-Project Investigator ID:</label>
                             <input class="input-f1" type="text" id="co_project_investigator_id"
                                 placeholder="Co-Project Investigator ID" name="co_project_investigator_id" required
-                                style="width: 100%; border: 1px solid;">
+                                style="width: 100%; border: 1px solid grey;">
                         </div>
                     </div>
                 </div>
@@ -129,13 +123,13 @@ IPR
                             <label class="labels1" for="project_type" style="font-size:18px ;font-weight:bold">Project
                                 Type:</label>
                             <input class="input-f1" type="text" id="project_type" placeholder="Project Type"
-                                name="project_type" required style="width: 100%; border: 1px solid;">
+                                name="project_type" required style="width: 100%; border: 1px solid grey;">
                         </div>
                         <div style="flex: 1; margin-right: 10px;">
                             <label class="labels1" for="number_of_years" style="font-size:18px ;font-weight:bold">Number
                                 of Years:</label>
                             <input class="input-f1" type="number" id="number_of_years" placeholder="Number of Years"
-                                name="number_of_years" required style="width: 100%; border: 1px solid;">
+                                name="number_of_years" required style="width: 100%; border: 1px solid grey;">
                         </div>
                     </div>
                 </div>
@@ -145,13 +139,13 @@ IPR
                             <label class="labels1" for="start_date" style="font-size:18px ;font-weight:bold">Start
                                 Date:</label>
                             <input class="input-f1" type="date" id="start_date" name="start_date" required
-                                style="width: 100%; border: 1px solid;">
+                                style="width: 100%; border: 1px solid grey;">
                         </div>
                         <div style="flex: 1; margin-right: 10px;">
                             <label class="labels1" for="finish_date" style="font-size:18px ;font-weight:bold">Project
                                 Deadline:</label>
                             <input class="input-f1" type="date" id="finish_date" name="finish_date" required
-                                style="width: 100%; border: 1px solid;">
+                                style="width: 100%; border: 1px solid grey;">
                         </div>
                     </div>
                 </div> 
@@ -165,8 +159,11 @@ IPR
                         onclick="document.getElementById('project_info_file').click()">
                         <i class="big upload icon" id="icon-button"></i> Select a file
                     </label>
+
                     <input type="file" class="ui button input-f1" id="project_info_file" name="project_info_file"
-                        style="display: none;" onchange="displaySelectedFile()">
+                        style="display: none;" onchange="displaySelectedFile()" required>
+
+                        
                 </div>
                 <p style="color:blue" id="selectedFile"></p>
                 <input type="submit" value="Submit"

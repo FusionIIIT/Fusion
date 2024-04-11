@@ -1,7 +1,7 @@
 {% block menucard %}
 
 {% comment %} <a class="item"  data-tab="fourth">Patents</a> {% endcomment %}
-{% if request.user.extrainfo.user_type == "staff" %}
+{% if global_var == "rspc_admin" %}
 <a class="item"  href="/research_procedures/add_projects">Add Projects</a>
 {% endif %}
 <a class="item"  href="/research_procedures/view_projects" >View Projects</a>

@@ -6,28 +6,10 @@ IPR
 {% endblock %}
 
 {% block body %}
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == "success" %}
-                <div class="ui positive message">
-                    <i class="close icon"></i>
-                    {{ message.message }}
-                </div>
-            {% else %}
-                <div class="ui negative message">
-                    <i class="close icon"></i>
-                    {{ message.message }}
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+   
 
     <script>
-        $(document).ready(function() {
-            $('.message .close').on('click', function() {
-                $(this).closest('.message').transition('fade');
-            });
-        });
+       
     </script>
     <style>
         .active-row:hover {
@@ -55,8 +37,7 @@ IPR
                 <th style="background-color:grey; color:white">Category</th>
                 <th style="background-color:grey; color:white" >Subcategory</th>
                 <th style="background-color:grey; color:white" >Alloted Amount</th>
-                <th style="background-color:grey; color:white" >Amount Utilised</th>
-                <th style="background-color:grey; color:white" >Amount Remaining</th>
+                <th style="background-color:grey; color:white" >Amount Utilised</th>h>
             </tr>
         </thead>
         <tbody>
@@ -68,7 +49,6 @@ IPR
                             <td>{{ item.sub_category }}</td>
                             <td>{{ item.amount }}</td>
                             <td>0</td>
-                            <td>{{ item.amount }}</td>
                         </tr>
                 {% endif %}
             {% endfor %}

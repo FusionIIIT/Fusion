@@ -10,30 +10,11 @@ IPR
 
 {% block body %}
    
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == "success" %}
-                <div class="ui positive message">
-                    <i class="close icon"></i>
-                        {{ message.message }}
-                </div>  
-            {% else %}
-                <div class="ui negative message">
-                    <i class="close icon"></i>
-                    {{ message.message }}
-                </div> 
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+    
 
     <script>
-        $('.message .close')
-            .on('click', function() {
-                $(this)
-                    .closest('.message')
-                    .transition('fade')
-                ;
-            });
+       
+            
     </script>
     <div class="ui pointing secondary menu" style="font-size: 25px;">
   <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
@@ -153,7 +134,7 @@ IPR
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="content " >
+                        <div class="content" >
                             <div class="header"  >Staff Allotment</div>
                             <div class="description"  >
                                 {% if request.user.extrainfo.user_type == "staff" %}
@@ -162,11 +143,35 @@ IPR
                                 <button id="hello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')" onclick="window.location='/research_procedures/view_staff_details/{{project.project_id}}'"><i class="eye icon"></i></button>
                             </div>
                         </div>
+                        
                         </div>
                     </div>
+                   
+                    <div class="item">
+                        <div class="content" >
+                            <div class="header">Project Information file</div>
+                            <div class="description"  >
+                               <a class="ui small grey equal-size-button button " id="k{{ project.project_id }}" onmouseover="changeText('k{{ project.project_id }}')" onmouseout="restoreText('k{{ project.project_id }}')" href="{{ project.project_info_file.url }}"><i class="eye icon"></i> </a>
+                            </div>
+                        </div>
+                    </div>
+                  
+                    {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
+                    <div class="item">
+                        <div class="content" >
+                            <div class="header"  >Update Financial Outlay</div>
+                            <div class="description"  >
+                               <button class="ui small grey equal-size-button button " id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" {{ project.project_id }}" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="eye icon"></i> </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}     
                 </div>
             </div>
-            <div style="font-size:22px; padding:8px; font-weight:bold"> Request More Staff </div>
+            <!-- <div class="item"> -->
+
+            
+            <div style=" font-size:22px; padding:8px; font-weight:bold"> Raise Staff / Expenditure request  </div>
             <form class="ui form" action="{% url 'research_procedures:add_staff_request' project.project_id %}"  method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
@@ -190,16 +195,17 @@ IPR
                     </div>
                 </div>
             </form> 
+        <!-- </div> -->
         </div>
 <script>
   function changeText(pid) {
-    console.log(pid);
     if(pid[0]=='h'){
-
         document.getElementById(pid).innerHTML = "View";
     }
     else if(pid[0]=='f')document.getElementById(pid).innerHTML = "Add";
     else if(pid[0]=='v')document.getElementById(pid).innerHTML = "View";
+    else if(pid[0]=='k')document.getElementById(pid).innerHTML = "View";
+    else if(pid[0]=='n')document.getElementById(pid).innerHTML = "Update";
     else document.getElementById(pid).innerHTML = "Add";
   }
 
@@ -210,6 +216,8 @@ IPR
     }
     else if(pid[0]=='f')document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
     else if(pid[0]=='v')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else if(pid[0]=='k')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else if(pid[0]=='n')document.getElementById(pid).innerHTML = '<i class="edit icon"></i>';
     else document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
   }
 </script>

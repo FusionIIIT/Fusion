@@ -1,0 +1,70 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+IPR
+{% endblock %}
+
+{% block body %}
+
+
+<script>
+  
+</script>
+<style>
+  .active-row:hover {
+    background-color: #f4f4f4;
+    /* Change to whatever color you want for active row */
+  }
+</style>
+
+<div class="ui pointing secondary menu" style="font-size: 20px;">
+  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Financial Outlay Details for Project: &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+  </label>
+</div>
+
+{% for year in years %}
+<div style="padding: 20px;">
+  <!-- <p style=" width: 100%; font-size:25px; text-align: center; "> Year {{year}} <p> -->
+  <table class="ui celled striped table" style="width: 100%; border-collapse: collapse; ">
+    <thead>
+      <tr>
+        <th colspan="5" style="text-align: center;">
+          Year {{year}}
+        </th>
+      </tr>
+      <tr style=" text-align: center;">
+        <th style="background-color:grey; color:white">Category</th>
+        <th style="background-color:grey; color:white">Subcategory</th>
+        <th style="background-color:grey; color:white">Alloted Amount</th>
+        <th style="background-color:grey; color:white">Amount Utilised</th>
+
+        <th style="background-color:grey; color:white">Update</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      {% for category, subcategory_data in category_data.items %}
+      {% for item in subcategory_data %}
+      {% if item.year == year %}
+      <tr style="text-align: center;">
+        <td>{{ item.category }}</td>
+        <td>{{ item.sub_category }}</td>
+        <td>{{ item.amount }}</td>
+        <td>{{item.utilized_amount}}</td>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_financial_outlay' project_id %}">
+          {%  csrf_token  %}
+          <input type="hidden" name="financial_outlay_id" value={{item.financial_outlay_id}} >
+          <td><input type="text" name="used_amount">  <button type="submit" class="">submit</button></td> 
+        </form>
+      </tr>
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+{% endblock %}

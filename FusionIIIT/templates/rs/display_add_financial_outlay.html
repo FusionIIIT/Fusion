@@ -7,10 +7,7 @@ IPR
 {% block body %}
 
 <script>
-  $(".message .close").on("click", function () {
-    $(this).closest(".message").transition("fade");
-  });
-
+  
   function populate(categoriesId, category_subcategory_map, year) {
     console.log(category_subcategory_map)
     let id1 = "subcategory-select-" + year + "-";
@@ -145,9 +142,6 @@ IPR
 </div>
 
 
-
-
-
 <form method="post" enctype="multipart/form-data"
   action="{% url 'research_procedures:add_financial_outlay' project_id %}">
   {% csrf_token %}
@@ -156,8 +150,8 @@ IPR
   <div class="container" id="container-{{year}}">
     <div class="category-section-{{year}} catt">
       <div class="f-group" style="position: relative; display: inline-block; vertical-align: middle;" >
-        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: rgba(0, 0, 0, 0.05); border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Category</label>
-        <select name="category-select-{{year}}-1" id="category-select-{{year}}-1" class="category-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; padding: 5px;margin-left: 96px;"
+        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Category</label>
+        <select name="category-select-{{year}}-1" required id="category-select-{{year}}-1" class="category-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; ;margin-left: 96px;"
           onchange="populate(this.id,{{ category_subcategory_map|safe }},{{year|safe}})">
           <option value="" > -- Choose Category -- </option>
           {% for category , subcategories in category_subcategory_map.items %}
@@ -167,14 +161,14 @@ IPR
       </div>
       &nbsp;&nbsp;&nbsp;
       <div class="f-group" style="position: relative; display: inline-block; vertical-align: middle;">
-        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: rgba(0, 0, 0, 0.05); border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Sub Category</label>
-        <select name="subcategory-select-{{year}}-1" class="subcategory-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; padding: 5px;margin-left: 120px;"
+        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Sub Category</label>
+        <select name="subcategory-select-{{year}}-1" required class="subcategory-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; padding: 5px;margin-left: 120px;"
           id="subcategory-select-{{year}}-1"></select>
       </div>
       &nbsp;&nbsp;&nbsp;
       <div class="ui input  f-group"  style="position: relative; display: inline-block; vertical-align: middle;">
-        <label for="amount-{{year}}-1" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: rgba(0, 0, 0, 0.05); border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Amount(lakhs)&nbsp;&nbsp;&nbsp;</label>
-        <input name="amount-{{year}}-1" id="amount-{{year}}-1" class="amount-{{year}}" style="border:1px solid;margin-left: 135px; ">
+        <label for="amount-{{year}}-1" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Amount(lakhs)&nbsp;&nbsp;&nbsp;</label>
+        <input type="number" name="amount-{{year}}-1" required id="amount-{{year}}-1" class="amount-{{year}}" style="border:0.1rem solid;border-color:rgb(212, 209, 209);margin-left: 135px; ">
       </div>
       &nbsp;&nbsp;&nbsp;
       <div class="f-group ">
@@ -183,13 +177,16 @@ IPR
       </div>
     </div>
   </div>
-  <button class="f-group ui secondary button"
+  <button class="f-group ui secondary button"style="background-color:grey"onmouseover="this.style.backgroundColor='grey'"
+                    onmouseout="this.style.backgroundColor='#9c9a9a'"
     onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add category</button>
   {% endfor %}
   <br>
   <br>
+  <div style="display:flex;justify-content:center;">
   <input type="submit" value="Submit"
-    style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;">
+    style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 20%;border-radius:5px;font-size:15px">
+    </div>
 </form>
 
 {% endblock %}

@@ -46,6 +46,7 @@ class financial_outlay(models.Model):
     year=models.IntegerField()
     status= models.IntegerField(default=0)
     staff_limit=models.IntegerField(default=0)
+    utilized_amount=models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.financial_outlay_id)
@@ -79,6 +80,8 @@ class staff_allocations(models.Model):
 
     def __str__(self):
         return str(self.staff_allocation_id)
+
+    
 
     class Meta:
         ordering = ['-staff_allocation_id']
