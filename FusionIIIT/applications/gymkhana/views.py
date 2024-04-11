@@ -1331,6 +1331,7 @@ def club_report(request):
     return redirect("/gymkhana/")
 
 
+
 @login_required
 def change_head(request):
     """
@@ -1415,7 +1416,6 @@ def change_head(request):
         return HttpResponse(content)
 
         # return redirect('/gymkhana/')
-
 
 @login_required
 def new_session(request):

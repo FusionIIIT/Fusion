@@ -66,7 +66,7 @@ class Club_info(models.Model):
     spent_budget - the amount spent by the club
     avail_budget  - the amount available at the club
     status - status of club wheather it is confirmed or not
-     
+
     """
 
     club_name = models.CharField(max_length=50, null=False, primary_key=True)
@@ -222,6 +222,7 @@ class Club_budget(models.Model):
     budget_file - it is file which contains complete details regarding the amount they want to spend
     descrion - description about the budget if any
     """
+
     id = models.AutoField(primary_key=True)
     club = models.ForeignKey(
         Club_info, on_delete=models.CASCADE, max_length=50, null=False
