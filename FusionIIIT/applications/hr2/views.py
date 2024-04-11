@@ -1714,8 +1714,8 @@ def cpda_form(request, id):
         if(designation):
             uploader_designation = designation
 
-        print("username",username)
-        print("uploader_designation",uploader_designation)
+        # print("username",username)
+        # print("uploader_designation",uploader_designation)
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
