@@ -27,6 +27,16 @@ from django.core.files.base import File as DjangoFile
 # owing to length and inherent extensiveness of code. Rather than, whosoever read this code is advised to do so
 # in conjunction with SRS. After that, everything will become easier.
 
+# def dashboard(request):
+#     eligible = False
+#     userObj = request.user
+#     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+#     for p in userDesignationObjects:
+#         if p.designation.name == 'Admin IWD':
+#             eligible = True
+#             break
+#     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+
 def dashboard(request):
     eligible = ""
     userObj = request.user
