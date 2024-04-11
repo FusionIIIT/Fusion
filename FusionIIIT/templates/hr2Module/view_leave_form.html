@@ -310,64 +310,64 @@ Module
                                                 <td>Credit Leave</td>
                                                 <td><input type="number" name="info_1_1" maxlength="40" 
                                                         id="id_info_1_1" value="{{ leave_request.info_1_1 }}"
-                                                        readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_1_2" maxlength="40"
                                                         id="id_info_1_2" value="{{ leave_request.info_1_2 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_1_3" maxlength="40"
                                                         id="id_info_1_3" value="{{ leave_request.info_1_3 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_1_4" maxlength="40"
                                                         id="id_info_1_4" value="{{ leave_request.info_1_4 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_1_5" maxlength="40"
                                                         id="id_info_1_5" value="{{ leave_request.info_1_5 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_1_6" maxlength="40"
                                                         id="id_info_1_6" value="{{ leave_request.info_1_6 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                             </tr>
                                             <tr>
                                                 <td>Leave Applied</td>
                                                 <td><input type="number" name="info_2_1" maxlength="40"
                                                         id="id_info_2_1" value="{{ leave_request.info_2_1 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_2_2" maxlength="40"
                                                         id="id_info_2_2" value="{{ leave_request.info_2_2 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_2_3" maxlength="40"
                                                         id="id_info_2_3" value="{{ leave_request.info_2_3 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_2_4" maxlength="40"
                                                         id="id_info_2_4" value="{{ leave_request.info_2_4 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_2_5" maxlength="40"
                                                         id="id_info_2_5" value="{{ leave_request.info_2_5 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_2_6" maxlength="40"
                                                         id="id_info_2_6" value="{{ leave_request.info_2_6 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                             </tr>
                                             <tr>
                                                 <td>Balance after availing Leave Applied</td>
                                                 <td><input type="number" name="info_3_1" maxlength="40"
                                                         id="id_info_3_1" value="{{ leave_request.info_3_1 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_3_2" maxlength="40"
                                                         id="id_info_3_2" value="{{ leave_request.info_3_2 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_3_3" maxlength="40"
                                                         id="id_info_3_3" value="{{ leave_request.info_3_3 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_3_4" maxlength="40"
                                                         id="id_info_3_4" value="{{ leave_request.info_3_4 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_3_5" maxlength="40"
                                                         id="id_info_3_5" value="{{ leave_request.info_3_5 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                                 <td><input type="number" name="info_3_6" maxlength="40"
                                                         id="id_info_3_6" value="{{ leave_request.info_3_6 }}"
-                                            readonly></td>
+                                                        {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                                             </tr>
                                         </table>
                                     </div>
@@ -381,14 +381,14 @@ Module
                                         <label for="post_title">Dealing Assistant : </label>
                                         <input type="text" name="dealing_assistant" placeholder="Enter name"
                                             maxlength="40" id="dealing_assistant"
-                                            value="{{ leave_request.dealing_assistant }}" >
+                                            value="{{ leave_request.dealing_assistant }}" {% if global_var != "dealing assistant" %}disabled{% endif %} >
                                     </div>
 
                                     <div class="eight wide field">
                                         <label for="post_title">Deputy Registrar (Estt.)</label>
                                         <input type="text" name="deputy_registrar" placeholder="Enter name"
                                             maxlength="40" id="deputy_registrar"
-                                            value="{{ leave_request.deputy_registrar }}" >
+                                            value="{{ leave_request.deputy_registrar }}"  {% if global_var != "dealing assistant" %}disabled{% endif %}>
                                     </div>
 
                                     <div style="text-align: center;">
@@ -416,19 +416,23 @@ Module
 
                                     <br>
                                     {% if button == 1 %}
-                                    <div class="two fields">
-                                        <div class="eight wide field">
-                                            <label for="username_employee">Username:</label>
-                                            <input type="text" name="username_employee" id="username_employee"
-                                                class="ui search" placeholder="Enter Username">
+                                    <div class="ui container center aligned">
+                                        <div class="two fields">
+                                            <div class="eight wide field">
+                                                <label for="username_employee">Username:</label>
+                                                <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                                            </div>
+                                            <div class="eight wide field">
+                                                <label for="designation_employee">Designation:</label>
+                                                <input type="text" name="designation_employee" id="designation_employee" readonly>
+                                            </div>
+                                            <div class="six wide field">
+                                                <h1></h1>   
+                                                <button id="check_button" class="ui primary button">Check</button>
+                                            </div>
                                         </div>
-                                        <div class="eight wide field">
-                                            <label for="designation_employee">Designation:</label>
-                                            <input type="text" name="designation_employee" id="designation_employee"
-                                                readonly>
-                                        </div>
-                                        <button id="check_button" class="ui primary button right floated">Check</button>
                                     </div>
+                                    
                                     <div class="two fields">
                                         <button id="forward-btn" class="ui primary button right floated" type="submit"
                                             value="Forward">
@@ -443,12 +447,14 @@ Module
                                             Approve
                                         </button>
                                     </div>
-
+                                    <label>Remarks</label>
+                                    <input id="remark_id" name="remark_id"></input>
                                     {% endif %}
                                 </div>
                                 <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
                                 <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
                                 <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
+                                <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
                             </form>
 
                             <br>
@@ -598,18 +604,69 @@ Module
             var from_designation = $('#from_designation').val();
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
+            var form_id = $('#form_id').val();
+            var id_info_1_1 = $('#id_info_1_1').val();
+            var id_info_1_2 = $('#id_info_1_2').val();
+            var id_info_1_3 = $('#id_info_1_3').val();
+            var id_info_1_4 = $('#id_info_1_4').val();
+            var id_info_1_5 = $('#id_info_1_5').val();
+            var id_info_1_6 = $('#id_info_1_6').val();
+            var id_info_2_1 = $('#id_info_2_1').val();
+            var id_info_2_2 = $('#id_info_2_2').val();
+            var id_info_2_3 = $('#id_info_2_3').val();
+            var id_info_2_4 = $('#id_info_2_4').val();
+            var id_info_2_5 = $('#id_info_2_5').val();
+            var id_info_2_6 = $('#id_info_2_6').val();
+            var id_info_3_1 = $('#id_info_3_1').val();
+            var id_info_3_2 = $('#id_info_3_2').val();
+            var id_info_3_3 = $('#id_info_3_3').val();
+            var id_info_3_4 = $('#id_info_3_4').val();
+            var id_info_3_5 = $('#id_info_3_5').val();
+            var id_info_3_6 = $('#id_info_3_6').val();
+            var dealing_assistant = $('#dealing_assistant').val();
+            var deputy_registrar = $('#deputy_registrar').val();
+            var sanction_status = $('#sanction_status').val();
+            var r_name = $('#r_name').val();
+            var r_desgination = $('#r_desgination').val();
+            var remark_id = $('#remark_id').val();
+            
 
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
                 from_designation: from_designation,
                 username_employee:username_employee,
-                designation_employee:designation_employee
+                designation_employee:designation_employee,
+                form_id : form_id,
+                id_info_1_1 : id_info_1_1,
+                id_info_1_2 : id_info_1_2,
+                id_info_1_3 : id_info_1_3,
+                id_info_1_4 : id_info_1_4,
+                id_info_1_5 : id_info_1_5,
+                id_info_1_6 : id_info_1_6,
+                id_info_2_1 : id_info_2_1,
+                id_info_2_2 : id_info_2_2,
+                id_info_2_3 : id_info_2_3,
+                id_info_2_4 : id_info_2_4,
+                id_info_2_5 : id_info_2_5,
+                id_info_2_6 : id_info_2_6,
+                id_info_3_1 : id_info_3_1,
+                id_info_3_2 : id_info_3_2,
+                id_info_3_3 : id_info_3_3,
+                id_info_3_4 : id_info_3_4,
+                id_info_3_5 : id_info_3_5,
+                id_info_3_6 : id_info_3_6,
+                dealing_assistant : dealing_assistant,
+                deputy_registrar : deputy_registrar,
+                sanction_status : sanction_status,
+                r_name : r_name,
+                r_desgination : r_desgination,
+                remark_id : remark_id
                 
             });
             // Fire an AJAX request to handle the action
             $.ajax({
-                url: '/hr2/file_handle/',
+                url: '/hr2/file_handle_leave/',
                 type: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')

@@ -543,7 +543,8 @@ Module
                                             Approve
                                         </button>
                                     </div>
-
+                                    <label>Remarks</label>
+                                    <input id="remark_id" name="remark_id"></input>
 
                                     {% endif %}
                                 </div>
@@ -706,6 +707,7 @@ Module
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
             var form_id = $('#form_id').val();
+            var remark_id = $('#remark_id').val();
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
@@ -713,11 +715,11 @@ Module
                 username_employee:username_employee,
                 designation_employee:designation_employee,
                 form_id:form_id,
-
+                remark_id : remark_id
             });
             // Fire an AJAX request to handle the action
             $.ajax({
-                url: '/hr2/file_handle/',
+                url: '/hr2/file_handle_ltc/',
                 type: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')

@@ -29,8 +29,11 @@ urlpatterns = [
     url(r'^search_employee/', views.search_employee, name='search_employee'),
     url(r'^track_file/(?P<id>\d+)/$', views.track_file, name='track_file'),
     url('form_view_ltc/(?P<id>\d+)/$', views.form_view_ltc, name='form_view_ltc'),
-    url('file_handle/', views.file_handle, name='file_handle'),
+    # url('file_handle/', views.file_handle, name='file_handle'),
     url('file_handle_cpda/', views.file_handle_cpda, name='file_handle_cpda'),
+    url('file_handle_leave/', views.file_handle_leave, name='file_handle_leave'),
+    url('file_handle_ltc/', views.file_handle_ltc, name='file_handle_ltc'),
+    url('file_handle_appraisal/', views.file_handle_appraisal, name='file_handle_appraisal'),
 
     url(r'^cpda_form/(?P<id>\d+)/$', views.cpda_form,name='cpdaForm'),
     url(r'^view_cpda_form/(?P<id>\d+)/$', views.view_cpda_form,name='view_cpda_form'),

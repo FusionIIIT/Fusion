@@ -35,7 +35,7 @@
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Designation</label>
-                    <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ employee.user_type }}">
+                    <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ designation }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Application Date</label>
@@ -143,7 +143,6 @@
                <div>
              <h3 style="text-align: center;">For Office Use</h3>
                </div>
-
                <label for="office_use"></label>
                <div>
                 <table>
@@ -161,30 +160,30 @@
                     </tr>
                     <tr>
                       <td>Credit Leave</td>
-                      <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"></td>
-                      <td><input type="number" name="info_1_2" maxlength="40" id="id_info_1_2"></td>
-                      <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"></td>
-                      <td><input type="number" name="info_1_4" maxlength="40" id="id_info_1_4"></td>
-                      <td><input type="number" name="info_1_5" maxlength="40" id="id_info_1_5"></td>
-                      <td><input type="number" name="info_1_6" maxlength="40" id="id_info_1_6"></td>
+                      <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_1_2" maxlength="40" id="id_info_1_2" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_1_4" maxlength="40" id="id_info_1_4" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_1_5" maxlength="40" id="id_info_1_5" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_1_6" maxlength="40" id="id_info_1_6" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                     </tr>
                     <tr>
                       <td>Leave Applied</td>
-                      <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"></td>
-                      <td><input type="number" name="info_2_2" maxlength="40" id="id_info_2_2"></td>
-                      <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"></td>
-                      <td><input type="number" name="info_2_4" maxlength="40" id="id_info_2_4"></td>
-                      <td><input type="number" name="info_2_5" maxlength="40" id="id_info_2_5"></td>
-                      <td><input type="number" name="info_2_6" maxlength="40" id="id_info_2_6"></td>
+                      <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_2_2" maxlength="40" id="id_info_2_2" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_2_4" maxlength="40" id="id_info_2_4" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_2_5" maxlength="40" id="id_info_2_5" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_2_6" maxlength="40" id="id_info_2_6" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                     </tr>
                     <tr>
                       <td>Balance after availing Leave Applied</td>
-                      <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1"></td>
-                      <td><input type="number" name="info_3_2" maxlength="40" id="id_info_3_2"></td>
-                      <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3"></td>
-                      <td><input type="number" name="info_3_4" maxlength="40" id="id_info_3_4"></td>
-                      <td><input type="number" name="info_3_5" maxlength="40" id="id_info_3_5"></td>
-                      <td><input type="number" name="info_3_6" maxlength="40" id="id_info_3_6"></td>
+                      <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_3_2" maxlength="40" id="id_info_3_2" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_3_4" maxlength="40" id="id_info_3_4" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_3_5" maxlength="40" id="id_info_3_5" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
+                      <td><input type="number" name="info_3_6" maxlength="40" id="id_info_3_6" {% if global_var != "dealing assistant" %}disabled{% endif %}></td>
                     </tr>
                   </table>
                 </div>
@@ -196,12 +195,12 @@
 
                 <div class="eight wide field">
                     <label for="post_title">Dealing Assistant : </label>
-                    <input type="text" name="dealing_assistant" placeholder="Enter name" maxlength="40" id="dealing_assistant" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
+                    <input type="text" name="dealing_assistant" placeholder="Enter name" maxlength="40" id="dealing_assistant" {% if global_var != "dealing assistant" %}disabled{% endif %}>
                 </div>
                 
                 <div class="eight wide field">
                     <label for="post_title">Deputy Registrar (Estt.)</label>
-                    <input type="text" name="deputy_registrar" placeholder="Enter name" maxlength="40" id="deputy_registrar" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
+                    <input type="text" name="deputy_registrar" placeholder="Enter name" maxlength="40" id="deputy_registrar" {% if global_var != "dealing assistant" %}disabled{% endif %}>
                 </div>
 
                 <div style="text-align: center;">

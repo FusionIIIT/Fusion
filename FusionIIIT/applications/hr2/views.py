@@ -13,6 +13,7 @@ from applications.establishment.models import *
 from applications.establishment.views import *
 from applications.eis.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo, Designation
+from applications.filetracking.models import Tracking
 from html import escape
 from io import BytesIO
 import re
@@ -896,6 +897,20 @@ def ltc_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
+        # designation = get_designation_by_user_id(employee.user)
+        # if(designation):
+        #     uploader_designation = designation
+
+        # print("username",username)
+        # print("uploader_designation",uploader_designation)
+        
+        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        # print(inbox)
+
+
+        # context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox, }
+
         designation = get_designation_by_user_id(employee.user)
         if(designation):
             uploader_designation = designation
@@ -905,10 +920,7 @@ def ltc_form(request, id):
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
-        print(inbox)
-
-
-        context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox, }
+        context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox , 'designation':designation}
 
         messages.success(request, "Ltc form filled successfully!")
         return render(request, template, context)
@@ -952,90 +964,19 @@ def track_file(request, id):
     # Create a JSON response
     return render(request ,template , context)
 
-
-
-# def file_handle_cpda(request):
-#     if request.method == 'POST':
-#         form_data2 = request.POST
-#         form_data=request.POST.get('context')
-#         print(request.POST.get('context'))
-#         action = form_data2.get('action')
-        
-#         form_data=json.loads(form_data)
-#         print(form_data)
-#         form_id = form_data['form_id']
-#         file_id = form_data['file_id']
-#         from_user = form_data['from_user']
-#         from_designation = form_data['from_designation']
-#         username_employee = form_data['username_employee']
-#         designation_employee = form_data['designation_employee']
-
-#         recomm_hod_confirm = form_data['recomm_hod_confirm']
-#         date_rspc_confirm = form_data['date_rspc_confirm']
-#         advance_amount_pda = form_data['advance_amount_pda']
-#         dealing_asstt_name = form_data['dealing_asstt_name']
-#         ar_dr_ia_name = form_data['ar_dr_ia_name']
-#         sanction_status = form_data['sanction_status']
-#         copy_to = form_data['copy_to']
-
-#         #change
-
-
-#         #database
-#         try:
-#             cpda_form = CPDAform.objects.get(id=form_id)
-#         except CPDAform.DoesNotExist:
-#             return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
-
-#         # Update the attribute
-#         setattr(cpda_form, recomm_hod_confirm, recomm_hod_confirm)
-#         setattr(cpda_form, date_rspc_confirm, date_rspc_confirm)
-#         setattr(cpda_form, advance_amount_pda, advance_amount_pda)
-#         setattr(cpda_form, dealing_asstt_name, dealing_asstt_name)
-#         setattr(cpda_form, ar_dr_ia_name, ar_dr_ia_name)
-#         setattr(cpda_form, sanction_status, sanction_status)
-#         setattr(cpda_form, copy_to, copy_to)
-#         cpda_form.save()
+def get_current_file_owner(file_id: int) -> User:
+    '''
+    This functions returns the current owner of the file.
+    The current owner is the latest recipient of the file
+    '''
+    latest_tracking = Tracking.objects.filter(
+        file_id=file_id).order_by('-receive_date').first()
+    latest_recipient = latest_tracking.receiver_id
+    return latest_recipient
 
 
 
-
-#         print("form_id" , form_id)
-#         print("file_id",file_id)
-#         print("from_user",from_user)
-#         print("from_designation",from_designation)
-#         print("action",action)
-#         print("username_employee",username_employee)
-#         print("designation_employee",designation_employee)
-#         print("recomm_hod_confirm",recomm_hod_confirm)
-#         print("date_rspc_confirm",date_rspc_confirm)
-#         print("advance_amount_pda",advance_amount_pda)
-#         print("dealing_asstt_name",dealing_asstt_name)
-#         print("ar_dr_ia_name",ar_dr_ia_name)
-#         print("sanction_status",sanction_status)
-#         print("copy_to",copy_to)
-
-
-#         if(action == '0'):
-#             track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = "Forwared", file_extra_JSON = "None")
-#             print("done1",track_id)
-#             messages.success(request, "File forwarded successfully")
-#         elif(action == '1'):
-#             track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Rejected", file_extra_JSON = "None")
-#             print("done2")
-#             messages.success(request, "File rejected successfully")
-#         else:
-#             track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Approved", file_extra_JSON = "None")
-#             print("done3")
-#             messages.success(request, "File approved successfully")
-
-        
-#         return HttpResponse("Success")
-#     else:
-#         # Handle other HTTP methods if needed
-#         return HttpResponse("Failure")
-
-def file_handle(request):
+def file_handle_leave(request):
     if request.method == 'POST':
         form_data2 = request.POST
         form_data=request.POST.get('context')
@@ -1051,28 +992,88 @@ def file_handle(request):
         username_employee = form_data['username_employee']
         designation_employee = form_data['designation_employee']
 
+        remark = form_data['remark_id']
+        id_info_1_1 = form_data['id_info_1_1']
+        id_info_1_2 = form_data['id_info_1_2']
+        id_info_1_3 = form_data['id_info_1_3']
+        id_info_1_4 = form_data['id_info_1_4']
+        id_info_1_5 = form_data['id_info_1_5']
+        id_info_1_6 = form_data['id_info_1_6']
+        id_info_2_1 = form_data['id_info_2_1']
+        id_info_2_2 = form_data['id_info_2_2']
+        id_info_2_3 = form_data['id_info_2_3']
+        id_info_2_4 = form_data['id_info_2_4']
+        id_info_2_5 = form_data['id_info_2_5']
+        id_info_2_6 = form_data['id_info_2_6']
+        id_info_3_1 = form_data['id_info_3_1']
+        id_info_3_2 = form_data['id_info_3_2']
+        id_info_3_3 = form_data['id_info_3_3']
+        id_info_3_4 = form_data['id_info_3_4']
+        id_info_3_5 = form_data['id_info_3_5']
+        id_info_3_6 = form_data['id_info_3_6']
+        dealing_assistant = form_data['dealing_assistant']
+        deputy_registrar = form_data['deputy_registrar']
+        sanction_status = form_data['sanction_status']
+        r_name = form_data['r_name']
+        r_desgination = form_data['r_desgination']
+
+        office_use = None
+
+        if(office_use == ""):
+            office_use = None
+        else:
+            office_use = f"{id_info_1_1},{id_info_1_2},{id_info_1_3},{id_info_1_4},{id_info_1_5},{id_info_1_6},{id_info_2_1},{id_info_2_2},{id_info_2_3},{id_info_2_4},{id_info_2_5},{id_info_2_6},{id_info_3_1},{id_info_3_2},{id_info_3_3},{id_info_3_4},{id_info_3_5},{id_info_3_6}"
+
+        #change
 
 
+        #database
+        leave_form = LeaveForm.objects.get(id=form_id)
 
-        print("form_id" , form_id)
-        print("file_id",file_id)
-        print("from_user",from_user)
-        print("from_designation",from_designation)
-        print("action",action)
-        print("username_employee",username_employee)
-        print("designation_employee",designation_employee)
+        # Update the attribute
+        setattr(leave_form, "office_use", office_use)
+        setattr(leave_form, "dealing_assistant", dealing_assistant)
+        setattr(leave_form, "deputy_registrar", deputy_registrar)
+        setattr(leave_form, "sanction_status", sanction_status)
+        setattr(leave_form, "r_name", r_name)
+        setattr(leave_form, "r_desgination", r_desgination)
+        leave_form.save()
+
+        #database
+        try:
+            leave_form = LeaveForm.objects.get(id=form_id)
+        except LeaveForm.DoesNotExist:
+            return JsonResponse({"error": "LeaveForm object with the provided ID does not exist"}, status=404)
+        
+
+        print(remark)
+
+        current_owner =  get_current_file_owner(file_id)
+
+        print(current_owner)
+    
+        
 
 
         if(action == '0'):
-            track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = "Forwared", file_extra_JSON = "None")
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee} . Reason : {remark}", file_extra_JSON = "None")
             print("done1",track_id)
             messages.success(request, "File forwarded successfully")
         elif(action == '1'):
-            track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Rejected", file_extra_JSON = "None")
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
             print("done2")
             messages.success(request, "File rejected successfully")
         else:
-            track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = "Approved", file_extra_JSON = "None")
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
             print("done3")
             messages.success(request, "File approved successfully")
 
@@ -1081,6 +1082,329 @@ def file_handle(request):
     else:
         # Handle other HTTP methods if needed
         return HttpResponse("Failure")
+
+
+
+
+def file_handle_cpda(request):
+    if request.method == 'POST':
+        form_data2 = request.POST
+        form_data=request.POST.get('context')
+        print(request.POST.get('context'))
+        action = form_data2.get('action')
+        
+        form_data=json.loads(form_data)
+        print(form_data)
+        form_id = form_data['form_id']
+        file_id = form_data['file_id']
+        from_user = form_data['from_user']
+        from_designation = form_data['from_designation']
+        username_employee = form_data['username_employee']
+        designation_employee = form_data['designation_employee']
+
+        recomm_hod_confirm = form_data['recomm_hod_confirm']
+        date_rspc_confirm = form_data['date_rspc_confirm']
+        advance_amount_pda = form_data['advance_amount_pda']
+        dealing_asstt_name = form_data['dealing_asstt_name']
+        balance_available = form_data['balance_available']
+        sanction_status = form_data['sanction_status']
+        id_ar_dr_name = form_data['id_ar_dr_name']
+        id_ar_dr_ia_name = form_data['id_ar_dr_ia_name']
+        id_check_amount = form_data['id_check_amount']
+        dealing_asstt_ia_name = form_data['dealing_asstt_ia_name']
+        copy_to = form_data['copy_to']
+        remark = form_data['remark_id']
+        #change
+
+
+        #database
+        try:
+            cpda_form = CPDAform.objects.get(id=form_id)
+        except CPDAform.DoesNotExist:
+            return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
+        
+        if(copy_to == ""):
+            copy_to = None
+
+        if(recomm_hod_confirm == ""):
+            recomm_hod_confirm = None
+
+        if(advance_amount_pda == ""):
+            advance_amount_pda = None 
+
+        if(balance_available == ""):
+            balance_available = None        
+
+
+        
+        # Update the attribute
+        setattr(cpda_form, "recomm_hod_confirm", recomm_hod_confirm)
+        setattr(cpda_form, "date_rspc_confirm", date_rspc_confirm)
+        setattr(cpda_form, "advance_amount_pda", advance_amount_pda)
+        setattr(cpda_form, "dealing_asstt_name", dealing_asstt_name)
+        setattr(cpda_form, "id_ar_dr_name", id_ar_dr_name)
+        setattr(cpda_form, "sanction_status", sanction_status)
+        setattr(cpda_form, "id_ar_dr_ia_name", id_ar_dr_ia_name)
+        setattr(cpda_form, "id_check_amount", id_check_amount)
+        setattr(cpda_form, "balance_available", balance_available)
+        setattr(cpda_form, "dealing_asstt_ia_name", dealing_asstt_ia_name)
+        setattr(cpda_form, "copy_to", copy_to)
+        cpda_form.save()
+
+        #database
+        try:
+            cpda_form = CPDAform.objects.get(id=form_id)
+        except CPDAform.DoesNotExist:
+            return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
+        
+        print(cpda_form)
+
+        current_owner =  get_current_file_owner(file_id)
+        print(current_owner)
+
+        print("form_id" , form_id)
+        print("file_id",file_id)
+        print("from_user",from_user)
+        print("from_designation",from_designation)
+        print("action",action)
+        print("username_employee",username_employee)
+        print("designation_employee",designation_employee)
+        print("recomm_hod_confirm",recomm_hod_confirm)
+        print("date_rspc_confirm",date_rspc_confirm)
+        print("advance_amount_pda",advance_amount_pda)
+        print("dealing_asstt_name",dealing_asstt_name)
+        print("id_ar_dr_ia_name",id_ar_dr_ia_name)
+        print("sanction_status",sanction_status)
+        print("copy_to",copy_to)
+
+
+        if(action == '0'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
+            print("done1",track_id)
+            messages.success(request, "File forwarded successfully")
+        elif(action == '1'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done2")
+            messages.success(request, "File rejected successfully")
+        else:
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done3")
+            messages.success(request, "File approved successfully")
+
+        
+        return HttpResponse("Success")
+    else:
+        # Handle other HTTP methods if needed
+        return HttpResponse("Failure")
+    
+
+def file_handle_ltc(request):
+    if request.method == 'POST':
+        form_data2 = request.POST
+        form_data=request.POST.get('context')
+        print(request.POST.get('context'))
+        action = form_data2.get('action')
+        
+        form_data=json.loads(form_data)
+        print(form_data)
+        form_id = form_data['form_id']
+        file_id = form_data['file_id']
+        from_user = form_data['from_user']
+        from_designation = form_data['from_designation']
+        username_employee = form_data['username_employee']
+        designation_employee = form_data['designation_employee']
+
+        remark = form_data['remark_id']
+        #change
+
+
+        #database
+        try:
+            ltc_form = LTCform.objects.get(id=form_id)
+        except LTCform.DoesNotExist:
+            return JsonResponse({"error": "LTCform object with the provided ID does not exist"}, status=404)
+        
+
+        ltc_form.save()
+        
+
+        current_owner =  get_current_file_owner(file_id)
+        print(current_owner)
+
+
+        if(action == '0'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
+            print("done1",track_id)
+            messages.success(request, "File forwarded successfully")
+        elif(action == '1'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done2")
+            messages.success(request, "File rejected successfully")
+        else:
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done3")
+            messages.success(request, "File approved successfully")
+
+        
+        return HttpResponse("Success")
+    else:
+        # Handle other HTTP methods if needed
+        return HttpResponse("Failure")   
+
+
+def file_handle_appraisal(request):
+    if request.method == 'POST':
+        form_data2 = request.POST
+        form_data=request.POST.get('context')
+        print(request.POST.get('context'))
+        action = form_data2.get('action')
+        
+        form_data=json.loads(form_data)
+        print(form_data)
+        form_id = form_data['form_id']
+        file_id = form_data['file_id']
+        from_user = form_data['from_user']
+        from_designation = form_data['from_designation']
+        username_employee = form_data['username_employee']
+        designation_employee = form_data['designation_employee']
+        remarks = form_data['remarks']
+        sign_hod = form_data['sign_hod']
+        sign_director = form_data['sign_director']
+        
+
+        remark = form_data['remark_id']
+        try:
+            appraisal_form = Appraisalform.objects.get(id=form_id)
+        except Appraisalform.DoesNotExist:
+            return JsonResponse({"error": "Appraisalform object with the provided ID does not exist"}, status=404)      
+
+
+        
+        # Update the attribute
+        setattr(appraisal_form, "form_id", form_id)
+        setattr(appraisal_form, "sign_hod", sign_hod)
+        setattr(appraisal_form, "remarks", remarks)
+        setattr(appraisal_form, "sign_director", sign_director)
+       
+        appraisal_form.save()
+
+        current_owner =  get_current_file_owner(file_id)
+        print(current_owner)
+        
+        #database
+        try:
+            appraisal_form = Appraisalform.objects.get(id=form_id)
+        except Appraisalform.DoesNotExist:
+            return JsonResponse({"error": "Appraisalform object with the provided ID does not exist"}, status=404)
+        
+
+
+        if(action == '0'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
+            print("done1",track_id)
+            messages.success(request, "File forwarded successfully")
+        elif(action == '1'):
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done2")
+            messages.success(request, "File rejected successfully")
+        else:
+            if(remark == ""):
+                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
+            else:
+                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+            print("done3")
+            messages.success(request, "File approved successfully")
+
+        
+        return HttpResponse("Success")
+    else:
+        # Handle other HTTP methods if needed
+        return HttpResponse("Failure") 
+
+# def file_handle(request):
+#     if request.method == 'POST':
+#         form_data2 = request.POST
+#         form_data=request.POST.get('context')
+#         print(request.POST.get('context'))
+#         action = form_data2.get('action')
+        
+#         form_data=json.loads(form_data)
+#         print(form_data)
+#         form_id = form_data['form_id']
+#         file_id = form_data['file_id']
+#         from_user = form_data['from_user']
+#         from_designation = form_data['from_designation']
+#         username_employee = form_data['username_employee']
+#         designation_employee = form_data['designation_employee']
+
+#         remark = form_data['remark_id']
+
+
+#         print("form_id" , form_id)
+#         print("file_id",file_id)
+#         print("from_user",from_user)
+#         print("from_designation",from_designation)
+#         print("action",action)
+#         print("username_employee",username_employee)
+#         print("designation_employee",designation_employee)
+
+#         print(remark)
+
+#         current_owner =  get_current_file_owner(file_id)  
+
+#         print(current_owner)
+
+#         if(action == '0'):
+#             if(remark == ""):
+#                 track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee, remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
+#             else:
+#                 track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee, remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
+#             print("done1",track_id)
+#             messages.success(request, "File forwarded successfully")
+#         elif(action == '1'):
+#             if(remark == ""):
+#                 track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
+#             else:
+#                 track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
+#             print("done2")
+#             messages.success(request, "File rejected successfully")
+#         else:
+#             if(remark == ""):
+#                 track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
+#             else:
+#                 track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")   
+#             print("done3")
+#             messages.success(request, "File approved successfully")
+
+        
+#         return HttpResponse("Success")
+#     else:
+#         # Handle other HTTP methods if needed
+#         return HttpResponse("Failure")
 
 def view_ltc_form(request, id):
     ltc_request = get_object_or_404(LTCform, id=id)
@@ -1107,8 +1431,6 @@ def form_mangement_ltc(request):
         # Extract src_object_id values
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
-
-        src_object_ids = [14,15,19]
         
         ltc_requests = []
 
@@ -1375,18 +1697,32 @@ def cpda_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
+        # designation = get_designation_by_user_id(employee.user)
+        # if(designation):
+        #     uploader_designation = designation
+
+        # # print("username",username)
+        # # print("uploader_designation",uploader_designation)
+        
+        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        # print(inbox)
+
+        # context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox}
+
         designation = get_designation_by_user_id(employee.user)
         if(designation):
             uploader_designation = designation
 
-        # print("username",username)
-        # print("uploader_designation",uploader_designation)
+        print("username",username)
+        print("uploader_designation",uploader_designation)
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
-        print(inbox)
+        context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox , 'designation':designation}
 
-        context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox}
+
+        
 
         messages.success(request, "CPDA form filled successfully!")
         return render(request, template, context)
@@ -1528,7 +1864,7 @@ def leave_pre_processing(request):
         for j in range(1,7):
             key_is = f'info_{i}_{j}'
             if(request.POST.get(key_is) == ""):
-                office_use = office_use + 'None' + ','
+                office_use = office_use + ','
             else:
                 office_use = office_use + request.POST.get(key_is) + ','
     
@@ -1604,7 +1940,6 @@ def leave_form(request, id):
             try:
                 print("Creating leave object!")
 
-                data = leave_pre_processing(request) 
 
                 form_3 = {
                     'employee_id' : id,
@@ -1625,7 +1960,6 @@ def leave_form(request, id):
                     'addministrative_responsibilty_assigned' : request.POST.get('addministrative_responsibilty_assigned'),
                     'sign_dir_reg_r_name' : request.POST.get('sign_dir_reg_r_name'),
                     'sign_dir_reg_r_desgination' : request.POST.get('sign_dir_reg_r_desgination'),
-                    'office_use' : data['office_use'],
                     'dealing_assistant' : request.POST.get('dealing_assistant'),
                     'deputy_registrar' : request.POST.get('deputy_registrar'),
                     'sanction_status' : request.POST.get('sanction_status'),
@@ -1653,7 +1987,7 @@ def leave_form(request, id):
                     addministrative_responsibilty_assigned = request.POST.get('addministrative_responsibilty_assigned'),
                     sign_dir_reg_r_name = request.POST.get('sign_dir_reg_r_name'),
                     sign_dir_reg_r_desgination = request.POST.get('sign_dir_reg_r_desgination'),
-                    office_use = data['office_use'],
+                    office_use = "",
                     dealing_assistant = request.POST.get('dealing_assistant'),
                     deputy_registrar = request.POST.get('deputy_registrar'),
                     sanction_status = request.POST.get('sanction_status'),
@@ -1666,6 +2000,7 @@ def leave_form(request, id):
 
                 uploader = employee.user
                 uploader_designation = 'Assistant Professor'
+
 
                 get_designation = get_designation_by_user_id(employee.user)
                 if(get_designation):
@@ -1721,9 +2056,7 @@ def leave_form(request, id):
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
-        print(inbox)
-
-        context = {'employee': employee, 'leave_requests': leave_requests, 'inbox': inbox}
+        context = {'employee': employee, 'leave_requests': leave_requests, 'inbox': inbox , 'designation':designation}
 
         messages.success(request, "Leave form filled successfully!")
         return render(request, template, context)
@@ -1748,7 +2081,7 @@ def form_view_leave(request , id):
     leave_request = reverse_leave_pre_processing(leave_request)
     print(leave_request)
     
-    context = {'leave_request' : leave_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+    context = {'leave_request' : leave_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation, "id" : id}
 
     return render(request , template , context)
 
@@ -2012,6 +2345,19 @@ def appraisal_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
+        # designation = get_designation_by_user_id(employee.user)
+        # if(designation):
+        #     uploader_designation = designation
+
+        # print("username",username)
+        # print("uploader_designation",uploader_designation)
+        
+        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
+
+        # print(inbox)
+
+        # context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': inbox}
+
         designation = get_designation_by_user_id(employee.user)
         if(designation):
             uploader_designation = designation
@@ -2021,9 +2367,7 @@ def appraisal_form(request, id):
         
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
-        print(inbox)
-
-        context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': inbox}
+        context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': inbox , 'designation':designation}
 
         messages.success(request, "Appraisal form filled successfully!")
         return render(request, template, context)
@@ -2050,7 +2394,7 @@ def form_view_appraisal(request , id):
     appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
     print(appraisal_request)
     
-    context = {'appraisal_request' : appraisal_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation}
+    context = {'appraisal_request' : appraisal_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation,"id":id}
 
     return render(request , template , context)
 

@@ -432,13 +432,13 @@ Module
                 <div class="two fields" style="float: right;">
                     <div class="eight wide field">
                         <label name="department_info">Remarks by HOD</label>
-                        <input type="text" name="remarks" maxlength="40" id="remarks" value="{{ appraisal_request.remarks}}" readonly>
+                        <input type="text" name="remarks" maxlength="40" id="remarks" value="{{ appraisal_request.remarks}}" {% if global_var != "CSE HOD" %}disabled{% endif %}>
                     </div>
                 </div> 
                 <div class="two fields" >
                     <div class="eight wide field">
-                        <label name="department_info">Signature</label>
-                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod" value="{{ appraisal_request.sign_hod}}" readonly>
+                        <label name="department_info">Signature of HOD</label>
+                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod" value="{{ appraisal_request.sign_hod}}" {% if global_var != "CSE HOD" %}disabled{% endif %}>
                     </div>
                 </div> 
 
@@ -450,7 +450,7 @@ Module
                <div class="two fields">
                 <div class="eight wide field">
                     <label name="department_info">Director</label>
-                    <input type="text" name="sign_director" maxlength="40" id="sign_director" value="{{ appraisal_request.sign_director}}" readonly>
+                    <input type="text" name="sign_director" maxlength="40" id="sign_director" value="{{ appraisal_request.sign_director}}" {% if global_var != "Director" %}disabled{% endif %}>
                 </div>
             </div> 
 
@@ -487,12 +487,14 @@ Module
                                             Approve
                                         </button>
                                     </div>
-
+                                    <label>Remarks</label>
+                                    <input id="remark_id" name="remark_id"></input>
                                     {% endif %}
         </div>
         <input  type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
         <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
         <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
+        <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
     </form>
 
 
@@ -650,17 +652,28 @@ Module
             var from_designation = $('#from_designation').val();
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
+            var remark_id = $('#remark_id').val();
+            var remarks = $('#remarks').val();remarks
+            var form_id = $('#form_id').val();
+            var sign_hod = $('#sign_hod').val();
+            var sign_director = $('#sign_director').val();
+
             console.log(file_id);
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
                 from_designation: from_designation,
                 username_employee:username_employee,
-                designation_employee:designation_employee
+                designation_employee:designation_employee,
+                remark_id : remark_id,
+                form_id : form_id,
+                sign_hod : sign_hod,
+                remarks : remarks,
+                sign_director : sign_director,
             });
             // Fire an AJAX request to handle the action
             $.ajax({
-                url: '/hr2/file_handle/',
+                url: '/hr2/file_handle_appraisal/',
                 type: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')

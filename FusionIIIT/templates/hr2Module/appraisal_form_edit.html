@@ -33,7 +33,7 @@
                 <div class="two fields">
                     <div class="eight wide field">
                         <label name="designation">Designation</label>
-                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{employee.user_type}}">
+                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{designation}}">
                     </div>
                 </div>
 
@@ -341,13 +341,13 @@
                 <div class="two fields" style="float: right;">
                     <div class="eight wide field">
                         <label name="department_info">Remarks by HOD</label>
-                        <input type="text" name="remarks" maxlength="40" id="remarks">
+                        <input type="text" name="remarks" maxlength="40" id="remarks" {% if global_var != "CSE_HOD" %}disabled{% endif %}>
                     </div>
                 </div> 
                 <div class="two fields" >
                     <div class="eight wide field">
-                        <label name="department_info">Signature</label>
-                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod">
+                        <label name="department_info">Signature of HOD</label>
+                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod" {% if global_var != "CSE_HOD" %}disabled{% endif %}>
                     </div>
                 </div> 
 
@@ -359,7 +359,7 @@
                <div class="two fields">
                 <div class="eight wide field">
                     <label name="department_info">Director</label>
-                    <input type="text" name="sign_director" maxlength="40" id="sign_director">
+                    <input type="text" name="sign_director" maxlength="40" id="sign_director" {% if global_var != "Director" %}disabled{% endif %}>
                 </div>
             </div> 
 
@@ -436,4 +436,3 @@
         });
     });
 </script>
-q

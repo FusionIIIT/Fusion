@@ -31,7 +31,7 @@
                 <div class="two fields">
                     <div class="eight wide field">
                         <label for="designation">Designation</label>
-                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ employee.user_type }}">
+                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ designation }}">
                     </div>
                 </div>
 
@@ -282,7 +282,7 @@
                     </div>
                     <div class="eight wide field">
                         <label for="designation_employee">Designation:</label>
-                        <input type="text" name="designation_employee" id="designation_employee" readonly>
+                        <input type="text" name="designation_employee" id="designation_employee" value = "{{designation}}">
                     </div>
                     <div class="field">
                         <button id="check_button" class="ui primary button right floated">Check</button>
