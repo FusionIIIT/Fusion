@@ -3,18 +3,18 @@
 {% block comp_prescription %}
     {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="prescribe_app">
+        {% comment %} <a class="active item" data-tab="prescribe_app">
             Prescribe with Appointment
-        </a>
+        </a> {% endcomment %}
         <a class="item" data-tab="prescribe">
-            Prescribe without Appointment
+            Prescribe 
         </a>
-        <a class="item" data-tab="hospitaladmit">
+        {% comment %} <a class="item" data-tab="hospitaladmit">
             Hospital Admission
-        </a>
+        </a> {% endcomment %}
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="prescribe_app">
+    {% comment %} <div class="ui active tab" data-tab="prescribe_app">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -202,10 +202,10 @@
 
 
 
-        <div class="extra content"></div>
+        <div class="extra content"></div> {% endcomment %}
     {% comment %}the compounder prescription tab ends here {% endcomment %}
     {% comment %}the prescribe tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="prescribe">
+    <div class="ui active tab" data-tab="prescribe">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -216,7 +216,7 @@
                   <div class="field">
                       <label>Patient</label>
                       <div class="ui fluid large input">
-                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="number">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
                       </div>
                    </div>
 
