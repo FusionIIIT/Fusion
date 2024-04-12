@@ -17,7 +17,17 @@ from applications.globals.models import DepartmentInfo
 import re
 from django.db.models import Q,Count
 
+dept_admin_to_dept = {
+    "deptadmin_cse": "CSE",
+    "deptadmin_ece": "ECE",
+    "deptadmin_me": "ME",
+    "deptadmin_sm": "SM",
+    "deptadmin_design": "Design",
+    "deptadmin_liberalarts": "Liberal Arts",
+    "deptadmin_ns": "Natural Science",
+}
 
+dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ]
 
 
 @login_required(login_url = "/accounts/login/")
@@ -32,7 +42,9 @@ def ps1(request):
     
     print('currentDes : ',currentDes);
 
-    if(currentDes == "dept_admin" or currentDes=="ps_admin" ):
+    isdept_admin = any(designation in dept_admin_to_dept for designation in designations)
+
+    if(isdept_admin  or currentDes=="ps_admin"):
         return redirect('/purchase-and-store/entry/')
     elif not("student" in designations) and str((request.user.extrainfo.department.name)):
         return redirect('/purchase-and-store/create_proposal/')
@@ -239,12 +251,18 @@ def create_proposal(request):
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
     today = timezone.now().strftime('%Y-%m-%d')
+
+    currDesig = request.session['currentDesignationSelected']
+    dept_admin_design = ['dept_admin1', 'dept_admin2', 'dept_admin3']  # Replace with actual department admin designations
+    isAdmin = currDesig == 'ps_admin' or currDesig in dept_admin_design
+
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
         'designations': designations,
         'today': today,
+        'isAdmin': isAdmin,
     }
     return render(request, 'ps1/composeIndent.html', context)
 
@@ -557,7 +575,7 @@ def forwardindent(request, id):
     # end = timer()
     
     if request.method == "POST":
-            print('Mohit Will Win : ' , request.POST);
+            # print('Mohit Will Win : ' , request.POST);
 
             if 'finish' in request.POST:
                 file.complete_flag = True
@@ -612,11 +630,18 @@ def forwardindent(request, id):
                 )
 
 
-                if (receive_design == "dept_admin"):
+
+                if (str(receive_design) in dept_admin_design):
                         indent.head_approval=True
-                elif ((sender_designation_name =="Director" or sender_designation_name =="Registrar") and (receive_design == "Accounts Admin")):
+                elif ((
+                    (sender_designation_name in dept_admin_design)
+                      or
+                      (sender_designation_name == "ps_admin")
+                      )
+                        and (str(receive_design) == "Accounts Admin")):
                         indent.director_approval=True
                         indent.financial_approval=True
+                        indent.head_approval=True
 
                 designs =[] 
                 designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
@@ -800,7 +825,7 @@ def test(request):
 @login_required(login_url = "/accounts/login")
 def delete(request,id):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     file = File.objects.get(pk = id)
     file.delete()
@@ -826,7 +851,7 @@ def delete(request,id):
 @login_required(login_url = "/accounts/login")
 def stock_edit(request): 
     
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     if request.method =="POST":
@@ -851,7 +876,7 @@ def stock_edit(request):
 @login_required(login_url = "/accounts/login")
 def stock_update(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     if request.method =="POST":
@@ -888,7 +913,7 @@ def stock_update(request):
 @login_required(login_url = "/accounts/login")
 def current_stock_view(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     # for handling the search after submission of filters form 
@@ -930,10 +955,15 @@ def current_stock_view(request):
     grades=['A','B','C']
     departmentUser=request.user.extrainfo.department
 
-    if  request.session['currentDesignationSelected'] == "dept_admin":
+    if  request.session['currentDesignationSelected'] in dept_admin_design:
         # if department admin then only show the stocks of that department to them
-        departments=[departmentUser]
-        StockItems = StockItem.objects.filter(department=departmentUser)
+
+        print(dept_admin_to_dept[request.session['currentDesignationSelected']]);
+        deptId = DepartmentInfo.objects.get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
+
+        departments=[deptId]
+
+        StockItems = StockItem.objects.filter(department=deptId)
 
     elif request.session['currentDesignationSelected'] == "ps_admin":
         departments=DepartmentInfo.objects.all()
@@ -955,7 +985,6 @@ def current_stock_view(request):
         for item in grouped_items
     ]
 
-    print('Stockitems :' , grouped_items_list)
 
     return render(request,'ps1/current_stock_view_filter.html',{'itemsTypes':itemsTypes,'grades':grades,'departments':departments,'stocks':grouped_items_list})
 
@@ -964,7 +993,7 @@ def current_stock_view(request):
 @login_required(login_url = "/accounts/login")
 def stock_item_view(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     if request.method=="POST":
@@ -986,15 +1015,16 @@ def stock_item_view(request):
 def stock_entry_view(request):
 
     # ! CHALLENGE HERE IS HOW TO SHOW THE TRANSFERRED STOCKS AND CURRENTLY PRESENT.
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     department = request.user.extrainfo.department
 
-    if  request.session['currentDesignationSelected'] == "dept_admin":
+    if  request.session['currentDesignationSelected'] in dept_admin_design:
         # if department admin then only show the stocks of that department to them
         print("I am a department admin ");
-        stocks=StockEntry.objects.filter(item_id__file_info__uploader__department=department)
+        deptId = DepartmentInfo.objects.get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
+        stocks=StockEntry.objects.filter(item_id__file_info__uploader__department=deptId)
     elif request.session['currentDesignationSelected'] == "ps_admin":
         print("I am a PS admin ");
         stocks=StockEntry.objects.all()
@@ -1008,7 +1038,7 @@ def stock_entry_view(request):
 @login_required(login_url = "/accounts/login")
 def stock_entry_item_view(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     department = request.user.extrainfo.department
@@ -1027,7 +1057,7 @@ def stock_entry_item_view(request):
 
 @login_required(login_url = "/accounts/login")    
 def stock_delete(request):
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     if request.method=='POST':
@@ -1047,7 +1077,7 @@ def stock_delete(request):
 
 @login_required(login_url = "/accounts/login")   
 def entry(request):
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     # To Add stock corresponding to 'id' indent File. 
@@ -1074,8 +1104,8 @@ def entry(request):
     department = request.user.extrainfo.department.name
 
     # this is to filter out the indent files only specific to a department like if A is a department Admin then he should only see the indent files corresponding to his department.
-    if  request.session['currentDesignationSelected'] == "dept_admin":
-        IndentFiles=IndentFile.objects.filter(file_info__uploader__department__name=department)
+    if  request.session['currentDesignationSelected'] in dept_admin_design:
+        IndentFiles=IndentFile.objects.filter(file_info__uploader__department__name=dept_admin_to_dept[request.session['currentDesignationSelected']])
     else :
         # otherwise all the indent files will be shown.
         IndentFiles=IndentFile.objects.all()
@@ -1085,7 +1115,7 @@ def entry(request):
 @login_required(login_url = "/accounts/login")
 def Stock_Entry(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     else :
         if request.method=='GET' :
@@ -1136,14 +1166,14 @@ def dealing_assistant(request):
 @login_required(login_url = "/accounts/login")
 def generate_report(request):
 
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     department = request.user.extrainfo.department.name
 
-    if  request.session['currentDesignationSelected'] == "dept_admin":
-        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=department)
+    if  request.session['currentDesignationSelected'] in dept_admin_design:
+        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=dept_admin_to_dept[request.session['currentDesignationSelected']])
     else:
         sto=StockEntry.objects.all()
 
@@ -1173,7 +1203,7 @@ def report(request):
 
 
 def view_bill(request, stock_entry_id):
-    if  request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     stock_entry = get_object_or_404(StockEntry, pk=stock_entry_id)
@@ -1197,8 +1227,8 @@ def view_bill(request, stock_entry_id):
 @login_required(login_url = "/accounts/login")
 def perform_transfer(request):
 
-    if request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
-            return redirect('/dashboard')
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
+        return redirect('/dashboard')
     
     if request.method == "POST":
     
@@ -1259,7 +1289,7 @@ def perform_transfer(request):
 # This is to get the list of all the available stock items for transfer.
 @login_required(login_url = "/accounts/login")
 def stock_transfer(request): 
-    if request.session['currentDesignationSelected'] not in ["dept_admin","ps_admin"]:
+    if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
     if request.method =="POST":
@@ -1288,14 +1318,14 @@ def stock_transfer(request):
 @login_required(login_url = "/accounts/login")
 def view_transfer(request): 
     curr_desg = request.session['currentDesignationSelected']
-    if curr_desg not in ["dept_admin","ps_admin"]:
+    if curr_desg not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
     if curr_desg=="ps_admin":
         stockTransfers = StockTransfer.objects.all(); 
 
-    elif curr_desg=="dept_admin":
-        user_dept = request.user.extrainfo.department
+    elif curr_desg in dept_admin_design:
+        user_dept = DepartmentInfo.objects.get(name=dept_admin_to_dept[curr_desg])
         stockTransfers = StockTransfer.objects.filter(
             Q(src_dept=user_dept) | Q(dest_dept=user_dept)
         )
