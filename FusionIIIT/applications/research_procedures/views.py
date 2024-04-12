@@ -193,8 +193,8 @@ def add_projects(request):
         else :
             projectid= obj[0].project_id+1
 
-        for i in obj:
-            if i.project_name==projectname:
+        for project in obj:
+            if project.project_name==projectname:
                 messages.error(request,"Request not added, project name already exists")
                 return render(request,"rs/projects.html")
         
