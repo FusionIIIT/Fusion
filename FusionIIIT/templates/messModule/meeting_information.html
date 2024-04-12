@@ -33,7 +33,7 @@
                     <!-- <div class="ui calendar" id="rangestart">
                         <div class="ui input left icon">
                             <i class="calendar icon"></i> -->
-                            <input  name="date" type="date" placeholder="Date" required="true" id="date">
+                            <input  name="date" type="date" required="true" id="date-input">
                         <!-- </div>
                     </div> -->
                 </div>
@@ -187,7 +187,7 @@
 
 <script type="text/javascript">
     function required_check_invitation(){
-            if (($("#agenda").val().length == 0)|| ($("#time").val().length == 0)|| ($("#date").val().length == 0))
+            if (($("#agenda").val().length == 0)|| ($("#time").val().length == 0)|| ($("#date-input").val().length == 0))
             {
                 check = 0;
                 return check;
@@ -207,7 +207,7 @@
                     url: 'invitation/',
                     dataType: 'json',
                     data: {
-                        'date': $("#date").val(),
+                        'date': $("#date-input").val(),
                         'agenda': $("#agenda").val(),
                         'venue': $("#venue").val(),
                         'time': $("#time").val()

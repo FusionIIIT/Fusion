@@ -17,7 +17,8 @@ from rest_framework.response import Response
 
 
 from . import serializers
-
+from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
+                                         Issue, IssueImage, DepartmentInfo)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
@@ -30,10 +31,33 @@ def login(request):
     serializer.is_valid(raise_exception=True)
     user = get_and_authenticate_user(**serializer.validated_data)
     data = serializers.AuthUserSerializer(user).data
+    print(user.id)
+    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = user).values_list('designation'))
+    print(desig)
+    b = [i for sub in desig for i in sub]
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
+
+    designation=[]
+                
+                
+
+    designation.append(str(user.extrainfo.user_type))
+    for i in design:
+        if str(i.designation) != str(user.extrainfo.user_type):
+            print('-------')
+            print(i.designation)
+            print(user.extrainfo.user_type)
+            print('')
+            designation.append(str(i.designation))
+    for i in designation:
+        print(i)
+
+    
     resp = {
         'success' : 'True',
         'message' : 'User logged in successfully',
-        'token' : data['auth_token']
+        'token' : data['auth_token'],
+        'designations':designation
     }
     return Response(data=resp, status=status.HTTP_200_OK)
 
@@ -67,6 +91,22 @@ def dashboard(request):
         'notifications':notifications,
         'desgination_info' :  designation_info,
         'club_details' : club_details
+    }
+
+    return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def notification(request):
+  
+    print(request)
+    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
+    print("get")
+    print(notifications)
+
+    resp={
+        'notifications':notifications, 
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
