@@ -175,7 +175,7 @@ def add_projects(request):
         
         
         check= get_obj_by_username_and_designation(copid, "Professor") #checking for copid to exist
-        
+
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
 
@@ -684,6 +684,7 @@ def inbox(request):
     }
     # print(data)
     return render(request, "rs/inbox.html",context= data1)
+  data1= {}
   return render(request, "rs/inbox.html", context= data1)
 
 @login_required
