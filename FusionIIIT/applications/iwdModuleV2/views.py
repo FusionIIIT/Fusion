@@ -37,6 +37,8 @@ from django.core.files.base import File as DjangoFile
 #             break
 #     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+#Junior Engineer, Electrical Engineer (Civil), Electrical_AE, Electrical_JE, EE, Civil_AE, Civil_JE
+
 def dashboard(request):
     eligible = ""
     userObj = request.user
@@ -453,15 +455,18 @@ def extensionFormView(request):
         key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
 
+designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
+
 def fetchDesignations(request):
     designations = Designation.objects.filter()
 
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/requestsView.html', {'holdsDesignations' : holdsDesignations})
 
@@ -488,6 +493,8 @@ def requestsView(request):
         request_object = Requests.objects.get(pk=formObject.pk)
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
         d1 = HoldsDesignation.objects.get(user__username=request.user)
+        print(d)
+        print(d1)
         create_file(uploader=request.user.username, 
             uploader_designation=d1.designation, 
             receiver=request.POST['designation'],
@@ -506,10 +513,11 @@ def requestsView(request):
 
 def createdRequests(request):
     obj = []
+    d = HoldsDesignation.objects.get(user__username=request.user)
 
     inbox_files = view_inbox(
         username=request.user,
-        designation="Engineer",
+        designation=d.designation,
         src_module="IWD"
     )
 
@@ -525,9 +533,10 @@ def createdRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
@@ -593,9 +602,10 @@ def engineerProcessedRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
@@ -659,9 +669,10 @@ def deanProcessedRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
@@ -760,9 +771,10 @@ def rejectedRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/rejectedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})    
 
@@ -1001,7 +1013,8 @@ def editInventoryAfterRequest(request):
         else:
             Inventory.objects.filter(id=request.POST['selected_item_id']).update(quantity=(q-int(request.POST['quantity'])))
         formObject = UsedItems()
-        formObject.requestId = request.POST['id']
+        request_instance = Requests.objects.get(pk=request.POST['id'])
+        formObject.request_id = request_instance
         formObject.itemName = selectedItem.name
         formObject.cost = selectedItem.cost
         formObject.quantity = request.POST['quantity']
@@ -1018,7 +1031,7 @@ def generateFinalBill(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
 
-        usedItems = UsedItems.objects.filter(requestId=requestId)
+        usedItems = UsedItems.objects.filter(request_id=requestId)
         workOrder = WorkOrder.objects.get(request_id=requestId)
 
         itemsList = []
@@ -1100,9 +1113,10 @@ def generatedBillsView(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean (P&D)" or d.name == "Director" or d.name == "Accounts Admin"  or d.name == "Admin IWD" or d.name == "Auditor":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 

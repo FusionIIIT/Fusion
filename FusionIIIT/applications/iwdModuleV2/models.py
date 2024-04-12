@@ -165,15 +165,15 @@ class Requests(models.Model):
     description = models.CharField(max_length=200)
     area = models.CharField(max_length=200)
     requestCreatedBy = models.CharField(max_length=200)
-    engineerProcessed = models.IntegerField()
-    directorApproval = models.IntegerField()
-    deanProcessed = models.IntegerField()
+    engineerProcessed = models.IntegerField(default=0)
+    directorApproval = models.IntegerField(default=0)
+    deanProcessed = models.IntegerField(default=0)
     status = models.CharField(max_length=200)
-    issuedWorkOrder = models.IntegerField()
-    workCompleted = models.IntegerField()
-    billGenerated = models.IntegerField()
-    billProcessed = models.IntegerField()
-    billSettled = models.IntegerField()
+    issuedWorkOrder = models.IntegerField(default=0)
+    workCompleted = models.IntegerField(default=0)
+    billGenerated = models.IntegerField(default=0)
+    billProcessed = models.IntegerField(default=0)
+    billSettled = models.IntegerField(default=0)
 
 class WorkOrder(models.Model):
     # request_id = models.IntegerField()
@@ -181,23 +181,24 @@ class WorkOrder(models.Model):
     name = models.CharField(max_length=200)
     date = models.DateField(default=date.today)
     agency = models.CharField(max_length=200)
-    amount = models.IntegerField()
-    deposit = models.IntegerField()
+    amount = models.IntegerField(default=0)
+    deposit = models.IntegerField(default=0)
     alloted_time = models.CharField(max_length=200)
     start_date = models.DateField()
     completion_date = models.DateField()
 
 class Inventory(models.Model):
     name = models.CharField(max_length=200)
-    quantity = models.IntegerField()
-    cost = models.IntegerField()
+    quantity = models.IntegerField(default=0)
+    cost = models.IntegerField(default=0)
 
 class UsedItems(models.Model):
-    requestId = models.IntegerField()
+    # requestId = models.IntegerField()
+    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     itemName = models.CharField(max_length=200)
-    cost = models.IntegerField()
-    quantity = models.IntegerField()
-    date = models.DateField()
+    cost = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
+    date = models.DateField(default=date.today)
     
 class Bills(models.Model):
     # requestId = models.IntegerField()
@@ -206,4 +207,4 @@ class Bills(models.Model):
 
 class Budget(models.Model):
     name = models.CharField(max_length=200)
-    budgetIssued = models.IntegerField()
+    budgetIssued = models.IntegerField(default=0)
