@@ -1,0 +1,110 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Department
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}    
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a class="active item" data-tab="first" id="ECE_Dep">
+                    ECE Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <div class="ui dropdown item">
+                    Other Departments
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a class="item" data-tab="second" id="CSE_Dep">
+                            CSE Department
+                        </a>
+                        <a class="item" data-tab="third" id="ME_Dep">
+                            ME Department
+                        </a>
+                        <a class="item" data-tab="fourth" id="SM_Dep">
+                            SM Department
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+            
+            {% comment %}CSE Department!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block ECE_Dep %}
+                    {{ user_designation }}
+                    {% include "department/ece_dep.html" %}
+                {% endblock %}
+            </div>
+            {% comment %}CSE Department!{% endcomment %}
+
+            {% comment %}ECE Department!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% block CSE_Dep %}
+                    {% include "department/cse_dep.html" %}
+                {% endblock %}
+            </div>
+            {% comment %}ECE Department!{% endcomment %}
+
+            {% comment %}ME Department!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block ME_Dep %}
+                    {% include "department/me_dep.html" %}
+                {% endblock %}
+            </div>
+            {% comment %}ME Department!{% endcomment %}
+
+            {% comment %}SM Department!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block SM_Dep %}
+                    {% include "department/sm_dep.html" %}
+                {% endblock %}
+            </div>
+            {% comment %}SM{% endcomment %}
+        </div>
+        
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+        
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+{% include 'department/alert.html' %}
+{% endblock %}

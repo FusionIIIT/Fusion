@@ -17,11 +17,10 @@ from applications.globals.models import (Designation, ExtraInfo,
 from applications.eis.models import (faculty_about, emp_research_projects)
 
 from notification.views import department_notif
-from .models import SpecialRequest, Announcements
+from .models import SpecialRequest, Announcements , Information
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-# Create your views here.
 
 
 def browse_announcements():
@@ -97,7 +96,8 @@ def dep_main(request):
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     ann_maker_id = user_info.id
     user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-
+    user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+    
     requests_made = get_make_request(user_info)
     
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
@@ -131,13 +131,24 @@ def dep_main(request):
                                                     )
     
     if user_designation == "student":
-        return render(request,"department/index.html", {"announcements":context,
-                                                        "fac_list" : context_f,
-                                                        "requests_made" : requests_made
-                                                    })
-    # elif(str(user.extrainfo.user_type)=="faculty"):
+        department_templates = {
+            51: 'department/cse_index.html',
+            30: 'department/ece_index.html',
+            37: 'department/me_index.html',
+            53: 'department/sm_index.html'
+        }
+        default_template = 'department/cse_index.html'
+        template_name = department_templates.get(user_departmentid, default_template)
+
+        return render(request, template_name, {
+            "announcements": context,
+            "fac_list": context_f,
+            "requests_made": requests_made
+        })
+       
     elif user_designation=="faculty":
         return HttpResponseRedirect("facView")
+    
     elif user_designation=="staff":
         return HttpResponseRedirect("staffView")
 
@@ -161,6 +172,8 @@ def faculty_view(request):
     num = 1
     ann_maker_id = user_info.id
     requests_received = get_to_request(usrnm)
+    user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+    
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
         programme = request.POST.get('programme', '')
@@ -179,14 +192,28 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
+        
         department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
-    return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
-                                                            "announcements":context,
-                                                            "request_to":requests_received,
-                                                            "fac_list" : context_f
-                                                        })
+    
+    department_templates = {
+        51: 'department/csedep_request.html',
+        30: 'department/ecedep_request.html',
+        37: 'department/medep_request.html',
+        53: 'department/smdep_request.html'
+    }
+    default_template = 'department/dep_request.html'
+    
+    template_name = department_templates.get(user_departmentid, default_template)
+    
+    return render(request, template_name, {
+        "user_designation": user_info.user_type,
+        "announcements": context,
+        "request_to": requests_received,
+        "fac_list": context_f
+    })
+    
 
 def staff_view(request):
     """
@@ -207,33 +234,83 @@ def staff_view(request):
     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
     num = 1
     ann_maker_id = user_info.id
+    user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+    
     requests_received = get_to_request(usrnm)
     if request.method == 'POST':
-        batch = request.POST.get('batch', '')
-        programme = request.POST.get('programme', '')
-        message = request.POST.get('announcement', '')
-        upload_announcement = request.FILES.get('upload_announcement')
-        department = request.POST.get('department')
-        ann_date = date.today()
-        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-        getstudents = ExtraInfo.objects.select_related('user')
-        recipients = User.objects.filter(extrainfo__in=getstudents)
+        form_type =   request.POST.get('form_type', '')
+        if form_type == 'form1' :
+            
+            batch = request.POST.get('batch', '')
+            programme = request.POST.get('programme', '')
+            message = request.POST.get('announcement', '')
+            upload_announcement = request.FILES.get('upload_announcement')
+            department = request.POST.get('department')
+            ann_date = date.today()
+            user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+            getstudents = ExtraInfo.objects.select_related('user')
+            recipients = User.objects.filter(extrainfo__in=getstudents)
 
-        obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
-                                    batch=batch,
-                                    programme=programme,
-                                    message=message,
-                                    upload_announcement=upload_announcement,
-                                    department = department,
-                                    ann_date=ann_date)
-        department_notif(usrnm, recipients , message)
+            obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
+                                        batch=batch,
+                                        programme=programme,
+                                        message=message,
+                                        upload_announcement=upload_announcement,
+                                        department = department,
+                                        ann_date=ann_date)
+            department_notif(usrnm, recipients , message)
+            
+        elif form_type == 'form2' :
+            
+            email = request.POST.get('email', '')
+            phone_number = request.POST.get('contact_number', '')
+            facilites = request.POST.get('facilities', '')
+            labs = request.POST.get('labs', '')
+            department_id = user_departmentid
+
+            # Check if a row with the specified department_id already exists
+            try:
+                department_info = Information.objects.get(department_id=department_id)
+                # If row exists, update the values
+                department_info.email = email
+                department_info.phone_number_number = phone_number
+                department_info.facilites = facilites
+                department_info.labs = labs
+                department_info.save()
+            except Information.DoesNotExist:
+                # If row does not exist, create a new one
+                department_info = Information.objects.create(
+                    department_id=department_id,
+                    email=email,
+                    phone_number=phone_number,
+                    facilites=facilites,
+                    labs=labs
+                )
+            
+        
+        
+    # update_department_info(request)
         
     context = browse_announcements()
-    return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
-                                                            "announcements":context,
-                                                            "request_to":requests_received,
-                                                            "fac_list" : context_f
-                                                        })
+    
+    department_templates = {
+        51: 'department/csedep_request.html',
+        30: 'department/ecedep_request.html',
+        37: 'department/medep_request.html',
+        53: 'department/smdep_request.html'
+    }
+    default_template = 'department/dep_request.html'
+    
+    template_name = department_templates.get(user_departmentid, default_template)
+    
+    return render(request, template_name, {
+        "user_designation": user_info.user_type,
+        "announcements": context,
+        "request_to": requests_received,
+        "fac_list": context_f
+    })
+    
+   
 
 @login_required(login_url='/accounts/login')
 
@@ -318,7 +395,7 @@ def faculty():
 
 
     }
-    print(cse_f)
+    # print(cse_f)
     return context_f
 
 def alumni(request):
