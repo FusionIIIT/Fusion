@@ -1,0 +1,262 @@
+<!-- no_dues_status.html -->
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    No Dues
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/nodues_apply" class="item">No Dues Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/nodues_status" class="active item">No Dues Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+        </div>
+
+  
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="first">
+                <h2 class="ui header">No Dues Status</h2>
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Departments</th>
+                            <th>Dues/No Dues</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in form_data %}
+                        {% if entry.roll_no == roll_no%}
+                            <tr>
+                                <td>1</td>
+                                <td>I-Card Submit - DSA office</td>
+                                <td>
+                                        {%if entry.icard_dsa_clear%} No Dues
+                                        {%elif entry.icard_dsa_notclear%} Dues
+                                        {% else %} Pending
+                                        {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Computer Centre</td>
+                                <td>
+                                    {%if entry.cc_clear%} No Dues
+                                    {%elif entry.cc_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Physics lab</td>
+                                <td>
+                                    {%if entry.physics_lab_clear%} No Dues
+                                    {%elif entry.physics_lab_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Mechatronics Lab</td>
+                                <td>
+                                    {%if entry.mechatronics_lab_clear%} No Dues
+                                    {%elif entry.mechatronics_lab_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Workshop</td>
+                                <td>
+                                    {%if entry.workshop_clear%} No Dues
+                                    {%elif entry.workshop_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Power & Control Lab/ Signal Processing Lab</td>
+                                <td>
+                                    {%if entry.signal_processing_lab_clear%} No Dues
+                                    {%elif entry.signal_processing_lab_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Nano -Scale Computational Lab (VLSI Design Lab)/ Advanced Microwave and Communication Lab (FIST Lab)</td>
+                                <td>
+                                    {%if entry.vlsi_clear%} No Dues
+                                    {%elif entry.vlsi_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>Electronic And Communication Engineering ECE Laboratory-I/ Communication Engineering Lab</td>
+                                <td>
+                                    {%if entry.ece_clear%} No Dues
+                                    {%elif entry.ece_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>Design Project (For UG only)</td>
+                                <td>
+                                    {%if entry.design_project_clear%} No Dues
+                                    {%elif entry.design_project_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>Design Studio</td>
+                                <td>
+                                    {%if entry.design_studio_clear%} No Dues
+                                    {%elif entry.design_studio_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>PBI/BTP Supervisor (For UG) Thesis Supervisor (For PG)</td>
+                                <td>
+                                    {%if entry.btp_supervisor_clear%} No Dues
+                                    {%elif entry.btp_supervisor_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>Discipline Office</td>
+                                <td>
+                                    {%if entry.discipline_office_clear%} No Dues
+                                    {%elif entry.discipline_office_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>Library</td>
+                                <td>
+                                    {%if entry.library_clear%} No Dues
+                                    {%elif entry.library_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>Hostel</td>
+                                <td>
+                                    {%if entry.hostel_clear%} No Dues
+                                    {%elif entry.hostel_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>Mess</td>
+                                <td>
+                                    {%if entry.mess_clear%} No Dues
+                                    {%elif entry.mess_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>16</td>
+                                <td>Student Gymkhana- DSA office</td>
+                                <td>
+                                    {%if entry.student_gymkhana_clear%} No Dues
+                                    {%elif entry.student_gymkhana_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td>Alumni Office</td>
+                                <td>
+                                    {%if entry.alumni_clear%} No Dues
+                                    {%elif entry.alumni_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td>Placement Cell</td>
+                                <td>
+                                    {%if entry.placement_cell_clear%} No Dues
+                                    {%elif entry.placement_cell_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td>Account Section</td>
+                                <td>
+                                    {%if entry.account_clear%} No Dues
+                                    {%elif entry.account_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>Allahabad Bank</td>
+                                <td>
+                                    {%if entry.bank_clear%} No Dues
+                                    {%elif entry.bank_notclear%} Dues
+                                    {% else %} Pending
+                                    {% endif %}
+                            </td>
+                            </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+

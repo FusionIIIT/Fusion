@@ -331,6 +331,29 @@
                             </a>
                         </div>
                         {% endif %}
+                        
+                        <div style="width: calc(50% - 10px);
+                                    margin: 5px;
+                                    box-sizing: border-box;">     
+                                    {%if request.user.extrainfo.user_type != "student"%} 
+                                    <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic/othersPage/">
+                                {% else%}
+                                    <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic/">
+                                {% endif%}
+                        
+                                <div class="ui centered grid">
+                                    <div class="row">
+                                        <i class="ui edit outline icon big"></i>
+                                    </div>
+                    
+                                    <div class="row">
+                                        <span class="ui sub header centered">Otheracademic Procedure </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                     
+                    
                         {% if request.user.extrainfo.user_type != "staff"  %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;

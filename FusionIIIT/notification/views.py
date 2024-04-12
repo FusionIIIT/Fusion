@@ -183,6 +183,18 @@ def complaint_system_notif(sender, recipient, type, complaint_id,student,message
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
 
+def otheracademic_notif(sender, recipient, type, otheracademic_id,student,message):
+    
+    url = ('otheracademic:otheracademic')
+    
+    module='otheracademic'
+    sender = sender
+    recipient = recipient
+    verb = message
+    description = otheracademic_id
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
+
 def office_dean_PnD_notif(sender, recipient, type):
     url = 'office_module:officeOfDeanPnD'
     module = 'Office of Dean PnD Module'

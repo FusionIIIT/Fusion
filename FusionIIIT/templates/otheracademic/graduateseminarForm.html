@@ -14,24 +14,28 @@
         <div class="column"></div>
 
         <div class="three wide column">
-            {% block usercard %}
-                {% include 'globals/usercard.html' %}
-            {% endblock %}
+            {% include 'globals/usercard.html' %}
+
             <div class="ui divider"></div>
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <a href="#/leave_student/leave_status" class="item">Seminar Sechdule</a>
+                <a href="/otheracademic/graduateseminar/" class="active item">Graduate Seminar Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/graduateSeminarStatus_Dip/" class="item">Seminar Log
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
         </div>
 
         <div class="eight wide column">
             <div class="ui active tab segment" data-tab="filetracking_form" id="filetracking_form">
-                <h2>Compose File</h2>
+                <h2>Graduate Seminar Form</h2>
                 <form method="POST" action="{% url 'otheracademic:graduate_form_submit'%}">
                     {% csrf_token %}
                     <div class="ui form">
                         <div class="field">
-                            <label>Roll No.</label>
+                            <label>Roll No.(In Capital Letter)</label>
                             <input type="text" name="roll_no" required>
                         </div>
                         <div class="field">
