@@ -1,8 +1,11 @@
+
 {% extends 'globals/base.html' %}
 {% load static %}
 
 {% block title %}
+
     Assistantship Claim Form
+
 {% endblock %}
 
 {% block body %}
@@ -20,6 +23,7 @@
             <div class="ui divider"></div>
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
                 <a href="/otheracademic/assistantship" class="active item">Assistantship Form
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -28,6 +32,7 @@
                 </a>
             </div>
         </div>
+
 
         <div class="ten wide column">
             <div class="ui active tab segment" data-tab="assistantship_form" id="assistantship_form">
@@ -77,10 +82,12 @@
                             <label>Thesis Supervisor</label>
                             <input type="text" name="thesis_supervisor" required>
                         </div>
+
                         <div class="field">
                             <label>HOD Credential</label>
                             <input type="text" name="hod_credential" required>
                         </div>
+
                         <button class="ui primary button" type="submit">Submit</button>
                     </div>
 
@@ -96,3 +103,5 @@
     </div>
 
 {% endblock %}
+
+

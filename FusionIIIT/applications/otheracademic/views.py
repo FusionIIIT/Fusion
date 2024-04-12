@@ -35,6 +35,7 @@ from timeit import default_timer as time
 from notification.views import office_module_notif,file_tracking_notif
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 from .models import LeaveFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd,LeavePG,NoDues
 from django.shortcuts import render, get_object_or_404
 from datetime import date
@@ -512,6 +513,7 @@ def nodues_apply(request):
 
 def update_dues_status(request):
     if request.method == 'POST':
+
         roll_no = request.POST.get('roll_no')
         clear = request.POST.get('clear')  # 'true' if clear, 'false' if not clear
         # Convert clear to boolean
