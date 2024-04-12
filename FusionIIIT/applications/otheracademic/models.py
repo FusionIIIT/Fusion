@@ -61,6 +61,7 @@ class LeavePG(models.Model):
     )
     
 
+
     student_name = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     programme = models.CharField(max_length=100)
@@ -87,6 +88,7 @@ class LeavePG(models.Model):
 
     class Meta:
         db_table='LeavePG'
+
 
 
 
@@ -150,6 +152,7 @@ class GraduateSeminarFormTable(models.Model):
         db_table='GraduateSeminarFormTable'
         
 
+
 class BonafideFormTableUpdated(models.Model):
    
     
@@ -169,6 +172,7 @@ class BonafideFormTableUpdated(models.Model):
     class Meta:
         db_table='BonafideFormTableUpdated'
         
+
 
 # class AssistantshipClaimFormStatusUpd(models.Model):
 #     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -200,12 +204,14 @@ class BonafideFormTableUpdated(models.Model):
 
 
 
+
 class AssistantshipClaimFormStatusUpd(models.Model):
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     student_name = models.CharField(max_length=100)
     discipline = models.CharField(max_length=100)
     dateFrom = models.DateField()
     dateTo = models.DateField()
+
     bank_account = models.CharField(max_length=100)
     student_signature = models.FileField(upload_to='student_signatures/')
     dateApplied = models.DateField()
@@ -213,6 +219,7 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     thesis_supervisor = models.CharField(max_length=100)
     hod = models.CharField(max_length=100)
     applicability = models.CharField(max_length=100)
+
     TA_approved = models.BooleanField()
     TA_rejected = models.BooleanField()
     Ths_approved = models.BooleanField()
@@ -221,6 +228,7 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     HOD_rejected = models.BooleanField()
     Acad_approved = models.BooleanField()
     Acad_rejected = models.BooleanField()
+
 
     # New fields
     amount = models.DecimalField(max_digits=10, decimal_places=2,default=0)
@@ -297,3 +305,4 @@ class NoDues(models.Model):
 
     class Meta:
         db_table = 'NoDues'
+

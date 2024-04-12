@@ -12,7 +12,9 @@ urlpatterns = [
     url(r'^leave_form_submit/$', views.leave_form_submit, name='leave_form_submit'),
     url(r'^leaveApproveForm/$', views.leaveApproveForm, name='leaveApproveForm'),
     url(r'^leaveStatus/$', views.leaveStatus, name='leaveStatus'),
+
     url(r'^leaveStatus_Dip/$', views.leaveStatus_Dip, name='leaveStatus_Dip'),
+
     url(r'^approve_leave/(?P<leave_id>\d+)/$', views.approve_leave, name='approve_leave'),
     url(r'^reject_leave/(?P<leave_id>\d+)/$', views.reject_leave, name='reject_leave'),
 
@@ -171,6 +173,7 @@ urlpatterns = [
   url(r'^assistantship/$', views.assistantship, name='assistantship'),
      url(r'^submitform/$', views.assistantship_form_submission, name='assistantship_form_submission'),
      url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
+
     url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
     url(r'^assitantship/thesis_approveform/$', views.assistantship_thesis, name='assistantship_thesis'),
     url(r'^assitantship/hod_approveform/$', views.assistantship_hod, name='assistantship_hod'),
@@ -196,6 +199,7 @@ urlpatterns = [
     url(r'^othersGraduate/$', views.othersGraduate, name='othersGraduate'),
     url(r'^othersAssistantship/$', views.othersAssistantship, name='othersAssistanship'),
     url(r'^othersNoDues/$', views.othersNoDues, name='othersNoDues'),
+
 
 
 ]
