@@ -163,7 +163,8 @@ def add_projects(request):
 
        
         
-        check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
+        check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
+
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
 
@@ -172,12 +173,14 @@ def add_projects(request):
                     return render(request,"rs/projects.html")  
 
         
-        check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Professor")
+        
+        check= get_obj_by_username_and_designation(copid, "Professor") #checking for copid to exist
+        
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
 
                 if not check.exists():
-                    messages.error(request,"Request not added, no such project investigator exists ")
+                    messages.error(request,"Request not added, no such co project investigator exists ")
                     return render(request,"rs/projects.html")  
 
         
@@ -866,6 +869,11 @@ def get_user_by_designation(designation):
 
 def get_designation_instance(designation):
     return Designation.objects.get(name=designation)
+
+def get_obj_by_username_and_designation(username,designation):
+    user_instance = get_user_by_username(username)
+    designation_instance = get_designation_instance(designation)
+    return HoldsDesignation.objects.filter(user=user_instance, designation=designation_instance)
 
 
     
