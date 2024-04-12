@@ -673,9 +673,9 @@ def inbox(request):
     print(data)
     files= []
     count =0
-    for i in data:
+    for file  in data:
         count+=1
-        files.append( File.objects.get(id=i.file_id.id) )
+        files.append( File.objects.get(id=file.file_id.id) )
 
     print(files)
     data1={
@@ -685,7 +685,7 @@ def inbox(request):
     # print(data)
   return render(request, "rs/inbox.html",context= data1)
   
-#   return render(request, "rs/inbox.html", context= data1)
+  
 
 @login_required
 def add_staff_request(request,id):
