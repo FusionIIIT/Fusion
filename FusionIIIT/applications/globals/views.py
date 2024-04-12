@@ -775,7 +775,6 @@ def   profile(request, username=None):
 
     print(username)
     user = get_object_or_404(User, Q(username=username)) if username else request.user
-
     editable = request.user == user
     print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
