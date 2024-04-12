@@ -56,7 +56,11 @@ IPR
         <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_financial_outlay' project_id %}">
           {%  csrf_token  %}
           <input type="hidden" name="financial_outlay_id" value={{item.financial_outlay_id}} >
-          <td><input type="text" name="used_amount">  <button type="submit" class="">submit</button></td> 
+          <td>
+            <div class="ui labeled input">
+            <input class="ui label" type="number" name="used_amount">  <button type="submit" style="margin-left:5px;width:90px" id="{{ forloop.parentloop.counter }}{{forloop.counter}}" onmouseover="changeText('{{forloop.parentloop.counter }}{{forloop.counter}}')" onmouseout="restoreText('{{ forloop.parentloop.counter }}{{forloop.counter}}')" class="ui grey button"><i class="edit icon"></i></button>
+            </div>
+          </td> 
         </form>
       </tr>
       {% endif %}
@@ -65,6 +69,15 @@ IPR
     </tbody>
   </table>
 </div>
+<script>
+  function changeText(idi) {
+    document.getElementById(idi).innerHTML = "Update";
+  }
+
+  function restoreText(idi) {
+    document.getElementById(idi).innerHTML = '<i class="edit icon"></i>';
+  }
+</script>
 {% endfor %}
 
 {% endblock %}

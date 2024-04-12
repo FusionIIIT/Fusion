@@ -148,29 +148,30 @@ IPR
                     </div>
                    
                     <div class="item">
-                        <div class="content" >
+                        <div class="flexy">
+                        <div class="content" id="width-half" >
                             <div class="header">Project Information file</div>
                             <div class="description"  >
                                <a class="ui small grey equal-size-button button " id="k{{ project.project_id }}" onmouseover="changeText('k{{ project.project_id }}')" onmouseout="restoreText('k{{ project.project_id }}')" href="{{ project.project_info_file.url }}"><i class="eye icon"></i> </a>
                             </div>
                         </div>
-                    </div>
-                  
-                    {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
-                    <div class="item">
-                        <div class="content" >
-                            <div class="header"  >Update Financial Outlay</div>
-                            <div class="description"  >
-                               <button class="ui small grey equal-size-button button " id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" {{ project.project_id }}" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="eye icon"></i> </button>
+                        {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
+                        {% comment %} <div class="item"> {% endcomment %}
+                            <div class="content" >
+                                <div class="header"  >Update Financial Outlay</div>
+                                <div class="description"  >
+                                    <button class="ui small grey equal-size-button button " id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
+                                </div>
                             </div>
+                            {% comment %} </div> {% endcomment %}
+                        {% endif %}  
                         </div>
                     </div>
-                    {% endif %}     
                 </div>
             </div>
             <!-- <div class="item"> -->
 
-            
+            {% if global_var == "aculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
             <div style=" font-size:22px; padding:8px; font-weight:bold"> Raise Staff / Expenditure request  </div>
             <form class="ui form" action="{% url 'research_procedures:add_staff_request' project.project_id %}"  method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -197,6 +198,7 @@ IPR
             </form> 
         <!-- </div> -->
         </div>
+        {% endif %}
 <script>
   function changeText(pid) {
     if(pid[0]=='h'){

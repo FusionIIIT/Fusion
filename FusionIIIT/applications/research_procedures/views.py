@@ -161,6 +161,7 @@ def add_projects(request):
 
         # print(check[0].username)
 
+
        
         
         check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
@@ -198,6 +199,8 @@ def add_projects(request):
                 messages.error(request,"Request not added, project name already exists")
                 return render(request,"rs/projects.html")
         
+
+
         
 
         userpi_instance = User.objects.get(username=pid)
@@ -666,9 +669,11 @@ def inbox(request):
     print(user_designation)
     user_designation= get_designation_instance(user_designation)
 
-    # data = view_inbox(request.user.username,user_designation, "research_procedures")
+    
     user_obj = get_user_by_username(request.user.username)
-
+    
+    # There was some issue using view_inbox function, so I had to write the code here
+    
     data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures")
     print(data)
     files= []
@@ -712,7 +717,7 @@ def add_staff_request(request,id):
             file_extra_JSON= { "message": "Staff request added ("+ str(projectid)+ ")"},
             attached_file= file_to_forward, 
         )
-        messages.success(request,"Staff request added successfully")
+        messages.success(request,"request added successfully")
 
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
 
@@ -762,7 +767,7 @@ def forward_request(request):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= filex.src_object_id,
-            file_extra_JSON= { "message": message + " by "+ sender},
+            file_extra_JSON= { "message": message },
             attached_file= filex.upload_file, 
         )
         
@@ -781,8 +786,11 @@ def update_financial_outlay(request,pid):
     if request.method=="POST" :
         obj = request.POST
         financial_outlay_id = obj.get('financial_outlay_id')
+        # print("sdfkjsdfd")
         used_amount = obj.get('used_amount')
-
+        if used_amount is None or used_amount == '':
+            messages.error(request,"Enter amount")
+            return redirect("/research_procedures/update_financial_outlay/" + str(pid))
         financial_outlay_instance = financial_outlay.objects.get(financial_outlay_id=financial_outlay_id)
         # financial_outlay_instance.status = 1
         financial_outlay_instance.utilized_amount += int(used_amount)
