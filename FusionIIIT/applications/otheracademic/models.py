@@ -162,7 +162,7 @@ class BonafideFormTableUpdated(models.Model):
     date_of_applications= models.DateField()
     approve = models.BooleanField()
     reject = models.BooleanField()
-    download_file = models.FileField(upload_to='Bonafide')
+    download_file = models.FileField(upload_to='Bonafide',default="not available")
    
     
 

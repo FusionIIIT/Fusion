@@ -364,7 +364,7 @@ def bonafide_form_submit(request):
                 date_of_applications = data.get('date_of_application'),
                 approve=False,  # Initially not approved
                 reject=False,  # Initially not rejected
-                download_file = None,
+                download_file = "not available",
             )
         bonafide.save()
         return HttpResponseRedirect('/otheracademic/bonafide')
