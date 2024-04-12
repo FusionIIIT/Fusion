@@ -133,6 +133,7 @@ def consult_insert(request):
     messages.success(request,"Successfully created consultancy project")
     return redirect(reverse("research_procedures:patent_registration"))
 
+@login_required
 def add_projects(request):
 
     # designation = getDesignation(request.user.username)
@@ -239,18 +240,21 @@ def add_projects(request):
         return redirect("/research_procedures/financial_outlay/"+str(projectid))
     return render(request,"rs/projects.html")
 
+@login_required
 def add_fund_requests(request,pj_id):
     data= {
         "pj_id": pj_id
     }
     return render(request,"rs/add_fund_requests.html",context=data)
 
+@login_required
 def add_staff_requests(request,pj_id):
     data= {
         "pj_id": pj_id  
     }
     return render(request,"rs/add_staff_requests.html",context=data)
 
+@login_required
 def add_requests(request,id,pj_id):
     if request.method == 'POST':
         obj=request.POST
@@ -340,7 +344,7 @@ def add_requests(request,id,pj_id):
     return render(request, "rs/add_requests.html")    
 
 
-
+@login_required
 def view_projects(request):
     queryset= projects.objects.all()
 
@@ -364,6 +368,7 @@ def view_projects(request):
 
     return render(request,"rs/view_projects_rspc.html", context= data)
 
+@login_required
 def view_requests(request,id):
         
     if id== '1':
@@ -395,6 +400,7 @@ def view_requests(request,id):
     
     return render(request,"rs/view_requests.html", context= data)
 
+@login_required
 def view_financial_outlay(request,pid):
 
     table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
@@ -418,6 +424,7 @@ def view_financial_outlay(request,pid):
     # print(data)
     return render(request,"rs/view_financial_outlay.html", context= data)
 
+@login_required
 def submit_closure_report(request,id):
     id= int(id)
     obj= projects.objects.get(project_id=id)
@@ -435,6 +442,7 @@ def submit_closure_report(request,id):
     messages.success(request,"Closure report submitted successfully")
     return render(request,"rs/view_projects_rspc.html",context=data)
 
+@login_required
 def view_project_inventory(request,pj_id):
     pj_id=int(pj_id)
     queryset= requests.objects.filter(project_id=pj_id,request_type="funds")
@@ -448,6 +456,7 @@ def view_project_inventory(request,pj_id):
     }
     return render(request,"rs/view_project_inventory.html",context=data)
 
+@login_required
 def view_project_staff(request,pj_id):
     pj_id=int(pj_id)
     queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
@@ -475,6 +484,7 @@ def view_project_info(request,id):
     
     return render(request,"rs/view_project_info.html", context= data)
 
+@login_required
 def financial_outlay_form(request,pid):
     pid= int(pid)
     project= projects.objects.get(project_id=pid);
@@ -506,7 +516,7 @@ def financial_outlay_form(request,pid):
 # return render(request,"rs/add_financial_outlay.html", context= data)
 
 
-
+@login_required
 def add_staff_details(request, pid):
     if request.method == 'POST':
         obj = request.POST
@@ -565,7 +575,7 @@ def add_staff_details(request, pid):
 
     return render(request, "rs/add_staff_details.html", context=data)
 
-
+@login_required
 def view_staff_details(request,pid):
 
     staff_records = staff_allocations.objects.filter(project_id=pid)
@@ -596,7 +606,7 @@ def view_staff_details(request,pid):
     return render(request, "rs/view_staff_details.html", context)
 
 
-
+@login_required
 def add_financial_outlay(request,pid):
     if request.method == 'POST':
         
@@ -644,11 +654,14 @@ def add_financial_outlay(request,pid):
                 
     return redirect("/research_procedures/view_financial_outlay/"+str(pid))
 
+@login_required
 def inbox(request):
     
-    
-    user_designation= getDesignation(request.user.username)
+  if request.method == 'POST':
+    obj= request.POST
+    user_designation= obj.get('inbox_designation')
     print(user_designation)
+    user_designation= get_designation_instance(user_designation)
 
     # data = view_inbox(request.user.username,user_designation, "research_procedures")
     user_obj = get_user_by_username(request.user.username)
@@ -668,7 +681,9 @@ def inbox(request):
     }
     # print(data)
     return render(request, "rs/inbox.html",context= data1)
+  return render(request, "rs/inbox.html", context= data1)
 
+@login_required
 def add_staff_request(request,id):
     if request.method == 'POST':
         obj= request.POST
@@ -697,6 +712,7 @@ def add_staff_request(request,id):
 
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
 
+@login_required
 def view_request_inbox(request):
     user_designation= getDesignation(request.user.username)
     print(user_designation)
@@ -718,6 +734,7 @@ def view_request_inbox(request):
     # print(data)
     return render(request, "rs/view_request_inbox.html",context= data)
 
+@login_required
 def forward_request(request):
     if request.method == 'POST':
         obj= request.POST
@@ -752,7 +769,7 @@ def forward_request(request):
     
     return redirect("/research_procedures/view_request_inbox")
         
-
+@login_required
 def update_financial_outlay(request,pid):
 
     
@@ -794,6 +811,7 @@ def update_financial_outlay(request,pid):
     # print(data)
     return render(request,"rs/update_financial_outlay.html", context= data)
 
+@login_required
 def approve_request(request,id):
     if request.method == 'POST':
         obj= request.POST
