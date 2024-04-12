@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db.models import Q
 from applications.globals.models import *
+from django.contrib.auth.decorators import login_required
 from .models import *
 from django.http import HttpResponseRedirect
 from applications.filetracking.sdk.methods import *
@@ -457,6 +458,7 @@ def extensionFormView(request):
 
 designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
 
+@login_required
 def fetchDesignations(request):
     designations = Designation.objects.filter()
 
@@ -470,6 +472,7 @@ def fetchDesignations(request):
 
     return render(request, 'iwdModuleV2/requestsView.html', {'holdsDesignations' : holdsDesignations})
 
+@login_required
 def requestsView(request):
     if request.method == 'POST':
         formObject = Requests()
@@ -511,6 +514,7 @@ def requestsView(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
+@login_required
 def createdRequests(request):
     obj = []
     d = HoldsDesignation.objects.get(user__username=request.user)
@@ -540,6 +544,7 @@ def createdRequests(request):
 
     return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleEngineerProcessRequests(request):
     if request.method == 'POST':
 
@@ -578,6 +583,7 @@ def handleEngineerProcessRequests(request):
 
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+@login_required
 def engineerProcessedRequests(request):
 
     obj = []
@@ -609,6 +615,7 @@ def engineerProcessedRequests(request):
 
     return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleDeanProcessRequests(request):
     if request.method == 'POST':
 
@@ -646,6 +653,7 @@ def handleDeanProcessRequests(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+@login_required
 def deanProcessedRequests(request):
     obj = []
 
@@ -676,6 +684,7 @@ def deanProcessedRequests(request):
 
     return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleDirectorApprovalRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
@@ -712,6 +721,7 @@ def handleDirectorApprovalRequests(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+@login_required
 def handleDirectorRejectionRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
@@ -748,6 +758,7 @@ def handleDirectorRejectionRequests(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+@login_required
 def rejectedRequests(request):
     obj = []
 
@@ -778,6 +789,7 @@ def rejectedRequests(request):
 
     return render(request, 'iwdModuleV2/rejectedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})    
 
+@login_required
 def updateRejectedRequests(request):
     request_id = request.POST.get("id", 0)
 
@@ -804,12 +816,14 @@ def updateRejectedRequests(request):
     obj = [request_object.id, request_object.name, request_object.description, request_object.area]
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "Director" or d.name == "Accounts Admin" or d.name == "Admin IWD":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/updateRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleUpdateRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
@@ -843,6 +857,7 @@ def handleUpdateRequests(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
+@login_required
 def issueWorkOrder(request):
     obj = []
 
@@ -865,11 +880,13 @@ def issueWorkOrder(request):
 
     return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
+@login_required
 def fetchRequest(request):
     request_id = request.POST.get("id", 0)
     req_request = Requests.objects.get(id=request_id)
     return render(request, 'iwdModuleV2/workOrder.html', {'req' : req_request})
 
+@login_required
 def workOrder(request):
     if request.method == 'POST':
         request_instance = Requests.objects.get(pk=request.POST['id'])
@@ -919,6 +936,7 @@ def workOrder(request):
 
         return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
+@login_required
 def requestsStatus(request):
     obj = []
     requestsObject = Requests.objects.all()
@@ -927,6 +945,7 @@ def requestsStatus(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/requestsStatus.html', {'obj' : obj})
 
+@login_required
 def inventory(request):
     items = Inventory.objects.filter()
     obj = []
@@ -935,9 +954,11 @@ def inventory(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/inventory.html', {'obj' : obj})
 
+@login_required
 def addItemsView(request):
     return render(request, 'iwdModuleV2/addItemsView.html')
 
+@login_required
 def addItems(request):
     if request.method == "POST":
         formObject = Inventory()
@@ -947,6 +968,7 @@ def addItems(request):
         formObject.save()
     return render(request, 'iwdModuleV2/addItemsView.html')
 
+@login_required
 def editInventoryView(request):
     items = Inventory.objects.filter()
     obj = []
@@ -955,6 +977,7 @@ def editInventoryView(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
 
+@login_required
 def editInventory(request):
     if request.method == "POST":
         itemId = request.POST['id']
@@ -968,7 +991,8 @@ def editInventory(request):
             element = [i.id, i.name, i.quantity, i.cost]
             obj.append(element)
         return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
-    
+
+@login_required    
 def requestsInProgess(request):
     obj = []
     requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
@@ -977,6 +1001,7 @@ def requestsInProgess(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
 
+@login_required
 def workCompleted(request):
     if request.method == 'POST':
         Requests.objects.filter(id=request.POST['id']).update(workCompleted=1, status="Work Completed")
@@ -987,6 +1012,7 @@ def workCompleted(request):
             obj.append(element)
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
 
+@login_required
 def requestFromInventory(request):
     if request.method == 'POST':
         requestId = request.POST['id']
@@ -1004,6 +1030,7 @@ def requestFromInventory(request):
         print(items)
     return render(request, 'iwdModuleV2/requestFromInventory.html', {'req' : req, 'items' : items})
 
+@login_required
 def editInventoryAfterRequest(request):
     if request.method == 'POST':
         selectedItem = Inventory.objects.get(id=request.POST['selected_item_id'])
@@ -1027,6 +1054,7 @@ def editInventoryAfterRequest(request):
             eligible = p.designation.name
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+@login_required
 def generateFinalBill(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
@@ -1090,7 +1118,8 @@ def generateFinalBill(request):
         response.write(buffer.getvalue())
 
         return response
-    
+
+@login_required    
 def handleBillGeneratedRequests(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
@@ -1102,6 +1131,7 @@ def handleBillGeneratedRequests(request):
             obj.append(element)
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
 
+@login_required
 def generatedBillsView(request):
     request_object = Requests.objects.filter(billGenerated=1, billProcessed=0)
     obj = []
@@ -1120,6 +1150,7 @@ def generatedBillsView(request):
 
     return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleProcessedBills(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
@@ -1158,6 +1189,7 @@ def handleProcessedBills(request):
 
     return render(request, 'iwdModuleV2/dashboard.html', {'obj' : obj, 'eligible': eligible})
 
+@login_required
 def auditDocumentView(request):
     d = HoldsDesignation.objects.get(user__username=request.user)
 
@@ -1186,6 +1218,7 @@ def auditDocumentView(request):
 
     return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def auditDocument(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
@@ -1224,6 +1257,7 @@ def auditDocument(request):
 
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
+@login_required
 def settleBillsView(request):
     d = HoldsDesignation.objects.get(user__username=request.user)
 
@@ -1243,6 +1277,7 @@ def settleBillsView(request):
 
     return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
 
+@login_required
 def handleSettleBillRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
@@ -1277,7 +1312,8 @@ def handleSettleBillRequests(request):
             obj.append(element)
 
         return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
-    
+
+@login_required   
 def viewBudget(request):
 
     budget_object = Budget.objects.filter()
@@ -1290,6 +1326,7 @@ def viewBudget(request):
     
     return render(request, 'iwdModuleV2/viewBudget.html', {'obj' : obj})
 
+@login_required
 def budget(request):
     budget_object = Budget.objects.filter()
 
@@ -1301,6 +1338,7 @@ def budget(request):
     
     return render(request, 'iwdModuleV2/budget.html', {'obj' : obj})
 
+@login_required
 def addBudget(request):
     if request.method == 'POST':
         formObject = Budget()
@@ -1309,6 +1347,7 @@ def addBudget(request):
         formObject.save()
     return render(request, 'iwdModuleV2/addBudget.html', {})
 
+@login_required
 def editBudgetView(request):
     budget_object = Budget.objects.filter()
 
@@ -1320,6 +1359,7 @@ def editBudgetView(request):
     
     return render(request, 'iwdModuleV2/editBudget.html', {'obj' : obj})
 
+@login_required
 def editBudget(request):
     if request.method == "POST":
         budgetId = request.POST['id']
