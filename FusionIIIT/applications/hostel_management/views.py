@@ -374,6 +374,8 @@ def hostel_view(request, context={}):
                 student_info['phone_number'] = extra_info.phone_no
                 
                 hostel_students_details.append(student_info)
+                hostel_students_details = sorted(hostel_students_details, key=lambda x: x['student_id'])
+
 
             context['hostel_students_details'] = hostel_students_details
 
