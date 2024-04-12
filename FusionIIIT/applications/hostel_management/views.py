@@ -313,7 +313,7 @@ def hostel_view(request, context={}):
                 if (room.room_cap > room.room_occupied):
                     a_room.append(room)
 
-            print(a_room)
+            # print(a_room)
             # Retrieve additional information for each student
             for student in students:
                 student_info = {}
