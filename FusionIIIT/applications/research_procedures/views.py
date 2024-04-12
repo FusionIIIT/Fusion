@@ -659,7 +659,7 @@ def add_financial_outlay(request,pid):
 
 @login_required
 def inbox(request):
-    
+  data1 = {}   
   if request.method == 'POST':
     obj= request.POST
     user_designation= obj.get('inbox_designation')
@@ -683,9 +683,9 @@ def inbox(request):
         "files": files
     }
     # print(data)
-    return render(request, "rs/inbox.html",context= data1)
-  data1= {}
-  return render(request, "rs/inbox.html", context= data1)
+  return render(request, "rs/inbox.html",context= data1)
+  
+#   return render(request, "rs/inbox.html", context= data1)
 
 @login_required
 def add_staff_request(request,id):
