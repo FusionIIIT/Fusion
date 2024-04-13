@@ -4,38 +4,26 @@ Resolved, Declined-->
 {% block complainthistory %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="pendingcomplaints">
-           <i class="large orange warning icon"></i> Pending <br>Complaints
-        </a>
-         <a class="item" data-tab="onholdcomplaints">
-           <i class="large orange add user icon"></i> On-Hold <br>Complaints
+    <div class="ui active tab segment">
+        <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="pendingcomplaints">
+                <i class="large orange warning icon"></i> Pending <br>Complaints
         </a>
          <a class="item" data-tab="resolvedcomplaints">
              <i class="large green checkmark icon"></i>Resolved<br> Complaints
         </a>
-         <a class="item" data-tab="declinedcomplaints">
+        <a class="item" data-tab="declinedcomplaints">
            <i class="large red x icon"></i>  Declined<br> Complaints
         </a>
     </div> 
-
-
-    <div class="ui active tab" data-tab="pendingcomplaints">
+    
+    
+    <div class="ui active tab large" data-tab="pendingcomplaints">
         <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
 
-            <!-- <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
-                </div>
-            </div> -->
-            <!--  <div class="ui divider"></div> -->
-        
 
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 0.5%;
+            <table class="ui very basic collapsing celled sortable table" id="pending_user"
+            style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
@@ -43,23 +31,23 @@ Resolved, Declined-->
              
              <thead>
                 <tr>
-                    <td>
+                    <!-- <td>
                         <b>S.No</b>
-                    </td>
-
-                     <td class="five wide column">
+                    </td> -->
+                    
+                    <td class="five wide column">
                         <b>Date</b>
                     </td>
-
+                    
                     <td>
-                    <b>Complaint </br>
+                        <b>Complaint </br>
                         Type</b>
                     </td>
-
+                    
                     <td>
                         <b>Location</b>
                     </td>
-
+                    
                     <!-- <th>
                         Specific </br> Location
                     </th> -->
@@ -71,33 +59,33 @@ Resolved, Declined-->
                    <!-- <th class="one wide column">
                         Status
                     </th> -->
-                    <td class="three wide column">
+                    <!-- <td class="three wide column">
                         <b>Worker </br> Name</b>
-                    </td>
+                    </td> -->
                     
                     
-                   
+                    
                 </tr>
                 </thead>
-               
-                {% for a in history %}
+                
+                {% for a in outbox %}
                     {% if a.status == 0 %}
                         
-                        
-                        
-                <tbody>
-                <tr>
-                    <td>
-                        <h4 class="ui image header">
+                    
+                    
+                    <tbody>
+                        <tr>
+                            <!-- <td>
+                                <h4 class="ui image header">
                             <div class="content">
                                 {{a.serial_no}}
                                 <div class="sub header">
 
                                 </div>
                             </div>
-                           
+                            
                         </h4>
-                    </td>
+                    </td> -->
                     <td>
                         {{ a.complaint_date }}
                     </td>
@@ -114,138 +102,40 @@ Resolved, Declined-->
                     <!-- <td>
                           <i class="large orange warning icon"></i>
                     </td> -->
-                    <td>
-                        <b>NOT ASSIGN</b>
-                    </td>
-                    
-</tr>
-
-
-                </tbody>
-                         
-                   {% endif %}
-                {% endfor %}
-            </table>
-
-            <br>
-            <div class="ui divider"></div>
-        </div>
-    </div>
-
-
-
-
-
-
-
-
-
-
-    <div class="ui tab" data-tab="onholdcomplaints">
-        <div class="ui vertical segment">
-
-          
-        
-
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 0.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-             
-             <thead>
-                <tr>
-                    <td>
-                        <b>S.No</b>
-                    </td>
-
-                    <td class="five wide column">
-                        <b>Date</b>
-                    </td>
-
-                    <td>
-                        <b>Complaint </br>
-                        Type</b>
-                    </td>
-
-                    <td>
-                        <b>Location</b>
-                    </td>
-
-                   <!--  <th>
-                        Specific </br> Location
-                    </th> -->
-
-                    <td class="two wide column">
-                        <b>Details</b>
-                    </td>
-
-                  <!--  <th class="one wide column">
-                        Status
-                    </th> -->
-                    <td class="three wide column">
-                        <b>Worker </br> Name</b>
-                    </td>
-                    
-                    
-                   
-                </tr>
-                </thead>
-                {% for a in history %}
-                    {% if a.status == 1 %}
-                <tbody>
-                <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <div class="content">
-                                {{ a.serial_no }}
-                                <div class="sub header">
-
-                                </div>
-                            </div>
-                           
-                        </h4>
-                    </td>
-                    <td>
-                        {{ a.complaint_date }}
-                    </td>
-                    <td>
-                        {{ a.complaint_type }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }},&nbsp;
-                        {{ a.location }}
-                    </td>
-                    <td>
-                        <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
-                    </td>
                     <!-- <td>
-                          <i class="large orange add user icon"></i>
+                        <b>NOT ASSIGN</b>
                     </td> -->
-                    <td>
-                        <b> {{ a.worker_id.name }}</b>
-                    </td>
                     
-</tr>
+                </tr>
 
 
                 </tbody>
+                
                    {% endif %}
                 {% endfor %}
             </table>
-
+            <div id="paginationpending_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
         </div>
     </div>
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 
 
-
-    <div class="ui tab" data-tab="resolvedcomplaints">
+    
+    <div class="ui tab large" data-tab="resolvedcomplaints">
         <div class="ui vertical segment">
 
             <!-- <div class="extra content">
@@ -256,10 +146,10 @@ Resolved, Declined-->
                     <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-             <div class="ui divider"></div> -->
-        
+            <div class="ui divider"></div> -->
+            
 
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="resolve_user"
                    style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -267,25 +157,25 @@ Resolved, Declined-->
                                                           margin: auto;">
              
              <thead>
-                <tr>
-                    <td>
-                        <b>S.No</b>
-                    </td>
-
-                    <td class="five wide column">
+                 <tr>
+                     <!-- <td>
+                         <b>S.No</b>
+                        </td> -->
+                        
+                        <td class="five wide column">
                         <b>Date</b>
                     </td>
-
+                    
                     <td>
                         <b>Complaint </br>
-                        Type</b>
-                    </td>
+                            Type</b>
+                        </td>
+                        
+                        <td>
+                            <b>Location</b>
+                        </td>
 
-                    <td>
-                        <b>Location</b>
-                    </td>
-
-                   
+                        
 
                     <td class="two wide column">
                         <b>Details</b>
@@ -294,29 +184,29 @@ Resolved, Declined-->
                    <!-- <th class="one wide column">
                         Status
                     </th> -->
-                    <td class="three wide column">
+                    <!-- <td class="three wide column">
                         <b>Worker </br> Name </b>
                     </td>
+                     -->
                     
-                    
-                   
-                </tr>
+                     
+                    </tr>
                 </thead>
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 2 %}
                 <tbody>
                 <tr>
-                    <td>
+                    <!-- <td>
                         <h4 class="ui image header">
                             <div class="content">
                                 {{ a.serial_no }}
                                 <div class="sub header">
-
+                                    
                                 </div>
                             </div>
-                           
+                            
                         </h4>
-                    </td>
+                    </td> -->
                     <td>
                         {{ a.complaint_date }}
                     </td>
@@ -333,33 +223,33 @@ Resolved, Declined-->
                     <!-- <td>
                           <i class="large green checkmark icon"></i>
                     </td> -->
-                    <td>
+                    <!-- <td>
                         <b> {{ a.worker_id.name }}</b>
                     </td>
-                    
-</tr>
+                -->
+            </tr>
 
 
                 </tbody>
                    {% endif %}
                 {% endfor %}
             </table>
-
+            <div id="paginationresolve_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
         </div>
     </div>
+    
 
-
-
-
-
-
-
-
- <div class="ui tab" data-tab="declinedcomplaints">
+    
+    
+    
+    
+    
+    
+    <div class="ui tab large" data-tab="declinedcomplaints">
         <div class="ui vertical segment">
-
+            
             <!-- <div class="extra content">
                 <div class="" style="text-align: center;">
                     <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
@@ -370,8 +260,8 @@ Resolved, Declined-->
             </div>
              <div class="ui divider"></div> -->
         
-
-            <table class="ui very basic collapsing celled sortable table"
+             
+            <table class="ui very basic collapsing celled sortable table" id="decline_user"
                    style="padding-left: 0.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -379,24 +269,24 @@ Resolved, Declined-->
                                                           margin: auto;">
              
              <thead>
-                <tr>
-                    <td width="1">
-                        <b>S.No</b>
-                    </td>
-
-                    <td class="five wide column">
-                        <b>Date</b>
-                    </td>
-
-                    <td>
+                 <tr>
+                     <!-- <td width="1">
+                         <b>S.No</b>
+                        </td> -->
+                        
+                        <td class="five wide column">
+                            <b>Date</b>
+                        </td>
+                        
+                        <td>
                         <b>Complaint </br>
-                        Type</b>
-                    </td>
-
-                    <td>
-                        <b>Location</b>
-                    </td>
-
+                            Type</b>
+                        </td>
+                        
+                        <td>
+                            <b>Location</b>
+                        </td>
+                        
                     <!-- <th>
                         Specific </br> Location
                     </th> -->
@@ -404,33 +294,33 @@ Resolved, Declined-->
                     <td class="two wide column">
                         <b>Details</b>
                     </td>
-
-                  <!--  <th class="one wide column">
+                    
+                    <!--  <th class="one wide column">
                         Status
                     </th> -->
-                    <td class="three wide column">
+                    <!-- <td class="three wide column">
                         <b>Worker </br> Name</b>
                     </td>
-                    
+                     -->
                     
                    
                 </tr>
-                </thead>
-                {% for a in history %}
-                    {% if a.status == 3 %}
+            </thead>
+                {% for a in outbox %}
+                {% if a.status == 3 %}
                 <tbody>
                 <tr>
-                    <td>
+                    <!-- <td>
                         <h4 class="ui image header">
                             <div class="content">
                                 {{ a.serial_no }}
                                 <div class="sub header">
-
+                                    
                                 </div>
                             </div>
-                           
+                            
                         </h4>
-                    </td>
+                    </td> -->
                     <td>
                         {{ a.complaint_date }}
                     </td>
@@ -445,23 +335,34 @@ Resolved, Declined-->
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
                    <!--  <td>
-                          <i class="large red x icon"></i>
+                       <i class="large red x icon"></i>
                     </td> -->
-                    <td>
+                    <!-- <td>
                         <b> {{ a.worker_id.name }}</b>
-                    </td>
+                    </td> -->
                     
-</tr>
-
-
-                </tbody>
-                   {% endif %}
-                {% endfor %}
-            </table>
-
+                </tr>
+                
+                
+            </tbody>
+            {% endif %}
+            {% endfor %}
+        </table>
+        <div id="paginationdecline_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
+    </div>
             <br>
             <div class="ui divider"></div>
         </div>
     </div>
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('pending_user', 10, 'paginationpending_user'); // Call the pagination function with table ID and rows per page
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('resolve_user', 10, 'paginationresolve_user'); // Call the pagination function with table ID and rows per page
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('decline_user', 10, 'paginationdecline_user'); // Call the pagination function with table ID and rows per page
+        });
+    </script>
     {% endblock%}
