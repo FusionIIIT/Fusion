@@ -15,6 +15,8 @@ from django.utils import timezone
 from datetime import datetime
 from applications.globals.models import DepartmentInfo
 import re
+import json
+
 from django.db.models import Q,Count
 
 dept_admin_to_dept = {
@@ -1206,8 +1208,11 @@ def view_bill(request, stock_entry_id):
     if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
     
+    print('Hello I am here ' , stock_entry_id)
     stock_entry = get_object_or_404(StockEntry, pk=stock_entry_id)
     
+    print(stock_entry);
+
     # Check if the bill file exists
     if stock_entry.bill:
         # Read the contents of the bill file
@@ -1275,7 +1280,7 @@ def perform_transfer(request):
 
             messages.success(request,'Stock Transfer Done Successfully.!')
         # if the quantity required for this indent file is fulfilled we should mark this indentfile as done.
-        if(moreStocksRequired==0):
+        if(moreStocksRequired<=0):
             myIndent.purchased=True
         else :
             myIndent.quantity=moreStocksRequired;
@@ -1361,3 +1366,28 @@ def outboxview(request):
     }
 
     return render(request, 'ps1/outboxview.html', context)
+
+
+@login_required(login_url="/accounts/login")
+def updateStockItemInUse(request):
+    if request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
+        return redirect('/dashboard')
+
+    if request.method == "POST":
+
+        # print(request.POST);
+
+        # Get the JSON data from the request body
+        json_data = json.loads(request.POST.get('selected_stock_items'))
+
+
+        # print('jsondata : ', json_data)
+
+        for item in json_data:
+            item_id = item['id']
+            checked = item['checked']
+            stock_item = StockItem.objects.get(id=item_id)
+            stock_item.inUse = checked
+            stock_item.save()
+
+        return redirect('/purchase-and-store/current_stock_view')

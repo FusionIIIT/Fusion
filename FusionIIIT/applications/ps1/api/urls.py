@@ -39,4 +39,16 @@ urlpatterns = [
 
     # To view the current_stock_view based on filters
     url(r'^current_stock_view/(?P<id>\d+)$', views.currentStockView, name='current-stock-view'),
+
+    # to view all the items present in any stock entry
+    url(r'^stock_entry_item_view/(?P<id>\d+)$', views.stock_entry_item_view, name='stock-entry-item-view'),
+
+    # to delete any stock entry
+    url(r'^stock_item_delete/(?P<id>\d+)$', views.stockDelete, name='stock-delete'),
+
+    url(r'^stock_transfer/(?P<id>\d+)$', views.stockTransfer, name='stock-transfer'),
+
+    # url(r'^view_bill/(?P<id>\d+)$', views.viewBill, name='view-bill'),
+    
+    url(r'^perform_transfer/(?P<id>\d+)$', views.performTransfer, name='perform-transfer'),
 ]

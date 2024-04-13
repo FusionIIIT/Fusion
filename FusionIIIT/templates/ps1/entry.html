@@ -6,7 +6,7 @@
 
 
 
-<div class="ui active tab" data-tab="composefile">
+<div class="ui active tab" data-tab="composefile" >
     <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
             padding-right: 3.5%;">
 <div class="ui pointing secondary menu" >
@@ -23,7 +23,8 @@
    
     <div class="ui divider"></div>
     {% if IndentFiles %}
-    <table class="ui very basic celled sortable table" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+    <div class="table-container" style="max-width:800px; overflow-x: scroll;max-height: 550px;  overflow-y: scroll;">
+    <table class="ui very basic celled sortable table">
         <thead>
         <tr>
             <th>Indent File Info</th>
@@ -61,6 +62,7 @@
         </tbody>
 
     </table>
+</div>
 
     <br>
     {% else %}
