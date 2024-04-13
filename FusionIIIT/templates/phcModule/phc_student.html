@@ -57,7 +57,7 @@
                     </a>
 
                     {% if global_var != "student" %}
-                        <a class="item" href="{% url 'healthcenter:medical_relief' %}">
+                        <a class="item" data-tab="fourth">
                             Medical Relief
                             <i class="right floated chevron right icon"></i>
                         </a>
@@ -109,12 +109,13 @@
                     {% include 'phcModule/schedule_student.html'%}
                 {% endblock %}
             </div>
-            {% comment %} {% if global_var=="faculty"%} {% endcomment %}
-            {% comment %} <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fifth" >
-                {% block medical_relief %}
-                    {% include 'phcModule/medical_relief.html'%}
-                {% endblock %}
-            </div> {% endcomment %}
+            {% if global_var != "student" %} 
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block medical_relief %}
+                        {% include 'phcModule/medical_relief.html'%}
+                    {% endblock %}
+                </div> 
+            {% endif %}
             {% comment %}The complaint/feedback ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}

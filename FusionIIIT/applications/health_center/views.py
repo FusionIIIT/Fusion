@@ -485,10 +485,10 @@ def medicalrelief(request):
             holdsDesignations.append(list)
             
     if request.method == 'POST':
-        print(request.POST['name'])
+        # print(request.POST['name'])
         formObject = medical_relief()
         formObject.description = request.POST['description']
-        formObject.file = request.POST['name']
+        formObject.file = request.POST['file']
         formObject.save()
         request_object = medical_relief.objects.get(pk=formObject.pk)
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
@@ -502,7 +502,7 @@ def medicalrelief(request):
             src_module="health_center", 
             src_object_id= str(request_object.id), 
             file_extra_JSON= {"value": 2}, 
-            attached_file = request.FILES['name'])
+            attached_file = None)
         
        
     return render(request, 'phcModule/medical_relief.html', {'holdsDesignations' : holdsDesignations})
