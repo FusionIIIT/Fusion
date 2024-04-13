@@ -1,3 +1,4 @@
+
 from django.db import models
 from datetime import date
 
@@ -227,3 +228,8 @@ class SpecialRequest(models.Model):
 
     def __str__(self):
         return str(self.request_ann_maker.user.username)
+    
+
+class medical_relief(models.Model):
+    description = models.CharField(max_length=200)
+    file = models.FileField()

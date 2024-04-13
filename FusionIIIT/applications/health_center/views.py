@@ -13,8 +13,9 @@ from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
                      Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
                      Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock,SpecialRequest,Announcements)
+                     Stock,SpecialRequest,Announcements,medical_relief)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
+from applications.filetracking.sdk.methods import *
 
 
 
@@ -460,3 +461,44 @@ def announcement(request):
                                                             "announcements":context,
                                                             "request_to":requests_received
                                                         })  
+    
+def fetch_designations(request):
+    designations = Designation.objects.filter()
+
+    holdsDesignations = []
+
+    for d in designations:
+        if d.name == "Compounder" or d.name == "Accounts Admin":
+            list = HoldsDesignation.objects.filter(designation=d)
+            holdsDesignations.append(list)
+
+    return render(request, 'health_center/medical_relief.html', {'holdsDesignations' : holdsDesignations})
+
+def medical_relief(request):
+    if request.method == 'POST':
+        formObject = medical_relief()
+        formObject.description = request.POST['description']
+        formObject.file = request.POST['name']
+        formObject.save()
+        request_object = medical_relief.objects.get(pk=formObject.pk)
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        print(d)
+        print(d1)
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation, 
+            src_module="health_center", 
+            src_object_id= str(request_object.id), 
+            file_extra_JSON= {"value": 2}, 
+            attached_file = request.FILES['name'])
+        designations = Designation.objects.filter()
+
+        holdsDesignations = []
+
+        for d in designations:
+            if d.name == "Compounder" or d.name == "Accounts Admin":
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
+    return render(request, 'health_center/medical_relief.html', {'holdsDesignations' : holdsDesignations})
