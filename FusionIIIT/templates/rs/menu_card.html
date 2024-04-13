@@ -1,10 +1,17 @@
 {% block menucard %}
 
 {% comment %} <a class="item"  data-tab="fourth">Patents</a> {% endcomment %}
-{% if request.user.extrainfo.user_type == "staff" %}
+{% if global_var == "rspc_admin" %}
 <a class="item"  href="/research_procedures/add_projects">Add Projects</a>
 {% endif %}
 <a class="item"  href="/research_procedures/view_projects" >View Projects</a>
-<a class="item"  href="/research_procedures/inbox" >Inbox</a>
+<!-- <a class="item"  href="/research_procedures/inbox" >Inbox</a> -->
+<form class="ui form" action="{% url 'research_procedures:inbox' %}"  method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="text" style="display: none;" name="inbox_designation"  value={{global_var}}>
 
+    <button class="item" type="submit" >Inbox</button>
+   
+    
+</form>
 {% endblock %}

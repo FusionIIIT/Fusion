@@ -133,7 +133,15 @@ def consult_insert(request):
     messages.success(request,"Successfully created consultancy project")
     return redirect(reverse("research_procedures:patent_registration"))
 
+@login_required
 def add_projects(request):
+
+    # designation = getDesignation(request.user.username)
+    # print("designation is " + designation)
+    # if designation != 'rspc_admin':
+    #     messages.error(request, 'Only RSPC Admin can add projects')
+    #     return redirect("/research_procedures")
+
     if request.method== "POST":
         obj= request.POST
         projectname= obj.get('project_name')
@@ -150,34 +158,50 @@ def add_projects(request):
         project_info_file= request.FILES.get('project_info_file')
 
         check = User.objects.filter(username=pid) 
+
         # print(check[0].username)
+
 
        
         
-        check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
+        check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
+
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
 
                 if not check.exists():
-                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    messages.error(request,"Request not added, no such project investigator exists ")
                     return render(request,"rs/projects.html")  
 
         
-        check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Professor")
+        
+        check= get_obj_by_username_and_designation(copid, "Professor") #checking for copid to exist
+
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
 
                 if not check.exists():
-                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    messages.error(request,"Request not added, no such co project investigator exists ")
                     return render(request,"rs/projects.html")  
 
         
         obj= projects.objects.all()
+
+
         if len(obj)==0 :
             projectid=1
         
         else :
             projectid= obj[0].project_id+1
+
+        for project in obj:
+            if project.project_name==projectname:
+                messages.error(request,"Request not added, project name already exists")
+                return render(request,"rs/projects.html")
+        
+
+
+        
 
         userpi_instance = User.objects.get(username=pid)
         usercpi_instance = User.objects.get(username=copid)
@@ -222,18 +246,21 @@ def add_projects(request):
         return redirect("/research_procedures/financial_outlay/"+str(projectid))
     return render(request,"rs/projects.html")
 
+@login_required
 def add_fund_requests(request,pj_id):
     data= {
         "pj_id": pj_id
     }
     return render(request,"rs/add_fund_requests.html",context=data)
 
+@login_required
 def add_staff_requests(request,pj_id):
     data= {
         "pj_id": pj_id  
     }
     return render(request,"rs/add_staff_requests.html",context=data)
 
+@login_required
 def add_requests(request,id,pj_id):
     if request.method == 'POST':
         obj=request.POST
@@ -323,7 +350,7 @@ def add_requests(request,id,pj_id):
     return render(request, "rs/add_requests.html")    
 
 
-
+@login_required
 def view_projects(request):
     queryset= projects.objects.all()
 
@@ -347,6 +374,7 @@ def view_projects(request):
 
     return render(request,"rs/view_projects_rspc.html", context= data)
 
+@login_required
 def view_requests(request,id):
         
     if id== '1':
@@ -378,6 +406,7 @@ def view_requests(request,id):
     
     return render(request,"rs/view_requests.html", context= data)
 
+@login_required
 def view_financial_outlay(request,pid):
 
     table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
@@ -401,6 +430,7 @@ def view_financial_outlay(request,pid):
     # print(data)
     return render(request,"rs/view_financial_outlay.html", context= data)
 
+@login_required
 def submit_closure_report(request,id):
     id= int(id)
     obj= projects.objects.get(project_id=id)
@@ -418,6 +448,7 @@ def submit_closure_report(request,id):
     messages.success(request,"Closure report submitted successfully")
     return render(request,"rs/view_projects_rspc.html",context=data)
 
+@login_required
 def view_project_inventory(request,pj_id):
     pj_id=int(pj_id)
     queryset= requests.objects.filter(project_id=pj_id,request_type="funds")
@@ -431,6 +462,7 @@ def view_project_inventory(request,pj_id):
     }
     return render(request,"rs/view_project_inventory.html",context=data)
 
+@login_required
 def view_project_staff(request,pj_id):
     pj_id=int(pj_id)
     queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
@@ -444,8 +476,7 @@ def view_project_staff(request,pj_id):
     }
     return render(request,"rs/view_project_staff.html",context=data)
 
-def projectss(request):
-    return render(request,"rs/projects.html")
+
 
 def view_project_info(request,id):
     id= int(id)
@@ -459,6 +490,7 @@ def view_project_info(request,id):
     
     return render(request,"rs/view_project_info.html", context= data)
 
+@login_required
 def financial_outlay_form(request,pid):
     pid= int(pid)
     project= projects.objects.get(project_id=pid);
@@ -490,7 +522,7 @@ def financial_outlay_form(request,pid):
 # return render(request,"rs/add_financial_outlay.html", context= data)
 
 
-
+@login_required
 def add_staff_details(request, pid):
     if request.method == 'POST':
         obj = request.POST
@@ -516,9 +548,14 @@ def add_staff_details(request, pid):
                 else:
                     fid = ob[0].staff_allocation_id + 1
 
-                staff_id_instance = User.objects.get(username=staff_id)
-         
+                if not User.objects.filter(username=staff_id).exists():
 
+                    messages.error(request, "Staff with ID " + staff_id + " does not exist")
+                    return redirect("/research_procedures/add_staff_details/"+str(pid))
+                
+                staff_id_instance = User.objects.get(username=staff_id)
+                
+         
                 staff_allocations.objects.create(
                     staff_allocation_id=fid,
                     project_id=project_instance,
@@ -544,7 +581,7 @@ def add_staff_details(request, pid):
 
     return render(request, "rs/add_staff_details.html", context=data)
 
-
+@login_required
 def view_staff_details(request,pid):
 
     staff_records = staff_allocations.objects.filter(project_id=pid)
@@ -575,7 +612,7 @@ def view_staff_details(request,pid):
     return render(request, "rs/view_staff_details.html", context)
 
 
-
+@login_required
 def add_financial_outlay(request,pid):
     if request.method == 'POST':
         
@@ -594,7 +631,7 @@ def add_financial_outlay(request,pid):
                 category = value
                 subcategory = obj.get(subcategory_key, [''])
                 amount = obj.get(amount_key, [''])
-                year = int(year_count)
+                year = int(year_count)  
 
                 # print(year)
                 # print(amount)
@@ -623,30 +660,39 @@ def add_financial_outlay(request,pid):
                 
     return redirect("/research_procedures/view_financial_outlay/"+str(pid))
 
+@login_required
 def inbox(request):
-    
-    
-    user_designation= getDesignation(request.user.username)
+  data1 = {}   
+  if request.method == 'POST':
+    obj= request.POST
+    user_designation= obj.get('inbox_designation')
     print(user_designation)
-    # data = view_inbox(request.user.username,user_designation, "research_procedures")
-    user_obj = get_user_by_username(request.user.username)
+    user_designation= get_designation_instance(user_designation)
 
+    
+    user_obj = get_user_by_username(request.user.username)
+    
+    # There was some issue using view_inbox function, so I had to write the code here
+    
     data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures")
     print(data)
-    # files= []
-    # count =0
-    # for i in data:
-    #     count+=1
-    #     file1= File.objects.get(id=i['id'])
-    #     files.append((count, file1))
+    files= []
+    count =0
+    for file  in data:
+        count+=1
+        files.append( File.objects.get(id=file.file_id.id) )
 
-
-    data={
+    print(files)
+    data1={
         "inbox": data,
+        "files": files
     }
     # print(data)
-    return render(request, "rs/inbox.html",context= data)
+  return render(request, "rs/inbox.html",context= data1)
+  
+  
 
+@login_required
 def add_staff_request(request,id):
     if request.method == 'POST':
         obj= request.POST
@@ -671,10 +717,11 @@ def add_staff_request(request,id):
             file_extra_JSON= { "message": "Staff request added ("+ str(projectid)+ ")"},
             attached_file= file_to_forward, 
         )
-        messages.success(request,"Staff request added successfully")
+        messages.success(request,"request added successfully")
 
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
 
+@login_required
 def view_request_inbox(request):
     user_designation= getDesignation(request.user.username)
     print(user_designation)
@@ -696,14 +743,19 @@ def view_request_inbox(request):
     # print(data)
     return render(request, "rs/view_request_inbox.html",context= data)
 
+@login_required
 def forward_request(request):
     if request.method == 'POST':
         obj= request.POST
         fileid = int(obj.get('file_id'))
-        receiver = obj.get('receiver')
+        
         message= obj.get('message')
-        receiver_instance= User.objects.get(username=receiver)
-        receiver_designation= HoldsDesignation.objects.get(user=receiver_instance).designation
+        designation = get_designation_instance(obj.get('receiver_designation'))
+        receiver_instance= get_user_by_designation(designation)
+        
+        receiver_designation= designation
+
+        receiver= receiver_instance.username
         sender = request.user.username
         
         filex= get_file_by_id(fileid)
@@ -715,20 +767,95 @@ def forward_request(request):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= filex.src_object_id,
-            file_extra_JSON= { "message": message},
+            file_extra_JSON= { "message": message },
             attached_file= filex.upload_file, 
         )
         
         delete_file(fileid)
         messages.success(request,"Request forwarded successfully")
+    return redirect("/research_procedures/inbox")
+
+    
     return redirect("/research_procedures/view_request_inbox")
+        
+@login_required
+def update_financial_outlay(request,pid):
+
+    
+    #post method
+    if request.method=="POST" :
+        obj = request.POST
+        financial_outlay_id = obj.get('financial_outlay_id')
+        # print("sdfkjsdfd")
+        used_amount = obj.get('used_amount')
+        if used_amount is None or used_amount == '':
+            messages.error(request,"Enter amount")
+            return redirect("/research_procedures/update_financial_outlay/" + str(pid))
+        financial_outlay_instance = financial_outlay.objects.get(financial_outlay_id=financial_outlay_id)
+        # financial_outlay_instance.status = 1
+        financial_outlay_instance.utilized_amount += int(used_amount)
+        financial_outlay_instance.save()
+        messages.success(request,"Financial Outlay updated successfully")
+        return redirect("/research_procedures/update_financial_outlay/"+str(pid))
+    
+    
+        
+    #get method
+    table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
+    project= projects.objects.get(project_id=pid);
+
+    years = set(table_data.values_list('year', flat=True))
+
+    category_data = {}
+    for category in table_data.values_list('category', flat=True).distinct():
+        category_data[category] = table_data.filter(category=category)
 
 
-    return redirect("/research_procedures/view_request_inbox")
+    data = {
+        'table_title': 'Total Budget Outlay',
+        'table_caption': '...',  # Add caption if needed
+        'project_name':project.project_name,
+        'years': list(years),
+        'category_data': category_data,
+        'project_id': pid,
+    }
+
+    # print(data)
+    return render(request,"rs/update_financial_outlay.html", context= data)
+
+@login_required
+def approve_request(request,id):
+    if request.method == 'POST':
+        obj= request.POST
+        fileid = id
+        message= "Request approved by " + request.user.username
+        designation = get_designation_instance("rspc_admin")
+        receiver_instance= get_user_by_designation(designation)
+        receiver_designation= designation
+        receiver= receiver_instance.username
+        sender = request.user.username
+        filex= get_file_by_id(fileid)
+        file2=create_file(
+            uploader=sender,
+            uploader_designation= getDesignation(sender),
+            receiver= receiver,
+            receiver_designation=receiver_designation, 
+            src_module="research_procedures",
+            src_object_id= filex.src_object_id,
+            file_extra_JSON= { "message": message + " by "+ sender},
+            attached_file= filex.upload_file, 
+        )
+        delete_file(fileid)
+        messages.success(request,"Request approved successfully")
+    return redirect("/research_procedures/inbox")
+
+
 
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
+
     user_designation= HoldsDesignation.objects.get(user= user_inst).designation
+    
     return user_designation
 
 def get_file_by_id(id):
@@ -745,6 +872,17 @@ def delete_file(id):
 
 def get_user_by_username(username):
     return User.objects.get(username=username)
+
+def get_user_by_designation(designation):
+    return HoldsDesignation.objects.get(designation=designation).user
+
+def get_designation_instance(designation):
+    return Designation.objects.get(name=designation)
+
+def get_obj_by_username_and_designation(username,designation):
+    user_instance = get_user_by_username(username)
+    designation_instance = get_designation_instance(designation)
+    return HoldsDesignation.objects.filter(user=user_instance, designation=designation_instance)
 
 
     

@@ -367,7 +367,7 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
 
 
 def research_procedures_notif(sender,recipient,type):
-    url = 'research_procedures:patent_registration'
+    url = 'research_procedures'
     module = 'Research Procedures'
     sender = sender
     recipient = recipient
