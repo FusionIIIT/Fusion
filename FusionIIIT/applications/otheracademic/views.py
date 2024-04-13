@@ -35,7 +35,6 @@ from timeit import default_timer as time
 from notification.views import office_module_notif,file_tracking_notif
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from .models import LeaveFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd,LeavePG,NoDues
 from django.shortcuts import render, get_object_or_404
 from datetime import date
@@ -513,7 +512,6 @@ def nodues_apply(request):
 
 def update_dues_status(request):
     if request.method == 'POST':
-
         roll_no = request.POST.get('roll_no')
         clear = request.POST.get('clear')  # 'true' if clear, 'false' if not clear
         # Convert clear to boolean
@@ -1616,6 +1614,7 @@ def assistantship_form_submission(request):
             HOD_rejected=False,
             Acad_approved=False,
             Acad_rejected=False,
+            hod=hod
             # amount =0
             # rate = 0
             # half_day_leave = models.IntegerField(default=0)
@@ -1638,6 +1637,7 @@ def assistantship_form_submission(request):
         message="A new assistantship application raised"
         otheracademic_notif(request.user,ta_supervisor_id ,'alert',assistant.id,"student",message)
         # Redirect to a success page or return a success message
+        messages.success(request,"Your form is successfully submitted")
         return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
 
     else:
@@ -1760,7 +1760,7 @@ def assistanship_ta_reject(request, ass_id):
 
 def assistanship_thesis_approve(request, ass_id):
     # Obtain inbox data
-    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    # inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
 
     # Find the object with the given ID from the AssistantshipClaimFormStatusUpd model
     leave_entry = get_object_or_404(AssistantshipClaimFormStatusUpd, id=ass_id)
@@ -1772,15 +1772,16 @@ def assistanship_thesis_approve(request, ass_id):
     # Update TA_approved field to True
     leave_entry.Ths_approved = True
     leave_entry.save()
-    ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
-    print(ass_id_from_inbox)
+    # ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
+    # print(ass_id_from_inbox)
     a=get_object_or_404(User,username=request.user.username)
     y=ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
     user_details=User.objects.get(id=y.user_id)
     des=HoldsDesignation.objects.filter(user=user_details).all()
    
+    forwarded_hod = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.hod, receiver_designation = "student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
     
-    forwarded_hod = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.hod, receiver_designation ="student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
+    # forwarded_hod = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.hod, receiver_designation ="student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
     # Forward the file to the thesis supervisor
     # forwarded_file_id = forward_file(
     #     file_id=ass_id_from_inbox,
@@ -1795,15 +1796,15 @@ def assistanship_thesis_approve(request, ass_id):
      
 
     # Send notification to the thesis  supervisor
-    if(forwarded_hod):
-        message = "Assistantship status received"
-        otheracademic_notif(request.user,csehod_user , 'alert', ass_id, "student", message)
+    
+    message = "Assistantship status received"
+    otheracademic_notif(request.user,csehod_user , 'alert', ass_id, "student", message)
 
     # Display success message
-        messages.success(request, "Successfully approved and forwarded.")
+    messages.success(request, "Successfully approved and forwarded.")
 
     # Redirect to the approveform page
-        return redirect('/otheracademic/assitantship/thesis_approveform')
+    return redirect('/otheracademic/assitantship/thesis_approveform')
 
 
 

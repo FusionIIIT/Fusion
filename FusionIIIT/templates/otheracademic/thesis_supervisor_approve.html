@@ -64,10 +64,10 @@
                             <td>{{ entry.bank_account }}</td>
                             <td>{{ entry.ta_supervisor }}</td>
                             <td>{{ entry.thesis_supervisor }}</td>
-                            <td>
-                                {% if entry.Ths_approved%} Approved
+                             <td>
+                                {% comment %} {% if entry.Ths_approved%} Approved
                                 {% elif entry.Ths_rejected%} Rejected
-                                {% else%}
+                                {% else%} {% endcomment %} 
                                 <div style="display: flex; flex-direction: column;">
                                     <form action="{% url 'otheracademic:assistanship_thesis_approve' ass_id=entry.id %}" method="post">
                                         {% csrf_token %}
@@ -78,8 +78,8 @@
                                         <button class="ui red button forward-button" style="width: 100%;" type="submit">Reject</button>
                                     </form>
                                 </div>
-                                {% endif%}
-                            </td>
+                                {% comment %} {% endif%} {% endcomment %}
+                            {% comment %} </td> {% endcomment %}
                         </tr>
                         {% endfor %}
                     </tbody>
