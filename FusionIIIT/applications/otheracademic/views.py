@@ -615,7 +615,7 @@ def submit_nodues_form(request):
         
             # Create a new LeaveFormTable instance and save it to the database
         nodues=NoDues.objects.create(
-            roll_no=data.get('roll_no'),
+            roll_no=request.user.extrainfo,
             name=data.get('name'),
             library_clear=False,
             library_notclear=False,
