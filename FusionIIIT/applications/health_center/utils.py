@@ -2,12 +2,14 @@ import json
 from datetime import datetime, timedelta
 from applications.globals.models import ExtraInfo
 from django.core import serializers
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
 from django.http import HttpResponse, JsonResponse
 from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
                      Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock, Announcements, SpecialRequest, Pathologist)
+                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief)
+from applications.filetracking.sdk.methods import *
 
 def datetime_handler(date):
     '''
@@ -532,3 +534,25 @@ def student_view_handler(request):
         Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(pk=app_id).delete()
         data = {'status': 1}
         return JsonResponse(data)
+    elif 'medical_relief_submit' in request.POST:
+        to_design = request.POST['designation']
+        formObject = medical_relief()
+        formObject.description = request.POST['description']
+        formObject.file=None
+        formObject.save()
+        request_object = medical_relief.objects.get(pk=formObject.pk)
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        print(d)
+        print(d1)
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation, 
+            src_module="health_center", 
+            src_object_id= str(request_object.id), 
+            file_extra_JSON= {"value": 2}, 
+            attached_file = None)
+        return JsonResponse({'status':1})
+    
+        

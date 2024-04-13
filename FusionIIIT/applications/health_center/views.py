@@ -99,15 +99,25 @@ def compounder_view(request):
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            designations = Designation.objects.filter()
+            holdsDesignations = []
+
+            for d in designations:
+                if d.name == "Compounder" or d.name == "Accounts Admin":
+                    list = HoldsDesignation.objects.filter(designation=d)
+                    holdsDesignations.append(list)
              
+             #adding file tracking inbox part
+            
+            inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
+            print(inbox_files)
 
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 'doct': doct,
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
+                           'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'holdsDesignations':holdsDesignations,'compounder_inbox':inbox_files})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -159,14 +169,20 @@ def student_view(request):
             Counter.objects.create(count=0,fine=0)
             count=Counter.objects.get()
 
-            doct= ["Dr. G S Sandhu", "Dr. Jyoti Garg", "Dr. Arvind Nath Gupta"]
+            designations = Designation.objects.filter()
+            holdsDesignations = []
+
+            for d in designations:
+                if d.name == "Compounder" or d.name == "Accounts Admin":
+                    list = HoldsDesignation.objects.filter(designation=d)
+                    holdsDesignations.append(list)
             
 
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users,'doct': doct, 'curr_date': datetime.now().date()})
+                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
@@ -476,13 +492,7 @@ def announcement(request):
 
 def medicalrelief(request):
     print(request)
-    designations = Designation.objects.filter()
-    holdsDesignations = []
-
-    for d in designations:
-        if d.name == "Compounder" or d.name == "Accounts Admin":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+   
             
     if request.method == 'POST':
         # print(request.POST['name'])

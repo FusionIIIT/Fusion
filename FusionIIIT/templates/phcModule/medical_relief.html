@@ -21,11 +21,11 @@
         <div class="ui header">
             Medical Relief
         </div>
-        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="{% url 'healthcenter:medical_relief' %}">{% csrf_token %}
+        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="POST">{% csrf_token %}
                 <div class="field">
                     <label for="file">File</i></sup></label>
                     <div class="ui fluid input">
-                        <input type="file" name="file" required="true">
+                        <input type="file" name="file" id="file">
                     </div>
                 </div>
                 
@@ -41,9 +41,9 @@
                 <br>
         
                 <div class="field">
-                    <label for="sendTo">Send to</i></sup></label>
+                    <label for="designation">Send to</i></sup></label>
                     <div class="ui fluid input">
-                        <select name="designation">
+                        <select id="designation" name="designation">
                             {% for queryset in holdsDesignations %}
                                 {% for hd in queryset %}
                                     <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
@@ -57,32 +57,53 @@
                             <label><br></label>
         
                             <div>
-                              <input type="submit" name="Submit" value="Send" class="ui small right floated primary button" />
+                              <input type="button" id="Submit" name="Submit" value="Send" class="ui small right floated primary button" />
                             </div>
         
                         </div>
                     </form>
+                                       
+                        <script type="text/javascript">
+                            $('#Submit').click(function(e) {
+                                // Prevent the default form submission
+                                e.preventDefault();                       
+                              
+                        
+                                // Perform the AJAX request
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/healthcenter/student/', // Specify the URL
+                                    data: {
+                                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                                        description: $('#description').val(),
+                                        designation: $('#designation').val(),                                      
+                                        medical_relief_submit: $('#Submit').val(),
+
+                                    },                                   
+                                    success: function(data) {
+                                        if (data.status === 1) {
+                                            alert("Form submitted successfully");
+                                            // Optionally, reload the page
+                                            window.location.reload();
+                                        } else {
+                                            // Handle specific server error cases if needed
+                                            alert("Error submitting the form: " + data.error);
+                                        }
+                                    }
+                                });
+                            });                  
+                        
+                        
+                        </script>
+                        
+              
 
 
 
     </div>
     {% comment %}The central-rail segment ends here!{% endcomment %}
 
-    {% comment %}The right-rail segment starts here!{% endcomment %}
-    <div class="three wide column">
-        <div class="row">
-            {% comment %}
-            TODO: the right rail!
-            {% endcomment %}
-        </div>
-    </div>
-    {% comment %}The right-rail segment ends here!{% endcomment %}
 
-    {% comment %}The right-margin segment!{% endcomment %}
-    <div class="column"></div>
-
-</div>
-{% comment %}The grid ends here!{% endcomment %}
 
 {% endblock %}
 
