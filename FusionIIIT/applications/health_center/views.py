@@ -485,6 +485,7 @@ def medicalrelief(request):
             holdsDesignations.append(list)
             
     if request.method == 'POST':
+        print(request.POST['name'])
         formObject = medical_relief()
         formObject.description = request.POST['description']
         formObject.file = request.POST['name']
