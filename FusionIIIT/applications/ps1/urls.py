@@ -65,6 +65,9 @@ urlpatterns = [
     url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
     url(r'^outboxview/$', views.outboxview, name='outboxview'),
 
+
+    url(r'^update_stock_item_inUse/$', views.updateStockItemInUse, name='outboxview'),
+
     # BASE API 
     url(r'^api/',include('applications.ps1.api.urls')),
 

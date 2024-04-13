@@ -177,7 +177,9 @@
                 <td>{{s.item_id.grade}}</td>
                 <td>{{s.location}}</td>
                 <td>{{s.recieved_date}}</td>
-                <td>{{s.bill}}</td>
+                <td>{{s.bill}}
+                    
+
                  
                  <td><form action="/purchase-and-store/stock_edit/" method="POST" id="item_id">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">
