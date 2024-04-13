@@ -19,8 +19,8 @@ urlpatterns = [
     url(r'^schedule_entry', schedule_entry, name='schedule_entry'),
     url(r'^doctor_entry', doctor_entry, name='doctor_entry'),
     url(r'^compounder_entry', compounder_entry, name='compounder_entry'),  
-    url(r'^fetch_designations', fetch_designations, name='fetch_designations'),  
-    url(r'^medical_relief', medical_relief, name='medical_relief'),  
+    # url(r'^fetch_designations', fetch_designations, name='fetch_designations'),  
+    url(r'^medical_relief', medicalrelief, name='medical_relief'),  
    
     #api
     url(r'^api/',include('applications.health_center.api.urls'))

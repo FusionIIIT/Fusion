@@ -1,4 +1,4 @@
-[12:54 PM, 4/12/2024] Srivatsa Potdar Iiitdmj: {% extends 'globals/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -36,112 +36,7 @@ Academic
     {% comment %}
     The central-rail segment starts here!
     {% endcomment %}
-    <div class="eight wide column">
-
-
-
-        {% load static %}
-        {% comment %}the main tab starts here {% endcomment %}
-        <div>
-            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
-        </div>
-        <div class="ui header">
-            Created Requests
-        </div>
-        <div class="ui one cards" style="padding: 2px;">
-            <div class="ui blue card" id="noti">
-                <div class="content">
-
-                    <table class="ui orange table">
-                        <thead>
-                            <th>Details:-</th>
-                            <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Area</th>
-                                <th>Created By</th>
-                                <th>Send to</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        {% for f in obj %}
-                        <tbody>
-                            <tr>
-                                <td>{{f.0}}</td>
-                                <td>{{f.1}}</td>
-                                <td>{{f.3}}</td>
-                                <td>{{f.2}}</td>
-                                <td>{{f.4}}</td>
-                                <td>
-                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                    <form method="POST" action="{% url 'iwdModuleV2:Engineer-Process-Requests' %}">
-                                        {% csrf_token %}
-                                        <select name="designation">
-                                            {% for queryset in holdsDesignations %}
-                                                {% for hd in queryset %}
-                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Process</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        </tbody>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-
-    </div>
-    {% comment %}The central-rail segment ends here!{% endcomment %}
-
-    {% comment %}The right-rail segment starts here!{% endcomment %}
-    <div class=…
-[1:25 PM, 4/12/2024] Srivatsa Potdar Iiitdmj: https://drive.google.com/drive/folders/1_Wyg8Z3mbVwYGM3xMWbEQv_WnPKIqdjj?usp=sharing
-[3:21 PM, 4/12/2024] Srivatsa Potdar Iiitdmj: {% extends 'globals/base.html' %}
-{% load static %}
-
-
-{% block title %}
-Academic
-{% endblock %}
-
-
-{% block body %}
-{% block navBar %}
-{% include 'dashboard/navbar.html' %}
-{% endblock %}
-
-<div class="ui stackable doubling grid">
-
-    {% comment %}The left-margin segment!{% endcomment %}
-    <div class="column"></div>
-
-    {% comment %}The left-rail segment starts here!{% endcomment %}
-    <div class="three wide column">
-        {% comment %}The user image card starts here!{% endcomment %}
-        {% block usercard %}
-        {% include 'globals/usercard.html' %}
-        {% endblock %}
-        {% comment %}The user image card ends here!{% endcomment %}
-
-        <div class="ui divider"></div>
-
-        {% comment %}The Tab-Menu ends here!{% endcomment %}
-    </div>
-    {% comment %}
-    The left-rail segment ends here!
-    {% endcomment %}
-
-    {% comment %}
-    The central-rail segment starts here!
-    {% endcomment %}
+    
     <div class="eight wide column">
 
 
@@ -154,7 +49,7 @@ Academic
         <div class="ui header">
             Medical Relief
         </div>
-        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="{% url 'health_center:medical_relief' %}">{% csrf_token %}
+        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="{% url 'healthcenter:medical_relief' %}">{% csrf_token %}
                 <div class="field">
                     <label for="name">File</i></sup></label>
                     <div class="ui fluid input">

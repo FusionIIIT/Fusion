@@ -462,19 +462,28 @@ def announcement(request):
                                                             "request_to":requests_received
                                                         })  
     
-def fetch_designations(request):
-    designations = Designation.objects.filter()
+# def fetch_designations(request):
+#     designations = Designation.objects.all()
 
+#     holdsDesignations = []
+
+#     for d in designations:
+#         if d.name == "Compounder" or d.name == "Accounts Admin":
+#             list = HoldsDesignation.objects.filter(designation=d)
+#             holdsDesignations.append(list)
+
+#     return render(request, 'phcModule/medical_relief.html', {'holdsDesignations' : holdsDesignations})
+
+def medicalrelief(request):
+    print(request)
+    designations = Designation.objects.filter()
     holdsDesignations = []
 
     for d in designations:
         if d.name == "Compounder" or d.name == "Accounts Admin":
             list = HoldsDesignation.objects.filter(designation=d)
             holdsDesignations.append(list)
-
-    return render(request, 'health_center/medical_relief.html', {'holdsDesignations' : holdsDesignations})
-
-def medical_relief(request):
+            
     if request.method == 'POST':
         formObject = medical_relief()
         formObject.description = request.POST['description']
@@ -493,12 +502,6 @@ def medical_relief(request):
             src_object_id= str(request_object.id), 
             file_extra_JSON= {"value": 2}, 
             attached_file = request.FILES['name'])
-        designations = Designation.objects.filter()
-
-        holdsDesignations = []
-
-        for d in designations:
-            if d.name == "Compounder" or d.name == "Accounts Admin":
-                list = HoldsDesignation.objects.filter(designation=d)
-                holdsDesignations.append(list)
-    return render(request, 'health_center/medical_relief.html', {'holdsDesignations' : holdsDesignations})
+        
+       
+    return render(request, 'phcModule/medical_relief.html', {'holdsDesignations' : holdsDesignations})
