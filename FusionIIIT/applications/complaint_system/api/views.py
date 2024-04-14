@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from applications.globals.models import (HoldsDesignation,Designation)
-from django.shortcuts import get_object_or_404
-from django.forms.models import model_to_dict
+from django.shortcuts import get_object_or_404 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -49,16 +48,27 @@ def student_complain_api(request):
     caretaker = Caretaker.objects.filter(staff_id=extra_info_id)
     supervisor = Supervisor.objects.filter(sup_id=extra_info_id)
     if caretaker.exists():
-        complain = StudentComplain.objects.filter(location = caretaker.first().area)
+        complaints = StudentComplain.get_complaints_by_user(user, 'caretaker')
         user_type = 'caretaker'
     elif supervisor.exists():
-        complain = StudentComplain.objects.filter(location = supervisor.first().area)
+        complaints = StudentComplain.get_complaints_by_user(user, 'supervisor')
         user_type = 'supervisor'
     else:
-        complain = StudentComplain.objects.filter(complainer = user)
-    complains = serializers.StudentComplainSerializers(complain,many=True).data
+        complaints = StudentComplain.get_complaints_by_user(user, 'student')
+
+    complaints = serializers.StudentComplainSerializers(complaints,many=True).data
+
+    if user_type == 'caretaker' or user_type == 'student':
+        for complaint in complaints:
+            last_forwarded = StudentComplain.get_complaint_owner(complaint['id'])
+            if last_forwarded.username != request.user.username:
+                complaint['last_forwarded'] = {
+                    'name': last_forwarded.first_name + ' ' + last_forwarded.last_name,
+                    'username': last_forwarded.username,
+                }
+
     resp = {
-        'student_complain' : complains,
+        'student_complain' : complaints,
         'user_type': user_type,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
@@ -67,15 +77,14 @@ def student_complain_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def create_complain_api(request):
-    print(request.FILES)
-    print(request.data)
     serializer = serializers.StudentComplainSerializers(data=request.data)
     if serializer.is_valid():
         serializer.save()
+        StudentComplain.create_file_for_complaint(serializer.instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE','PUT'])
+@api_view(['DELTE','PUT'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_complain_api(request,c_id):
@@ -90,7 +99,7 @@ def edit_complain_api(request,c_id):
         serializer = serializers.StudentComplainSerializers(complain,data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
@@ -167,7 +176,7 @@ def caretaker_api(request):
         user = get_object_or_404(User ,username=request.user.username)
         user = ExtraInfo.objects.all().filter(user = user).first()
         try :
-            supervisor = Supervisor.objects.get(staff_id=user)
+            supervisor = Supervisor.objects.get(sup_id=user)
         except Supervisor.DoesNotExist:
             return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.CaretakerSerializers(data=request.data)
@@ -183,7 +192,7 @@ def edit_caretaker_api(request,c_id):
     user = get_object_or_404(User ,username=request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
     try :
-        supervisor = Supervisor.objects.get(staff_id=user)
+        supervisor = Supervisor.objects.get(sup_id=user)
     except Supervisor.DoesNotExist:
         return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
@@ -244,3 +253,19 @@ def edit_supervisor_api(request,s_id):
             return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def forward_complaint_api(request):
+    user = get_object_or_404(User, username=request.user.username) 
+    user = ExtraInfo.objects.get(user=user)
+    supervisor = Supervisor.objects.filter(sup_id=user)
+    caretaker = Caretaker.objects.filter(staff_id=user)
+
+    if supervisor.exists() or caretaker.exists():
+        forward_supervisor = Supervisor.objects.get(id=request.data['forward_id'])
+        StudentComplain.forward_complaint(forward_supervisor.sup_id, request.data['complaint_id'])
+        return Response({'message':'Complaint forwarded'},status=status.HTTP_200_OK)
+    else:
+        return Response({'message':'Logged in user does not have permission'},status=status.HTTP_403_FORBIDDEN)

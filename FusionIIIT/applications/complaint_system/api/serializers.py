@@ -34,6 +34,11 @@ class SupervisorSerializers(serializers.ModelSerializer):
         model=Supervisor
         fields=('__all__')
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['name'] = instance.sup_id.user.first_name + ' ' + instance.sup_id.user.last_name
+        return response
+
 class ExtraInfoSerializers(serializers.ModelSerializer):
     class Meta:
         model=ExtraInfo
