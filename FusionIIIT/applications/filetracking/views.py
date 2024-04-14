@@ -15,26 +15,7 @@ from .utils import *
 
 @login_required(login_url = "/accounts/login/")
 def filetracking(request):
-    """
-        The function is used to create files by current user(employee).
-        It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
-        if he intends to create file.
-
-        @param:
-                request - trivial.
-
-        @variables:
-
-
-                uploader - Employee who creates file.
-                subject - Title of the file.
-                description - Description of the file.
-                upload_file - Attachment uploaded while creating file.
-                file - The file object.
-                extrainfo - The Extrainfo object.
-                holdsdesignations - The HoldsDesignation object.
-                context - Holds data needed to make necessary changes in the template.
-    """
+   
     if request.method =="POST":
         try:
             if 'save' in request.POST:

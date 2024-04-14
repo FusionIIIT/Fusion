@@ -8,8 +8,6 @@ from . forms import RegisterForm
 def home_page(request):
     return render(request,'recruitment/homepage.html')
 
-
-
 def post(request):
     if request.user.is_superuser:
         return render(request,'recruitment/post.html')
