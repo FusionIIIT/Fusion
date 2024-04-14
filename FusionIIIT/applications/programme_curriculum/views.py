@@ -1249,6 +1249,7 @@ def forward_course_forms(request,ProposalId):
                 if request.method == 'POST':
                     form = CourseForm(request.POST)
                     if form.is_valid():
+                            file.is_added=True
                             file.is_submitted=True
                             file.save()
                             form.save()
