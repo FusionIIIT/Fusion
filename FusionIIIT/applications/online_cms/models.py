@@ -202,4 +202,16 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
+    
 
+class Student_grades(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    semester = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    year = models.IntegerField(default=2016)
+    roll_no = models.TextField(max_length=2000)
+    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    grade = models.TextField(max_length=2000)
+    batch = models.TextField(max_length=2000)
+
+    def _str_(self):
+        return '{} - {}'.format(self.pk, self.course_id)

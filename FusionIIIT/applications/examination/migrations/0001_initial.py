@@ -28,6 +28,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('student', models.CharField(max_length=20)),
                 ('curriculum', models.CharField(max_length=50)),
+                ('semester_id', models.CharField(max_length=10)),
                 ('grade', models.CharField(default='B', max_length=5)),
             ],
         ),
