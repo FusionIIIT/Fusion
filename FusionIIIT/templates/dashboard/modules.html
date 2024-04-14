@@ -12,47 +12,58 @@
             </a>
 
             <div class="content modulesContent">
-                <div class="ui two column stackable doubling grid">
+                <div style="display: flex; flex-wrap: wrap;">
                     {% comment %}A single modules row starts here!{% endcomment %}
 
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                     {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label" href="/academic-procedures">
+                 
+                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var or "corelabcaretaker" == global_var %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" style="height: 120px; width:100%" href="/academic-procedures">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui university icon big"></i>
                                     </div>
 
                                     <div class="row">
-                                        <span class="ui sub header centered">Academics Module</span>
+                                        <span class="ui sub header centered">Academics</span>
                                     </div>
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label" href="/programme_curriculum">
+                        {% endif %}
+                        {% if request.user.extrainfo.user_type == "student" or "acadadmin" == global_var  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/programme_curriculum">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui book icon big"></i>
                                     </div>
 
                                     <div class="row">
-                                        <span class="ui sub header centered">Programme And Curriculum Module</span>
+                                        <span class="ui sub header centered">Programme And Curriculum </span>
                                     </div>
                                 </div>
                             </a>
                         </div>
-                    </div>
+                        {% endif %}
+                    
+
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                     {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/mess">
+                  
+                        {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/mess">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui food icon big"></i>
@@ -64,9 +75,11 @@
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label disabled" href="/visitorhostel">
+                        {% endif %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/visitorhostel">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui hotel icon big"></i>
@@ -78,13 +91,15 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
+                  
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                     {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/healthcenter">
+                                       
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui first aid icon big"></i>
@@ -96,9 +111,11 @@
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label disabled" href="/filetracking">
+                        {% if request.user.extrainfo.user_type != "student"  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/filetracking">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui wpforms icon big"></i>
@@ -110,13 +127,17 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
+                        {% endif %}
+                
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                     {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/spacs">
+               
+                        {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui student icon big"></i>
@@ -128,9 +149,11 @@
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label disabled" href="/complaint">
+                        {% endif %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui line chart icon big"></i>
@@ -142,11 +165,14 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
+                   
                     {% comment %}A single modules row ends here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/placement">
+                  
+                        {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var  or "placement officer" == global_var  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/placement">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui bitcoin icon big"></i>
@@ -158,9 +184,11 @@
                                 </div>
                             </a>
                         </div>
-
-                        <div class="column">
-                            <a class="ui large label disabled" href="{% url 'estate_module_home' %}">
+                        {% endif %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label disabled "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui line industry icon big"></i>
@@ -172,12 +200,15 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
+                   
                     {% comment %}A single modules row ends here!{% endcomment %}
 
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/dep">
+                    
+                        {% if request.user.extrainfo.user_type != "staff"   %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/dep">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui student icon big"></i>
@@ -189,8 +220,11 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="column">
-                            <a class="ui large label disabled" href="/research_procedures">
+                        {% endif %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/research_procedures">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui university icon big"></i>
@@ -202,12 +236,14 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
+                   
                     {% comment %}A single modules row ends here!{% endcomment %}
 
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/counselling">
+                                     
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/counselling">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui edit outline icon big"></i>
@@ -219,8 +255,11 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="column">
-                            <a class="ui large label disabled" href="/leave">
+                        {% if request.user.extrainfo.user_type != "student"  %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/leave">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui file icon big"></i>
@@ -261,6 +300,7 @@
                 <i class="right arrow icon right floated"></i>
             </a>
             {% endcomment %}
+            </div>
         </div>
     </div>
 </div>
