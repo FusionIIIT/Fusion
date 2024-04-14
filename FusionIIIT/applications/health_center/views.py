@@ -108,17 +108,31 @@ def compounder_view(request):
             
             inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
             medicalrelief=medical_relief.objects.all()       
-            for ib in inbox_files:
-                src_object_id = ib['src_object_id']
+            # for ib in inbox_files:
+            #     src_object_id = ib['src_object_id']
                                
-                for mr in medicalrelief:                   
-                    if mr.id == int(src_object_id):                        
-                        ib['medical_relief'] = {
-                            'description': mr.description,
-                            'file': mr.file,
-                            'compounder_flag':mr.compounder_forward_flag,
-                            'acc_admin_flag':mr.acc_admin_forward_flag                            
-                        }
+            #     for mr in medicalrelief:                   
+            #         if mr.id == int(src_object_id):                        
+            #             ib['medical_relief'] = {
+            #                 'description': mr.description,
+            #                 'file': mr.file,
+            #                 'compounder_flag':mr.compounder_forward_flag,
+            #                 'acc_admin_flag':mr.acc_admin_forward_flag                            
+            #             }
+            inbox=[]
+            for ib in inbox_files:
+                dic={}
+                for mr in medicalrelief:
+                    if mr.file_id==int(ib['id']):   
+                        dic['id']=ib['id'] 
+                        dic['uploader']=ib['uploader']                   
+                        dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
+                        dic['desc']=mr.description
+                        dic['file']=mr.file
+                        dic['status']=mr.compounder_forward_flag
+                        dic['status1']=mr.acc_admin_forward_flag
+                inbox.append(dic)
+                       
             # print(inbox_files)
                       
                         
@@ -127,7 +141,7 @@ def compounder_view(request):
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox_files})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -189,18 +203,20 @@ def student_view(request):
                     holdsDesignations.append(list)
             
             acc_admin_inbox=view_inbox(username=request.user.username,designation='Accounts Admin',src_module='health_center')
-            medicalrelief=medical_relief.objects.all()       
+            medicalrelief=medical_relief.objects.all()   
+            acc_ib=[]    
             for ib in acc_admin_inbox:
-                src_object_id = ib['src_object_id']
+                dic={}
                                
                 for mr in medicalrelief:                   
-                    if mr.id == int(src_object_id):                        
-                        ib['medical_relief'] = {
-                            'description': mr.description,
-                            'file': mr.file,
-                            'compounder_flag':mr.compounder_forward_flag,
-                            'acc_admin_flag':mr.acc_admin_forward_flag                            
-                        }
+                    if mr.file_id == int(ib['id']): 
+                        dic['id']=ib['id']                       
+                        dic['uploader']=ib['uploader']
+                        dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
+                        dic['desc']=mr.description
+                        dic['file']=mr.file
+                        dic['status']=mr.acc_admin_forward_flag
+                acc_ib.append(dic)
             uploader_outbox=view_outbox(username=request.user.username,designation=request.session['currentDesignationSelected'] ,src_module='health_center')
          
           
@@ -213,7 +229,7 @@ def student_view(request):
                 for mr in medicalrelief:
                     if mr.file_id==int(out['id']):   
                         dic['id']=out['id']                    
-                        dic['upload_date']=out['upload_date']                    
+                        dic['upload_date']=datetime.fromisoformat(out['upload_date']).date()                   
                         dic['desc']=mr.description
                         dic['file']=mr.file
                         dic['status']=mr.acc_admin_forward_flag
@@ -221,7 +237,7 @@ def student_view(request):
             
                 for inb in uploader_inbox:
                     if dic['id']==inb['id']:
-                        dic['approval_date']=inb['upload_date']
+                        dic['approval_date']=datetime.fromisoformat(inb['upload_date']).date()
                 medicalRelief.append(dic)                               
     
             
@@ -229,7 +245,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_admin_inbox,'medicalRelief':medicalRelief})
+                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 

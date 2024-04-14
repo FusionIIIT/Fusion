@@ -58,15 +58,18 @@
                 </td>
                 
                 <td>
-                    {% if inbox.status== True %}
-                        Approved                    
+                    {% if inbox.status1 == True%}
+                        Approved
+                    {% elif inbox.status == True %}
+                        Forwarded                  
+                    
                     {% else %}
                         Pending
                     {% endif %}
                 </td>
 
                 <td>
-                    {% if inbox.medical_relief.compounder_flag == False %}
+                    {% if inbox.status == False %}
                         <input type="button" onclick="rem({{inbox.id}})" id="{{inbox.id}}" name="Forward" value="Forward"class="ui blue button" />
                     {% endif %}
                 </td>

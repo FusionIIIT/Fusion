@@ -49,21 +49,25 @@
                 </td>
 
                 <td style="white-space:nowrap;">
-                    {{ inbox.medical_relief.description}}       
+                    {{ inbox.desc}}       
+                   
+                </td>
+                <td style="white-space:nowrap;">
+                    {{ inbox.file}}       
                    
                 </td>
 
+                
                 <td>
-                    
-                </td>
-                <td>
-                    {% if inbox.medical_relief.acc_admin_flag == True %}
+                    {% if inbox.status == True %}
                         Approved
+                    {% else %}
+                        Pending
                     {% endif %}
                 </td>
 
                 <td>
-                    {% if inbox.medical_relief.acc_admin_flag == False %}
+                    {% if inbox.status == False %}
                         <input type="button" onclick="rem({{inbox.id}})" id="{{inbox.id}}" name="Approve" value="Approve"class="ui green button" />
                     {% endif %}
                 </td>
