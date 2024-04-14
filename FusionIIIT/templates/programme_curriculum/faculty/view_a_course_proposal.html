@@ -19,12 +19,24 @@
         <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">View Proposal Form
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:faculty_view_all_courses' %}">Edit Proposal Form
-            <i class="right floated chevron right icon"></i>
-        </a>
+        <div class="ui dropdown">
+            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
+            
+            <div class="menu">
+              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+          </div>
+          <script>
+            $('.ui.dropdown').dropdown();
+          </script>
     </div>
 {% endblock %} 
 {% block content %}
@@ -35,7 +47,7 @@
                 <thead>
                     <tr style="font-size: medium;
                     background-color: aliceblue;">
-                        <td colspan="3"><h2><center>Course Proposal Form By</h2> <h3><center>{{ proposal.faculty_name }}({{ proposal.faculty_code }})</center></h3>
+                        <td colspan="3"><h2><center>Course Proposal Form By -> {{ proposal.uploader }} - {{proposal.designation}}</h2></center>
                         </td>
                     </tr>
                     <tr style="font-size: medium;
@@ -156,10 +168,10 @@
 {% block rightcontent %}
 <br>
 <br>
-<div class="ui center aligned segment">
+{% comment %} <div class="ui center aligned segment">
     <div class="extra content">
         <a class="fluid ui large positive animated button"  tabindex="0"
-            href="{% url 'programme_curriculum:forward_update_form' proposal.id %}"
+            href="{% url 'programme_curriculum:forward_form' proposal.id %}"
             type="Submit" name="Submit">
             <div class="visible content">FORWARD</div>
             <div class="hidden content">
@@ -168,7 +180,7 @@
         </a>
         <br>
         <a class="fluid ui large primary animated button" tabindex="0"
-            href="{% url 'programme_curriculum:reject_update_form' proposal.id %}"
+            href="{% url 'programme_curriculum:reject_form' proposal.id %}"
             type="Submit" name="Submit">
             <div class="visible content">REJECT</div>
             <div class="hidden content">
@@ -176,5 +188,5 @@
             </div>
         </a>
     </div>
-</div>
+</div> {% endcomment %}
 {% endblock %}
