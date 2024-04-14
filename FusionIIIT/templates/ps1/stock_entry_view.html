@@ -140,7 +140,7 @@
      -->
      <div class="ui divider"></div>
      {% if stocks %}
-     <div class="table-container" style="overflow-x: scroll;">
+     <div class="table-container" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
 
     <table class="ui very basic celled sortable table">
         <thead>
@@ -177,7 +177,9 @@
                 <td>{{s.item_id.grade}}</td>
                 <td>{{s.location}}</td>
                 <td>{{s.recieved_date}}</td>
-                <td>{{s.bill}}</td>
+                <td>{{s.bill}}
+                    
+
                  
                  <td><form action="/purchase-and-store/stock_edit/" method="POST" id="item_id">{% csrf_token %}
                     <input hidden  name = 'id' value="{{ s.item_id.file_info.id }}">

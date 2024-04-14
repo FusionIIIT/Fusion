@@ -11,7 +11,21 @@ from applications.filetracking.sdk.methods import *
 from datetime import datetime
 from django.http import HttpResponseForbidden
 from django.db.models import Q,Count
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+import ast
 
+dept_admin_to_dept = {
+    "deptadmin_cse": "CSE",
+    "deptadmin_ece": "ECE",
+    "deptadmin_me": "ME",
+    "deptadmin_sm": "SM",
+    "deptadmin_design": "Design",
+    "deptadmin_liberalarts": "Liberal Arts",
+    "deptadmin_ns": "Natural Science",
+}
+
+dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ]
 
 
 @api_view(['GET'])
@@ -30,7 +44,7 @@ def getDesignations(request):
 @permission_classes([IsAuthenticated])
 def createProposal(request):
     if request.method == 'POST':
-        print('our requested data :',request.data)
+        # print('our requested data :',request.data)
         # Process the POST request data
         uploader = request.user.extrainfo
         subject = request.data.get('title')
@@ -125,8 +139,8 @@ def indentView(request, id):
 @permission_classes([IsAuthenticated])
 def draftView(request, id):
     if request.method == 'GET':
-        des = HoldsDesignation.objects.all().select_related().filter(user=request.user).first()
-        if request.session.get('currentDesignationSelected') == "student":
+        designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+        if designation == "student":
             return Response({"message": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
         indents = IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
@@ -148,11 +162,10 @@ def draftView(request, id):
 @permission_classes([IsAuthenticated])
 def inwardIndents(request, id):
     if request.method == 'GET':
+        designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
         abcd = HoldsDesignation.objects.get(pk=id)
-        s = str(abcd).split(" - ")
-        designations = s[1]
         
-        data = view_inbox(request.user.username, designations, "ps1")
+        data = view_inbox(request.user.username, designation, "ps1")
         # outboxd = view_outbox(request.user.username, designations, "ps1")
         
         data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
@@ -257,11 +270,17 @@ def ForwardIndentFile(request, id):
         )
 
         # Updating indent approvals if necessary
-        if (receive_design == "dept_admin"):
-            indent.head_approval = True
-        elif ((sender_designation_name == "Director" or sender_designation_name == "Registrar") and (receive_design == "Accounts Admin")):
-            indent.director_approval = True
-            indent.financial_approval = True
+        if (str(receive_design) in dept_admin_design):
+                        indent.head_approval=True
+        elif ((
+                (sender_designation_name in dept_admin_design)
+                    or
+                    (sender_designation_name == "ps_admin")
+                    )
+                    and (str(receive_design) == "Accounts Admin")):
+                    indent.director_approval=True
+                    indent.financial_approval=True
+                    indent.head_approval=True
 
         indent.save()
 
@@ -285,10 +304,10 @@ def ForwardIndentFile(request, id):
 @permission_classes([IsAuthenticated])
 def entry(request,id):
 
-    designation = Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id)
+    designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
     if request.method == 'GET':
 
-        if str(designation) not in ["dept_admin", "ps_admin"]:
+        if  designation not in dept_admin_design + ["ps_admin"]:
             return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
         # Get department name
@@ -305,7 +324,7 @@ def entry(request,id):
 
     elif request.method == 'POST':
         print(designation)
-        if str(designation)not in ["dept_admin", "ps_admin"]:
+        if str(designation) not in dept_admin_design + ["ps_admin"]:
             return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
         id = request.data.get('id')
@@ -335,12 +354,12 @@ def entry(request,id):
 @permission_classes([IsAuthenticated])
 def stockEntry(request,id):
 
-    print(request.data);
+    # print(request.data);
     
     designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
-    print(designation)
-    if designation not in ["dept_admin", "ps_admin"]:
-        return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    # print(designation)
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'POST':
 
@@ -383,13 +402,15 @@ def stockEntry(request,id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def stockEntryView(request,id):
+    # print(request.user.id); 
+
     designation =str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
-    if designation not in ["dept_admin", "ps_admin"]:
-        return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
     department = request.user.extrainfo.department
 
-    if designation == "dept_admin":
+    if designation in dept_admin_design:
         stocks = StockEntry.objects.filter(item_id__file_info__uploader__department=department)
     elif designation == "ps_admin":
         stocks = StockEntry.objects.all()
@@ -409,13 +430,13 @@ def currentStockView(request,id):
 
     if request.method == 'GET':
         # Check if the user is authorized
-        if designation not in ["dept_admin", "ps_admin"]:
+        if str(designation) not in dept_admin_design + ["ps_admin"]:
             return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
         # Handle GET request
         department = request.user.extrainfo.department
 
-        if designation == "dept_admin":
+        if designation in dept_admin_design:
             # Only show stocks of the department for department admin
             stocks = StockItem.objects.filter(department=department)
         elif designation == "ps_admin":
@@ -472,3 +493,127 @@ def currentStockView(request,id):
         firstStock = StockItemSerializer(StockItems.first())
 
         return Response({'stocks': grouped_items_list, 'first_stock': firstStock.data})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def stock_entry_item_view(request,id):
+    designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    department = request.data.get('department')
+    file_id=request.data.get('file_id')
+    temp=File.objects.get(id=file_id)
+    temp1=IndentFile.objects.get(file_info=temp)
+    stock_entry=StockEntry.objects.get(item_id=temp1)
+
+    stocks=StockItem.objects.filter(StockEntryId=stock_entry)
+    serializer = StockItemSerializer(stocks, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def stockDelete(request,id):
+    designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+
+    
+    id = request.POST.get('id')
+    try:
+        stock = StockItem.objects.get(id=id)
+    except StockItem.DoesNotExist:
+        return Response({"message": 'Stock item with given ID does not exist',"id":id}, status=status.HTTP_404_NOT_FOUND)
+
+    stock.delete()
+    return Response({"message": "Stock item deleted successfully"}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def stockTransfer(request,id):
+    designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    
+    id=request.POST.get('id')
+    temp=File.objects.get(id=id)
+    temp1=IndentFile.objects.get(file_info=temp)
+
+    item_type_required =temp1.item_type
+    item_grade_required = temp1.grade
+
+    available_items=StockItem.objects.filter(
+        StockEntryId__item_id__item_type=item_type_required,
+        StockEntryId__item_id__grade=item_grade_required,
+        inUse=False  
+    )
+
+    print(available_items)
+    serializer = StockItemSerializer(available_items, many=True)
+    return Response(serializer.data)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def performTransfer(request,id):
+    designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+
+    if str(designation) not in dept_admin_design + ["ps_admin"]:
+        return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    
+    selected_stock_items = request.data.getlist('selected_stock_items[]')
+    indentId = request.data.get('indentId')
+    dest_location = request.data.get('dest_location')
+
+    list = selected_stock_items[0];
+    stock_items_list = ast.literal_eval(list)
+    
+    myIndent = IndentFile.objects.get(file_info=indentId)
+
+    moreStocksRequired = myIndent.quantity - len(stock_items_list)  
+    # print('dest_destination : ', myIndent.file_info.uploader.department)
+    
+    stock_transfers = []
+    for item in stock_items_list:
+        stock_item  = StockItem.objects.get(id=item)
+        # print('src dest : ', stock_item.department)
+
+        store_cur_dept = stock_item.department;
+        store_cur_location = stock_item.location;
+        
+        # changing the attributes for this stock item as being transferred.
+        stock_item.department=myIndent.file_info.uploader.department;
+        stock_item.location=dest_location;
+        stock_item.inUse= True
+        stock_item.isTransferred= True
+        # if a stock_item is been transferred then obviously it will be put into use.
+        stock_item.save();
+
+
+        stock_transfer = StockTransfer.objects.create(
+            indent_file=myIndent,
+            src_dept=store_cur_dept,
+            dest_dept=myIndent.file_info.uploader.department,
+            stockItem=stock_item,
+            src_location=store_cur_location,
+            dest_location=dest_location
+        )
+
+        stock_transfers.append(stock_transfer)
+
+
+    if(moreStocksRequired==0):
+        myIndent.purchased=True
+    else:
+        myIndent.quantity=moreStocksRequired;
+        
+    myIndent.save();
+
+    
+    serializer = StockTransferSerializer(stock_transfers,many=True)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
