@@ -132,12 +132,12 @@
 
              <div class="ui tab segment" data-tab="tenth" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block make_announce_comp %}
-                    {% include 'phcModule/make_announce_comp.html' with all_complaints=all_complaints%}
+                    {% include 'phcModule/make_announce_comp.html' with all_complaints=all_complaints %}
                 {% endblock %}
             </div>
             <div class="ui tab segment" data-tab="elventh" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block CompounderMedicalReliefView %}
-                    {% include 'phcModule/compounder_medical_relief.html' with inbox_files=inbox_files%}
+                    {% include 'phcModule/compounder_medical_relief.html' with inbox_files=inbox_files medicalRelief=medicalRelief %}
                 {% endblock %}
             </div>
 

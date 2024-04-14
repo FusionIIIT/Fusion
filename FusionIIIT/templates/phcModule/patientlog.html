@@ -460,36 +460,36 @@
                 </tbody>
             </table>
 
-            <script>
+        <script>
 
-                
-            function rem(id){
+            
+        function rem(id){
 
-			var dis = this;
-            var d = window.confirm('Are you sure, you want to cancel the prescription?');
-            if(d == false){
-                return;
-            }
-			     $('#'+id).parent().parent().remove();
-                                                      alert("prescription cancelled");
+        var dis = this;
+        var d = window.confirm('Are you sure, you want to cancel the prescription?');
+        if(d == false){
+            return;
+        }
+                $('#'+id).parent().parent().remove();
+                                                    alert("prescription cancelled");
 
-					$.ajax({
-                             type:'post',
-                             url:'/healthcenter/compounder/',
-                            data: {'cancel_presc':id,},
+                $.ajax({
+                            type:'post',
+                            url:'/healthcenter/compounder/',
+                        data: {'cancel_presc':id,},
 
-                            beforeSend: function(xhr) {
-               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-            },
-                            success: function(data){
-                                                    }
-                                                  });
+                        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+                        success: function(data){
+                                                }
+                                                });
 
 
-      }
-      </script>
+    }
+    </script>
 
-          </div>
-        </div>
+    </div>
+</div>
 
 {% endblock %}

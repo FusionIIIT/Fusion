@@ -10,6 +10,7 @@ from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
+from applications.health_center.api.serializers import MedicalReliefSerializer
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
                      Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
                      Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
@@ -80,6 +81,7 @@ def compounder_view(request):
             appointments_future=Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(date__gt=datetime.now()).order_by('date')
             users = ExtraInfo.objects.select_related('user','department').filter(user_type='student')
             stocks = Stock.objects.all()
+           
             days = Constants.DAYS_OF_WEEK
             schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
@@ -88,6 +90,7 @@ def compounder_view(request):
             count=Counter.objects.all()
             presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-date')
             medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
+            print(medicines_presc)
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
@@ -99,25 +102,27 @@ def compounder_view(request):
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
 
-            designations = Designation.objects.filter()
-            holdsDesignations = []
-
-            for d in designations:
-                if d.name == "Compounder" or d.name == "Accounts Admin":
-                    list = HoldsDesignation.objects.filter(designation=d)
-                    holdsDesignations.append(list)
+           
              
-             #adding file tracking inbox part
+            #adding file tracking inbox part
             
             inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
-            print(inbox_files)
-
+            medicalrelief=medical_relief.objects.all()       
+            for ib in inbox_files:
+                src_object_id = ib['src_object_id']
+                               
+                for mr in medicalrelief:                   
+                    if mr.id == int(src_object_id):                        
+                        ib['medical_relief'] = {
+                            'description': mr.description,
+                            'file': mr.file
+                        }
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'holdsDesignations':holdsDesignations,'compounder_inbox':inbox_files})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox_files})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 

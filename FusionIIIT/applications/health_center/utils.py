@@ -441,6 +441,31 @@ def compounder_view_handler(request):
         thresh = Stock.objects.get(id=med_id).threshold
         data = {'thresh': thresh}
         return JsonResponse(data)
+    elif 'compounder_forward' in request.POST:
+        acc_admin_des_id = Designation.objects.get(name="Accounts Admin")
+        print(acc_admin_des_id.id)
+        # Get the user IDs from HoldsDesignation associated with the designation
+        user_ids = HoldsDesignation.objects.filter(designation_id=acc_admin_des_id.id).values_list('user_id', flat=True)
+        
+        # Filter the ExtraInfo table using the list of user IDs
+        acc_admins = ExtraInfo.objects.get(user_id=user_ids[0])
+
+        forwarded_file_id=forward_file(
+            file_id=request.POST['file_id'],
+            receiver=acc_admins.id, 
+            receiver_designation="Accounts Admin",
+            file_extra_JSON= {"value": 2},            
+            remarks="Forwarding to Accounts Admin "+str(acc_admins.id), 
+            file_attachment=None,
+        )
+
+       
+        data = {'status': 1}
+        return JsonResponse(data)
+        
+        
+        
+        
 
 
 def student_view_handler(request):
@@ -543,8 +568,8 @@ def student_view_handler(request):
         request_object = medical_relief.objects.get(pk=formObject.pk)
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
         d1 = HoldsDesignation.objects.get(user__username=request.user)
-        print(d)
-        print(d1)
+        # print(d)
+        # print(d1)
         create_file(uploader=request.user.username, 
             uploader_designation=d1.designation, 
             receiver=request.POST['designation'],
