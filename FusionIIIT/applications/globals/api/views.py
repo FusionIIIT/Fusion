@@ -40,8 +40,9 @@ def login(request):
     designation=[]
                 
                 
-
-    designation.append(str(user.extrainfo.user_type))
+    if str(user.extrainfo.user_type) == "student":
+        designation.append(str(user.extrainfo.user_type))
+        
     for i in design:
         if str(i.designation) != str(user.extrainfo.user_type):
             print('-------')
@@ -143,6 +144,12 @@ def profile(request, username=None):
         return Response(data=resp, status=status.HTTP_200_OK)
     elif profile['user_type'] == 'faculty':
         return redirect('/eis/api/profile/' + (username+'/' if username else ''))
+    elif profile['user_type'] == 'staff':
+        resp = {
+            'user' : user_detail,
+            'profile' : profile,
+        }
+        return Response(data=resp, status=status.HTTP_200_OK)   
 
 @api_view(['PUT'])
 def profile_update(request):
