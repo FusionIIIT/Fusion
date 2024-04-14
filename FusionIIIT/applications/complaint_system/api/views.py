@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers
+from applications.complaint_system.models import USER_TYPE
 from . import serializers
 
 
@@ -43,22 +44,22 @@ def student_complain_api(request):
     user = get_object_or_404(User,username = request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
 
-    user_type = 'student'
+    user_type = USER_TYPE.student
     extra_info_id = ExtraInfo.objects.get(id=user.id)
     caretaker = Caretaker.objects.filter(staff_id=extra_info_id)
     supervisor = Supervisor.objects.filter(sup_id=extra_info_id)
     if caretaker.exists():
-        complaints = StudentComplain.get_complaints_by_user(user, 'caretaker')
-        user_type = 'caretaker'
+        complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.caretaker)
+        user_type = USER_TYPE.caretaker
     elif supervisor.exists():
-        complaints = StudentComplain.get_complaints_by_user(user, 'supervisor')
-        user_type = 'supervisor'
+        complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.supervisor)
+        user_type = USER_TYPE.supervisor
     else:
-        complaints = StudentComplain.get_complaints_by_user(user, 'student')
+        complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.student)
 
     complaints = serializers.StudentComplainSerializers(complaints,many=True).data
 
-    if user_type == 'caretaker' or user_type == 'student':
+    if user_type == USER_TYPE.caretaker or user_type == USER_TYPE.supervisor:
         for complaint in complaints:
             last_forwarded = StudentComplain.get_complaint_owner(complaint['id'])
             if last_forwarded.username != request.user.username:
@@ -84,7 +85,7 @@ def create_complain_api(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELTE','PUT'])
+@api_view(['DELETE','PUT'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_complain_api(request,c_id):

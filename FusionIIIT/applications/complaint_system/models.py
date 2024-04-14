@@ -7,6 +7,8 @@ from applications.filetracking.sdk import methods as fts
 from applications.filetracking.models import File
 from django.contrib.auth.models import User
 
+from enum import Enum
+
 # Class definations:
 
 
@@ -37,6 +39,10 @@ class Constants:
         ('other', 'other'),
     )
 
+class USER_TYPE(Enum):
+    student = 'student'
+    caretaker = 'caretaker'
+    supervisor = 'supervisor'
 
 class Caretaker(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
