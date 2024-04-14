@@ -335,7 +335,6 @@ class CourseInstructor(models.Model):
       
 
 
-
       def __self__(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
         
