@@ -22,7 +22,7 @@ def complaint_details_api(request,detailcomp_id1):
     if complaint_detail.worker_id is None:
         worker_detail_serialized = {}
     else :
-        worker_detail = worker_detail.objects.get(id=complaint_detail.worker_id)
+        worker_detail = Workers.objects.get(id=complaint_detail.worker_id.id)
         worker_detail_serialized = serializers.WorkersSerializers(instance=worker_detail).data
     complainer = User.objects.get(username=complaint_detail.complainer.user.username)
     complainer_serialized = serializers.UserSerializers(instance=complainer).data
