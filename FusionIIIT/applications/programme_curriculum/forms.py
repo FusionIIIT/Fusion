@@ -220,3 +220,6 @@ class CourseSlotForm(ModelForm):
             'min_registration_limit': 'Min Course Slot Registration Limit',
             'max_registration_limit': 'Max Course Slot Registration Limit',  
         }
+        
+        
+        

@@ -34,6 +34,7 @@ urlpatterns = [
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
     path('verifygrades/', views.verifygrades, name='verifygrades'),
+
     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
          name='update_hidden_grades_multiple'),
     path('submit_hidden_grades_multiple/', views.Submithidden_gradesMultipleView.as_view(),

@@ -512,59 +512,30 @@ def generate_transcript(request):
 
     # Initialize a dictionary to store course grades
     course_grades = {}
-
-    total_course_registered = Register.objects.filter(
-        student_id=student_id, semester=semester)
+    student_details = Student.objects.filter(id_id=student_id)
+    totalCpi=0
 
     print(total_course_registered)
 
-    for each_course in total_course_registered:
-        course_name = Curriculum.objects.filter(
-            curriculum_id=each_course.curr_id_id)
-        print(course_name)
 
+    print(totalCpi)
+    # Fetch grades for the courses registered by the student
     for course in courses_registered:
         try:
-            # Attempt to fetch the grade for the course from Student_grades
-            grade = Student_grades.objects.get(
-                roll_no=student_id, course_id=course.course_id)
-
-            course_detail = Curriculum.objects.get(
-                course_id=course.course_id, batch=grade.batch)
-            course_instance = Course.objects.get(id=course.course_id_id)
-            check_authentication_object = authentication.objects.filter(
-                course_id=course_instance, course_year=grade.year)
-            all_authenticators_true = True
-
-            if check_authentication_object:
-                # Iterate over each authentication object
-                for auth_obj in check_authentication_object:
-                    # Check if all authenticators are true
-                    if not (auth_obj.authenticator_1 and auth_obj.authenticator_2 and auth_obj.authenticator_3):
-                        all_authenticators_true = False
-                        break  # No need to check further if any authenticator is False
-            else:
-                # Create authentication object if it doesn't exist
-                authentication_object = authentication.objects.create(
-                    course_id=course_instance, course_year=grade.year)
-                # Get all registrations for the course and year
-                registrations = authentication.objects.filter(
-                    course_id=course_instance, course_year=grade.year)
-                all_authenticators_true = False
-
-            print("course")
-            print(course_detail)
-            course_grades[course_detail] = {
-                'grade': grade,
-                'all_authenticators_true': all_authenticators_true
-            }  # Store the grade
-        except Student_grades.DoesNotExist:
+            # Attempt to fetch the grade for the course from hidden_grades
+            grade = hidden_grades.objects.get(
+                student_id=student_id, course_id=course.course_id_id)
+            print(course.course_id.code)
+            course_grades[course] = grade.grade  # Store the grade
+        except hidden_grades.DoesNotExist:
             # Grade not available
             course_grades[course] = "Grading not done yet"
 
     print(course_grades)
     context = {
         'courses_grades': course_grades,
+        'student_details': student_details
+        
     }
 
     print(context)

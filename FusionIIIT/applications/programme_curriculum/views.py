@@ -95,8 +95,6 @@ def view_all_working_curriculums(request):
     curriculums = curriculumfilter.qs
     return render(request,'programme_curriculum/view_all_working_curriculums.html',{'curriculums':curriculums, 'curriculumfilter': curriculumfilter})
 
-
-
 def view_semesters_of_a_curriculum(request, curriculum_id):
     """
     This function is used to Display all Semester of a Curriculum.
