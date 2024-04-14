@@ -104,7 +104,7 @@ def compounder_view(request):
 
            
              
-            #adding file tracking inbox part
+            #adding file tracking inbox part for compounder
             
             inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
             medicalrelief=medical_relief.objects.all()       
@@ -115,8 +115,13 @@ def compounder_view(request):
                     if mr.id == int(src_object_id):                        
                         ib['medical_relief'] = {
                             'description': mr.description,
-                            'file': mr.file
+                            'file': mr.file,
+                            'compounder_flag':mr.compounder_forward_flag,
+                            'acc_admin_flag':mr.acc_admin_forward_flag                            
                         }
+            # print(inbox_files)
+                      
+                        
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users, 'count': count,'expired':expired,
                            'stocks': stocks, 'all_complaints': all_complaints,
@@ -153,6 +158,7 @@ def student_view(request):
             return student_view_handler(request)
 
         else:
+            
             users = ExtraInfo.objects.all()
             user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
@@ -182,12 +188,48 @@ def student_view(request):
                     list = HoldsDesignation.objects.filter(designation=d)
                     holdsDesignations.append(list)
             
-
+            acc_admin_inbox=view_inbox(username=request.user.username,designation='Accounts Admin',src_module='health_center')
+            medicalrelief=medical_relief.objects.all()       
+            for ib in acc_admin_inbox:
+                src_object_id = ib['src_object_id']
+                               
+                for mr in medicalrelief:                   
+                    if mr.id == int(src_object_id):                        
+                        ib['medical_relief'] = {
+                            'description': mr.description,
+                            'file': mr.file,
+                            'compounder_flag':mr.compounder_forward_flag,
+                            'acc_admin_flag':mr.acc_admin_forward_flag                            
+                        }
+            uploader_outbox=view_outbox(username=request.user.username,designation=request.session['currentDesignationSelected'] ,src_module='health_center')
+         
+          
+            uploader_inbox=view_inbox(username=request.user.username,designation=request.session['currentDesignationSelected'],src_module='health_center')
+            medicalRelief=[]
+           
+            for out in uploader_outbox:
+                dic={}
+            
+                for mr in medicalrelief:
+                    if mr.file_id==int(out['id']):   
+                        dic['id']=out['id']                    
+                        dic['upload_date']=out['upload_date']                    
+                        dic['desc']=mr.description
+                        dic['file']=mr.file
+                        dic['status']=mr.acc_admin_forward_flag
+                        dic['approval_date']=''
+            
+                for inb in uploader_inbox:
+                    if dic['id']==inb['id']:
+                        dic['approval_date']=inb['upload_date']
+                medicalRelief.append(dic)                               
+    
+            
             return render(request, 'phcModule/phc_student.html',
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations})
+                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_admin_inbox,'medicalRelief':medicalRelief})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 

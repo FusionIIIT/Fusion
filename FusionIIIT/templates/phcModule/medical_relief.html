@@ -8,22 +8,21 @@
     {% comment %}
     The central-rail segment starts here!
     {% endcomment %}
-    
-    <div class="eight wide column">
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="relief">
+            Apply For Medical Relief
+        </a>
 
-
-
-    
-        {% comment %}the main tab starts here {% endcomment %}
-        {% comment %} <div>
-            <a href="{% url 'heatl_center:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
-        </div> {% endcomment %}
-        <div class="ui header">
-            Medical Relief
-        </div>
-        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="POST">{% csrf_token %}
+        <a class="item" data-tab="inbox">
+            Approval Status
+        </a>
+        
+    </div>
+    <div class="ui active tab" data-tab="relief">
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
                 <div class="field">
-                    <label for="file">File</i></sup></label>
+                    <label for="file">File</label>
                     <div class="ui fluid input">
                         <input type="file" name="file" id="file">
                     </div>
@@ -32,7 +31,7 @@
                 <br>
         
                 <div class="field">
-                    <label for="description">Description</i></sup></label>
+                    <label for="description">Description</label>
                     <div class="ui fluid input">
                         <textarea id="description" class="ui textarea" name="description" type="text" required="true"></textarea>
                     </div>
@@ -41,7 +40,7 @@
                 <br>
         
                 <div class="field">
-                    <label for="designation">Send to</i></sup></label>
+                    <label for="designation">Send to</label>
                     <div class="ui fluid input">
                         <select id="designation" name="designation">
                             {% for queryset in holdsDesignations %}
@@ -94,14 +93,107 @@
                             });                  
                         
                         
-                        </script>
-                        
+                        </script>                    
               
 
 
 
     </div>
-    {% comment %}The central-rail segment ends here!{% endcomment %}
+</div>
+    
+<div class="ui tab" data-tab="inbox">
+    <div class="ui vertical segment" >
+        <table  border=1 class="ui very basic collapsing celled large sortable table"
+              style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+            <thead>
+            <tr>
+                
+                <td style="font-weight:bold;color:black;">
+                    Upload Date
+                </td>
+
+                <td style="font-weight:bold;color:black;" >
+                    Approval Date
+                </td>
+                <td style="font-weight:bold;color:black;">
+                    Description
+                </td>               
+                <td style="font-weight:bold;color:black;">
+                    File
+                </td>               
+                <td style="font-weight:bold;color:black;">
+                    Status
+                </td>               
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for inbox in medicalRelief %}
+            <tr>
+
+                <td style="white-space:nowrap;">                    
+                    {{inbox.upload_date}}
+                </td>
+                <td style="white-space:nowrap;">                
+                           
+                    {{inbox.approval_date}}   
+    
+                </td>
+
+                <td style="white-space:nowrap;">
+                    {{ inbox.desc}}       
+                   
+                </td>
+                <td style="white-space:nowrap;">
+                    {{ inbox.file}}       
+                   
+                </td>
+
+                
+                <td>
+                    {% if inbox.status == True %}
+                        Approved
+                    {% else %}
+                        Pending
+                    {% endif %}
+
+                </td>
+
+               
+
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+            <script>
+                function rem(id) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/healthcenter/compounder/', // Specify the URL
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            file_id: id,  
+                            compounder_forward: 1,                            
+                        },
+                        success: function(data) {
+                            if (data.status === 1) {
+                                alert("Forwarded to Accounts Admin");
+                                // Optionally, reload the page
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+                
+                
+           
+        </script>
+
+    </div>
+</div>
 
 
 

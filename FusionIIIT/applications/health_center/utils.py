@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 from applications.globals.models import ExtraInfo
 from django.core import serializers
+from applications.filetracking.models import File
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
 from django.http import HttpResponse, JsonResponse
 from notification.views import  healthcare_center_notif
@@ -444,10 +445,10 @@ def compounder_view_handler(request):
     elif 'compounder_forward' in request.POST:
         acc_admin_des_id = Designation.objects.get(name="Accounts Admin")
         print(acc_admin_des_id.id)
-        # Get the user IDs from HoldsDesignation associated with the designation
+        
         user_ids = HoldsDesignation.objects.filter(designation_id=acc_admin_des_id.id).values_list('user_id', flat=True)
         
-        # Filter the ExtraInfo table using the list of user IDs
+     
         acc_admins = ExtraInfo.objects.get(user_id=user_ids[0])
 
         forwarded_file_id=forward_file(
@@ -455,9 +456,14 @@ def compounder_view_handler(request):
             receiver=acc_admins.id, 
             receiver_designation="Accounts Admin",
             file_extra_JSON= {"value": 2},            
-            remarks="Forwarding to Accounts Admin "+str(acc_admins.id), 
+            remarks="Forwarded File with id: "+ str(request.POST['file_id'])+"to Accounts Admin "+str(acc_admins.id), 
             file_attachment=None,
         )
+       
+        medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
+        medical_relief_instance.compounder_forward_flag = True
+        medical_relief_instance.save()
+        
 
        
         data = {'status': 1}
@@ -565,19 +571,43 @@ def student_view_handler(request):
         formObject.description = request.POST['description']
         formObject.file=None
         formObject.save()
+      
         request_object = medical_relief.objects.get(pk=formObject.pk)
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
         d1 = HoldsDesignation.objects.get(user__username=request.user)
         # print(d)
         # print(d1)
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
+        send_file_id=create_file(uploader=request.user.username, 
+            uploader_designation=request.session['currentDesignationSelected'], 
             receiver=request.POST['designation'],
             receiver_designation=d.designation, 
             src_module="health_center", 
             src_object_id= str(request_object.id), 
             file_extra_JSON= {"value": 2}, 
             attached_file = None)
+        
+        request_object.file_id=send_file_id
+        request_object.save()
         return JsonResponse({'status':1})
+    elif 'acc_admin_forward' in request.POST:
+        file_id=request.POST['file_id']
+        rec=File.objects.get(id=file_id)
+        des=Designation.objects.get(pk=rec.designation_id)        
+        
+        
+        forwarded_file_id=forward_file(
+            file_id=request.POST['file_id'],
+            receiver=rec.uploader_id, 
+            receiver_designation=des.name,
+            file_extra_JSON= {"value": 2},            
+            remarks="Forwarded File with id: "+ str(request.POST['file_id'])+"to"+str(rec.id), 
+            file_attachment=None,
+        )
+        medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
+        medical_relief_instance.acc_admin_forward_flag = True
+        medical_relief_instance.save()
+        
+        return JsonResponse({'status':1})
+        
     
         

@@ -109,12 +109,22 @@
                     {% include 'phcModule/schedule_student.html'%}
                 {% endblock %}
             </div>
-            
+                {% if global_var != 'Accounts Admin' %}
                 <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
                     {% block medical_relief %}
                         {% include 'phcModule/medical_relief.html'%}
                     {% endblock %}
                 </div> 
+                {% endif %}
+
+                {% if global_var == 'Accounts Admin' %}
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block account_admin_medical_relief %}
+                        {% include 'phcModule/account_admin_medical_relief.html' with acc_admin_inbox=acc_admin_inbox medicalRelief=medicalRelief %}
+                    {% endblock %}
+                </div> 
+                {% endif %}
+
            
             {% comment %}The complaint/feedback ends here!{% endcomment %}
         </div>
