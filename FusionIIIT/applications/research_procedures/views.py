@@ -662,10 +662,14 @@ def add_financial_outlay(request,pid):
 
 @login_required
 def inbox(request):
-  data1 = {}   
-  if request.method == 'POST':
-    obj= request.POST
-    user_designation= obj.get('inbox_designation')
+ 
+    user_designation= request.session.get('currentDesignationSelected')
+    if user_designation == 'Assistant':
+        user_designation = 'Assistant Professor'
+    
+    if user_designation == 'CSE':
+        user_designation= 'CSE HOD'
+    
     print(user_designation)
     user_designation= get_designation_instance(user_designation)
 
@@ -688,7 +692,7 @@ def inbox(request):
         "files": files
     }
     # print(data)
-  return render(request, "rs/inbox.html",context= data1)
+    return render(request, "rs/inbox.html",context= data1)
   
   
 
@@ -697,7 +701,16 @@ def add_staff_request(request,id):
     if request.method == 'POST':
         obj= request.POST
         projectid = int(id)
-        receiver = obj.get('receiver')
+        receiver_designation = obj.get('receiver')
+
+        if receiver_designation == 'Assistant':
+            receiver_designation = 'Assistant Professor'
+        
+        if receiver_designation == 'CSE':
+            receiver_designation = 'CSE HOD'
+        
+        receiver_designation= get_designation_instance(receiver_designation)
+        receiver = get_user_by_designation(receiver_designation).username
 
 
         sender = request.user.username
@@ -705,7 +718,7 @@ def add_staff_request(request,id):
         project_instance=projects.objects.get(project_id=projectid)
         receiver_instance=User.objects.get(username=receiver)
         sender_designation= HoldsDesignation.objects.get(user= request.user).designation
-        receiver_designation = HoldsDesignation.objects.get(user= receiver_instance).designation
+        receiver_designation = receiver_designation
 
         file_x= create_file(
             uploader=sender,    
@@ -714,7 +727,7 @@ def add_staff_request(request,id):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
-            file_extra_JSON= { "message": "Staff request added ("+ str(projectid)+ ")"},
+            file_extra_JSON= { "message": "Request Added." },
             attached_file= file_to_forward, 
         )
         messages.success(request,"request added successfully")
@@ -854,7 +867,9 @@ def approve_request(request,id):
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
 
-    user_designation= HoldsDesignation.objects.get(user= user_inst).designation
+    user_designation= HoldsDesignation.objects.filter(user= user_inst)
+    if user_designation.exists():
+        user_designation= user_designation.first().designation.name
     
     return user_designation
 
