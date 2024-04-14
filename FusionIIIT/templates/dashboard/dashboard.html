@@ -62,7 +62,7 @@ Dashboard
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
 
-        {% if 'student' == request.user.extrainfo.user_type %}
+        {% if 'student' != request.user.extrainfo.user_type %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">

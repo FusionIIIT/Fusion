@@ -14,6 +14,8 @@ urlpatterns = [
     url(r'^profile_delete/(?P<id>[0-9]+)/', views.profile_delete, name='delete-profile-api'),
 
     url(r'^dashboard/',views.dashboard,name='dashboard-api'),
+    url(r'^notification/',views.notification,name='notification'),
     url(r'^notification/read',views.NotificationRead,name='notifications-read')
+
 
 ]

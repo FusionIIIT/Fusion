@@ -105,8 +105,8 @@
 
             {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
-                {% block comapproval %}
-                    {% include 'phcModule/comapproval.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
+                {% block pateintlog %}
+                    {% include 'phcModule/patientlog.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
                 {% endblock %}
             </div>
             {% comment %}The appointment approval tab ends here!{% endcomment %}
