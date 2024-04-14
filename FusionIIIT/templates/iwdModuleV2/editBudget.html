@@ -43,10 +43,11 @@ Academic
         {% load static %}
         {% comment %}the main tab starts here {% endcomment %}
         <div>
-            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
+            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Go to dashboard</button></a>
+            <a href="{% url 'iwdModuleV2:Budget' %}"><button class="ui button back-button">Back</button></a>
         </div>
         <div class="ui header">
-            Requests in Progress
+            Budget
         </div>
         <div class="ui one cards" style="padding: 2px;">
             <div class="ui blue card" id="noti">
@@ -54,52 +55,31 @@ Academic
 
                     <table class="ui orange table">
                         <thead>
-                            <th>Details:-</th>
+                            <!-- <th>Details:-</th> -->
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
-                                <th>Description</th>
-                                <th>Area</th>
-                                <th>Created By</th>
+                                <th>Budget Issued</th>
                                 <th></th>
                             </tr>
                         </thead>
                         {% for f in obj %}
                         <tbody>
                             <tr>
-                                <td>{{f.0}}</td>
-                                <td>{{f.1}}</td>
-                                <td>{{f.3}}</td>
-                                <td>{{f.2}}</td>
-                                <td>{{f.4}}</td>
-                                <td>
-                                    {% if f.5 == 1 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Generate-Final-Bill' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Generate Final Bill</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Handle-Bill-Generated-Requests' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Done</button>
-                                        </form>
-                                    {% endif %}
-                                    {% if f.5 == 0 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Work Completed' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Completed</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Request From Inventory' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Inventory</button>
-                                        </form>
-                                    {% endif %}
-                                </td>
+                                <form method="POST" action="{% url 'iwdModuleV2:Edit-Budget' %}">
+                                    {% csrf_token %}
+                                    <td>{{f.0}}</td>
+                                    <td>
+                                        <input type="text" name="name" value="{{f.1}}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="budget" value="{{f.2}}">
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="id" value="{{f.0}}">
+                                        <button type="submit" class="ui small primary button">Edit</button>
+                                    </td>
+                                </form>
                             </tr>
                         </tbody>
                         {% endfor %}

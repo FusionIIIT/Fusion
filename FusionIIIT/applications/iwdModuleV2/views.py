@@ -2,10 +2,19 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db.models import Q
 from applications.globals.models import *
+from django.contrib.auth.decorators import login_required
 from .models import *
 from django.http import HttpResponseRedirect
 from applications.filetracking.sdk.methods import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
+from django.http import HttpResponse
+from io import BytesIO
+from django.core.files.base import File as DjangoFile
 
 # Create your views here.
 
@@ -29,12 +38,15 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 #             break
 #     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
+#Junior Engineer, Electrical Engineer (Civil), Electrical_AE, Electrical_JE, EE, Civil_AE, Civil_JE
+
 def dashboard(request):
     eligible = ""
     userObj = request.user
     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
     for p in userDesignationObjects:
         eligible = p.designation.name
+    print(eligible)
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 def page1_1(request):
@@ -444,19 +456,23 @@ def extensionFormView(request):
         key=Projects.objects.get(id=request.session['projectId']))
     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
 
+designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
+
+@login_required
 def fetchDesignations(request):
-    print("yesslkednonmedcm")
     designations = Designation.objects.filter()
 
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "director" or d.name == "Accounts Admin":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/requestsView.html', {'holdsDesignations' : holdsDesignations})
 
+@login_required
 def requestsView(request):
     if request.method == 'POST':
         formObject = Requests()
@@ -471,26 +487,41 @@ def requestsView(request):
         formObject.status = "Pending"
         formObject.issuedWorkOrder = 0
         formObject.workCompleted = 0
+        formObject.billGenerated = 0
+        formObject.billProcessed = 0
+        formObject.billSettled = 0
         formObject.save()
+        print(request.user)
+        print(request.user.username)
         request_object = Requests.objects.get(pk=formObject.pk)
         d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        print(d)
+        print(d1)
         create_file(uploader=request.user.username, 
-            uploader_designation="Engineer", 
+            uploader_designation=d1.designation, 
             receiver=request.POST['designation'],
             receiver_designation=d.designation, 
             src_module="IWD", 
             src_object_id= str(request_object.id), 
             file_extra_JSON= {"value": 2}, 
             attached_file = None)
-        return redirect('http://127.0.0.1:8000/iwdModuleV2/')
-    return render(request, 'http://127.0.0.1:8000/iwdModuleV2/', {})
+        
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
+@login_required
 def createdRequests(request):
     obj = []
+    d = HoldsDesignation.objects.get(user__username=request.user)
 
     inbox_files = view_inbox(
         username=request.user,
-        designation="Engineer",
+        designation=d.designation,
         src_module="IWD"
     )
 
@@ -506,12 +537,14 @@ def createdRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "director" or d.name == "Accounts Admin":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleEngineerProcessRequests(request):
     if request.method == 'POST':
 
@@ -542,22 +575,15 @@ def handleEngineerProcessRequests(request):
                 delete_file(file_id = p['id'])
                 break
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=d1.designation,
-            src_module="IWD"
-        )
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
 
-        obj = []
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
-                obj.append(element)
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
-    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
-
+@login_required
 def engineerProcessedRequests(request):
 
     obj = []
@@ -582,12 +608,14 @@ def engineerProcessedRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "director" or d.name == "Accounts Admin":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleDeanProcessRequests(request):
     if request.method == 'POST':
 
@@ -618,22 +646,14 @@ def handleDeanProcessRequests(request):
                 delete_file(file_id = p['id'])
                 break
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=d1.designation,
-            src_module="IWD"
-        )
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
-        obj = []
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
-                obj.append(element)
-
-    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj})
-
+@login_required
 def deanProcessedRequests(request):
     obj = []
 
@@ -657,12 +677,14 @@ def deanProcessedRequests(request):
     holdsDesignations = []
 
     for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "director" or d.name == "Accounts Admin":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
 
+@login_required
 def handleDirectorApprovalRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
@@ -692,33 +714,150 @@ def handleDirectorApprovalRequests(request):
                 delete_file(file_id = p['id'])
                 break
 
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+
+@login_required
+def handleDirectorRejectionRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation, 
+            src_module="IWD", 
+            src_object_id= str(request_id), 
+            file_extra_JSON= {"value": 2}, 
+            attached_file = None)
+        
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+
         inbox_files = view_inbox(
             username=request.user,
             designation=d1.designation,
             src_module="IWD"
         )
 
-        obj = []
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
-                obj.append(element)
+        for p in inbox_files:
+            if p['src_object_id'] == request_id:
+                delete_file(file_id = p['id'])
+                break
 
-    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
-def handleDirectorRejectionRequests(request):
+@login_required
+def rejectedRequests(request):
+    obj = []
+
+    d = HoldsDesignation.objects.get(user__username=request.user)
+
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=d.designation,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id).first()
+        if request_object.directorApproval == -1:
+            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+            obj.append(element)
+
+    designations = Designation.objects.filter()
+
+    holdsDesignations = []
+
+    for d in designations:
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
+
+    return render(request, 'iwdModuleV2/rejectedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})    
+
+@login_required
+def updateRejectedRequests(request):
+    request_id = request.POST.get("id", 0)
+
+    d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+    inbox_files = view_inbox(
+            username=request.user,
+            designation=d1.designation,
+            src_module="IWD"
+        )
+
+    for p in inbox_files:
+        if p['src_object_id'] == request_id:
+            delete_file(file_id = p['id'])
+            break
+
+    designations = Designation.objects.filter()
+
+    holdsDesignations = []
+    obj = []
+
+    request_object = Requests.objects.get(id=request_id)
+
+    obj = [request_object.id, request_object.name, request_object.description, request_object.area]
+
+    for d in designations:
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
+
+    return render(request, 'iwdModuleV2/updateRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+
+@login_required
+def handleUpdateRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
-        obj = []
-        requestsObject = Requests.objects.filter(engineerProcessed = 1, deanProcessed = 1, directorApproval = 0)
-        for x in requestsObject:
-            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy]
-            obj.append(element)
-    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        Requests.objects.filter(id=request_id).update(name=request.POST['name'],
+            description=request.POST['description'],
+            area=request.POST['area'],
+            engineerProcessed=0,
+            directorApproval=0,
+            deanProcessed=0,
+            requestCreatedBy=request.user.username,
+            status="Pending",
+            issuedWorkOrder=0,
+            workCompleted=0,
+            billGenerated=0,
+            billProcessed=0,
+            billSettled=0)
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation, 
+            src_module="IWD", 
+            src_object_id= str(request_id), 
+            file_extra_JSON= {"value": 2}, 
+            attached_file = None)
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
+@login_required
 def issueWorkOrder(request):
     obj = []
 
@@ -732,7 +871,7 @@ def issueWorkOrder(request):
 
     for result in inbox_files:
         uploader = result['sent_by_designation']
-        if uploader == 'director':
+        if uploader == 'Director':
             src_object_id = result['src_object_id']
             request_object = Requests.objects.filter(id=src_object_id).first()
             if request_object:
@@ -741,15 +880,18 @@ def issueWorkOrder(request):
 
     return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
+@login_required
 def fetchRequest(request):
     request_id = request.POST.get("id", 0)
     req_request = Requests.objects.get(id=request_id)
     return render(request, 'iwdModuleV2/workOrder.html', {'req' : req_request})
 
+@login_required
 def workOrder(request):
     if request.method == 'POST':
+        request_instance = Requests.objects.get(pk=request.POST['id'])
         formObject = WorkOrder()
-        formObject.request_id = request.POST['id']
+        formObject.request_id = request_instance
         formObject.name = request.POST['name']
         formObject.date = request.POST['date']
         formObject.agency = request.POST['agency']
@@ -771,7 +913,7 @@ def workOrder(request):
         )
 
         for result in inbox_files:
-            if result['src_object_id'] == request.POST['id'] and result['sent_by_designation'] == 'director':
+            if result['src_object_id'] == request.POST['id'] and result['sent_by_designation'] == 'Director':
                 delete_file(file_id = result['id'])
                 break
 
@@ -785,7 +927,7 @@ def workOrder(request):
 
         for result in inbox_files:
             uploader = result['sent_by_designation']
-            if uploader == 'director':
+            if uploader == 'Director':
                 src_object_id = result['src_object_id']
                 request_object = Requests.objects.filter(id=src_object_id).first()
                 if request_object:
@@ -794,6 +936,7 @@ def workOrder(request):
 
         return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
+@login_required
 def requestsStatus(request):
     obj = []
     requestsObject = Requests.objects.all()
@@ -802,6 +945,7 @@ def requestsStatus(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/requestsStatus.html', {'obj' : obj})
 
+@login_required
 def inventory(request):
     items = Inventory.objects.filter()
     obj = []
@@ -810,9 +954,11 @@ def inventory(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/inventory.html', {'obj' : obj})
 
+@login_required
 def addItemsView(request):
     return render(request, 'iwdModuleV2/addItemsView.html')
 
+@login_required
 def addItems(request):
     if request.method == "POST":
         formObject = Inventory()
@@ -822,6 +968,7 @@ def addItems(request):
         formObject.save()
     return render(request, 'iwdModuleV2/addItemsView.html')
 
+@login_required
 def editInventoryView(request):
     items = Inventory.objects.filter()
     obj = []
@@ -830,6 +977,7 @@ def editInventoryView(request):
         obj.append(element)
     return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
 
+@login_required
 def editInventory(request):
     if request.method == "POST":
         itemId = request.POST['id']
@@ -843,25 +991,28 @@ def editInventory(request):
             element = [i.id, i.name, i.quantity, i.cost]
             obj.append(element)
         return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
-    
+
+@login_required    
 def requestsInProgess(request):
     obj = []
-    requestsObject = Requests.objects.filter(issuedWorkOrder=1)
+    requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
     for x in requestsObject:
         element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
         obj.append(element)
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
 
+@login_required
 def workCompleted(request):
     if request.method == 'POST':
         Requests.objects.filter(id=request.POST['id']).update(workCompleted=1, status="Work Completed")
         obj = []
-        requestsObject = Requests.objects.filter(issuedWorkOrder=1)
+        requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
         for x in requestsObject:
             element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
             obj.append(element)
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
 
+@login_required
 def requestFromInventory(request):
     if request.method == 'POST':
         requestId = request.POST['id']
@@ -869,8 +1020,357 @@ def requestFromInventory(request):
         Items = Inventory.objects.filter()
         req = []
         items = []
-        for i in Req:
-            print(i)
-        print(req)
+        for x in Req:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
+            req.append(element)
+
+        for x in Items:
+            element = [x.id, x.name, x.quantity, x.cost]
+            items.append(element)
         print(items)
     return render(request, 'iwdModuleV2/requestFromInventory.html', {'req' : req, 'items' : items})
+
+@login_required
+def editInventoryAfterRequest(request):
+    if request.method == 'POST':
+        selectedItem = Inventory.objects.get(id=request.POST['selected_item_id'])
+        q = int(selectedItem.quantity)
+        if q == int(request.POST['quantity']):
+            Inventory.objects.filter(id=request.POST['selected_item_id']).delete()
+        else:
+            Inventory.objects.filter(id=request.POST['selected_item_id']).update(quantity=(q-int(request.POST['quantity'])))
+        formObject = UsedItems()
+        request_instance = Requests.objects.get(pk=request.POST['id'])
+        formObject.request_id = request_instance
+        formObject.itemName = selectedItem.name
+        formObject.cost = selectedItem.cost
+        formObject.quantity = request.POST['quantity']
+        formObject.date = datetime.now().date()
+        formObject.save()
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+
+@login_required
+def generateFinalBill(request):
+    if request.method == 'POST':
+        requestId = request.POST.get("id", 0)
+
+        usedItems = UsedItems.objects.filter(request_id=requestId)
+        workOrder = WorkOrder.objects.get(request_id=requestId)
+
+        itemsList = []
+
+        for used in usedItems:
+            element = [used.itemName, used.quantity, used.cost, used.date]
+            itemsList.append(element)
+
+        filename = f"Request_id_{requestId}_final_bill.pdf"
+
+        buffer = BytesIO()
+
+        c = canvas.Canvas(buffer, pagesize=letter)
+
+        c.setFont("Helvetica", 12)
+
+        y_position = 750
+
+        rid = f"Request Id : {requestId}"
+        agency = f"Agency : {workOrder.agency}"
+        
+        c.drawString(100, y_position, rid)
+        y_position -= 20
+
+        c.drawString(100, y_position, agency)
+        y_position -= 20
+
+        c.drawString(100, y_position - 40, "Items:")
+
+        data = [["Item Name", "Quantity", "Cost (in Rupees)", "Date of Purchase", "Total Amount"]]
+        for item in itemsList:
+            data.append([item[0], str(item[1]), "{:.2f}".format(item[2]), item[3], "{:.2f}".format(item[1] * item[2])])
+
+        total_amount_to_be_paid = sum(item[1] * item[2] for item in itemsList)
+
+        c.drawString(100, y_position - 80, f"Total Amount (in Rupees): {total_amount_to_be_paid:.2f}")
+
+        table = Table(data)
+        table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+
+        table.wrapOn(c, 400, 600)
+        table.drawOn(c, 100, y_position - 60)
+
+        c.save()
+
+        buffer.seek(0)
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response.write(buffer.getvalue())
+
+        return response
+
+@login_required    
+def handleBillGeneratedRequests(request):
+    if request.method == 'POST':
+        requestId = request.POST.get("id", 0)
+        Requests.objects.filter(id=requestId).update(status="Bill Generated", billGenerated=1)
+        obj = []
+        requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
+        for x in requestsObject:
+            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
+            obj.append(element)
+    return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
+
+@login_required
+def generatedBillsView(request):
+    request_object = Requests.objects.filter(billGenerated=1, billProcessed=0)
+    obj = []
+    for x in request_object:
+        element = [x.id, x.name, x.description, x.area, x.requestCreatedBy]
+        obj.append(element)
+    designations = Designation.objects.filter()
+
+    holdsDesignations = []
+
+    for d in designations:
+        for x in designations_list:
+            if d.name == x:
+                list = HoldsDesignation.objects.filter(designation=d)
+                holdsDesignations.append(list)
+
+    return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+
+@login_required
+def handleProcessedBills(request):
+    if request.method == 'POST':
+        requestId = request.POST.get("id", 0)
+        request_instance = Requests.objects.get(pk=requestId)
+
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation,
+            src_module="IWD", 
+            src_object_id= str(requestId),
+            file_extra_JSON= {"value": 2},
+            attached_file = request.FILES['bill'])
+        
+        formObject = Bills()
+        formObject.request_id = request_instance
+        formObject.file = request.FILES['bill']
+        formObject.save()
+
+        Requests.objects.filter(id=requestId).update(status="Final Bill Processed", billProcessed=1)
+
+        request_object = Requests.objects.filter(billGenerated=1, billProcessed=0)
+        obj = []
+        for x in request_object:
+            element = [x.id, x.name, x.description, x.area, x.requestCreatedBy]
+            obj.append(element)
+
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+
+    return render(request, 'iwdModuleV2/dashboard.html', {'obj' : obj, 'eligible': eligible})
+
+@login_required
+def auditDocumentView(request):
+    d = HoldsDesignation.objects.get(user__username=request.user)
+
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=d.designation,
+        src_module="IWD"
+    )
+
+    obj = []
+
+    for x in inbox_files:
+        requestId = x['src_object_id']
+        files = Bills.objects.get(request_id=requestId)
+        element = [files.request_id.id, files.file, files.file.url]
+        obj.append(element)
+
+    designations = Designation.objects.filter()
+
+    holdsDesignations = []
+
+    for d in designations:
+        if d.name == "Engineer" or d.name == "Dean" or d.name == "Director" or d.name == "Accounts Admin" or d.name == "Admin IWD":
+            list = HoldsDesignation.objects.filter(designation=d)
+            holdsDesignations.append(list)
+
+    return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+
+@login_required
+def auditDocument(request):
+    if request.method == 'POST':
+        requestId = request.POST.get("id", 0)
+
+        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+        create_file(uploader=request.user.username, 
+            uploader_designation=d1.designation, 
+            receiver=request.POST['designation'],
+            receiver_designation=d.designation,
+            src_module="IWD", 
+            src_object_id= str(requestId),
+            file_extra_JSON= {"value": 2},
+            attached_file = None)
+
+        inbox_files = view_inbox(
+            username=request.user,
+            designation=d1.designation,
+            src_module="IWD"
+        )
+
+        for result in inbox_files:
+            print(result['src_object_id'])
+            if result['src_object_id'] == requestId:
+                delete_file(file_id = result['id'])
+                break
+
+        Requests.objects.filter(id=requestId).update(status="Bill Audited")
+
+        eligible = ""
+        userObj = request.user
+        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+        for p in userDesignationObjects:
+            eligible = p.designation.name
+
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
+
+@login_required
+def settleBillsView(request):
+    d = HoldsDesignation.objects.get(user__username=request.user)
+
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=d.designation,
+        src_module="IWD"
+    )
+
+    obj = []
+    
+    for x in inbox_files:
+        requestId = x['src_object_id']
+        bills_object = Bills.objects.filter(request_id=requestId).first()
+        element = [bills_object.request_id.id, bills_object.file, bills_object.file.url]
+        obj.append(element)
+
+    return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
+
+@login_required
+def handleSettleBillRequests(request):
+    if request.method == 'POST':
+        request_id = request.POST.get("id", 0)
+
+        d = HoldsDesignation.objects.get(user__username=request.user)
+
+        inbox_files = view_inbox(
+            username=request.user,
+            designation=d.designation,
+            src_module="IWD"
+        )
+
+        for p in inbox_files:
+            if p['src_object_id'] == request_id:
+                delete_file(file_id = p['id'])
+                break
+
+        Requests.objects.filter(id=request_id).update(status="Final Bill Settled", billSettled=1)
+
+        inbox_files = view_inbox(
+            username=request.user,
+            designation=d.designation,
+            src_module="IWD"
+        )
+
+        obj = []
+        
+        for x in inbox_files:
+            request_id = x['src_object_id']
+            bills_object = Bills.objects.get(request_id=request_id)
+            element = [request_id, bills_object.file, bills_object.file.url]
+            obj.append(element)
+
+        return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
+
+@login_required   
+def viewBudget(request):
+
+    budget_object = Budget.objects.filter()
+
+    obj = []
+
+    for x in budget_object:
+        element = [x.id, x.name, x.budgetIssued]
+        obj.append(element)
+    
+    return render(request, 'iwdModuleV2/viewBudget.html', {'obj' : obj})
+
+@login_required
+def budget(request):
+    budget_object = Budget.objects.filter()
+
+    obj = []
+
+    for x in budget_object:
+        element = [x.id, x.name, x.budgetIssued]
+        obj.append(element)
+    
+    return render(request, 'iwdModuleV2/budget.html', {'obj' : obj})
+
+@login_required
+def addBudget(request):
+    if request.method == 'POST':
+        formObject = Budget()
+        formObject.name = request.POST['name']
+        formObject.budgetIssued = request.POST['budget']
+        formObject.save()
+    return render(request, 'iwdModuleV2/addBudget.html', {})
+
+@login_required
+def editBudgetView(request):
+    budget_object = Budget.objects.filter()
+
+    obj = []
+
+    for x in budget_object:
+        element = [x.id, x.name, x.budgetIssued]
+        obj.append(element)
+    
+    return render(request, 'iwdModuleV2/editBudget.html', {'obj' : obj})
+
+@login_required
+def editBudget(request):
+    if request.method == "POST":
+        budgetId = request.POST['id']
+        budgetName = request.POST['name']
+        budgetIssued = request.POST['budget']
+        Budget.objects.filter(id=budgetId).update(name=budgetName, budgetIssued=budgetIssued)
+        items = Budget.objects.filter()
+        obj = []
+        for i in items:
+            element = [i.id, i.name, i.budgetIssued]
+            obj.append(element)
+        return render(request, 'iwdModuleV2/editBudget.html', {'obj' : obj})
+
+    

@@ -46,7 +46,7 @@ Academic
             <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
         </div>
         <div class="ui header">
-            Requests in Progress
+            Generated Bills Requests
         </div>
         <div class="ui one cards" style="padding: 2px;">
             <div class="ui blue card" id="noti">
@@ -54,13 +54,12 @@ Academic
 
                     <table class="ui orange table">
                         <thead>
-                            <th>Details:-</th>
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
-                                <th>Description</th>
-                                <th>Area</th>
                                 <th>Created By</th>
+                                <th>Bill</th>
+                                <th>Send to</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -69,37 +68,25 @@ Academic
                             <tr>
                                 <td>{{f.0}}</td>
                                 <td>{{f.1}}</td>
-                                <td>{{f.3}}</td>
-                                <td>{{f.2}}</td>
                                 <td>{{f.4}}</td>
-                                <td>
-                                    {% if f.5 == 1 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Generate-Final-Bill' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Generate Final Bill</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Handle-Bill-Generated-Requests' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Done</button>
-                                        </form>
-                                    {% endif %}
-                                    {% if f.5 == 0 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Work Completed' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Completed</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Request From Inventory' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Inventory</button>
-                                        </form>
-                                    {% endif %}
-                                </td>
+                                <form method="POST" action="{% url 'iwdModuleV2:Handle-Processed-Bills' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <td>
+                                        <input type="file" name="bill" id="bill">
+                                    </td>
+                                    <td>
+                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
+                                        <select name="designation">
+                                            {% for queryset in holdsDesignations %}
+                                                {% for hd in queryset %}
+                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </select>
+                                        <input type="hidden" name="id" value="{{ f.0 }}">
+                                        <button type="submit" class="ui small primary button">Send</button>
+                                    </td>
+                                </form>
                             </tr>
                         </tbody>
                         {% endfor %}

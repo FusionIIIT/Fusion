@@ -46,7 +46,7 @@ Academic
             <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
         </div>
         <div class="ui header">
-            Requests in Progress
+            Rejected Requests
         </div>
         <div class="ui one cards" style="padding: 2px;">
             <div class="ui blue card" id="noti">
@@ -54,7 +54,6 @@ Academic
 
                     <table class="ui orange table">
                         <thead>
-                            <th>Details:-</th>
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
@@ -73,32 +72,11 @@ Academic
                                 <td>{{f.2}}</td>
                                 <td>{{f.4}}</td>
                                 <td>
-                                    {% if f.5 == 1 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Generate-Final-Bill' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Generate Final Bill</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Handle-Bill-Generated-Requests' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Done</button>
-                                        </form>
-                                    {% endif %}
-                                    {% if f.5 == 0 %}
-                                        <form method="POST" action="{% url 'iwdModuleV2:Work Completed' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Completed</button>
-                                        </form>
-                                        <br>
-                                        <form method="POST" action="{% url 'iwdModuleV2:Request From Inventory' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="id" value="{{ f.0 }}">
-                                            <button type="submit" class="ui small primary button">Inventory</button>
-                                        </form>
-                                    {% endif %}
+                                    <form method="POST" action="{% url 'iwdModuleV2:Update-Rejected-Requests' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ f.0 }}">
+                                        <button type="submit" class="ui small primary button">Update</button>
+                                    </form>
                                 </td>
                             </tr>
                         </tbody>
