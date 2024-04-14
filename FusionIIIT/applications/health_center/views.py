@@ -107,18 +107,8 @@ def compounder_view(request):
             #adding file tracking inbox part for compounder
             
             inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
-            medicalrelief=medical_relief.objects.all()       
-            # for ib in inbox_files:
-            #     src_object_id = ib['src_object_id']
-                               
-            #     for mr in medicalrelief:                   
-            #         if mr.id == int(src_object_id):                        
-            #             ib['medical_relief'] = {
-            #                 'description': mr.description,
-            #                 'file': mr.file,
-            #                 'compounder_flag':mr.compounder_forward_flag,
-            #                 'acc_admin_flag':mr.acc_admin_forward_flag                            
-            #             }
+            medicalrelief=medical_relief.objects.all()
+                 
             inbox=[]
             for ib in inbox_files:
                 dic={}
@@ -128,7 +118,7 @@ def compounder_view(request):
                         dic['uploader']=ib['uploader']                   
                         dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
                         dic['desc']=mr.description
-                        dic['file']=mr.file
+                        dic['file']=view_file(file_id=ib['id'])['upload_file']
                         dic['status']=mr.compounder_forward_flag
                         dic['status1']=mr.acc_admin_forward_flag
                 inbox.append(dic)

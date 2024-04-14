@@ -34,50 +34,46 @@
 
             </tr>
             </thead>
-
             <tbody>
-            {% for inbox in inbox_files %}
-            <tr>
-
-                <td style="white-space:nowrap;">                    
-                    {{inbox.uploader}}
-                </td>
-                <td style="white-space:nowrap;">                
-                           
-                    {{inbox.upload_date}}   
-    
-                </td>
-
-                <td style="white-space:nowrap;">
-                    {{ inbox.desc}}       
-                   
-                </td>
-                <td style="white-space:nowrap;">
-                    {{ inbox.file}}       
-                   
-                </td>
+                {% for inbox in inbox_files %}
+                <tr>
                 
-                <td>
-                    {% if inbox.status1 == True%}
-                        Approved
-                    {% elif inbox.status == True %}
-                        Forwarded                  
+                    <td style="white-space:nowrap;">
+                        {{ inbox.uploader }}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        {{ inbox.upload_date }}
+                    </td>
+                
+                    <td style="white-space:nowrap;">
+                        {{ inbox.desc }}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <a href="{{ inbox.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                    </td>
                     
-                    {% else %}
-                        Pending
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if inbox.status == False %}
-                        <input type="button" onclick="rem({{inbox.id}})" id="{{inbox.id}}" name="Forward" value="Forward"class="ui blue button" />
-                    {% endif %}
-                </td>
-
-            </tr>
-            {% endfor %}
-
-            </tbody>
+                    <td>
+                        {% if inbox.status1 %}
+                            Approved
+                        {% elif inbox.status %}
+                            Forwarded                  
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                
+                    <td>
+                        {% if not inbox.status %}
+                            <input type="button" onclick="rem({{ inbox.id }})" id="{{ inbox.id }}" name="Forward" value="Forward" class="ui blue button" />
+                        {% endif %}
+                    </td>
+                
+                </tr>
+                {% endfor %}
+                </tbody>
+                
         </table>
 
             <script>

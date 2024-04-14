@@ -566,29 +566,46 @@ def student_view_handler(request):
         data = {'status': 1}
         return JsonResponse(data)
     elif 'medical_relief_submit' in request.POST:
-        to_design = request.POST['designation']
-        formObject = medical_relief()
-        formObject.description = request.POST['description']
-        formObject.file=None
-        formObject.save()
-      
-        request_object = medical_relief.objects.get(pk=formObject.pk)
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-        # print(d)
-        # print(d1)
-        send_file_id=create_file(uploader=request.user.username, 
-            uploader_designation=request.session['currentDesignationSelected'], 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="health_center", 
-            src_object_id= str(request_object.id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        designation = request.POST.get('designation')
+        description = request.POST.get('description')
         
-        request_object.file_id=send_file_id
+        # Retrieve the uploaded file from request.FILES
+        uploaded_file = request.FILES.get('file')
+
+        # Create an instance of the medical_relief model
+        form_object = medical_relief(
+            description=description,
+            file=uploaded_file
+        )
+
+        # Save the form object
+        form_object.save()
+        
+        # Retrieve the form object you just saved
+        request_object = medical_relief.objects.get(pk=form_object.pk)
+        
+        # Retrieve HoldsDesignation instances
+        d = HoldsDesignation.objects.get(user__username=designation)
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+        # Create a file entry using the create_file utility function
+        send_file_id = create_file(
+            uploader=request.user.username,
+            uploader_designation=request.session['currentDesignationSelected'],
+            receiver=designation,
+            receiver_designation=d.designation,
+            src_module="health_center",
+            src_object_id=str(request_object.id),
+            file_extra_JSON={"value": 2},
+            attached_file=uploaded_file  
+        )  
+        request_object.file_id = send_file_id
         request_object.save()
-        return JsonResponse({'status':1})
+        
+        # file_details_dict = view_file(file_id=send_file_id)    
+        # print(file_details_dict)   
+        return JsonResponse({'status': 1})
+    
     elif 'acc_admin_forward' in request.POST:
         file_id=request.POST['file_id']
         rec=File.objects.get(id=file_id)
