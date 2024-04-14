@@ -313,7 +313,7 @@ def hostel_view(request, context={}):
                 if (room.room_cap > room.room_occupied):
                     a_room.append(room)
 
-            print(a_room)
+            # print(a_room)
             # Retrieve additional information for each student
             for student in students:
                 student_info = {}
@@ -374,6 +374,8 @@ def hostel_view(request, context={}):
                 student_info['phone_number'] = extra_info.phone_no
                 
                 hostel_students_details.append(student_info)
+                hostel_students_details = sorted(hostel_students_details, key=lambda x: x['student_id'])
+
 
             context['hostel_students_details'] = hostel_students_details
 
