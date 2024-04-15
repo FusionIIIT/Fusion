@@ -141,6 +141,9 @@ def add_projects(request):
     # if designation != 'rspc_admin':
     #     messages.error(request, 'Only RSPC Admin can add projects')
     #     return redirect("/research_procedures")
+    if request.session.get('currentDesignationSelected') != 'rspc_admin':
+        messages.error(request, 'Only RSPC Admin can add projects')
+        return redirect("/research_procedures")
 
     if request.method== "POST":
         obj= request.POST
@@ -162,7 +165,6 @@ def add_projects(request):
         # print(check[0].username)
 
 
-       
         
         check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
 
@@ -237,7 +239,9 @@ def add_projects(request):
         messages.success(request,"Project added successfully")
         categories = category.objects.all()
 
+        notifs = request.user.notifications.all()
         data = {
+            'notifications': notifs,
             "pid": pid,
             "years": list(range(1, int(years) + 1)),    
             "categories": categories,
@@ -357,7 +361,9 @@ def view_projects(request):
     rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
     rspc_admin =rspc_admin.user.username
     if request.user.username == rspc_admin:
-        data= {
+        notifs = request.user.notifications.all()
+        data = {
+        'notifications': notifs,
         "projects": queryset,
         "username": request.user.username,
         }
@@ -384,7 +390,9 @@ def view_requests(request,id):
         rspc_admin =rspc_admin.user.username
         if request.user.username == rspc_admin :
             queryset= rspc_inventory.objects.all()
-            data= {
+            notifs = request.user.notifications.all()
+            data = {
+            'notifications': notifs,
             "requests": queryset,
             "username": request.user.username
             }   
@@ -524,6 +532,9 @@ def financial_outlay_form(request,pid):
 
 @login_required
 def add_staff_details(request, pid):
+    if request.session.get('currentDesignationSelected') != 'rspc_admin':
+        messages.error(request, 'Only RSPC Admin can add staff details')
+        return redirect("/research_procedures")
     if request.method == 'POST':
         obj = request.POST
         for key, value in obj.items():
@@ -662,10 +673,9 @@ def add_financial_outlay(request,pid):
 
 @login_required
 def inbox(request):
-  data1 = {}   
-  if request.method == 'POST':
-    obj= request.POST
-    user_designation= obj.get('inbox_designation')
+ 
+    user_designation= request.session.get('currentDesignationSelected')
+   
     print(user_designation)
     user_designation= get_designation_instance(user_designation)
 
@@ -688,7 +698,7 @@ def inbox(request):
         "files": files
     }
     # print(data)
-  return render(request, "rs/inbox.html",context= data1)
+    return render(request, "rs/inbox.html",context= data1)
   
   
 
@@ -697,7 +707,12 @@ def add_staff_request(request,id):
     if request.method == 'POST':
         obj= request.POST
         projectid = int(id)
-        receiver = obj.get('receiver')
+        receiver_designation = obj.get('receiver')
+
+        
+        
+        receiver_designation= get_designation_instance(receiver_designation)
+        receiver = get_user_by_designation(receiver_designation).username
 
 
         sender = request.user.username
@@ -705,7 +720,7 @@ def add_staff_request(request,id):
         project_instance=projects.objects.get(project_id=projectid)
         receiver_instance=User.objects.get(username=receiver)
         sender_designation= HoldsDesignation.objects.get(user= request.user).designation
-        receiver_designation = HoldsDesignation.objects.get(user= receiver_instance).designation
+        receiver_designation = receiver_designation
 
         file_x= create_file(
             uploader=sender,    
@@ -714,7 +729,7 @@ def add_staff_request(request,id):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
-            file_extra_JSON= { "message": "Staff request added ("+ str(projectid)+ ")"},
+            file_extra_JSON= { "message": "Request Added." },
             attached_file= file_to_forward, 
         )
         messages.success(request,"request added successfully")
@@ -783,7 +798,12 @@ def update_financial_outlay(request,pid):
 
     
     #post method
+    if(request.session.get('currentDesignationSelected') != 'rspc_admin'):
+        messages.error(request, 'Only RSPC Admin can update financial outlay')
+        return redirect("/research_procedures")
+
     if request.method=="POST" :
+        
         obj = request.POST
         financial_outlay_id = obj.get('financial_outlay_id')
         # print("sdfkjsdfd")
@@ -825,6 +845,9 @@ def update_financial_outlay(request,pid):
 
 @login_required
 def approve_request(request,id):
+
+    
+
     if request.method == 'POST':
         obj= request.POST
         fileid = id
@@ -854,7 +877,9 @@ def approve_request(request,id):
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
 
-    user_designation= HoldsDesignation.objects.get(user= user_inst).designation
+    user_designation= HoldsDesignation.objects.filter(user= user_inst)
+    if user_designation.exists():
+        user_designation= user_designation.first().designation.name
     
     return user_designation
 
@@ -883,6 +908,7 @@ def get_obj_by_username_and_designation(username,designation):
     user_instance = get_user_by_username(username)
     designation_instance = get_designation_instance(designation)
     return HoldsDesignation.objects.filter(user=user_instance, designation=designation_instance)
+
 
 
     
