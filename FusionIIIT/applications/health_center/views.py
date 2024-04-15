@@ -74,8 +74,7 @@ def compounder_view(request):
             return compounder_view_handler(request)
 
         else:
-            notifs = request.user.notifications.all()
-            print(notifs)
+            notifs = request.user.notifications.all()           
             all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all()
             all_hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-admission_date')
             hospitals_list = Hospital.objects.all().order_by('hospital_name')
@@ -91,7 +90,7 @@ def compounder_view(request):
             expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
-            presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-date')
+            
             medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
             print(medicines_presc)
             if count:
@@ -104,7 +103,24 @@ def compounder_view(request):
             
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
-
+            prescription= Prescription.objects.all()
+            report=[]
+            for pre in prescription:
+                dic={}
+                dic['id']=pre.pk
+                dic['user_id']=pre.user_id_id
+                dic['doctor_id'] = pre.doctor_id  # Use dot notation
+                dic['date'] = pre.date  # Use dot notation
+                dic['details'] = pre.details  # Use dot notation
+                dic['test'] = pre.test  # Use dot notation
+                if pre.file_id:
+                    dic['file'] = view_file(file_id=pre.file_id)['upload_file']
+                else:
+                    dic['file']=None 
+                report.append(dic)
+                
+                
+                
            
              
             #adding file tracking inbox part for compounder
@@ -134,7 +150,7 @@ def compounder_view(request):
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox,'notifications':notifs})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': report, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -257,7 +273,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'notifications':notifs})
+                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 

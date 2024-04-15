@@ -184,29 +184,7 @@
             </tbody>
         </table>
 
-            <script>
-                function rem(id) {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/healthcenter/compounder/', // Specify the URL
-                        data: {
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                            file_id: id,  
-                            compounder_forward: 1,                            
-                        },
-                        success: function(data) {
-                            if (data.status === 1) {
-                                alert("Forwarded to Accounts Admin");
-                                // Optionally, reload the page
-                                window.location.reload();
-                            }
-                        }
-                    });
-                }
-                
-                
-           
-        </script>
+            
 
     </div>
 </div>

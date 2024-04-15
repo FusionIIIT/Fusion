@@ -390,10 +390,13 @@
                         Date
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Details
+                        Details
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Test
+                        Test
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
                     </td>
 
                      <td>
@@ -437,6 +440,13 @@
                     <td>
                         {{pre.test}}
                     </td>
+                    <td style="white-space:nowrap;">
+                        {% if pre.file %}
+                        <a href="{{ pre.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
+                    </td>
 
                     <td>
                      <table>
@@ -450,7 +460,7 @@
 
                     <td>
 
-                        <input type="button" onclick="rem({{pre.pk}})" id="{{pre.pk}}" name="cancel" value="Cancel"class="ui red button" />
+                        <input type="button" onclick="rem1({{pre.id}})" id="{{pre.id}}" name="cancel" value="Cancel"class="ui red button" />
 
                     </td>
 
@@ -463,7 +473,7 @@
         <script>
 
             
-        function rem(id){
+        function rem1(id){
 
         var dis = this;
         var d = window.confirm('Are you sure, you want to cancel the prescription?');

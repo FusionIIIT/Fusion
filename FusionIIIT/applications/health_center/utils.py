@@ -453,7 +453,11 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
-        Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(pk=presc_id).delete()
+        prescription=Prescription.objects.filter(pk=presc_id)
+        is_deleted = delete_file(id=presciption.file_id)
+        prescription.delete()
+        
+        
         data = {'status': 1}
         return JsonResponse(data)
     elif 'medicine' in request.POST:
