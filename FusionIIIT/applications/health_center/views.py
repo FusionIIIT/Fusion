@@ -67,13 +67,15 @@ def compounder_view(request):
         doctors: retrieve Doctor class objects from database 
     '''
                                                                 # compounder view starts here
-    notifs = request.user.notifications.all()
+    
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     if usertype == 'compounder':
         if request.method == 'POST':
             return compounder_view_handler(request)
 
         else:
+            notifs = request.user.notifications.all()
+            print(notifs)
             all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all()
             all_hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-admission_date')
             hospitals_list = Hospital.objects.all().order_by('hospital_name')
@@ -132,7 +134,7 @@ def compounder_view(request):
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox,'notifications':notifs})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -157,14 +159,14 @@ def student_view(request):
         doctors: retrieve Doctor class objects from database        
 
     '''                                                                 # student view starts here
-    notifs = request.user.notifications.all()
+    
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     if usertype == 'student' or usertype == 'faculty' or usertype == 'staff':
         if request.method == 'POST':
             return student_view_handler(request)
 
         else:
-            
+            notifs = request.user.notifications.all()
             users = ExtraInfo.objects.all()
             user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
@@ -206,7 +208,7 @@ def student_view(request):
                         dic['uploader']=ib['uploader']
                         dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
                         dic['desc']=mr.description
-                        dic['file']=mr.file
+                        dic['file']=view_file(file_id=ib['id'])['upload_file']
                         dic['status']=mr.acc_admin_forward_flag
                 acc_ib.append(dic)
             uploader_outbox=view_outbox(username=request.user.username,designation=request.session['currentDesignationSelected'] ,src_module='health_center')
@@ -223,7 +225,7 @@ def student_view(request):
                         dic['id']=out['id']                    
                         dic['upload_date']=datetime.fromisoformat(out['upload_date']).date()                   
                         dic['desc']=mr.description
-                        dic['file']=mr.file
+                        dic['file']=view_file(file_id=out['id'])['upload_file']
                         dic['status']=mr.acc_admin_forward_flag
                         dic['approval_date']=''
             
@@ -237,7 +239,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief})
+                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'notifications':notifs})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
