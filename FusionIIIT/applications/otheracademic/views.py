@@ -1,28 +1,8 @@
-# from django.shortcuts import render
-# from django.contrib import messages
-# from django.shortcuts import render, get_object_or_404, redirect
-# # from .models import File, Tracking
-# from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-# from django.template.defaulttags import csrf_token
-# from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-# from django.contrib.auth.decorators import login_required
-# from django.db import IntegrityError
-# from django.core import serializers
-# from django.contrib.auth.models import User
-# from timeit import default_timer as time
-# from notification.views import office_module_notif,file_tracking_notif
-# from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt
-# from .models import LeaveFormTable,BonafideFormTableUpdated,GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd,NoDues
-# from django.shortcuts import render, get_object_or_404
-# from datetime import date 
-# from applications.filetracking.models import *
-# from applications.filetracking.sdk.methods import *
-# from notification.views import otheracademic_notif
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect,render
-# from .models import File, Tracking
+
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 
 from django.template.defaulttags import csrf_token
@@ -44,130 +24,198 @@ from applications.filetracking.sdk.methods import *
 from notification.views import otheracademic_notif
 
 
-#leave for UG
+
 
 def otheracademic(request):
+    """
     
-    user=get_object_or_404(User,username=request.user.username)
-    if (user.extrainfo.student.programme == "B.Tech"):
-        return  render(request, "otheracademic/UG_page.html")
-    elif(user.extrainfo.student.programme == "M.Tech" or user.extrainfo.student.programme == "PhD"):
+
+    Description:
+        This function checks the user's programme (B.Tech, M.Tech, or PhD) to determine whether they are an undergraduate or postgraduate student. It then renders the corresponding academic page accordingly.
+        - If the user is an undergraduate student (B.Tech), the function renders the UG_page.html template.
+        - If the user is a postgraduate student (M.Tech or PhD), the function renders the PG_page.html template.
+    """
+    user = get_object_or_404(User, username=request.user.username)
+    if user.extrainfo.student.programme == "B.Tech":
+        return render(request, "otheracademic/UG_page.html")
+    elif user.extrainfo.student.programme == "M.Tech" or user.extrainfo.student.programme == "PhD":
         return render(request, "otheracademic/PG_page.html")
-    
+
 
 def leaveform(request):
-    return render(request, 'otheracademic/leaveform.html')
+    """
+    View function for accessing the leave form page.
 
+    """
+    return render(request, 'otheracademic/leaveform.html')
 
 
 @csrf_exempt  # Exempt CSRF verification for this view
 def leave_form_submit(request):
+    """
+    View function for submitting a leave form.
+
+    Description:
+        This function handles form submission for leave requests, processes the data, and saves it to the database.
+        It also notifies the relevant authority about the new leave application.
+    """
     if request.method == 'POST':
         # Extract data from the request
-        current_user=get_object_or_404(User,username=request.user.username)
-        y=ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-        user_details=User.objects.filter(id=y.user_id)
-        des=HoldsDesignation.objects.filter(user=user_details).all()
         data = request.POST
         file = request.FILES.get('related_document')
-        hodname=data.get('hod_credential')
-
+        hodname = data.get('hod_credential')
         
-            # Create a new LeaveFormTable instance and save it to the database
-        leave=LeaveFormTable.objects.create(
-                student_name=data.get('name'),
-                roll_no=request.user.extrainfo,
-                date_from=data.get('date_from'),
-                date_to=data.get('date_to'),
-                leave_type=data.get('leave_type'),
-                upload_file=file,
-                address=data.get('address'),
-                purpose=data.get('purpose'),
-                date_of_application=data.get('date_of_application'),
-                approved=False,  # Initially not approved
-                rejected=False, 
-                hod=data.get('hod_credential') # Initially not rejected
-            )
+        # Create a new LeaveFormTable instance and save it to the database
+        leave = LeaveFormTable.objects.create(
+            student_name=data.get('name'),
+            roll_no=request.user.extrainfo,
+            date_from=data.get('date_from'),
+            date_to=data.get('date_to'),
+            leave_type=data.get('leave_type'),
+            upload_file=file,
+            address=data.get('address'),
+            purpose=data.get('purpose'),
+            date_of_application=data.get('date_of_application'),
+            approved=False,  # Initially not approved
+            rejected=False,  # Initially not rejected
+            hod=data.get('hod_credential')
+        )
         
-        leave_hod=User.objects.get(username=hodname)
+        leave_hod = User.objects.get(username=hodname)
         receiver_value = User.objects.get(username=request.user.username)
-        receiver_value_designation= HoldsDesignation.objects.filter(user=receiver_value)
+        receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
         lis = list(receiver_value_designation)
-        obj=lis[0].designation
+        obj = lis[0].designation
         
-        file_id= create_file(
+        file_id = create_file(
             uploader=request.user.username,
             uploader_designation=obj,
             receiver=leave_hod,
             receiver_designation="student",
             src_module="otheracademic",
             src_object_id=leave.id,
-            file_extra_JSON={"value":2},
+            file_extra_JSON={"value": 2},
             attached_file=None,
-            subject='ug_leave')
-        # leave.save()
-        # print(roll_no_id)
-        message="A new leave application"
-        otheracademic_notif(request.user,leave_hod,'alert',leave.id,'student',message)
-        if(leave):
-            messages.success(request,"you successfully submited your form")
+            subject='ug_leave'
+        )
+       
+        message = "A new leave application"
+        otheracademic_notif(request.user, leave_hod, 'alert', leave.id, 'student', message)
+        if leave:
+            messages.success(request, "You successfully submitted your form")
             
         return HttpResponseRedirect('/otheracademic/leaveform')
-    
+
 
 def leaveApproveForm(request):
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='ug_leave']
+    """
+    View function for accessing the leave approval form.
+
+    Description:
+        This function retrieves leave requests for approval by the designated authority (e.g., HOD) and displays them in a list.
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'ug_leave']
     
     form_data = LeaveFormTable.objects.filter(id__in=leave_ids)
     return render(request, 'otheracademic/leaveformreciever.html', {'form_data': form_data})
 
+
 def leaveStatus(request):
-     
+    """
+    View function for accessing the leave status page for the student.
+
+    Description:
+        This function retrieves and displays the leave status of the currently logged-in student.
+    """
     form_data = LeaveFormTable.objects.filter(roll_no=request.user.extrainfo)
-    return render(request, 'otheracademic/leaveStatus.html',{'form_data' : form_data })
+    return render(request, 'otheracademic/leaveStatus.html', {'form_data': form_data})
+
 
 def leaveStatus_Dip(request):
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='ug_leave']
+    """
+    View function for track the record of leave applied.
+
+    
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'ug_leave']
 
     form_data = LeaveFormTable.objects.filter(id__in=leave_ids)
-    return render(request, 'otheracademic/leaveStatus_Dip.html',{'form_data' : form_data })
+    return render(request, 'otheracademic/leaveStatus_Dip.html', {'form_data': form_data})
 
 
 def approve_leave(request, leave_id):
+    """
+    View function for approving a leave request.
+
+    Parameters:
+        leave_id (int): The ID of the leave request to be approved.
+
+    Description:
+        This function approves the leave request with the specified ID and updates its status accordingly.
+    """
     leave_entry = LeaveFormTable.objects.get(id=leave_id)
     leave_entry.approved = True
     leave_entry.save()
-    return redirect('/otheracademic/leaveApproveForm')  # Redirect to appropriate page after approval
+    messages.success(request, "Successfully Approved")
+    return redirect('/otheracademic/leaveApproveForm')
+
 
 def reject_leave(request, leave_id):
+    """
+    View function for rejecting a leave request.
+
+    Parameters:
+        leave_id (int): The ID of the leave request to be rejected.
+
+    Description:
+        This function rejects the leave request with the specified ID and updates its status accordingly.
+    """
     leave_entry = LeaveFormTable.objects.get(id=leave_id)
     leave_entry.rejected = True
     leave_entry.save()
-    return redirect('/otheracademic/leaveApproveForm')  # Redirect to appropriate page after rejection
+    messages.success(request, "Successfully Rejected")
+    return redirect('/otheracademic/leaveApproveForm')
+
+
+
+
 
 # PG/MTECh
 @login_required
 def leavePG(request):
-    user=get_object_or_404(User,username=request.user.username)
-    if (user.extrainfo.student.programme == "M.Tech" or "PhD"):
+    """
+    View function for accessing the leave page for postgraduate students.
+
+    Description:
+        This function checks if the logged-in user is a postgraduate student (M.Tech or PhD). If so, it renders the leavePG.html template, allowing them to apply for leave. 
+        If the user is not a postgraduate student, it returns an "NOT AVAILABLE" message.
+    """
+    user = get_object_or_404(User, username=request.user.username)
+    if user.extrainfo.student.programme == "M.Tech" or "PhD":
         return render(request, 'otheracademic/leavePG.html')
     else:
         return HttpResponse("NOT AVAILABLE")
 
 
-
 def leavePgSubmit(request):
+    """
+    View function for submitting a leave form by postgraduate students.
+
+    Description:
+        This function handles form submission for leave requests by postgraduate students.
+        It processes the data, saves it to the database, notifies the TA supervisor about the new leave application,
+        and redirects the user to the leave form page.
+
+        -In this function  hod is charfield ,basically it ask the credential in charfied but by using user.get.object() it return the foreign key of hod and after that we can proceed furthur.
+        this is used to  overcome the problem of database data
+    """
     if request.method == 'POST':
-        current_user = get_object_or_404(User, username=request.user.username)
-        y = ExtraInfo.objects.all().select_related('user', 'department').filter(user=current_user).first()
-        user_details = User.objects.filter(id=y.user_id)
-        des = HoldsDesignation.objects.filter(user=user_details).all()
         data = request.POST
         file = request.FILES.get('related_document')
         hodname = data.get('hod_credential')
-        ta=data.get('ta_supervisor')
+        ta = data.get('ta_supervisor')
         
         leave = LeavePG.objects.create(
             student_name=data.get('student_name'),
@@ -190,11 +238,10 @@ def leavePgSubmit(request):
             ta_rejected=False,
             hod_approved=False,
             hod_rejected=False,
-            
             hod=hodname
         )
         
-        tasupervisor= User.objects.get(username=ta)
+        tasupervisor = User.objects.get(username=ta)
         receiver_value = User.objects.get(username=request.user.username)
         receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
         lis = list(receiver_value_designation)
@@ -213,22 +260,34 @@ def leavePgSubmit(request):
         )
         
         message = "A new leave application"
-        otheracademic_notif(request.user,tasupervisor, 'alert', leave.id, 'student', message)
+        otheracademic_notif(request.user, tasupervisor, 'alert', leave.id, 'student', message)
         if leave:
             messages.success(request, "You have successfully submitted your form")
             
         return HttpResponseRedirect('/otheracademic/leaveform')
 
-    
+
 def leaveApproveTA(request):
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='pg_leave']
+    """
+    View function for accessing the leave approval page for TA supervisors.
+
+    Description:
+        This function retrieves leave requests for approval by the TA supervisor and displays them in a list.
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
     
     form_data = LeavePG.objects.filter(id__in=leave_ids)
     return render(request, 'otheracademic/leaveApproveTA.html', {'form_data': form_data})
 
-def approve_leave_ta(request, leave_id):
 
+def approve_leave_ta(request, leave_id):
+    """
+    View function for approving a leave request by TA supervisor.
+
+    Description:
+        This function approves the leave request with the specified ID by TA supervisor and updates its status accordingly and forwarded to hod.
+    """
     leave_entry = LeavePG.objects.get(id=leave_id)
     leave_entry.ta_approved = True
     leave_entry.save()
@@ -237,71 +296,122 @@ def approve_leave_ta(request, leave_id):
     receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
     lis = list(receiver_value_designation)
     obj = lis[0].designation
-    leave_entry=get_object_or_404(LeavePG,id=leave_id)
-
+    leave_entry = get_object_or_404(LeavePG, id=leave_id)
         
-    file_id_forward= create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=leave_entry.hod,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=leave_id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='pg_leave')
+    file_id_forward = create_file(
+        uploader=request.user.username,
+        uploader_designation=obj,
+        receiver=leave_entry.hod,
+        receiver_designation="student",
+        src_module="otheracademic",
+        src_object_id=leave_id,
+        file_extra_JSON={"value": 2},
+        attached_file=None,
+        subject='pg_leave'
+    )
     message = "A new leave application"
-    hod_user=User.objects.get(username=leave_entry.hod)
-    otheracademic_notif(request.user,hod_user, 'alert', leave_id, 'student', message)
+    hod_user = User.objects.get(username=leave_entry.hod)
+    otheracademic_notif(request.user, hod_user, 'alert', leave_id, 'student', message)
+   
 
     return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after approval
 
+
 def reject_leave_ta(request, leave_id):
+    """
+    View function for rejecting a leave request by TA supervisor.
+
+    Description:
+        This function rejects the leave request with the specified ID by TA supervisor and updates its status accordingly.
+    """
     leave_entry = LeavePG.objects.get(id=leave_id)
     leave_entry.ta_rejected = True
     leave_entry.save()
+   
+
     return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after rejection
 
+
 def leaveApproveHOD(request):
-    
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='pg_leave']
+    """
+    View function for accessing the leave approval page for HOD.
+
+    Description:
+        This function retrieves leave requests for approval by the HOD and displays them in a list.
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
     
     form_data = LeavePG.objects.filter(id__in=leave_ids)
     return render(request, 'otheracademic/leaveApproveHOD.html', {'form_data': form_data})
 
+
 def approve_leave_hod(request, leave_id):
+    """
+    View function for approving a leave request by HOD.
+
+    Description:
+        This function approves the leave request with the specified ID by HOD and updates its status accordingly.
+    """
     leave_entry = LeavePG.objects.get(id=leave_id)
     leave_entry.hod_approved = True
     leave_entry.save()
+   
     return redirect('/otheracademic/leaveApproveHOD')  # Redirect to appropriate page after approval
 
+
 def reject_leave_hod(request, leave_id):
+    """
+    View function for rejecting a leave request by HOD.
+
+    Description:
+        This function rejects the leave request with the specified ID by HOD and updates its status accordingly.
+    """
     leave_entry = LeavePG.objects.get(id=leave_id)
     leave_entry.hod_rejected = True
+   
     leave_entry.save()
+    
     return redirect('/otheracademic/leaveApproveHOD')  # Redirect to appropriate page after rejection
 
 
 def leaveStatusPG(request):
-    
+    """
+    View function for accessing the leave status page for postgraduate students.
+
+    Description:
+        This function retrieves and displays the leave status of postgraduate students.
+    """
     form_data = LeavePG.objects.all()
     roll_no = request.user.username
-    print(roll_no)
-    # form_data = LeavePG.objects.all()
-    return render(request, 'otheracademic/leaveStatusPG.html', {'form_data': form_data, 'roll_no' : roll_no})
-
+    return render(request, 'otheracademic/leaveStatusPG.html', {'form_data': form_data, 'roll_no': roll_no})
 
 
 def leaveStatusPG_Dip(request):
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='pg_leave']
+    """
+    View function for accessing the leave  logged data of PG .
+
+    Description:
+        This function retrieves and displays the leave logged data of PG leave for future reference.
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
 
     form_data = LeavePG.objects.filter(id__in=leave_ids)
     return render(request, 'otheracademic/leaveStatusPG_Dip.html', {'form_data': form_data})
 
 
+
+
+
+
+
+
 def graduateseminar(request):
+    """
+    This function is used to log the graduate seminar form and show the status.
+    
+    """
     user=get_object_or_404(User,username=request.user.username)
     if(request.user.username == "AG") :
         return render(request,'otheracademic/graduateseminarForm.html')
@@ -333,14 +443,36 @@ def graduate_status(request):
     return render(request, 'otheracademic/graduateSeminarStatus.html',{'form_data' : form_data, 'roll_no' : roll_no })
 
 def graduateSeminarStatus_Dip(request):
-    user=get_object_or_404(User,username=request.user.username)
-    if(request.user.username == "AG") :
+    receiver_value = User.objects.get(username=request.user.username)
+    receiver_value_designation= HoldsDesignation.objects.filter(user=receiver_value)
+    lis = list(receiver_value_designation)
+    obj=lis[0].designation
+    
+    
+    if  obj :
         form_data = GraduateSeminarFormTable.objects.all()
         return render(request, 'otheracademic/graduateSeminarStatus_Dip.html',{'form_data' : form_data })
     else :
-        return HttpResponse("Not Available for You")
+        return HttpResponse("Not Available")
+
+
+
+
+
+
+
+
+
 
 def bonafide(request):
+    """
+    This function is used for solve the problem of Bonafied.In this Student apply for the bonafide .
+    
+    
+    
+    
+    
+    """
     return render(request,'otheracademic/bonafideForm.html')
 
 
@@ -348,6 +480,9 @@ def bonafide(request):
 
 
 def bonafide_form_submit(request):
+    """
+    Bonafide form submitted to acadadmin
+    """
     if request.method == 'POST':
         # Extract data from the request
         data = request.POST
@@ -366,11 +501,17 @@ def bonafide_form_submit(request):
                 reject=False,  # Initially not rejected
                 download_file = "not available",
             )
+        messages.success(request,'form submitted successfully')
         bonafide.save()
         return HttpResponseRedirect('/otheracademic/bonafide')
 
 
 def bonafideApproveForm(request):
+
+    """
+    Bonafide form approveform where it got option to accept and reject the application 
+    """
+    
     if(request.user.username == "acadadmin"):
         form_data = BonafideFormTableUpdated.objects.all()
         return render(request, 'otheracademic/bonafideApprove.html', {'form_data': form_data})
@@ -378,6 +519,10 @@ def bonafideApproveForm(request):
         return HttpResponse("Not available For You")
 
 def approve_bonafide(request, leave_id):
+
+    """
+    Approve Bonafide form
+    """
     file = request.FILES.get('related_document')
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.approve = True
@@ -385,12 +530,18 @@ def approve_bonafide(request, leave_id):
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after approval
 
 def reject_bonafide(request, leave_id):
+    """
+    Reject Bonafide Form
+    """
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.reject = True
     leave_entry.save()
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after rejection
 
 def bonafideStatus(request):
+    """
+    Bonafide Status shown to student with option of download
+    """
 
     form_data = BonafideFormTableUpdated.objects.all()
     roll_no = request.user.username
@@ -403,6 +554,10 @@ def bonafideStatus(request):
 
 
 def upload_file(request, entry_id):
+
+    """
+    Bonafide uploaded by acadadmin
+    """
     if request.method == 'POST' and request.FILES.get('related_document'):
         related_document = request.FILES['related_document']
         
@@ -416,76 +571,13 @@ def upload_file(request, entry_id):
         return JsonResponse({'error': 'No file provided'}, status=400)
 
 
-# def assistantship(request):
-#     return render(request,'otheracademic/assistantshipclaimform.html')
-
-# def assistantship_form_submission(request):
-#     if request.method == 'POST':
-#         # Retrieve form data
-
-#         student_name = request.POST.get('student_name')
-#         roll_no = request.POST.get('roll_no')
-#         discipline = request.POST.get('discipline')
-#         date_from = request.POST.get('date_from')
-#         date_to = request.POST.get('date_to')
-#         bank_account_no = request.POST.get('bank_account_no')
-#         signature = request.FILES.get('signature')
-#         applicability = request.POST.get('applicability')
-#         ta_supervisor = request.POST.get('ta_supervisor')
-#         thesis_supervisor = request.POST.get('thesis_supervisor')
-#         date_applied = request.POST.get('date_of_application')
-
-#         current_date = date.today()
-        
-#         # Save form data to the database
-#         assistantship_claim = AssistantshipClaimFormStatusUpd(
-#             student_name=student_name,
-#             roll_no=request.user.extrainfo,
-#             discipline=discipline,
-#             dateFrom=date_from,
-#             dateTo=date_to,
-#             bank_account=bank_account_no,
-#             student_signature=signature,
-#             dateApplied= current_date ,
-#             ta_supervisor=ta_supervisor,
-#             thesis_supervisor=thesis_supervisor,
-#             applicability=applicability,
-#             TA_approved=False,
-#             TA_rejected=False,
-#             Ths_approved=False,
-#             Ths_rejected=False,
-#             HOD_approved=False,
-#             HOD_rejected=False,
-#             Acad_approved=False,
-#             Acad_rejected=False
-#         )
-#         assistantship_claim.save()
-        
-#         # Redirect to a success page or return a success message
-#         return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
-
-#     else:
-#         # Return an error response for invalid request method
-#         return HttpResponse('Invalid request method')
-
-
-# def assistantship_form_approval(request):
-#     # Retrieve data from the database
-#     form_data =AssistantshipClaimForm.objects.all()
-#     return render(request, 'otheracademic/assistantship_approval.html', {'form_data': form_data})
-
-
-
-
-#No Dues Status
-
-
-
-
 
 
 
 def nodues(request):
+    """
+    No Dues Form where student can apply for no dues
+    """
     return render(request,'otheracademic/noduesverification.html')
 
 
@@ -534,70 +626,36 @@ def update_dues_status(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-# @csrf_exempt  # Exempt CSRF verification for this view
-# def submit_nodues_form(request):
-#     if request.method == 'POST':
-#         roll_no = request.POST.get('roll_no')
-#         student_name = request.POST.get('student_name')
 
-#         # Create a new NoDues instance and save it to the database
-#         nodues_entry = NoDues.objects.create(
-#             roll_no=roll_no,
-#             student_name=student_name,
-#             library_clear=False,
-#             library_notclear=True,
-#             hostel_clear=False,
-#             hostel_notclear=True,
-#             mess_clear=False,
-#             mess_notclear=True,
-#             ece_clear=False,
-#             ece_notclear=True,
-#             physics_lab_clear=False,
-#             physics_lab_notclear=True,
-#             mechatronics_lab_clear=False,
-#             mechatronics_lab_notclear=True,
-#             cc_clear=False,
-#             cc_notclear=True,
-#             workshop_clear=False,
-#             workshop_notclear=True,
-#             signal_processing_lab_clear=False,
-#             signal_processing_lab_notclear=True,
-#             vlsi_clear=False,
-#             vlsi_notclear=True,
-#             design_studio_clear=False,
-#             design_studio_notclear=True,
-#             design_project_clear=False,
-#             design_project_notclear=True,
-#             bank_clear=False,
-#             bank_notclear=True,
-#             icard_dsa_clear=False,
-#             icard_dsa_notclear=True,
-#             account_clear=False,
-#             account_notclear=True,
-#             btp_supervisor_clear=False,
-#             btp_supervisor_notclear=True,
-#             discipline_office_clear=False,
-#             discipline_office_notclear=True,
-#             student_gymkhana_clear=False,
-#             student_gymkhana_notclear=True,
-#             discipline_office_dsa_clear=False,
-#             discipline_office_dsa_notclear=True,
-#             alumni_clear=False,
-#             alumni_notclear=True,
-#             placement_cell_clear=False,
-#             placement_cell_notclear=True,
-   
-#      )
-#         # Optionally, you can redirect to a success page or render a template
-#         nodues_entry.save()
-#         # print(roll_no_id)
-#         return redirect('no_dues_form.html')
-#     else:
-#         return render(request, 'no_dues_form.html')
-    
 
 @csrf_exempt  # Exempt CSRF verification for this view
 def submit_nodues_form(request):
+
+    """
+    Submit the No Dues form for a student
+    description:-
+
+    There are many actors in this problem like authory of:-
+    library,
+    mess,
+    hostel,
+    Physics Lab,
+    ECE Lab,
+    Computer Centre,
+    mechatronics_lab,
+    Vlsi,
+    Design,
+    Bank,
+    BTP,
+    Placement cell etc.......
+
+    Students apply this form and this forwarded to all this actor to approve/reject
+
+
+    There is also example Bank_nodues_not for those student whose in first time application is rejected and when they go to second time it will be approved by them.
+
+
+    """
     if request.method == 'POST':
         # Extract data from the request
         data = request.POST
@@ -613,7 +671,7 @@ def submit_nodues_form(request):
         mess_credential = data.get('mess_credential'),
         physics_credential = data.get('physics_credential'),
         
-            # Create a new LeaveFormTable instance and save it to the database
+            
         nodues=NoDues.objects.create(
             roll_no=request.user.extrainfo,
             name=data.get('name'),
@@ -1510,17 +1568,7 @@ def library_nodues_not(request):
 
 
 
-# def nodues_status(request):
-#     form_data = NoDues.objects.all()
-#     roll_no = request.user.username
-#     print(roll_no)
-#     return render(request, 'otheracademic/nodues_status.html',{'form_data' : form_data, 'roll_no' : roll_no })
 
-# def nodues_status(request):
-#     roll_no = request.user.username
-#     form_data = NoDues.objects.filter(roll_no=roll_no)
-#     print(form_data)
-#     return render(request, 'otheracademic/nodues_status.html', {'form_data': form_data, 'roll_no': roll_no})
 
 
 
@@ -1565,6 +1613,16 @@ def update_dues_status(request):
 
 @login_required
 def assistantship(request):
+     
+     """
+     This function solve the problem of assistantship apply by mtech and phd students for thhe monthly stipend.
+     The form firstly approved by TA_supervisor ---->then it forwarded to---->Thesis_Supervisor------>HOD------>acadadmin
+     After approval status is shown to the student
+     
+     
+     
+     
+     """
      user = get_object_or_404(User, username=request.user.username)
      if user.extrainfo.student.programme == 'M.Tech':
         return render(request, 'otheracademic/assistantshipclaimform.html')
@@ -1615,20 +1673,15 @@ def assistantship_form_submission(request):
             Acad_approved=False,
             Acad_rejected=False,
             hod=hod
-            # amount =0
-            # rate = 0
-            # half_day_leave = models.IntegerField(default=0)
-            # full_day_leave = models.IntegerField(default=0)
+           
 
 
         )
-        # print(assistant.id)
-        # assistant.save()
+       
         current_user=get_object_or_404(User,username=request.user.username)
         ta_supervisor_id=User.objects.get(username=ta_supervisor)
         ts=User.objects.get(username=thesis_supervisor)
-        # y=ExtraInfo.object.all().select_related('user','department').filter(user=current_user).first()
-        # thesis_supervisor_name=HoldsDesignation.objects.select_related('user','working','designation').get(designation__name=thesis_supervisor)
+        
         user_details=User.objects.get(id=y.user_id)
         des=HoldsDesignation.objects.filter(user=user_details).all()
         file_id = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =ta_supervisor, receiver_designation = "student", src_module = "otheracademic", src_object_id = assistant.id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
@@ -1645,13 +1698,7 @@ def assistantship_form_submission(request):
         return HttpResponse('Invalid request method')
 
 
-# def assistantship_form_approval(request):
-#     # Retrieve data from the database
-#     inbox = view_inbox(username = request.user.username, designation = "student", src_module = "otheracademic")
-#     print(inbox)
-#     print(request.user.username)
-#     form_data = AssistantshipClaimFormStatusUpd.objects.all()
-#     return render(request, 'otheracademic/assistantship_approval.html', {'form_data': form_data})
+
 
 
 
@@ -1759,10 +1806,7 @@ def assistanship_ta_reject(request, ass_id):
     return redirect('/otheracademic/approveform')
 
 def assistanship_thesis_approve(request, ass_id):
-    # Obtain inbox data
-    # inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
-
-    # Find the object with the given ID from the AssistantshipClaimFormStatusUpd model
+   
     leave_entry = get_object_or_404(AssistantshipClaimFormStatusUpd, id=ass_id)
 
     # Access the thesis_supervisor attribute of leave_entry
@@ -1781,21 +1825,7 @@ def assistanship_thesis_approve(request, ass_id):
    
     forwarded_hod = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.hod, receiver_designation = "student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
     
-    # forwarded_hod = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.hod, receiver_designation ="student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
-    # Forward the file to the thesis supervisor
-    # forwarded_file_id = forward_file(
-    #     file_id=ass_id_from_inbox,
-    #     receiver=leave_entry.thesis_supervisor,
-    #     receiver_designation="thesis_supervisor",
-    #     file_extra_JSON={"key": "value"},
-    #     remarks="Forwarding to thesis supervisor",
-    #     attached_file=None,
-    # ) 
-
-    # Get the thesis supervisor's User object
-     
-
-    # Send notification to the thesis  supervisor
+   
     
     message = "Assistantship status received"
     otheracademic_notif(request.user,csehod_user , 'alert', ass_id, "student", message)
