@@ -40,14 +40,20 @@
                         <br>
 
                         <div class="field">
-                            <label>Remarks:<textarea rows="2" name="remarks">{{remarks}}</textarea></label>
+                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
                         </div>
 
                         <br>
 
-                        <div class="field">                                <div class="field">
-                                <label> Send as: {{ designation_name }}</label>
-                                <input type="hidden" name="sender" value="{{ designation_id }}">
+                        <div class="field">
+                            <label>Send as:
+                                <select required class="ui fluid search selection dropdown" name="sender">
+                                    <option selected hidden>Select</option>
+                                    {% for designations in designations %}
+                                        <option value="{{designations.id}}">{{designations}}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
                         </div>
 
                         <br>
@@ -68,12 +74,8 @@
 
                         <div class="field">
                             <label for="file">Attach Files: (Maximum File Size 10 MB)</label>
-                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" value="
-                                {% if file.upload_file %}
-                                    file.upload_file.url
-                                {% endif %}
-                            ">
-                        </div>                        
+                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png">
+                        </div>
                     </div>
                 </div>
                 <button type="submit" name="send" class="ui large right floated primary button" style="float: right;">
