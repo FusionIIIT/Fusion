@@ -40,7 +40,8 @@ def otheracademic(request):
         return render(request, "otheracademic/UG_page.html")
     elif user.extrainfo.student.programme == "M.Tech" or user.extrainfo.student.programme == "PhD":
         return render(request, "otheracademic/PG_page.html")
-
+    else:
+        return HttpResponse(request,"NOt Available For you")
 
 def leaveform(request):
     """
@@ -100,7 +101,7 @@ def leave_form_submit(request):
         )
        
         message = "A new leave application"
-        otheracademic_notif(request.user, leave_hod, 'alert', leave.id, 'student', message)
+        otheracademic_notif(request.user, leave_hod, 'ug_leave_hod', leave.id, 'student', message)
         if leave:
             messages.success(request, "You successfully submitted your form")
             
@@ -260,7 +261,7 @@ def leavePgSubmit(request):
         )
         
         message = "A new leave application"
-        otheracademic_notif(request.user, tasupervisor, 'alert', leave.id, 'student', message)
+        otheracademic_notif(request.user, tasupervisor,'pg_leave_ta', leave.id, 'student', message)
         if leave:
             messages.success(request, "You have successfully submitted your form")
             
@@ -311,7 +312,7 @@ def approve_leave_ta(request, leave_id):
     )
     message = "A new leave application"
     hod_user = User.objects.get(username=leave_entry.hod)
-    otheracademic_notif(request.user, hod_user, 'alert', leave_id, 'student', message)
+    otheracademic_notif(request.user, hod_user, 'pg_leave_hod', leave_id, 'student', message)
    
 
     return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after approval
@@ -752,7 +753,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,hostel_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,hostel_receiver, 'hostel_nodues', nodues.id, 'student', message)
 
 
         #bnk_receiver
@@ -770,7 +771,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,bank_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,bank_receiver, 'bank_nodues', nodues.id, 'student', message)
 
         #btp_receiver
         btp_receiver=User.objects.get(username=data.get('btp_credential'))
@@ -787,7 +788,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,btp_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,btp_receiver, 'btp_nodues', nodues.id, 'student', message)
 
         #cse_receiver
         cse_receiver=User.objects.get(username=data.get('cse_credential'))
@@ -804,7 +805,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,cse_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,cse_receiver, 'cse_nodues', nodues.id, 'student', message)
         #design_receiver
         design_receiver=User.objects.get(username=data.get('design_credential'))
         file_bank= create_file(
@@ -820,7 +821,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,design_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,design_receiver, 'design_nodues', nodues.id, 'student', message)
 
         #acad_receiver
         acad_receiver=User.objects.get(username=data.get('acad_credential'))
@@ -837,7 +838,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,acad_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,acad_receiver, 'acad_nodues', nodues.id, 'student', message)
 
         #ece_receiver
         ece_receiver=User.objects.get(username=data.get('ece_credential'))
@@ -854,7 +855,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,ece_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,ece_receiver, 'ece_nodues', nodues.id, 'student', message)
 
         #library_receiver
         library_receiver=User.objects.get(username=data.get('library_credential'))
@@ -871,7 +872,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,library_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,library_receiver, 'library_nodues', nodues.id, 'student', message)
         #  me_receiver
         me_receiver=User.objects.get(username=data.get('me_credential'))
         file_bank= create_file(
@@ -887,7 +888,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,me_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,me_receiver, 'me_nodues', nodues.id, 'student', message)
 
         #mess_receiver
         mess_receiver=User.objects.get(username=data.get('mess_credential'))
@@ -904,7 +905,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,mess_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,mess_receiver, 'mess_nodues', nodues.id, 'student', message)
 
         #physics_receiver
         physics_receiver=User.objects.get(username=data.get('physics_credential'))
@@ -921,7 +922,7 @@ def submit_nodues_form(request):
         )
         
         message = "A new leave application of no dues"
-        otheracademic_notif(request.user,physics_receiver, 'alert', nodues.id, 'student', message)
+        otheracademic_notif(request.user,physics_receiver, 'physics_nodues', nodues.id, 'student', message)
         messages.success(request,'You successfully applied for no_dues')
         
 
@@ -1688,7 +1689,7 @@ def assistantship_form_submission(request):
         print(request.user)
         print(file_id)
         message="A new assistantship application raised"
-        otheracademic_notif(request.user,ta_supervisor_id ,'alert',assistant.id,"student",message)
+        otheracademic_notif(request.user,ta_supervisor_id ,'ast_ta',assistant.id,"student",message)
         # Redirect to a success page or return a success message
         messages.success(request,"Your form is successfully submitted")
         return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
@@ -1788,7 +1789,7 @@ def assistanship_ta_approve(request, ass_id):
     forwarded_file_id = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.thesis_supervisor, receiver_designation = "student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
   
     message = "Assistantship status received"
-    otheracademic_notif(request.user, thesis_supervisor_user, 'alert', ass_id, "student", message)
+    otheracademic_notif(request.user, thesis_supervisor_user, 'ast_thesis', ass_id, "student", message)
 
     # Display success message
     messages.success(request, "Successfully approved and forwarded.")
@@ -1828,7 +1829,7 @@ def assistanship_thesis_approve(request, ass_id):
    
     
     message = "Assistantship status received"
-    otheracademic_notif(request.user,csehod_user , 'alert', ass_id, "student", message)
+    otheracademic_notif(request.user,csehod_user , 'ast_hod', ass_id, "student", message)
 
     # Display success message
     messages.success(request, "Successfully approved and forwarded.")
@@ -1871,7 +1872,7 @@ def assistanship_hod_approve(request, ass_id):
     forwarded_acad = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver ='acadadmin', receiver_designation ="student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
   
     message = "Assistantship status received"
-    otheracademic_notif(request.user,acadadmin , 'alert', ass_id, "student", message)
+    otheracademic_notif(request.user,acadadmin , 'ast_acadadmin', ass_id, "student", message)
 
     # Display success message
     messages.success(request, "Successfully approved and forwarded.")
@@ -1899,49 +1900,6 @@ def assistantship_acad_approveform(request):
     form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
     
     return render(request, 'otheracademic/acadadmin_approval.html', {'form_data': form_data})
-
-def assistanship_acad_approve(request, ass_id):
-    # Obtain inbox data
-    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
-
-    # Find the object with the given ID from the AssistantshipClaimFormStatusUpd model
-    leave_entry = get_object_or_404(AssistantshipClaimFormStatusUpd, id=ass_id)
-
-    # Access the thesis_supervisor attribute of leave_entry
-    print(leave_entry.thesis_supervisor)
-    acadadmin = User.objects.get(username='acadadmin')
-
-    # Update TA_approved field to True
-    leave_entry.HOD_approved = True
-    leave_entry.save()
-    ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
-    print(ass_id_from_inbox)
-    a=get_object_or_404(User,username=request.user.username)
-    y=ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
-    user_details=User.objects.get(id=y.user_id)
-    des=HoldsDesignation.objects.filter(user=user_details).all()
-    
-    
-    
-  
-    message = "Assistantship status received"
-    otheracademic_notif(request.user,acadadmin , 'alert', ass_id, "student", message)
-
-    # Display success message
-    messages.success(request, "Successfully approved and forwarded.")
-
-    # Redirect to the approveform page
-    return redirect('/otheracademic/assitantship/acad_approveform')
-
-
-
-def assistanship_acad_reject(request, ass_id):
-    leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
-    leave_entry.Acad_rejected = True
-    leave_entry.save()
-    messages.success(request, "Successfully rejected.")
-    
-    return redirect('/otheracademic/assitantship/acad_approveform')
 
 
 def assistanship_acad_approve(request, ass_id):

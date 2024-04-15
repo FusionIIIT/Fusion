@@ -172,9 +172,9 @@ urlpatterns = [
 
   url(r'^assistantship/$', views.assistantship, name='assistantship'),
      url(r'^submitform/$', views.assistantship_form_submission, name='assistantship_form_submission'),
-     url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
+    #  url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
 
-    url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_approval'),
+    url(r'^approveform/$', views.assistantship_form_approval, name='assistantship_form_approval'),
     url(r'^assitantship/thesis_approveform/$', views.assistantship_thesis, name='assistantship_thesis'),
     url(r'^assitantship/hod_approveform/$', views.assistantship_hod, name='assistantship_hod'),
     url(r'^assitantship/acad_approveform/$', views.assistantship_acad_approveform, name='assistantship_acad_approveform'),

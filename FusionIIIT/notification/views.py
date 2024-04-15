@@ -184,8 +184,46 @@ def complaint_system_notif(sender, recipient, type, complaint_id,student,message
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
 
 def otheracademic_notif(sender, recipient, type, otheracademic_id,student,message):
+    if(type=='ug_leave_hod'):
+        url = ('otheracademic:leaveApproveForm')
+    elif type=='pg_leave_ta' :
+       url = ('otheracademic:leaveApproveTA')
+    elif type=='pg_leave_hod' :
+       url = ('otheracademic:leaveApproveHOD')
+    elif type=='ast_ta' :
+       url = ('otheracademic:assistantship_form_approval') 
+    elif type=='ast_thesis' :
+       url = ('otheracademic:assistantship_thesis') 
     
-    url = ('otheracademic:otheracademic')
+    elif type=='ast_acadadmin' :
+       url = ('otheracademic:assistantship_acad_approveform')
+    elif type=='ast_hod' :
+       url = ('otheracademic:assistantship_hod') 
+    elif type=='hostel_nodues' :
+       url = ('otheracademic:hostel_nodues')
+    elif type=='bank_nodues' :
+       url = ('otheracademic:Bank_nodues')
+    elif type=='btp_nodues' :
+       url = ('otheracademic:BTP_nodues')         
+    elif type=='cse_nodues' :
+       url = ('otheracademic:CSE_nodues')                 
+    elif type=='design_nodues' :
+       url = ('otheracademic:Design_nodues')
+    elif type=='acad_nodues' :
+       url = ('otheracademic:dsa_nodues')   
+    elif type=='ece_nodues' :
+       url = ('otheracademic:Ece_nodues')   
+    elif type=='library_nodues' :
+       url = ('otheracademic:library_nodues')   
+    elif type=='mess_nodues' :
+       url = ('otheracademic:mess_nodues')   
+    elif type=='pysics_nodues' :
+       url = ('otheracademic:Physics_nodues')
+    elif type=='me_nodues' :
+       url = ('otheracademic:ME_nodues')                 
+    else:
+        url=('otheracademic:otheracademic')
+
     
     module='otheracademic'
     sender = sender
