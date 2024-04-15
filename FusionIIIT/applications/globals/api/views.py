@@ -101,7 +101,7 @@ def profile(request, username=None):
             'current' : current
         }
         return Response(data=resp, status=status.HTTP_200_OK)
-    elif profile['user_type'] == 'faculty':
+    elif profile['user_type'] == 'faculty' or profile['user_type'] == 'staff':
         return redirect('/eis/api/profile/' + (username+'/' if username else ''))
 
 @api_view(['PUT'])

@@ -3,6 +3,8 @@ from django.urls import path, include
 from . import views
 from django.contrib import admin
 
+from applications.programme_curriculum.api import views as v2
+
 app_name = 'programme_curriculum'
 
 urlpatterns = [
@@ -67,4 +69,23 @@ urlpatterns = [
     path('forward_update_form/<UpdateCourseProposal_id>/', views.forward_update_form, name='forward_update_form'),
     path('reject_update_form/<UpdateCourseProposal_id>', views.reject_update_form, name='reject_update_form'),
     # path('approve_update_form/<UpdateCourseProposal_id>', views.approve_update_form, name='approve_update_form'),
+
+    # # urls for api view ...
+    # path('api/programmes/', v2.view_all_programmes, name='view_all_programmes_api'),
+    # path('api/working_curriculums/', v2.view_all_working_curriculums, name='view_all_working_curriculums_api'),
+    # path('api/curriculums/<programme_id>/', v2.view_curriculums_of_a_programme, name='view_curriculums_of_a_programme_api'),
+    # path('api/curriculum_semesters/<curriculum_id>/', v2.view_semesters_of_a_curriculum, name='view_semesters_of_a_curriculum_api'),
+    # path('api/semester/<semester_id>/', v2.view_a_semester_of_a_curriculum, name='view_a_semester_of_a_curriculum_api'),
+    # path('api/courseslot/<courseslot_id>/', v2.view_a_courseslot, name='view_a_courseslot_api'),
+    # path('api/courses/', v2.view_all_courses, name='view_all_courses_api'),
+    # path('api/course/<course_id>/', v2.view_a_course, name='view_a_course_api'),
+    # path('api/disciplines/', v2.view_all_discplines, name='view_all_discplines_api'),
+    # path('api/batches/', v2.view_all_batches, name='view_all_batches_api'),
+    path('api/programmes_ug/', v2.view_ug_programmes, name='view_ug_programmes_api'),
+    path('api/programmes_pg/', v2.view_pg_programmes, name='view_pg_programmes_api'),
+    path('api/programmes_phd/', v2.view_phd_programmes, name='view_phd_programmes_api'),
+    path('api/programme_info/', v2.get_programme_info, name='programme_info_api'),
+    path('api/curriculumns/', v2.view_curriculumns, name='curriculumns_api'),
+    path('api/add_programme/', v2.create_programme, name='add_programme_api'),
+
 ]
