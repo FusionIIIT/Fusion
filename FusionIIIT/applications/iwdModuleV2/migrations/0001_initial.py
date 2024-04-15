@@ -223,18 +223,4 @@ class Migration(migrations.Migration):
                 ('key', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='iwdModuleV2.projects', unique=True)),
             ],
         ),
-        migrations.CreateModel(
-            name='Requests',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=200)),
-                ('area', models.CharField(max_length=200)),
-                ('requestCreatedBy', models.CharField(max_length=200)),
-                ('engineerProcessed', models.IntegerField()),
-                ('directorApproval', models.IntegerField()),
-                ('deanProcessed', models.IntegerField()),
-                ('status', models.CharField(max_length=200)),
-            ],
-        ),
     ]
