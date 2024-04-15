@@ -409,3 +409,11 @@ def research_procedures_notif(sender,recipient,type):
 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
 
+def course_management_notif(sender, recipient, type,  course, course_name, course_code, flag):
+    url = 'online_cms:course'
+    module="Course Management"
+    sender = sender
+    recipient = recipient
+    verb = type
+ 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag, course_code=course_code, course=course, cname = course_name)
