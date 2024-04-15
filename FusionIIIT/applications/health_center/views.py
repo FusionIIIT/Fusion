@@ -172,7 +172,7 @@ def student_view(request):
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
             appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
-            prescription = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-date')
+            
             medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
             complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
             days = Constants.DAYS_OF_WEEK
@@ -180,6 +180,24 @@ def student_view(request):
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             doctors=Doctor.objects.filter(active=True)
             pathologists=Pathologist.objects.filter(active=True)
+            
+            #prescription
+            prescription= Prescription.objects.filter(user_id=request.user.username)
+            report=[]
+            for pre in prescription:
+                dic={}
+                dic['id']=pre.id
+                dic['doctor_id'] = pre.doctor_id  # Use dot notation
+                dic['date'] = pre.date  # Use dot notation
+                dic['details'] = pre.details  # Use dot notation
+                dic['test'] = pre.test  # Use dot notation
+                if pre.file_id:
+                    dic['file'] = view_file(file_id=pre.file_id)['upload_file']
+                else:
+                    dic['file']=None 
+                
+                
+                report.append(dic)
             
             count=Counter.objects.all()
 
@@ -239,7 +257,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': prescription, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'notifications':notifs})
+                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'notifications':notifs})
     elif usertype == 'compounder':
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 

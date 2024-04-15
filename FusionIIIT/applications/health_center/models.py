@@ -172,6 +172,7 @@ class Prescription(models.Model):
     details = models.CharField(max_length=100)
     date = models.DateField()
     test = models.CharField(max_length=200, null=True, blank=True)
+    file_id=models.IntegerField(default=0)
     # appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):

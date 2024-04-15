@@ -380,14 +380,32 @@ def compounder_view_handler(request):
         #     appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(user_id=user_id,date=datetime.now())
         # else:
         #     appointment = None
-        Prescription.objects.create(
+        designation=request.POST.get('user')
+        uploaded_file = request.FILES.get('file')
+        d = HoldsDesignation.objects.get(user__username=designation)
+        form_object=Prescription(
             user_id=user,
             doctor_id=doctor,
             details=details,
             date=datetime.now(),
-            test=tests,
+            test=tests,          
             # appointment=appointment
         )
+        form_object.save()
+        request_object = Prescription.objects.get(pk=form_object.pk)
+        send_file_id = create_file(
+            uploader=request.user.username,
+            uploader_designation=request.session['currentDesignationSelected'],
+            receiver=designation,
+            receiver_designation=d.designation,
+            src_module="health_center",
+            src_object_id=str(request_object.id),
+            file_extra_JSON={"value": 2},
+            attached_file=uploaded_file  
+        )
+        request_object.file_id=send_file_id
+        request_object.save()
+        
         query = Medicine.objects.select_related('patient','patient__user','patient__department').filter(patient=user)
         prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().last()
         for medicine in query:
@@ -428,6 +446,7 @@ def compounder_view_handler(request):
             else:
                 status = 0
             Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
+          
 
         healthcare_center_notif(request.user, user.user, 'presc')
         data = {'status': status}
