@@ -122,16 +122,23 @@ def healthcare_center_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ''
+    
     if type == 'appoint':
         verb = "Your Appointment has been booked"
-    if type == 'amb_request':
+    elif type == 'amb_request':
         verb = "Your Ambulance request has been placed"
-    if type == 'Presc':
+    elif type == 'Presc':
         verb = "You have been prescribed some medicine"
-    if type == 'appoint_req':
+    elif type == 'appoint_req':
         verb = "You have a new appointment request"
-    if type == 'amb_req':
+    elif type == 'amb_req':
         verb = "You have a new ambulance request"
+    elif type == 'rel_forward':
+        verb = "You have a new medical relief forward request"
+    elif type == 'rel_approve':
+        verb = "You have a new medical relief approval request"
+    elif type == 'rel_approved':
+        verb = 'Your medical relief request has been approved' 
 
 
 

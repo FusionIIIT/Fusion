@@ -147,6 +147,10 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
+            <div class="row">
+                {% block sidepanel %} {% include 'phcModule/notifications/sidepanel.html' %}
+                {% endblock %}
+            </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 

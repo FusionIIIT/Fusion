@@ -443,14 +443,10 @@ def compounder_view_handler(request):
         data = {'thresh': thresh}
         return JsonResponse(data)
     elif 'compounder_forward' in request.POST:
-        acc_admin_des_id = Designation.objects.get(name="Accounts Admin")
-        print(acc_admin_des_id.id)
-        
-        user_ids = HoldsDesignation.objects.filter(designation_id=acc_admin_des_id.id).values_list('user_id', flat=True)
-        
-     
+        acc_admin_des_id = Designation.objects.get(name="Accounts Admin")        
+        user_ids = HoldsDesignation.objects.filter(designation_id=acc_admin_des_id.id).values_list('user_id', flat=True)    
         acc_admins = ExtraInfo.objects.get(user_id=user_ids[0])
-
+        user=ExtraInfo.objects.get(pk=acc_admins.id)
         forwarded_file_id=forward_file(
             file_id=request.POST['file_id'],
             receiver=acc_admins.id, 
@@ -463,6 +459,9 @@ def compounder_view_handler(request):
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.compounder_forward_flag = True
         medical_relief_instance.save()
+        
+        healthcare_center_notif(request.user,user.user,'rel_approve')
+        
         
 
        
@@ -567,6 +566,9 @@ def student_view_handler(request):
         return JsonResponse(data)
     elif 'medical_relief_submit' in request.POST:
         designation = request.POST.get('designation')
+        # print("# #")
+        # print(designation)
+        user=ExtraInfo.objects.get(pk=designation)
         description = request.POST.get('description')
         
         # Retrieve the uploaded file from request.FILES
@@ -599,6 +601,7 @@ def student_view_handler(request):
             file_extra_JSON={"value": 2},
             attached_file=uploaded_file  
         )  
+        healthcare_center_notif(request.user,user.user,'rel_forward')
         request_object.file_id = send_file_id
         request_object.save()
         
@@ -609,8 +612,8 @@ def student_view_handler(request):
     elif 'acc_admin_forward' in request.POST:
         file_id=request.POST['file_id']
         rec=File.objects.get(id=file_id)
-        des=Designation.objects.get(pk=rec.designation_id)        
-        
+        des=Designation.objects.get(pk=rec.designation_id)      
+        user=ExtraInfo.objects.get(pk=rec.uploader_id)
         
         forwarded_file_id=forward_file(
             file_id=request.POST['file_id'],
@@ -623,6 +626,8 @@ def student_view_handler(request):
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.acc_admin_forward_flag = True
         medical_relief_instance.save()
+        
+        healthcare_center_notif(request.user,user.user,'rel_approved')
         
         return JsonResponse({'status':1})
         

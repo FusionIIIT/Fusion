@@ -67,6 +67,7 @@ def compounder_view(request):
         doctors: retrieve Doctor class objects from database 
     '''
                                                                 # compounder view starts here
+    notifs = request.user.notifications.all()
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     if usertype == 'compounder':
         if request.method == 'POST':
@@ -156,6 +157,7 @@ def student_view(request):
         doctors: retrieve Doctor class objects from database        
 
     '''                                                                 # student view starts here
+    notifs = request.user.notifications.all()
     usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
     if usertype == 'student' or usertype == 'faculty' or usertype == 'staff':
         if request.method == 'POST':
@@ -188,7 +190,7 @@ def student_view(request):
             holdsDesignations = []
 
             for d in designations:
-                if d.name == "Compounder" or d.name == "Accounts Admin":
+                if d.name == "Compounder":
                     list = HoldsDesignation.objects.filter(designation=d)
                     holdsDesignations.append(list)
             
