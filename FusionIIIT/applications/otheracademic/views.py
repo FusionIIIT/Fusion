@@ -265,7 +265,7 @@ def leavePgSubmit(request):
         if leave:
             messages.success(request, "You have successfully submitted your form")
             
-        return HttpResponseRedirect('/otheracademic/leaveform')
+        return HttpResponseRedirect('/otheracademic/leavePG')
 
 
 def leaveApproveTA(request):
