@@ -773,9 +773,8 @@ def   profile(request, username=None):
             displays the profile of currently logged-in user
     """
 
-    print(username)
-    user = get_object_or_404(User, Q(username=username)) if username else request.user
 
+    user = get_object_or_404(User, Q(username=username)) if username else request.user
     editable = request.user == user
     print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
@@ -1047,7 +1046,8 @@ def   profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
-        # print("context",context)
+        print("context",context)
+
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
