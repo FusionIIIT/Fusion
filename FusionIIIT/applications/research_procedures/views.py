@@ -675,12 +675,7 @@ def add_financial_outlay(request,pid):
 def inbox(request):
  
     user_designation= request.session.get('currentDesignationSelected')
-    if user_designation == 'Assistant':
-        user_designation = 'Assistant Professor'
-    
-    if user_designation == 'CSE':
-        user_designation= 'CSE HOD'
-    
+   
     print(user_designation)
     user_designation= get_designation_instance(user_designation)
 
@@ -714,11 +709,7 @@ def add_staff_request(request,id):
         projectid = int(id)
         receiver_designation = obj.get('receiver')
 
-        if receiver_designation == 'Assistant':
-            receiver_designation = 'Assistant Professor'
         
-        if receiver_designation == 'CSE':
-            receiver_designation = 'CSE HOD'
         
         receiver_designation= get_designation_instance(receiver_designation)
         receiver = get_user_by_designation(receiver_designation).username
