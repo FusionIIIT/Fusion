@@ -2,18 +2,18 @@
 
 {% block comapproval %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="viewappointments">
+        {% comment %} <a class="active item" data-tab="viewappointments">
             Today Appointments
-        </a>
-        <a class="item" data-tab="viewambulance">
+        </a> {% endcomment %}
+        {% comment %} <a class="item" data-tab="viewambulance">
             Ambulance
-        </a>
-        <a class="item" data-tab="viewhospitaladmission">
+        </a> {% endcomment %}
+        {% comment %} <a class="item" data-tab="viewhospitaladmission">
             Hospital_Admission
-        </a>
-        <a class="item" data-tab="futureappointments">
+        </a> {% endcomment %}
+        {% comment %} <a class="item" data-tab="futureappointments">
             Future Appointments
-        </a>
+        </a> {% endcomment %}
         <a class="item" data-tab="prescriptionhistory">
             Prescription History
         </a>
@@ -22,7 +22,7 @@
 
 
     {% comment %}the view appointments tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="viewappointments">
+    {% comment %} <div class="ui active tab" data-tab="viewappointments">
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
             <thead>
@@ -86,12 +86,12 @@
             {% endfor %}
             </tbody>
         </table>
-    </div>
+    </div> {% endcomment %}
     {% comment %}the view appointments tab ends here {% endcomment %}
 
 
     {% comment %}the view ambulance tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="viewambulance">
+    {% comment %} <div class="ui tab" data-tab="viewambulance">
       <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
           <table class="ui very basic collapsing celled large sortable table"
                  style="padding-left: 2.5%;
@@ -182,11 +182,11 @@
                                                   });
               </script>
       </div>
-    </div>
+    </div> {% endcomment %}
     {% comment %}the view ambulance tab ends here {% endcomment %}
 
       {% comment %}the view hospital admission tab starts here {% endcomment %}
-      <div class="ui tab" data-tab="viewhospitaladmission">
+      {% comment %} <div class="ui tab" data-tab="viewhospitaladmission">
           <div class="ui vertical segment" >
               <table class="ui very basic collapsing celled small sortable table">
                   <thead>
@@ -301,11 +301,11 @@
   </script>
           </div>
 
-      </div>
+      </div> {% endcomment %}
 
       {% comment %}the view hospital admission tab ends here {% endcomment %}
       {% comment %}the view appointments tab starts here {% endcomment %}
-      <div class="ui tab" data-tab="futureappointments">
+      {% comment %} <div class="ui tab" data-tab="futureappointments">
           <table class="ui very basic collapsing celled large sortable table"
                  style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
               <thead>
@@ -369,10 +369,10 @@
               {% endfor %}
               </tbody>
           </table>
-      </div>
+      </div> {% endcomment %}
       {% comment %}the view appointments tab ends here {% endcomment %}
 
-<div class="ui tab" data-tab="prescriptionhistory">
+<div class="ui active tab" data-tab="prescriptionhistory">
         <div class="ui vertical segment" >
             <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
@@ -390,10 +390,13 @@
                         Date
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Details
+                        Details
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Test
+                        Test
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
                     </td>
 
                      <td>
@@ -437,6 +440,13 @@
                     <td>
                         {{pre.test}}
                     </td>
+                    <td style="white-space:nowrap;">
+                        {% if pre.file %}
+                        <a href="{{ pre.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
+                    </td>
 
                     <td>
                      <table>
@@ -450,7 +460,7 @@
 
                     <td>
 
-                        <input type="button" onclick="rem({{pre.pk}})" id="{{pre.pk}}" name="cancel" value="Cancel"class="ui red button" />
+                        <input type="button" onclick="rem1({{pre.id}})" id="{{pre.id}}" name="cancel" value="Cancel"class="ui red button" />
 
                     </td>
 
@@ -460,34 +470,36 @@
                 </tbody>
             </table>
 
-            <script>
-            function rem(id){
+        <script>
 
-			var dis = this;
-            var d = window.confirm('Are you sure, you want to cancel the prescription?');
-            if(d == false){
-                return;
-            }
-			     $('#'+id).parent().parent().remove();
-                                                      alert("prescription cancelled");
+            
+        function rem1(id){
 
-					$.ajax({
-                             type:'post',
-                             url:'/healthcenter/compounder/',
-                            data: {'cancel_presc':id,},
+        var dis = this;
+        var d = window.confirm('Are you sure, you want to cancel the prescription?');
+        if(d == false){
+            return;
+        }
+                $('#'+id).parent().parent().remove();
+                                                    alert("prescription cancelled");
 
-                            beforeSend: function(xhr) {
-               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-            },
-                            success: function(data){
-                                                    }
-                                                  });
+                $.ajax({
+                            type:'post',
+                            url:'/healthcenter/compounder/',
+                        data: {'cancel_presc':id,},
+
+                        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+                        success: function(data){
+                                                }
+                                                });
 
 
-      }
-      </script>
+    }
+    </script>
 
-          </div>
-        </div>
+    </div>
+</div>
 
 {% endblock %}

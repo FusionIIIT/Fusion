@@ -3,18 +3,18 @@
 {% block comp_prescription %}
     {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="prescribe_app">
+        {% comment %} <a class="active item" data-tab="prescribe_app">
             Prescribe with Appointment
-        </a>
+        </a> {% endcomment %}
         <a class="item" data-tab="prescribe">
-            Prescribe without Appointment
+            Prescribe 
         </a>
-        <a class="item" data-tab="hospitaladmit">
+        {% comment %} <a class="item" data-tab="hospitaladmit">
             Hospital Admission
-        </a>
+        </a> {% endcomment %}
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="prescribe_app">
+    {% comment %} <div class="ui active tab" data-tab="prescribe_app">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -202,10 +202,10 @@
 
 
 
-        <div class="extra content"></div>
+        <div class="extra content"></div> {% endcomment %}
     {% comment %}the compounder prescription tab ends here {% endcomment %}
     {% comment %}the prescribe tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="prescribe">
+    <div class="ui active tab" data-tab="prescribe">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -216,7 +216,7 @@
                   <div class="field">
                       <label>Patient</label>
                       <div class="ui fluid large input">
-                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="number">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
                       </div>
                    </div>
 
@@ -305,6 +305,12 @@
                     <textarea rows="2" id="tests_b" name="extra_meds"></textarea>
                 </div>
                 <div class="field">
+                    <label for="file">Report</label>
+                    <div class="ui fluid input">
+                        <input type="file" name="file" id="file">
+                    </div>
+                </div>
+                <div class="field">
                     <label><br></label>
                     <input type="button" id="prescribe_b" name="prescribe"  value="Submit"class="ui large right floated primary button" />
                 </div>
@@ -358,6 +364,15 @@
                                                     var user = document.getElementById('patient_b').value;
                                                     var details = document.getElementById('details_b').value;
                                                     var tbl = document.getElementById('sched_b');
+                                                     
+                                                    // Get the file input element
+                                                    var fileInput = document.getElementById('file');
+                                                    
+                                                    // Get the files from the input element
+                                                    var file = fileInput.files[0];
+                                                    
+                                                    // Create a new FormData object
+                                                    var formData = new FormData();
                                                     if(tbl.rows.length==0){
                                                     $('#usr_b').html("Please prescribe some medicine!");
                                                     return false;
@@ -367,18 +382,19 @@
                                                     $('#usr_b').html("Please enter all the details!");
                                                     return false;
                                                     }
+                                                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                                                    formData.append('file', file);
+                                                    formData.append('user', $("#patient_b").val());
+                                                    formData.append('doctor', $("#doctor_b").val());
+                                                    formData.append('details', $("#details_b").val());
+                                                    formData.append('tests', $("#tests_b").val());
+                                                    formData.append('prescribe_b', $("#prescribe_b").val());
                                                     $.ajax({
                                                       type:'post',
                                                       url:'/healthcenter/compounder/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      user:$("#patient_b").val(),
-                                                      doctor:$("#doctor_b").val(),
-                                                      details:$("#details_b").val(),
-                                                      tests:$("#tests_b").val(),
-                                                      // appointment:$("#appointment").val(),
-                                                      prescribe_b:$("#prescribe_b").val()
-                                                    },
+                                                      data: formData,
+                                                      processData: false, // Don't process the data as a query string
+                                                      contentType: false, // Let the browser set the Content-Type header automatically
                                                       success: function(data){
                                                         if (data.status == 1){
                                                           alert("prescribed medicine");
