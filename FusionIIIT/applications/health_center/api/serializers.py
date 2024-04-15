@@ -54,11 +54,6 @@ class PathologistScheduleSerializer(serializers.ModelSerializer):
 
 
         
-class AnnouncementSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model=Announcements
-        fields=('__all__')
         
 class AnnouncementSerializer(serializers.ModelSerializer):
     
