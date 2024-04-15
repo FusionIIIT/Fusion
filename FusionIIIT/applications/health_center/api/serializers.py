@@ -54,6 +54,7 @@ class PathologistScheduleSerializer(serializers.ModelSerializer):
 
 
         
+        
 class AnnouncementSerializer(serializers.ModelSerializer):
     
     class Meta:

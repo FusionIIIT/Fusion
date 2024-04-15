@@ -14,7 +14,7 @@
 <div class="field">
                     <label>Select designation:
                              {% for designation in designation %}
-                             <td> <a href="{% url 'ps1:draftview' designation.id %}"><button class="ui primary button">
+                             <td> <a href="{% url 'ps1:draftview_multiple_items_indent' designation.id %}"><button class="ui primary button">
                                  {{designation}}
                              </button></a></td>
                             {% endfor %}

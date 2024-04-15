@@ -114,8 +114,6 @@ class Pathologist_Schedule(models.Model):
     room = models.IntegerField()
     date = models.DateField(auto_now=True)
 
-    
-
 
 class Counter(models.Model):
     count=models.IntegerField(default=0)
