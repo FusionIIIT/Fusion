@@ -1,4 +1,8 @@
 {% load static %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/semantic-ui-alerts.css' %}">
+
+{% endblock %}
 {% block manageEval %}
 <div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
     <h3 class="ui dividing header">Manage Evaluations</h3>
@@ -7,7 +11,10 @@
         {% csrf_token %}
         
         <div style="overflow-x:hidden; margin-top:15px; margin-right:0.75em;">
-            <table class="ui fixed single line celled table">
+            <!-- <div class="ui fluid input">
+                <input type="text" id="usernameSearchInput" placeholder="Search by Roll No." onkeyup="searchByUsername()">
+            </div> -->
+            <table class="ui fixed single line celled table" id="grading_table">
                     <thead>
                         <tr>
                             <th style="width: 25%;">S.No.</th>
@@ -58,7 +65,9 @@
         </form>
 </div>
 
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'semantic/dist/components/semantic-ui-alerts.js' %}"></script>
 
 <script type="text/javascript">
     let O_Lower = {{gradingscheme_grades.O_Lower}};
@@ -123,7 +132,36 @@
             num = num + 1;
         }
     });
+
+    function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+    }
     
+    
+    function searchByUsername() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("usernameSearchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("grading_table");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1];
+            if (td) {
+                txtValue = td.getElementsByTagName("input")[0].value;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
 
     // Function to handle form submission
     function submitForm() {
@@ -134,7 +172,7 @@
         xhr.open(form.method, form.action, true);
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-                alert('Success: ' + xhr.responseText); // Display success message
+                successAlert('Success: ' + xhr.responseText); // Display success message
             } else {
                 alert('Error: ' + xhr.statusText); // Display error message
             }

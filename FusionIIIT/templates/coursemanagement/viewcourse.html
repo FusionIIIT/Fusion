@@ -7,20 +7,18 @@
 
 
 {% block title %}
-    Course Management
+Course Management
 {% endblock %}
 
 {% block css %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/semantic.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/semantic-ui-alerts.css' %}">
 
 {% endblock %}
 
 {% block body %}
-    {% block navBar %}
-        {% include 'dashboard/navbar.html' %}
-    {% endblock %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
     <div class="ui stackable doubling grid">
 
         <div class="column"></div>
@@ -28,7 +26,7 @@
         <div class="three wide column">
             <!-- {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %} -->
 
-            <div class="ui divider"></div>
+            <!-- <div class="ui divider"></div> -->
 
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
@@ -96,7 +94,7 @@
             
         </div>
 
-        <div class="ten wide column" >
+        <div class="eight wide column" >
             <div class="ui active tab segment" id="11" data-tab="first" style="display:block; margin-top: 14px;">
                 <style>
                     #pdf_modal iframe {
@@ -545,12 +543,12 @@
             <div class="ui tab segment" id="15" data-tab="fifth" style="display:none">
                 {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
             </div>
-            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+            <!-- <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
                 {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
             </div>
             <div class="ui tab segment" id="18" data-tab="fourth" style="display:none">
               {% block topics %} {% include 'coursemanagement/topics.html' %} {% endblock %}
-            </div>
+            </div> -->
             <div class="ui tab segment" id="19" data-tab="eighth" style="display:none">
               {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
             </div>
@@ -561,7 +559,12 @@
               {% block manageEval %} {% include 'coursemanagement/manageEval.html' %} {% endblock %}
             </div>
         </div>
-
+        <div class="three wide column" style="margin-top: 14px;">
+          <div class="row">
+            {% comment %}TODO: the right rail!{% endcomment %}
+            {% block sidepanel %} {% include 'notifications/sidepanel_ocms.html' %} {% endblock %}
+          </div>
+        </div>
     </div>
 
 {% endblock %}
@@ -621,7 +624,17 @@
          $(".pointing.pagination.menu")
             .tab()
         ;
- 
+    
+    
+    function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+    }
  
     function assess_student(element){
       if(event.key === 'Enter') {
@@ -638,11 +651,11 @@
                 'csrfmiddlewaretoken': csrf
             },
             success: function(data) {
-                alert(data);
+                successAlert(data);
                 $('#score'+pk).text(element.value);
             },
             error: function(data, err) {
-                alert(err.message);
+                errAlert(err.message);
             }
         });
       }
@@ -662,11 +675,11 @@
                 'csrfmiddlewaretoken': csrf
             },
             success: function(data) {
-                alert(data);
- 
+                successAlert(data);
+                $('#feedback'+pk).text(element.value);
             },
             error: function(data, err) {
-                alert(err.message);
+                errAlert(err.message);
             }
         });
       }
@@ -966,7 +979,7 @@
           }
       }
  
-      // submitting a new question
+      // submitting a new announcement
        $(document).on('click','.submit_new',function(event) {
         event.preventDefault();
         var parent = $(this).parent();
@@ -983,15 +996,15 @@
                  // dataType: 'jsonp',
                 success: function(data) {
                     // location.reload();
-                    alert("success");
+                    successAlert("success");
                     resetForm($('#new'));
-                    $('<div class="question"id="question' + data.pk + '"><div class="comment comment_q" id="comment' + data.pk + '"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content" data-pk="' + data.pk + '" id="question' + data.pk + '"><a class="author">' + data.name + '</a><div class="metadata"><span class="date">' + data.time + '</span></div><div class="text"><p>' + data.question + '</p></div><div class="actions" ><a class="reply remove_q" onclick="func_q(this)" data-pk="' + data.pk +
-                        '" id = "remove' + data.pk + '"name = "remove' + data.pk + '">remove</a></div></div></div><div class="comments answer" style="padding:10px"><div class="ui form field" style="margin-bottom:10px"><input type="text" onkeydown="key_down(this)" id="reply_n_' + data.pk + '" data-pk="' + data.pk + '" name="comment' + data.pk + '" placeholder="Enter Your Comment"></div><input type="submit" id="button_r' + data.pk + '" onclick="reply_q(this)" class="ui blue submit button submit_r" data-pk="' + data.pk + '" name="submit" value="Reply"></input></div>').insertBefore(parent);
-                         $("#comments_refresh").load(" #comments_refresh > *");
+                    // $('<div class="question"id="question' + data.pk + '"><div class="comment comment_q" id="comment' + data.pk + '"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content" data-pk="' + data.pk + '" id="question' + data.pk + '"><a class="author">' + data.name + '</a><div class="metadata"><span class="date">' + data.time + '</span></div><div class="text"><p>' + data.question + '</p></div><div class="actions" ><a class="reply remove_q" onclick="func_q(this)" data-pk="' + data.pk +
+                    //     '" id = "remove' + data.pk + '"name = "remove' + data.pk + '">remove</a></div></div></div><div class="comments answer" style="padding:10px"><div class="ui form field" style="margin-bottom:10px"><input type="text" onkeydown="key_down(this)" id="reply_n_' + data.pk + '" data-pk="' + data.pk + '" name="comment' + data.pk + '" placeholder="Enter Your Comment"></div><input type="submit" id="button_r' + data.pk + '" onclick="reply_q(this)" class="ui blue submit button submit_r" data-pk="' + data.pk + '" name="submit" value="Reply"></input></div>').insertBefore(parent);
+                    $("#comments_refresh").load(" #comments_refresh > *");
                 },
                 error: function(data, err) {
                     errAlert(err);
-                    //$("#comments_refresh").load(" #comments_refresh > *");
+                    $("#comments_refresh").load(" #comments_refresh > *");
                 }
             });
         } else {
@@ -1187,16 +1200,6 @@
         });
     });
 
-    function successAlert(data){
-      $.suiAlert({
-      title: 'Success',
-      description: data,
-      type: 'success',
-      time: '3',
-      position: 'top-center',
-      });
-    }
-
     $(document).on('click','#submit_doc',function() {
         var data = new FormData();
         var img = $('#doc')[0].files;
@@ -1252,6 +1255,7 @@
                 $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
             },
             error: function(err) {
+                $('#load_att_doc').hide();
                 errAlert(err.responseText);
                 $("#refresh_attend_tab").load(" #refresh_attend_tab > *")
                 //setTimeout("location.reload(true);",200);
@@ -1279,6 +1283,7 @@
             $("#add_module_refresh").load(" #add_module_refresh > *");
         },
         error: function(err) {
+          $('#load_submit_module').hide();
           errAlert(err);
           $("#add_module_refresh").load(" #add_module_refresh > *");
         }
@@ -1310,6 +1315,7 @@
                  $("#add_assign_block").load(" #add_assign_block > *");
             },
             error: function(data, err) {
+                $('#load_add_assignment').hide();
                 errAlert(err.message);
             }
         });
@@ -1340,6 +1346,7 @@
                 $("#student_assign_refresh").load(" #student_assign_refresh > *");
             },
             error: function(data, err) {
+                $('#load_submit_assign').hide();
                 errAlert(err.message);
             }
         });

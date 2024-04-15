@@ -7,11 +7,11 @@
     </a>
 </div>
 
-<div class="ui active tab segment" data-tab="academic">
+<div class="ui active tab segment" data-tab="academic" id="add_timetable_refresh">
 
   <h4 class="ui dividing header">Add Time Table</h4>
 
-  <form class="ui form" action="/ocms/add_timetable/" method="POST" id="form7" enctype="multipart/form-data">
+  <form class="ui form" method="POST" id="form7" enctype="multipart/form-data">
     {% csrf_token %}
 
     <div class="field">
@@ -27,7 +27,7 @@
 
     <div class="field">
       <label>Batch</label>
-      <input type="number" name="batch" required>
+      <input type="number" id="batch" name="batch" required>
     </div>
 
     <div class="field">
@@ -40,20 +40,25 @@
             <option value="Common">Common</option>
         </select>
     </div>
-
+    
     <div class="field">
       <label>Upload Time Table</label>
-      <input placeholder="Upload Time Table" type="file" name="time_table" required>
+      <input placeholder="Upload Time Table" type="file" id="time_table" name="time_table" required>
     </div>
 
     <div class="field">
-      {%comment%}
-        <a href="#" onclick="document.getElementById('form7').submit();">
-          <div class="ui primary button"><i class="save icon"></i> Save</div>
-        </a>
-        {%endcomment%}
-        <button class="ui primary button" type="submit"><i class="upload icon"></i> Upload</button>
+      <div class="ui labeled button" id="add_timetable" tabindex="0">
+        <div class="ui blue button">
+          <i class="upload icon"></i>
+        </div>
+        <a class="ui basic blue left pointing label">Upload</a>
+      </div>
+      <div class="load" id="load_add_timetable" style="display:none">
+        <!-- <img src="{% static 'globals/img/loading.gif'%}" alt="#loading"> -->
+        <span >Your file is being uploaded!</span>
+      </div>
     </div>
+    
 
   </form>
   {% if timetable %}
@@ -79,9 +84,13 @@
           <td>{{c.programme}}</td>
           <td>{{ c.batch }}</td>
           <td>{{ c.branch }}</td>
-          <td>{{c.time_table}}</td>
+          <td>
+            <div class="content">
+              <a href="../media/{{ c.time_table }}" class="header">Download</a>
+            </div>
+          </td>
 
-          <div style="width:100%;height:100%" id='pdf_modal_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
+          <!-- <div style="width:100%;height:100%" id='pdf_modal_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
             <i class="close  icon"></i>
             <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.time_table}}" type="application/pdf">
           </div>
@@ -94,10 +103,11 @@
                   $('#pdf_modal_{{forloop.counter}}').modal('show');
                 });
               })
-          </script>
+          </script> -->
 
-          <td><button type="submit" value="{{ c.time_table }}" name="delete">
-          <i class="trash icon" style="font-size:1.3vw;color:red;"></i></button></td>
+          <!-- <td><button type="submit" value="{{ c.time_table }}" name="delete">
+          <i class="trash icon" style="font-size:1.3vw;color:red;"></i></button></td> -->
+          <td> <a href="#"><i class="trash icon" data-pk="{{c.pk}}" style="font-size:1.3vw;color:red;"></i></a></td>
 
         </tr>
         {% endfor %}

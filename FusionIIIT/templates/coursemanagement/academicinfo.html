@@ -11,6 +11,10 @@ Academic Information System
 <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css"
     rel="stylesheet" type="text/css" />
 
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/semantic-ui-alerts.css' %}">
+  
+
 {% endblock %}
 
 {% block body %}
@@ -71,7 +75,7 @@ Academic Information System
             {% endblock %}
         </div>
 
-        <div class="ui tab segment" data-tab="fourth">
+        <div class="ui tab segment" data-tab="fourth" style="margin-top: 0px;">
             {% block timetable %}
             {% include 'coursemanagement/timetable.html' %}
             {% endblock %}
@@ -96,273 +100,91 @@ Academic Information System
 
 <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
 <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'semantic/dist/components/semantic-ui-alerts.js' %}"></script>
 
 <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
 <script
     src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 <script type="text/javascript">
-    $(document).ready(function () {
-        $(document).on('submit', '#cse_attend_form', function (event) {
-            event.preventDefault();
-            $.ajax({
-                url: 'attendance',
-                type: 'POST',
-                data: {
-                    student_id: $('#student_id').val(),
-                    course_id: $('#course_id').val(),
-                    present_attend: $('#present_attend').val(),
-                    total_attend: $('#total_attend').val(),
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.result === 'Success') {
-                        $('#cse_attend_form').each(function () {
-                            this.reset();
-                        });
-                    }
-                    else {
-                        alert(response.message);
-                    }
-                }
-            });
-        });
-        $(document).on('submit', '#ece_attend_form', function (event) {
-            event.preventDefault();
-            $.ajax({
-                url: 'attendance',
-                type: 'POST',
-                data: {
-                    student_id: $('#student_id_ece').val(),
-                    course_id: $('#course_id_ece').val(),
-                    present_attend: $('#present_attend_ece').val(),
-                    total_attend: $('#total_attend_ece').val(),
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.result === 'Success') {
-                        $('#ece_attend_form').each(function () {
-                            this.reset();
-                        });
-                    }
-                    else {
-                        alert(response.message);
-                    }
-                }
-            });
-        });
-        $(document).on('submit', '#mech_attend_form', function (event) {
-            event.preventDefault();
-            $.ajax({
-                url: 'attendance',
-                type: 'POST',
-                data: {
-                    student_id: $('#student_id_mech').val(),
-                    course_id: $('#course_id_mech').val(),
-                    present_attend: $('#present_attend_mech').val(),
-                    total_attend: $('#total_attend_mech').val(),
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.result === 'Success') {
-                        $('#mech_attend_form').each(function () {
-                            this.reset();
-                        });
-                    }
-                    else {
-                        alert(response.message);
-                    }
 
-                }
-            });
-        });
+    function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+    }
 
-        $(document).on('submit', '#design_attend_form', function (event) {
-            event.preventDefault();
-            $.ajax({
-                url: 'attendance',
-                type: 'POST',
-                data: {
-                    student_id: $('#student_id_design').val(),
-                    course_id: $('#course_id_design').val(),
-                    present_attend: $('#present_attend_design').val(),
-                    total_attend: $('#total_attend_design').val(),
-                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.result === 'Success') {
-                        $('#design_attend_form').each(function () {
-                            this.reset();
-                        });
-                    }
-                    else {
-                        alert(response.message);
-                    }
-                }
-            });
+    function errAlert(data){
+        $.suiAlert({
+        title: 'Error',
+        description: data,
+        type: 'error',
+        time: '3',
+        position: 'top-center',
         });
+      }
+      
+      function delAlert(data){
+        $.suiAlert({
+        title: 'Deleted',
+        description: data,
+        type: 'info',
+        time: '3',
+        position: 'top-center',
+      });
+      }
 
-        // {       alert($('button #CS204').length);}
-        $('#cse_courses').on('click', 'button', function (event) {
-            event.preventDefault();
-            var course_code = $(this).data('course');
-            $('#cse_table tbody').find("tr:gt(0)").remove();
-            element = $('#cse_table tbody tr').last();
-            $.ajax({
-                url: 'get_attendance',
-                type: 'GET',
-                data: { 'course_id': course_code },
-                success: function (response) {
-                    for (var j = 0; j < response.tuples.length; j++) {
-                        var name = response.stud_data.name[j];
-                        var programme = response.stud_data.programme[j];
-                        var batch = response.stud_data.batch[j];
-                        var roll = response.tuples[j][1];
-                        var course = course_code;
-                        var present_attend = response.tuples[j][2];
-                        var total_attend = response.tuples[j][3];
-                        var attend_percent = ((present_attend / total_attend) * 100).toFixed(2);
-                        txt = "<tr>";
-                        txt += '<td>  </td>' +
-                            '<td>' + name + '</td>' +
-                            '<td>' + roll + '</td>' +
-                            '<td>' + batch + '</td>' +
-                            '<td>' + programme + '</td>' +
-                            '<td>' + course + '</td>' +
-                            '<td>' + attend_percent + '</td>' +
-                            '<td>  <i class="refresh icon" style="font-size:1.3vw"></i>' +
-                            '<i class="trash outline icon" style="font-size:1.3vw"></i></td>';
-                        txt += '</tr>';
-                        element.after(txt);
-                    }
-                    console.log(response.stud_data.name.length);
-                    console.log(response.tuples.length);
-                    { alert(response.tuples[0][1]); }
-                },
-                error: function (response) {
-                }
-            });
+      $(document).on('click','.trash',function(){
+        var pk = $(this).attr('data-pk');
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/admin/delete_timetable',
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                delAlert(data);
+                $("#add_timetable_refresh").load(" #add_timetable_refresh > *");
+            },
+            error: function(data, err) {
+                errAlert(err);
+            }
         });
-        $('#ece_courses').on('click', 'button', function (event) {
-            event.preventDefault();
-            var course_code = $(this).data('course');
-            $('#ece_table tbody').find("tr:gt(0)").remove();
-            element = $('#ece_table tbody tr').last();
-            $.ajax({
-                url: 'get_attendance',
-                type: 'GET',
-                data: { 'course_id': course_code },
-                success: function (response) {
-                    for (var j = 0; j < response.tuples.length; j++) {
-                        var name = response.stud_data.name[j];
-                        var programme = response.stud_data.programme[j];
-                        var batch = response.stud_data.batch[j];
-                        var roll = response.tuples[j][1];
-                        var course = course_code;
-                        var present_attend = response.tuples[j][2];
-                        var total_attend = response.tuples[j][3];
-                        var attend_percent = ((present_attend / total_attend) * 100).toFixed(2);
-                        txt = "<tr>";
-                        txt += '<td>  </td>' +
-                            '<td>' + name + '</td>' +
-                            '<td>' + roll + '</td>' +
-                            '<td>' + batch + '</td>' +
-                            '<td>' + programme + '</td>' +
-                            '<td>' + course + '</td>' +
-                            '<td>' + attend_percent + '</td>' +
-                            '<td>  <i class="refresh icon" style="font-size:1.3vw"></i>' +
-                            '<i class="trash outline icon" style="font-size:1.3vw"></i></td>';
-                        txt += '</tr>';
-                        element.after(txt);
-                    }
-                    console.log(response.stud_data.name.length);
-                    console.log(response.tuples.length);
-                    { alert(response.tuples[0][1]); }
-                },
-                error: function (response) {
-                }
-            });
-        });
-        $('#mech_courses').on('click', 'button', function (event) {
-            event.preventDefault();
-            var course_code = $(this).data('course');
-            $('#mech_table tbody').find("tr:gt(0)").remove();
-            element = $('#mech_table tbody tr').last();
-            $.ajax({
-                url: 'get_attendance',
-                type: 'GET',
-                data: { 'course_id': course_code },
-                success: function (response) {
-                    for (var j = 0; j < response.tuples.length; j++) {
-                        var name = response.stud_data.name[j];
-                        var programme = response.stud_data.programme[j];
-                        var batch = response.stud_data.batch[j];
-                        var roll = response.tuples[j][1];
-                        var course = course_code;
-                        var present_attend = response.tuples[j][2];
-                        var total_attend = response.tuples[j][3];
-                        var attend_percent = ((present_attend / total_attend) * 100).toFixed(2);
-                        txt = "<tr>";
-                        txt += '<td>  </td>' +
-                            '<td>' + name + '</td>' +
-                            '<td>' + roll + '</td>' +
-                            '<td>' + batch + '</td>' +
-                            '<td>' + programme + '</td>' +
-                            '<td>' + course + '</td>' +
-                            '<td>' + attend_percent + '</td>' +
-                            '<td>  <i class="refresh icon" style="font-size:1.3vw"></i>' +
-                            '<i class="trash outline icon" style="font-size:1.3vw"></i></td>';
-                        txt += '</tr>';
-                        element.after(txt);
-                    }
-                    console.log(response.stud_data.name.length);
-                    console.log(response.tuples.length);
-                    { alert(response.tuples[0][1]); }
-                },
-                error: function (response) {
-                }
-            });
-        });
+    });
 
-        $('#design_courses').on('click', 'button', function (event) {
-
-            event.preventDefault();
-            var course_code = $(this).data('course');
-            $('#design_table tbody').find("tr:gt(0)").remove();
-            element = $('#design_table tbody tr').last();
-            $.ajax({
-                url: 'get_attendance',
-                type: 'GET',
-                data: { 'course_id': course_code },
-                success: function (response) {
-                    for (var j = 0; j < response.tuples.length; j++) {
-                        var name = response.stud_data.name[j];
-                        var programme = response.stud_data.programme[j];
-                        var batch = response.stud_data.batch[j];
-                        var roll = response.tuples[j][1];
-                        var course = course_code;
-                        var present_attend = response.tuples[j][2];
-                        var total_attend = response.tuples[j][3];
-                        var attend_percent = ((present_attend / total_attend) * 100).toFixed(2);
-                        txt = "<tr>";
-                        txt += '<td>  </td>' +
-                            '<td>' + name + '</td>' +
-                            '<td>' + roll + '</td>' +
-                            '<td>' + batch + '</td>' +
-                            '<td>' + programme + '</td>' +
-                            '<td>' + course + '</td>' +
-                            '<td>' + attend_percent + '</td>' +
-                            '<td>  <i class="refresh icon" style="font-size:1.3vw"></i>' +
-                            '<i class="trash outline icon" style="font-size:1.3vw"></i></td>';
-                        txt += '</tr>';
-                        element.after(txt);
-                    }
-                    console.log(response.stud_data.name.length);
-                    console.log(response.tuples.length);
-                    { alert(response.tuples[0][1]); }
-                },
-                error: function (response) {
-                }
-            });
+    $(document).on('click','#add_timetable',function() {
+        var data = new FormData();
+        var img = $('#time_table')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form7').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_add_timetable').show();
+        $.ajax({
+            url: "/ocms/admin/add_timetable",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_add_timetable').hide();
+                successAlert(data);
+                //location.reload();
+                 $("#add_timetable_refresh").load(" #add_timetable_refresh > *");
+            },
+            error: function(data, err) {
+                $('#load_add_timetable').hide();
+                errAlert(data.responseText);
+            }
         });
     });
 </script>

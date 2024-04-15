@@ -264,12 +264,12 @@ class GradingScheme_grades(models.Model):
 
 class Student_grades(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    semester = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
-    roll_no = models.TextField(max_length=2000)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     grade = models.TextField(max_length=2000)
-    batch = models.TextField(max_length=2000)
+    batch = models.IntegerField(default=2021)
  
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)

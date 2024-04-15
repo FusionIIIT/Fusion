@@ -151,6 +151,7 @@ input:checked + .slider:before {
             </tbody>
 	    </table>
 	</div>
+  <br>
 
 	   <!--  <div class="one wide field">
             <label><br></label>
@@ -158,7 +159,7 @@ input:checked + .slider:before {
                     <div class="ui primary button">Save</div>
              </a>
          </div>  -->
-<input type="submit" class="ui primary button" id="submit_attendance" value="Upload">
+  <input type="submit" class="ui primary button" id="submit_attendance" value="Upload">
 
 	</form>
   <br>
@@ -201,7 +202,29 @@ input:checked + .slider:before {
 {% endblock %}
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'semantic/dist/components/semantic-ui-alerts.js' %}"></script>
 <script type="text/javascript">
+
+  function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+  }
+
+  function errAlert(data){
+      $.suiAlert({
+      title: 'Error',
+      description: data,
+      type: 'error',
+      time: '3',
+      position: 'top-center',
+      });
+  }
 
 $(function() {
     $("#attendance_submit").submit(function(event) {
@@ -213,12 +236,12 @@ $(function() {
             var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
             // if success:
             posting.done(function(data) {
-                alert('Upload Successful');
+                successAlert('Upload Successful');
                 // window.location = "/academic-procedures/main/";
             });
             // if failure
             posting.fail(function(data) {
-                alert('Failed');
+                errAlert('Failed');
                 // window.location = "/academic-procedures/main/";
             });
     });

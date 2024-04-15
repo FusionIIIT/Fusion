@@ -11,9 +11,10 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.core.serializers import serialize
 
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
                                                       Student,Student_attendance,Calendar, Timetable)
@@ -25,7 +26,7 @@ from .forms import *
 # from .helpers import create_thumbnail, semester
 from .models import *
 from .helpers import create_thumbnail, semester
-
+from notification.views import course_management_notif
 
 @login_required
 def viewcourses(request):
@@ -62,6 +63,8 @@ def viewcourses(request):
                        'curriculum_list': curriculum_list})
     
     elif extrainfo.id == 'id_admin':
+        if request.session.get('currentDesignationSelected') != 'acadadmin':
+            return HttpResponseRedirect('/dashboard/')
         acadTtForm = AcademicTimetableForm()
         calendar = Calendar.objects.all()
         timetable = Timetable.objects.all()
@@ -80,7 +83,10 @@ def course(request, course_code):
     '''
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    notifs = request.user.notifications.all()
     if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
+        if request.session.get('currentDesignationSelected') != 'student':
+            return HttpResponseRedirect('/dashboard/')
         student = Student.objects.select_related('id').get(id=extrainfo)
         roll = student.id.id[:2]
 
@@ -193,7 +199,7 @@ def course(request, course_code):
         assignment = Assignment.objects.select_related().filter(course_id=course)
         submitable_assignments = []
         for assi in assignment:
-            if assi.submit_date >= timezone.now():
+            if assi.submit_date.date() >= datetime.date.today():
                 submitable_assignments.append(assi)
                 
         student_assignment = []
@@ -233,7 +239,13 @@ def course(request, course_code):
         if(total_attendance):
             attendance_percent = count/total_attendance*100
             attendance_percent = round(attendance_percent,2)
-        
+
+        attendance_file = {}
+        try:
+            attendance_file = AttendanceFiles.objects.select_related().filter(course_id=course)
+        except AttendanceFiles.DoesNotExist:
+            attendance_file = {}
+
         
         lec = 0
         comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
@@ -257,9 +269,13 @@ def course(request, course_code):
                        'present_attendance':present_attendance,
                        'attendance_percent': attendance_percent,
                        'Lecturer': lec,
-                       'curriculum': curriculum})
+                       'attendance_file':attendance_file,
+                       'curriculum': curriculum,
+                       'notifications': notifs})
 
     else:
+        if request.session.get('currentDesignationSelected') != 'faculty':
+            return HttpResponseRedirect('/dashboard/')
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -408,7 +424,7 @@ def course(request, course_code):
                        'assignment': assignment,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
-                       
+                       'notifications': notifs,
                        'students': students,
                        'total_attendance' : total_attendance,
                        'present_attendance':present_attendance,
@@ -433,7 +449,7 @@ def upload_assignment(request, course_code):
             assign = Assignment.objects.get(pk=assi_name)
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
-            return HttpResponse("Please fill each and every field correctly!")
+            return HttpResponse("Please fill each and every field correctly!", status=422)
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/"  #storing the media files
         full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
@@ -444,7 +460,7 @@ def upload_assignment(request, course_code):
         fs = FileSystemStorage(full_path, url)
         fs.save(name + file_extenstion, doc)  #saving the media files
         # uploaded_file_url = full_path+ "/" + name + file_extenstion
-        uploaded_file_url = "media/online_cms/" + "/online_cms/" + course_code + "/assi/" + assign.assignment_name + "/" + student.id.id + "/" + name + file_extenstion
+        uploaded_file_url = "/media/online_cms/" + course_code + "/assi/" + assign.assignment_name + "/" + student.id.id + "/" + name + file_extenstion
         # to save the solution of assignment the database
         sa = StudentAssignment(
          student_id=student,
@@ -471,7 +487,7 @@ def add_modules(request, course_code):
         try:
             module_name = request.POST.get('module_name')
         except:
-            return HttpResponse("Please fill each and every field correctly!")
+            return HttpResponse("Please fill each and every field correctly!",status=422)
         
         Modules.objects.create(
             course_id=course,
@@ -499,7 +515,7 @@ def add_document(request, course_code):
             module_id = request.POST.get('module_id')
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
-            return HttpResponse("Please fill each and every field correctly!",status=400)
+            return HttpResponse("Please fill each and every field correctly!",status=422)
         #for storing the media files properly
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/doc/"
@@ -540,7 +556,7 @@ def add_attendance(request, course_code):
             name = request.POST.get('name')
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
-            return HttpResponse("Please fill each and every field correctly!",status=400)
+            return HttpResponse("Please fill each and every field correctly!",status=422)
         #for storing the media files properly
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/attendance/"
@@ -653,7 +669,7 @@ def add_videos(request, course_code):
         create_thumbnail(course_code,course, video, name, file_extenstion, 'Small', 1, '170:127')
         return HttpResponse("Upload successful.")
     else:
-        return HttpResponse("not found")
+        return HttpResponse("Not found")
 
 
 @login_required
@@ -723,33 +739,63 @@ def ajax_reply(request, course_code):
 
 @login_required
 def ajax_new(request, course_code):
-    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
-    if extrainfo.user_type == "student":
-        student = Student.objects.select_related('id').get(id=extrainfo)
-        roll = student.id.id[:4]
-        #course = Course.objects.get(course_id=course_code, sem=semester(roll))
-        curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
-        #print(curriculum_details[0].course_id)
-        #print(Curriculum.objects.values_list('curriculum_id'))
-        course =  curriculum_details[0].course_id
-    else:
+    # extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    # if extrainfo.user_type == "student":
+    #     student = Student.objects.select_related('id').get(id=extrainfo)
+    #     roll = student.id.id[:4]
+    #     #course = Course.objects.get(course_id=course_code, sem=semester(roll))
+    #     curriculum_details = Curriculum.objects.select_related('course_id').filter(course_code=course_code)  #curriculum id
+    #     #print(curriculum_details[0].course_id)
+    #     #print(Curriculum.objects.values_list('curriculum_id'))
+    #     course =  curriculum_details[0].course_id
+    # else:
 
-        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+    #     instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+    #     for ins in instructor:
+    #         if ins.curriculum_id.course_code == course_code:
+    #             course = ins.curriculum_id.course_id
+    # ex = ExtraInfo.objects.select_related().get(user=request.user)
+    # f = Forum(
+    #     course_id=course,
+    #     commenter_id=ex,
+    #     comment=request.POST.get('question')
+    # )
+    # f.save()
+    # name = request.user.first_name + " " + request.user.last_name
+    # time = f.comment_time.strftime('%b. %d, %Y, %I:%M %p')
+
+    # data = {'pk': f.pk, 'question': f.comment, 'replier': f.commenter_id.user.username,
+    #         'time': time, 'name': name}
+    ex = ExtraInfo.objects.select_related().get(user=request.user)
+    if ex.user_type == "student":
+        print()
+    else:
+        HttpResponse('Announcement in Progress')
+        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=ex)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
-                course = ins.curriculum_id.course_id
-    ex = ExtraInfo.objects.select_related().get(user=request.user)
-    f = Forum(
-        course_id=course,
-        commenter_id=ex,
-        comment=request.POST.get('question')
-    )
-    f.save()
-    name = request.user.first_name + " " + request.user.last_name
-    time = f.comment_time.strftime('%b. %d, %Y, %I:%M %p')
+                course = ins.curriculum_id.course_id    
+                registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
+        
+        f = Forum(
+            course_id=course,
+            commenter_id=ex,
+            comment=request.POST.get('question')
+        )
+        f.save()
+        name = request.user.first_name + " " + request.user.last_name
+        time = f.comment_time.strftime('%b. %d, %Y, %I:%M %p')
+        data = {'pk': f.pk, 'question': f.comment, 'replier': f.commenter_id.user.username,
+                'time': time, 'name': name}
+        # course_json = serialize('json', [course])
 
-    data = {'pk': f.pk, 'question': f.comment, 'replier': f.commenter_id.user.username,
-            'time': time, 'name': name}
+        student = []        
+        for reg_student in registered_students:
+            student.append(Student.objects.get(id = str(reg_student.student_id)).id.user)
+            # student = Student.objects.get(id = str(reg_student.student_id))
+            
+        course_management_notif(request.user, student,  request.POST.get('question'), course.pk, str(course),course_code, "announcement")
+
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -785,12 +831,13 @@ def add_assignment(request, course_code):                 #from faculty side
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
+                registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
         try:
             assi = request.FILES.get('img')
             name = request.POST.get('name')
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
-            return HttpResponse("Please Enter The Form Properly")
+            return HttpResponse("Please Enter The Form Properly",status=422)
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
         url = settings.MEDIA_URL + filename
@@ -808,6 +855,11 @@ def add_assignment(request, course_code):                 #from faculty side
             assignment_name=name
         )
         assign.save()
+        student = []        
+        for reg_student in registered_students:
+            student.append(Student.objects.get(id = str(reg_student.student_id)).id.user)
+        print(student)
+        course_management_notif(request.user, student,  "New Assignment Created!", course.pk, str(course),course_code,0)
         return HttpResponse("Assignment created successfully.")
     else:
         return HttpResponse("not found")
@@ -1317,10 +1369,22 @@ def remove_quiz(request, course_code):
 
 @login_required
 def ajax_assess(request, course_code):
-    sa = StudentAssignment.objects.select_related().get(pk=request.POST.get('pk'))
-    sa.score = request.POST.get('marks')
-    sa.save()
-    return HttpResponse("Marks uploaded")
+    extrainfo = ExtraInfo.objects.select_related().get(user=request.user)
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+                # registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
+        sa = StudentAssignment.objects.select_related().get(pk=request.POST.get('pk'))
+        sa.score = request.POST.get('marks')
+        sa.save()
+        student = []        
+        student.append(sa.student_id.id.user)
+        # for reg_student in registered_students:
+        # #     student.append(Student.objects.get(id = str(reg_student.student_id)).id.user)
+        course_management_notif(request.user, student,  "An Assignment has been graded!", course.pk, str(course),course_code, 0)
+        return HttpResponse("Marks uploaded")    
 
 
 @login_required
@@ -1774,21 +1838,36 @@ def add_timetable(request):
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
 
     if extrainfo.id == 'id_admin':
-        timetable = Timetable.objects.all()
-        calendar = Calendar.objects.all()
-        context= {
-            'timetable': timetable,
-            'academic_calendar' :calendar,
-            'tab_id' :['10','1']
-        }
-        acadTtForm = AcademicTimetableForm()
-        if request.method == 'POST' and request.FILES:
-            acadTtForm = AcademicTimetableForm(request.POST, request.FILES)
-            if acadTtForm.is_valid():
-                acadTtForm.save()
-            return render(request, 'coursemanagement/academicinfo.html', context)
+        if request.method == 'POST':
+            try:
+                timetable = request.FILES.get('img')
+                programme = request.POST.get('programme')
+                batch = request.POST.get('batch')
+                branch = request.POST.get('branch')
+                filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
+            except:
+                return HttpResponse("Please Enter The Form Properly", status=400)
+            
+            full_path = settings.MEDIA_ROOT + "/Administrator/academic_information/"
+            url = settings.MEDIA_URL + filename
+            if not os.path.isdir(full_path):
+                cmd = "mkdir " + full_path
+                subprocess.call(cmd, shell=True)
+            fs = FileSystemStorage(full_path, url)
+            fs.save(filename+file_extenstion, timetable)
+            uploaded_file_url = "Administrator/academic_information/" + filename + file_extenstion
+            # uploaded_file_url = full_path + filename + file_extenstion
+            timetb = Timetable(
+                time_table = uploaded_file_url,
+                programme = programme,
+                batch = batch,
+                branch = branch
+            )
+            timetb.save()
+                
+            return HttpResponse("Upload successful.")
         else:
-            return render(request, 'coursemanagement/academicinfo.html', context)
+            return HttpResponse("Not found.")
         
 @login_required
 def delete_timetable(request):
@@ -1804,11 +1883,12 @@ def delete_timetable(request):
     """
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    
 
     if extrainfo.id == 'id_admin':
         if request.method == "POST":
-            data = request.POST['delete']
-            t = Timetable.objects.get(time_table=data)
+            pk = request.POST.get('pk')
+            t = Timetable.objects.get(pk=pk)
             t.delete()
             return HttpResponse("TimeTable Deleted")
 
