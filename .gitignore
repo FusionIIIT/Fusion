@@ -73,7 +73,6 @@ node_modules/
 FusionIIIT/static/
 package-lock.json
 
-
 docker-entrypoint.sh
 
 
@@ -86,4 +85,3 @@ postgres_data
 !media/Administrator/academic_procedures/sample_student_profile.xlsx
 
 migrations/
-
