@@ -166,7 +166,7 @@ def add_projects(request):
 
 
         
-        check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
+        check= HoldsDesignation.objects.filter(user__username= pid, designation__name= "Professor") #checking for pid to exist
 
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
@@ -177,7 +177,7 @@ def add_projects(request):
 
         
         
-        check= get_obj_by_username_and_designation(copid, "Professor") #checking for copid to exist
+        check= HoldsDesignation.objects.filter(user__username= copid, designation__name= "Professor") #checking for copid to exist
 
         if not check.exists():
                 check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
@@ -907,6 +907,7 @@ def get_designation_instance(designation):
 def get_obj_by_username_and_designation(username,designation):
     user_instance = get_user_by_username(username)
     designation_instance = get_designation_instance(designation)
+    
     return HoldsDesignation.objects.filter(user=user_instance, designation=designation_instance)
 
 
