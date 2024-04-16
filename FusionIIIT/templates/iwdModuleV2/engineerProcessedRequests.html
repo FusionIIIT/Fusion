@@ -44,8 +44,11 @@
 
 		{% load static %}
     {% comment %}the main tab starts here {% endcomment %}
+    <div>
+        <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Back</button></a>
+    </div>
     <div class="ui header">
-        Page 1
+        Engineer Processed Requests
     </div>
     <div class="ui one cards" style="padding: 2px;">
       <div class="ui blue card" id="noti">
@@ -53,71 +56,46 @@
 
               <table class="ui orange table">
                   <thead>
-                      <th> Details:-</th>
-                  </thead>
-                  <tbody>
-
-                      <tr>
-                          <td>Name of Project</td>
-                          <td>{{x.id.id}}</td>
-                      </tr>
-                      <tr>
-                          <td>AA And AES</td>
-                          <td>  <div style="display:flex;justify-content: space-between;">
-                            <div><a href="">Download</a></div>
-                             <div><a href="{% url 'iwdModuleV2:AES View' %}">i</a></div>
-                      </div>
-
-
-                            </td>
-                      </tr>
-                      <tr>
-                          <td>Date of sanction and authority</td>
-                          <td>{{x.dASA}}</td>
-                      </tr>
-                      <tr>
-                          <td>NIT/NIQ Number</td>
-                          <td>{{x.nitNiqNo}}</td>
-
-                      </tr>
-                      <tr>
-                          <td>Project through</td>
-                          <td>{{x.proTh}}</td>
-
-                      </tr>
-
-                      <tr>
-                          <td>EMD Details</td>
-                          <td>{{x.emdDetails}}</td>
-
-                      </tr>
-                      <tr>
-                          <td>Pre-bid meeting date</td>
-                          <td>{{x.preBidDate}}</td>
-
-                      </tr>
-                      <tr>
-                          <td>Technical-bid meeting date</td>
-                          <td>{{x.technicalBidDate}}</td>
-
-                      </tr>
-                      <tr>
-                          <td>Financial-bid meeting date</td>
-
-                          <td>{{x.financialBidDate}}</td>
-
-                      </tr>
-
-
-                  </tbody>
-              </table>
-              <a class="ui small right floated primary button"  href="{% url 'iwdModuleV2:Page 2 View'%}">Next</a>
-              {% if var %}<h1>{{var}}</h1>{% endif %}
+                      <th>Details:-</th>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Area</th>
+                        <th>Created By</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                  {% for f in obj %}
+                <tbody>
+                    <tr>
+                        <td>{{f.0}}</td>
+                        <td>{{f.1}}</td>
+                        <td>{{f.3}}</td>
+                        <td>{{f.2}}</td>
+                        <td>{{f.4}}</td>
+                        <td>
+                            <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
+                            <form method="POST" action="{% url 'iwdModuleV2:Dean-Process-Requests' %}">
+                                {% csrf_token %}
+                                <select name="designation">
+                                    {% for queryset in holdsDesignations %}
+                                        {% for hd in queryset %}
+                                            <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="id" value="{{ f.0 }}">
+                                <button type="submit" class="ui small primary button">Process</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+                  {% endfor %}
+                </table>
           </div>
       </div>
   </div>
-
-
 
 
 
@@ -146,5 +124,5 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-</script>
+<!-- </script> -->
 {% endblock %}
