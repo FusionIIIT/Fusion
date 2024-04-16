@@ -108,7 +108,7 @@ def get_context(request):
     # timetable = Timetable.objects.all()
     # exam_t = Exam_timetable.objects.all()
     procedures_context = acad_proced_global_context()
-
+    notifs = request.user.notifications.all()
     try:
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
@@ -175,7 +175,8 @@ def get_context(request):
         'batch_branch_data' : procedures_context['batch_branch_data'],
         'assistant_flag' : assistant_flag,
         'hod_flag' : hod_flag,
-        'account_flag' : account_flag
+        'account_flag' : account_flag,
+        'notifications': notifs,
     }
 
     return context

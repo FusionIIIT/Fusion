@@ -130,7 +130,7 @@ def academic_procedures_faculty(request):
 
     # elif str(request.user) == "acadadmin":
     #     return HttpResponseRedirect('/academic-procedures/main/')
-
+    notifs = request.user.notifications.all()
     if request.session.get('currentDesignationSelected') == "faculty" or str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
        
         object_faculty = Faculty.objects.select_related('id','id__user','id__department').get(id = user_details.pk)
@@ -193,6 +193,7 @@ def academic_procedures_faculty(request):
                             'phdprogress_request_list' : phdprogress_request_list,
                             'r' : r,
                             'assigned_courses' : assigned_courses,
+                            'notifications': notifs,
                         })
     else:
         HttpResponse("user not found")
@@ -223,6 +224,7 @@ def academic_procedures_student(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
 
     if str(des.designation) == "student":
+        notifs = request.user.notifications.all()
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
 
         if obj.programme.upper() == "PHD" :
@@ -568,6 +570,7 @@ def academic_procedures_student(request):
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
+                           'notifications': notifs,
                            }
                 )
 
