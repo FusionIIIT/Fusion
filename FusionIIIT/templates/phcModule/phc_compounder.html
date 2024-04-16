@@ -42,10 +42,10 @@
                         Patient Logs
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="fifth">
+                    {% comment %} <a class="item" data-tab="fifth">
                         Generate Report
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> {% endcomment %}
                     <a class="item" data-tab="seventh">
                         Manage Stock
                         <i class="right floated chevron right icon"></i>
@@ -100,11 +100,11 @@
             {% comment %}The appointment approval tab ends here!{% endcomment %}
 
             {% comment %}The compounder prescription tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="fifth">
+            {% comment %} <div class="ui tab segment" data-tab="fifth">
                 {% block comp_prescription %}
                     {% include 'phcModule/comp_prescription.html' with appointments_today=appointments_today stocks=stocks doctors=doctors users=users %}
                 {% endblock %}
-            </div>
+            </div> {% endcomment %}
             {% comment %}The appointment approval tab ends here!{% endcomment %}
 
 

@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import serializers
+from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
@@ -31,11 +32,10 @@ def healthcenter(request):
         usertype - get user data from request 
 
     '''
-    usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
-
-    if usertype == 'student' or usertype=='faculty' or usertype=='staff':
+    design=request.session['currentDesignationSelected']
+    if design!='Compounder':
         return HttpResponseRedirect("/healthcenter/student")
-    elif usertype == 'compounder':
+    elif design == 'Compounder':
         return HttpResponseRedirect("/healthcenter/compounder")
 
 
@@ -68,8 +68,8 @@ def compounder_view(request):
     '''
                                                                 # compounder view starts here
     
-    usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
-    if usertype == 'compounder':
+    design=request.session['currentDesignationSelected']
+    if design == 'Compounder':
         if request.method == 'POST':
             return compounder_view_handler(request)
 
@@ -118,10 +118,8 @@ def compounder_view(request):
                 else:
                     dic['file']=None 
                 report.append(dic)
-                
-                
-                
            
+            
              
             #adding file tracking inbox part for compounder
             
@@ -151,7 +149,7 @@ def compounder_view(request):
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
                            'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': report, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox})
-    elif usertype == 'student':
+    else:
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
 
@@ -176,8 +174,8 @@ def student_view(request):
 
     '''                                                                 # student view starts here
     
-    usertype = ExtraInfo.objects.select_related('user','department').get(user=request.user).user_type
-    if usertype == 'student' or usertype == 'faculty' or usertype == 'staff':
+    design=request.session['currentDesignationSelected']
+    if design != 'Compounder':
         if request.method == 'POST':
             return student_view_handler(request)
 
@@ -274,7 +272,7 @@ def student_view(request):
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
                            'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief})
-    elif usertype == 'compounder':
+    else:
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
 def schedule_entry(request):
@@ -568,42 +566,3 @@ def announcement(request):
                                                             "announcements":context,
                                                             "request_to":requests_received
                                                         })  
-    
-# def fetch_designations(request):
-#     designations = Designation.objects.all()
-
-#     holdsDesignations = []
-
-#     for d in designations:
-#         if d.name == "Compounder" or d.name == "Accounts Admin":
-#             list = HoldsDesignation.objects.filter(designation=d)
-#             holdsDesignations.append(list)
-
-#     return render(request, 'phcModule/medical_relief.html', {'holdsDesignations' : holdsDesignations})
-
-def medicalrelief(request):
-    print(request)
-   
-            
-    if request.method == 'POST':
-        # print(request.POST['name'])
-        formObject = medical_relief()
-        formObject.description = request.POST['description']
-        formObject.file = request.POST['file']
-        formObject.save()
-        request_object = medical_relief.objects.get(pk=formObject.pk)
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-        print(d)
-        print(d1)
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="health_center", 
-            src_object_id= str(request_object.id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
-        
-       
-    return render(request, 'phcModule/medical_relief.html', {'holdsDesignations' : holdsDesignations})
