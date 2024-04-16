@@ -984,7 +984,10 @@ def editInventory(request):
         itemName = request.POST['name']
         itemQuantity = request.POST['quantity']
         itemCost = request.POST['cost']
-        Inventory.objects.filter(id=itemId).update(name=itemName, quantity=itemQuantity, cost=itemCost)
+        if itemQuantity == "0":
+            Inventory.objects.filter(id=itemId).delete()
+        else:
+            Inventory.objects.filter(id=itemId).update(name=itemName, quantity=itemQuantity, cost=itemCost)
         items = Inventory.objects.filter()
         obj = []
         for i in items:

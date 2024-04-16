@@ -1,3 +1,4 @@
+from amqp import NotFound
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
@@ -80,7 +81,6 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
-        print(file_details)
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
@@ -120,7 +120,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-     
+
     return received_files_serialized
 
 
@@ -377,7 +377,12 @@ def add_uploader_department_to_files_list(files: list) -> list:
     '''
     for file in files:
         uploader_Extrainfo = file['uploader']
-        file['uploader_department'] = (str(uploader_Extrainfo.department)).split(': ')[1]
+        if uploader_Extrainfo.department is None:
+            # for files created by staff or users that dont have department
+            file['uploader_department'] = 'FTS'
+        else:
+            file['uploader_department'] = (
+                str(uploader_Extrainfo.department)).split(': ')[1]
 
     return files
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
+from requests import Response
 from notifications.signals import notify
-
 # Create your views here.
 
 def leave_module_notif(sender, recipient, type, date=None):
@@ -69,6 +69,7 @@ def central_mess_notif(sender, recipient, type, message=None):
     sender = sender
     recipient = recipient
     verb = ''
+
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
     elif type == 'menu_change_accepted':
@@ -85,7 +86,15 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb = "You have been added to the mess committee. "
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    
+def placement_cellNotif(sender, recipient, type):
+    url = 'placement:placement'
+    module = 'Placement Cell'
+    sender = sender
+    recipient = recipient
+    verb = ''
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type):
     url='visitorhostel:visitorhostel'
@@ -114,18 +123,23 @@ def healthcare_center_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ''
+    
     if type == 'appoint':
         verb = "Your Appointment has been booked"
-    if type == 'amb_request':
+    elif type == 'amb_request':
         verb = "Your Ambulance request has been placed"
-    if type == 'Presc':
+    elif type == 'Presc':
         verb = "You have been prescribed some medicine"
-    if type == 'appoint_req':
+    elif type == 'appoint_req':
         verb = "You have a new appointment request"
-    if type == 'amb_req':
+    elif type == 'amb_req':
         verb = "You have a new ambulance request"
-
-
+    elif type == 'rel_forward':
+        verb = "You have a new medical relief forward request"
+    elif type == 'rel_approve':
+        verb = "You have a new medical relief approval request"
+    elif type == 'rel_approved':
+        verb = 'Your medical relief request has been approved' 
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -148,6 +162,8 @@ def scholarship_portal_notif(sender, recipient, type):
 
     if type.startswith('award'):
         s = type.split('_')
+        # print("psss")
+        # print(type, s)
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
@@ -336,7 +352,21 @@ def department_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = type
-    flag = "department"
+    flag = "announcement"
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                flag=flag)
+def examination_notif(sender, recipient, type):
+    url='examination:examination'
+    module='examination'
+    sender = sender
+    recipient = recipient
+    verb = type
+    flag = "announcement"
 
     notify.send(sender=sender,
                 recipient=recipient,
@@ -385,3 +415,4 @@ def research_procedures_notif(sender,recipient,type):
         verb = "A new Patent has been Created"
 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
