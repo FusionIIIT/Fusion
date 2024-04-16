@@ -32,7 +32,7 @@ COURSESLOT_TYPE_CHOICES = [
     ('Manufacturing', 'Manufacturing'),
     ('Management Science', 'Management Science'),
     ('Open Elective', 'Open Elective'),
-    ('Swayam','Swayam'),
+    ('Swayam', 'Swayam'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
     ('Others', 'Others')
@@ -41,16 +41,17 @@ COURSESLOT_TYPE_CHOICES = [
 BATCH_NAMES = [
     ('B.Tech', 'B.Tech'),
     ('M.Tech', 'M.Tech'),
-    ('B.Des','B.Des'),
-    ('M.Des','M.Des'),
+    ('B.Des', 'B.Des'),
+    ('M.Des', 'M.Des'),
     ('Phd', 'Phd')
 ]
+
 
 class Programme(models.Model):
     '''
         Current Purpose : To store the details regardina a programme
-        
-        
+
+
 
         ATTRIBUTES :
 
@@ -61,12 +62,15 @@ class Programme(models.Model):
         ! - the name attribute has ambiguous entries
     '''
 
-    category = models.CharField(max_length=3, choices=PROGRAMME_CATEGORY_CHOICES, null=False, blank=False)
-    name = models.CharField(max_length=70, null=False, unique=True, blank=False)
-    programme_begin_year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
+    category = models.CharField(
+        max_length=3, choices=PROGRAMME_CATEGORY_CHOICES, null=False, blank=False)
+    name = models.CharField(max_length=70, null=False,
+                            unique=True, blank=False)
+    programme_begin_year = models.PositiveIntegerField(
+        default=datetime.date.today().year, null=False)
 
     def __str__(self):
-        return str(self.category + " - "+ self.name)
+        return str(self.category + " - " + self.name)
 
     @property
     def curriculums(self):
@@ -80,8 +84,8 @@ class Programme(models.Model):
 class Discipline(models.Model):
     '''
         Current Purpose : To store the details regarding a discipline
-        
-        
+
+
 
         ATTRIBUTES :
 
@@ -91,26 +95,27 @@ class Discipline(models.Model):
 
     '''
 
+    name = models.CharField(max_length=100, null=False,
+                            unique=True, blank=False)
+    acronym = models.CharField(
+        max_length=10, null=False, default="", blank=False)
+    programmes = models.ManyToManyField(Programme, blank=True)
 
-    name = models.CharField(max_length=100, null=False, unique=True, blank=False)
-    acronym = models.CharField(max_length=10, null=False, default="", blank=False)
-    programmes = models.ManyToManyField(Programme, blank=True)    
-    
     def __str__(self):
         return str(self.name) + " " + str(self.acronym)
 
     @property
     def batches(self):
         return Batch.objects.filter(discipline=self.id).order_by('year')
-        
+
 
 class Curriculum(models.Model):
     '''
         Current Purpose : To store the details regarding a curriculum
         Curriculum definition : a set of all courses offered by the institute within a programme
 
-        
-        
+
+
 
         ATTRIBUTES :
 
@@ -121,7 +126,8 @@ class Curriculum(models.Model):
         no_of_semester(Integer) - the number of semesters defined for the curriculum
         min_credit(Integer) - the minimum credits required for the curriculum
     '''
-    programme = models.ForeignKey(Programme, on_delete=models.CASCADE, null=False)
+    programme = models.ForeignKey(
+        Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
@@ -138,7 +144,7 @@ class Curriculum(models.Model):
 
     class Meta:
         unique_together = ('name', 'version',)
-    
+
     def __str__(self):
         return str(self.name + " v" + str(self.version))
 
@@ -146,20 +152,18 @@ class Curriculum(models.Model):
     def batches(self):
         return Batch.objects.filter(curriculum=self.id).order_by('year')
 
-
     @property
     def semesters(self):
         return Semester.objects.filter(curriculum=self.id).order_by('semester_no')
 
 
-
 class Semester(models.Model):
     '''
         Current Purpose : To store the details regarding a semester
-        
 
-        
-        
+
+
+
 
         ATTRIBUTES :
 
@@ -170,7 +174,8 @@ class Semester(models.Model):
         end_semester(DateTime) - to store the end date of the semester
 
     '''
-    curriculum = models.ForeignKey(Curriculum, null=False, on_delete=models.CASCADE)
+    curriculum = models.ForeignKey(
+        Curriculum, null=False, on_delete=models.CASCADE)
     semester_no = models.PositiveIntegerField(null=False)
     instigate_semester = models.BooleanField(default=False, null=True)
     start_semester = models.DateField(blank=True, null=True)
@@ -179,7 +184,7 @@ class Semester(models.Model):
 
     class Meta:
         unique_together = ('curriculum', 'semester_no',)
-    
+
     def __str__(self):
         return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
 
@@ -187,13 +192,14 @@ class Semester(models.Model):
     def courseslots(self):
         return CourseSlot.objects.filter(semester=self.id).order_by("id")
 
+
 class Course(models.Model):
     '''
         Current Purpose : To store the details regarding a course
-        
 
-        
-        
+
+
+
 
         ATTRIBUTES :
 
@@ -224,10 +230,10 @@ class Course(models.Model):
     code = models.CharField(max_length=10, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     version = models.DecimalField(
-    max_digits=5, 
-    decimal_places=1, 
-    default=1.0, 
-    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
+        max_digits=5,
+        decimal_places=1,
+        default=1.0,
+        validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     lecture_hours = PositiveIntegerField(null=True, )
     tutorial_hours = PositiveIntegerField(null=True)
@@ -237,39 +243,44 @@ class Course(models.Model):
     pre_requisits = models.TextField(null=True, blank=True)
     pre_requisit_courses = models.ManyToManyField('self', blank=True)
     syllabus = models.TextField()
-    percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
-    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
-    percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
-    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
+    percent_quiz_1 = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_midsem = models.PositiveIntegerField(
+        default=20, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(
+        default=30, null=False, blank=False)
+    percent_project = models.PositiveIntegerField(
+        default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_course_attendance = models.PositiveIntegerField(
+        default=5, null=False, blank=False)
     ref_books = models.TextField()
     working_course = models.BooleanField(default=True)
     disciplines = models.ManyToManyField(Discipline, blank=True)
     latest_version = models.BooleanField(default=True)
-    
-    class Meta:
-        unique_together = ('code','version')        
-    
-    def __str__(self):
-        return str(self.code + " - " +self.name+"- v"+str(self.version))
 
+    class Meta:
+        unique_together = ('code', 'version')
+
+    def __str__(self):
+        return str(self.code + " - " + self.name+"- v"+str(self.version))
 
     @property
     def courseslots(self):
         return CourseSlot.objects.filter(courses=self.id)
 
+
 class Batch(models.Model):
-
-
 
     '''
         Current Purpose : To store the details regarding a batch(eg details of curriculum assigned for batch)
-        
 
-        
-        
+
+
+
 
         ATTRIBUTES :
 
@@ -280,10 +291,14 @@ class Batch(models.Model):
         running_batch(Boolean) - to denote whether the batch is currently active or has graduated
 
     '''
-    name = models.CharField(choices=BATCH_NAMES, max_length=50, null=False, blank=False)
-    discipline = models.ForeignKey(Discipline, null=False, on_delete=models.CASCADE)
-    year = models.PositiveIntegerField(default=datetime.date.today().year, null=False)
-    curriculum = models.ForeignKey(Curriculum, null=True, blank=True, on_delete=models.SET_NULL)
+    name = models.CharField(choices=BATCH_NAMES,
+                            max_length=50, null=False, blank=False)
+    discipline = models.ForeignKey(
+        Discipline, null=False, on_delete=models.CASCADE)
+    year = models.PositiveIntegerField(
+        default=datetime.date.today().year, null=False)
+    curriculum = models.ForeignKey(
+        Curriculum, null=True, blank=True, on_delete=models.SET_NULL)
     running_batch = models.BooleanField(default=True)
 
     class Meta:
@@ -292,7 +307,7 @@ class Batch(models.Model):
     def __str__(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
 
-    
+
 class CourseSlot(models.Model):
     '''
         Current Purpose : To store the details regarding a course slot 
@@ -310,15 +325,16 @@ class CourseSlot(models.Model):
         maximum_registration_limit(integer) - maximum students required for a course 
 
     '''
-    semester = models.ForeignKey(Semester, null=False, on_delete=models.CASCADE)
+    semester = models.ForeignKey(
+        Semester, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
-    type = models.CharField(max_length=70, choices=COURSESLOT_TYPE_CHOICES, null=False)
+    type = models.CharField(
+        max_length=70, choices=COURSESLOT_TYPE_CHOICES, null=False)
     course_slot_info = models.TextField(null=True)
     courses = models.ManyToManyField(Course, blank=True)
     duration = models.PositiveIntegerField(default=1)
-    min_registration_limit = models.PositiveIntegerField(default = 0)
-    max_registration_limit = models.PositiveIntegerField(default = 1000)
-
+    min_registration_limit = models.PositiveIntegerField(default=0)
+    max_registration_limit = models.PositiveIntegerField(default=1000)
 
     def __str__(self):
         return str(Semester.__str__(self.semester) + ", " + self.name)
@@ -330,20 +346,15 @@ class CourseSlot(models.Model):
     def for_batches(self):
         return ((Semester.objects.get(id=self.semester.id)).curriculum).batches
 
+
 class CourseInstructor(models.Model):
-      course_id = models.ForeignKey(Course, on_delete = models.CASCADE)
-      instructor_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
-      batch_id = models.ForeignKey(Batch, on_delete=models.CASCADE, default=1)
-      #change extra info to faculty(globals)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    batch_id = models.ForeignKey(Batch, on_delete=models.CASCADE, default=1)
+    # change extra info to faculty(globals)
 
-      class Meta:
-          unique_together = ('course_id', 'instructor_id', 'batch_id')
-      
-
-
-      def __self__(self):
-            return '{} - {}'.format(self.course_id, self.instructor_id)
-        
+    class Meta:
+        unique_together = ('course_id', 'instructor_id', 'batch_id')
 
 #new
 class NewProposalFile(models.Model):
@@ -351,23 +362,30 @@ class NewProposalFile(models.Model):
     uploader = models.CharField(max_length=100, null=False, blank=False)
     designation = models.CharField(max_length=100, null=False, blank=False)
     code = models.CharField(max_length=10, null=False, blank=False)
-    name = models.CharField(max_length=100, null=False,blank=False)
+    name = models.CharField(max_length=100, null=False, blank=False)
     credit = models.PositiveIntegerField(default=3, null=False, blank=False)
-    lecture_hours = PositiveIntegerField(default=3,null=True, )
-    tutorial_hours = PositiveIntegerField(default=0,null=True)
-    pratical_hours = PositiveIntegerField(default=0,null=True)
-    discussion_hours = PositiveIntegerField(default=0,null=True)
-    project_hours = PositiveIntegerField(default=0,null=True)
+    lecture_hours = PositiveIntegerField(default=3, null=True, )
+    tutorial_hours = PositiveIntegerField(default=0, null=True)
+    pratical_hours = PositiveIntegerField(default=0, null=True)
+    discussion_hours = PositiveIntegerField(default=0, null=True)
+    project_hours = PositiveIntegerField(default=0, null=True)
     pre_requisits = models.TextField(null=True, blank=True)
     pre_requisit_courses = models.ManyToManyField(Course, blank=True)
     syllabus = models.TextField()
-    percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
-    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
-    percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
-    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
-    percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
+    percent_quiz_1 = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_midsem = models.PositiveIntegerField(
+        default=20, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(
+        default=30, null=False, blank=False)
+    percent_project = models.PositiveIntegerField(
+        default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(
+        default=10, null=False, blank=False)
+    percent_course_attendance = models.PositiveIntegerField(
+        default=5, null=False, blank=False)
     ref_books = models.TextField()
     subject = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=400, null=True, blank=True)

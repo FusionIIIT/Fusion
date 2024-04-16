@@ -1,0 +1,136 @@
+<div class="ui form">
+  <div class="field">
+    <label>Title</label>
+    <input type="text" placeholder="Title of Indent" />
+  </div>
+  <div class="field">
+    <label>Description</label>
+    <textarea rows="3" placeholder="Enter the description"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Item Details</label>
+    <div class="two fields">
+      <div class="field">
+        <input type="text" placeholder="Item Name" />
+      </div>
+      <div class="field">
+        <input type="number" placeholder="Quantity" />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Stocks and Costs</label>
+    <div class="two fields">
+      <div class="field">
+        <input type="number" placeholder="Present Stock" />
+      </div>
+      <div class="field">
+        <input type="number" placeholder="Estimated Cost" />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Purpose</label>
+        <textarea rows="3" placeholder="Enter the Purpose"></textarea>
+      </div>
+      <div class="field">
+        <label>Specification</label>
+        <textarea rows="3" placeholder="Enter the specification"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Item Type</label>
+
+        <select class="ui fluid dropdown">
+          <option value="Equipment">Equipment</option>
+          <option value="Machinery">Machinery</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Fixture">Fixture</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Expected Delivery</label>
+        <input type="date" id="start" />
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="two fields">
+      <div class="field">
+        <label>Budgetory Head</label>
+        <textarea rows="3"> </textarea>
+      </div>
+      <div class="field">
+        <label>Sources of Supply</label>
+        <textarea rows="3"> </textarea>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <div class="three fields">
+      <div class="field">
+        <h5>Nature of Item*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="nature" value="True" /> Consumable
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="nature" value="False" /> Non Consumable
+        </label>
+      </div>
+
+      <div class="field">
+        <h5>Indigenous*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="indigenous" value="True" /> Yes
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="indigenous" value="False" /> No
+        </label>
+      </div>
+
+      <div class="field">
+        <h5>Replaced*</h5>
+        <label class="radio-inline">
+          <input type="radio" name="replaced" value="True" /> Yes
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="replaced" value="False" /> No
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label
+      >Create as:
+      <select class="ui fluid search selection dropdown" name="design">
+        <option selected hidden>Select</option>
+
+        {% for designations in designations %}
+        <option value="{{designations.id}}">{{designations}}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="left floated item">
+    <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+    <input
+      type="file"
+      id="file"
+      name="myfile"
+      accept=".pdf, .jpg, .jpeg, .png"
+    />
+  </div>
+</div>
+
+<div class="action">
+  <div class="ui floated primary button" style="margin-top: 20px" tabindex="0">
+    Add this Item
+  </div>
+</div>
