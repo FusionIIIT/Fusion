@@ -1120,7 +1120,8 @@ class AssignBatchView(View):
                 hall_id = data.get('hall_id')
 
                 hall = Hall.objects.get(hall_id=hall_id)
-                previous_batch = hall.assigned_batch  # Get the previous batch
+                # previous_batch = hall.assigned_batch  # Get the previous batch
+                previous_batch = hall.assigned_batch if hall.assigned_batch is not None else 1  # Get the previous batch
                 hall.assigned_batch = data.get('batch')
                 hall.save()
 
