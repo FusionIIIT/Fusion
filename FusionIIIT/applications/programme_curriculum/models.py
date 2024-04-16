@@ -299,6 +299,7 @@ class Batch(models.Model):
         unique_together = ('name', 'discipline', 'year',)
 
     def __str__(self):
+    def __str__(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
 
 
