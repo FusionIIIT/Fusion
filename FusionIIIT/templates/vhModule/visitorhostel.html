@@ -31,14 +31,14 @@
                 </a>
 
 
-                <a class="item" data-tab="second" id="bookaroom">
+                <a class="item" data-tab="second" id="bookaroom" onclick="requestModal()" >
                     Booking Form
                     <i class="right floated chevron right icon"></i>
                 </a> 
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class="item" data-tab="third" id="roomstatus">
-                    Get Details
+                    Room Availability
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -52,14 +52,14 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="sixth">
-                    Accounts
+                    Account Statement
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                 <a class="item" data-tab="seventh" id="booking_bw_dates">
+                 <!-- <a class="item" data-tab="seventh" id="booking_bw_dates">
                     Bill Details
                     <i class="right floated chevron right icon"></i>
-                </a> 
+                </a>  -->
 
 
                 {% endif %}
