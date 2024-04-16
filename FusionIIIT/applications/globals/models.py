@@ -64,8 +64,6 @@ class Constants:
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
-
-
     )
     USER_STATUS = {
         ("NEW", "NEW"),

@@ -236,5 +236,4 @@ class WorkerReport(models.Model):
     remark = models.CharField(max_length=100)
 
     def str(self):
-        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
-
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
