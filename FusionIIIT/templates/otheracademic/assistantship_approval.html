@@ -1,5 +1,3 @@
-<!-- file_tracking_form.html -->
-
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -21,7 +19,21 @@
             {% endblock %}
             <div class="ui divider"></div>
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <!-- Your existing menu items -->
+                <a href="/otheracademic/assitantship/hod_approveform" class="item">Assistantship Approve (HOD)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assitantship/acad_approveform" class="item">Assistantship Approve (Acad)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/approveform" class="active item">Assistanship Approve (TA)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assitantship/thesis_approveform" class="item">Assistanship Approve (Thesis)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assistantship_log/" class="item">Assistanship Log
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
         </div>
 
@@ -33,8 +45,8 @@
                             <th>Roll No.</th>
                             <th>Student Name</th>
                             <th>Discipline</th>
-                            <th>Month</th>
-                            <th>Year</th>
+                            <th>Date from</th>
+                            <th>Date to</th>
                             <th>Bank A/C No.</th>
                             <th>TA Supervisor</th>
                             <th>Thesis Supervisor</th>
@@ -47,15 +59,27 @@
                             <td>{{ entry.roll_no_id }}</td>
                             <td>{{ entry.student_name }}</td>
                             <td>{{ entry.discipline }}</td>
-                            <td>{{ entry.month }}</td>
-                            <td>{{ entry.year }}</td>
+                            <td>{{ entry.dateFrom }}</td>
+                            <td>{{ entry.dateTo }}</td>
                             <td>{{ entry.bank_account }}</td>
                             <td>{{ entry.ta_supervisor }}</td>
                             <td>{{ entry.thesis_supervisor }}</td>
                             <td>
-                                <button class="ui green button approve-button" data-id="{{ entry.id }}">Approve</button>
-                                <br>
-                                <button class="ui blue button forward-button" data-id="{{ entry.id }}">Forward</button>
+                                {% if entry.TA_approved%} Approved
+                                {% elif entry.TA_rejected%} Rejected
+                                {% else%}
+                                <div style="display: flex; flex-direction: column;">
+                                    <form action="{% url 'otheracademic:assistanship_ta_approve' ass_id=entry.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="ui green button approve-button" style="margin-bottom: 10px; width: 100%;" type="submit">Approve</button>
+                                    </form>
+                                    <form action="{% url 'otheracademic:assistanship_ta_reject' ass_id=entry.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="ui red button forward-button" style="width: 100%;" type="submit">Reject</button>
+                                    </form>
+                                </div>
+                                {% endif %}
+
                             </td>
                         </tr>
                         {% endfor %}
@@ -71,23 +95,4 @@
         <div class="column"></div>
     </div>
 
-{% endblock %}
-
-{% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.approve-button').click(function() {
-                var entryId = $(this).data('id');
-                // Perform action to approve the entry with ID entryId
-                console.log('Approved entry with ID: ' + entryId);
-            });
-
-            $('.forward-button').click(function() {
-                var entryId = $(this).data('id');
-                // Perform action to forward the entry with ID entryId
-                console.log('Forwarded entry with ID: ' + entryId);
-            });
-        });
-    </script>
 {% endblock %}

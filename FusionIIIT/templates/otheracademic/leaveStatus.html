@@ -20,18 +20,23 @@
                 {% include 'globals/usercard.html' %}
             {% endblock %}
             <div class="ui divider">
-                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                    <a href="#/leave_student" class="item">Leave Form</a>
-                    <a href="#/leave_student/leave_status" class="item">Leave Status</a>
-                    
-                </div>
+                
             </div>
-            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            
                 <!-- Your existing menu items -->
-            </div>
+                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                    <a href="/otheracademic/leaveform" class=" item">Leave Form
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a href="/otheracademic/leaveStatus" class="active item">Leave Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                </div>
+            
         </div>
 
         <div class="eight wide column">
+            <h2 class="ui header">Leave Status</h2>
             <div class="ui active tab segment" data-tab="first">
                 <table class="ui celled table">
                     <thead>

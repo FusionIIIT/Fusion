@@ -19,19 +19,22 @@
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
             {% endblock %}
-            <div class="ui divider">
-                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                    <a href="#/leave_student" class="item">Leave Form</a>
-                    <a href="#/leave_student/leave_status" class="item">Leave Status</a>
-                    
-                </div>
-            </div>
+            <div class="ui divider"></div>
+
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <!-- Your existing menu items -->
+                <a href="/otheracademic/bonafide" class="item">Bonafide Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/bonafideStatus" class="active item">Bonafide Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
             </div>
+          
         </div>
 
         <div class="eight wide column">
+            <h2> Bonafide Status </h2>
             <div class="ui active tab segment" data-tab="first">
                 <table class="ui celled table">
                     <thead>
@@ -48,6 +51,7 @@
                     </thead>
                     <tbody>
                         {% for entry in form_data %}
+                        {% if entry.roll_nos_id == roll_no %}
                         <tr>
                             <td>{{ entry.roll_nos_id }}</td>
                             <td>{{ entry.student_names}}</td>
@@ -55,7 +59,7 @@
                             <td>{{ entry.semester_types }}</td>
                             <td>{{ entry.purposes }}</td>
                             <td>{{ entry.date_of_applications }}</td>
-                            <td>{{ entry.download_file }}</td>
+                            <td><a href='{{ entry.download_file.url }}'>Download</a></td>
                             <td>
                                 {% if entry.approve %}
                                     Approved
@@ -66,6 +70,7 @@
                                 {% endif %}
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

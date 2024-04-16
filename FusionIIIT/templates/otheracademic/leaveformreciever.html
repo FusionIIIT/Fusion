@@ -7,6 +7,26 @@
     Leave Approve
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .ui.segment {
+        padding: 20px; /* Increase padding for background container */
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px; /* Spacing between buttons */
+    }
+
+    .action-buttons button {
+        width: 100%;
+        margin-bottom: 10px; /* Add margin between buttons */
+        padding: 10px; /* Increase button padding */
+    }
+</style>
+{% endblock %}
+
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
@@ -20,17 +40,29 @@
                 {% include 'globals/usercard.html' %}
             {% endblock %}
             <div class="ui divider">
-                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                    <a href="#/leave_student" class="item">Leave Approve</a>
-                    
-                </div>
             </div>
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <!-- Your existing menu items -->
+                <a href="/otheracademic/leaveApproveForm/" class="active item">Leave Approve HOD (UG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveApproveHOD/" class="item">Leave Approve HOD (PG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveApproveTA/" class="item">Leave Approve (TA)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatus_Dip/" class="item">Leave Log (UG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatusPG_Dip/" class="item">Leave Log (PG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
+          
         </div>
 
         <div class="eight wide column">
+            <h2 class="ui header">Leave Approve (UG)</h2>
             <div class="ui active tab segment" data-tab="first">
                 <table class="ui celled table">
                     <thead>
@@ -57,24 +89,20 @@
                                 <td>{{ entry.date_from }}</td>
                                 <td>{{ entry.date_to }}</td>
                                 <td>{{ entry.leave_type }}</td>
-                                <td>{{ entry.upload_file }}</td>
+                                <td><a href='{{ entry.upload_file.url }}'>Download</a></td>
                                 <td>{{ entry.purpose }}</td>
                                 <td>{{ entry.address }}</td>
                                 <td>
-                                    
-                                    
-                                    <form action="{% url 'otheracademic:approve_leave' leave_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui green button approve-button" type="submit">Approve</button>
-                                    </form>
-                                    <form action="{% url 'otheracademic:reject_leave' leave_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui red button reject-button" type="submit">Reject</button>
-                                    </form>
-                                    
-                                    
-                                    
-                                    
+                                    <div class="action-buttons">
+                                        <form action="{% url 'otheracademic:approve_leave' leave_id=entry.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="ui green button approve-button" style="width:100%;margin-bottom:10px" type="submit">Approve</button>
+                                        </form>
+                                        <form action="{% url 'otheracademic:reject_leave' leave_id=entry.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="ui red button reject-button" style="width:100%" type="submit">Reject</button>
+                                        </form>
+                                    </div>
                                 </td>
                             {% endif %}
                         </tr>
@@ -92,40 +120,3 @@
     </div>
 
 {% endblock %}
-
-{% comment %} {% block javascript %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        function approveLeave(leaveId) {
-            $.ajax({
-                type: 'POST',
-                url: '{% url "otheracademic:approve_leave" %}',
-                data: {'leave_id': leaveId},
-                dataType: 'json',
-                success: function(response) {
-                    console.log(response.message);
-                    // Optionally, update the UI to reflect the approval
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
-        }
-
-        function rejectLeave(leaveId) {
-            $.ajax({
-                type: 'POST',
-                url: '{% url "otheracademic:reject_leave" %}',
-                data: {'leave_id': leaveId},
-                dataType: 'json',
-                success: function(response) {
-                    console.log(response.message);
-                    // Optionally, update the UI to reflect the rejection
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
-        }
-    </script>
-{% endblock %} {% endcomment %}

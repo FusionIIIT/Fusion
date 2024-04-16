@@ -19,15 +19,20 @@
             <div class="ui divider"></div>
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <a href="#/leave_student" class="item">Leave Form</a>
-                <a href="#/leave_student/leave_status" class="item">Leave Status</a>
+                <a href="/otheracademic/leaveform" class="active item">Leave Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatus" class="item">Leave Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
         </div>
-   
+
         <div class="eight wide column">
+            <h2 class="ui header">Leave Form</h2>
             <div class="ui active tab segment" data-tab="leave_form" id="leave_form">
                 <h2>Leave Form</h2>
-                <form method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leave_form_submit' %}" >
+                <form id="leaveForm" method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leave_form_submit' %}" >
                     {% csrf_token %}
                     <div class="ui form">
                         <div class="field">
@@ -35,7 +40,7 @@
                             <input type="text" name="name" required>
                         </div>
                         <div class="field">
-                            <label>Roll No.</label>
+                            <label>Roll No. (In Capital Letter) </label>
                             <input type="text" name="roll_no">
                         </div>
                         <div class="fields">
@@ -58,7 +63,7 @@
                         </div>
                         <div class="field">
                             <label>Doc</label>
-                            <input type="file" name="related_document" accept=".pdf, .doc, .docx, .txt" >
+                            <input type="file" name="related_document" accept=".pdf" >
                         </div>
                         <div class="field">
                             <label>Address</label>
@@ -67,6 +72,10 @@
                         <div class="field">
                             <label>Purpose</label>
                             <textarea name="purpose" style="width: 100%; height: 100px;" required></textarea>
+                        </div>
+                        <div class="field">
+                            <label>HOD (Credential)</label>
+                            <input type="text" name="hod_credential" required >
                         </div>
                         <div class="field">
                             <label>Date of Application</label>
@@ -89,4 +98,23 @@
 
         <div class="column"></div>
     </div>
+
+    <script>
+        document.getElementById('leaveForm').addEventListener('submit', function(event) {
+            var form = event.target;
+            var inputs = form.querySelectorAll('input, select, textarea');
+            var emptyFields = [];
+
+            inputs.forEach(function(input) {
+                if (!input.value.trim()) {
+                    emptyFields.push(input.name);
+                }
+            });
+
+            if (emptyFields.length > 0) {
+                alert('Please fill in all required fields: ' + emptyFields.join(', '));
+                event.preventDefault();
+            }
+        });
+    </script>
 {% endblock %}
