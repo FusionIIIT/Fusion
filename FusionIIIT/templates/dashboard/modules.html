@@ -19,7 +19,7 @@
 
                     {% comment %}A single modules row starts here!{% endcomment %}
                  
-                        {% if request.user.extrainfo.user_type != "staff" or "Acadadmin" == global_var %}
+                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -36,7 +36,7 @@
                             </a>
                         </div>
                         {% endif %}
-                        {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academics" == global_var or "Acadadmin" == global_var or "Assistant Professor" == global_var or "Hod" == global_var %}
+                        {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academics" == global_var or "acadadmin" == global_var or "Assistant Professor" == global_var or "Hod" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
