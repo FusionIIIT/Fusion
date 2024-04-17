@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'notification',
     'notifications',
     'applications.academic_procedures',
+    'applications.examination',
     'applications.academic_information',
     'applications.leave',
     'applications.library',

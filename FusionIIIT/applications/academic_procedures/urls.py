@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^process_verification_request/$', views.process_verification_request),
     url(r'^auto_process_verification_request/$', views.auto_process_verification_request),
     url(r'^teaching_credit/$', views.teaching_credit_register),
-    url(r'^course_marks_data/$', views.course_marks_data),  # --
+    url(r'^course_marks_data/$', views.course_marks_data),  # -- 
     url(r'^submit_marks/$', views.submit_marks),  # --
     url(r'^verify_course_marks_data/$', views.verify_course_marks_data),  # --
     url(r'^verify_marks/$', views.verify_marks),
