@@ -36,18 +36,16 @@
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui huge fluid vertical pointing menu"
                     style="max-width: 320px;">
-                    <a class="item" href="{% url 'examination:submit' %}">Submit
+                    <a class="item" href="{% url 'examination:submitGrades' %}">Submit
                         <i class="right floated chevron right icon"></i>
                       </a>
-                      <a class="item" href="{% url 'examination:verify' %}">Verify
+                      <a class="item" href="{% url 'examination:updateGrades' %}">Verify
                         <i class="right floated chevron right icon"></i>
                       </a>
                       <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
                         <i class="right floated chevron right icon"></i>
                       </a>
-                      <a class="item" href="{% url 'examination:publish' %}">Publish
-                        <i class="right floated chevron right icon"></i>
-                      </a>
+                    
 
                     <a class="active item" data-tab="first" id="announcement" href="{% url 'examination:announcement' %}">
                         <B>Make Announcement</B>

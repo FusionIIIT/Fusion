@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, redirect
 from notifications.models import Notification
 
 
-        
 def mark_as_read_and_redirect(request, slug=None):
     notification_id = slug2id(slug)
     notification = get_object_or_404(
@@ -14,9 +13,9 @@ def mark_as_read_and_redirect(request, slug=None):
 
     # This conditional statement is True only in
     # case of complaint_module.
-
-    if(notification.data['module'] == 'Complaint System'):
-        complaint_id=notification.description
-        return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'detailcomp_id1':complaint_id}))
+    print(notification.data['url'])
+    if (notification.data['module'] == 'Complaint System'):
+        complaint_id = notification.description
+        return HttpResponseRedirect(reverse(notification.data['url'], kwargs={'detailcomp_id1': complaint_id}))
     else:
         return HttpResponseRedirect(reverse(notification.data['url']))
