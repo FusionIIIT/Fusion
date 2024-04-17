@@ -1,0 +1,185 @@
+{% extends 'programme_curriculum/common.html' %}
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+        style="max-width: 320px;">
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_discplines' %}">Disciplines
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <div class="ui dropdown">
+            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
+            
+            <div class="menu">
+              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+          </div>
+          <script>
+            $('.ui.dropdown').dropdown();
+          </script>
+        
+    </div>
+{% endblock %} 
+
+{% block content %}
+{%if data %}
+
+<div style=" padding-left: 18px; padding-top: 10px; font-size:25px "><br>
+    <center><span style="color: red;font-size:25px">{{ data }}</span></center>
+</div>
+{%endif%}
+{%if not data %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">New Course Proposal Forms</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 495px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+               
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Created As</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>View</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for courseProposal in courseProposals %}
+                        <tr>
+                            <td>{{ courseProposal.uploader }}  -  {{ courseProposal.designation }}</td>
+                            <td>{{ courseProposal.name }}</td>
+                            <td>{{ courseProposal.code }}</td>
+                            <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                href="{% url 'programme_curriculum:view_a_course_proposal_form' courseProposal.id%}"
+                                type="Submit" name="Submit">
+                                    <div class="visible content">VIEW</div>
+                                    <div class="hidden content">
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                href="{% url 'programme_curriculum:filetracking' courseProposal.id%}"
+                                type="Submit" name="Submit">
+                                    <div class="visible content">Submit</div>
+                                    <div class="hidden content">
+                                    <i class="add icon"></i>
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Courses Proposals Submitted</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Update Proposal Forms</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 495px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Created As</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>View</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for courseProposal in updateProposals %}
+                        <tr>
+                            <td>{{ courseProposal.uploader }}  -  {{ courseProposal.designation }}</td>
+                            <td>{{ courseProposal.name }}</td>
+                            <td>{{ courseProposal.code }}</td>
+                            <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                href="{% url 'programme_curriculum:view_a_course_proposal_form' courseProposal.id%}"
+                                type="Submit" name="Submit">
+                                    <div class="visible content">VIEW</div>
+                                    <div class="hidden content">
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                href="{% url 'programme_curriculum:filetracking' courseProposal.id%}"
+                                type="Submit" name="Submit">
+                                    <div class="visible content">Submit</div>
+                                    <div class="hidden content">
+                                    <i class="add icon"></i>
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Courses Proposals Submitted</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endif%}
+
+
+
+{% endblock %}
+{% block rightcontent %}
+{%if not data %}
+
+<br>
+<br>
+<div class="ui center aligned segment">
+    <a class="fluid ui large primary animated button" tabindex="0"
+        href="{% url 'programme_curriculum:new_course_proposal_file' %}"
+        type="Submit" name="Submit" rel="noopener">
+        <div class="visible content">ADD COURSE PROPOSAL FORM</div>
+        <div class="hidden content">
+        <i class="add icon"></i>
+        </div>
+    </a>
+</div>
+
+<div class="ui center aligned segment">
+    <a class="fluid ui large primary animated button" tabindex="0"
+        href="{% url 'programme_curriculum:faculty_view_all_courses' %}"
+        type="Submit" name="Submit" rel="noopener">
+        <div class="visible content">UPDATE COURSE PROPOSAL FORM</div>
+        <div class="hidden content">
+        <i class="add icon"></i>
+        </div>
+    </a>
+</div>
+
+<br>
+{%endif%}
+{% endblock %}

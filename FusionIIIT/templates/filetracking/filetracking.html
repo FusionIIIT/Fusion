@@ -13,7 +13,7 @@
     {% endblock %}
 
     {% comment %}The grid starts here!{% endcomment %}
-    <div class="ui stackable doubling grid">
+    <div class="ui stackable doubling grid fluid">
 
         {% comment %}The left-margin segment!{% endcomment %}
         <div class="column"></div>
@@ -40,7 +40,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/filetracking/drafts" class="item">
+                <a href="/filetracking/draftdesign" class="item">
                     Drafts
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -60,10 +60,10 @@
                     correction team 24
                 -->
 
-                <a href="/filetracking/finish_design" class="item">
+                <!-- <a href="/filetracking/finish_design" class="item">
                     Track
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
 
                 <a href="/filetracking/archive_design" class="item">
                     Archive
@@ -106,15 +106,16 @@
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
-        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <!-- {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
+                {% block sidepanel%} {% include 'filetracking/notif_sidepanel.html' %} {% endblock %}
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
             </div>
         </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
+        {% comment %}The right-rail segment ends here!{% endcomment %} -->
 
         {% comment %}The right-margin segment!{% endcomment %}
         <div class="column"></div>

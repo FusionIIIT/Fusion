@@ -66,15 +66,35 @@ class Constants:
 
 
 class Student(models.Model):
-   
+    '''
+        Current Purpose : To store information pertinent to a user who is also a student
+        
+         
+
+        ATTRIBUTES :
+
+        id(globals.ExtraInfo) - one to one unique reference to the nominal details of the student[not nullable]
+        program(char) - to store the programme (eg: Btech Mtech)
+        batch(Integer) -  to store the batch year(eg 2019)
+        batch_id(programme_curriculum.Batch) - reference to the Batch collective details(foreign key, can be null)
+        cpi(Float) - to store the current CPI of the student
+        category - to store the details about category of a sutdent (General/OBC etc)[not nullable]
+        father_name(char) - father's name
+        mother_name(char) - mother's name
+        hall_no(integer) - the hostel number in which the student has been alloted a room
+        room_no(char) - the room.no of the student
+        specialization - to dentote the specialization for MTECH students[null is allowed]
+        cur_sem_no(integer) - the current semester of the student
+
+    '''
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     batch = models.IntegerField(default=2016)
     batch_id = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.CASCADE)
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
-    father_name = models.CharField(max_length=40, default='')
-    mother_name = models.CharField(max_length=40, default='')
+    father_name = models.CharField(max_length=40, default='',null=True)
+    mother_name = models.CharField(max_length=40, default='',null=True)
     hall_no = models.IntegerField(default=0)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
