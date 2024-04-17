@@ -18,4 +18,7 @@ urlpatterns = [
     url(r'^notification/read',views.NotificationRead,name='notifications-read')
 
 
+
 ]
+
+

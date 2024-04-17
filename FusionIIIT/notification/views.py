@@ -422,3 +422,4 @@ def course_management_notif(sender, recipient, type,  course, course_name, cours
     verb = type
  
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag, course_code=course_code, course=course, cname = course_name)
+
