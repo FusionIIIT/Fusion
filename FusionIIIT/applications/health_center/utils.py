@@ -2,12 +2,15 @@ import json
 from datetime import datetime, timedelta
 from applications.globals.models import ExtraInfo
 from django.core import serializers
+from applications.filetracking.models import File
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
 from django.http import HttpResponse, JsonResponse
 from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
                      Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock, Announcements, SpecialRequest, Pathologist)
+                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief)
+from applications.filetracking.sdk.methods import *
 
 def datetime_handler(date):
     '''
@@ -377,14 +380,32 @@ def compounder_view_handler(request):
         #     appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(user_id=user_id,date=datetime.now())
         # else:
         #     appointment = None
-        Prescription.objects.create(
+        designation=request.POST.get('user')
+        uploaded_file = request.FILES.get('file')
+        d = HoldsDesignation.objects.get(user__username=designation)
+        form_object=Prescription(
             user_id=user,
             doctor_id=doctor,
             details=details,
             date=datetime.now(),
-            test=tests,
+            test=tests,          
             # appointment=appointment
         )
+        form_object.save()
+        request_object = Prescription.objects.get(pk=form_object.pk)
+        send_file_id = create_file(
+            uploader=request.user.username,
+            uploader_designation=request.session['currentDesignationSelected'],
+            receiver=designation,
+            receiver_designation=d.designation,
+            src_module="health_center",
+            src_object_id=str(request_object.id),
+            file_extra_JSON={"value": 2},
+            attached_file=uploaded_file  
+        )
+        request_object.file_id=send_file_id
+        request_object.save()
+        
         query = Medicine.objects.select_related('patient','patient__user','patient__department').filter(patient=user)
         prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().last()
         for medicine in query:
@@ -425,13 +446,18 @@ def compounder_view_handler(request):
             else:
                 status = 0
             Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
+          
 
         healthcare_center_notif(request.user, user.user, 'presc')
         data = {'status': status}
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
-        Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(pk=presc_id).delete()
+        prescription=Prescription.objects.filter(pk=presc_id)
+        is_deleted = delete_file(id=presciption.file_id)
+        prescription.delete()
+        
+        
         data = {'status': 1}
         return JsonResponse(data)
     elif 'medicine' in request.POST:
@@ -439,6 +465,35 @@ def compounder_view_handler(request):
         thresh = Stock.objects.get(id=med_id).threshold
         data = {'thresh': thresh}
         return JsonResponse(data)
+    elif 'compounder_forward' in request.POST:
+        acc_admin_des_id = Designation.objects.get(name="Accounts Admin")        
+        user_ids = HoldsDesignation.objects.filter(designation_id=acc_admin_des_id.id).values_list('user_id', flat=True)    
+        acc_admins = ExtraInfo.objects.get(user_id=user_ids[0])
+        user=ExtraInfo.objects.get(pk=acc_admins.id)
+        forwarded_file_id=forward_file(
+            file_id=request.POST['file_id'],
+            receiver=acc_admins.id, 
+            receiver_designation="Accounts Admin",
+            file_extra_JSON= {"value": 2},            
+            remarks="Forwarded File with id: "+ str(request.POST['file_id'])+"to Accounts Admin "+str(acc_admins.id), 
+            file_attachment=None,
+        )
+       
+        medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
+        medical_relief_instance.compounder_forward_flag = True
+        medical_relief_instance.save()
+        
+        healthcare_center_notif(request.user,user.user,'rel_approve')
+        
+        
+
+       
+        data = {'status': 1}
+        return JsonResponse(data)
+        
+        
+        
+        
 
 
 def student_view_handler(request):
@@ -532,3 +587,72 @@ def student_view_handler(request):
         Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(pk=app_id).delete()
         data = {'status': 1}
         return JsonResponse(data)
+    elif 'medical_relief_submit' in request.POST:
+        designation = request.POST.get('designation')
+        # print("# #")
+        # print(designation)
+        user=ExtraInfo.objects.get(pk=designation)
+        description = request.POST.get('description')
+        
+        # Retrieve the uploaded file from request.FILES
+        uploaded_file = request.FILES.get('file')
+
+        # Create an instance of the medical_relief model
+        form_object = medical_relief(
+            description=description,
+            file=uploaded_file
+        )
+
+        # Save the form object
+        form_object.save()
+        
+        # Retrieve the form object you just saved
+        request_object = medical_relief.objects.get(pk=form_object.pk)
+        
+        # Retrieve HoldsDesignation instances
+        d = HoldsDesignation.objects.get(user__username=designation)
+        d1 = HoldsDesignation.objects.get(user__username=request.user)
+
+        # Create a file entry using the create_file utility function
+        send_file_id = create_file(
+            uploader=request.user.username,
+            uploader_designation=request.session['currentDesignationSelected'],
+            receiver=designation,
+            receiver_designation=d.designation,
+            src_module="health_center",
+            src_object_id=str(request_object.id),
+            file_extra_JSON={"value": 2},
+            attached_file=uploaded_file  
+        )  
+        healthcare_center_notif(request.user,user.user,'rel_forward')
+        request_object.file_id = send_file_id
+        request_object.save()
+        
+        # file_details_dict = view_file(file_id=send_file_id)    
+        # print(file_details_dict)   
+        return JsonResponse({'status': 1})
+    
+    elif 'acc_admin_forward' in request.POST:
+        file_id=request.POST['file_id']
+        rec=File.objects.get(id=file_id)
+        des=Designation.objects.get(pk=rec.designation_id)      
+        user=ExtraInfo.objects.get(pk=rec.uploader_id)
+        
+        forwarded_file_id=forward_file(
+            file_id=request.POST['file_id'],
+            receiver=rec.uploader_id, 
+            receiver_designation=des.name,
+            file_extra_JSON= {"value": 2},            
+            remarks="Forwarded File with id: "+ str(request.POST['file_id'])+"to"+str(rec.id), 
+            file_attachment=None,
+        )
+        medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
+        medical_relief_instance.acc_admin_forward_flag = True
+        medical_relief_instance.save()
+        
+        healthcare_center_notif(request.user,user.user,'rel_approved')
+        
+        return JsonResponse({'status':1})
+        
+    
+        
