@@ -32,7 +32,7 @@ from notification.views import (leave_module_notif,
     research_procedures_notif,
     hostel_notifications)
 
-# import user
+
 
 class LeaveModuleNotificationAPIView(APIView):
     def post(self, request, *args, **kwargs):
