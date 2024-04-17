@@ -5,8 +5,7 @@
 
         <form method="post" id="editDetail" enctype="multipart/form-data">
             {% csrf_token %}
-            <!-- <input type="hidden" name="csrfmiddlewaretoken"
-                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+           
 
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
@@ -48,10 +47,7 @@
                 
                 
                 <div class="eight wide field" style="float: right;">
-                    <!-- <div class="eight wide field">
-                        <label for="post_title">Signature of Applicant</label>
-                        <input type="image" name="sign_applicant" maxlength="40" required id="id_sign_faculty">
-                    </div> -->
+                   
                     <div class="eight wide field">
                         <label for="post_title">Date</label>
                         <input type="date" name="submission_date" maxlength="40" required id="id_contact">
@@ -151,10 +147,7 @@
                 </div>
 
                 <br>
-                <!-- <div class="fifteen wide field" style="text-align: center;">
-                    <label for="post-title"><h4>Director</h4> </label>
-                    <input type="image" name="sign_director" maxlength="40" required id="id_sign_director">
-                </div> -->
+               
                 <div class="eight wide field">
                     <label for="post_title"><u>AR(F&A)</u> for payment of advance <br> Copy to:</label>
                     <input type="number" name="copy_to" maxlength="40"  id="id_copy_to" {% if global_var != "Director" %}disabled{% endif %}>

@@ -37,51 +37,11 @@ Module
                 {% comment %}
                 TODO: Add a If-Else here!
                 {% endcomment %}
-                <!-- {% if employee %}
-                        <div class="ui large header" href="">
-                            {{ employee.user.first_name}}
-                            {{ employee.user.last_name}}
-
-                            <span class="right floated meta">
-                                {{ employee.department.name}}
-                            </span>
-                        </div>
-                        {% else %}
-                        <div class="ui large header" href="">
-                            {{ request.user.first_name}}
-                            {{ request.user.last_name}}
-                            <span class="right floated meta">
-                                {{ request.user.extrainfo.department.name}}
-                            </span>
-                        </div>
-                        {% endif %} -->
-
-                <!-- <div class="meta">
-                            {% for i in Curr_desig %}
-                            <span> {% comment %}Should this be inside if else?{% endcomment %}
-                                {% if i == "co-ordinator" or i == "co co-ordinator" %}
-                                {{ i }} of {{ club_details }} club
-                                {% else %}
-                                {{ i }}
-                                {% endif %}
-                            </span>
-                            <br>
-                            {% endfor %}
-                        </div> -->
-                <!-- </div> -->
+               
             </div>
 
 
-            <!-- <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                    <a class="item" href="http://127.0.0.1:8000/hr2/cpda_form/{{ user_id }}">
-                        CPDA
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" href="http://127.0.0.1:8000/hr2/ltc_form/{{ user_id }}">
-                        LTC
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                </div> -->
+           
         </div>
 
 
@@ -275,14 +235,7 @@ Module
                                                 <option value="True">rail</option>
                                                 <option value="False">road</option>
                                             </select>
-                                            <!-- <div class="two fields one" style="justify-content:center ;">
-                            <input type="radio" name="mode_for_vacation" id="id_rail" checked>
-                            <label for="rail" padding="320px">Rail</label>
-                        </div>
-                        <div class="two fields one" style="justify-content:center ;">
-                            <input type="radio" name="mode_for_vacation" id="id_road">
-                            <label for="road" padding="320px">Road</label> -->
-                                            <!-- </div> -->
+                                          
                                         </div>
                                     </div>
 
@@ -487,34 +440,10 @@ Module
                                                 id="id_phone_number_for_contact"
                                                 value="{{ ltc_request.phone_number_for_contact}}" readonly>
                                         </div>
-                                        <!-- <div class="eight wide field">
-                        <label for="sign_faculty">Signature</label>
-                        <input type="image" name="sign_faculty" maxlength="40" id="id_sign_faculty">
-                    </div> -->
+                                      
                                     </div>
 
 
-                                    <!-- <div class="eight wide field">
-                    <label for="recommendation">Specific recommendation of the Head of Department/Section</label>
-                </div>
-
-                <hr>
-
-                <div class="two fields" style="justify-content: space-around;">
-                    <div class="two fields " style="justify-content:center ;">
-                        <input type="radio" name="recommendation" maxlength="40" id="id_recommendation_1" >
-                        <label for="home-town" padding="320px">Approved</label>
-                    </div>
-                    <div class="two fields" style="justify-content:center ;">
-                        <input type="radio" name="recommendation" maxlength="40" id="id_recommendation_2">
-                        <label for="elsewhere" padding="320px">Not Approved</label>
-                    </div>
-                </div> -->
-
-                                    <!-- <div class="four wide field" style="float: right;">
-                    <label for="sign_director_registrar">Director/Registrar Signature</label>
-                    <input type="image" name="sign_director_registrar" maxlength="40" id="id_sign_director_registrar">
-                </div> -->
                                     {% if button == 1 %}
                                     <div class="two fields">
                                         <div class="eight wide field">
@@ -618,18 +547,7 @@ Module
         }
     });
 
-    /*$(document).ready(function(){
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        setTimeout(loader, 1750);
-    });
-
-    function loader() {
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        $("#loader").removeClass("active");
-        $("#loader").addClass("disabled");
-    }*/
+    
 </script>
 
 
@@ -746,6 +664,3 @@ Module
 
 
 
-<!--  -->
-<!--  -->
-<!--  -->

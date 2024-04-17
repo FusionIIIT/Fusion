@@ -13,7 +13,6 @@ from applications.establishment.models import *
 from applications.establishment.views import *
 from applications.eis.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo, Designation
-from applications.filetracking.models import Tracking
 from html import escape
 from io import BytesIO
 import re
@@ -363,270 +362,13 @@ def add_new_user(request):
     except:
         raise Http404("Post does not exist")
 
-    # if request.method == "POST":
-    #     form = EditServiceBookForm(request.POST, request.FILES)
-
-    #     if form.is_valid():
-    #         form.save()
-    #         messages.success(
-    #             request, "Employee Service Book details edited successfully")
-    #     else:
-    #         messages.warning(request, "Error in submitting form")
-    #         pass
-
-    # form = EditServiceBookForm(initial={'extra_info': employee.id})
+   
     context = {'employee': employee, "register_form": form, "eform": eform
                }
 
     return render(request, template, context)
 
-# def ltc_form(request, id):
-#     """ Views for edit details"""
-#     try:
-#         employee = ExtraInfo.objects.get(user__id=id)
-#     except:
-#         raise Http404("Post does not exist! id doesnt exist")
 
-#     print(employee.user_type)
-
-    
-#     if(employee.user_type == 'faculty'):
-#         template = 'hr2Module/ltc_form.html'
-
-#         if request.method == "POST":
-#             family_mem_a = request.POST.get('id_family_mem_a', '')
-#             family_mem_b = request.POST.get('id_family_mem_b', '')
-#             family_mem_c = request.POST.get('id_family_mem_c', '')
-
-        
-#             details_of_family_members = ', '.join(filter(None, [family_mem_a, family_mem_b, family_mem_c]))
-
-        
-#             request.POST = request.POST.copy()
-#             request.POST['details_of_family_members_already_done'] = details_of_family_members
-
-    
-#             family_members = []
-#             for i in range(1, 7):  # Loop through input fields for each family member
-#                 name = request.POST.get(f'info_{i}_2', '')  # Get the name
-#                 age = request.POST.get(f'info_{i}_3', '')   # Get the age
-#                 if name and age:  # Check if both name and age are provided
-#                     family_members.append(f"{name} ({age} years)")  # Concatenate name and age
-
-#             family_members_str = ', '.join(family_members)
-
-#             # Populate the form with concatenated family member details
-#             request.POST['family_members_about_to_avail'] = family_members_str
-
-#             dependents = []
-#             for i in range(1, 7):  # Loop through input fields for each dependent
-#                 name = request.POST.get(f'd_info_{i}_2', '')  # Get the name
-#                 age = request.POST.get(f'd_info_{i}_3', '')   # Get the age
-#                 why_dependent = request.POST.get(f'd_info_{i}_4', '')  # Get the reason for dependency
-#                 if name and age:  # Check if both name and age are provided
-#                     dependents.append(f"{name} ({age} years), {why_dependent}")  # Concatenate name, age, and reason
-            
-
-#             # Concatenate all dependent strings into a single string
-#             dependents_str = ', '.join(dependents)
-
-#             # Populate the form with concatenated dependent details
-#             request.POST['details_of_dependents'] = dependents_str
-
-#             # print("first",request.POST['family_members_about_to_avail'])
-#             pf_no = int(request.POST.get('pf_no')) if request.POST.get('pf_no') else None
-#             basic_pay_salary = int(request.POST.get('basic_pay_salary')) if request.POST.get('basic_pay_salary') else None
-#             amount_of_advance_required = int(request.POST.get('amount_of_advance_required')) if request.POST.get('amount_of_advance_required') else None
-#             phone_number_for_contact = int(request.POST.get('phone_number_for_contact')) if request.POST.get('phone_number_for_contact') else None
-
-
-#             try:
-#                 ltc_request = LTCform.objects.create(
-#                     employee_id = id,
-#                     details_of_family_members_already_done=request.POST.get('details_of_family_members_already_done', ''),
-#                     family_members_about_to_avail=request.POST.get('family_members_about_to_avail', ''),
-#                     details_of_dependents=request.POST.get('details_of_dependents', ''),
-#                     name=request.POST.get('name', ''),
-#                     block_year=request.POST.get('block_year', ''),
-#                     pf_no=request.POST.get('pf_no', ''),
-#                     basic_pay_salary=request.POST.get('basic_pay_salary', ''),
-#                     designation=request.POST.get('designation', ''),
-#                     department_info=request.POST.get('department_info', ''),
-#                     leave_availability=request.POST.get('leave_availability', ''),
-#                     leave_start_date=request.POST.get('leave_start_date', ''),
-#                     leave_end_date=request.POST.get('leave_end_date', ''),
-#                     date_of_leave_for_family=request.POST.get('date_of_leave_for_family', ''),
-#                     nature_of_leave=request.POST.get('nature_of_leave', ''),
-#                     purpose_of_leave=request.POST.get('purpose_of_leave', ''),
-#                     hometown_or_not=request.POST.get('hometown_or_not', ''),
-#                     place_of_visit=request.POST.get('place_of_visit', ''),
-#                     address_during_leave=request.POST.get('address_during_leave', ''),
-#                     mode_for_vacation=request.POST.get('mode_for_vacation', ''),
-#                     details_of_family_members=request.POST.get('details_of_family_members', ''),
-#                     amount_of_advance_required=request.POST.get('amount_of_advance_required', ''),
-#                     certified_family_dependents=request.POST.get('certified_family_dependents', ''),
-#                     certified_advance=request.POST.get('certified_advance', ''),
-#                     adjusted_month=request.POST.get('adjusted_month', ''),
-#                     date=request.POST.get('date', ''),
-#                     phone_number_for_contact=request.POST.get('phone_number_for_contact', '')
-#                 )
-#                 print("done")
-#                 messages.success(request, "Ltc form filled successfully")
-#             except Exception as e:
-#                 print("error" , e)
-#                 messages.warning(request, "Fill not correctly")
-#                 context = {'employee': employee}
-#                 return render(request, template, context)
-
-            
-#          # Query all LTC requests
-#         ltc_requests = LTCform.objects.filter(employee_id=id)
-
-#         context = {'employee': employee, 'ltc_requests': ltc_requests}
-
-#         return render(request, template, context)
-#     else:
-#         return render(request, 'hr2Module/edit.html')
-
-# def reverse_ltc_pre_processing(ltc_form_data):
-#     reversed_data = {}
-
-#     # Reverse general information
-#     reversed_data['name'] = [ltc_form_data.name]
-#     reversed_data['block_year'] = [str(ltc_form_data.block_year)]
-#     reversed_data['pf_no'] = [str(ltc_form_data.pf_no)]
-#     reversed_data['basic_pay_salary'] = [str(ltc_form_data.basic_pay_salary)]
-#     reversed_data['designation'] = [ltc_form_data.designation]
-#     reversed_data['department_info'] = [ltc_form_data.department_info]
-#     reversed_data['leave_availability'] = ['True'] if ltc_form_data.leave_availability else ['False']
-#     reversed_data['leave_start_date'] = [ltc_form_data.leave_start_date]
-#     reversed_data['leave_end_date'] = [ltc_form_data.leave_end_date]
-#     reversed_data['date_of_leave_for_family'] = [ltc_form_data.date_of_leave_for_family]
-#     reversed_data['nature_of_leave'] = [ltc_form_data.nature_of_leave]
-#     reversed_data['purpose_of_leave'] = [ltc_form_data.purpose_of_leave]
-#     reversed_data['hometown_or_not'] = ['True'] if ltc_form_data.hometown_or_not else ['False']
-#     reversed_data['place_of_visit'] = [ltc_form_data.place_of_visit]
-#     reversed_data['address_during_leave'] = [ltc_form_data.address_during_leave]
-
-#     # Reverse details of family members
-#     family_members = ltc_form_data.details_of_family_members_already_done.split(',')
-    
-#     count = 0
-
-#     for i in range(1, 7):
-#         if(len(family_members) > count+3):
-#             reversed_data[f'info_{i}_1'] = [family_members[count]]
-#             reversed_data[f'info_{i}_2'] = [family_members[count+1]]
-#             reversed_data[f'info_{i}_3'] = [family_members[count+2]]
-#             count+=3
-#         else:
-#             reversed_data[f'info_{i}_1'] = ['']
-#             reversed_data[f'info_{i}_2'] = ['']
-#             reversed_data[f'info_{i}_3'] = ['']
-#             count+=3
-
-#     # for i, member in enumerate(family_members, start=1):
-#     #     if member:
-#     #         reversed_data[f'info_{i}_1'] = [member.split(',')[0]]
-#     #         reversed_data[f'info_{i}_2'] = [member.split(',')[1]]
-#     #         reversed_data[f'info_{i}_3'] = [member.split(',')[2]]
-#     #     else:
-#     #         # If family member information is not provided, use empty strings
-#     #         reversed_data[f'info_{i}_1'] = ['']
-#     #         reversed_data[f'info_{i}_2'] = ['']
-#     #         reversed_data[f'info_{i}_3'] = ['']
-
-#     # Reverse details of dependents
-#     dependents = ltc_form_data.details_of_dependents.split(',')
-
-#     count=0
-
-#     for i in range(1, 7):
-#         if(len(dependents) > count+4):
-#             reversed_data[f'd_info_{i}_1'] = [dependents[count]]
-#             reversed_data[f'd_info_{i}_2'] = [dependents[count+1]]
-#             reversed_data[f'd_info_{i}_3'] = [dependents[count+2]]
-#             reversed_data[f'd_info_{i}_4'] = [dependents[count+3]]
-#             count+=4
-#         else:
-#             reversed_data[f'd_info_{i}_1'] = ['']
-#             reversed_data[f'd_info_{i}_2'] = ['']
-#             reversed_data[f'd_info_{i}_3'] = ['']
-#             reversed_data[f'd_info_{i}_4'] = ['']
-#             count+=4
-
-
-#     # for i, dependent in enumerate(dependents, start=1):
-#     #     if dependent:
-#     #         reversed_data[f'd_info_{i}_1'] = [dependent.split(',')[0]]
-#     #         reversed_data[f'd_info_{i}_2'] = [dependent.split(',')[1]]
-#     #         reversed_data[f'd_info_{i}_3'] = [dependent.split(',')[2]]
-#     #         reversed_data[f'd_info_{i}_4'] = [dependent.split(',')[3]]
-#     #     else:
-#     #         # If dependent information is not provided, use empty strings
-#     #         reversed_data[f'd_info_{i}_1'] = ['']
-#     #         reversed_data[f'd_info_{i}_2'] = ['']
-#     #         reversed_data[f'd_info_{i}_3'] = ['']
-#     #         reversed_data[f'd_info_{i}_4'] = ['']
-
-#     # Reverse remaining fields
-#     reversed_data['amount_of_advance_required'] = [str(ltc_form_data.amount_of_advance_required)]
-#     reversed_data['certified_family_dependents'] = [ltc_form_data.certified_family_dependents]
-#     reversed_data['certified_advance'] = [str(ltc_form_data.certified_advance)]
-#     reversed_data['adjusted_month'] = [ltc_form_data.adjusted_month]
-#     reversed_data['date'] = [ltc_form_data.date]
-#     reversed_data['phone_number_for_contact'] = [str(ltc_form_data.phone_number_for_contact)]
-
-#     return reversed_data
-
-
-
-
-# def ltc_pre_processing(request):
-#     ltc_form_data = {}
-
-#     # Extract general information
-#     ltc_form_data['name'] = request.POST.get('name')
-#     ltc_form_data['block_year'] = int(request.POST.get('block_year'))
-#     ltc_form_data['pf_no'] = int(request.POST.get('pf_no'))
-#     ltc_form_data['basic_pay_salary'] = int(request.POST.get('basic_pay_salary'))
-#     ltc_form_data['designation'] = request.POST.get('designation')
-#     ltc_form_data['department_info'] = request.POST.get('department_info')
-#     ltc_form_data['leave_availability'] = request.POST.getlist('leave_availability') == ['True', 'True']
-#     ltc_form_data['leave_start_date'] = request.POST.get('leave_start_date')
-#     ltc_form_data['leave_end_date'] = request.POST.get('leave_end_date')
-#     ltc_form_data['date_of_leave_for_family'] = request.POST.get('date_of_leave_for_family')
-#     ltc_form_data['nature_of_leave'] = request.POST.get('nature_of_leave')
-#     ltc_form_data['purpose_of_leave'] = request.POST.get('purpose_of_leave')
-#     ltc_form_data['hometown_or_not'] = request.POST.get('hometown_or_not') == 'True'
-#     ltc_form_data['place_of_visit'] = request.POST.get('place_of_visit')
-#     ltc_form_data['address_during_leave'] = request.POST.get('address_during_leave')
-
-#     # Extract details of family members
-#     family_members = []
-#     for i in range(1, 7):
-#         if request.POST.get(f'info_{i}_1'):
-#             family_member = ','.join(request.POST.getlist(f'info_{i}_{j}')[0] for j in range(1, 4))
-#             family_members.append(family_member)
-#     ltc_form_data['details_of_family_members_already_done'] = ','.join(family_members)
-
-#     # Extract details of dependents
-#     dependents = []
-#     for i in range(1, 7):
-#         if request.POST.get(f'd_info_{i}_1'):
-#             dependent = ','.join(request.POST.getlist(f'd_info_{i}_{j}')[0] for j in range(1, 5))
-#             dependents.append(dependent)
-#     ltc_form_data['details_of_dependents'] = ','.join(dependents)
-
-#     # Extract remaining fields
-#     ltc_form_data['amount_of_advance_required'] = int(request.POST.get('amount_of_advance_required'))
-#     ltc_form_data['certified_family_dependents'] = request.POST.get('certified_family_dependents')
-#     ltc_form_data['certified_advance'] = int(request.POST.get('certified_advance'))
-#     ltc_form_data['adjusted_month'] = request.POST.get('adjusted_month')
-#     ltc_form_data['date'] = request.POST.get('date')
-#     ltc_form_data['phone_number_for_contact'] = int(request.POST.get('phone_number_for_contact'))
-
-#     return ltc_form_data
 
 def ltc_pre_processing(request):
     data = {}
@@ -766,12 +508,7 @@ def ltc_form(request, id):
                 print("Creating ltc object!")
 
                 data = ltc_pre_processing(request)
-                # print(request.POST.getlist('details_of_family_members_already_done'))
-                # print(request.POST.get('d1'))
-
-                # print(request.POST)
-                # print(data)
-
+              
                 form_1 = {
                     'employee_id': id,
                     'name': request.POST.get('name'),
@@ -802,20 +539,7 @@ def ltc_form(request, id):
                     'designation_employee' : request.POST.get('designation_employee')
                 }
 
-                # attached_file = None
-
-                # print(request.FILES.get('file_attachment'))
-
-                # if(request.FILES.get('file_attachment') != ""):
-                #     attached_file = open(request.FILES.get('file_attachment'), "rb")
-                #     attached_file = DjangoFile(attached_file)
-                
-
-                # print(attached_file)
-
-
-
-                
+             
 
                 ltc_form = LTCform.objects.create(
                     employee_id=id,
@@ -897,19 +621,7 @@ def ltc_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
-        # designation = get_designation_by_user_id(employee.user)
-        # if(designation):
-        #     uploader_designation = designation
-
-        # print("username",username)
-        # print("uploader_designation",uploader_designation)
-        
-        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        # print(inbox)
-
-
-        # context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': inbox, }
+       
 
         designation = get_designation_by_user_id(employee.user)
         if(designation):
@@ -1054,6 +766,9 @@ def file_handle_leave(request):
     
         
 
+        # if action value is 0,then file has been forwarded
+        # if action value is 1,then file has been rejected
+        # if action value is 2,then file has been approved
 
         if(action == '0'):
             if(remark == ""):
@@ -1178,6 +893,10 @@ def file_handle_cpda(request):
         print("copy_to",copy_to)
 
 
+        # if action value is 0,then file has been forwarded
+        # if action value is 1,then file has been rejected
+        # if action value is 2,then file has been approved
+
         if(action == '0'):
             if(remark == ""):
                 track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
@@ -1224,10 +943,7 @@ def file_handle_ltc(request):
         designation_employee = form_data['designation_employee']
 
         remark = form_data['remark_id']
-        #change
-
-
-        #database
+       
         try:
             ltc_form = LTCform.objects.get(id=form_id)
         except LTCform.DoesNotExist:
@@ -1240,6 +956,9 @@ def file_handle_ltc(request):
         current_owner =  get_current_file_owner(file_id)
         print(current_owner)
 
+        # if action value is 0,then file has been forwarded
+        # if action value is 1,then file has been rejected
+        # if action value is 2,then file has been approved
 
         if(action == '0'):
             if(remark == ""):
@@ -1266,7 +985,7 @@ def file_handle_ltc(request):
         
         return HttpResponse("Success")
     else:
-        # Handle other HTTP methods if needed
+       
         return HttpResponse("Failure")   
 
 
@@ -1298,7 +1017,6 @@ def file_handle_appraisal(request):
 
 
         
-        # Update the attribute
         setattr(appraisal_form, "form_id", form_id)
         setattr(appraisal_form, "sign_hod", sign_hod)
         setattr(appraisal_form, "remarks", remarks)
@@ -1309,13 +1027,15 @@ def file_handle_appraisal(request):
         current_owner =  get_current_file_owner(file_id)
         print(current_owner)
         
-        #database
+        
         try:
             appraisal_form = Appraisalform.objects.get(id=form_id)
         except Appraisalform.DoesNotExist:
             return JsonResponse({"error": "Appraisalform object with the provided ID does not exist"}, status=404)
         
-
+        # if action value is 0,then file has been forwarded
+        # if action value is 1,then file has been rejected
+        # if action value is 2,then file has been approved
 
         if(action == '0'):
             if(remark == ""):
@@ -1342,74 +1062,14 @@ def file_handle_appraisal(request):
         
         return HttpResponse("Success")
     else:
-        # Handle other HTTP methods if needed
+       
         return HttpResponse("Failure") 
 
-# def file_handle(request):
-#     if request.method == 'POST':
-#         form_data2 = request.POST
-#         form_data=request.POST.get('context')
-#         print(request.POST.get('context'))
-#         action = form_data2.get('action')
-        
-#         form_data=json.loads(form_data)
-#         print(form_data)
-#         form_id = form_data['form_id']
-#         file_id = form_data['file_id']
-#         from_user = form_data['from_user']
-#         from_designation = form_data['from_designation']
-#         username_employee = form_data['username_employee']
-#         designation_employee = form_data['designation_employee']
 
-#         remark = form_data['remark_id']
-
-
-#         print("form_id" , form_id)
-#         print("file_id",file_id)
-#         print("from_user",from_user)
-#         print("from_designation",from_designation)
-#         print("action",action)
-#         print("username_employee",username_employee)
-#         print("designation_employee",designation_employee)
-
-#         print(remark)
-
-#         current_owner =  get_current_file_owner(file_id)  
-
-#         print(current_owner)
-
-#         if(action == '0'):
-#             if(remark == ""):
-#                 track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee, remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-#             else:
-#                 track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee, remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-#             print("done1",track_id)
-#             messages.success(request, "File forwarded successfully")
-#         elif(action == '1'):
-#             if(remark == ""):
-#                 track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-#             else:
-#                 track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-#             print("done2")
-#             messages.success(request, "File rejected successfully")
-#         else:
-#             if(remark == ""):
-#                 track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-#             else:
-#                 track_id = forward_file(file_id = file_id, receiver = from_user, receiver_designation = from_designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")   
-#             print("done3")
-#             messages.success(request, "File approved successfully")
-
-        
-#         return HttpResponse("Success")
-#     else:
-#         # Handle other HTTP methods if needed
-#         return HttpResponse("Failure")
 
 def view_ltc_form(request, id):
     ltc_request = get_object_or_404(LTCform, id=id)
-    # print("ltc object: ", ltc_request)
-    # print("ltc object: ", reverse_ltc_pre_processing(ltc_request))
+   
     print(ltc_request)
     ltc_request = reverse_ltc_pre_processing(ltc_request)
 
@@ -1426,8 +1086,7 @@ def form_mangement_ltc(request):
         designation = "hradmin"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
+       
         # Extract src_object_id values
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
@@ -1482,13 +1141,11 @@ def form_mangement_ltc_hod(request):
         designation = "HOD"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+        
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
-        # src_object_ids = [14,15]
+        
         
         ltc_requests = []
 
@@ -1506,47 +1163,7 @@ def form_mangement_ltc_hod(request):
         return render(request, 'hr2Module/ltc_form.html',context)
 
 
-# def form_mangement_ltc(request):
-#     if(request.method == "GET"):
-#         username = "21BCS185"
-#         designation = "hradmin"
-#         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-#         # print(inbox)
-
-#         # Extract src_object_id values
-#         src_object_ids = [item['src_object_id'] for item in inbox]
-#         # print(src_object_ids)
-
-#         src_object_ids = [14,15]
-        
-#         ltc_requests = []
-
-#         for src_object_id in src_object_ids:
-#             ltc_request = get_object_or_404(LTCform, id=src_object_id)
-#             ltc_requests.append(ltc_request)
-
-#         context= {
-#             'ltc_requests' : ltc_requests,
-#             'hr' : "1",
-#         }
-
-#         print(ltc_requests[0].name)
-
-#         return render(request, 'hr2Module/ltc_form.html',context)
-    
-    # elif(request.method == "POST"):
-    #     # username = request.data['receiver']
-    #     username = request.POST.get['receiver']
-    #     receiver_value = User.objects.get(username=username)
-    #     receiver_value_designation= HoldsDesignation.objects.filter(user=receiver_value)
-    #     lis = list(receiver_value_designation)
-    #     obj=lis[0].designation
-    #     forward_file(file_id = request.data['file_id'], receiver = request.data['receiver'], 
-    #         receiver_designation = obj.name, remarks = request.data['remarks'], 
-    #         file_extra_JSON = request.data['file_extra_JSON']
-    #     )
-    #     messages.success(request, "forwarded succesfully")
 
 @login_required(login_url='/accounts/login')
 def dashboard(request):
@@ -1598,7 +1215,7 @@ def cpda_form(request, id):
             try:
                 print("Creating cpda object!")
 
-                # data = ltc_pre_processing(request) #isko dekhege
+                
 
                 form_2 = {
                     'employee_id' : id,
@@ -1697,26 +1314,13 @@ def cpda_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
-        # designation = get_designation_by_user_id(employee.user)
-        # if(designation):
-        #     uploader_designation = designation
-
-        # # print("username",username)
-        # # print("uploader_designation",uploader_designation)
-        
-        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        # print(inbox)
-
-        # context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox}
+      
 
         designation = get_designation_by_user_id(employee.user)
         if(designation):
             uploader_designation = designation
 
-        # print("username",username)
-        # print("uploader_designation",uploader_designation)
-        
+       
         inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
 
         context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': inbox , 'designation':designation}
@@ -1734,7 +1338,7 @@ def form_view_cpda(request , id):
     print(id)
     cpda_request = get_object_or_404(CPDAform, id=id)
 
-    # isko recheck krna h
+    
     from_user = request.GET.get('param1')
     from_designation = request.GET.get('param2')
     file_id = request.GET.get('param3')
@@ -1770,7 +1374,6 @@ def form_mangement_cpda(request):
         designation = "hradmin"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
 
         # Extract src_object_id values
         src_object_ids = [item['src_object_id'] for item in inbox]
@@ -1829,13 +1432,11 @@ def form_mangement_cpda_hod(request):
         designation = "HOD"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+       
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
-        # src_object_ids = [14,15]
+       
         
         cpda_requests = []
 
@@ -1877,8 +1478,7 @@ def leave_pre_processing(request):
 def reverse_leave_pre_processing(data):
     reversed_data = {}
 
-    # Copying over simple key-value pairs
-    # dalna h
+   
     simple_keys = [
         'name', 'designation', 'application_date', 'application_pf_no', 'discipline', 'nature_of_leave',
         'nature_leave_start_date', 'nature_leave_end_date', 'station_leave', 'station_leave_start_date',
@@ -1892,13 +1492,6 @@ def reverse_leave_pre_processing(data):
         value = getattr(data, key)
         reversed_data[key] = value if value != 'None' else ''
 
-    # # Reversing details_of_dependents
-    # office_use = getattr(data,'office_use').split(',')
-    # for i in range(1, 4):
-    #     for j in range(1, 7):
-    #         key = f'info_{i}_{j}'
-    #         value = office_use.pop(0)
-    #         reversed_data[key] = value if value != 'None' else ''
         
 
     office_use = getattr(data, 'office_use')
@@ -2107,9 +1700,7 @@ def form_mangement_leave(request):
         designation = "hradmin"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+        
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
@@ -2141,7 +1732,7 @@ def form_mangement_leave_hr(request,id):
     src_object_id = id,
     file_extra_JSON = {"key": "value"}
 
-    # Create a file representing the Leave form and send it to HR admin
+   
     file_id = create_file(
         uploader=uploader,
         uploader_designation=uploader_designation,
@@ -2165,13 +1756,11 @@ def form_mangement_leave_hod(request):
         designation = "HOD"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+       
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
-        # src_object_ids = [14,15]
+       
         
         leave_requests = []
 
@@ -2209,11 +1798,7 @@ def appraisal_form(request, id):
                 print("Creating appraisal object!")
 
                 data = appraisal_pre_processing(request)
-                # print(request.POST.getlist('details_of_family_members_already_done'))
-                # print(request.POST.get('d1'))
-
-                # print(request.POST)
-                # print(data)
+               
 
                 form_4 = {
                     'employee_id': id,
@@ -2249,16 +1834,7 @@ def appraisal_form(request, id):
                     'sign_director' : request.POST.get('sign_director')
                 }
 
-                # attached_file = None
-
-                # print(request.FILES.get('file_attachment'))
-
-                # if(request.FILES.get('file_attachment') != ""):
-                #     attached_file = open(request.FILES.get('file_attachment'), "rb")
-                #     attached_file = DjangoFile(attached_file)
                 
-
-                # print(attached_file)
 
                 appraisal_form = Appraisalform.objects.create(
                     employee_id= id,
@@ -2345,18 +1921,7 @@ def appraisal_form(request, id):
         username = employee.user
         uploader_designation = 'Assistant Professor'
 
-        # designation = get_designation_by_user_id(employee.user)
-        # if(designation):
-        #     uploader_designation = designation
-
-        # print("username",username)
-        # print("uploader_designation",uploader_designation)
-        
-        # inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        # print(inbox)
-
-        # context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': inbox}
+       
 
         designation = get_designation_by_user_id(employee.user)
         if(designation):
@@ -2401,8 +1966,7 @@ def form_view_appraisal(request , id):
 
 def view_appraisal_form(request, id):
     appraisal_request = get_object_or_404(Appraisalform, id=id)
-    # print("ltc object: ", ltc_request)
-    # print("ltc object: ", reverse_ltc_pre_processing(ltc_request))
+    
     print(appraisal_request)
     appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
 
@@ -2421,9 +1985,7 @@ def form_mangement_appraisal(request):
         designation = "hradmin"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+      
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
@@ -2479,13 +2041,11 @@ def form_mangement_appraisal_hod(request):
         designation = "HOD"
         inbox = view_inbox(username = username, designation = designation, src_module = "HR")
 
-        # print(inbox)
-
-        # Extract src_object_id values
+        
         src_object_ids = [item['src_object_id'] for item in inbox]
         print(src_object_ids)
 
-        # src_object_ids = [14,15]
+        
         
         appraisal_requests = []
 
@@ -2610,9 +2170,6 @@ def reverse_appraisal_pre_processing(data):
         value = getattr(data, key)
         reversed_data[key] = value if value != 'None' else ''
 
-    # Reversing array-like values
-    # reversed_data['details_of_family_members_already_done'] = getattr(data,'details_of_family_members_already_done').split(',')
-    
     courses_taught = getattr(data,'courses_taught').split(',')
     for index, value in enumerate(courses_taught):
         courses_taught[index] = value if value != 'None' else ''
