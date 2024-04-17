@@ -36,7 +36,9 @@
                             </a>
                         </div>
                         {% endif %}
-                        {% if request.user.extrainfo.user_type == "student" or "acadadmin" == global_var  %}
+
+                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var or "corelabcaretaker" == global_var %}
+
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -142,7 +144,7 @@
                                     <div class="row">
                                         <i class="ui student icon big"></i>
                                     </div>
-
+                                    
                                     <div class="row">
                                         <span class="ui sub header centered">Scholarship Portal</span>
                                     </div>
@@ -167,8 +169,11 @@
                         </div>
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
+
                   
-                        {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var  or "placement officer" == global_var  %}
+
+                    {% if request.user.extrainfo.user_type == "student" or "placement chairman" == global_var or "faculty" == global_var or "placement officer" == global_var  %}
+
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">

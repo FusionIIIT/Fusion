@@ -1,5 +1,4 @@
 amqp==5.0.2
-arabic-reshaper==2.1.1
 asgiref==3.3.1
 attrs==20.3.0
 beautifulsoup4==4.9.3
@@ -14,7 +13,7 @@ click==7.1.2
 click-didyoumean==0.0.3
 click-plugins==1.1.1
 click-repl==0.1.6
-cryptography==36.0.2
+cryptography==3.1.1
 defusedxml==0.6.0
 Django==3.1.5
 django-allauth==0.44.0

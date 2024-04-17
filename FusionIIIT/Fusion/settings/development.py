@@ -16,6 +16,7 @@ DATABASES = {
     }
 }
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -64,6 +65,3 @@ CRONJOBS = [
 ]
 
 CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT=os.path.join(BASE_DIR,"media/")

@@ -86,7 +86,7 @@
                             </a>
                         {% else %}
                              <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
-                                 Placement Schedule
+                                 Placement schedule
                                  <i class="right floated chevron right icon"></i>
                              </a>
                              <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
@@ -97,13 +97,13 @@
 
 
                    <!-- <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
-                        Manage Records
+                        Manage Rescords
                         <i class="right floated chevron right icon"></i>
-                    </a>(9-4-22)
-                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                    </a> -->
+                    <!-- <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                         Placement Visits
                         <i class="right floated chevron right icon"></i>
-                    </a>-->
+                    </a>  -->
 
 
                     {% endif %}
@@ -114,15 +114,38 @@
                 <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
+                  
                 </a>
+              <!-- <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                 
+                  Apply for jobs
+                  <i class="right floated chevron right icon"></i>
+                
+              </a>
+              <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+       
+               Upload documents
+                <i class="right floated chevron right icon"></i>
+            </a> -->
                  <!--Added student record tab here for staff only-->
-                {% if current2 %}
-                <!--<a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                <!-- {% if current2 %}
+                <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
                     Student Record
                     <i class="right floated chevron right icon"></i>
-                </a>(9-4-22)-->
+                </a> -->
 
-
+  <!-- <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                 
+                  Apply for jobs
+                  <i class="right floated chevron right icon"></i>
+                
+              </a>
+              <a class="{% if schedule_tab %} item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+       
+               Upload documents
+                <i class="right floated chevron right icon"></i>
+            </a> -->
+                 <!--Added student record tab here for staff only-->
 
                 <!--Placement officers could schedule placement -->
                <!-- <a class="{% if add_schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_schedule' %}">
@@ -130,16 +153,16 @@
                     <i class="right floated chevron right icon"></i>
                 </a>-->
                 <a class="{% if add_record_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_record' %}">
-                    Add Placement Record
+                  Add Placement Record
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-                {% if current1 %}
+                <!-- {% if current1 %}
                 <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
                     Add Chairman Visit
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                {% endif %} -->
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -181,9 +204,9 @@
 
             {% for c in current1 %}
               {% if c.designation.name == 'placement chairman' %}
-              <a class="item" data-tab="addschedule">
+              <!-- <a class="item" data-tab="addschedule">
                   Add Event
-              </a>
+              </a> -->
               {% endif %}
             {% endfor %}
 
