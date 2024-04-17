@@ -439,3 +439,11 @@ def hostel_notifications(sender, recipient, type):
         verb = "A fine has been imposed on you."
     
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+    
+def prog_and_curr_notif(sender, recipient,title):
+    url='programme_curriculum:inward_files'
+    module='Programme and Curriculum'
+    sender = sender
+    recipient = recipient
+    verb = title
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
