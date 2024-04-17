@@ -1,0 +1,66 @@
+{% block manage_Hostel %}
+
+            <form class="ui form">
+
+                {% csrf_token %}
+                <h2 class="text-center" align="center">Assign Batch</h2>
+                <div class="field">
+                  <label for="hall_id" class="form-label">Hall ID:</label>
+                  <select name="hall_id" class="form-control" id="hall__id" required>
+                    <!-- Add an option for each hall ID dynamically -->
+                    {% for hall in all_hall %}
+                        <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div class="field">
+                  <label for="batch" class="form-label">Batch :</label>
+                  <input type="text" name="batch" required class="form-control mb-3" id="batch">
+                </div>
+                <button type="submit" onclick="assignBatch()" class="ui primary button">Assign</button>
+              </form>
+        
+
+    <script>
+        function assignBatch() {
+            var hall_id = document.getElementById('hall__id').value;
+            var batch = document.getElementById('batch').value;
+            // Perform AJAX request to assign batch
+            fetch('/hostelmanagement/assign-batch/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token in headers
+                },
+                body: JSON.stringify({
+                    hall_id: hall_id,
+                    batch: batch,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("batch assigned succesfully");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning batch.');
+            });
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if the cookie name matches the expected format
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

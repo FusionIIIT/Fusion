@@ -29,7 +29,8 @@ from notification.views import (leave_module_notif,
     AssistantshipClaim_account_notify,
     department_notif,
     office_module_DeanRSPC_notif,
-    research_procedures_notif)
+    research_procedures_notif,
+    hostel_notifications)
 
 
 
@@ -327,7 +328,20 @@ class ResearchProceduresNotificationAPIView(APIView):
         research_procedures_notif(sender, recipient, type)
 
         return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
-    
+
+class HostelModuleNotificationAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Extract data from the request, you can customize this based on your needs
+        sender = request.user
+        recipient_id = request.data.get('recipient')
+        type = request.data.get('type')
+        User = get_user_model()
+        recipient = User.objects.get(pk=recipient_id)
+        # Trigger the notification function
+        hostel_notifications(sender, recipient, type)
+        
+        return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
+
 class MarkAsRead(APIView):
 
     def put(self,request,**args):

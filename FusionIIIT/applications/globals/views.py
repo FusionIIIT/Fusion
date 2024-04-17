@@ -29,6 +29,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
 from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
+from applications.hostel_management.models import (HallCaretaker,HallWarden)
 
 def index(request):
     context = {}
@@ -733,11 +734,25 @@ def dashboard(request):
     for i in b :
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
+
+    hall_caretakers = HallCaretaker.objects.all().select_related()
+    hall_wardens = HallWarden.objects.all().select_related()
+
+    hall_caretaker_user = []
+    for caretaker in hall_caretakers:
+        hall_caretaker_user.append(caretaker.staff.id.user)
+
+    hall_warden_user = []
+    for warden in hall_wardens:
+        hall_warden_user.append(warden.faculty.id.user)
+
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
         'club_details' : coordinator_club(request),
         'designation' : designation,
+        'hall_caretaker': hall_caretaker_user,
+        'hall_warden': hall_warden_user,
         
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
