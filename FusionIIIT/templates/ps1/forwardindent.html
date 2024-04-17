@@ -36,73 +36,117 @@
                                 <div class="item">
 
                                     <div class="description">
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Name:</b> {{indent.item_name}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Quantity:</b> {{indent.quantity}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Present Stock:</b> {{indent.present_stock}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Estimated Cost:</b> {{indent.estimated_cost}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purpose:</b> {{indent.purpose}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Specification:</b> {{indent.specification}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Type:</b> {{indent.item_type}}</pre>
-                                        
-                                        {% if indent.nature == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Consumable</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Non Consumable</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.indigenous == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.replaced == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Budgetary Head:</b> {{indent.budgetary_head}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Expected Delivery:</b> {{indent.expected_delivery}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Sources of Supply:</b> {{indent.sources_of_supply}}</pre>
-                                        
-                                        {% if indent.head_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> Yes</pre>
-                                        {% else %}
-                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> No</pre>
-                                        {% endif %}
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>description :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.description}}</b></a>
 
-                                        {% if indent.director_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> No</pre>
-                                        {% endif %}
+                                            <a class="item"><b>Name :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.item_name}}</b></a>
+                                        </div>
 
-                                        {% if indent.financial_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> No</pre>
-                                        {% endif %}
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Quantity :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.quantity}}</b></a>
 
-                                        {% if indent.purchased == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> No</pre>
-                                        {% endif %}
+                                            <a class="item"><b>Present Stock :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.present_stock}}</b></a>
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Estimated Cost:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.estimated_cost}}</b></a>
+
+                                            <a class="item"><b>Purpose:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.purpose}}</b></a>
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Specification:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.specification}}</b></a>
+
+                                            <a class="item"><b>Type :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.item_type}}</b></a>
+                                        </div>
+
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.nature == True %}
+
+                                            <a class="item"><b>Item Nature :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Consumable</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Item Nature :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">Non Consumable</b></a>
+                                            {% endif %}
+
+                                            {% if indent.indigenous == True %}
+
+                                            <a class="item"><b>Indigenous :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Indigenous :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.replaced == True %}
+
+                                            <a class="item"><b>Replaced :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Replaced :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            <a class="item"><b>Budgetary Head:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.budgetary_head}}</b></a>
+
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Expected Delivery:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.expected_delivery}}</b></a>
+
+                                            <a class="item"><b>Sources of Supply :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.sources_of_supply}}</b></a>
+                                        </div>
+
+
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.head_approval == True%}
+
+                                            <a class="item"><b>Head Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Head Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            {% if indent.director_approval == True %}
+
+                                            <a class="item"><b>Director Approval :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Director Approval :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.financial_approval == True%}
+
+                                            <a class="item"><b>Financial Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Financial Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            {% if indent.purchased == True %}
+
+                                            <a class="item"><b>Purchased :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Purchased :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
 
                                         <div class="ui divider"></div>
                                     </div>
-
                                     {% for t in track %}
                                     <div class="ui comments">
                                         <div class="comment">

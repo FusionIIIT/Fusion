@@ -88,7 +88,11 @@ def create_proposal(request):
                 financial_approval=False
                 purchased =request.POST.get('purchased')
     """
-    print("request.user.id : ", request.user.id) 
+    print("request.user.id : ", request.user.id)
+
+    if  request.session['currentDesignationSelected'] in dept_admin_design + ["ps_admin"]:
+        return redirect('/purchase-and-store/inwardIndent')
+        
     
     if request.method =="POST":
         try:
@@ -255,8 +259,8 @@ def create_proposal(request):
     today = timezone.now().strftime('%Y-%m-%d')
 
     currDesig = request.session['currentDesignationSelected']
-    dept_admin_design = ['dept_admin1', 'dept_admin2', 'dept_admin3']  # Replace with actual department admin designations
-    isAdmin = currDesig == 'ps_admin' or currDesig in dept_admin_design
+    dept_admin_designs = dept_admin_design
+    isAdmin = currDesig == 'ps_admin' or currDesig in dept_admin_designs
 
     context = {
         'file': file,
@@ -310,16 +314,15 @@ def composed_indents(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
-    designation = HoldsDesignation.objects.filter(user=request.user)
-    context = {
-        # 'draft': draft,
-        # 'extrainfo': extrainfo,
-        'designation': designation,
-    }
-    return render(request, 'ps1/composed_indents.html', context)
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
+    print(designation)
+
+    return redirect(f'/purchase-and-store/indentview/{designation.id}')
+
 
 
 
@@ -366,20 +369,24 @@ def drafts(request):
     # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
-    designation = HoldsDesignation.objects.filter(user=request.user)
-    context = {
-        # 'draft': draft,
-        # 'extrainfo': extrainfo,
-        'designation': designation,
-    }
-    return render(request, 'ps1/drafts.html', context)
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
+
+    return redirect(f'/purchase-and-store/draftview/{designation.id}')
 
 @login_required(login_url = "/accounts/login")
 def indentview(request,id):
-    print("id : ",id);
+
+    if  request.session['currentDesignationSelected'] == "student":
+        return redirect('/dashboard')
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
+    if str(id) != str(designation.id):
+        return redirect(f'/purchase-and-store/indentview/{designation.id}')
 
     tracking_objects=Tracking.objects.all()
     tracking_obj_ids=[obj.file_id for obj in tracking_objects]
@@ -446,9 +453,13 @@ def indentview(request,id):
 @login_required(login_url = "/accounts/login")
 def draftview(request,id):
 
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
+    if str(id) != str(designation.id):
+        return redirect(f'/purchase-and-store/draftview/{designation.id}')
 
     indents= IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
     indent_ids=[indent.file_info for indent in indents]
@@ -469,8 +480,19 @@ def draftview(request,id):
     }
     return render(request, 'ps1/draftview.html', context)
 
+
+
 @login_required(login_url = "/accounts/login")
 def indentview2(request,id):
+
+    if  request.session['currentDesignationSelected'] == "student":
+        return redirect('/dashboard')
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
+    if str(id) != str(designation.id):
+        return redirect(f'/purchase-and-store/indentview2/{designation.id}')
+
     abcd = HoldsDesignation.objects.get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
@@ -491,13 +513,6 @@ def indentview2(request,id):
 
 
 
-
-
-
-
-
-
-
 @login_required(login_url = "/accounts/login")
 def inward(request):
     """
@@ -511,17 +526,13 @@ def inward(request):
                     in_file - The Tracking object filtered by receiver_id i.e, present working user.
                     context - Holds data needed to make necessary changes in the template.
     """
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    if  str(des.designation) == "student":
+    if  request.session['currentDesignationSelected'] == "student":
         return redirect('/dashboard')
     
-    designation = HoldsDesignation.objects.filter(user=request.user)
-    context = {
-        'designation': designation,
-    }
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
 
-    return render(request, 'ps1/inwardIndent.html', context)
-
+    return redirect(f'/purchase-and-store/indentview2/{designation.id}')
 
 
 

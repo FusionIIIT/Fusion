@@ -7,11 +7,13 @@
 {% endblock %}
 
 
+
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
+    
     {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
@@ -34,34 +36,45 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
+                 {% with dept_admin_designations="['Accounts Admin','ps_admin', 'deptadmin_cse', 'deptadmin_ece', 'deptadmin_me', 'deptadmin_sm', 'deptadmin_design', 'deptadmin_liberalarts', 'deptadmin_ns']" %}
 
-                <a href="/purchase-and-store" class="item">
-                    File an Indent
-                    <i class="right floated chevron right icon"></i>
-                </a>
+             
+                 {% if request.session.currentDesignationSelected  not in dept_admin_designations %}
+                    <a href="/purchase-and-store" class="item">
+                        File an Indent
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    
+                    <a href="/purchase-and-store/composed_indents" class="item">
+                        All Filed Indents
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a href="/purchase-and-store/drafts" class="item">
+                        Saved Indents
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
                 <!-- <a href="/purchase-and-store/create_indent_multiple" class="item">
                     File an Indent(New)
                     <i class="right floated chevron right icon"></i>
                 </a> -->
-
-                <a href="/purchase-and-store/composed_indents" class="item">
-                    All Filed Indents
-                    <i class="right floated chevron right icon"></i>
-                </a>
 
                 <a href="/purchase-and-store/inwardIndent" class="item">
                     Inbox
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/purchase-and-store/drafts" class="item">
-                    Saved Indents
-                    <i class="right floated chevron right icon"></i>
-                </a>
+
+                {% if request.session.currentDesignationSelected in dept_admin_designations %}
                 <a href="/purchase-and-store/entry" class="item">
                     Stock dashboard
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endif %}
+
+                {% endwith %}
+
                 <!-- <a href="/purchase-and-store/drafts1" class="item"> 
                     Saved Indents(New)
                     <i class="right floated chevron right icon"></i>

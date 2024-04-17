@@ -9,9 +9,10 @@ urlpatterns = [
     url(r'^$', views.ps1, name='ps1'),
     url(r'^create_proposal/$', views.create_proposal, name='create_proposal'),
     # url(r'^compose_indent/$', views.compose_indent, name='compose_indent'),
+    # to see the save indents.
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
 
-    # here id is the Holdsdesignation id.
+    # here id is the Holdsdesignation id 
     url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
 
     url(r'^drafts/$', views.drafts, name='drafts'),
