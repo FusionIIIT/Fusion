@@ -18,45 +18,6 @@
     <p style="color:red">
         <CENTER> You have already registered for this semester!!! </CENTER>
     </p>
-    <center>
-        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
-                                    padding-right: 2.5%;
-                                    padding-top: 1%;
-                                    padding-bottom: 1.5%;
-                                    margin: auto;">
-
-            <thead>
-                <tr>
-                    <th style="width: 5%">#</th>
-                    <th style="width: 15%">Course ID</th>
-                    <th style="width: 30%">Course Name</th>
-                    <th style="width: 5%">Credits</th>
-                    <th style="width: 5%">Semester</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for items in final_registered_course_show %}
-                <tr>
-                    <td style="width: 5%">{{forloop.counter}}.</td>
-                    <td style="width: 15%">{{items.course_code}}
-                    </td>
-                    <td style="width: 30%">{{items.course_name}}</td>
-                    <td style="width: 5%">{{items.course_credit}}</td>
-                    <td style="width: 5%">{{next_sem.semester_no}}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </center>
-
-
-
-
-
-
-
-
 
 
     {% else %}
@@ -64,40 +25,8 @@
         <form id='final_student_register' action='/academic-procedures/final_registration/' method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="ui form" style="border: black">
-                <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
-                                        padding-right: 2.5%;
-                                        padding-top: 1%;
-                                        padding-bottom: 1.5%;
-                                        margin: auto;">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Course Code</th>
-                            <th>Course Name</th>
-                            <th>Credits</th>
-                            <th>Semester</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
-                        <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                        {% for items in final_registered_course_show %}
-                        <tr>
-                            <td>{{forloop.counter}}.</td>
-                            <td>{{ items.course_code }}
-                            </td>
-                            <td>{{ items.course_name }}
-                            </td>
-                            <td>{{ items.course_credit }}</td>
-                            <td>{{next_sem.semester_no}}</td>
-                            <input name="choice" value="{{ items.course_id.id }}" hidden="True">
-                            <input name="slot" value="{{ items.course_slot_id.id }}" hidden="True">
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <input type="text" name='semester' value='{{ next_sem.id}}' hidden="True">
+                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                 <input type="text" name="type_reg" value="register" hidden="True">
 
 
@@ -164,13 +93,13 @@
                 </div>
                 
  
-                {% if final_registered_course|length != 0 %}
+                
                 <div class="extra content">
                     <div class="" style="text-align: center;">
                         <button class="ui primary button">Register</button>
                     </div>
                 </div>
-                {% endif %}
+                
             </div>
         </form>
     </div>
@@ -178,8 +107,6 @@
  
     {% comment %} <form id='payment' action='/academic-procedures/final_registration/'>
         {% csrf_token %}
- 
- 
  
         <h3>Fee Payment</h3>
  
