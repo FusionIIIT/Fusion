@@ -48,7 +48,6 @@ def viewcourses(request):
 
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
-
                        'extrainfo': extrainfo})
     elif extrainfo.user_type == 'faculty':   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
@@ -528,7 +527,7 @@ def add_document(request, course_code):
         # uploaded_file_url = full_path + filename + file_extenstion
         uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename + file_extenstion
         #save the info/details in the database
-        CourseDocuments.objects.create(
+        CourseSlide.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
             description=description,
@@ -840,6 +839,7 @@ def add_assignment(request, course_code):                 #from faculty side
             return HttpResponse("Please Enter The Form Properly",status=422)
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
+        print(full_path)
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
             cmd = "mkdir " + full_path
@@ -851,7 +851,7 @@ def add_assignment(request, course_code):                 #from faculty side
         assign = Assignment(
             course_id=course,
             submit_date=request.POST.get('myDate'),
-            assignment_url=uploaded_file_url,
+            doc=assi,
             assignment_name=name
         )
         assign.save()

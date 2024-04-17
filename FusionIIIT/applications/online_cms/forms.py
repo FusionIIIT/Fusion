@@ -1,3 +1,4 @@
+# from django import forms
 import datetime
 from datetime import time, timedelta
 #import information from the models 
@@ -5,6 +6,8 @@ from django import forms
 # from .models import StoreMarks
 from applications.academic_information.models import (Student_attendance,Timetable)
 
+
+from .models import *
 #the types of exam whose marks can be stored from edit marks in assessment, related to StoreMarks table in models
 EXAM_TYPES= [
     ('quiz1', 'Quiz 1'),

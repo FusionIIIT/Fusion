@@ -310,7 +310,7 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            semester_no = obj.curr_semester_no+1
+            semester_no = obj.curr_semester_no
             next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
             user_sem = semester_no
             
@@ -346,12 +346,11 @@ def academic_procedures_student(request):
         
         acad_year = get_acad_year(user_sem, year)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
-
         next_sem_branch_course = get_sem_courses(next_sem_id, batch)
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
-        currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+        currently_registered_course = get_currently_registered_course(user_details.id, user_sem)
 
         current_credits = get_current_credits(currently_registered_course)
  
