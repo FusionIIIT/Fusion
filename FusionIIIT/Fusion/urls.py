@@ -60,4 +60,9 @@ urlpatterns = [
     url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
     url(r'^hr2/', include('applications.hr2.urls')),
     url(r'^recruitment/', include('applications.recruitment.urls')),
+    
+    #API
+    
+    #FileTracking
+    url(r'^filetracking/api/', include('applications.filetracking.api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
