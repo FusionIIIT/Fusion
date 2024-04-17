@@ -7,17 +7,20 @@
             Exams
         </a> -->
 </div>
-<div class="ui tab segment active" data-tab="assignment" style="overflow: auto;">
+<div class="ui tab segment active" id="refresh_asn_tab" data-tab="assignment">
   <h4 class="ui dividing header">{{course.course_name}}</h4>
 
-  <div class="ui top attached tabular menu">
+  <div class="ui top attached tabular menu"  style="overflow:auto;overflow-y:hidden;">
       {% for assi in assignment %}
           <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
       {% endfor %}
   </div>
   {% for assi in assignment %}
       <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
-          <table class="ui very basic collapsing celled table">
+          <div class="ui input">
+            <input type="text" id="studentSearchInput" placeholder="Search Student" onkeyup="searchStudents()">
+          </div>
+          <table id="studentTable" class="ui very basic collapsing celled table">
               <thead>
                   <tr>
                       <th>Student</th>
@@ -42,15 +45,16 @@
                                           </h4>
                                       </td>
                                       <td>
-                                          <div>Press 'Enter' to upload</div>
+                                          <div class="ui text">Press 'Enter' to upload</div>
                                           <div class="ui form" style="margin-bottom:10px">
                                               <div class="field">
                                                   <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}">
                                               </div>
                                           </div>
+                                          <div class="ui text">Press 'Enter' to upload</div>
                                           <div class="ui form">
                                               <div class="field">
-                                                  <input type="text" placeholder="Enter Feedback" onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
+                                                  <input type="text" placeholder="Enter Feedback" onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedb{{sa.pk}}">
                                               </div>
                                           </div>
                                       </td>
@@ -130,6 +134,26 @@
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
+
+function searchStudents() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("studentSearchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("studentTable");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0]; // Assuming student ID is in the first column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+}
+
 
 $(function() {
     $("#entermarks").submit(function(event) {

@@ -1,4 +1,8 @@
 {% load static %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/semantic-ui-alerts.css' %}">
+
+{% endblock %}
 {% block gradingScheme %}
 <div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
     <h3 class="ui dividing header">Create Grading Scheme</h3>
@@ -37,7 +41,7 @@
                     </td>
                     <td >
                         <input type="number" style="width:80%; float:left;" name="add_item_wtg" id="" value="" placeholder="Enter Weightage" />
-                        <input type="button" style="float:right;" class="ui primary button" id="add_item_btn" style="display: flex; justify-content: center;" value="Add">
+                        <input type="button" style="float:right;" class="ui primary button tiny" id="add_item_btn" style="display: flex; justify-content: center;" value="Add">
                     </td>
                 </tr>
         		{% comment %} <tr>
@@ -186,7 +190,9 @@
 
 </div>
 
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'semantic/dist/components/semantic-ui-alerts.js' %}"></script>
 
 <script type="text/javascript">
     // Function to handle add_item_btn
@@ -215,6 +221,16 @@
         itemWtg.value = ''
     });
 
+    function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+    }
+
 
     // Function to handle form submission
     function submitForm() {
@@ -225,7 +241,7 @@
         xhr.open(form.method, form.action, true);
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-                alert('Success: ' + xhr.responseText); // Display success message
+                successAlert('Success: ' + xhr.responseText); // Display success message
             } else {
                 alert('Error: ' + xhr.statusText); // Display error message
             }

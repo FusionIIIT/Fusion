@@ -12,6 +12,7 @@ class Modules(models.Model):
     def __str__(self):
         return self.module_name
 
+#the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     module_id = models.ForeignKey(Modules, on_delete=models.CASCADE, default = 1)
@@ -168,23 +169,6 @@ class Assignment(models.Model):
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.course_id, self.assignment_name)
 
-def assignment_file_name(instance, filename):
-    name, ext = filename.split('.')
-    obj=Curriculum.objects.get(course_id=instance.course_id)
-    course_code=obj.course_code
-    file_path = 'online_cms/{course_id}/doc/{fileName}.{ext}'.format(
-         course_id=course_code, fileName=instance.assignment_name, ext=ext) 
-    return file_path
-class CourseAssignment(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField(auto_now=True)
-    submit_date = models.DateTimeField()
-    assignment_name = models.CharField(max_length=100)
-    doc = models.FileField(upload_to=assignment_file_name, null=True, blank=True)
-
-    def __str__(self):
-        return '{} - {} - {}'.format(self.pk, self.course_id, self.assignment_name)
-
 #details of the solution uploaded by the student
 class StudentAssignment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -281,12 +265,12 @@ class GradingScheme_grades(models.Model):
 
 class Student_grades(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    semester = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
-    roll_no = models.TextField(max_length=2000)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     grade = models.TextField(max_length=2000)
-    batch = models.TextField(max_length=2000)
+    batch = models.IntegerField(default=2021)
  
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
