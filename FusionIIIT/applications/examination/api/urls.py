@@ -6,8 +6,7 @@ from . import views
 
 urlpatterns = [
     url(r'^registered_student_details/', views.fetch_student_details, name='fetch_student_details'),
-    
-    # url(r'^add_student/', views.add_student, name='add_student'),
+
 
     url(r'^update_hidden_grade/', views.update_hidden_grade, name='update_hidden_grade'),
 
@@ -19,8 +18,6 @@ urlpatterns = [
 
 
     url(r'^publish_grade/' , views.publish_grade , name='publish_grade'),
-
-    # url(r'^announcement/',views.announcement , name = 'announcement')
 
     url(r'^generate_transcript_form/' , views.generate_transcript_form , name = 'generate_transcript_form'),
 
@@ -35,6 +32,14 @@ urlpatterns = [
     url(r'^fetch_roll_of_courses/' , views.fetch_roll_of_courses , name='fetch_roll_of_courses/'),
 
     url(r'^get_registered_students_roll_no/' , views.get_registered_students_roll_no , name='get_registered_students_roll_no/'),
-    
+
+    url(r'^get_auth_status/' , views.get_auth_status , name='get_auth_status'),
+
+    url(r'^get_curriculum_values/' , views.get_curriculum_values , name='get_curriculum_values/'),
+
+
+    url(r'^announce/' , views.announce , name='announce/'),
+
+    url(r'^submit_grades/$' , views.submit_grades , name='submit_grades/'),
 
 ]
