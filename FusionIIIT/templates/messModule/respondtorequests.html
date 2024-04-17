@@ -1,171 +1,165 @@
-{% load static %}
-{% block body %}
-{% block respondtoleave %}
+{% load static %} {% block body %} {% block respondtoleave %}
 
 <div class="ui top attached tabular menu">
-    <a class="active item" data-tab="" id="rlr">
-        Respond to Rebate
-    </a>
-    <a class="item" data-tab="" id="rvr">
-        Respond to Vacation Food Requests
-    </a>
-
+  <a class="active item" data-tab="" id="rlr"> Respond to Rebate </a>
+  <!-- <a class="item" data-tab="" id="rvr"> Respond to Vacation Food Requests </a> -->
 </div>
 
 <div class="ui bottom attached segment">
-    <div class="ui active tab" data-tab="" id="rlrtab">
-        <div class="ui vertical segment">
-            <div>
-                <button class="ui primary button right floated" onclick="getLeave()">
-                    Leave Statistics
-                </button>
+  <div class="ui active tab" data-tab="" id="rlrtab">
+    <div class="ui vertical segment" style="overflow-y: scroll;">
+      <!-- <div>
+        <button class="ui primary button right floated" onclick="getLeave()">
+          Leave Statistics
+        </button>
 
-                <button class="ui primary button right floated" onclick="dateVacation()">
-                    Accept Rebate Requests
-                </button>
-                <button class="ui primary button right floated" onclick="showLeaveDiv()">
+        <button
+          class="ui primary button right floated"
+          onclick="dateVacation()">
+          Accept Rebate Requests
+        </button>
+        <button class="ui primary button right floated" onclick="showLeaveDiv()">
                     Add Leave
                 </button>
-            </div>
-            <br>
-            <br>
-            <div id="leave-form-t" style="display:none;">
-                <form method="post" action="{% url 'mess:addleavet' %}">
-                    {% csrf_token %}
-                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                        <div class="ui header">
-                            Add Leave Data
-                        </div>
-                                <div class="field">
-                                    <label>Roll Number: </label>
-                                    <input id="l_rollno" required="true" name="l_rollno">
-                                </div>
-
-                            <br>
-                            <div class="two fields">
-                                <div class="field">
-                                    <label>Leave From*</label>
-                                    <div class="ui calendar" id="l_start">
-                                        <div>
-                                            <input type="date" placeholder="From" required="true" id="l_startd"
-                                                   name="l_startd">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <label>Leave To*</label>
-                                    <div class="ui calendar" id="rangeend">
-                                        <input name="l_endd" type="date" placeholder="To" required="true"
-                                               id="l_endd">
-                                    </div>
-                                </div>
-                            </div>
-                            <br>
-                            <div class="two fields">
-                                <div class="field">
-                                    <label>Type: </label>
-                                    <input required="true" id="l_type" name="l_type">
-                                </div>
-                                <div class="field">
-                                    <label>Purpose: </label>
-                                    <input required="true" id="l_purpose"name="l_purpose">
-                                </div>
-                            </div>
-                         <div class="field">
-                                    <label><br></label>
-                                    <button class="ui primary button right floated" type="submit">
-                                        Submit
-                                    </button>
-                         </div>
-                            <br>
-                    </div>
-                </form>
+      </div> -->
+      <!-- <br />
+      <br />
+      <div id="leave-form-t" style="display: none">
+        <form method="post" action="{% url 'mess:addleavet' %}">
+          {% csrf_token %}
+          <div
+            class="ui form"
+            style="padding: 8px; padding-left: 24px; padding-right: 24px">
+            <div class="ui header">Add Leave Data</div>
+            <div class="field">
+              <label>Roll Number: </label>
+              <input id="l_rollno" required="true" name="l_rollno" />
             </div>
 
-<br>
-            <br>
-        <table class="ui very basic collapsing celled large sortable table"
-               style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-            <thead>
-            <tr>
-                <th class="four wide">
-                    Date
-                </th>
+            <br />
+            <div class="two fields">
+              <div class="field">
+                <label>Leave From*</label>
+                <div class="ui calendar" id="l_start">
+                  <div>
+                    <input
+                      type="date"
+                      placeholder="From"
+                      required="true"
+                      id="l_startd"
+                      name="l_startd" />
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Leave To*</label>
+                <div class="ui calendar" id="rangeend">
+                  <input
+                    name="l_endd"
+                    type="date"
+                    placeholder="To"
+                    required="true"
+                    id="l_endd" />
+                </div>
+              </div>
+            </div>
+            <br />
+            <div class="two fields">
+              <div class="field">
+                <label>Type: </label>
+                <input required="true" id="l_type" name="l_type" />
+              </div>
+              <div class="field">
+                <label>Purpose: </label>
+                <input required="true" id="l_purpose" name="l_purpose" />
+              </div>
+            </div>
+            <div class="field">
+              <label><br /></label>
+              <button class="ui primary button right floated" type="submit">
+                Submit
+              </button>
+            </div>
+            <br />
+          </div>
+        </form>
+      </div>
 
-                <th class="four wide">
-                    Student
-                </th>
+      <br />
+      <br /> -->
+      <table
+        class="ui very basic collapsing celled large sortable table"
+        style="
+          padding-left: 2.5%;
+          padding-right: 2.5%;
+          padding-top: 1%;
+          padding-bottom: 1.5%;
+          margin: auto;
+        ">
+        <thead>
+          <tr>
+            <th class="four wide">Date</th>
 
-                <th class="four wide">
-                    Type
-                </th>
+            <th class="four wide">Student</th>
 
-                <th class="two wide">
-                    Purpose
-                </th>
+            <!-- <th class="four wide">Type</th> -->
 
-                <th class="two wide">
-                    From
-                </th>
+            <th class="four wide">Purpose</th>
 
-                <th class="two wide">
-                    To
-                </th>
-                <th class="one wide">
-                    Approve
-                </th>
-            </tr>
-            </thead>
+            <th class="two wide">From</th>
 
-            <tbody>
-            {% for item in leave %}
-            <tr id="accr-{{item.pk}}">
-                <th>
-                    {{item.app_date}}
-                </th>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                            {{ item.student_id.id|truncatewords:1|slice:"-4" }}
-                        </div>
-                    </h4>
-                </td>
+            <th class="two wide">To</th>
+            <th class="one wide">Approve</th>
+            <th class="two wide">Remark</th>
+          </tr>
+        </thead>
 
-                <td>
-                    {{item.leave_type}}
-                </td>
+        <tbody>
+          {% for item in leave %}
+          <tr id="accr-{{item.pk}}">
+            <th>{{item.app_date}}</th>
+            <td>
+              <h4 class="ui image header">
+                <img
+                  src="{% static 'globals/img/zlatan.jpg' %}"
+                  class="ui mini circular image" />
+                <div class="content">
+                  {{ item.student_id.id|truncatewords:1|slice:"-1" }}
+                </div>
+              </h4>
+            </td>
 
-                <td>
-                    {{item.purpose}}
-                </td>
+            <!-- <td>{{item.leave_type}}</td> -->
 
-                <td>
-                    {{item.start_date}}
-                </td>
+            <td>{{item.purpose}}</td>
 
-                <td>
-                    {{item.end_date}}
-                </td>
+            <td>{{item.start_date}}</td>
 
-                <td>
-                    <div class="ui buttons">
-                        <button class="acc ui positive button" name="submit" value="approve" data-acc="{{item.pk}}"
-                                onclick="acceptReq({{item.pk}})">A
-                        </button>
+            <td>{{item.end_date}}</td>
 
-                        <div class="or"></div>
-                        <button class="ui negative button" name="submit" value="reject"
-                                onclick="rejectReq({{item.pk}})">R
-                        </button>
+            <td>
+              <div class="ui buttons">
+                <button
+                  class="acc ui positive button"
+                  name="submit"
+                  value="approve"
+                  data-acc="{{item.pk}}"
+                  onclick="rebateAcceptReq({{item.pk}})">
+                  A
+                </button>
 
-                    </div>
+                <div class="or"></div>
+                <button
+                  class="ui negative button"
+                  id="remark"
+                  name="submit"
+                  value="reject"
+                  onclick="rebateRejectReq({{item.pk}})">
+                  R
+                </button>
+              </div>
 
-                    <!--
+              <!--
                     <form action="{{item.pk}}/rebateresponse/" method="POST" >
                     {% csrf_token %}
                     <div class="ui buttons">
@@ -175,263 +169,285 @@
                     </div>
                     </form>
                     -->
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+            </td>
+            <td>
+              {% comment %} {% set the_var = "rebate_remark" ~{{ item.pk }} %}
+              {% endcomment %}
+              <div class="field">
+                <textarea
+                  rows="2"
+                  name="remark"
+                  id="rebate_remark-{{ item.pk }}"
+                  placeholder="Give remark for non acceptance"></textarea>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-        <br>
+      <br />
 
-        <div class="ui divider"></div>
-
+      <div class="ui divider"></div>
     </div>
-</div>
-<div class="ui tab" data-tab="" id="rvrtab">
+  </div>
+  <div class="ui tab" data-tab="" id="rvrtab">
     <div class="ui vertical segment">
-
-        {% for item in vaca_all %}
-        {% if item.status == '1' %}
-        <div>
-            <div class="content">
-                <b>Application Date:</b> {{item.app_date}}
-                <br>
-                <b>Student:</b> {{ item.student_id.id|truncatewords:1|slice:"-4" }}
-                <br>
-                <b>Reason:</b> {{item.purpose}}
-                <br>
-                <b>From:</b> {{item.start_date}}
-                <br>
-                <b>To:</b> {{item.end_date}}
-                <br>
-            </div>
-            <div class="right floated content">
-                <b>Approve:</b>
-                <form action="/mess/{{item.pk}}/responsevacationfood/" method="post">
-                    {% csrf_token %}
-                    <div class="ui buttons">
-                        <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
-                        <div class="or"></div>
-                        <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
-                    </div>
-                </form>
-            </div>
-            <hr>
+      {% for item in vaca_all %} {% if item.status == '1' %}
+      <div>
+        <div class="content">
+          <b>Application Date:</b> {{item.app_date}}
+          <br />
+          <b>Student:</b> {{ item.student_id.id|truncatewords:1|slice:"-1" }}
+          <br />
+          <b>Reason:</b> {{item.purpose}}
+          <br />
+          <b>From:</b> {{item.start_date}}
+          <br />
+          <b>To:</b> {{item.end_date}}
+          <br />
         </div>
+        <div class="right floated content">
+          <b>Approve:</b>
+          <form action="/mess/{{item.pk}}/responsevacationfood/" method="post">
+            {% csrf_token %}
+            <div class="ui buttons">
+              <button
+                class="ui negative button"
+                type="submit"
+                name="submit"
+                value="reject">
+                R
+              </button>
+              <div class="or"></div>
+              <button
+                class="ui positive button"
+                type="submit"
+                name="submit"
+                value="approve">
+                A
+              </button>
+            </div>
+          </form>
+        </div>
+        <hr />
+      </div>
 
-        {% endif %}
-        {% endfor %}
+      {% endif %} {% endfor %}
     </div>
     <!--</table>-->
 
-    <br>
+    <br />
 
     <div class="ui divider"></div>
+  </div>
 
-</div>
-
-
-<div class="ui small modal" id="leavedata" style="padding: 0.5%;">
+  <!-- <div class="ui small modal" id="leavedata" style="padding: 0.5%">
     <div class="ui vertical segment">
-        <table class="ui very basic collapsing celled large sortable table" style="margin: auto;">
-            <thead>
-            <td> Date</td>
-            <td> Number of Students Taking Leave</td>
-            </thead>
-            <tbody>
-            <tr>
-                <td id="today_modal"></td>
-                <td id="today_count"></td>
-            </tr>
-            <tr>
-                <td id="tomorrow_modal"></td>
-                <td id="tomorrow_count"></td>
-            </tr>
-            </tbody>
-        </table>
-
-
+      <table
+        class="ui very basic collapsing celled large sortable table"
+        style="margin: auto">
+        <thead>
+          <td>Date</td>
+          <td>Number of Students Taking Leave</td>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="today_modal"></td>
+            <td id="today_count"></td>
+          </tr>
+          <tr>
+            <td id="tomorrow_modal"></td>
+            <td id="tomorrow_count"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-</div>
+  </div> -->
 
-
-<div class="ui small modal" id="dateVacationModal" style="padding: 1.5%;">
+  <!-- <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%">
     <div class="ui vertical segment">
-        <header><strong>Accept Vacation Leave between dates:</strong></header>
-        <br>
-        <form method="get">
-            {# {% csrf_token %}#}
-            <div class="ui grid">
-                <div class="eight wide column">
-                    <label>Leave From:</label>
-                    <br>
-                    <br>
-                    <div class="ui calendar">
-                        <div class="ui input left icon">
-                            <input name="start_date" type="date" placeholder="From" required="true"
-                                   id="startDate">
-                        </div>
-                    </div>
-                </div>
+      <header><strong>Accept Vacation Leave between dates:</strong></header>
+      <br />
+      <form method="get">
+        {# {% csrf_token %}#}
+        <div class="ui grid">
+          <div class="eight wide column">
+            <label>Leave From:</label>
+            <br />
+            <br />
+            <div class="ui calendar">
+              <div class="ui input left icon">
+                <input
+                  name="start_date"
+                  type="date"
+                  placeholder="From"
+                  required="true"
+                  id="startDate" />
+              </div>
+            </div>
+          </div>
 
-                <div class="eight wide column">
-                    <label>Leave To:</label>
-                    <br>
-                    <br>
-                    <div class="ui calendar">
-                        <div class="ui input left icon">
-                            <input name="start_date" type="date" placeholder="From" required="true"
-                                   id="endDate">
-                        </div>
-                    </div>
-                </div>
+          <div class="eight wide column">
+            <label>Leave To:</label>
+            <br />
+            <br />
+            <div class="ui calendar">
+              <div class="ui input left icon">
+                <input
+                  name="start_date"
+                  type="date"
+                  placeholder="From"
+                  required="true"
+                  id="endDate" />
+              </div>
             </div>
-            <div>
-                <button class="ui primary right floated button" onclick="acceptLeaveDates()" type="submit">
-                    Accept
-                </button>
-            </div>
-        </form>
+          </div>
+        </div>
+        <div>
+          <button
+            class="ui primary right floated button"
+            onclick="acceptLeaveDates()"
+            type="submit">
+            Accept
+          </button>
+        </div>
+      </form>
     </div>
+  </div> -->
 </div>
-</div>
-{% endblock %}
-{% endblock %}
-
-{% block javascript %}
+{% endblock %} {% endblock %} {% block javascript %}
 <script>
- $(document).ready(function(){
-     $('#rlr').on('click',function(){
-        $(this).addClass('active');
-         $('#rvr').removeClass('active');
-         $('#rlrtab').show();
-          $('#rvrtab').hide();
-
-     });
-
- });
- $(document).ready(function(){
-     $('#rvr').on('click',function(){
-        $(this).addClass('active');
-         $('#rlr').removeClass('active');
-        $('#rlrtab').hide();
-          $('#rvrtab').show();
-
-     });
-
- });
-
-
-
+  $(document).ready(function () {
+    $('#rlr').on('click', function () {
+      $(this).addClass('active');
+      $('#rvr').removeClass('active');
+      $('#rlrtab').show();
+      $('#rvrtab').hide();
+    });
+  });
+  $(document).ready(function () {
+    $('#rvr').on('click', function () {
+      $(this).addClass('active');
+      $('#rlr').removeClass('active');
+      $('#rlrtab').hide();
+      $('#rvrtab').show();
+    });
+  });
+  {% comment %} acceptReq; {% endcomment %}
 </script>
 
 <script>
-function showLeaveDiv(){
-    if($('#leave-form-t').css('display') == 'none')
-    {
-        document.getElementById('leave-form-t').style.display="block";
-    }
-    else{
-        document.getElementById('leave-form-t').style.display="none";
-    }
-<!--    document.getElementById('leave-form-t').style.display="block";-->
-}
+  function showLeaveDiv(){
+      if($('#leave-form-t').css('display') == 'none')
+      {
+          document.getElementById('leave-form-t').style.display="block";
+      }
+      else{
+          document.getElementById('leave-form-t').style.display="none";
+      }
+  <!--    document.getElementById('leave-form-t').style.display="block";-->
+  }
 
-function acceptReq(id){
- document.getElementById('accr-'+id).style.display="none";
+  function rebateAcceptReq(id){
+    console.log(id)
+    var remark_res = document.getElementById("rebate_remark-"+id).value;
 
-         $.ajax({
-                type: 'POST',
-                url: 'rebateresponse',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id_rebate':id,
-                    'status':'2',
+    console.log(remark_res)
+   document.getElementById('accr-'+id).style.display="none";
 
-                },
-                success: function(data) {
+           $.ajax({
+                  type: 'POST',
+                  url: 'rebateresponse',
+                  dataType: 'json',
+                  data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'id_rebate':id,
+                      'status':'2',
+                      'remark':remark_res,
+                  },
+                  success: function(data) {
 
-                        alert(data.message);
-
-
-                },
-                error: function(data, err) {
-                    alert(err.message);
-                }
-            });
-
-         }
-         function rejectReq(id){
-
-          document.getElementById('accr-'+id).style.display="none";
-         $.ajax({
-                type: 'POST',
-                url: 'rebateresponse',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id_rebate':id,
-                    'status':'0',
-
-                },
-                success: function(data) {
-
-                        alert(data.message);
+                          alert(data.message);
 
 
-                },
-                error: function(data, err) {
-                    alert(err.message);
-                }
-            });
+                  },
+                  error: function(data, err) {
+                      alert(err.message);
+                  }
+              });
 
-         }
+           }
+           function rebateRejectReq(id){
+            var remark_res = document.getElementById("rebate_remark-"+id).value;
 
-        function getLeave(){
-            $('#leavedata').modal('show');
-            $.ajax({
-                type: 'GET',
-                url: 'getleave',
-                dataType: 'json',
-                data:{
-                },
-                success: function(data) {
+            console.log(remark_res)
+            document.getElementById('accr-'+id).style.display="none";
+           $.ajax({
+                  type: 'POST',
+                  url: 'rebateresponse',
+                  dataType: 'json',
+                  data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'id_rebate':id,
+                      'status':'0',
+                      'remark':remark_res,
+                  },
+                  success: function(data) {
 
-                        $('#today_modal').html(data.today);
-                        $('#today_count').html(data.counttoday);
-                        $('#tomorrow_modal').html(data.tomorrow);
-                        $('#tomorrow_count').html(data.counttomorrow);
-
-                },
-                error: function(data, err) {
-                    alert(err.message);
-                }
-            });
-        }
-
-        function dateVacation(){
-            $('#dateVacationModal').modal('show');
-        }
-        function acceptLeaveDates(){
-            $.ajax({
-                type: 'GET',
-                url: 'acceptleave',
-                dataType: 'json',
-                data:{
-                    'start_date': $("#startDate").val(),
-                    'end_date': $("#endDate").val(),
-                },
-                success: function(data) {
-                    $('#dateVacationModal').modal('hide');
-                    {#alert(data.display);#}
-                },
-                error: function(data, err) {
-                    {#alert(err.message);#}
-                }
-            });
-        }
+                          alert(data.message);
 
 
+                  },
+                  error: function(data, err) {
+                      alert(err.message);
+                  }
+              });
 
+           }
+
+          function getLeave(){
+              $('#leavedata').modal('show');
+              $.ajax({
+                  type: 'GET',
+                  url: 'getleave',
+                  dataType: 'json',
+                  data:{
+                  },
+                  success: function(data) {
+
+                          $('#today_modal').html(data.today);
+                          $('#today_count').html(data.counttoday);
+                          $('#tomorrow_modal').html(data.tomorrow);
+                          $('#tomorrow_count').html(data.counttomorrow);
+
+                  },
+                  error: function(data, err) {
+                      alert(err.message);
+                  }
+              });
+          }
+
+          function dateVacation(){
+              $('#dateVacationModal').modal('show');
+          }
+          function acceptLeaveDates(){
+              $.ajax({
+                  type: 'GET',
+                  url: 'acceptleave',
+                  dataType: 'json',
+                  data:{
+                      'start_date': $("#startDate").val(),
+                      'end_date': $("#endDate").val(),
+                  },
+                  success: function(data) {
+                      $('#dateVacationModal').modal('hide');
+                      {#alert(data.display);#}
+                  },
+                  error: function(data, err) {
+                      {#alert(err.message);#}
+                  }
+              });
+          }
 </script>
 {% endblock %}

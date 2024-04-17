@@ -1,0 +1,243 @@
+{% load static %}
+{% block body %}
+{% block add_remove %}
+
+<div class="ui container">
+    <div class="ui large label">
+        Mess*
+    </div>
+    <select class="ui dropdown" id="mess_add_dropdown_option">
+        <option value="mess1" selected>Mess 1</option>
+        <option value="mess2">Mess 2</option>
+    </select>
+</div>
+
+<form id="add_remove_form">
+<div class="ui container" style="margin-top: 10px;">
+    <div class="ui large label">
+        Roll No*
+    </div>
+
+    <div class="ui form" style="display: inline-flex;margin-top: 10px; margin-bottom: 10px;">       
+        <input
+            type="text"
+            id="roll_no_add"
+            name="roll_number"
+            placeholder="Student Roll Number Here"
+            style="min-width: 65%;"
+        />
+        <button
+            class="ui primary button"
+            style="margin-left: 10px;"
+            type="submit"
+            id="searchStudent"
+        >
+            Search
+        </button>
+        <button
+            class="ui primary button"
+            style="margin-left: 10px;"
+            type="submit"
+            id="addStudent"
+        >
+            Add
+        </button>
+        <button
+            class="ui primary button"
+            style="margin-left: 10px;"
+            type="submit"
+            id="removeStudent"
+        >
+            Remove
+        </button>
+    </div>   
+</div>
+
+<div class="ui container" style="margin-top: 10px;">
+    <button
+            style="max-width: 15rem"
+            class="ui primary button"
+            type="submit"
+            id="removeAllStudent1"
+          >
+            Remove All from Mess1
+     </button>
+    <button
+            style="max-width: 15rem"
+            class="ui primary button"
+            type="submit"
+            id="removeAllStudent2"
+          >
+            Remove All from Mess2
+    </button>
+</div>
+</form>
+
+<div class="ui form" style="margin-top: 10px;">
+    <form
+        method="POST"
+        id="#form22"
+        action="/mess/registeredstudent"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <div class="field">
+          <div class="ui label" style="display: block;">Add by uploading Excel</div>
+          <input
+            type="file"
+            title="Upload excel file"
+            name="excel_file1"
+            accept=".xlsx,.xls"
+            style="max-width: 15rem; margin-bottom: 1rem"
+            required
+          />
+          <br />
+        </div>
+        <div class="field">
+          <button
+            class="ui primary fluid button"
+            style="max-width: 10rem"
+            type="submit"
+            name="excelUpload1"
+          >
+            <i class="upload icon"></i>
+            Register all
+          </button>
+          <ul>
+            <li>
+              The excel sheet should only contain three columns including the heading - Roll no, Balance, mess_option
+            </li>
+            <li>File should be in .xlsx or .xls format.</li>
+            <li>This registration will add the Students to provided mess_option.</li>
+          </ul>
+        </div>
+      </form>
+</div>
+
+<div class="ui modal" id="reg_form_modal" style="padding: 10px;">
+    <form class="ui form" method = "post" action="registrationRequest" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Roll No</label>
+        <input type="text" id="input_roll" name="input_roll" style="margin-bottom: 10px;">
+        <label>Mess No</label>
+        <select name="mess_option_form">
+            <option value="mess1">mess1</option>
+            <option value="mess2">mess2</option>
+        </select>
+        {{reg_form.as_p}}
+        <button class="ui primary button"  type="submit">
+            Add student
+        </button>
+    </form>
+</div>
+
+<div class="ui modal" id="remove_modal" style="padding: 10px;">
+    <form class="ui form" method="post" action="{% url 'mess:deregistrationRequest' %}" >
+        {% csrf_token %}
+
+        <label>Roll No</label>
+        <input type="text" id="input_roll_remove" name="input_roll" style="margin-bottom: 10px;">
+
+        <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+            {#                <p style="text-align:center;"><strong>Update </strong></p>#}
+            <div class="two fields">
+                <div class="field">
+                    <label for="End Date">End Date*</label>
+                    <div class="ui calendar" id="dereg_end_date">
+                        <div>
+                            <input name="end_date" type="date" placeholder="From" required="true"
+                                id="dereg_end_date">
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" name="submit">Deregister 
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+
+  document.getElementById("add_remove_form").addEventListener("submit", searchOrRemovefun);
+ 
+
+function searchOrRemovefun(event){
+    event.preventDefault();
+    const S_id=document.getElementById('roll_no_add').value
+    const mess_option=document.getElementById('mess_add_dropdown_option').value;
+
+    submitType=event.submitter.id;
+    if(submitType==='searchStudent'){
+        $.ajax({
+                type: 'GET',
+                url: 'registeredstudent',
+                dataType: 'json',
+                data:{
+                'roll_number': S_id,
+                'type':submitType
+            },
+            success: function(data) {
+                alert(data.message)
+            },
+            error: function(data, err) {
+                alert(err)
+            }
+        });
+    }
+    else if((submitType==='removeAllStudent1'&&window.confirm("Do you really want to remove all Students from mess1?"))||(submitType==='removeAllStudent2'&&window.confirm("Do you really want to remove all Students from mess2?")))
+    {
+        var messNo='mess1';
+        if(submitType==='removeAllStudent2')messNo='mess2';
+        $.ajax({
+                type: 'GET',
+                url: 'registeredstudent',
+                dataType: 'json',
+                data:{
+                'type':submitType,
+                'mess':messNo
+            },
+            success: function(data) {
+                alert(data.message)
+            },
+            error: function(data, err) {
+                alert(err)
+            }
+        });
+    }
+    else if(submitType==='addStudent'){
+        console.log("addstudent was called")
+        input_roll=document.getElementById('input_roll').value = S_id
+        $('#reg_form_modal').modal('show')
+        // $.ajax({
+        //         type: 'GET',
+        //         url: 'registeredstudent',
+        //         dataType: 'json',
+        //         data:{
+        //             'roll_number': S_id,
+        //             'type':submitType,
+        //             'messNo':mess_option
+        //         },
+        //         success: function(data) {
+        //             alert(data.message)
+        //         },
+        //         error: function(data, err) {
+        //             alert(err)
+        //         }
+        //     });
+    }
+    else if(submitType==='removeStudent'){
+        input_roll=document.getElementById('input_roll_remove').value = S_id
+        $('#remove_modal').modal('show')
+    }
+}
+</script>
+
+{% endblock %}
