@@ -359,7 +359,7 @@ def department_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = type
-    flag = "department"
+    flag = "announcement"
 
     notify.send(sender=sender,
                 recipient=recipient,
@@ -367,40 +367,20 @@ def department_notif(sender, recipient, type):
                 module=module,
                 verb=verb,
                 flag=flag)
-def examination_notif(sender, recipient, type,request):
-    url='examination:examination'
-    module='examination'
-    sender = sender
-    recipient = recipient
-    verb = type
-    flag = "examination"
-
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
-    print("test3")
-    # return render(request, 'examination/announcement_req.html')
-
 
 def examination_notif(sender, recipient, type):
-    url = 'examination:examination'
+    url = 'examination:updateGrades'
     module = 'examination'
     sender = sender
     recipient = recipient
     verb = type
-    flag = "examination"
-
+    flag = "announcement"
     notify.send(sender=sender,
                 recipient=recipient,
                 url=url,
                 module=module,
                 verb=verb,
                 flag=flag)
-    print("test3")
-    # return render(request, 'examination/announcement_req.html')
 
 
 def office_module_DeanRSPC_notif(sender, recipient, type):

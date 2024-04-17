@@ -11,13 +11,24 @@ app_name = 'examination'
 urlpatterns = [
     url(r'^api/', include('applications.examination.api.urls')),
     url(r'^$', views.exam, name='exam'),
-    url(r'submit/', views.submit, name='submit'),
-    url(r'verify/', views.verify, name='verify'),
-    url(r'publish/', views.publish, name='publish'),
-    url(r'notReady_publish/', views.notReady_publish, name='notReady_publish'),
-    url(r'announcement/', views.announcement, name='announcement'),
-    url(r'timetable/', views.timetable, name='timetable'),
     
+    
+    url(r'submit/', views.submit, name='submit'),#old
+    url(r'verify/', views.verify, name='verify'),#old
+    url(r'publish/', views.publish, name='publish'),#old
+    url(r'notReady_publish/', views.notReady_publish, name='notReady_publish'),#old
+    url(r'timetable/', views.timetable, name='timetable'),#old
+    # entering and updataing grade
+    path('entergrades/', views.entergrades, name='entergrades'),#old
+    path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
+         name='update_hidden_grades_multiple'),#old
+    path('verifygrades/', views.verifygrades, name='verifygrades'),#old
+    path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
+         name='update_hidden_grades_multiple'),#old
+    path('submit_hidden_grades_multiple/', views.Submithidden_gradesMultipleView.as_view(),
+         name='submit_hidden_grades_multiple'),#old
+    path('download_excel/', DownloadExcelView.as_view(), name='download_excel'),#old
+
     #new
     url(r'submitGrades/', views.submitGrades, name='submitGrades'),#new
     url(r'submitEntergrades/', views.submitEntergrades, name='submitEntergrades'),#new
@@ -28,35 +39,19 @@ urlpatterns = [
     path('updateEntergrades/', views.updateEntergrades, name='updateEntergrades'),#new
      path('moderate_student_grades/', views.moderate_student_grades.as_view(),#new
          name='moderate_student_grades'),
-
-    # entering and updataing grade
-    path('entergrades/', views.entergrades, name='entergrades'),
-    path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
-         name='update_hidden_grades_multiple'),
-    path('verifygrades/', views.verifygrades, name='verifygrades'),
-
-    path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
-         name='update_hidden_grades_multiple'),
-    path('submit_hidden_grades_multiple/', views.Submithidden_gradesMultipleView.as_view(),
-         name='submit_hidden_grades_multiple'),
-
     # authenticate new
     path('authenticate/', views.authenticate, name='authenticate'), #new
     path('authenticategrades/', views.authenticategrades,
          name='authenticategrades'),#new
     path('update_authentication/', update_authentication.as_view(),
          name='update_authentication'),#new
-
-    # download result
-    path('download_excel/', DownloadExcelView.as_view(), name='download_excel'),
-
     # generate transcript new
     path('generate_transcript/', views.generate_transcript,
          name='generate_transcript'), #new
     path('generate_transcript_form/', views.generate_transcript_form,
          name='generate_transcript_form'),#new
-    # url(r'entergrades/', views.entergrades, name='entergrades'),
-
+    # Announcement
+    url(r'announcement/', views.announcement, name='announcement'),#new
     
 
 ]
