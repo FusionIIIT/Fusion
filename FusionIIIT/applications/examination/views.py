@@ -251,7 +251,7 @@ def authenticategrades(request):  # new
                 course_id=course_instance, course_year=year)
             registrations = authentication.objects.filter(
                 course_id=course_instance, course_year=year)
-            print(registrations)
+            # print(registrations)
             context = {
                 'registrations': registrations,
                 'course_year': year,
@@ -278,7 +278,7 @@ def examination_notif(sender, recipient, type):
                     module=module,
                     verb=verb,
                     flag=flag)
-        print("Notification sent successfully")
+        # print("Notification sent successfully")
     except Exception as e:
         print("Error sending notification:", e)
 
@@ -331,7 +331,7 @@ def announcement(request):
             "request_to": requests_received
         })
     except Exception as e:
-        print("Error in announcement view:", e)
+        # print("Error in announcement view:", e)
         return render(request, 'examination/announcement_req.html', {"error_message": "An error occurred. Please try again later."})
 
 # from rest_framework.views import APIView
@@ -370,8 +370,8 @@ class Updatehidden_gradesMultipleView(APIView):
             #     semester_id=semester_id,
             #     grade=grade
             # )
-            print(
-                f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
+            # print(
+            #     f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
             hidden_grade.save()
 
         # return Response({'message': 'Grades updated successfully'}, status=status.HTTP_200_OK)
@@ -419,8 +419,8 @@ class Submithidden_gradesMultipleView(APIView):
             #     semester_id=semester_id,
             #     grade=grade
             # )
-            print(
-                f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
+            # print(
+            #     f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
             hidden_grade.save()
 
         return render(request, '../templates/examination/grades_updated.html', {})
@@ -435,11 +435,11 @@ class update_authentication(View):
         authenticator2 = request.POST.get('authenticator2')
         authenticator3 = request.POST.get('authenticator3')
 
-        print(course)
-        print(course_year)
-        print(authenticator1)
-        print(authenticator2)
-        print(authenticator3)
+        # print(course)
+        # print(course_year)
+        # print(authenticator1)
+        # print(authenticator2)
+        # print(authenticator3)
 
         # Retrieve the registration object
         try:
@@ -516,12 +516,12 @@ def generate_transcript(request):
     total_course_registered = Register.objects.filter(
         student_id=student_id, semester=semester)
 
-    print(total_course_registered)
+    # print(total_course_registered)
 
     for each_course in total_course_registered:
         course_name = Curriculum.objects.filter(
             curriculum_id=each_course.curr_id_id)
-        print(course_name)
+        # print(course_name)
 
     for course in courses_registered:
         try:
@@ -552,8 +552,8 @@ def generate_transcript(request):
                     course_id=course_instance, course_year=grade.year)
                 all_authenticators_true = False
 
-            print("course")
-            print(course_detail)
+            # print("course")
+            # print(course_detail)
             course_grades[course_detail] = {
                 'grade': grade,
                 'all_authenticators_true': all_authenticators_true
@@ -562,12 +562,12 @@ def generate_transcript(request):
             # Grade not available
             course_grades[course] = "Grading not done yet"
 
-    print(course_grades)
+    # print(course_grades)
     context = {
         'courses_grades': course_grades,
     }
 
-    print(context)
+    # print(context)
 
     return render(request, 'examination/generate_transcript.html', context)
 
@@ -580,7 +580,7 @@ def generate_transcript_form(request):
         batch = request.POST.get('batch')
         specialization = request.POST.get('specialization')
         semester = request.POST.get('semester')
-        print(specialization)
+        # print(specialization)
 
         if specialization == None:
             students = Student.objects.filter(
@@ -614,7 +614,7 @@ def generate_transcript_form(request):
 def updateGrades(request):
     unique_course_ids = Student_grades.objects.values(
         'course_id').distinct()
-    print(unique_course_ids)
+    # print(unique_course_ids)
 
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
@@ -640,9 +640,9 @@ def updateEntergrades(request):
     semester_id = request.GET.get('semester')
     batch = request.GET.get('batch')
 
-    print(course_id)
-    print(semester_id)
-    print(batch)
+    # print(course_id)
+    # print(semester_id)
+    # print(batch)
 
     course_present = Student_grades.objects.filter(
         course_id=course_id, semester=semester_id, batch=batch)
@@ -668,7 +668,7 @@ class moderate_student_grades(APIView):
 
         for student_id, semester_id, course_id, grade in zip(student_ids, semester_ids, course_ids, grades):
             # Create an instance of hidden_grades model and save the data
-            print(course_id, student_id, semester_id, grade)
+            # print(course_id, student_id, semester_id, grade)
 
             try:
                 grade_of_student = Student_grades.objects.get(
@@ -681,8 +681,8 @@ class moderate_student_grades(APIView):
                     course_id=course_id, student_id=student_id, semester_id=semester_id, grade=grade)
                 hidden_grade.save()
 
-            print(
-                f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
+            # print(
+            #     f"Student ID: {student_id}, Semester ID: {semester_id}, Course ID: {course_id}, Grade: {grade}")
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="grades.csv"'
@@ -704,12 +704,12 @@ def submitGrades(request):
 
     course_ids = [entry['curr_id'] for entry in unique_course_ids]
 
-    print(course_ids)
+    # print(course_ids)
 
     courses_info = Curriculum.objects.filter(
         curriculum_id__in=course_ids)
 
-    print(courses_info)
+    # print(courses_info)
 
     context = {
         'courses_info': courses_info,
@@ -722,7 +722,7 @@ def submitEntergrades(request):
     course_id = request.GET.get('course')
     year = request.GET.get('year')
 
-    print(course_id)
+    # print(course_id)
     # print(semester_id)
     # print(batch)
 
@@ -738,7 +738,7 @@ def submitEntergrades(request):
             'message': message
         }
 
-        print(context)
+        # print(context)
         return render(request, '../templates/examination/message.html', context)
 
     students = Register.objects.filter(
@@ -750,7 +750,7 @@ def submitEntergrades(request):
         'year': year
     }
 
-    print(context)
+    # print(context)
 
     return render(request, '../templates/examination/gradeSubmissionForm.html', context)
 
@@ -772,8 +772,8 @@ class submitEntergradesStoring(APIView):
 
         for student_id, batch_id, course_id, semester_id, year_id, mark, grade in zip(student_ids, batch_ids, course_ids, semester_ids, year_ids, marks, grades):
             # Create an instance of hidden_grades model and save the data
-            print(student_id, batch_id, course_id,
-                  semester_id, year_id, mark, grade)
+            # print(student_id, batch_id, course_id,
+            #       semester_id, year_id, mark, grade)
 
             try:
                 grade_of_student = Student_grades.objects.get(
