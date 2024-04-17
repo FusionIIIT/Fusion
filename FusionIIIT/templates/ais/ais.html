@@ -242,13 +242,16 @@ Academic Information System
 
     <div class="three wide column">
 
-        <!-- <div class="row">
-        <div class="ui tab segment" data-tab="ninth">
+        <div class="row">
+        <!-- <div class="ui tab segment" data-tab="ninth">
         {% block filter_stu %}
             {% include 'ais/filter_student.html' %}
+            {% endblock %} -->
+            {% block sidepanel%} 
+            {% include 'notifications/academic_procedures_sidepanel.html' %} 
             {% endblock %}
         </div>
-    </div> -->
+    </div> 
     </div>
 </div>
 {% endblock %}
