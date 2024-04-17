@@ -359,7 +359,7 @@ def department_notif(sender, recipient, type):
                 verb=verb,
                 flag=flag)
 def examination_notif(sender, recipient, type):
-    url='examination:examination'
+    url='examination:updateGrades'
     module='examination'
     sender = sender
     recipient = recipient
