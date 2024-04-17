@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
                      ForumReply, Quiz, QuizQuestion, QuizResult, StudentAnswer,
-                     StudentAssignment, Topics)
+                     StudentAssignment, Topics,Student_grades)
 
 class QuizResultAdmin(admin.ModelAdmin):
     model = QuizResult
@@ -29,3 +29,5 @@ admin.site.register(QuizResult, QuizResultAdmin)
 admin.site.register(Forum)
 
 admin.site.register(ForumReply)
+
+admin.site.register(Student_grades)
