@@ -42,10 +42,19 @@
 {% load static %}
 
 {% block content %}
+
+
+{%if data %}
+
+<div style=" padding-left: 18px; padding-top: 10px; font-size:25px "><br>
+    <center><span style="color: red;font-size:25px">{{ data }}</span></center>
+</div>
+{%endif%}
+{%if not data %}
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="inward">
-            Outward Files
+            Outward Files of "{{request.user.extrainfo.user}} - {{design}}"
             </a>
         </h3>
 
@@ -92,5 +101,5 @@
     </table>
 
     <br>
-
+    {%endif%}
 {% endblock %}

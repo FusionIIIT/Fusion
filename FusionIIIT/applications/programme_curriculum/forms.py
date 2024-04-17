@@ -113,7 +113,9 @@ class CourseForm(ModelForm):
                 + cleaned_data.get("percent_lab_evaluation")
                 + cleaned_data.get("percent_course_attendance")
             )
-
+        
+        # credits = cleaned_data.get("credit")
+        
         if percentages_sum != 100:
             msg = 'Percentages must add up to 100%, they currently add up to ' + str(percentages_sum) + '%'
             self.add_error('percent_quiz_1', msg)
@@ -123,6 +125,10 @@ class CourseForm(ModelForm):
             self.add_error('percent_project', msg)
             self.add_error('percent_lab_evaluation', msg)
             self.add_error('percent_course_attendance', msg)
+            
+        # if credits==0:
+        #     msg2="Credits can't be zero"
+        #     self.add_error('credits', msg2)
         return cleaned_data
     class Meta:
         model = Course

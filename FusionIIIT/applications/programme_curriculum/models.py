@@ -387,8 +387,8 @@ class NewProposalFile(models.Model):
     percent_course_attendance = models.PositiveIntegerField(
         default=5, null=False, blank=False)
     ref_books = models.TextField()
-    subject = models.CharField(max_length=100, null=True, blank=True)
-    description = models.CharField(max_length=400, null=True, blank=True)
+    subject = models.CharField(max_length=100, null=True, blank=False)
+    description = models.CharField(max_length=400, null=True, blank=False)
     upload_date = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default = False)
     is_update= models.BooleanField(default = False)
@@ -400,9 +400,9 @@ class NewProposalFile(models.Model):
 
 class Proposal_Tracking(models.Model):
 
-    file_id = models.CharField(max_length=10, null=False, blank=False)
-    current_id =  models.CharField(max_length=10, null=False, blank=False)
-    current_design = models.CharField(max_length=10, null=False, blank=False)
+    file_id = models.CharField(max_length=100, null=False, blank=False)
+    current_id =  models.CharField(max_length=100, null=False, blank=False)
+    current_design = models.CharField(max_length=100, null=False, blank=False)
     receive_id = models.ForeignKey(User,blank=False,on_delete=models.CASCADE)
     receive_design = models.ForeignKey(Designation, blank=False,on_delete=models.CASCADE)
     disciplines = models.ForeignKey(Discipline, blank=False,on_delete=models.CASCADE)
@@ -414,4 +414,7 @@ class Proposal_Tracking(models.Model):
     is_rejected = models.BooleanField(default = False)
 
     class Meta:
-        unique_together = ('file_id', 'current_id','receive_id','receive_design')
+        # unique_together = ('file_id', 'current_id','receive_id','receive_design')
+        unique_together = ('file_id', 'current_id','current_design','disciplines')
+
+        
