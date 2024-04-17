@@ -118,7 +118,7 @@ def academic_procedures(request):
 def academic_procedures_faculty(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
-    if request.session.get('currentDesignationSelected') != 'faculty':
+    if request.user.extrainfo.user_type != 'faculty':
         return HttpResponseRedirect('/dashboard/')
     #extra info details , user id used as main id
     user_details = ExtraInfo.objects.select_related('user','department').get(user = request.user)
