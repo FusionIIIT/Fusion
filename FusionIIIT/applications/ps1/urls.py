@@ -9,25 +9,25 @@ urlpatterns = [
     url(r'^$', views.ps1, name='ps1'),
     url(r'^create_proposal/$', views.create_proposal, name='create_proposal'),
     # url(r'^compose_indent/$', views.compose_indent, name='compose_indent'),
-    # to see the save indents.
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
 
-    # here id is the Holdsdesignation id 
-    url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
+    # here id is the Holdsdesignation id.
+    url(r'^indentview/(?P<id>\d+)/$', views.indentview, name='indentview'),
+    url(r'^archieveview/(?P<id>\d+)/$', views.archieveview, name='archieveview'),
 
     url(r'^drafts/$', views.drafts, name='drafts'),
-    url(r'^draftview/(?P<id>\d+)$', views.draftview, name='draftview'),
+    url(r'^draftview/(?P<id>\d+)/$', views.draftview, name='draftview'),
     url(r'^inwardIndent/$', views.inward, name='inward'),
 
     # indentview2 is to get all the indentFiles inwarded towards the request.user.
 
-    url(r'^indentview2/(?P<id>\d+)$', views.indentview2, name='indentview2'),
-    url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
-    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
+    url(r'^indentview2/(?P<id>\d+)/$', views.indentview2, name='indentview2'),
+    url(r'^confirmdelete/(?P<id>\d+)/$', views.confirmdelete, name='confirm_delete'),
+    url(r'^delete/(?P<id>\d+)/$',views.delete, name='delete'),
     # forward Indent is to see a specific forwarded indent to ourselves 
     url(r'^forwardindent/(?P<id>\d+)/$', views.forwardindent, name='forwardindent'),
     url(r'^createdindent/(?P<id>\d+)/$', views.createdindent, name='createdindent'),
-
+    url(r'^forwardedIndent/(?P<id>\d+)/$', views.forwardedIndent, name='forwardedIndent'),
     
     url(r'^entry/$', views.entry, name='entry'),
     url(r'^StockEntry/$', views.Stock_Entry, name='Stock_Entry'),
@@ -44,6 +44,7 @@ urlpatterns = [
     # to display stock items which are having similar item_type ,grade and department.(used in current_stock_view)
     url(r'^stock_item_view/$', views.stock_item_view, name='stock_item_view'),
 
+    url(r'^archieved_indents/$', views.archieved_files, name='archieved_indents_view'),
 
 
 

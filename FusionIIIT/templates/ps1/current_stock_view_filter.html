@@ -40,20 +40,11 @@
                     </select>
                 </div>
 
-                <div class="field">
-                    <label>Select Grade
-                    </label>
-                    <select name="grade">
-                        {% for grade in grades %}
-                        <option value="{{grade}}">{{grade}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
 
 
 
 
-                <div>
+                <div style="margin-bottom: 40px;">
                     <a class="right floated item">
 
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
@@ -91,7 +82,6 @@
             <thead>
             <tr>
                     <th>Item Type</th>
-                    <th>Item Grade</th>
                     <th>department</th>
                     <th>Quantity</th>
                     <th>View Stocks</th>
@@ -104,14 +94,12 @@
                 <tr>
                     
                     <td> {{s.item_type}} </td>
-                    <td> {{s.grade}} </td>
                     <td> {{s.department}} </td>
                     <td>{{s.total_quantity}}</td>
 
                     <td>
                         <form action="/purchase-and-store/stock_item_view/" method="POST" >{% csrf_token %}
                         <input hidden  name = 'item_type' value="{{ s.item_type}}">
-                        <input hidden  name = 'grade' value="{{ s.grade}}">
                         <input hidden  name = 'departmentId' value="{{ s.departmentId}}">
                         <button class="ui primary button" >View Stocks</button>
                         </form>

@@ -2,6 +2,20 @@
 {% load static %}
 
 {% block filetracking_tab %}
+<script>
+function limitToOneFile(input) {
+    if (input.files.length > 1) {
+        // Get the first file from the list
+        var file = input.files[0];
+        // Create a new FileList containing only the first file
+        var fileList = new DataTransfer();
+        fileList.items.add(file);
+        // Replace the input files with the new FileList
+        input.files = fileList.files;
+    }
+}
+</script>
+
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="notesheet">
@@ -22,7 +36,6 @@
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
         </div>
 
-            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
 
             {% csrf_token %}
 
@@ -147,6 +160,7 @@
 
                                         <div class="ui divider"></div>
                                     </div>
+
                                     {% for t in track %}
                                     <div class="ui comments">
                                         <div class="comment">
@@ -157,7 +171,7 @@
                                                      </a>
                                                  </a>
 
-                                                 <div class="right floated" style="font-colorz: black;">
+                                                 <div class="right floated" style="font: black;">
                                                      <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
                                                  </div>
 
@@ -180,82 +194,46 @@
 
                                 </div>
 
-                                <br>
 
-                                <!-- <div>{{lastTrackingInstance.receiver_id}} </div>
-                                <div>{{request.user}} </div> -->
-
-                                {% if lastTrackingInstance.receiver_id == request.user %}
-
-                                        <div class="field">
-                                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
-                                        </div>
+                              
 
 
-                                        <!-- <div class="field">
-                                            <label>Send as:
-                                                <select required class="ui fluid search selection dropdown" name="sender">
-                                                    <option selected hidden>Select</option>
-
-                                                    {% for designation in designations %}
-                                                    <option value="{{designation.id}}">{{designation}}</option>
-                                                    {% endfor %}
-
-                                                </select>
-                                            </label>
-                                        </div> -->
-
-        
-                                        <br>
-
-                                        <div class="field">
-                                            <label>Receiver:
-                                                <select required class="ui fluid search selection dropdown" name="receive">
-                                                    <option required selected hidden>Select</option>
-                                                    {% for holdsdesignations in holdsdesignations %}
-                                                    <option value="{{holdsdesignations.id}}">{{holdsdesignations}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-                                        </div> 
+                       
 
 
 
-                                        <div class="field">
-                                            <label for="file">Attach Files: </label>
-                                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
-                                        </div>
 
-                                {% endif %}
+                               
+                                
+                                
+                                
 
                             </div>
                         </div>
                     </div>
 
-                    <br>                      
+                    <br>                      <!--  <a href="/media/" target="_">
+                                                <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u></u></span>
+                                            </a>-->
+
+                        <!--    <div class="content" style="text-indent: 5em">
+                                                        <a class="download icon">
+                                                            <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                                <span>Attachments -</span>
+                                                                <u class="meta" style="color: #1B1C1D"></u>
+                                                            </a>
+                                                        </a>
+                                                        <br>
+                                                        <div class="ui divider"></div>
+                                            <center style="color: dimgrey">FileFlow is possible only when file is forwarded to other employee.</center
+                                                </div>
+                                            </div>
+                                        </div>
+                               </div>
+                        </div>-->
 
 
 
-                <br>
-
-
-            <br>
-            <br>
-            <div >
-                {% if lastTrackingInstance.receiver_id == request.user %}
-                    <button type="submit" name="send" class="ui large right floated primary button">
-                        Send<i class="ui send icon right floated"></i>
-                    </button>
-                {% endif %}
-                
-                {% if isArchivable == True %}
-
-                <button name="Archieve" class="ui large right floated primary button" style="margin-right: 10px; background-color: #D22B2B;"">
-                    Archieve
-                </button>
-                {% endif %}
-            </div>
-            </form>
 
             <br>
     </div>
@@ -335,38 +313,34 @@
     </div>
 
 
-    <script type="text/javascript">
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
-            value = $('#input_search1').val();
-
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
+    <script>
+        $(document).ready(function() {
+            $('#input_search').on('blur', function() {
+                var inputValue = $(this).val();
+                fetchDropdownValues(inputValue);
             });
-            console.log("dsfagdfdshadf");
+            
+            function fetchDropdownValues(inputValue) {
+                $.ajax({
+                    url: `/filetracking/getdesignations/${inputValue}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        populateDropdown(data);
+                    },
+                    error: function() {
+                        console.error('Error fetching dropdown values');
+                    }
+                });
+            }
+            
+            function populateDropdown(values) {
+                console.log(values)
+                var dropdown = $('#receiver_dropdown');
+                dropdown.empty();
+                $.each(values, function(index, value) {
+                    dropdown.append($('<option>').text(value).val(value));
+                });
+            }
         });
     </script>
 

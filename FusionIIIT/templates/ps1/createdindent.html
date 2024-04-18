@@ -2,6 +2,20 @@
 {% load static %}
 
 {% block filetracking_tab %}
+<script>
+function limitToOneFile(input) {
+    if (input.files.length > 1) {
+        // Get the first file from the list
+        var file = input.files[0];
+        // Create a new FileList containing only the first file
+        var fileList = new DataTransfer();
+        fileList.items.add(file);
+        // Replace the input files with the new FileList
+        input.files = fileList.files;
+    }
+}
+</script>
+
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="notesheet">
@@ -158,7 +172,7 @@
                                                      </a>
                                                  </a>
 
-                                                 <div class="right floated" style="font-color: black;">
+                                                 <div class="right floated" style="font: black;">
                                                      <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
                                                  </div>
 
@@ -244,12 +258,13 @@
 
                             <div class="field">
                             <label>Receiver Designation:
-                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                                <!-- <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
                                     <datalist  id="input_list1">
 
-                                    </datalist>
+                                    </datalist> -->
 
-
+                                <select id="receiver_dropdown" name="recieve">
+                                </select>
                                
                             </label>
                         </div>
@@ -270,9 +285,12 @@
                                 </div>-->
 
                                 <div class="field">
-                                    <label for="file">Attach Files: </label>
-                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                                    <label for="file">Attach File: </label>
+                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" onchange="limitToOneFile(this)">
                                 </div>
+                                
+                                
+                                
 
                             </div>
                         </div>
@@ -389,38 +407,34 @@
     </div>
 
 
-    <script type="text/javascript">
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
-            value = $('#input_search1').val();
-
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
+    <script>
+        $(document).ready(function() {
+            $('#input_search').on('blur', function() {
+                var inputValue = $(this).val();
+                fetchDropdownValues(inputValue);
             });
-            console.log("dsfagdfdshadf");
+            
+            function fetchDropdownValues(inputValue) {
+                $.ajax({
+                    url: `/filetracking/getdesignations/${inputValue}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        populateDropdown(data);
+                    },
+                    error: function() {
+                        console.error('Error fetching dropdown values');
+                    }
+                });
+            }
+            
+            function populateDropdown(values) {
+                console.log(values)
+                var dropdown = $('#receiver_dropdown');
+                dropdown.empty();
+                $.each(values, function(index, value) {
+                    dropdown.append($('<option>').text(value).val(value));
+                });
+            }
         });
     </script>
 

@@ -151,7 +151,6 @@
                 <th>vendor</th>
                 <th>Department</th>
                 <th >Quantity</th>
-                <th >Grade  </th>
                 <th >Location Storage</th>
                     <th >recieved_date  </th>
                     <th >bill  </th>
@@ -174,10 +173,16 @@
                 <td>{{s.item_id.file_info.uploader.department}}</td>
                 
                 <td>{{s.current_stock}}</td>
-                <td>{{s.item_id.grade}}</td>
                 <td>{{s.location}}</td>
                 <td>{{s.recieved_date}}</td>
-                <td>{{s.bill}}
+                <td>
+                    <!-- {{s.bill}} -->
+                    {% if s.bill %}
+                        <a href="{{ s.bill.url }}" download>{{ s.bill }}</a>
+                    {% else %}
+                        No bill available
+                    {% endif %}
+                </td>
                     
 
                  

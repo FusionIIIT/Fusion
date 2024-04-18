@@ -36,20 +36,21 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 {% with dept_admin_designations="['Accounts Admin','ps_admin', 'deptadmin_cse', 'deptadmin_ece', 'deptadmin_me', 'deptadmin_sm', 'deptadmin_design', 'deptadmin_liberalarts', 'deptadmin_ns']" %}
+                 {% with dept_admin_designations="['ps_admin', 'deptadmin_cse', 'deptadmin_ece', 'deptadmin_me', 'deptadmin_sm', 'deptadmin_design', 'deptadmin_liberalarts', 'deptadmin_ns']" %}
 
              
                  {% if request.session.currentDesignationSelected  not in dept_admin_designations %}
-                    <a href="/purchase-and-store" class="item">
+                    <a href="/purchase-and-store" class="item {% if '/purchase-and-store/create_proposal' in request.path %}active{% endif %}">
                         File an Indent
                         <i class="right floated chevron right icon"></i>
                     </a>
                     
-                    <a href="/purchase-and-store/composed_indents" class="item">
+                    <a href="/purchase-and-store/composed_indents" class="item {% if '/purchase-and-store/indentview/' in request.path %}active{% endif %}">
                         All Filed Indents
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a href="/purchase-and-store/drafts" class="item">
+
+                    <a href="/purchase-and-store/drafts" class="item {% if '/purchase-and-store/draftview/' in request.path %}active{% endif %}">
                         Saved Indents
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -60,11 +61,16 @@
                     <i class="right floated chevron right icon"></i>
                 </a> -->
 
-                <a href="/purchase-and-store/inwardIndent" class="item">
+                <a href="/purchase-and-store/inwardIndent" class="item {% if '/purchase-and-store/indentview2/' in request.path %}active{% endif %}">
                     Inbox
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+
+                <a href="/purchase-and-store/archieved_indents" class="item {% if '/purchase-and-store/archieveview/' in request.path %}active{% endif %}"> 
+                    Archieved Indents
+                    <i class="right floated chevron right icon"></i>
+                    </a>
 
                 {% if request.session.currentDesignationSelected in dept_admin_designations %}
                 <a href="/purchase-and-store/entry" class="item">
@@ -119,6 +125,8 @@
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
+                {% block sidepanel%} {% include 'notifications/ps1_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
