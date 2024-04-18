@@ -43,7 +43,6 @@ def filetracking(request):
                 context - Holds data needed to make necessary changes in the template.
     """
 
-
     if request.method == "POST":
         try:
             if 'save' in request.POST:
@@ -664,11 +663,10 @@ def finish(request, id):
     return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id,
                                                         'notifications': request.user.notifications.all()})
 
-
 def AjaxDropdown1(request):
 
     """
-    This function returns the designation of receiver  on the forward or compose file template.
+    This function returns the designation of receiver on the forward or compose file template.
 
      @param:
             request - trivial.
@@ -691,7 +689,7 @@ def AjaxDropdown1(request):
 
 def AjaxDropdown(request):
     """
-    This function returns the usernames of receiver  on the forward or compose file template.
+    This function returns the usernames of receiver on the forward or compose file template.
 
      @param:
             request - trivial.
@@ -709,10 +707,6 @@ def AjaxDropdown(request):
             'users': users
         }
         return HttpResponse(JsonResponse(context), content_type='application/json')
-
-
-def test(request):
-    return HttpResponse('success')
 
 
 
