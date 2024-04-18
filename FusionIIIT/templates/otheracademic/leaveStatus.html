@@ -55,6 +55,7 @@
                     </thead>
                     <tbody>
                         {% for entry in form_data %}
+                        {% if entry.roll_no_id == roll_no%}
                         <tr>
                             <td>{{ entry.roll_no_id }}</td>
                             <td>{{ entry.student_name }}</td>
@@ -62,7 +63,12 @@
                             <td>{{ entry.date_from }}</td>
                             <td>{{ entry.date_to }}</td>
                             <td>{{ entry.leave_type }}</td>
-                            <td>{{ entry.upload_file }}</td>
+                            <td>
+                            {%if entry.upload_file == ""%}
+                            {%else%}
+                            <a href={{ entry.upload_file.url }}>Download</a>
+                            {%endif%}
+                            </td>
                             <td>{{ entry.purpose }}</td>
                             <td>{{ entry.address }}</td>
                             <td>
@@ -75,6 +81,7 @@
                                 {% endif %}
                             </td>
                         </tr>
+                        {% endif%}
                         {% endfor %}
                     </tbody>
                 </table>

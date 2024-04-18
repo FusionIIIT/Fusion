@@ -2,8 +2,10 @@ from datetime import datetime
 
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.db import models
+from django import forms
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
+from django.core.exceptions import ValidationError
 
 
 class LeaveFormTable(models.Model):
@@ -70,7 +72,7 @@ class LeavePG(models.Model):
     date_from = models.DateField()
     date_to = models.DateField()
     date_of_application = models.DateField()
-    upload_file = models.FileField(upload_to='leave_doc')
+    upload_file = models.FileField(blank=True)
     address = models.CharField(max_length=100)
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
@@ -80,9 +82,12 @@ class LeavePG(models.Model):
     alt_mobile_no = models.CharField(max_length=100)
     ta_approved = models.BooleanField()
     ta_rejected = models.BooleanField()
+    thesis_approved = models.BooleanField()
+    thesis_rejected = models.BooleanField()
     hod_approved = models.BooleanField()
     hod_rejected = models.BooleanField()
     ta_supervisor=models.CharField(max_length=100)
+    thesis_supervisor=models.CharField(max_length=100)
     hod=models.CharField(max_length=100)
     
 
@@ -205,6 +210,8 @@ class BonafideFormTableUpdated(models.Model):
 
 
 
+
+
 class AssistantshipClaimFormStatusUpd(models.Model):
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     student_name = models.CharField(max_length=100)
@@ -229,15 +236,27 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     Acad_approved = models.BooleanField()
     Acad_rejected = models.BooleanField()
 
-
-    # New fields
-    amount = models.DecimalField(max_digits=10, decimal_places=2,default=0)
-    rate = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     half_day_leave = models.IntegerField(default=0)
     full_day_leave = models.IntegerField(default=0)
 
+    remark = models.TextField(default='')  # New field with an empty default value
+
+    def clean(self):
+        start_date = self.cleaned_data['start_date']
+        end_date = self.cleaned_data['end_date']
+
+        if end_date <= start_date:
+            raise forms.ValidationError("End date must be later than start date")
+    
+        return super(AssistantshipClaimFormStatusUpd, self).clean()
+
     class Meta:
         db_table = 'AssistantshipClaimFormStausUpd'
+
+    
+
 
 
 
@@ -286,8 +305,8 @@ class NoDues(models.Model):
     alumni_notclear = models.BooleanField(default=False)
     placement_cell_clear = models.BooleanField(default=False)
     placement_cell_notclear = models.BooleanField(default=False)
-    discipline_office_dsa_clear=models.BooleanField(default=False)
-    discipline_office_dsa_notclear=models.BooleanField(default=False)
+    # discipline_office_dsa_clear=models.BooleanField(default=False)
+    # discipline_office_dsa_notclear=models.BooleanField(default=False)
 
     hostel_credential =  models.CharField(max_length=100)
     bank_credential =  models.CharField(max_length=100)
@@ -300,6 +319,7 @@ class NoDues(models.Model):
     me_credential =  models.CharField(max_length=100)
     mess_credential =  models.CharField(max_length=100)
     physics_credential =  models.CharField(max_length=100)
+    discipline_credential =  models.CharField(max_length=100)
 
     acad_admin_float = models.BooleanField(default=False)
 

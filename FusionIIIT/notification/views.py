@@ -212,15 +212,31 @@ def otheracademic_notif(sender, recipient, type, otheracademic_id,student,messag
     elif type=='acad_nodues' :
        url = ('otheracademic:dsa_nodues')   
     elif type=='ece_nodues' :
-       url = ('otheracademic:Ece_nodues')   
+       url = ('otheracademic:Ece_nodues')  
     elif type=='library_nodues' :
        url = ('otheracademic:library_nodues')   
     elif type=='mess_nodues' :
        url = ('otheracademic:mess_nodues')   
-    elif type=='pysics_nodues' :
+    elif type=='physics_nodues' :
        url = ('otheracademic:Physics_nodues')
+    elif type=='discipline_nodues' :
+       url = ('otheracademic:discipline_nodues')
     elif type=='me_nodues' :
-       url = ('otheracademic:ME_nodues')                 
+       url = ('otheracademic:ME_nodues')
+    elif type=="ug_leave_hod_approve":
+       url = ('otheracademic:leaveStatus') 
+    elif type=="bonafide_acadadmin":
+       url = ('otheracademic:bonafideApproveForm') 
+    elif type=="bonafide_accept":
+       url = ('otheracademic:bonafideStatus')  
+    elif type=="ast_ta_accept":
+       url = ('otheracademic:assistantship_status')  
+    elif type=="nodues_status":
+       url = ('otheracademic:nodues_status')   
+    elif type=="pg_leave_ta_approve":
+       url = ('otheracademic:leaveStatusPG') 
+    elif type=="pg_leave_thesis":
+       url = ('otheracademic:leaveApproveThesis')                   
     else:
         url=('otheracademic:otheracademic')
 

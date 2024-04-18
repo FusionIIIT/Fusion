@@ -45,7 +45,7 @@
                     <tbody>
                         {% for entry in form_data %}
                         <tr>
-                            {% if not entry.signal_processing_lab_clear and not entry.signal_processing_lab_notclear or not entry.vlsi_clear and entry.vlsi_notclear or not entry.ece_clear and entry.ece_notclear  %}
+                            {% comment %} {% if not entry.signal_processing_lab_clear and not entry.signal_processing_lab_notclear or not entry.vlsi_clear and entry.vlsi_notclear or not entry.ece_clear and entry.ece_notclear  %} {% endcomment %}
                         
                                 <td>{{ entry.roll_no}}</td>
                                 <td>{{ entry.name }}</td>
@@ -105,7 +105,7 @@
 
 
                             
-                            {% endif %}
+                            {% comment %} {% endif %} {% endcomment %}
                         </tr>
                         {% endfor%}
                         <!-- Add more rows for other departments as needed -->

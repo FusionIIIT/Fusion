@@ -59,7 +59,7 @@
                                 <td> 
                                     <form action="{% url 'otheracademic:upload_file' entry_id=entry.id %}" method="post" enctype="multipart/form-data">
                                         {% csrf_token %}
-                                        <input type="file" name="related_document" accept=".pdf, .doc, .docx, .txt">
+                                        <input type="file" name="related_document" accept=".pdf, .doc, .docx, .txt" >
                                         <button type="submit">Upload</button>
                                     </form>
                                 </td>

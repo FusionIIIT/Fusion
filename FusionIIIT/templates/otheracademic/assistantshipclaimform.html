@@ -37,17 +37,10 @@
         <div class="ten wide column">
             <div class="ui active tab segment" data-tab="assistantship_form" id="assistantship_form">
                 <h2>Assistantship Form</h2>
-                <form method="POST" enctype="multipart/form-data" action="{% url 'otheracademic:assistantship_form_submission' %}">
+                <form id="assistantshipclaimform" method="POST" enctype="multipart/form-data" action="{% url 'otheracademic:assistantship_form_submission' %}">
                     {% csrf_token %}
                     <div class="ui form">
-                        <div class="field">
-                            <label>Student Name</label>
-                            <input type="text" name="student_name" required>
-                        </div>
-                        <div class="field">
-                            <label>Roll No.</label>
-                            <input type="text" name="roll_no" required>
-                        </div>
+                       
                         <div class="field">
                             <label>Discipline</label>
                             <input type="text" name="discipline" required>
@@ -55,11 +48,12 @@
                         <div class="fields">
                             <div class="field">
                                 <label>Date From</label>
-                                <input type="date" name="date_from" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="datefrom" name="date_from" style="display: inline-block; width: auto;" required>
                             </div>
                             <div class="field">
                                 <label>Date To</label>
-                                <input type="date" name="date_to" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="dateto" name="date_to" style="display: inline-block; width: auto;" required>
+                               
                             </div>
                         </div>
                         <div class="field">
@@ -102,6 +96,17 @@
         <div class="column"></div>
     </div>
 
+    <script>
+        document.getElementById('assistantshipclaimform').addEventListener('submit', function(event) {
+            var dateFrom = document.getElementById('datefrom').value;
+            var dateTo = document.getElementById('dateto').value;
+        
+            if (dateTo <= dateFrom) {
+                alert('End date must be later than start date');
+                event.preventDefault();  // Prevent form submission
+            }
+        });
+    </script>
 {% endblock %}
 
 

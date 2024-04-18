@@ -36,14 +36,14 @@
                
                 <form id="bonafideForm" class="ui form" method="POST" action="{% url 'otheracademic:bonafide_form_submit' %}">
                     {% csrf_token %}
-                    <div class="field">
+                    {% comment %} <div class="field">
                         <label for="name">Name</label>
                         <input type="text" id="name" name="name" required>
                     </div>
                     <div class="field">
                         <label for="rollNo">Roll Number</label>
                         <input type="text" id="rollNo" name="rollNo" required>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="field">
                         <label for="branch">Branch</label>
                         <input type="text" id="branch" name="branch" required>

@@ -43,13 +43,13 @@
                             <th>Placement Cell</th>
                             <th>Alumni Office</th>
                             <th>Gymkhana</th>
-                            <th>Discipline Office</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
                         {% for entry in form_data %}
                         <tr>
-                            {% if not entry.icard_dsa_clear and not entry.icard_dsa_notclear or not entry.placement_cell_clear and not entry.placement_cell_notclear   or not entry.alumni_clear and not entry.alumni_notclear or not entry.student_gymkhana_clear and not entry.student_gymkhana_notclear or not entry.discipline_office_clear and not entry.discipline_office_notclear %}
+                            {% if not entry.icard_dsa_clear and not entry.icard_dsa_notclear or not entry.placement_cell_clear and not entry.placement_cell_notclear   or not entry.alumni_clear and not entry.alumni_notclear or not entry.student_gymkhana_clear and not entry.student_gymkhana_notclear %}
                          
                                 <td>{{ entry.roll_no }}</td>
                                 <td>{{ entry.name }}</td>
@@ -122,23 +122,7 @@
                                     
                                     {% endif %}
                                 </td>
-                                <td>
-                                    {% if entry.discipline_office_clear %}
-                                        clear
-                                    {% elif entry.discipline_office_notclear %}
-                                        not clear
-                                    {% else %}
-                                    <form action="{% url 'otheracademic:approve_discipline' no_dues_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui green button approve-button" style="margin-bottom : 10px; width:100%" type="submit">Clear</button>
-                                    </form>
-                                    <form action="{% url 'otheracademic:reject_discipline' no_dues_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui red button reject-button" style="width:100%" type="submit">Not Clear</button>
-                                    </form>
-                                    
-                                    {% endif %}
-                                </td>
+                                
                             
                              {% endif %}
                         </tr>

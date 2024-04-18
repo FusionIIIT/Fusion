@@ -44,6 +44,9 @@
                     <a href="/otheracademic/leaveApproveTA/" class="item">Leave Approve (TA)
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    <a href="/otheracademic/leaveApproveThesis/" class=" item">Leave Approve (Thesis)
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     <a href="/otheracademic/leaveStatus_Dip/" class="item">Leave Log (UG)
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -81,6 +84,7 @@
                             </thead>
                             <tbody>
                                 {% for entry in form_data %}
+                                {%if entry.hod == roll_no%}
                                 {% if entry.ta_approved %}
                                 <tr>
                                     {% if not entry.hod_approved and not entry.hod_rejected %}
@@ -95,8 +99,11 @@
                                     <td>{{ entry.date_to }}</td>
                                     <td>{{ entry.leave_type }}</td>
                                     <td>
-                                        <a href='{{ entry.upload_file.url }}'>Download</a>
-                                    </td>
+                                        {%if entry.upload_file == ""%}
+                                        {%else%}
+                                            <a href={{ entry.upload_file.url }}>Download</a>
+                                        {%endif%}
+                                    </td> 
                                     <td>{{ entry.purpose }}</td>
                                     <td>{{ entry.address }}</td>
                                     <td>{{ entry.mobile_no }}</td>
@@ -115,6 +122,7 @@
                                     {% endif %}
                                 </tr>
                                 {% endif %}
+                                {%endif%}
                                 {% endfor %}
                             </tbody>
                         </table>

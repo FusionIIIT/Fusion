@@ -44,13 +44,12 @@
                             <th>Placement Cell</th>
                             <th>Alumni Office</th>
                             <th>Gymkhana</th>
-                            <th>Discipline Office</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for entry in form_data %}
                         <tr>
-                            {% if not entry.icard_dsa_clear  or not entry.placement_cell_clear  or not entry.alumni_clear  or not entry.student_gymkhana_clear  or not entry.discipline_office_clear  %}
+                            {% if not entry.icard_dsa_clear  or not entry.placement_cell_clear  or not entry.alumni_clear  or not entry.student_gymkhana_clear  %}
                          
                                 <td>{{ entry.roll_no }}</td>
                                 <td>{{ entry.name }}</td>
@@ -107,19 +106,7 @@
                                     
                                     {% endif %}
                                 </td>
-                                <td>
-                                    {% if entry.discipline_office_clear %}
-                                        clear
-                                    
-                                    {% else %}
-                                    <form action="{% url 'otheracademic:approve_discipline_not' no_dues_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui green button approve-button" type="submit">Clear</button>
-                                    </form>
-                                    
-                                    
-                                    {% endif %}
-                                </td>
+                                <
                             
                              {% endif %}
                         </tr>
