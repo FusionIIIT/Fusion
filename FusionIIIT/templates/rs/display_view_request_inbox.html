@@ -10,31 +10,10 @@ IPR
 
 {% block body %}
    
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == "success" %}
-                <div class="ui positive message">
-                    <i class="close icon"></i>
-                        {{ message.message }}
-                </div>  
-            {% else %}
-                <div class="ui negative message">
-                    <i class="close icon"></i>
-                    {{ message.message }}
-                </div> 
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+  
 
     <script>
-        $('.message .close')
-            .on('click', function() {
-                $(this)
-                    .closest('.message')
-                    .transition('fade')
-                ;
-            });
-        
+       
         function openFile(event, index) {
             var file = files[index-1];
             var url = file.index

@@ -10,30 +10,11 @@ IPR
 
 {% block body %}
 
-{% if messages %}
-    {% for message in messages %}
-        {% if message.tags == "success" %}
-            <div class="ui positive message">
-                <i class="close icon"></i>
-                    {{ message.message }}
-            </div>  
-        {% else %}
-            <div class="ui negative message">
-                <i class="close icon"></i>
-                {{ message.message }}
-            </div> 
-        {% endif %}
-    {% endfor %}
-{% endif %}
+
 
 <script>
-    $('.message .close')
-        .on('click', function() {
-            $(this)
-                .closest('.message')
-                .transition('fade')
-            ;
-        });
+   
+        
 </script>
 
 <style>
@@ -71,34 +52,50 @@ IPR
 <div style="width:100%">
 <div class="ui pointing secondary menu" style="font-size:25px; width:100%" >
     <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
-        Projects             
-    </label>      
+        Projects          
+
+    </label>
+          
 </div>
 
+ {% if projects|length == 0  %}
+    <div>
+        <h2>No Projects</h2>
+    </div>
+    {% else %}
 <table class="ui celled table">
     <thead>
         <tr style="background-color: #4CAF50; color: white;">
-            <th>S.No.</th>
+            {% comment %} <th>S.No.</th> {% endcomment %}
             {% comment %} <th>Project ID</th> {% endcomment %}
             <th>Project Name</th>
-            <th>Project Type</th>
+            {% comment %} <th>Project Type</th> {% endcomment %}
             <th>Sponsored Agency</th>
-            <th>Years</th>
+            {% comment %} <th>Years</th> {% endcomment %}
             <th>Status</th>
+            {% if global_var == "rspc_admin" %}
             <th>Financial Outlay</th>
+            {% endif %}
             <th>Staff Details</th>
             <th>Project Info</th>
+            
         </tr>
     </thead>
     <tbody>
         {% for project in projects %}
         <tr>
-            <td>{{forloop.counter}}</td>
+            {% comment %} <td>{{forloop.counter}}</td> {% endcomment %}
             {% comment %} <td>{{project.project_id}}</td> {% endcomment %}
-            <td>{{project.project_name}}</td>
-            <td>{{project.project_type}}</td>
+            <td>
+                {% if project.project_name|length > 10 %}
+                {{ project.project_name|slice:":10" }}...
+                {% else %}
+                {{ project.project_name }}
+                {% endif %}
+            </td>
+            {% comment %} <td>{{project.project_type}}</td> {% endcomment %}
             <td>{{project.sponsored_agency}}</td>
-            <td>{{project.years}}</td>
+            {% comment %} <td>{{project.years}}</td> {% endcomment %}
             <td>
                 {% if project.status == 0 %}
                 <div class="ui teal label">OnGoing</div>
@@ -107,16 +104,21 @@ IPR
                 <div class="ui teal label">Completed</div>
                 {% endif %}
             </td>
+            {% if global_var == "rspc_admin" %}
             <td>
-                {% if project.financial_outlay_status == 0 %}
+                {% if project.financial_outlay_status == 0  %}
+
                 <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
                 {% endif %}
                 {% if project.financial_outlay_status == 1 %}
                 <button id="vhello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('vhello{{ project.project_id }}')" onmouseout="restoreText('vhello{{ project.project_id }}')" onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'"><i class="eye icon"></i></button>
                 {% endif %}
             </td>
+            {% endif %}
             <td>
+                {% if request.user.extrainfo.user_type == "staff" %}
                 <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})" onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
+                {% endif %}
                 <button id="hello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_staff_details/{{ project.project_id }}'"><i class="eye icon"></i></button>
             </td>
             
@@ -127,6 +129,7 @@ IPR
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
 </div>
 <script>
   function changeText(pid) {

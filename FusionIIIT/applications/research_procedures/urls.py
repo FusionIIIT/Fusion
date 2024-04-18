@@ -5,7 +5,7 @@ from . import tests
 app_name="research_procedures"
 
 urlpatterns = [
-      url(r'^$', views.projectss, name='patent_registration'),
+      url(r'^$', views.view_projects, name='patent_registration'),
       url(r'^update$', views.patent_status_update, name='patent_status_update'),
       url(r'^research_group$', views.research_group_create, name='research_group_create'),
       url(r'^project_insert$',views.project_insert,name='project_insert'),
@@ -15,7 +15,7 @@ urlpatterns = [
       # path('add_requests/<id>/<pj_id>/',views.add_requests,name='add_requests'),
       url(r'^api/',include('applications.research_procedures.api.urls')),
       # path('view_requests/<id>/',views.view_requests),
-      path('projects',views.projectss),
+      
       path('view_project_info/<id>/',views.view_project_info),
       # path('submit_closure_report/<id>/',views.submit_closure_report, name="submit_closure_report"),
       # path('add_fund_requests/<pj_id>/',views.add_fund_requests, name="add_fund_requests"),
@@ -31,6 +31,10 @@ urlpatterns = [
       path('inbox',views.inbox, name="inbox"),
       path('view_request_inbox',views.view_request_inbox, name="view_request_inbox"),
       path('forward_request',views.forward_request, name="forward_request"),
+      path('update_financial_outlay/<pid>/',views.update_financial_outlay,name="update_financial_outlay"),
+      path('approve_request/<id>/',views.approve_request,name="approve_request"),
+      
+      #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       
       url(r'^test/$',tests.testfun,name = 'test'),

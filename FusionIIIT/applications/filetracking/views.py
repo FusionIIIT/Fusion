@@ -15,9 +15,12 @@ from .utils import *
 from django.utils.dateparse import parse_datetime
 from .sdk.methods import *
 from .decorators import *
+import json
+
 
 @login_required(login_url="/accounts/login/")
 @user_is_student
+@dropdown_designation_valid
 def filetracking(request):
     """
         The function is used to create files by current user(employee).
@@ -39,7 +42,8 @@ def filetracking(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
-    print(request.POST)
+
+
     if request.method == "POST":
         try:
             if 'save' in request.POST:
@@ -55,12 +59,17 @@ def filetracking(request):
                         request, "File should not be greater than 10MB")
                     return redirect("/filetracking")
 
+                extraJSON = {
+                    'remarks': request.POST.get('remarks'),
+                }
+
                 File.objects.create(
                     uploader=uploader,
                     description=description,
                     subject=subject,
                     designation=designation,
-                    upload_file=upload_file
+                    upload_file=upload_file,
+                    file_extra_JSON=extraJSON
                 )
 
                 messages.success(request, 'File Draft Saved Successfully')
@@ -132,35 +141,42 @@ def filetracking(request):
     extrainfo = ExtraInfo.objects.select_related('user', 'department').all()
     holdsdesignations = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').all()
-    designations = get_designation(request.user)
+
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
+
+
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
 
     context = {
         'file': file,
         'extrainfo': extrainfo,
         'holdsdesignations': holdsdesignations,
-        'designations': designations,
+        'designation_name': designation_name,
+        'designation_id': designation_id,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/composefile.html', context)
 
 
 @login_required(login_url="/accounts/login")
 def draft_design(request):
+    """ 
+    This function redirects the user to the drafts page of designation selected in dropdown 
+     @param:
+            request - trivial.
     """
-        The function is used to get the designation of the user and renders it on draft template.
 
-        @param:
-                request - trivial.
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
 
-        @variables:
-
-
-                context - Holds data needed to make necessary changes in the template.
-    """
-    designation = get_designation(request.user)
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/draft_design.html', context)
+    return redirect('/filetracking/drafts/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url="/accounts/login")
@@ -175,6 +191,7 @@ def drafts_view(request, id):
     @parameters
       draft - file obeject containing all the files created by user
       context - holds data needed to render the template
+
 
 
 
@@ -199,6 +216,7 @@ def drafts_view(request, id):
     context = {
         'draft_files': draft_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/drafts.html', context)
 
@@ -218,6 +236,7 @@ def outbox_view(request, id):
         @variables:
                 outward_files - File objects filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
+
 
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
@@ -241,11 +260,15 @@ def outbox_view(request, id):
         f['uploader'] = get_extra_info_object_from_id(f['uploader'])
 
     outward_files = add_uploader_department_to_files_list(outward_files)
+    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
+        'user', 'working', 'designation').get(pk=id)
+    s = str(user_HoldsDesignation_obj).split(" - ")
+    designation = s[1]
 
     context = {
-
         'out_files': outward_files,
         'viewer_designation': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/outbox.html', context)
 
@@ -288,11 +311,10 @@ def inbox_view(request, id):
         
     inward_files = add_uploader_department_to_files_list(inward_files)
 
-
     context = {
-
         'in_file': inward_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/inbox.html', context)
 
@@ -300,40 +322,37 @@ def inbox_view(request, id):
 @login_required(login_url="/accounts/login")
 def outward(request):
     """ 
-    This function fetches the different designations of the user and renders it on outward template 
+    This function redirects the user to the outbox page of designation selected in dropdown 
      @param:
             request - trivial.
-
-    @variables:
-            context - Holds the different designation data of the user
-
     """
-    designation = get_designation(request.user)
 
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/outward.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/outbox/' + str(dropdown_HoldsDesignation_obj.id))
+
+
 
 
 @login_required(login_url="/accounts/login")
 def inward(request):
-    """
-     This function fetches the different designations of the user and renders it on inward template 
-
-
+    """ 
+    This function redirects the user to the inbox page of designation selected in dropdown 
      @param:
             request - trivial.
-
-    @variables:
-            context - Holds the different designation data of the user
     """
-    designation = get_designation(request.user)
-    context = {
 
-        'designation': designation,
-    }
-    return render(request, 'filetracking/inward.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/inbox/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url = "/accounts/login")
@@ -404,6 +423,7 @@ def view_file(request, id):
         'track': track,
         'forward_enable': forward_enable, 
         'archive_enable': archive_enable,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/viewfile.html', context)
 
@@ -515,11 +535,23 @@ def forward(request, id):
 
     designations = get_designation(request.user)
 
-    context = {
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
 
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
+
+    context = {
         'designations': designations,
         'file': file,
         'track': track,
+        'designation_name': designation_name,
+        'designation_id': designation_id,
+
+        'notifications': request.user.notifications.all()
     }
 
     return render(request, 'filetracking/forward.html', context)
@@ -527,13 +559,19 @@ def forward(request, id):
 
 @login_required(login_url="/accounts/login")
 def archive_design(request):
-    designation = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').filter(user=request.user)
+    """ 
+    This function redirects the user to the archive page of designation selected in dropdown 
+     @param:
+            request - trivial.
+    """
 
-    context = {
-        'designation': designation,
-    }
-    return render(request, 'filetracking/archive_design.html', context)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    dropdown_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
+
+    return redirect('/filetracking/archive/' + str(dropdown_HoldsDesignation_obj.id))
 
 
 @login_required(login_url="/accounts/login")
@@ -573,6 +611,7 @@ def archive_view(request, id):
     context = {
         'archive_files': archive_files,
         'designations': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/archive.html', context)
 
@@ -595,6 +634,7 @@ def finish_design(request):
 
     context = {
         'designation': designation,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/finish_design.html', context)
 
@@ -612,6 +652,7 @@ def finish_fileview(request, id):
 
         'out': out,
         'abcd': abcd,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/finish_fileview.html', context)
 
@@ -628,7 +669,8 @@ def finish(request, id):
             track.update(is_read=True)
             messages.success(request, 'File Archived')
 
-    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id})
+    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id,
+                                                        'notifications': request.user.notifications.all()})
 
 
 def AjaxDropdown1(request):
@@ -722,6 +764,7 @@ def forward_inward(request,id):
         'designations': designations,
         'file': file,
         'track': track,
+        'notifications': request.user.notifications.all()
     }
     return render(request, 'filetracking/forward.html', context)
 
@@ -798,6 +841,7 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'notifications': request.user.notifications.all()
                 }
                 return render(request, 'filetracking/editdraft.html', context)
             receive = request.POST.get('receive')
@@ -811,6 +855,7 @@ def edit_draft_view(request, id, *args, **kwargs):
 
                     'designations': designations,
                     'file': file,
+                    'notifications': request.user.notifications.all()
                 }
                 return render(request, 'filetracking/editdraft.html', context)
 
@@ -829,11 +874,30 @@ def edit_draft_view(request, id, *args, **kwargs):
 
     designations = get_designation(request.user)
 
-    context = {
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
 
+
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
+    remarks = None
+    receive = None
+    receiver = None
+
+    if file.file_extra_JSON and file.file_extra_JSON['remarks']:
+        remarks = file.file_extra_JSON['remarks']
+
+    context = {
         'designations': designations,
         'file': file,
-        'track': track,
+        'track': track,        
+        'designation_name': designation_name,
+        'designation_id': designation_id,
+        'remarks' : remarks,
+        'notifications': request.user.notifications.all()
     }
 
     return render(request, 'filetracking/editdraft.html', context)
