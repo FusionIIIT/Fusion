@@ -545,6 +545,7 @@ def forward(request, id):
                 remarks=remarks,
                 upload_file=upload_file,
             )
+        file_tracking_notif(request.user, receiver_id, file.subject)
         messages.success(request, 'File sent successfully')
 
     designations = get_designation(request.user)
