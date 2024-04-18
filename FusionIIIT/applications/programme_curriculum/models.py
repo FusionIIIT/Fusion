@@ -126,10 +126,10 @@ class Curriculum(models.Model):
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
-    max_digits=5, 
+    max_digits=2, 
     decimal_places=1,  
     default=1.0, 
-    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
@@ -343,6 +343,145 @@ class CourseInstructor(models.Model):
 
       def __self__(self):
             return '{} - {}'.format(self.course_id, self.instructor_id)
+        
+
+
+
+class CourseProposal(models.Model):
+    '''
+        Current Purpose : To store the details regarding a course
+        
+
+        
+        
+
+        ATTRIBUTES :
+
+        code(char) -  the course code (eg CS3005)
+        name(char) -  the name of the course(eg Machine Learning)
+        credit(Integer) -  the credits defined for the course
+        lecture_hours(integer) -  lecture hours defined for the course
+        tutorial_hours(Integer) - tutorial hours defined for the course
+        practical_hours(Integer)  - practical hours defined for the course
+        discussion_hours(Integer) - discussion hours
+        project_hours(Integer) - project hours
+        pre_requisits(Boolean) -  denote whether  this course has prerequisites(courses that one should take before opting this )
+        pre_requisit_courses(programme_curriculum.Course) - link to set of prerequisite courses
+        syllabus(text) - syllabus described for the course
+        percent_quiz_1(+ve int)  - defined weightage in marking
+        percent_midsem(+ve int)  - defined weightage in marking
+        percent_quiz_2(+ve int)  - defined weightage in marking
+        percent_endsem (+ve int)  - defined weightage in marking
+        percent_project(+ve int)  - defined weightage in marking
+        percent_lab_evaluation (+ve int)  - defined weightage in marking
+        percent_course_attendance (+ve int)  - defined weightage in marking
+        ref_books(text) - reference books suggested for the course
+        working_course(boolean) - to denote whether the course is currently in execution or not
+        disciplines(programme_curriculum.Discipline) - to store which discipline is offering the course
+
+
+    '''
+    faculty_name=models.CharField(max_length=100, null=False,blank=False)
+    faculty_code = models.CharField(max_length=10, null=False, blank=False)
+    code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False,blank=False)
+    credit = models.PositiveIntegerField(default=3, null=False, blank=False)
+    lecture_hours = PositiveIntegerField(default=3,null=True, )
+    tutorial_hours = PositiveIntegerField(default=0,null=True)
+    pratical_hours = PositiveIntegerField(default=0,null=True)
+    discussion_hours = PositiveIntegerField(default=0,null=True)
+    project_hours = PositiveIntegerField(default=0,null=True)
+    pre_requisits = models.TextField(null=True, blank=True)
+    pre_requisit_courses = models.ManyToManyField(Course, blank=True)
+    syllabus = models.TextField()
+    percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
+    percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
+    ref_books = models.TextField()
+    disciplines = models.ManyToManyField(Discipline, blank=True)
+    status = models.PositiveIntegerField(default=0,null=False, blank=False)
+    
+    class Meta:
+        unique_together = ('code', 'faculty_code',)        
+    
+    def __str__(self):
+        return str(self.faculty_name + " - " +self.faculty_code+" - "+self.code + " - "+self.name)
+
+    # @property
+    # def courseslots(self):
+    #     return CourseSlot.objects.filter(courses=self.id)
+
+
+
+class UpdateCourseProposal(models.Model):
+    '''
+        Current Purpose : To store the details regarding a update course proposal forms
+        ATTRIBUTES :
+
+        code(char) -  the course code (eg CS3005)
+        name(char) -  the name of the course(eg Machine Learning)
+        credit(Integer) -  the credits defined for the course
+        lecture_hours(integer) -  lecture hours defined for the course
+        tutorial_hours(Integer) - tutorial hours defined for the course
+        practical_hours(Integer)  - practical hours defined for the course
+        discussion_hours(Integer) - discussion hours
+        project_hours(Integer) - project hours
+        pre_requisits(Boolean) -  denote whether  this course has prerequisites(courses that one should take before opting this )
+        pre_requisit_courses(programme_curriculum.Course) - link to set of prerequisite courses
+        syllabus(text) - syllabus described for the course
+        percent_quiz_1(+ve int)  - defined weightage in marking
+        percent_midsem(+ve int)  - defined weightage in marking
+        percent_quiz_2(+ve int)  - defined weightage in marking
+        percent_endsem (+ve int)  - defined weightage in marking
+        percent_project(+ve int)  - defined weightage in marking
+        percent_lab_evaluation (+ve int)  - defined weightage in marking
+        percent_course_attendance (+ve int)  - defined weightage in marking
+        ref_books(text) - reference books suggested for the course
+        working_course(boolean) - to denote whether the course is currently in execution or not
+        disciplines(programme_curriculum.Discipline) - to store which discipline is offering the course
+
+
+    '''
+    faculty_name=models.CharField(max_length=100, null=False,blank=False)
+    faculty_code = models.CharField(max_length=10, null=False, blank=False)
+    code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False,blank=False)
+    credit = models.PositiveIntegerField(default=0, null=False, blank=False)
+    lecture_hours = PositiveIntegerField(null=True, )
+    tutorial_hours = PositiveIntegerField(null=True)
+    pratical_hours = PositiveIntegerField(null=True)
+    discussion_hours = PositiveIntegerField(null=True)
+    project_hours = PositiveIntegerField(null=True)
+    pre_requisits = models.TextField(null=True, blank=True)
+    pre_requisit_courses = models.ManyToManyField(Course, blank=True)
+    syllabus = models.TextField()
+    percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
+    percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
+    ref_books = models.TextField()
+    working_course = models.BooleanField(default=True)
+    disciplines = models.ManyToManyField(Discipline, blank=True)
+    status = models.PositiveIntegerField(default=0,null=False, blank=False)
+    
+    class Meta:
+        unique_together = ('code', 'faculty_code',)        
+    
+    def __str__(self):
+        return str(self.faculty_name + " - " +self.faculty_code+" - "+self.code + " - "+self.name)
+
+    # @property
+    # def courseslots(self):
+    #     return CourseSlot.objects.filter(courses=self.id)
+
+
         
 
 class NewProposalFile(models.Model):
