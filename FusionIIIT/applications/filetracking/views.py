@@ -895,8 +895,10 @@ def edit_draft_view(request, id, *args, **kwargs):
                 remarks=remarks,
                 upload_file=upload_file,
             )
+            
         file_tracking_notif(request.user, receiver_id, subject)
         messages.success(request, 'File sent successfully')
+        return render(request, 'filetracking/composefile.html')
 
     designations = get_designation(request.user)
 
