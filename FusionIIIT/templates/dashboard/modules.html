@@ -393,7 +393,8 @@
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                                      
-                        {% if request.user.extrainfo.user_type == "student"  or  "hall1_caretaker" == global_var or  "hall1_warden" == global_var  or "hall3_caretaker" == global_var  or  "hall3_warden" == global_var or "hall4_caretaker" == global_var  or  "hall4_warden" == global_var %}
+                       {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
+                        
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">

@@ -416,3 +416,26 @@ def research_procedures_notif(sender,recipient,type):
 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
 
+def hostel_notifications(sender, recipient, type):
+    url = 'hostelmanagement:hostel_view'
+    module = 'Hostel Management'
+    
+    sender = sender
+    recipient = recipient
+    verb = ""
+    if type == "leave_accept":
+        verb = "Your leave request has been Accepted."
+    elif type == "leave_reject":
+        verb = "Your leave request has been Rejected."
+    elif type == "guestRoom_accept":
+        verb = "Your Guest Room request has been Accepted."
+    elif type == "guestRoom_reject":
+        verb = "Your Guest Room request has been Rejected."
+    elif type == "leave_request":
+        verb = "You have a new Leave Request."
+    elif type == "guestRoom_request":
+        verb = "You have a new Guest Room Request."
+    elif type == "fine_imposed":
+        verb = "A fine has been imposed on you."
+    
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
