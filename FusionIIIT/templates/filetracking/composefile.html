@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block filetracking_tab %}
-    {% comment %}the compounder prescription tab starts here {% endcomment %}
-
 
     <div class="ui pointing secondary menu">
         <h3>
@@ -12,116 +10,73 @@
             </a>
         </h3>
     </div>
-    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+
     <div class="ui active tab" data-tab="composefile">
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
+                <div class="content">
 
-                <!--<div class="field">
-                    <label>File ID.</label>
-                    <div class="ui fluid input">
-                        <input type="number" min="1" max="9999" size="4" name="fileid" required>
-                    </div>
-                </div>
-                {% if IntegrityError %}
-                    <span>FileID already exists</span>
-                {% endif %}-->
-
-                <!--<div class="field">
-                    <label>Designation</label>
-                    <select class="ui fluid search selection dropdown" name="receiver">
-                        <option selected hidden>Select</option>
-
-                    </select>
-                </div>-->
-
-                <div class="field">
+                    <div class="field">
                         <label>Title of File</label>
                         <textarea rows="1" name="title" required></textarea>
-                </div>
+                    </div>
 
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea rows="3" name="desc" required></textarea>
+                    </div>
 
+                    <div class="field" style="margin-top: 30px">
+                        <label>Create as: {{ designation_name }}</label>
+                        <input type="hidden" name="design" value="{{ designation_id }}">
+                    </div>
 
-                <div class="field">
-                    <label>Description</label>
-                    <textarea rows="3" name="desc" required></textarea>
-                </div>
+                    <div class="field" style="margin-top: 25px">
+                        <label for="remarks" >Remarks</label>
+                        <textarea rows="2" name="remarks"></textarea>
+                    </div>
 
+                    <div class="left floated item" style="margin-top: 30px">
+                        <label for="file">Attach Files  ( PDF, JPEG, PNG, JPG, ZIP ) (Maximum Size Allowed 10 MB)</label>
+                        <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip" >
+                    </div>
 
-                <div class="field">
-                    <label>Create as: {{ designation_name }}</label>
-                    <input type="hidden" name="design" value="{{ designation_id }}">
-                </div>
-
-                <br>
-
-                <div class = "left floated item">
-                      <label for="file">Attach Files  ( PDF, JPEG, PNG, JPG ) (Maximum Size Allowed 10 MB)</label>
-                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip" >
-                </div>
-
-                <br>
-
-                <div>
-                    <a class="right floated item">
-
+                    <div class="field" style="margin-top:30px">
                         <button type="submit" name="save" class="ui large right floated primary button">
                             Save to drafts<i class="ui save icon right floated"></i>
                         </button>
-                    </a>
-                </div>
+                    </div>
 
-                <br>
-                <br>
-                <div class="field">
-                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
-                </div>
+                    <div class="field">
+                        <label>Forward To:
+                                <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                <datalist  id="input_list">
+                                </datalist>
+                        </label>
+                    </div>
 
-                <div class="field">
-                            <label>Forward To:
+                    <div class="field">
+                        <label>Receiver Designation:
+                            <select id="receiver_dropdown" name="receive">
+                                <!-- Dropdown options will be dynamically populated here -->
+                            </select>
+                        </label>
+                    </div>
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
-                                    <datalist  id="input_list">
-
-                                    </datalist>
-                               
-                            </label>
-                </div>
-
-                <div class="field">
-                    <label>Receiver Designation:
-                        <select id="receiver_dropdown" name="receive">
-                            <!-- Dropdown options will be dynamically populated here -->
-                        </select>
-                    </label>
-                </div>
-
-
-                <div>
-                    <a class="right floated item">
-
+                    <div class="field" style="margin-top:30px">
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
-                                Send<i class="ui send icon right floated"></i>
-                            </button>
-                    </a>
+                            Send<i class="ui send icon right floated"></i>
+                        </button>
+                    </div>
+
+                    <br>
                 </div>
-
-
-
             </form>
-
-            <br>
-
         </div>
-
-        <br>
-        <div class="extra content"></div>
     </div>
-    {% comment %}the compounder prescription tab ends here {% endcomment %}
-
 
 <script type="text/javascript">
 
@@ -235,5 +190,4 @@
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
-
 
