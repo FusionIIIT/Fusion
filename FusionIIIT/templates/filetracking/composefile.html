@@ -20,34 +20,15 @@
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
 
-                <!--<div class="field">
-                    <label>File ID.</label>
-                    <div class="ui fluid input">
-                        <input type="number" min="1" max="9999" size="4" name="fileid" required>
-                    </div>
-                </div>
-                {% if IntegrityError %}
-                    <span>FileID already exists</span>
-                {% endif %}-->
-
-                <!--<div class="field">
-                    <label>Designation</label>
-                    <select class="ui fluid search selection dropdown" name="receiver">
-                        <option selected hidden>Select</option>
-
-                    </select>
-                </div>-->
-
                 <div class="field">
                         <label>Title of File</label>
                         <textarea rows="1" name="title" required></textarea>
                 </div>
 
 
-
                 <div class="field">
                     <label>Description</label>
-                    <textarea rows="3" name="desc" required></textarea>
+                    <textarea rows="3" name="desc"></textarea>
                 </div>
 
 
@@ -59,7 +40,7 @@
                 <br>
 
                 <div class = "left floated item">
-                      <label for="file">Attach Files  ( PDF, JPEG, PNG, JPG ) (Maximum Size Allowed 10 MB)</label>
+                      <label for="file">Attach Files  ( PDF, JPEG, PNG, ZIP) (Maximum Size Allowed 10 MB)</label>
                       <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
