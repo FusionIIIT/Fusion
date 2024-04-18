@@ -111,7 +111,6 @@ def filetracking(request):
                     return redirect('/filetracking/')
                 receive = request.POST.get('receive')
                 try:
-                    print(receive)
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -128,7 +127,6 @@ def filetracking(request):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-                # office_module_notif(request.user, receiver_id)
                 file_tracking_notif(request.user, receiver_id, subject)
                 messages.success(request, 'File sent successfully')
 
@@ -191,9 +189,6 @@ def drafts_view(request, id):
     @parameters
       draft - file obeject containing all the files created by user
       context - holds data needed to render the template
-
-
-
 
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
@@ -543,14 +538,12 @@ def forward(request, id):
     designation_id = get_HoldsDesignation_obj(
         username, designation_name).id
 
-
     context = {
         'designations': designations,
         'file': file,
         'track': track,
         'designation_name': designation_name,
         'designation_id': designation_id,
-
         'notifications': request.user.notifications.all()
     }
 
@@ -619,7 +612,6 @@ def archive_view(request, id):
 
 @login_required(login_url="/accounts/login")
 def archive_finish(request, id):
-    # file = get_object_or_404(File, ref_id=id)
     file1 = get_object_or_404(File, id=id)
     track = Tracking.objects.filter(file_id=file1)
 
