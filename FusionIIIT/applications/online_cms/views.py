@@ -273,7 +273,7 @@ def course(request, course_code):
                        'notifications': notifs})
 
     else:
-        if request.session.get('currentDesignationSelected') == "faculty" and request.session.get('currentDesignationSelected') == "Associate Professor" and request.session.get('currentDesignationSelected') == "Professor" and request.session.get('currentDesignationSelected') == "Assistant Professor":
+        if request.session.get('currentDesignationSelected') != "faculty" and request.session.get('currentDesignationSelected') != "Associate Professor" and request.session.get('currentDesignationSelected') != "Professor" and request.session.get('currentDesignationSelected') != "Assistant Professor":
             return HttpResponseRedirect('/dashboard/')
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
         for ins in instructor:
