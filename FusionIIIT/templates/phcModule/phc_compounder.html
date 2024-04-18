@@ -39,11 +39,11 @@
                 <div class="ui large fluid vertical pointing menu">
 
                     <a class=" active item" data-tab="fourth">
-                        Appointment
+                        Patient Logs
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="fifth">
-                        Prescribe
+                        Generate Report
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="seventh">
@@ -51,11 +51,11 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="eigth">
-                        Doctor Schedule
+                        Schedule
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="ninth">
-                        Doctors
+                        Doctors/Pathologists
                         <i class="right floated chevron right icon"></i>
                     </a>
 
@@ -89,8 +89,8 @@
 
             {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
             <div class="ui active tab segment" data-tab="fourth" style='height:650px;width:820px;overflow-x:scroll'>
-                {% block comapproval %}
-                    {% include 'phcModule/comapproval.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
+                {% block patientlog %}
+                    {% include 'phcModule/patientlog.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
                 {% endblock %}
             </div>
             {% comment %}The appointment approval tab ends here!{% endcomment %}
