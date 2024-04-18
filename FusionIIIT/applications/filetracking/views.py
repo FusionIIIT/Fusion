@@ -160,6 +160,8 @@ def filetracking(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def draft_design(request):
     """ 
     This function redirects the user to the drafts page of designation selected in dropdown 
@@ -177,6 +179,8 @@ def draft_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def drafts_view(request, id):
     """
     This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
@@ -216,6 +220,8 @@ def drafts_view(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def outbox_view(request, id):
     """
          The function is used to get all the files sent by user(employee) to other employees
@@ -268,6 +274,8 @@ def outbox_view(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def inbox_view(request, id):
     """
     The function is used to fetch the files received by the user form other employees. 
@@ -314,6 +322,8 @@ def inbox_view(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def outward(request):
     """ 
     This function redirects the user to the outbox page of designation selected in dropdown 
@@ -333,6 +343,8 @@ def outward(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def inward(request):
     """ 
     This function redirects the user to the inbox page of designation selected in dropdown 
@@ -350,6 +362,8 @@ def inward(request):
 
 
 @login_required(login_url = "/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def confirmdelete(request,id):
     """
      The function is used to confirm the deletion of a file.
@@ -370,6 +384,8 @@ def confirmdelete(request,id):
     return render(request, 'filetracking/confirmdelete.html', context)
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def view_file(request, id): 
     ''' 
     This function is used to view a particular file received by an employee from another.
@@ -422,6 +438,8 @@ def view_file(request, id):
     return render(request, 'filetracking/viewfile.html', context)
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_file(request, id): 
     '''This function is used to archive a file.
        It returns unauthorized access if the user is not file uploader 
@@ -441,6 +459,8 @@ def archive_file(request, id):
         return render(request, 'filetracking/composefile.html')
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def forward(request, id):
     """
             The function is used to forward files received by user(employee) from other
@@ -550,6 +570,8 @@ def forward(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_design(request):
     """ 
     This function redirects the user to the archive page of designation selected in dropdown 
@@ -567,6 +589,8 @@ def archive_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_view(request, id):
     """
     The function is used to fetch the files in the user's archive 
@@ -610,6 +634,8 @@ def archive_view(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_finish(request, id):
     file1 = get_object_or_404(File, id=id)
     track = Tracking.objects.filter(file_id=file1)
@@ -618,6 +644,8 @@ def archive_finish(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish_design(request):
 
     designation = HoldsDesignation.objects.select_related(
@@ -631,6 +659,8 @@ def finish_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish_fileview(request, id):
 
     out = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
@@ -649,6 +679,8 @@ def finish_fileview(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish(request, id):
     # file = get_object_or_404(File, ref_id=id)
     file1 = get_object_or_404(File, id=id)
@@ -711,6 +743,8 @@ def AjaxDropdown(request):
 
 
 @login_required(login_url = "/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def delete(request,id):
     """ 
      The function is used the delete of a file and it returns to the drafts page. 
@@ -725,6 +759,8 @@ def delete(request,id):
     return redirect('/filetracking/draftdesign/')
 
 
+@user_is_student
+@dropdown_designation_valid
 def forward_inward(request,id):
     """ This function is used forward the files which are available in the inbox of the user .
 
@@ -773,6 +809,8 @@ def unarchive_file(request, id):
     
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def edit_draft_view(request, id, *args, **kwargs):
     """
             The function is used to edit and send drafted files, and also alter their title and subject 
