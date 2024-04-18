@@ -16,13 +16,13 @@
                 TODO: Add a If-Else here!
             {% endcomment %}
             {% if user %}
-                <div style="display:flex;flex-wrap:wrap;justify-content:space-between;" class="ui large header">
-                    <div style="padding: 0.25rem;">
+                <div style="display:flex;justify-content:space-between;flex-direction: column;" class="ui large header">
+                    <div style="padding: 0.25rem; word-wrap: break-word;">
                         {{ user.first_name }}
                         {{ user.last_name }}
                     </div>
                 
-                    <div class="meta" style="padding: 0.25rem;">
+                    <div class="meta" style="padding: 0.25rem;word-wrap: break-word;">
                         {{ user.extrainfo.department.name }}
                     </div>
                 </div>
@@ -62,18 +62,12 @@
                     {{ user.extrainfo.student.curr_semester_no }}
                 </span>
             {% endif %}
-            <div class="ui large header">
-                {% for i in Curr_desig %}
-                    {% comment %} Should this be inside if else? {% endcomment %}
-                    <span class="meta" style="text-transform: uppercase;">
-                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
-                            {{ i }} of {{ club_details }} club
-                        {% else %}
-                            {{ i }}
-                        {% endif %}
-                    </span>
-                    <br>
-                {% endfor %}
+            <br/>
+            <div class="meta">
+               
+                <span> 
+                    {{global_var|capfirst}}
+                </span>
             </div>
         </div>
     </div>
