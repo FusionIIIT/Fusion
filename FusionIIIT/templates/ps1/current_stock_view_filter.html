@@ -22,10 +22,10 @@
             <form class="ui large form" method="POST" action="/purchase-and-store/current_stock_view/" ="multipart/form-data" id="form1">
             {% csrf_token %}
                 <div class="field">
-                        <label>Select Department</label>
+                        <label>Select Department/Section</label>
                         <select name="department">
                             {% for department in departments %}
-                            <option value="{{department.id}}">{{department}}</option>
+                            <option value="{{department.id}}">{{department.name}}</option>
                             {% endfor %}
                         </select>
                 </div>
@@ -82,7 +82,7 @@
             <thead>
             <tr>
                     <th>Item Type</th>
-                    <th>department</th>
+                    <th>department/section</th>
                     <th>Quantity</th>
                     <th>View Stocks</th>
                 
@@ -94,7 +94,7 @@
                 <tr>
                     
                     <td> {{s.item_type}} </td>
-                    <td> {{s.department}} </td>
+                    <td> {{s.department.name}} </td>
                     <td>{{s.total_quantity}}</td>
 
                     <td>

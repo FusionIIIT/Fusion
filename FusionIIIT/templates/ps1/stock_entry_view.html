@@ -149,7 +149,7 @@
                 <th>item Type</th>
                 <th>dealing assistant id</th>
                 <th>vendor</th>
-                <th>Department</th>
+                <th>Department/Section</th>
                 <th >Quantity</th>
                 <th >Location Storage</th>
                     <th >recieved_date  </th>
@@ -170,7 +170,7 @@
                 <td> {{s.item_id.item_type}} </td>
                 <td>{{s.dealing_assistant_id}}</td>
                 <td>{{s.vendor}}</td>
-                <td>{{s.item_id.file_info.uploader.department}}</td>
+                <td>{{s.item_id.file_info.uploader.department.name}}</td>
                 
                 <td>{{s.current_stock}}</td>
                 <td>{{s.location}}</td>

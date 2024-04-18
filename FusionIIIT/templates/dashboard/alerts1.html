@@ -57,10 +57,10 @@
                     var status = document.getElementById("notif-sp"+id).innerHTML;
                     var url;
                     if(status=="Mark as Unread"){
-                        url = '{% url 'notifications:mark_as_unread' 0 %}'.replace('0', slug);
+                        url = `{% url 'notifications:mark_as_unread' 0 %}`.replace('0', slug);
                     }
                     else{
-                        url = '{% url 'notifications:mark_as_read' 0 %}'.replace('0', slug);
+                        url = `{% url 'notifications:mark_as_read' 0 %}`.replace('0', slug);
                     }
                         $.ajax(
                             {

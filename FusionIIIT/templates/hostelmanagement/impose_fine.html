@@ -1,0 +1,76 @@
+{% block Impose_fine  %}
+    <h2 align="center">Hostel Fine Form</h2>
+    <form  class="ui form" id="fineForm" action="/hostelmanagement/fine/impose/" method="POST">
+        {% csrf_token %}
+        <div class="field">
+        <label for="student_id">Student ID:</label>
+        <select id="student_id" name="student_id">
+            <option value="">Select a Student ID</option>
+            {% for student in students %}
+            <option value="{{ student.id_id }}">{{ student.id_id }}</option>
+            {% endfor %}
+        </select>
+        </div>
+        <div class="field">
+        <label for="student_name">Student Name:</label>
+        <input type="text" id="student_fine_name" name="student_fine_name" required readonly />
+        </div>
+        <div class="field">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" min="0" step="1" required />
+        </div>
+        <div class="field">
+        <label for="reason">Reason:</label><br />
+        <textarea id="reason" name="reason" required></textarea><br />
+        </div>
+        <button type="submit" class="ui primary button">Submit</button>
+    </form>
+
+    <div id="responseMessage"></div>
+
+    <script>
+        document.getElementById("student_id").addEventListener("change", function() {
+            var studentId = this.value;
+            if (!studentId) {
+                document.getElementById("student_name").value = "";
+                return;
+            }
+
+            // Fetch student name based on selected ID
+            fetch(`/hostelmanagement/student/${studentId}/name/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.name);
+                    document.getElementById("student_fine_name").value = data.name;
+                })
+                .catch(error => {
+                    console.error("Error fetching student name:", error);
+                });
+        });
+
+        document.getElementById("fineForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var studentId = document.getElementById("student_id").value;
+            if (!studentId) {
+                alert("Please select a student ID.");
+                return;
+            }
+
+            var formData = new FormData(this);
+            fetch(this.action, {
+                method: this.method,
+                body: formData,
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = "/hostelmanagement/";
+                } else {
+                    console.error("Error updating status");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+    </script>
+{% endblock %}

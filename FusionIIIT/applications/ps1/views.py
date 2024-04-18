@@ -1133,14 +1133,15 @@ def current_stock_view(request):
         # if department admin then only show the stocks of that department to them
 
         print(dept_admin_to_dept[request.session['currentDesignationSelected']]);
-        deptId = DepartmentInfo.objects.get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
+        deptId = DepartmentInfo.objects.values('id', 'name').get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
 
         departments=[deptId]
 
         StockItems = StockItem.objects.filter(department=deptId)
 
     elif request.session['currentDesignationSelected'] == "ps_admin":
-        departments=DepartmentInfo.objects.all()
+        departments=DepartmentInfo.objects.values('id','name').all()
+
         StockItems = StockItem.objects.all()
     else :
         return redirect('/dashboard')
@@ -1151,7 +1152,7 @@ def current_stock_view(request):
     grouped_items_list = [
         {
             'item_type': item['StockEntryId__item_id__item_type'],
-            'department':  DepartmentInfo.objects.get(id=item['department']),
+            'department':  DepartmentInfo.objects.values('id','name').get(id=item['department']),
             'departmentId': item['department'],
             'total_quantity': item['total_quantity']
         }
@@ -1189,7 +1190,6 @@ def stock_entry_view(request):
     if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
-    department = request.user.extrainfo.department
 
     if  request.session['currentDesignationSelected'] in dept_admin_design:
         # if department admin then only show the stocks of that department to them
@@ -1506,7 +1506,6 @@ def view_transfer(request):
 
     return render(request,'ps1/view_transfer.html',{'stockTransfers': stockTransfers})  
 
-
 @login_required(login_url = "/accounts/login")
 def outboxview2(request,id):
     abcd = HoldsDesignation.objects.get(pk=id)
@@ -1527,12 +1526,13 @@ def outboxview2(request,id):
 @login_required(login_url = "/accounts/login")
 def outboxview(request):
 
-    designation = HoldsDesignation.objects.filter(user=request.user)
-    context = {
-        'designation': designation,
-    }
+    if  request.session['currentDesignationSelected'] == "student":
+        return redirect('/dashboard')
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=request.session['currentDesignationSelected']).first()
+    
 
-    return render(request, 'ps1/outboxview.html', context)
+    return redirect(f'/purchase-and-store/outboxview2/{designation.id}')
 
 
 @login_required(login_url="/accounts/login")

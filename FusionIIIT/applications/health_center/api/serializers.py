@@ -100,3 +100,9 @@ class HospitalAdmitSerializer(serializers.ModelSerializer):
     class Meta:
         model=Hospital_admit
         fields=('__all__')
+
+class MedicalReliefSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=medical_relief
+        fields=('__all__')

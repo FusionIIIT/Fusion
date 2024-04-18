@@ -64,7 +64,7 @@ urlpatterns = [
     url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer'),
     url(r'^view_transfer/$', views.view_transfer, name='view_transfer'),
 
-    url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
+    url(r'^outboxview2/(?P<id>\d+)/$', views.outboxview2, name='outboxview2'),
     url(r'^outboxview/$', views.outboxview, name='outboxview'),
 
 

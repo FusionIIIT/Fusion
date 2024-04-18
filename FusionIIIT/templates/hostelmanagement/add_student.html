@@ -12,10 +12,10 @@
                {% comment %} <input value="" class="ui large input" name="roll_no" required onkeypress="return isNumberKey(event)"> {% endcomment %}
                <select class="ui search fluid dropdown" name="roll_no" required>
                    <option value="">Select</option>
-                   {% for i, students in halls_student.items %}
-                        {% for st in students %}
-                        <option value="{{st.id.user.username}}">{{st.id.user.username}}</option>
-                        {% endfor %}
+                   {% for stu in hostel_students_details %}
+                       
+                        <option value="{{ stu.student_id }}">{{ stu.student_id }}</option>
+                        
                    {%endfor%}
                </select>
            </div>
@@ -27,7 +27,7 @@
                 <select class="ui search fluid dropdown" name="hall_room_no" required>
                    <option value="">Select</option>
                    
-                   {% for room in room_avail%}
+                   {% for room in av_room%}
                         <option value="{{room.hall}}-{{room.block_no}}-{{room.room_no}}">{{room.hall.hall_id}}-{{room.block_no}}-{{room.room_no}}</option>
                    {% endfor %}
                </select>
