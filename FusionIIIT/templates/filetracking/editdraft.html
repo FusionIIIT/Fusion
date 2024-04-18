@@ -65,12 +65,19 @@
                         </div>
 
                         <div class="field" style="margin-top: 20px">
-                            <label for="file">Attach Files: (Maximum File Size 10 MB)</label>
-                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" value="
-                                {% if file.upload_file %}
-                                    file.upload_file.url
-                                {% endif %}
-                            ">
+                             {% if file.upload_file %}
+                                <label for="file_link">Chosen Files: </label>
+
+                                <a id="file_link" href="{{file.upload_file.url}}" target="_blank">{{file.upload_file.name}}</a>
+
+                                <label for="file" style="margin-top:10px">Replace Files: </label>
+                                <input type="file" id="file" name="myfile" style="margin-top:5px" accept=".pdf, .jpg, .jpeg, .png, .zip" value="
+                                {{file.upload_file.url}}">
+
+                            {% else %} 
+                                <label for="file">Attach Files: (Maximum File Size 10 MB)</label>
+                                <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip">
+                            {% endif %} 
                         </div>                        
                     </div>
 
