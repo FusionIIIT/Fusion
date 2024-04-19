@@ -144,7 +144,7 @@
 <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_time_period' project_id %}" >
 
   {% csrf_token %}
-  Update Period of Project
+  Change Project Duration
   <input name="updated_year" type="number" />
   <button  type="submit" > Update Period of Project </button>
 </form>

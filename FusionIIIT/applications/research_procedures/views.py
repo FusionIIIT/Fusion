@@ -831,7 +831,7 @@ def update_time_period(request,id):
 
         project.years=up_year
 
-        projects.save()
+        project.save()
 
         return redirect("/research_procedures/financial_outlay/"+str(id))
 

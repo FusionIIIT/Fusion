@@ -34,7 +34,7 @@ urlpatterns = [
       path('approve_request/<id>/',views.approve_request,name="approve_request"),
       path('view_file/<id>/',views.view_file,name="view_file"),
       path('update_time_period/<id>/',views.update_time_period,name="update_time_period"),
-      
+      path('change_year/<id>/',views.change_year,name="change_year"),
       #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       

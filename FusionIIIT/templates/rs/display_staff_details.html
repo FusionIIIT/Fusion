@@ -1,3 +1,4 @@
+{% extends 'globals/base.html' %}
 
 {% load static %}
 
@@ -147,10 +148,12 @@
                 <table class="ui celled table">
                     <thead>
                         <tr>
-                            <th>Staff ID</th>
-                            <th>Staff Name</th>
-                            <th>Qualification</th>
-                            <th>Stipend</th>
+                            <th>STAFF ID</th>
+                            <th>STAFF NAME</th>
+                            <th>QUALIFICATION</th>
+                            <th>STIPEND</th>
+                            <th>START DATE</th>
+                            <th>END DATE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -160,6 +163,8 @@
                             <td>{{ staff_detail.staff_name }}</td>
                             <td>{{ staff_detail.qualification }}</td>
                             <td>{{ staff_detail.stipend }}</td>
+                            <td>{{ staff_detail.start_date }}</td>
+                            <td>{{ staff_detail.end_date }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
