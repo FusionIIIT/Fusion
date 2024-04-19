@@ -1,10 +1,10 @@
+from amqp import NotFound
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
 from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
 from applications.filetracking.api.serializers import FileSerializer, FileHeaderSerializer, TrackingSerializer
 from django.core.exceptions import ValidationError
 from typing import Any
-from amqp import NotFound
 
 
 def create_file(
@@ -12,6 +12,8 @@ def create_file(
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
+        subject: str = "", 
+        description: str = "", 
         src_module: str = "filetracking",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
@@ -39,11 +41,14 @@ def create_file(
 
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
+        subject=subject, 
+        description=description,
         designation=uploader_designation_obj,
         src_module=src_module,
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
     )
+    
 
     if attached_file is not None: 
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
@@ -103,7 +108,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False)
+        file_id__is_read=False).order_by('receive_date');
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -132,7 +137,7 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         current_id=sender_ExtraInfo_object,
         current_design=user_HoldsDesignation_object,
         file_id__src_module=src_module,
-        file_id__is_read=False)
+        file_id__is_read=False).order_by('-receive_date')
     sent_files = [tracking.file_id for tracking in sent_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -142,9 +147,6 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     return sent_files_serialized.data
 
 
-# need: view_archived, archive_file, (can get details of archived files by view_file, etc)
-# view_drafts, create_draft, (delete_draft can be via delete_file),
-# (forward_draft can be via forward_file, but lets implement a send draft that follows our remark convention)
 
 def view_archived(username: str, designation: str, src_module: str) -> dict:
     '''
@@ -185,6 +187,16 @@ def archive_file(file_id: int) -> bool:
     '''
     try:
         File.objects.filter(id=file_id).update(is_read=True)
+        return True
+    except File.DoesNotExist:
+        return False
+
+def unarchive_file(file_id: int) -> bool: 
+    '''
+    This functions is used to unarchive a file and returns true if the unarchiving was successful
+    '''
+    try: 
+        File.objects.filter(id=file_id).update(is_read=False)
         return True
     except File.DoesNotExist:
         return False
@@ -333,7 +345,9 @@ def get_designations(username: str) -> list:
     '''
     user = User.objects.get(username=username)
     designations_held = HoldsDesignation.objects.filter(user=user)
-    designation_name = [designation.name for designation in designations_held]
+    designation_name = [hold_designation.designation.name for hold_designation in designations_held]
+    return designation_name
+
 
 def get_user_object_from_username(username: str) -> User:
     user = User.objects.get(username=username)
@@ -349,8 +363,12 @@ def uniqueList(l: list) -> list:
     This function is used to return a list with unique elements
     O(n) time and space
     '''
-    s = set(l)
-    unique_list = (list(s))
+    seen = set()
+    unique_list = []
+    for item in l:
+        if item not in seen:
+            unique_list.append(item)
+            seen.add(item)
     return unique_list
 
 def add_uploader_department_to_files_list(files: list) -> list:

@@ -73,9 +73,15 @@ node_modules/
 FusionIIIT/static/
 package-lock.json
 
-# migrations
-*/migrations/
+docker-entrypoint.sh
 
-# Disallow migration files
-**/migrations/*
-!**/migrations/__init__.py
+
+FusionIIIT/applications/eis/migrations/
+
+postgres_data
+
+# sample files from media/Adminstrator
+!media/Administrator/academic_procedures/sample_courses_allotment.xls
+!media/Administrator/academic_procedures/sample_student_profile.xlsx
+
+migrations/

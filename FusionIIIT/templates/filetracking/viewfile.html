@@ -32,37 +32,55 @@
                             {% for t in track %}
                             <div class="ui comments" style="max-width: 100%;">
                                 <div class="comment" style="max-width: 100%;">
-                                        <div class="content">
-                                            <a class="author">{{t.current_design}}
-                                                <a class="metadata">
-                                                    <span class="date">{{t.forward_date}}</span>
-                                                </a>
+                                    <div class="content">
+                                        <a class="author">{{ t.current_design }}
+                                            <a class="metadata">
+                                                <span class="date">{{ t.forward_date }}</span>
                                             </a>
+                                        </a>
 
-                                            <div class="right floated" style="font-color: black;">
-                                                <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
-                                            </div>
-
-                                            <div class="text">
-                                                <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
-                                                {% if t.remarks %}
-                                                    {{t.remarks}}
-                                                {% else %}
-                                                    <span class="meta">No Remarks</span>
-                                                {% endif %}
-
-                                                </pre>
-                                            </div>
+                                        <div class="right floated" style="font-color: black;">
+                                            <b>Received by:</b>&nbsp{{ t.receiver_id }}-{{ t.receive_design }}
                                         </div>
+
+                                        <div class="text">
+                                            <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                            {% if t.remarks %}
+                                                {{ t.remarks }}
+                                            {% else %}
+                                                <span class="meta">No Remarks</span>
+                                            {% endif %}
+                                            </pre>
+                                            {% if t.upload_file %}
+                                            <span class="meta" style="color: grey;">Attachment: {{ t.upload_file }}</span>
+                                            {% else %}
+                                            <span class="meta" style="color: grey;">No attachments</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
-                            
+
                             <div class="ui divider"></div>
                             
                             <button class="ui large right floated primary button" style="margin-top:20px; float: right;" {% if not forward_enable %} disabled {% endif %}>
                                 <a href="{% url 'filetracking:forward' file.id %}" style="text-decoration: none; color: inherit;"> Forward File <i class="ui send icon right floated"></i> </a>
                             </button>
+
+                            {% if not file.is_read %}
+                            <button class="ui large right floated primary button" style="margin-top:22px; float: right; display: none;"> 
+                                <a href="{% url 'filetracking:unarchive' file.id %}" style="text-decoration: none; color: inherit;"> 
+                                    Unarchive <i class="ui archive icon right floated"></i> 
+                                </a>  
+                            </button>
+                            {% else %}
+                            <button class="ui large right floated primary button" style="margin-top:22px; float: right;"> 
+                                <a href="{% url 'filetracking:unarchive' file.id %}" style="text-decoration: none; color: inherit;"> 
+                                    Unarchive <i class="ui archive icon right floated"></i> 
+                                </a>  
+                            </button>
+                            {% endif %}
                             
                             <button class="ui large right floated primary button" style="margin-right:10px; margin-top:20px; float: right;" {% if not archive_enable %} disabled {% endif %}>
                                 <a href="{% url 'filetracking:archive_finish' file.id %}" style="text-decoration: none; color: inherit;">Archive File <i class="ui archive icon right floated"></i> </a>

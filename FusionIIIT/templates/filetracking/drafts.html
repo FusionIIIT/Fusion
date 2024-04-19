@@ -1,7 +1,9 @@
 {% extends 'filetracking/filetracking.html' %}
 {% load static %}
-
 {% block filetracking_tab %}
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:draft_design' %}";</script>
+{% endif %}
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="drafts">
@@ -29,8 +31,8 @@
                     <td>{{ draft.subject|default:"None" }}</td>
                     <td>{{ draft.upload_date }}</td>
                     <td>
-                        <a href="{% url 'filetracking:forward' draft.id %}">
-                            <button class="ui primary button">View</button>
+                        <a href="{% url 'filetracking:edit_draft' draft.id %}">
+                            <button class="ui primary button">Edit</button>
                         </a>
                     </td>
                     <td>
