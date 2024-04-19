@@ -1,9 +1,9 @@
-{% extends 'globals/base.html' %}
+
 
 {% load static %}
 
 {% block title %}
-IPR
+
 {% endblock %}
 
 {% block project_info %}
@@ -17,7 +17,7 @@ IPR
             
     </script>
     <div class="ui pointing secondary menu" style="font-size: 25px;">
-  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+  <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
     &nbsp;<span class="ui blue text header">{{ project.project_name }}</span>
   </label>
 </div>
@@ -58,8 +58,7 @@ IPR
         <div class="ui segments">
             <div class="ui segment">
                 <div class="ui relaxed divided list">
-                    
-                    
+       
                     <div class="item"  >
                         <div class="flexy">
                             <div class="content" id="width-half"> 
@@ -193,6 +192,10 @@ IPR
                     <div class="four wide field">
                         <label  for="file_to_forward">Choose a file:</label>
                         <input type="file" id="file_to_forward" name="file_to_forward" required >
+                    </div> 
+                    <div class="four wide field">
+                        <label  for="subject">Add Subject</label>
+                        <input type="text" id="subject" name="subject" required >
                     </div> 
                     <div class="four wide field">   
                         <br>

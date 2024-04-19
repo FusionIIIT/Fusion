@@ -229,12 +229,20 @@ def add_projects(request):
             uploader=request.user.username,
             uploader_designation="rspc_admin",
             receiver= pid,
+            subject= projectname,
             receiver_designation=project_investigator_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
             file_extra_JSON= { "message": "Project added successfully"},
             attached_file= project_info_file, 
         )
+        
+        research_procedures_notif(request.user, userpi_instance, "Project Added")
+
+        tracking_obj = Tracking.objects.get(file_id__id=file_x)
+        
+ 
+        tracking_obj.upload_file.save(project_info_file.name, project_info_file, save=True)
 
         messages.success(request,"Project added successfully")
         categories = category.objects.all()
@@ -437,6 +445,9 @@ def view_financial_outlay(request,pid):
 
     # print(data)
     return render(request,"rs/view_financial_outlay.html", context= data)
+
+
+
 
 @login_required
 def submit_closure_report(request,id):
@@ -684,7 +695,7 @@ def inbox(request):
     
     # There was some issue using view_inbox function, so I had to write the code here
     
-    data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures")
+    data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures").order_by('-receive_date')
     print(data)
     files= []
     count =0
@@ -695,12 +706,16 @@ def inbox(request):
     print(files)
     data1={
         "inbox": data,
-        "files": files
+        "files": data,
     }
     # print(data)
     return render(request, "rs/inbox.html",context= data1)
   
-  
+def view_file(request, id):
+    file1= File.objects.get(id=id)
+    tracks= Tracking.objects.filter(file_id=file1)
+
+    return render(request, "rs/view_file.html", context= {"file": file1, "tracks": tracks})
 
 @login_required
 def add_staff_request(request,id):
@@ -714,7 +729,7 @@ def add_staff_request(request,id):
         receiver_designation= get_designation_instance(receiver_designation)
         receiver = get_user_by_designation(receiver_designation).username
 
-
+        subject= obj.get('subject')
         sender = request.user.username
         file_to_forward= request.FILES.get('file_to_forward')
         project_instance=projects.objects.get(project_id=projectid)
@@ -729,6 +744,7 @@ def add_staff_request(request,id):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
+            subject= subject,
             file_extra_JSON= { "message": "Request Added." },
             attached_file= file_to_forward, 
         )
@@ -759,40 +775,67 @@ def view_request_inbox(request):
     return render(request, "rs/view_request_inbox.html",context= data)
 
 @login_required
-def forward_request(request):
+def forward_request(request,id):
+    # forward_file(
+    #     file_id: int,
+    #     receiver: str,
+    #     receiver_designation: str,
+    #     file_extra_JSON: dict,
+    #     remarks: str = "",
+    #     file_attachment: Any = None) -> int:
     if request.method == 'POST':
         obj= request.POST
-        fileid = int(obj.get('file_id'))
         
-        message= obj.get('message')
-        designation = get_designation_instance(obj.get('receiver_designation'))
-        receiver_instance= get_user_by_designation(designation)
+        fileid = int(id)
+        filez= File.objects.get(id=fileid)
         
-        receiver_designation= designation
-
+        remarks = obj.get('remarks')
+        receiver_designation =obj.get('receiver_designation')
+        if receiver_designation == 'project_investigator':
+            project= projects.objects.get(project_id= filez.src_object_id )
+            receiver_instance= project.project_investigator_id
+            receiver_designation= getDesignation(receiver_instance.username)
+        else:
+            receiver_instance= HoldsDesignation.objects.get(designation__name=receiver_designation).user
+        attachment= request.FILES.get('attachment')
         receiver= receiver_instance.username
-        sender = request.user.username
-        
-        filex= get_file_by_id(fileid)
 
-        file2=create_file(
-            uploader=sender,
-            uploader_designation= getDesignation(sender),
+        filex= forward_file(
+            file_id= fileid,
             receiver= receiver,
             receiver_designation=receiver_designation, 
-            src_module="research_procedures",
-            src_object_id= filex.src_object_id,
-            file_extra_JSON= { "message": message },
-            attached_file= filex.upload_file, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
         )
-        
-        delete_file(fileid)
+        if(receiver_designation == 'Professor' or receiver_designation == 'Assistant Professor'):
+            research_procedures_notif(request.user, receiver_instance, "Request update")
         messages.success(request,"Request forwarded successfully")
+
+
     return redirect("/research_procedures/inbox")
 
     
     return redirect("/research_procedures/view_request_inbox")
         
+
+
+
+def update_time_period(request,id):
+    if request.method== "POST":
+
+        obj = request.POST
+        up_year= obj.get('updated_year')
+
+        project = get_object_or_404(projects, project_id=id)
+
+        project.years=up_year
+
+        projects.save()
+
+        return redirect("/research_procedures/financial_outlay/"+str(id))
+
+
 @login_required
 def update_financial_outlay(request,pid):
 
@@ -872,6 +915,16 @@ def approve_request(request,id):
         messages.success(request,"Request approved successfully")
     return redirect("/research_procedures/inbox")
 
+def change_year(request,id):
+    if request.method == 'POST':
+        obj= request.POST
+        projectid = int(id)
+        year = obj.get('year')
+        project_instance=projects.objects.get(project_id=projectid)
+        project_instance.years= year
+        project_instance.save()
+        messages.success(request,"Year changed successfully")
+    return redirect("/research_procedures/view_financial_outlay/"+str(projectid))
 
 
 def getDesignation(us):

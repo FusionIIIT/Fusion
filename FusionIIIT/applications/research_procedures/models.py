@@ -46,7 +46,7 @@ class financial_outlay(models.Model):
     year=models.IntegerField()
     status= models.IntegerField(default=0)
     staff_limit=models.IntegerField(default=0)
-    utilized_amount=models.IntegerField(default=0)
+    utilized_amount=models.IntegerField(default=0,null= True)
 
     def __str__(self):
         return str(self.financial_outlay_id)
@@ -77,7 +77,9 @@ class staff_allocations(models.Model):
     year=models.IntegerField()
     stipend=models.IntegerField()
     staff_type=models.CharField(max_length=100,default="research")
-
+    start_date=models.DateField(auto_now_add=True, null=True, blank=True) #default=datetime.date.today()
+    end_date=models.DateField(null=True, blank=True)
+    
     def __str__(self):
         return str(self.staff_allocation_id)
 

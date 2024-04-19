@@ -1,9 +1,9 @@
-{% extends 'globals/base.html' %}
+
 
 {% load static %}
 
 {% block title %}
-IPR
+
 {% endblock %}
 
 {% block view_projects %}
@@ -51,7 +51,7 @@ IPR
 </style>
 <div style="width:100%">
 <div class="ui pointing secondary menu" style="font-size:25px; width:100%" >
-    <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
         Projects          
 
     </label>
@@ -66,18 +66,14 @@ IPR
 <table class="ui celled table">
     <thead>
         <tr style="background-color: #4CAF50; color: white;">
-            {% comment %} <th>S.No.</th> {% endcomment %}
-            {% comment %} <th>Project ID</th> {% endcomment %}
-            <th>Project Name</th>
-            {% comment %} <th>Project Type</th> {% endcomment %}
-            <th>Sponsored Agency</th>
-            {% comment %} <th>Years</th> {% endcomment %}
-            <th>Status</th>
+            <th style="text-transform: uppercase">Project Name</th>
+            <th style="text-transform: uppercase">Sponsored Agency</th>
+            <th style="text-transform: uppercase">Status</th>
             {% if global_var == "rspc_admin" %}
-            <th>Financial Outlay</th>
+            <th style="text-transform: uppercase">Financial Outlay</th>
             {% endif %}
-            <th>Staff Details</th>
-            <th>Project Info</th>
+            <th style="text-transform: uppercase">Staff Details</th>
+            <th style="text-transform: uppercase">Project Info</th>
             
         </tr>
     </thead>
