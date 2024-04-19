@@ -1,33 +1,25 @@
-<!-- jQuery Library -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery library -->
 
-<!-- Table Segment -->
 <div class="ui bottom attached tab segment" data-tab="second">
     <div id="textSegmentDiv">
         <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
             <div class="content">
                 <div class="description" style="overflow: auto; max-height: 480px">
-                    <!-- Table to display CPDA requests -->
                     <table class="ui celled medium table" style="text-align: center; margin: auto;">
                         <thead>
                             <tr style="font-size: medium; background-color: whitesmoke;">
                                 <th><h4>Form Id</h4></th>
-                                <th><h4>User</h4></th>
-                                <th><h4>Desgination</h4></th>
-                                <th><h4>Date</h4></th>
                                 <th><h4>View</h4></th>
-                                <!-- Add more headers for LTC request details -->
+                                <!-- Add more headers for CPDA request details -->
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Loop through LTC requests and display in table -->
-                            {% for cpda_request in cpda_requests %}
+                            {% for cpda_reimbursement_request in cpda_reimbursement_requests %}
                                 <tr>
-                                    <td>{{ cpda_request.id }}</td>
-                                    <td>{{ cpda_request.name }}</td>
-                                    <td>{{ cpda_request.designation }}</td>
-                                    <th>{{ cpda_request.submissionDate }}</th>
-                                    <td><a href="http://127.0.0.1:8000/hr2/view_cpda_form/{{ cpda_request.id }}">View</a></td>
+                                    <td>{{ cpda_reimbursement_request.id }}</td>
+                                    <td><a href="http://127.0.0.1:8000/hr2/view_cpda_reimbursement_form/{{ cpda_reimbursement_request.id }}">View</a></td>
+                                    <!-- Adjust URL name as per your project -->
+                                    <!-- Add more <td> elements to display other LTC request details -->
                                 </tr>
                             {% empty %}
                                 <tr>
@@ -42,26 +34,25 @@
     </div>
 </div>
 
-<!-- JavaScript to handle button click -->
 <script>
     $(document).ready(function() {
         $('.forward-btn').on('click', function() {
-            var cpdaId = $(this).data('cpda-id'); // Get CPDA request ID from button data
+            var cpdaReimbursementId = $(this).data('cpda-reimbursement-id');
 
             $.ajax({
-                url: '/hr2/form_mangement_cpda_hr/' + cpdaId + '/', // URL to send request to
-                type: 'POST', // HTTP method
+                url: '/hr2/forward/' + cpdaReimbursementId + '/', // Update the URL here
+                type: 'POST',
                 data: {
-                    'id': cpdaId, // Include CPDA request ID in data
-                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                    'id': cpdaReimbursementId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
                 },
                 success: function(response) {
                     // Handle success response, if needed
-                    console.log(response);
+                    alret("User exists");
                 },
                 error: function(xhr, status, error) {
                     // Handle error
-                    console.error(error);
+                    alret("User doesn't exists");
                 }
             });
         });

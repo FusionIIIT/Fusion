@@ -7,7 +7,7 @@
         <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
             <div class="content">
                 <div class="description" style="overflow: auto; max-height: 480px">
-                    <!-- Table to display LTC requests -->
+                    <!-- Table to display cpda requests -->
                     <table class="ui celled medium table" style="text-align: center; margin: auto;">
                         <thead>
                             <tr style="font-size: medium; background-color: whitesmoke;">
@@ -17,27 +17,27 @@
                                 <th><h4>Date</h4></th>
                                 <th><h4>View</h4></th>
                                 <th><h4>Track</h4></th>
-                                
-                                <!-- Add more headers for LTC request details -->
+                               
+                                <!-- Add more headers for cpda request details -->
                             </tr>
                         </thead>
                         <tbody>
-                            
-                            <!-- Loop through LTC requests and display in table -->
-                            {% for ltc_request in inbox %}
+                            <!-- Loop through cpda requests and display in table -->
+                            {% for archived_file in archived_files %}
                                 <tr>
-                                    <td>{{ ltc_request.id }}</td>
-                                    <td>{{ ltc_request.sent_by_user }}</td>
-                                    <td>{{ ltc_request.sent_by_designation }}</td>
-                                    <td>{{ ltc_request.upload_date }}</td>
-                                    <td><a href="http://127.0.0.1:8000/hr2/form_view_ltc/{{ ltc_request.src_object_id }}?param1={{ ltc_request.sent_by_user }}&param2={{ ltc_request.sent_by_designation }}&param3={{ ltc_request.id }}">View</a></td>
+                                    <td>{{ archived_file.id }}</td>
+                                    <td>{{ archived_file.uploader }}</td>
+                                    <td>{{ archived_file.designation }}</td>
+                                    <td>{{ archived_file.upload_date }}</td>
+                                    <td><a href="http://127.0.0.1:8000/hr2/form_view_appraisal/{{ archived_file.src_object_id }}?param1={{ archived_file.sent_by_user }}&param2={{ archived_file.sent_by_designation }}&param3={{ archived_file.id }}">View</a></td>
+                                    <td><a href="http://127.0.0.1:8000/hr2/track_file/{{ archived_file.id }}">Track</a></td>
 
-                                    <td><a href="http://127.0.0.1:8000/hr2/track_file/{{ ltc_request.id }}">Track</a></td>
+        
 
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="4">No LTC requests found</td>
+                                    <td colspan="4">No Appraisal requests found</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -53,13 +53,13 @@
 <script>
     $(document).ready(function() {
         $('.forward-btn').on('click', function() {
-            var ltcId = $(this).data('ltc-id'); // Get LTC request ID from button data
+            var cpdaId = $(this).data('cpda-id'); // Get cpda request ID from button data
 
             $.ajax({
-                url: '/hr2/form_mangement_ltc_hr/' + ltcId + '/', // URL to send request to
+                url: '/hr2/form_mangement_cpda_hr/' + cpdaId + '/', // URL to send request to
                 type: 'POST', // HTTP method
                 data: {
-                    'id': ltcId, // Include LTC request ID in data
+                    'id': cpdaId, // Include cpda request ID in data
                     'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
                 },
                 success: function(response) {

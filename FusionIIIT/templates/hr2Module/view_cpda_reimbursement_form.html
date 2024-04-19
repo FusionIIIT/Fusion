@@ -36,9 +36,7 @@ Module
                 {% comment %}
                 TODO: Add a If-Else here!
                 {% endcomment %}
-                
 
-               
             </div>
 
 
@@ -69,8 +67,8 @@ Module
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
             <div class="ui top attached tabular large menu">
-                <a class="active item" data-tab="first">Leave Form</a>
-                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+                <a class="active item" data-tab="first">CPDA Reimbursement Form</a>
+
             </div>
 
         </div>
@@ -85,171 +83,132 @@ Module
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                     {% block alerts %}
 
-
-
-
-
-
-
-                    <style>
-                        table {
-                            border-collapse: collapse;
-                            width: 100%;
-                        }
-
-                        th,
-                        td {
-                            border: 1px solid #ddd;
-                            padding: 8px;
-                            text-align: center;
-                        }
-
-                        th {
-                            background-color: #f2f2f2;
-                        }
-                    </style>
-
                     <div style="margin: 2rem;">
                         <div class="ui vertical segment">
 
-
-
                             <form method="post" id="editDetail" enctype="multipart/form-data">
                                 {% csrf_token %}
-                                <!-- <input type="hidden" name="csrfmiddlewaretoken"
-                                    value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
 
                                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
 
 
+                                    <!-- <div class="two fields"> -->
+
                                     <div class="eight wide field">
                                         <label for="post_title">Name</label>
                                         <input type="text" name="name" maxlength="40" required id="name"
-                                            value="{{ leave_request.name }}" readonly>
+                                            value="{{ cpda_reimbursement_request.name }}" readonly>
                                     </div>
                                     <div class="eight wide field">
                                         <label for="post_title">Designation</label>
-                                        <input type="text" name="designation" maxlength="40" id="designation"
-                                            value="{{ leave_request.designation }}" readonly>
+                                        <input type="text" name="designation" maxlength="40" required id="designation"
+                                            value="{{ cpda_reimbursement_request.designation}}" readonly>
                                     </div>
                                     <div class="eight wide field">
-                                        <label for="post_title">Application Date</label>
-                                        <input type="Date" name="submissionDate" id="submissionDate"
-                                            value="{{ leave_request.submissionDate|date:'Y-m-d' }}" readonly>
+                                        <label for="post_title">P.F. No.</label>
+                                        <input type="number" name="pfNo" maxlength="30" required id="pfNo"
+                                            value="{{ cpda_reimbursement_request.pfNo }}" readonly>
                                     </div>
                                     <div class="fifteen wide field">
-                                        <label for="post_title">PF Number</label>
-                                        <input type="number" name="pfNo" maxlength="40" id="pfNo"
-                                            value="{{ leave_request.pfNo }}" readonly>
-                                    </div>
-                                    <div class="eight wide field">
-                                        <label for="post_title">Department/Discipline</label>
-                                        <input type="text" name="departmentInfo" maxlength="40" id="departmentInfo"
-                                            value="{{ leave_request.departmentInfo }}" readonly>
-                                    </div>
-
-
-
-                                    <div style="text-align: center;">
-                                        <div class="field">
-                                            <label for="natureOfLeave">Nature of leave :</label>
-                                            <select id="natureOfLeave" name="natureOfLeave">
-                                                <option value="Casual">Casual</option>
-                                                <option value="vacaction">Vacation</option>
-                                                <option value="earned">Earned</option>
-                                                <option value="commuted leave">Commuted Leave</option>
-                                                <option value="specail casual leave">Special Casual Leave</option>
-                                                <option value="restricted leave">Restricted Holiday</option>
-                                                <option value="station leave">Station Leave</option>
-
-                                            </select>
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="eight wide field">
-                                        <label for="post_title"> Leave Start Date</label>
-                                        <input type="date" name="leaveStartDate" maxlength="40"
-                                            id="leaveStartDate"
-                                            value="{{ leave_request.leaveStartDate|date:'Y-m-d' }}" readonly>
-                                    </div>
-
-                                    <div class="eight wide field">
-                                        <label for="post_title"> Leave End Date</label>
-                                        <input type="date" name="leaveEndDate" maxlength="40"
-                                            id="leaveEndDate"
-                                            value="{{ leave_request.leaveEndDate|date:'Y-m-d' }}" readonly>
-                                    </div>
-
-                                    <div class="eight wide field">
                                         <label for="post_title">Purpose</label>
-                                        <input type="text" name="purposeOfLeave" maxlength="40" id="purposeOfLeave"
-                                            value="{{ leave_request.purposeOfLeave }}" readonly>
+                                        <input type="text" name="purpose" maxlength="40" required id="purpose"
+                                            value="{{ cpda_reimbursement_request.purpose }}" readonly>
                                     </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Advance taken</label>
+                                        <input type="number" name="advanceTaken" maxlength="40" required
+                                            id="advanceTaken" value="{{ cpda_reimbursement_request.advanceTaken }}"
+                                            readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Adjustment/Reimbursement submitted for Rs.</label>
+                                        <input type="number" name="adjustmentSubmitted" maxlength="40" required
+                                            id="adjustmentSubmitted"
+                                            value="{{ cpda_reimbursement_request.adjustmentSubmitted }}" readonly>
+                                    </div>
+
 
                                     <div class="eight wide field">
-                                        <label for="post_title">Leave Address</label>
-                                        <input type="text" name="addressDuringLeave" maxlength="40" id="addressDuringLeave"
-                                            value="{{ leave_request.addressDuringLeave }}" readonly>
+                                        <label for="post_title">Date</label>
+                                        <input type="date" name="submissionDate" maxlength="40" required
+                                            id="idSubmissionDate"
+                                            value="{{ cpda_reimbursement_request.submissionDate|date:'Y-m-d' }}"
+                                            readonly>
                                     </div>
+                                    <!-- </div> -->
+                                    <br><br>
 
-                                    <div class="eight wide field">
-                                        <label for="post_title">Academic Responsibility Assigned to </label>
-                                        <input type="text" name="academicResponsibility" maxlength="40"
-                                            id="academicResponsibility"
-                                            value="{{ leave_request.academicResponsibility }}" readonly>
-                                    </div>
-
-                                    <div class="eight wide field">
-                                        <label for="post_title">Administrative Responsibility Assigned to </label>
-                                        <input type="text" name="addministrativeResponsibiltyAssigned" maxlength="40"
-                                            id="addministrativeResponsibiltyAssigned"
-                                            value="{{ leave_request.addministrativeResponsibiltyAssigned }}" readonly>
-                                    </div>
-
-                                    <br>
-                                    <br>
-                                    <br>
-                                    <br>
-                                    <br>
                                     <hr>
 
+                                    <div style="text-align: center;">
+                                        <h4><u>Estt. Section</u></h4>
+                                    </div>
+                                    <br><br>
 
-                                    <br>
-                                    {% if button == 1 %}
-                                    <div class="ui container center aligned">
-                                        <div class="two fields">
-                                            <div class="eight wide field">
-                                                <label for="username_employee">Username:</label>
-                                                <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
-                                            </div>
-                                            <div class="eight wide field">
-                                                <label for="designation_employee">Designation:</label>
-                                                <input type="text" name="designation_employee" id="designation_employee" readonly>
-                                            </div>
-                                            <div class="six wide field">
-                                                <h1></h1>   
-                                                <button id="check_button" class="ui primary button">Check</button>
-                                            </div>
-                                        </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Bill checked in Audit for Rs.</label>
+                                        <input type="number" name="amountCheckedInPDA" maxlength="40"
+                                            id="amountCheckedInPDA"
+                                            value="{{ cpda_reimbursement_request.amountCheckedInPDA }}">
+                                    </div>
+
+                                    <br><br>
+
+                                    <hr>
+
+                                    <div style="text-align: center;">
+                                        <h4><u>Establishment</u></h4>
+                                    </div>
+                                    <br><br>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Balance available as on date</label>
+                                        <input type="number" name="balanceAvailable" maxlength="40" id="balanceAvailable"
+                                            value="{{ cpda_reimbursement_request.balanceAvailable}}">
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Adjustment/Reimbursement amount entered in PDA Register on
+                                            Page no.</label>
+                                        <input type="number" name="advanceDueAdjustment" maxlength="40"
+                                            id="advanceDueAdjustment"
+                                            value="{{ cpda_reimbursement_request.advanceDueAdjustment}}">
                                     </div>
                                     
-                                    <div class="two fields">
-                                        <button id="forward-btn" class="ui primary button right floated" type="submit"
-                                            value="Forward">
-                                            Forward
-                                        </button>
-                                        <button id="reject-btn" class="ui primary red button right floated"
-                                            type="submit" value="Reject">
-                                            Reject
-                                        </button>
-                                        <button id="approve-btn" class="ui primary red button right floated"
-                                            type="submit" value="Approve">
-                                            Approve
-                                        </button>
-                                        <button id="archive-btn" class="ui primary red button right floated"
+                                
+                                <br><br>
+
+                                
+                                <hr>
+
+                                {% if button == 1 %}
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label for="username_employee">Username:</label>
+                                        <input type="text" name="username_employee" id="username_employee"
+                                            class="ui search" placeholder="Enter Username">
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="designation_employee">Designation:</label>
+                                        <input type="text" name="designation_employee" id="designation_employee"
+                                            readonly>
+                                    </div>
+                                    <button id="check_button" class="ui primary button right floated">Check</button>
+                                </div>
+                                <div class="two fields">
+                                    <button id="forward-btn" class="ui primary button right floated" type="submit"
+                                        value="Forward">
+                                        Forward
+                                    </button>
+                                    <button id="reject-btn" class="ui primary red button right floated" type="submit"
+                                        value="Reject">
+                                        Reject
+                                    </button>
+                                    <button id="approve-btn" class="ui primary red button right floated" type="submit"
+                                        value="Approve">
+                                        Approve
+                                    </button>
+                                    <button id="archive-btn" class="ui primary red button right floated"
                                         type="submit" value="Approve">
                                         Archive
                                     </button>
@@ -257,53 +216,53 @@ Module
                                             type="submit" value="getAllForms">
                                             PreviousForms
                                         </button>
-                                    </div>
-                                    <label>Remarks</label>
-                                    <input id="remark_id" name="remark_id"></input>
-                                    {% endif %}
                                 </div>
-                                <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
-                                <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
-                                <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
-                                <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
-                                <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
-                            </form>
-
-                            <div id="data-of-past">
-                              
+                                <label>Remarks</label>
+                                <input id="remark_id" name="remark_id"></input>
+                                {% endif %}
                             </div>
-
-                            <br>
-                            <br>
-
+                                
 
                         </div>
+                        <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+                        <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+                        <input type="hidden" id="from_designation" name="from_designation"
+                            value="{{ from_designation }}">
+                        <input type="hidden" id="form_id" name="form_id" value="{{ id }}">
+                        <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
+                        </form>
+                        
+                        <div id="data-of-past">
+                              
+                        </div>
                         <br>
-                        <div class="extra content"></div>
+                        <br>
                     </div>
-
-
-                    {% endblock %}
+                    <br>
+                    <div class="extra content"></div>
                 </div>
+
+
+                {% endblock %}
             </div>
-        </div>
+        
+    </div>
+</div>
 
 
+{% comment %}The central-rail segment ends here!{% endcomment %}
+
+{% comment %}The right-rail segment starts here!{% endcomment %}
+<div class="three wide column">
+    <div class="row">
+        {% comment %}The Modules:{% endcomment %}
+        {% block modules %}
+        {% include 'dashboard/modules.html' %}
+        {% endblock %}
     </div>
 
-    {% comment %}The central-rail segment ends here!{% endcomment %}
-
-    {% comment %}The right-rail segment starts here!{% endcomment %}
-    <div class="three wide column">
-        <div class="row">
-            {% comment %}The Modules:{% endcomment %}
-            {% block modules %}
-            {% include 'dashboard/modules.html' %}
-            {% endblock %}
-        </div>
-
-    </div>
-    {% comment %}The right-rail segment ends here!{% endcomment %}
+</div>
+{% comment %}The right-rail segment ends here!{% endcomment %}
 
 
 
@@ -335,7 +294,7 @@ Module
         }
     });
 
-    
+
 </script>
 
 
@@ -385,10 +344,10 @@ Module
 
             console.log(user_id)
        
-            var type = 'Leave'; 
+            var type = 'CPDAReimbursement'; // Assuming 'LTC' is the type for this request
            $.ajax({
             type: 'GET',
-               url: '/hr2/getformLeave/',
+               url: '/hr2/getformcpdaReimbursement/',
                data: {
                    'id': user_id,
                    'type': type
@@ -436,7 +395,11 @@ Module
         $('#reject-btn').click(function (event) {
             event.preventDefault();
             // Perform actions for rejecting
-            handleForwardOrReject(1);
+            var confirmation = confirm("Do you want to reject the request?")
+
+            if (confirmation) {
+                handleForwardOrReject(1);
+            }
         });
 
         $('#approve-btn').click(function (event) {
@@ -444,8 +407,8 @@ Module
             // Perform actions for rejecting
             var confirmation = confirm("Do you want to approve the request?")
 
-            if(confirmation){
-                handleForwardOrReject(2);   
+            if (confirmation) {
+                handleForwardOrReject(2);
             }
         });
         $('#archive-btn').click(function (event) {
@@ -460,38 +423,49 @@ Module
 
         function handleForwardOrReject(action) {
             // Prepare the data to be sent to the server
-            var formData = $('#leave_form').serialize(); // Serialize the form data
-            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            var formData = $('#cpdaForm').serialize();
+            formData += '&action=' + action;
             var file_id = $('#file_id').val();
             var from_user = $('#from_user').val();
             var from_designation = $('#from_designation').val();
             var username_employee = $('#username_employee').val();
             var designation_employee = $('#designation_employee').val();
             var form_id = $('#form_id').val();
-            var remark_id = $('#remark_id').val();
-            
 
+            var balanceAvailable = $('#balanceAvailable').val();
+            var advanceDueAdjustment = $('#advanceDueAdjustment').val();
+            var amountCheckedInPDA = $('#amountCheckedInPDA').val();
+            var remark_id = $('#remark_id').val();
+
+            console.log(file_id)
             formData += '&context=' + JSON.stringify({
                 file_id: file_id,
                 from_user: from_user,
                 from_designation: from_designation,
-                username_employee:username_employee,
-                designation_employee:designation_employee,
-                form_id : form_id,
-                remark_id : remark_id
-                
+                username_employee: username_employee,
+                designation_employee: designation_employee,
+                form_id: form_id,
+                advanceDueAdjustment: advanceDueAdjustment,
+
+                balanceAvailable: balanceAvailable,
+
+                amountCheckedInPDA: amountCheckedInPDA,
+                remark_id: remark_id
+
+
             });
-            // Fire an AJAX request to handle the action
+
             $.ajax({
-                url: '/hr2/file_handle_leave/',
+                url: '/hr2/file_handle_cpda_reimbursement/',
                 type: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
-                 },  
+                },
                 data: formData, // Send the serialized form data
                 success: function (data) {
+
                     // Handle success response, if needed
-                    alert("Request it succefull.");
+                    alert("Request successful.");
                     console.log(data);
                 },
                 error: function (xhr, status, error) {

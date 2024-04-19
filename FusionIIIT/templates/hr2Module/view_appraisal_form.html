@@ -63,7 +63,7 @@ Module
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
             <div class="ui top attached tabular large menu">
-                <a class="active item" data-tab="first">LTC Form</a>
+                <a class="active item" data-tab="first">Appraisal Form</a>
                 <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
             </div>
 
@@ -131,21 +131,21 @@ Module
                 <div class="two fields">
                     <div class="eight wide field">
                         <label name="department_info">Disipline</label>
-                        <input type="text" name="discipline" maxlength="40" id="discipline"  value="{{ appraisal_request.discipline}}" readonly>
+                        <input type="text" name="disciplineInfo" maxlength="40" id="disciplineInfo"  value="{{ appraisal_request.disciplineInfo}}" readonly>
                     </div>
                 </div>  
 
                 <div class="two fields">
                     <div class="eight wide field">
                         <label name="department_info">Specific field of knowledge</label>
-                        <input type="text" name="field_knowledge" maxlength="40" id="field_knowledge" value="{{ appraisal_request.field_knowledge}}" readonly>
+                        <input type="text" name="specificFieldOfKnowledge" maxlength="40" id="specificFieldOfKnowledge" value="{{ appraisal_request.specificFieldOfKnowledge}}" readonly>
                     </div>
                 </div>  
 
                 <div class="two fields">
                     <div class="eight wide field">
                         <label name="department_info">Current Research Interests</label>
-                        <input type="text" name="current_res_int" maxlength="40" id="current_res_int" value="{{ appraisal_request.current_res_int}}" readonly>
+                        <input type="text" name="currentResearchInterests" maxlength="40" id="currentResearchInterests" value="{{ appraisal_request.currentResearchInterests}}" readonly>
                     </div>
                 </div>  
 
@@ -156,7 +156,7 @@ Module
                     <h2 style="text-align: center;">1. INSTRUCTION ELEMENT</h2>
 
                     <P>1.1 Teaching</P>
-                    <p name="courses_taught">1.1.1 Courses taught at UG/PG level</p>
+                    <p name="coursesTaught">1.1.1 Courses taught at UG/PG level</p>
 
 
                     <table>
@@ -190,7 +190,7 @@ Module
                         
                       </table>
 
-                      <p name="new_courses_introduced">1.1.2 New Courses/ laboratory experiments introduced and taught</p>
+                      <p name="newCoursesIntroduced">1.1.2 New Courses/ laboratory experiments introduced and taught</p>
                       
 
                       <table>
@@ -213,7 +213,7 @@ Module
 
 
 
-                        <p name="new_courses_developed">1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)</p>
+                        <p name="newCoursesDeveloped">1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)</p>
                       
 
                       <table>
@@ -239,7 +239,7 @@ Module
 
                         <p>1.1.4 Any other instructional tasks :- </p>
                         
-                        <input type="text" name="instructional_tasks" maxlength="40" id="instructional_tasks" value="{{ appraisal_request.instructional_tasks}}" readonly>
+                        <input type="text" name="otherInstructionalTasks" maxlength="40" id="otherInstructionalTasks" value="{{ appraisal_request.otherInstructionalTasks}}" readonly>
 
                         <div>
 
@@ -247,7 +247,7 @@ Module
 
                                 <h2 style="text-align: center;">2. RESEARCH ELEMENT</h2>
 
-                            <P name="thesis_reasearch">2.1 Thesis/Research Supervision</P>
+                            <P name="thesisSupervision">2.1 Thesis/Research Supervision</P>
                             <table>
                                 <tr>
                                   <th>Name of student (M.tech/Phd)</th>
@@ -272,7 +272,7 @@ Module
                                   </tr>
                             </table>
 
-                            <P name="sponsored_research">2.2 Sponsored Research and Consultancy projects</P>
+                            <P name="sponsoredReseachProjects">2.2 Sponsored Research and Consultancy projects</P>
                             <table>
                                 <tr>
                                   <th>Title of project</th>
@@ -298,7 +298,7 @@ Module
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.3 Other Research element(such as development of reseach facilities, patenet(applied for / granted) / transfer of technology, etc)</label>
-                                    <input type="text" name="research_element" maxlength="40" id="research_element" value="{{ appraisal_request.research_element}}" readonly>
+                                    <input type="text" name="otherResearchElement" maxlength="40" id="otherResearchElement" value="{{ appraisal_request.otherResearchElement}}" readonly>
                                 </div>
                             </div> 
 
@@ -312,14 +312,14 @@ Module
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.5 Referred Conferences/ Symposia/ Seminars/ Workshops / Specialist's meetings attended</label>
-                                    <input type="text" name="referred_conf" maxlength="40" id="referred_conf" value="{{ appraisal_request.referred_conf}}" readonly>
+                                    <input type="text" name="referredConference" maxlength="40" id="referredConference" value="{{ appraisal_request.referredConference}}" readonly>
                                 </div>
                             </div> 
 
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.6 Conference / Workshop / STP etc Organised </label>
-                                    <input type="text" name="conf_organised" maxlength="40" id="conf_organised" value="{{ appraisal_request.conf_organised}}" readonly>
+                                    <input type="text" name="conferenceOrganised" maxlength="40" id="conferenceOrganised" value="{{ appraisal_request.conferenceOrganised}}" readonly>
                                 </div>
                             </div> 
 
@@ -328,7 +328,7 @@ Module
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.7.1 Memberships of Professional Socities(National/International) </label>
-                                    <input type="text" name="memberships" maxlength="40" id="memberships" value="{{ appraisal_request.memberships}}" readonly>
+                                    <input type="text" name="membership" maxlength="40" id="membership" value="{{ appraisal_request.membership}}" readonly>
                                 </div>
                             </div> 
                             <div class="two fields">
@@ -340,25 +340,25 @@ Module
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.7.3 Editors/ Guest Editor etc of Reputed Publication</label>
-                                    <input type="text" name="edt_of_rep_pub" maxlength="40" id="edt_of_rep_pub" value="{{ appraisal_request.edt_of_rep_pub}}" readonly>
+                                    <input type="text" name="editorOfPublications" maxlength="40" id="editorOfPublications" value="{{ appraisal_request.editorOfPublications}}" readonly>
                                 </div>
                             </div> 
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.7.4 Expert/ Invited lecture delivered</label>
-                                    <input type="text" name="expert_lec_del" maxlength="40" id="expert_lec_del" value="{{ appraisal_request.expert_lec_del}}" readonly>
+                                    <input type="text" name="expertLectureDelivered" maxlength="40" id="expertLectureDelivered" value="{{ appraisal_request.expertLectureDelivered}}" readonly>
                                 </div>
                             </div> 
                             <div class="two fields">
                                 <div class="eight wide field">
                                     <label name="department_info">2.7.5 Membership of BoS/ BoG / Senate etc</label>
-                                    <input type="text" name="mem_of_bos" maxlength="40" id="mem_of_bos" value="{{ appraisal_request.mem_of_bos}}" readonly>
+                                    <input type="text" name="membershipOfBOS" maxlength="40" id="membershipOfBOS" value="{{ appraisal_request.membershipOfBOS}}" readonly>
                                 </div>
                             </div> 
 
                             <p><b>2.8 Other Extention Taks</b></p>
                             <p>eg. involvement in government , industry and public community service</p>
-                            <input type="text" name="extention_tasks" id="extention_tasks" value="{{ appraisal_request.extention_tasks}}" readonly>
+                            <input type="text" name="otherExtensionTasks" id="otherExtensionTasks" value="{{ appraisal_request.otherExtensionTasks}}" readonly>
 
                             </div>
 
@@ -372,19 +372,19 @@ Module
                                 <div class="two fields">
                                     <div class="eight wide field">
                                         <label name="department_info">3.1 Adminitrative assignment: (please mention institue/discipline level)</label>
-                                        <input type="text" name="add_assign" maxlength="40" id="add_assign" value="{{ appraisal_request.add_assign}}" readonly>
+                                        <input type="text" name="administrativeAssignment" maxlength="40" id="administrativeAssignment" value="{{ appraisal_request.administrativeAssignment}}" readonly>
                                     </div>
                                 </div> 
                                 <div class="two fields">
                                     <div class="eight wide field">
                                         <label name="department_info">3.2 Service to institute community(if any): (please mention institute/others)</label>
-                                        <input type="text" name="service_inst_community" maxlength="40" id="service_inst_community" value="{{ appraisal_request.service_inst_community}}" readonly>
+                                        <input type="text" name="serviceToInstitute" maxlength="40" id="serviceToInstitute" value="{{ appraisal_request.serviceToInstitute}}" readonly>
                                     </div>
                                 </div> 
                                 <div class="two fields">
                                     <div class="eight wide field">
                                         <label name="department_info">Any other contribution</label>
-                                        <input type="text" name="other_contri" maxlength="40" id="other_contri" value="{{ appraisal_request.other_contri}}" readonly>
+                                        <input type="text" name="otherContribution" maxlength="40" id="otherContribution" value="{{ appraisal_request.otherContribution}}" readonly>
                                     </div>
                                 </div> 
                             </div>
@@ -396,7 +396,7 @@ Module
                                 <div class="two fields">
                                     <div >
                                         <label name="department_info">Your comments on your performance so far and this academic year particularly.</label>
-                                        <input type="text" name="your_comments" id="your_comments" value="{{ appraisal_request.your_comments}}" readonly>
+                                        <input type="text" name="performanceComments" id="performanceComments" value="{{ appraisal_request.performanceComments}}" readonly>
                                     </div>
                                 </div> 
 
@@ -415,44 +415,11 @@ Module
                <div>
                 <div class="eight wide field">
                     <label name="date">Date</label>
-                    <input type="date" name="date" id="id_date" value="{{ appraisal_request.date|date:'Y-m-d' }}" readonly>
+                    <input type="date" name="submissionDate" id="submissionDate" value="{{ appraisal_request.submissionDate|date:'Y-m-d'}}" readonly>
                 </div>
-                <div class="two fields" style="float: right;">
-                    <div class="eight wide field">
-                        <label name="department_info">Signature of Faculty</label>
-                        <input type="text" name="sign_faculty" maxlength="40" id="sign_faculty" value="{{ appraisal_request.sign_faculty}}" readonly>
-                    </div>
-                </div> 
-
-               </div>
-
-
-               <div >
-
-                <div class="two fields" style="float: right;">
-                    <div class="eight wide field">
-                        <label name="department_info">Remarks by HOD</label>
-                        <input type="text" name="remarks" maxlength="40" id="remarks" value="{{ appraisal_request.remarks}}" {% if global_var != "CSE HOD" %}disabled{% endif %}>
-                    </div>
-                </div> 
-                <div class="two fields" >
-                    <div class="eight wide field">
-                        <label name="department_info">Signature of HOD</label>
-                        <input type="text" name="sign_hod" maxlength="40" id="sign_hod" value="{{ appraisal_request.sign_hod}}" {% if global_var != "CSE HOD" %}disabled{% endif %}>
-                    </div>
-                </div> 
-
-
                 
 
                </div>
-
-               <div class="two fields">
-                <div class="eight wide field">
-                    <label name="department_info">Director</label>
-                    <input type="text" name="sign_director" maxlength="40" id="sign_director" value="{{ appraisal_request.sign_director}}" {% if global_var != "Director" %}disabled{% endif %}>
-                </div>
-            </div> 
 
                 
                 
@@ -486,6 +453,14 @@ Module
                                             type="submit" value="Approve">
                                             Approve
                                         </button>
+                                        <button id="archive-btn" class="ui primary red button right floated"
+                                        type="submit" value="Approve">
+                                        Archive
+                                    </button>
+                                    <button id="getAllForms-btn" class="ui primary red button right floated"
+                                    type="submit" value="getAllForms">
+                                    PreviousForms
+                                </button>
                                     </div>
                                     <label>Remarks</label>
                                     <input id="remark_id" name="remark_id"></input>
@@ -495,9 +470,12 @@ Module
         <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
         <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
         <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
+        <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
     </form>
 
-
+    <div id="data-of-past">
+                              
+    </div>
 
 
         <br>
@@ -567,18 +545,7 @@ Module
         }
     });
 
-    /*$(document).ready(function(){
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        setTimeout(loader, 1750);
-    });
-
-    function loader() {
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        $("#loader").removeClass("active");
-        $("#loader").addClass("disabled");
-    }*/
+    
 </script>
 
 
@@ -619,6 +586,55 @@ Module
 
 <script>
     $(document).ready(function() {
+        $('#getAllForms-btn').click(function(event) {
+            event.preventDefault();
+
+            var user_id = '{{ user_id }}';
+
+           //  var user_id = 5332;
+
+            console.log(user_id)
+       
+            var type = 'Appraisal'; // Assuming 'LTC' is the type for this request
+           $.ajax({
+            type: 'GET',
+               url: '/hr2/getformAppraisal/',
+               data: {
+                   'id': user_id,
+                   'type': type
+               },
+               success: function(response) {
+                   // Construct HTML table from response data
+                   var tableHtml = '<table style="border: 1px solid black"><thead><tr><th>S.No</th><th>Full Name</th><th>designation</th><th>submissionDate</th></tr></thead><tbody>';
+                   for (var i = 0; i < response.length; i++) {
+                       var form = response[i];
+                       var approvedColor = form.is_approved ? 'green' : 'red'; // Change color based on is_approved field
+
+                       tableHtml += '<tr style="color: ' + approvedColor + '">';
+                       tableHtml += '<td><input type="number" name="info_' + (i+1) + '_1" maxlength="40" id="id_info_' + (i+1) + '_1" value="' + form.id + '" readonly></td>';
+                       tableHtml += '<td><input type="text" name="info_' + (i+1) + '_2" maxlength="40" id="id_info_' + (i+1) + '_2" value="' + form.name + '" readonly></td>';
+                       tableHtml += '<td><input type="text" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.designation + '" readonly></td>';
+                       tableHtml += '<td><input type="date" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.submissionDate + '" readonly></td>';
+                       tableHtml += '</tr>';
+                   }
+                   tableHtml += '</tbody></table>';
+
+                   // Populate data into the specified div and show it
+                   $('#data-of-past').html(tableHtml).show();
+               },
+
+               error: function(xhr, status, error) {
+                   // Handle errors here
+                   console.error(xhr.responseText);
+               }
+           });
+       });
+   });
+  
+</script>
+
+<script>
+    $(document).ready(function() {
        
         // Handle Forward and Reject button clicks
         $('#forward-btn').click(function(event) {
@@ -643,6 +659,16 @@ Module
             }
         });
 
+        $('#archive-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to archive the file")
+
+            if(confirmation){
+                handleForwardOrReject(3);   
+            }
+        });
+
         function handleForwardOrReject(action) {
             // Prepare the data to be sent to the server
             var formData = $('#appraisal_form').serialize(); // Serialize the form data
@@ -655,8 +681,7 @@ Module
             var remark_id = $('#remark_id').val();
             var remarks = $('#remarks').val();remarks
             var form_id = $('#form_id').val();
-            var sign_hod = $('#sign_hod').val();
-            var sign_director = $('#sign_director').val();
+            
 
             console.log(file_id);
             formData += '&context=' + JSON.stringify({
@@ -667,9 +692,9 @@ Module
                 designation_employee:designation_employee,
                 remark_id : remark_id,
                 form_id : form_id,
-                sign_hod : sign_hod,
+               
                 remarks : remarks,
-                sign_director : sign_director,
+               
             });
             // Fire an AJAX request to handle the action
             $.ajax({

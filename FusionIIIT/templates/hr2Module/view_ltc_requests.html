@@ -21,12 +21,12 @@
                         </thead>
                         <tbody>
                             <!-- Loop through LTC requests and display in table -->
-                            {% for ltc_request in ltc_requests %}
+                            {% for ltc_request in ltc_requests|dictsort:"submissionDate" %}
                                 <tr>
                                     <td>{{ ltc_request.id }}</td>
                                     <td>{{ ltc_request.name }}</td>
                                     <td>{{ ltc_request.designation }}</td>
-                                    <th>{{ ltc_request.date }}</th>
+                                    <th>{{ ltc_request.submissionDate }}</th>
                                     <td><a href="http://127.0.0.1:8000/hr2/view_ltc_form/{{ ltc_request.id }}">View</a></td>
                                 </tr>
                             {% empty %}

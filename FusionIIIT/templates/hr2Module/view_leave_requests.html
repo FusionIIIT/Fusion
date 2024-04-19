@@ -26,7 +26,7 @@
                                     <td>{{ leave_request.id }}</td>
                                     <td>{{ leave_request.name }}</td>
                                     <td>{{ leave_request.designation }}</td>
-                                    <th>{{ leave_request.application_date|date:"F j, Y" }}</th>
+                                    <th>{{ leave_request.submissionDate|date:"F j, Y" }}</th>
 
                                     <td><a href="http://127.0.0.1:8000/hr2/view_leave_form/{{ leave_request.id }}">View</a></td>
                                 </tr>
