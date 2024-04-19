@@ -38,7 +38,7 @@ def viewcourses(request):
     extrainfo = ExtraInfo.objects.select_related().get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
         student = Student.objects.select_related('id').get(id=extrainfo)
-        roll = student.id.id[:2]                       #get the roll no. of the student
+        roll = student.id.id[:4]                       #get the roll no. of the student
         register = Register.objects.select_related().filter(student_id=student, semester=semester(roll))
         #info of registered student
         courses = collections.OrderedDict()   #courses in which student is registerd
@@ -48,6 +48,7 @@ def viewcourses(request):
 
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
+
                        'extrainfo': extrainfo})
     elif extrainfo.user_type == 'faculty':   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)   #get info of the instructor
@@ -87,7 +88,7 @@ def course(request, course_code):
         if request.session.get('currentDesignationSelected') != 'student':
             return HttpResponseRedirect('/dashboard/')
         student = Student.objects.select_related('id').get(id=extrainfo)
-        roll = student.id.id[:2]
+        roll = student.id.id[:4]
 
         #info about courses he is registered in
         curriculum = Curriculum.objects.select_related('course_id').get(course_code=course_code)
@@ -527,7 +528,7 @@ def add_document(request, course_code):
         # uploaded_file_url = full_path + filename + file_extenstion
         uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename + file_extenstion
         #save the info/details in the database
-        CourseSlide.objects.create(
+        CourseDocuments.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
             description=description,
@@ -839,7 +840,6 @@ def add_assignment(request, course_code):                 #from faculty side
             return HttpResponse("Please Enter The Form Properly",status=422)
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/" + name + "/"
-        print(full_path)
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
             cmd = "mkdir " + full_path
@@ -851,7 +851,7 @@ def add_assignment(request, course_code):                 #from faculty side
         assign = Assignment(
             course_id=course,
             submit_date=request.POST.get('myDate'),
-            doc=assi,
+            assignment_url=uploaded_file_url,
             assignment_name=name
         )
         assign.save()
@@ -1911,12 +1911,12 @@ def submit_marks(request, course_code):
                 student = Student.objects.select_related().get(id=str(form_data.getlist('stu_marks')[(i*3)]))
                 batch = str(student.batch)
                 # print(batch)
-                already_existing_data = Student_grades.objects.filter(roll_no=str(form_data.getlist('stu_marks')[(i*3)]))
+                already_existing_data = Student_grades.objects.filter(student_id=form_data.getlist('stu_marks')[(i*3)])
                 if already_existing_data.exists():
                     already_existing_data.update(
-                        semester = semester(str(form_data.getlist('stu_marks')[(i*3)])[:2]),
+                        semester = semester(student.id.id[:4]),
                         year = year,
-                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
+                        student_id = student,
                         total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
                         grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
                         batch = batch,
@@ -1924,9 +1924,9 @@ def submit_marks(request, course_code):
                     )
                 else:
                     student_grades = Student_grades.objects.create(
-                        semester = semester('21'),
+                        semester = semester(student.id.id[:4]),
                         year = year,
-                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
+                        student_id = student,
                         total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
                         grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
                         batch = batch,

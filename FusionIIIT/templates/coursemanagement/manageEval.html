@@ -32,7 +32,7 @@
                         <tr>
                             <td>{{forloop.counter}}</td>
                             <td>
-                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{row.roll_no}}" />
+                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{row.student_id.id.user.username}}" />
                             </td>
                             <td>
                                 <input type="number" name="stu_marks" id="total_marks{{forloop.counter}}" value="{{row.total_marks}}" placeholder="Enter total marks" />
