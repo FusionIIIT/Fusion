@@ -71,7 +71,7 @@ Complaint
                         {% csrf_token %}
                         <div class="ui header">
 
-                            <div>Complaint ID :{{ detail.complainer }}</div>
+                            <div>Complaint ID :{{ detail.complainer.id }}</div>
                             <div>Complainer :{{ detail.complainer.user.first_name }}
                                 {{detail.complainer.user.last_name}}
                             </div>
@@ -96,6 +96,12 @@ Complaint
                                         <td>: {{ detail.specific_location }}</td>
                                     </tr>
                                 </div>
+                                <div class="eight wide field">
+                                    <tr>
+                                        <td>Redirected to: </td>
+                                        <td>: {{ sup_name }}</td>
+                                    </tr>
+                                </div>
                             </table>
                             <div class="eight wide field">
 
@@ -108,7 +114,7 @@ Complaint
                                 {% else %} -->
                                 <button class="ui large primary button right floated" type="submit" name="submit"
                                     value="redirect" onclick="redirectsubmit()">
-                                    Submit
+                                    Forward
                                 </button>
                                 <a href="javascript:history.go(-1)">
                                     <button class="ui large primary button right floated" type="button" name="back">
