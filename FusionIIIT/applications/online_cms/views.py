@@ -1911,12 +1911,12 @@ def submit_marks(request, course_code):
                 student = Student.objects.select_related().get(id=str(form_data.getlist('stu_marks')[(i*3)]))
                 batch = str(student.batch)
                 # print(batch)
-                already_existing_data = Student_grades.objects.filter(student_id=form_data.getlist('stu_marks')[(i*3)])
+                already_existing_data = Student_grades.objects.filter(roll_no=str(form_data.getlist('stu_marks')[(i*3)]))
                 if already_existing_data.exists():
                     already_existing_data.update(
                         semester = semester(student.id.id[:4]),
                         year = year,
-                        student_id = student,
+                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
                         total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
                         grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
                         batch = batch,
@@ -1926,7 +1926,7 @@ def submit_marks(request, course_code):
                     student_grades = Student_grades.objects.create(
                         semester = semester(student.id.id[:4]),
                         year = year,
-                        student_id = student,
+                        roll_no = str(form_data.getlist('stu_marks')[(i*3)]),
                         total_marks = (form_data.getlist('stu_marks')[(i*3+1)]),
                         grade = str(form_data.getlist('stu_marks')[(i*3+2)]),
                         batch = batch,
