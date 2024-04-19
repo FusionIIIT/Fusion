@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^removesupervisor/(?P<s_id>[0-9]+)',views.edit_supervisor_api,name='supervisor-delete-api'),
     url(r'^updatesupervisor/(?P<s_id>[0-9]+)',views.edit_supervisor_api,name='supervisor-put-api'),
     
+    url(r'^forward', views.forward_complaint_api, name='forward-complaint-api'),
 ]

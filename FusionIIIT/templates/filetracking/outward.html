@@ -16,7 +16,7 @@
 <!--                           <option selected hidden>Select</option>-->
 <!--                         <form action="/filetracking/fileview/" method="get">-->
                              {% for designation in designation %}
-                             <td> <a href="{% url 'filetracking:fileview1' designation.id %}"><button class="ui primary button">
+                             <td> <a href="{% url 'filetracking:outbox_view' designation.id %}"><button class="ui primary button">
                                  {{designation}}
                              </button></a></td>
                             {% endfor %}

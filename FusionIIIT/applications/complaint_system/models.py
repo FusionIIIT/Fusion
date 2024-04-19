@@ -2,21 +2,26 @@
 from django.db import models
 from django.utils import timezone
 
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, HoldsDesignation
+from applications.filetracking.sdk import methods as fts
+from applications.filetracking.models import File
+from django.contrib.auth.models import User
+
+from enum import Enum
 
 # Class definations:
 
 
 class Constants:
-    AREA = (
-        ('hall-1', 'hall-1'),
+    AREA = ( ('hall-1', 'hall-1'),
         ('hall-3', 'hall-3'),
         ('hall-4', 'hall-4'),
-        ('CC1', 'CC1'),
-        ('CC2', 'CC2'),
+        ('computer center', 'CC'),
         ('core_lab', 'core_lab'),
         ('LHTC', 'LHTC'),
         ('NR2', 'NR2'),
+        ('NR3', 'NR3'),
+        ('Admin building', 'Admin building'),
         ('Rewa_Residency', 'Rewa_Residency'),
         ('Maa Saraswati Hostel', 'Maa Saraswati Hostel'),
         ('Nagarjun Hostel', 'Nagarjun Hostel'),
@@ -33,6 +38,10 @@ class Constants:
         ('other', 'other'),
     )
 
+class USER_TYPE(Enum):
+    student = 'student'
+    caretaker = 'caretaker'
+    supervisor = 'supervisor'
 
 class Caretaker(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -42,11 +51,18 @@ class Caretaker(models.Model):
     # no_of_comps = models.CharField(max_length=1000)
 
     def __str__(self):
-        return str(self.id) + '-' + self.area
+        return str(self.id) + '-' + str(self.area)
 
+class SectionIncharge(models.Model):
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    work_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
+                                   max_length=20, default='Electricity')
+
+    def __str__(self):
+        return str(self.id) + '-' + self.work_type
 
 class Workers(models.Model):
-    caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
+    secincharge_id = models.ForeignKey(SectionIncharge, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
@@ -79,10 +95,79 @@ class StudentComplain(models.Model):
     def __str__(self):
         return str(self.complainer.user.username)
 
+    @staticmethod
+    def get_complaints_by_user(user: ExtraInfo, role: str):
+        """
+        user: ExtraInfo
+        role: student, caretaker or supervisor
+        """
+        if role == 'student':
+            return StudentComplain.objects.filter(complainer=user)
+        elif role == 'caretaker' or role == 'supervisor':
+            designation = HoldsDesignation.objects.get(user=user.user).designation.name
+            complaints = fts.view_inbox(
+                username=user.user.username,
+                designation=designation,
+                src_module='complaint'
+            )
+            complaint_queryset = StudentComplain.objects.none()
+            for complaint in complaints:
+                complaint_queryset |= StudentComplain.objects.filter(id=complaint['src_object_id'])
+
+            return complaint_queryset
+
+    
+    @staticmethod
+    def create_file_for_complaint(complaint):
+        """
+        complaint: StudentComplain
+        """
+
+        caretaker = Caretaker.objects.get(area=complaint.location)
+        caretaker_designation = HoldsDesignation.objects.get(user=caretaker.staff_id.user).designation.name
+
+        fts.create_file(
+            uploader=complaint.complainer.user.username,
+            uploader_designation='student',
+            receiver=caretaker.staff_id.user.username,
+            receiver_designation=caretaker_designation,
+            src_module='complaint',
+            src_object_id=complaint.id
+        )
+
+        return complaint
+
+    @staticmethod
+    def forward_complaint(user: ExtraInfo, complaint_id: int):
+        """
+        user: ExtraInfo
+        complaint_id: int
+        """
+        file = File.objects.get(src_object_id=complaint_id, src_module='complaint')
+        user_designation = HoldsDesignation.objects.get(user=user.user)
+        try:
+            fts.forward_file(
+                file_id=file.id,
+                receiver=user.user.username,
+                receiver_designation=user_designation.designation.name,
+                file_extra_JSON={},
+            )
+            return True, 'Complaint forwarded successfully'
+        except Exception as e:
+            return False, str(e)
+
+
+    # owner refers to whom it was last forwarded not the complainer
+    @staticmethod
+    def get_complaint_owner(complaint_id: int) -> User:
+        file = File.objects.get(src_object_id=complaint_id, src_module='complaint')
+        owner_id = fts.get_current_file_owner(file.id)
+        return User.objects.get(username=owner_id)
+
 
 class Supervisor(models.Model):
     sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    area = models.CharField(choices=Constants.AREA, max_length=20)
+    type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
     def __str__(self):
-        return str(self.sup_id.user.username)
+        return str(self.sup_id) + '-' + str(self.type)
