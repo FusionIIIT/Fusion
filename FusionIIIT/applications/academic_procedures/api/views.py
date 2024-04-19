@@ -33,6 +33,8 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
 
+from applications.academic_procedures.views import get_sem_courses, get_student_registrtion_check, get_cpi
+
 from . import serializers
 
 User = get_user_model()
@@ -180,6 +182,37 @@ def academic_procedures_student(request):
 
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
 
+        curr_id = batch.curriculum
+        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
+
+        try:
+            semester_no = obj.curr_semester_no+1
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
+            user_sem = semester_no
+            
+        except Exception as e:
+            user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+            next_sem_id = curr_sem_id
+
+        student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
+        student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
+
+        cpi = get_cpi(user_details.id)
+
+        next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
+        print(next_sem_registration_courses)
+
+        next_sem_courses = []
+
+        for course_slot in next_sem_registration_courses:
+            courses = course_slot.courses.all()
+            courselist = []
+            for course in courses:
+                courselist.append({'name': course.name, 'credit': course.credit, 'course_code': course.code});
+            next_sem_courses.append({'slot_name':course_slot.name, 'slot_type': course_slot.type, 'semester': course_slot.semester.semester_no, 'slot_info': course_slot.course_slot_info, 'courses': courselist })
+        
+        print(next_sem_courses)
+
         student_registration_check_pre = obj.studentregistrationcheck_set.all().filter(semester=user_sem+1)
         student_registration_check_final = obj.studentregistrationcheck_set.all().filter(semester=user_sem)
         pre_registration_flag = False
@@ -232,6 +265,7 @@ def academic_procedures_student(request):
             'current_credits' : current_credits,
             'courses_list': next_sem_branch_courses_data,
             'fee_payment_mode_list' : fee_payment_mode_list,
+            'next_sem_registration_courses': next_sem_courses,
             'next_sem_branch_registration_courses' : next_sem_branch_registration_courses_data,
             'final_registration_choices' : final_registration_choices_data,
                         
@@ -338,7 +372,7 @@ def get_user_info(request):
 
 
 # with this api student can see the list of courses offered to him in upcoming semester
-@api_view(['GET'])
+@api_view(['POST'])
 def view_offered_courses(request):
     try : 
         obj = Curriculum.objects.filter(
@@ -481,9 +515,8 @@ def student_final_registration(request):
         registration_status = StudentRegistrationChecks.objects.filter(student_id = current_user["id"], semester_id = sem_id)
         registration_status = serializers.StudentRegistrationChecksSerializer(registration_status , many = True ).data
         
-        if(registration_status[0] and registration_status[0]["pre_registration_flag"] == False):
+        if(len(registration_status)>0 and registration_status[0]["pre_registration_flag"] == False):
             return Response(data = {"message" : "Student haven't done pre registration yet."} , status= status.HTTP_400_BAD_REQUEST )
-
         mode = str(request.data.get('mode'))
         transaction_id = str(request.data.get('transaction_id'))
         deposit_date = request.data.get('deposit_date')
@@ -493,15 +526,15 @@ def student_final_registration(request):
         reason = str(request.data.get('reason'))
         if reason=="":
             reason=None
-        fee_receipt = request.FILES['fee_receipt']
+        # fee_receipt = request.FILES['fee_receipt']
 
-        print(fee_receipt)
+        # print(fee_receipt)
         obj = FeePayments(
             student_id = current_user_instance,
             semester_id = sem_id_instance,
             mode = mode,
             transaction_id = transaction_id,
-            fee_receipt = fee_receipt,
+            # fee_receipt = fee_receipt,
             deposit_date = deposit_date,
             utr_number = utr_number,
             fee_paid = fee_paid,
@@ -545,7 +578,7 @@ def student_backlog_courses(request):
 
 
 # with this acad admin can fetch the list of courses for any batch , semester and brach
-@api_view(['GET'])
+@api_view(['POST'])
 def get_course_list(request):
     
     programme = request.data['programme']
@@ -689,7 +722,16 @@ def faculty_assigned_courses(request):
         print(current_user.id)
         for curriculum_id in curriculum_ids:
             course_info = Curriculum.objects.filter(curriculum_id=curriculum_id).values_list('course_code','course_type','programme','branch','sem','course_id_id').first()
-            course_infos.append(course_info)
+            # course_infos.append(course_info)
+            context = {
+                "course_code": course_info[0],
+                "course_type": course_info[1],
+                "programme": course_info[2],
+                "branch": course_info[3],
+                "sem": course_info[4],
+                "course_id": course_info[5]
+            }
+            course_infos.append(context)
     
         return Response(data= course_infos , status=status.HTTP_200_OK)
     except Exception as e:
