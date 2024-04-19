@@ -12,9 +12,9 @@ IPR
     {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-  
+
     <script>
-       
+      
     </script>
 
 {% comment %}The grid starts here!{% endcomment %}
@@ -56,25 +56,25 @@ IPR
     The central-rail segment starts here!
     {% endcomment %}
 
-    
+     <div >
+        {% block view_staff_details %}
+        {% include 'rs/display_staff_details.html' %}
+        {% endblock %}
+        </div>
 
     <div class="eight wide column">
 
-        <div class="ui tab segment" data-tab="fourth">
+        {% comment %} <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'rs/patent.html' %}
             {% endblock %}
-        </div>
+        </div> {% endcomment %}
 
         <div class="ui tab segment" data-tab="second">
             
         </div>
 
-        <div class="ui tab segment" data-tab="first">
-            {% block view_projects %}
-            {% include 'rs/view_projects_rspc.html' %}
-            {% endblock %}
-        </div>
+       
 
 
         {% comment %} <div class="ui tab segment" data-tab="second">
@@ -96,9 +96,6 @@ IPR
     {% comment %}The right-rail segment starts here!{% endcomment %}
     <div class="three wide column">
         <div class="row">
-            {% block sidepanel %} 
-               {% include 'notifications/sidepanel.html' %}
-            {% endblock %}
             {% comment %}
             TODO: the right rail!
             {% endcomment %}
@@ -113,7 +110,7 @@ IPR
 
 {% comment %}The grid ends here!{% endcomment %}
 
-{% endblock %}
+{% endblock %}  
 
 {% block javascript %}
 <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
