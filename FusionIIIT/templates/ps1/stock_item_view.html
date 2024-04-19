@@ -16,9 +16,11 @@
                     Stock Items View
                 </a>
             </h3>
+            {% if request.session.currentDesignationSelected != "ps_admin" %}
             <div class="right menu">
                 <button class="ui primary button compact" style="padding-top: 8px; padding-bottom: 8px;">Save</button>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -52,7 +54,14 @@
                 <td>{{s.department.name}}</td>
                 <td>{{s.location}}</td>
                 <td>{{s.isTransferred}}</td>
-                    <td><input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %}></td>
+
+                    <td>
+                        {% if request.session.currentDesignationSelected == "ps_admin" %}
+                            <input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %} disabled>
+                        {% else %}
+                            <input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %}>
+                        {% endif %}
+                    </td>
             
             </tr>
             {% endif %}
@@ -101,8 +110,12 @@
                         'csrfmiddlewaretoken': '{{csrf_token}}'
                     },
                     success: function (response) {
-                        // Handle success response
                         console.log("success in sending stock items information");
+                        if (response.success) {
+                            window.location.href = '../current_stock_view'; 
+                        } else {
+                            console.log("Request was successful, but response indicates failure.");
+                        }
                     },
                     error: function (xhr, errmsg, err) {
                         // Handle error response
