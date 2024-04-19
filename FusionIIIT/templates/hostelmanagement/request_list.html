@@ -1,0 +1,99 @@
+{% load custom_tags %}
+
+{% block {{hall.hall_id}} %}
+  {% for pending_request in pending_guest_room_requests|get_hall_no:hall_id %}
+    <div class="ui secondary segment">
+      <div class="ui segment">
+        <div class="ui container">
+          <h2 class="ui center aligned header">Room for {{pending_request.total_guest}} in {{pending_request.hall.hall_id}}</h2>
+          <div class="ui grid">
+            <div class="sixteen wide column">
+              <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+              <table class="ui celled table">
+                <thead>
+                  <tr>
+                    <th>Requested By</th>
+                    <th>Guest Name</th>
+                    <th>Guest Phone</th>
+                    <th>Arrival</th>
+                    <th>Departure</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{pending_request.intender}}</td>
+                    <td>{{pending_request.guest_name}}</td>
+                    <td>{{pending_request.guest_phone}}</td>
+                    <td>{{pending_request.arrival_date}}</td>
+                    <td>{{pending_request.departure_date}}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="5">
+                      <div class="ui styled accordion" style="width: 650px;">
+                        <div class="title">
+                          <i class="dropdown icon"></i>
+                          Reason
+                        </div>
+                        <div class="content">
+                          <h3 style="color: grey;">Description</h3>
+                          <h4 class="transition hidden" style="color: black;">{{pending_request.purpose}}</h4>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          {% if user in hall_caretaker or user in hall_warden %}
+            {% ifequal current_hall pending_request.hall.hall_id %}
+            <form method="post" action="{% url 'hostelmanagement:update_guest_room' %}" class="ui form" role="form">
+              {% csrf_token %}
+              <div class="fields" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <label>Room</label>
+                <select class="ui dropdown" name="guest_room_id">
+                  <option value="" selected disabled>Select Room</option>
+                  {% for room in guest_rooms|get_hall_no:hall_id %}
+                  <option value="{{room.room}}" >{{room.room}}</option>
+                  {% endfor %}
+                </select>
+                <div class="field" style="flex: 1; margin-right: 1rem;">
+                  <label>Status</label>
+                  <select class="ui dropdown" name="status" onchange="updateButton(this)" required>
+                    <option value="" selected disabled>Status</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field" style="text-align: right">
+                <button class="ui mini green basic button" type="submit" value="{{ pending_request.pk }}" name="accept_request" id="submit-btn" style = "margin-right: 1rem;margin-top: 1rem;" onclick="return confirm('Are you sure you want to SUBMIT this request?');">Submit</button>
+              </div>
+            </form>
+
+            {% endifequal %}
+          {% endif %}
+        </div>
+        <br>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
+            
+<script>
+  function updateButton(selectElem) {
+    var submitBtn = document.getElementById('submit-btn');
+    if (selectElem.value == 'Rejected') {
+      submitBtn.innerHTML = 'Reject';
+      submitBtn.setAttribute('name', 'reject_request');
+    } else {
+      submitBtn.innerHTML = 'Submit';
+      submitBtn.setAttribute('name', 'accept_request');
+    }
+  }
+</script>
+

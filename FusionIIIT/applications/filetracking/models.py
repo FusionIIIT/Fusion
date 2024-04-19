@@ -24,8 +24,8 @@ class File(models.Model):
     class Meta:
         db_table = 'File'
 
-    #def __str__(self):
-        #return str(self.ref_id)
+    # def __str__(self):
+    #     return str(self.ref_id)
 
 
 class Tracking(models.Model):
@@ -35,8 +35,6 @@ class Tracking(models.Model):
     file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=True)
     current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     current_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE)
-    # receiver_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='receiver_id')
-    # receive_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE, related_name='rec_design')
     receiver_id = models.ForeignKey(User,null = True, on_delete=models.CASCADE, related_name='receiver_id')
     receive_design = models.ForeignKey(Designation, null=True, on_delete=models.CASCADE, related_name='rec_design')
 

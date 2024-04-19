@@ -1,0 +1,59 @@
+{% block inventory_form %}
+  <h2>Hostel Inventory Form</h2>
+  <form class="ui form" action="{% url 'hostelmanagement:hostel_inventory_list' %}"  id="inventoryForm" method="POST"  >
+    {% csrf_token %}
+    <div class="field">
+    <label for="hall_id">Hall ID:</label>
+    <!-- <input type="number" id="hall_id" name="hall_id" /><br /><br /> -->
+    <select id="hall_id" name="hall_id">
+      {% for hall in all_hall %}
+      <option value="{{ hall.id }}">{{ hall.hall_id }}</option>
+      {% endfor %}
+    </select>
+    </div>
+    <div class="field">
+    <label for="inventory_name">Inventory Name:</label>
+    <input type="text" id="inventory_name" name="inventory_name" required/>
+    </div>
+    <div class="field">
+    <label for="cost">Cost:</label>
+    <input type="number" id="cost" name="cost"required />
+      </div>
+    <div class="field">
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" required/>
+    </div>
+  
+    <button class="ui primary button" type="submit">Submit</button>
+  </form>
+  <script>
+    document
+      .getElementById("inventoryForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        console.log("hiiiiiiiiii");
+        
+        fetch(this.action, {
+          method: this.method,
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            // document.getElementById("responseMessage").innerHTML =
+            //   data.message;
+            if (data.hall_id) {
+              console.log(data.hall_id);
+              alert("Inventory added successfully");
+              window.location.href =
+                // "/hostelmanagement/inventory/" + data.hall_id + "/";
+                "/hostelmanagement/"
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      });
+  </script>
+{% endblock %}
