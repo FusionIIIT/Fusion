@@ -82,7 +82,7 @@
                 <th style="text-align: center;text-transform: uppercase">File</th>
                 <th style="text-align: center;text-transform: uppercase">Recive Date</th>
                 <th style="text-align: center;text-transform: uppercase">View File Tracking</th>
-                {% if global_var == "director" or global_var == "CSE HOD"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
+                {% if global_var == "director" or global_var == "HOD (CSE)"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
                 <th style="text-align: center;">Approve</th>
                 {% endif %}
             </tr>
@@ -107,8 +107,8 @@
                     <button onclick="window.location='/research_procedures/view_file/{{ data.file_id.id }}'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"
                         >View File</button>
                 </td>
-                {% if global_var == "director" or global_var == "CSE HOD" or  global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
-            <td>data.file_id.id
+                {% if global_var == "director" or global_var == "HOD (CSE)" or  global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
+            <td>
                 <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:approve_request' data.id  %}">
                     {% csrf_token %}
                     <button style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"  type="submit" >Approve</button>

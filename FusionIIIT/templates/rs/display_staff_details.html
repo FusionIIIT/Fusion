@@ -1,4 +1,4 @@
-{% extends 'globals/base.html' %}
+<!-- {% extends 'globals/base.html' %} -->
 
 {% load static %}
 
@@ -121,31 +121,31 @@
 
 </script>
 
+<!--if condition for staff details is zero  -->
+
+
+
+
+<!--if condition for staff details is zero  -->
+
+{% if data_by_year|length == 0  %}
+<div>
+    <h2>No Staff</h2>
+</div>
+{% else %}
+
 <div style=" max-width:600px" >
     <div class="ui pointing secondary menu" style="font-size: 20px; max-width:60%;">
-        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
-            Staff Details for Project &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+        <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Staff Details for Project : &nbsp;<span class="ui blue text header">{{ project_name }}</span>
         </label>
     </div>
-    <!--if condition for staff details is zero  -->
-    
-    
-
-    
-    <!--if condition for staff details is zero  -->
-
-    {% if data_by_year|length == 0  %}
-    <div>
-        <h2>No Staff</h2>
-    </div>
-    {% else %}
-   
-    <div class="ui ten wide grid container">
+<div class="ui ten wide grid container" >
         {% for year, staff_details_list in data_by_year.items %}
         <div class="row">
             <div class="twelwe wide column">
-                <h2 class="ui header">Year - {{ year }}</h2>
-                <table class="ui celled table">
+                <h2 class="ui header">YEAR - {{ year }}</h2>
+                <table class="ui celled table" style="width:900px">
                     <thead>
                         <tr>
                             <th>STAFF ID</th>
@@ -154,6 +154,9 @@
                             <th>STIPEND</th>
                             <th>START DATE</th>
                             <th>END DATE</th>
+                            {% if global_var == "rspc_admin" %}
+                            <th>CHANGE END DATE</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -165,6 +168,17 @@
                             <td>{{ staff_detail.stipend }}</td>
                             <td>{{ staff_detail.start_date }}</td>
                             <td>{{ staff_detail.end_date }}</td>
+                            <td>
+                            {% if global_var == "rspc_admin" %}
+                            <form class="ui form" action="{% url 'research_procedures:change_end_date' staff_detail.staff_allocation_id %}"  method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div style="display:flex;flex-direction:row;">
+                                <input type="date" name="end_date">
+                                <button class="ui small grey equal-size-button button" style="margin-left:10px" type="submit">CHANGE</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

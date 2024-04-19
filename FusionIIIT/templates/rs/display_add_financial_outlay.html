@@ -145,8 +145,10 @@
 
   {% csrf_token %}
   Change Project Duration
-  <input name="updated_year" type="number" />
-  <button  type="submit" > Update Period of Project </button>
+  <div class="ui labeled input">
+  <input  name="updated_year" type="number" />
+  </div>
+  <button class="ui small grey equal-size-button button"  type="submit" > Update </button>
 </form>
 
 <form method="post" enctype="multipart/form-data"

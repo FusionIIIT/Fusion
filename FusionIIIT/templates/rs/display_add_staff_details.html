@@ -1,7 +1,7 @@
-
+{% extends 'globals/base.html' %} 
 {% load static %} 
 {% block title %} 
-
+IPR 
 {% endblock %} 
 {% block projects %} 
 {% block body %}
@@ -123,32 +123,32 @@
     <div class="staff-{{year}} catt">
         <div >
           <div class="ui labeled input" style="margin:5px;">
-            <label for="staff_id" class="ui label">Staff ID</label>
+            <label for="staff_id" class="ui label">STAFF ID</label>
             <input name="staff_id-{{year}}-1" required id="staff_id-{{year}}-1" class="staff_id-{{year}}">
           </div>
           <div class="ui labeled input" style="margin:5px;">
-            <label for="staff_name" class="ui label">Staff Name</label>
+            <label for="staff_name" class="ui label">STAFF NAME</label>
             <input name="staff_name-{{year}}-1" required id="staff_name-{{year}}-1" class="staff_name-{{year}}">
           </div>
         </div>
         <div>
           <div class="ui labeled input" style="margin:5px;">
-            <label for="stipend" class="ui label">Stipend</label>
+            <label for="stipend" class="ui label">STIPEND</label>
             <input type="number" name="stipend-{{year}}-1" required id="stipend-{{year}}-1" class="stipend-{{year}}">
           </div>
           <div class="ui labeled input" style="margin:5px;">
-            <label for="amount" class="ui label">Qualification</label>
+            <label for="amount" class="ui label">QUALIFICATION</label>
             <input name="qualification-{{year}}-1"  id="qualification-{{year}}-1" class="qualification-{{year}}">
           </div>
           
         </div>
           <div class="ui labeled input" style="margin:5px">
-            <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">Remove</button>
+            <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">REMOVE</button>
           </div>
       </div> 
       
     </div>
-    <button class="f-group ui grey button" onclick="addStaffSection(event,{{year}},{{project_id}})" style="margin:8px">Add Staff</button>
+    <button class="f-group ui grey button" onclick="addStaffSection(event,{{year}},{{project_id}})" style="margin:8px">ADD STAFF</button>
     {% comment %} <div class="f-group">
       <label for="staff-count-{{year}}">Staff Count</label>
       <input name="staff-count-{{year}}" id="staff-count-{{year}}" value="1">

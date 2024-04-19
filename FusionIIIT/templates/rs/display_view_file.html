@@ -10,12 +10,12 @@
 
 {% block body %}
 
-<div class="ui active tab" data-tab="notesheet" style="width:800px;">
+<div class="ui active tab" data-tab="notesheet" style="width:830px;">
     <div class="ui two item menu">
         <a class="item"><b>Created By :-</b><b class="meta"
                 style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
-        <a class="item"><b>File ID :</b><b class="meta"
-                style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        {% comment %} <a class="item"><b>File ID :</b><b class="meta"
+                style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a> {% endcomment %}
     </div>
     <div class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
         {% csrf_token %}
@@ -26,7 +26,7 @@
                 <div class="content" style="padding-left: 26px; padding-top: 0.1px; height: auto; overflow-y: auto;">
                     <div class="item">
                         {% for t in tracks %}
-                        <div class="ui card" style="padding: 12px; width:700px;">
+                        <div class="ui card" style="padding: 12px; width:750px;">
                             <div class="comment">
                                 <div class="content">
                                     <div style="display:flex;justify-content: space-between;flex-direction: row; font-weight:normal">
@@ -79,7 +79,7 @@
                                         <option value="dean_rspc">RSPC Dean</option>
                                         <option value="rspc_admin">RSPC Admin</option>
                                         <option value="project_investigator">Project Investigator</option>
-                                        <option value="CSE HOD">HOD (CSE)</option>
+                                        <option value="HOD (CSE)">HOD (CSE)</option>
                                         <option value="HOD (ME)">HOD (ME)</option>
                                         <option value="HOD (ECE)">HOD (ECE)</option>
                                         <option value="HOD (Design)">HOD (Design)</option>
@@ -99,7 +99,7 @@
                             <label for="attachment">Attach File: (Maximum File Size 10 MB) </label>
                             <input type="file" id="file" name="attachment" accept=".pdf, .jpg, .jpeg, .png">
                         </div>
-                        {% if global_var == "director" or global_var == "CSE HOD"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
+                        {% if global_var == "director" or global_var == "HOD (CSE)"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
                         <button type="submit" class="ui large right floated primary button" style="margin-top:20px; float: right;">
                             <a
                             style="text-decoration: none; color: inherit;"> Approve File <i

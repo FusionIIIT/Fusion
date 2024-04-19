@@ -62,11 +62,11 @@
                     <div class="item"  >
                         <div class="flexy">
                             <div class="content" id="width-half"> 
-                                <div class="header" >Project Investigator ID</div>
+                                <div class="header" >PROJECT INVESTIGATOR ID</div>
                                 <div class="description" >{{ project.project_investigator_id }}</div>
                             </div>
                             <div class="content" id="width-half" > 
-                                <div class="header " >Co-Project Investigator ID</div>
+                                <div class="header " >CO-PROJECT INVESTIGATOR ID</div>
                                 <div class="description" >{{ project.co_project_investigator_id }}</div>
                             </div>
                         </div>
@@ -75,11 +75,11 @@
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header" >Project Type</div>
+                            <div class="header" >PROJECT TYPE</div>
                             <div class="description" >{{ project.project_type }}</div>
                         </div>
                         <div class="content" id="width-half" >
-                            <div class="header" >Sponsored Agency</div>
+                            <div class="header" >SPONSORED AGENCY</div>
                             <div class="description" >{{ project.sponsored_agency }}</div>
                         </div>
                         </div>
@@ -88,11 +88,11 @@
                     <div class="item" >
                         <div class="flexy">
                             <div class="content" id="width-half">
-                                <div class="header" >Years</div>
+                                <div class="header" >YEARS</div>
                                 <div class="description" >{{ project.years }} years</div>
                             </div>
                             <div class="content" id="width-half" >
-                                <div class="header" >Project Status</div>
+                                <div class="header" >PROJECT STATUS</div>
                                 <br>
                                 {% if project.status == 0 %}
                                 <div class="ui teal label">OnGoing</div>
@@ -107,11 +107,11 @@
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header" >Start Date</div>
+                            <div class="header" >START DATE</div>
                             <div class="description" >{{ project.start_date }}</div>
                         </div>
                         <div class="content" id="width-half" >
-                            <div class="header" >Finish Date</div>
+                            <div class="header" >FINISH DATE</div>
                             <div class="description" >{{ project.finish_date }}</div>
                         </div>
                         </div>
@@ -120,7 +120,7 @@
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header"  >Financial Outlay</div>
+                            <div class="header"  >FINANCIAL OUTLAY</div>
                             <div class="description"  >
                                 {% if project.financial_outlay_status == 0 and request.user.extrainfo.user_type == "staff" %}
                                 <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                         <div class="content" >
-                            <div class="header"  >Staff Allotment</div>
+                            <div class="header"  >STAFF ALLOTMENT</div>
                             <div class="description"  >
                                 {% if request.user.extrainfo.user_type == "staff" %}
                                 <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})"  onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
@@ -149,7 +149,7 @@
                     <div class="item">
                         <div class="flexy">
                         <div class="content" id="width-half" >
-                            <div class="header">Project Information file</div>
+                            <div class="header">PROJECT INFORMATION FILE</div>
                             <div class="description"  >
                                <a class="ui small grey equal-size-button button " id="k{{ project.project_id }}" onmouseover="changeText('k{{ project.project_id }}')" onmouseout="restoreText('k{{ project.project_id }}')" href="{{ project.project_info_file.url }}"><i class="eye icon"></i> </a>
                             </div>
@@ -157,9 +157,9 @@
                         {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
                         {% comment %} <div class="item"> {% endcomment %}
                             <div class="content" >
-                                <div class="header"  >Update Financial Outlay</div>
+                                <div class="header"  >UPDATE FINANCIAL OUTLAY</div>
                                 <div class="description"  >
-                                    <button class="ui small grey equal-size-button button " id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
+                                    <button class="ui small grey equal-size-button button" id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
                                 </div>
                             </div>
                             {% comment %} </div> {% endcomment %}
@@ -181,7 +181,7 @@
                         <select id="receiver" name="receiver" class="ui selection dropdown">
                             <option value="dean_rspc">RSPC Dean</option>
                             <option value="rspc_admin">RSPC Admin</option>
-                            <option value="CSE HOD">HOD (CSE)</option>
+                            <option value="HOD (CSE)">HOD (CSE)</option>
                             <option value="HOD (ME)">HOD (ME)</option>
                             <option value="HOD (ECE)">HOD (ECE)</option>
                             <option value="HOD (Design)">HOD (Design)</option>

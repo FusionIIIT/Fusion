@@ -618,10 +618,13 @@ def view_staff_details(request,pid):
         if year not in data_by_year:
             data_by_year[year] = []
         data_by_year[year].append({
+            'staff_allocation_id': record.staff_allocation_id,
             'staff_id' : record.staff_id,
             'staff_name': record.staff_name,
             'qualification': record.qualification,
-            'stipend': record.stipend
+            'stipend': record.stipend,
+            'start_date': record.start_date,
+            'end_date': record.end_date,
         })
 # Pass the organized data to the template
     context = {
@@ -926,6 +929,16 @@ def change_year(request,id):
         messages.success(request,"Year changed successfully")
     return redirect("/research_procedures/view_financial_outlay/"+str(projectid))
 
+def change_end_date(request,id):
+    if request.method == "POST":
+        obj= request.POST
+        staff_allocations_id = int(id)
+        end_date = obj.get('end_date')
+        staff_allocation_instance = staff_allocations.objects.get(staff_allocation_id=staff_allocations_id)
+        staff_allocation_instance.end_date = end_date
+        staff_allocation_instance.save()
+        messages.success(request,"End date changed successfully")
+    return redirect("/research_procedures/view_staff_details/"+str(staff_allocation_instance.project_id.project_id))
 
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
