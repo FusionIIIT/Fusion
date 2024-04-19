@@ -240,10 +240,10 @@ def add_projects(request):
         research_procedures_notif(request.user, userpi_instance, "Project Added")
 
         tracking_obj = Tracking.objects.get(file_id__id=file_x)
-        
+        file_obj= File.objects.get(id=file_x)
  
-        tracking_obj.upload_file.save(project_info_file.name, project_info_file, save=True)
-
+        tracking_obj.upload_file= file_obj.upload_file
+        tracking_obj.save()
         messages.success(request,"Project added successfully")
         categories = category.objects.all()
 
@@ -751,6 +751,14 @@ def add_staff_request(request,id):
             file_extra_JSON= { "message": "Request Added." },
             attached_file= file_to_forward, 
         )
+
+        tracking_obj = Tracking.objects.get(file_id__id=file_x)
+        file_obj= File.objects.get(id=file_x)
+ 
+        tracking_obj.upload_file= file_obj.upload_file
+        tracking_obj.save()
+        
+
         messages.success(request,"request added successfully")
 
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
@@ -811,9 +819,9 @@ def forward_request(request,id):
             remarks= remarks,
             file_attachment= attachment, 
         )
-        if(receiver_designation == 'Professor' or receiver_designation == 'Assistant Professor'):
+        if(receiver_designation == 'Professor' or receiver_designation == 'Assistant Professor' or receiver_designation == 'rspc_admin'):
             research_procedures_notif(request.user, receiver_instance, "Request update")
-        messages.success(request,"Request forwarded successfully")
+        messages.success(request,"Request forwarded successfully") 
 
 
     return redirect("/research_procedures/inbox")
