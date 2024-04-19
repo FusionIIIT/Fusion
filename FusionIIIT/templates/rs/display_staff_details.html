@@ -173,7 +173,7 @@
                             <form class="ui form" action="{% url 'research_procedures:change_end_date' staff_detail.staff_allocation_id %}"  method="post" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div style="display:flex;flex-direction:row;">
-                                <input type="date" name="end_date">
+                                <input  required type="date" name="end_date">
                                 <button class="ui small grey equal-size-button button" style="margin-left:10px" type="submit">CHANGE</button>
                                 </div>
                             </form>
