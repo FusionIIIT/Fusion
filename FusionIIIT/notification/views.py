@@ -117,31 +117,37 @@ def visitors_hostel_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def healthcare_center_notif(sender, recipient, type):
+def healthcare_center_notif(sender, recipient, type,message):
     url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
     recipient = recipient
     verb = ''
-    
     if type == 'appoint':
         verb = "Your Appointment has been booked"
     elif type == 'amb_request':
         verb = "Your Ambulance request has been placed"
-    elif type == 'Presc':
+    elif type == 'presc':
         verb = "You have been prescribed some medicine"
     elif type == 'appoint_req':
         verb = "You have a new appointment request"
+    elif type == 'feedback_submitted':
+        verb = "Your feedback has been submitted"
+    elif type == 'feedback_res':
+        verb = "You have a new feedback"
     elif type == 'amb_req':
         verb = "You have a new ambulance request"
+    elif type == 'new_announce':
+        verb = message
+        flag='announcement'
     elif type == 'rel_forward':
         verb = "You have a new medical relief forward request"
     elif type == 'rel_approve':
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
         verb = 'Your medical relief request has been approved' 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def file_tracking_notif(sender, recipient,title):

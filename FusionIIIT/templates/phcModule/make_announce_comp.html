@@ -3,18 +3,28 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="dep">
-            Announcement
+        {% if global_var == 'Compounder' %}
+            <a class="active item" data-tab="dep">
+                Announcement
+            </a>
+        {% endif %}
+
+        <a class="item" data-tab="announcerecord">
+            Announcement Record
         </a>
+
     </div>
 
+    {% if global_var == 'Compounder' %}
     <div class="ui active tab" data-tab="dep">
+        
         <div class="ui vertical segment">
             <!-- fill the form details -->
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
                   action="../views/announcement/">
                 {% csrf_token %}
-                <div class="ui header">
+
+                <div class="ui header", >
                     Make a new Announcement:
                 </div>
 
@@ -22,7 +32,7 @@
 
                 <div class="fields">
 
-                    <div class="eight wide field">
+                    {% comment %} <div class="eight wide field">
                         <label>Programme Type<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
                             <input name="programme" type="hidden" placeholder="programme" required='true'>
@@ -49,9 +59,9 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> {% endcomment %}
 
-                    <div class="eight wide field">
+                    {% comment %} <div class="eight wide field">
                         <label>Batch </label>
                         <div class="ui selection dropdown">
                             <input name="batch" type="hidden" required='TRUE'>
@@ -83,12 +93,12 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 </div>
 
                 <div class="fields">
 
-                    <div class="eight wide field">
+                    {% comment %} <div class="eight wide field">
                         <label>Department<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
                             <input name="department" type="hidden" placeholder="department" required='true'>
@@ -119,13 +129,13 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 </div>
 
                 <div class="field">
                     <label>Announcement Details<sup><i class="small red asterisk icon"></i></sup></label>
-                    <input placeholder="What is the Announcement?" name="announcement" required></textarea>
-                </div>
+                    <textarea placeholder="What is the Announcement?" name="announcement" required></textarea>
+                </div> 
 
                 <div class = "file">
                       <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
@@ -150,9 +160,126 @@
             <br>
             <div class="ui divider"></div>
         </div>
+        {% endif %}
     </div>
 
-   
+
+    <div class="ui tab" data-tab="announcerecord">
+        <div id="announce_print" class="ui vertical segment" >
+
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black; ">
+                        Announcement Details
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Announcement Files
+                    </td>
+                    {% comment %} <td style="font-weight:bold;color:black;">
+                        Details
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Test
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
+                    </td>
+
+
+                    <td style="font-weight:bold;color:black;">
+
+                      <table>
+
+                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
+
+                      </table>
+                    </td> {% endcomment %}
+
+                </tr>
+                </thead>
+                    <h1>{{ user_designation }}</h1>
+                <tbody>
+                {% for anno in announcement %}
+                <tr>
+                    {% comment %} <h1>1</h1> {% endcomment %}
+                    <td style="font-weight:bold;color:black;">
+                        <h4 class="ui image header">
+                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{anno.message}}
+
+
+                    </td>
+
+                    {% comment %} <td>
+                        {{pre.date}}
+                    </td>
+
+                    <td>
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        {{pre.test}}
+                    </td> {% endcomment %}
+                   
+                    <td style="white-space:nowrap;">
+                        {% if anno.upload_announcement != None %}
+                        <a href="{{ anno.upload_announcement }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+
+                    {% comment %} <td>
+                      <table>
+                        {% for announcement in announcement %}
+                            {% if announcement.anno_id.id == anno.id %}
+                                  <tr><td>{{announcement.anno_id}}</td><td>{{announcement.days}}</td><td>{{announcement.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
+                    </td> {% endcomment %}
+                </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+
+          </div>
+        </div>
+
+<script>
+            function rem(id){
+           
+			var dis = this;
+            var d = window.confirm('Are you sure, you want to delete the Request?');
+            if(d == false){
+                return;
+            }
+            $('#'+id).parent().parent().remove();
+                                             alert("Ambulance request cancelled");
+
+					$.ajax({
+                            type:'POST',
+                            url:'/healthcenter/student/',
+                            data: {'cancel_amb':id},
+
+                            beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+                            success: function(data){
+
+                                                    }
+                          });
+
+            
+      }
+      </script>
+
+
 {% endblock %}
 
 {% block javascript %}

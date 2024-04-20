@@ -64,10 +64,10 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     
-                    {% comment %} <a class=" item" data-tab="tenth">
+                    <a class=" item" data-tab="tenth">
                         Make Announcements
                         <i class="right floated chevron right icon"></i>
-                    </a> {% endcomment %}
+                    </a>
                     <a class=" item" data-tab="elventh">
                         Medical Relief
                         <i class="right floated chevron right icon"></i>
@@ -130,11 +130,11 @@
                 {% endblock %}
             </div>
 
-             {% comment %} <div class="ui tab segment" data-tab="tenth" style='height:650px;width:820px;overflow-x:scroll'>
+              <div class="ui tab segment" data-tab="tenth" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block make_announce_comp %}
-                    {% include 'phcModule/make_announce_comp.html' with all_complaints=all_complaints %}
+                    {% include 'phcModule/make_announce_comp.html' with announcement=announcements all_complaints=all_complaints %}
                 {% endblock %}
-            </div> {% endcomment %}
+            </div>  
             <div class="ui tab segment" data-tab="elventh" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block CompounderMedicalReliefView %}
                     {% include 'phcModule/compounder_medical_relief.html' with inbox_files=inbox_files medicalRelief=medicalRelief %}

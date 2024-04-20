@@ -90,6 +90,7 @@ def compounder_view(request):
             expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
+            announcements_data=Announcements.objects.all().values()
             
             medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
             print(medicines_presc)
@@ -148,7 +149,7 @@ def compounder_view(request):
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': report, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': report, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox,'announcements':announcements_data,})
     else:
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -186,6 +187,7 @@ def student_view(request):
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
             appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
+            announcements_data=Announcements.objects.all().values()
             
             medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
             complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
@@ -271,7 +273,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief})
+                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'announcements':announcements_data,})
     else:
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
@@ -524,6 +526,7 @@ def announcement(request):
     num = 1
     ann_anno_id = user_info.id
     requests_received = get_to_request(usrnm)
+
     if request.method == 'POST':
         formObject = Announcements()
         # formObject.key = Projects.objects.get(id=request.session['projectId'])
@@ -532,16 +535,23 @@ def announcement(request):
         recipients = User.objects.filter(extrainfo__in=getstudents)
         # formObject.anno_id=1
         formObject.anno_id=user_info
-        formObject.batch = request.POST['batch']
-        formObject.programme = request.POST['programme']
+        # formObject.batch = request.POST['batch']
+        # formObject.programme = request.POST['programme']
         formObject.message = request.POST['announcement']
         formObject. upload_announcement = request.FILES.get('upload_announcement')
-        formObject.department = request.POST['department']
+        # formObject.department = request.POST['department']
         formObject.ann_date = date.today()
         #formObject.amount = request.POST['amount']
         formObject.save()
+        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
         return redirect('../../compounder/')    
         
+    announcements_data=Announcements.objects.all().values()
+    
+    return render(request, 'health_center/make_announce_comp.html', {"user_designation":user_info.user_type,
+                                                            'announcements':announcements_data,
+                                                            "request_to":requests_received
+                                                        })  
         # batch = request.POST.get('batch', '')
         # programme = request.POST.get('programme', '')
         # message = request.POST.get('announcement', '')
@@ -559,10 +569,5 @@ def announcement(request):
         #                             upload_announcement=upload_announcement,
         #                             department = department,
         #                             ann_date=ann_date)
-        # # department_notif(usrnm, recipients , message)
+     
         
-    context = browse_announcements()
-    return render(request, 'health_center/make_announce_comp.html', {"user_designation":user_info.user_type,
-                                                            "announcements":context,
-                                                            "request_to":requests_received
-                                                        })  

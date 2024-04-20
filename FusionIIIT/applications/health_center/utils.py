@@ -11,6 +11,8 @@ from .models import (Ambulance_request, Appointment, Complaint, Doctor,
                      Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
                      Stock, Announcements, SpecialRequest, Pathologist, medical_relief)
 from applications.filetracking.sdk.methods import *
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 def datetime_handler(date):
     '''
@@ -27,11 +29,14 @@ def compounder_view_handler(request):
     '''
 
     # compounder response to patients feedback
-    if 'feed_com' in request.POST:                                    
+    if 'feed_com' in request.POST:                                 
         pk = request.POST.get('com_id')
         feedback = request.POST.get('feed')
+        comp_id = ExtraInfo.objects.select_related('user','department').filter(user_type='compounder')
         Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(id=pk).update(feedback=feedback)
         data = {'feedback': feedback}
+        for cmp in comp_id:
+                healthcare_center_notif(request.user, cmp.user, 'feedback_res')
         return JsonResponse(data)
 
     elif 'end' in request.POST:
@@ -83,16 +88,7 @@ def compounder_view_handler(request):
         data={'status':1, 'pathologist_name':doctor, 'specialization':specialization, 'pathologist_phone':phone}
         return JsonResponse(data)
     
-    # making announcements from compounder 
-    elif 'add' in request.POST:                                         
-        ven=request.POST.get('venue')
-        announcement=request.POST.get('announcement')
-        Announcement.objects.create(
-        venue=ven,
-        announcement=announcement,
-        )
-        data={ 'venue':ven, 'announcement':announcement }
-        return JsonResponse(data)
+    
 
     # remove doctor by changing active status
     elif 'remove_doctor' in request.POST:                              
@@ -576,7 +572,10 @@ def student_view_handler(request):
             date=datetime.now()
         )
         data = {'status': 1}
+        healthcare_center_notif(request.user, request.user,'feedback_submitted')
+        
         return JsonResponse(data)
+    
     elif 'cancel_amb' in request.POST:
         amb_id = request.POST.get('cancel_amb')
         Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(pk=amb_id).delete()
@@ -593,7 +592,7 @@ def student_view_handler(request):
         # print(designation)
         user=ExtraInfo.objects.get(pk=designation)
         description = request.POST.get('description')
-        
+         
         # Retrieve the uploaded file from request.FILES
         uploaded_file = request.FILES.get('file')
 
@@ -654,5 +653,10 @@ def student_view_handler(request):
         
         return JsonResponse({'status':1})
         
-    
-        
+    elif 'announcement' in request.POST:
+        print("lsahflkushdfkhjshdfkghsdkhkfhg")
+        anno_id = request.POST.get('anno_id')
+        Announcements.objects.select_related('user_id','user_id__user','user_id__department', 'message', 'upload_announcement').filter(pk=anno_id).delete()
+        data = {'status': 1}
+        healthcare_center_notif(request.user,user.user,'new_announce')
+        return JsonResponse({'status':1})

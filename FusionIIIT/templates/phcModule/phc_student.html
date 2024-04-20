@@ -62,6 +62,10 @@
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
+                    <a class="item" data-tab="fifth">
+                        Announcements
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
                     {% comment %} {% if usertype == "fx" %}
                         <a class="item" data-tab="fifth">
@@ -125,17 +129,23 @@
                 </div> 
                 {% endif %}
 
+                <div class="ui tab segment" data-tab="fifth">
+                {% block announcements %}
+                    {% include 'phcModule/announce_stud.html' with complaints=complaints prescription=prescription medicines=medicines announcement=announcements %}
+                {% endblock %}
+            </div>
+
            
             {% comment %}The complaint/feedback ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            {% comment %} <div class="row">
+        {% comment %} <div class="three wide column">
+             <div class="row">
                 {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
                 {% endblock %}
-            </div> {% endcomment %}
+            </div>  {% endcomment %}
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
