@@ -648,7 +648,7 @@ def submitMCM(request):
                     status="INCOMPLETE",
                 )
                 messages.success(
-                    request, award + ' Application is successfully submitted'
+                    request, award + ' Application is successfully Updated'
                 )
                 break
             else:
@@ -1120,7 +1120,6 @@ def sendStudentRenderRequest(request, additionalParams={}):
                     pass
 
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
-    print(x)
     show_mcm_flag = False
     show_convocation_flag = False
     for i in x:
