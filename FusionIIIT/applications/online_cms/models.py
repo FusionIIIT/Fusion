@@ -4,16 +4,36 @@ from applications.academic_information.models import Course, Student, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
 
+#the modules for containing course content
+class Modules(models.Model):
+    module_name = models.CharField(max_length=50)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE, default = 405)
+
+    def __str__(self):
+        return self.module_name
+
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    module_id = models.ForeignKey(Modules, on_delete=models.CASCADE, default = 1)
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
-    document_url = models.CharField(max_length=100, null=True)
+    document_url = models.CharField(max_length=500, null=True,blank=True)
+    # media = models.FileField(upload_to=content_file_name, null=True, blank=True)
 
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.document_name)
+    
+#the attendance files added by the faculty and can be downloaded by the students
+class AttendanceFiles(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(auto_now=True)
+    file_name = models.CharField(max_length=40)
+    file_url = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.course_id, self.file_name)
 
 #videos added by the faculty and can be downloaded by students
 class CourseVideo(models.Model):
@@ -203,15 +223,54 @@ class ForumReply(models.Model):
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
     
+class GradingScheme(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # quiz = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # assignment = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # midsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # endsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # projects = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    type_of_evaluation = models.TextField(max_length=255, default=None)
+    weightage = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+
+    def __str__(self):
+        return '{} - {}'.format(
+                self.pk, self.course_id)
+    
+class GradingScheme_grades(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    O_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    O_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    F_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    F_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return '{} - {}'.format(self.pk, self.course_id)
 
 class Student_grades(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    semester = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
     roll_no = models.TextField(max_length=2000)
     total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     grade = models.TextField(max_length=2000)
-    batch = models.TextField(max_length=2000)
-
-    def _str_(self):
+    batch = models.IntegerField(default=2021)
+ 
+    def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)

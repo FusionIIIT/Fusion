@@ -9,7 +9,6 @@ class QuizResultAdmin(admin.ModelAdmin):
     raw_id_fields = ("student_id",)
 
 admin.site.register(CourseDocuments)
-
 admin.site.register(CourseVideo)
 
 admin.site.register(Quiz)
