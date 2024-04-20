@@ -52,7 +52,7 @@ Central Mess
     {% endcomment %}
     <div class="eight wide column">
         {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="first">
+        <div class="ui tab segment {% if reg_main_stud.current_mess_status == 'Deregistered' %}disabled {% endif %}"  data-tab="first">
             {% block feedback %}
             {% include 'messModule/feedback.html' %}
             {% endblock %}
@@ -69,7 +69,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
+        <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
@@ -143,7 +143,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
+        <div class="ui active tab segment" data-tab="thirteenth">
             {% block viewmenu %}
             {% include 'messModule/viewmenu.html' %}
             {% endblock %}
@@ -311,7 +311,7 @@ Central Mess
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
                     label: 'Feedback',
-                    data: [c1,c2,c3,c4],
+                    data: [c2,c3,c1,c4],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',
@@ -348,7 +348,7 @@ Central Mess
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
                     label: 'Feedback',
-                    data: [c5,c6,c7,c8],
+                    data: [c6,c7,c5,c8],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',

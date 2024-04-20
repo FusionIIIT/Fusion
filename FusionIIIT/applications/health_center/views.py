@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
                      Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
-                     Medicine, Prescribed_medicine, Prescription, Schedule,
+                     Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
                      Stock,SpecialRequest,Announcements)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
 
@@ -80,20 +80,20 @@ def compounder_view(request):
             users = ExtraInfo.objects.select_related('user','department').filter(user_type='student')
             stocks = Stock.objects.all()
             days = Constants.DAYS_OF_WEEK
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
-            schedule1=Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
-            presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').all().order_by('-date')
-            medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
+            presc_hist=Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-date')
+            medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
             count=Counter.objects.get()
             hospitals=Hospital.objects.all()
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
-            schedule1=Schedule.objects.select_related('pathologist_id').all().order_by('day','pathologist_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('day','pathologist_id')
             
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
@@ -142,12 +142,12 @@ def student_view(request):
             hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
             appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
-            prescription = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').filter(user_id=user_id).order_by('-date')
-            medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','prescription_id__appointment','prescription_id__appointment__user_id','prescription_id__appointment__user_id__user','prescription_id__appointment__user_id__department','prescription_id__appointment__doctor_id','prescription_id__appointment__schedule','prescription_id__appointment__schedule__doctor_id','medicine_id').all()
+            prescription = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-date')
+            medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
             complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
             days = Constants.DAYS_OF_WEEK
-            schedule=Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
-            schedule1=Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
+            schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
+            schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             doctors=Doctor.objects.filter(active=True)
             pathologists=Pathologist.objects.filter(active=True)
             

@@ -8,6 +8,10 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo
 from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
+from applications.globals.models import (DepartmentInfo, Designation,
+                                         ExtraInfo, Faculty, HoldsDesignation)
+from django.contrib.auth.models import User
+
 
 # Create your models here.
 # Create your models here.
@@ -129,6 +133,8 @@ class Curriculum(models.Model):
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
+    latest_version = models.BooleanField(default=True)
+    
 
     class Meta:
         unique_together = ('name', 'version',)
@@ -475,3 +481,57 @@ class UpdateCourseProposal(models.Model):
     # def courseslots(self):
     #     return CourseSlot.objects.filter(courses=self.id)
 
+
+        
+
+class NewProposalFile(models.Model):
+    
+    uploader = models.CharField(max_length=100, null=False, blank=False)
+    designation = models.CharField(max_length=100, null=False, blank=False)
+    code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=100, null=False,blank=False)
+    credit = models.PositiveIntegerField(default=3, null=False, blank=False)
+    lecture_hours = PositiveIntegerField(default=3,null=True, )
+    tutorial_hours = PositiveIntegerField(default=0,null=True)
+    pratical_hours = PositiveIntegerField(default=0,null=True)
+    discussion_hours = PositiveIntegerField(default=0,null=True)
+    project_hours = PositiveIntegerField(default=0,null=True)
+    pre_requisits = models.TextField(null=True, blank=True)
+    pre_requisit_courses = models.ManyToManyField(Course, blank=True)
+    syllabus = models.TextField()
+    percent_quiz_1 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_midsem = models.PositiveIntegerField(default=20, null=False, blank=False)
+    percent_quiz_2 = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_endsem = models.PositiveIntegerField(default=30, null=False, blank=False)
+    percent_project = models.PositiveIntegerField(default=15, null=False, blank=False)
+    percent_lab_evaluation = models.PositiveIntegerField(default=10, null=False, blank=False)
+    percent_course_attendance = models.PositiveIntegerField(default=5, null=False, blank=False)
+    ref_books = models.TextField()
+    subject = models.CharField(max_length=100, null=True, blank=True)
+    description = models.CharField(max_length=400, null=True, blank=True)
+    upload_date = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default = False)
+    is_update= models.BooleanField(default = False)
+    class Meta:
+        unique_together = ('code', 'uploader','name') # if code and faculty code matches to another proposal name will take care of it         
+    
+    def __str__(self):
+        return str(self.uploader + " - " +self.designation+" - "+self.code + " - "+self.name)
+
+class Proposal_Tracking(models.Model):
+
+    file_id = models.CharField(max_length=10, null=False, blank=False)
+    current_id =  models.CharField(max_length=10, null=False, blank=False)
+    current_design = models.CharField(max_length=10, null=False, blank=False)
+    receive_id = models.ForeignKey(User,blank=False,on_delete=models.CASCADE)
+    receive_design = models.ForeignKey(Designation, blank=False,on_delete=models.CASCADE)
+    disciplines = models.ForeignKey(Discipline, blank=False,on_delete=models.CASCADE)
+    receive_date = models.DateTimeField(auto_now_add=True)
+    forward_date = models.DateTimeField(auto_now_add=True)
+    remarks = models.CharField(max_length=250, null=True, blank=True)
+    is_added = models.BooleanField(default = False)
+    is_submitted = models.BooleanField(default = False)
+    is_rejected = models.BooleanField(default = False)
+
+    class Meta:
+        unique_together = ('file_id', 'current_id','receive_id','receive_design')

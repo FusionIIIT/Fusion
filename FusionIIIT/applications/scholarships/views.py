@@ -3,6 +3,7 @@ import json
 from operator import or_
 from functools import reduce
 
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -23,7 +24,11 @@ from notification.views import scholarship_portal_notif
 from .validations import MCM_list, MCM_schema, gold_list, gold_schema, silver_list, silver_schema, proficiency_list,proficiency_schema
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from .helpers import getBatch
 # Create your views here.
+
+
+
 
 
 @login_required(login_url='/accounts/login')
@@ -70,6 +75,8 @@ def spacs(request):
 
 @login_required(login_url='/accounts/login')
 def convener_view(request):
+    print(request)
+    
     try:
         convener = Designation.objects.get(name='spacsconvenor')
         hd = HoldsDesignation.objects.get(
@@ -77,8 +84,11 @@ def convener_view(request):
     except:
         return HttpResponseRedirect('/logout')
     if request.method == 'POST':
+        print("this is a check for post request")
         if 'Submit' in request.POST:
+            print("this is a check for post xfhjgisdfkhlsjk request")
             award = request.POST.get('type')
+            print("award " + award)
             programme = request.POST.get('programme')
             batch = request.POST.get('batch')
             from_date = request.POST.get('From')
@@ -98,14 +108,27 @@ def convener_view(request):
             )
             
             # It updates the student Notification table on the spacs head sending the mcm invitation
-            if batch == 'all':
+            if batch == 'All':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
+                # active_batches=str(active_batches)
+                # active_batches.split(',')
+                print(active_batches)
+                querybatch = []
+                for curbatch in active_batches:
+                    if curbatch > 2019:
+                        curbatch=curbatch%2000
+                        querybatch.append(curbatch)
+                print( active_batches)
+                query = reduce(or_, (Q(id__id__startswith=batch) for batch in querybatch))
+                print(query)
                 recipient = Student.objects.filter(programme=programme).filter(query)
             else:
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
+                if(int(batch)>2019):
+                    curbatch=int(batch)%2000
+                recipient = Student.objects.filter(programme=programme, id__id__startswith=curbatch)
             
             # Notification starts
+            print(recipient)
             convenor = request.user
             for student in recipient:
                 scholarship_portal_notif(convenor, student.id.user, 'award_' + award)  # Notification
@@ -124,9 +147,9 @@ def convener_view(request):
                     notification_convocation_flag=True,
                     invite_convocation_accept_flag=False) for student in recipient])
             # Notification ends
-            
+            print(batch)
             messages.success(request, 
-                    award + ' applications are invited successfully for ' + batch + ' batch(es)')
+                    award + ' applications are invited successfully for ' + str(batch) + ' batch(es)')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Email' in request.POST:
@@ -257,6 +280,7 @@ def convener_view(request):
 
 @login_required(login_url='/accounts/login')
 def student_view(request):
+
     if request.method == 'POST':
         if 'Submit_MCM' in request.POST:
             return submitMCM(request)
@@ -382,37 +406,52 @@ def convenerCatalogue(request):
             context['result'] = 'Failure'
         return HttpResponse(json.dumps(context), content_type='convenerCatalogue/json')
 
+
+
+#below function is refactored and changed as it is not used by the user interface 
+#it will be changed later for other testing and download of winners
 def getWinners(request):
+    # Extract parameters from the request
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
     programme_name = request.GET.get('programme')
-    award = Award_and_scholarship.objects.get(award_name=award_name)
-    winners = Previous_winner.objects.select_related('student','award_id').filter(
-        year=batch_year, award_id=award, programme=programme_name)
-    context = {}
-    context['student_name'] = []
-    context['student_program'] = []
-    context['roll'] = []
+    
+    # Get the Award_and_scholarship object based on the provided award name
+    try:
+        award = Award_and_scholarship.objects.get(award_name=award_name)
+    except Award_and_scholarship.DoesNotExist:
+        return JsonResponse({'result': 'Failure', 'message': 'Award not found'})
 
-#  If-Else Condition for previous winner if there is or no data in the winner table
+    # Query for previous winners based on the provided criteria
+    winners = Previous_winner.objects.select_related('student__extra_info').filter(
+        year=batch_year, award_id=award, programme=programme_name)
+
+    context = {
+        'result': 'Success',
+        'winners': [],
+    }
+
+    # Process the winners if any found
     if winners:
         for winner in winners:
-
-            extra_info = ExtraInfo.objects.get(id=winner.student_id)
-            student_id = Student.objects.get(id=extra_info)
+            # Fetch extra information for the student
+            extra_info = winner.student.extra_info
             student_name = extra_info.user.first_name
             student_roll = winner.student_id
-            student_program = student_id.programme
-            context['student_name'].append(student_name)
-            context['roll'].append(student_roll)
-            context['student_program'].append(student_program)
-
-        context['result'] = 'Success'
+            student_program = winner.student.programme
+            
+            # Append student details to the context
+            context['winners'].append({
+                'student_name': student_name,
+                'roll': student_roll,
+                'student_program': student_program,
+            })
 
     else:
         context['result'] = 'Failure'
+        context['message'] = 'No winners found for the provided criteria'
 
-    return HttpResponse(json.dumps(context), content_type='getWinners/json')
+    return JsonResponse(context)
 
 def get_MCM_Flag(request):  # Here we are extracting mcm_flag
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)
@@ -431,7 +470,7 @@ def get_MCM_Flag(request):  # Here we are extracting mcm_flag
     # return HttpResponseRedirect('/spacs/student_view')
 
 def getConvocationFlag(request):  # Here we are extracting convocation_flag
-    x = Notification.objects.filter(student_id=request.user.extrainfo.id)
+    x = Notification.objects.select_related('student_id', 'release_id').filter(student_id=request.user.extrainfo.id)
     for i in x:
         i.invite_convocation_accept_flag = True
         i.save()
@@ -480,6 +519,18 @@ def updateEndDate(request):
     else:
         context['result'] = 'Failure'
     return HttpResponse(json.dumps(context), content_type='updateEndDate/json')
+
+def deleteRelease(request):
+    print("deleteRelease")
+    id = request.GET.get('id')
+    is_deleted = Release.objects.filter(pk=id).delete()
+    request.session['last_clicked'] = "Release_deleted"
+    context = {}
+    if is_deleted:
+        context['result'] = 'Success'
+    else:
+        context['result'] = 'Failure'
+    return HttpResponse(json.dumps(context), content_type='deleteRelease/json')
 
 def getAwardId(request):
     award = request.POST.get('award')
@@ -1012,7 +1063,6 @@ def sendConvenerRenderRequest(request, additionalParams={}):
     source = Constants.FATHER_OCC_CHOICE
     time = Constants.TIME
     release = Release.objects.all()
-    notification = Notification.objects.select_related('student_id','release_id').all()
     spi = Spi.objects.all()
     context.update({ 'source': source, 'time': time, 'ch': ch, 'spi': spi, 'release': release})
     context.update(additionalParams)
@@ -1020,6 +1070,7 @@ def sendConvenerRenderRequest(request, additionalParams={}):
 
 def sendStudentRenderRequest(request, additionalParams={}):
     context = getCommonParams(request)
+
     ch = Constants.BATCH
     time = Constants.TIME
     mother_occ = Constants.MOTHER_OCC_CHOICES
@@ -1039,24 +1090,48 @@ def sendStudentRenderRequest(request, additionalParams={}):
     update_con_flag = False
     x_notif_mcm_flag = False
     x_notif_con_flag = False
+    student_batch = getBatch(request.user.extrainfo.student)
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
-            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            curBatch = dates.batch
+            checkBatch = str(request.user.extrainfo.student)[0:4]
+            batchCondition = False
+            if checkBatch[2] >= "A" and checkBatch[2] <= "Z":
+                if(curBatch == 'All'):
+                    batchRange = range(datetime.datetime.now().year - 4, datetime.datetime.now().year + 1)
+                    for batches in batchRange :
+                        if int(checkBatch[0:2]) == batches % 2000:
+                            batchCondition = True
+                elif curBatch == checkBatch:
+                    batchCondition = True
+            else:
+                if(curBatch == 'All'):
+                    batchRange = range(datetime.datetime.now().year - 4, datetime.datetime.now().year + 1)
+                    for batch in batchRange:
+                        if str(checkBatch) == batch:
+                            batchCondition = True
+                elif curBatch == checkBatch:
+                    True
+                print("bye")
+            
+            
+            print(curBatch, checkBatch)
+            if dates.award == 'Merit-cum-Means Scholarship' and batchCondition and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_mcm_flag = True
                 if no_of_mcm_filled > 0:
                     update_mcm_flag = True
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_con_flag = True
                 if no_of_con_filled > 0:
                     update_con_flag = True
         else:
-            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
                 except:
                     pass
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            elif dates.award == 'Convocation Medals' and dates.batch == student_batch:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
@@ -1081,7 +1156,7 @@ def sendStudentRenderRequest(request, additionalParams={}):
     context.update(additionalParams)
     return render(request, 'scholarshipsModule/scholarships_student.html',context)
 
-def sendStaffRenderRequest(request, additionalParams={}):
+def sendStaffRenderRequest(request, additionalParams={}):    
     context = getCommonParams(request)
     context.update(additionalParams)
     return render(request, 'scholarshipsModule/scholarships_staff.html', context)
