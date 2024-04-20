@@ -175,8 +175,10 @@ def convener_view(request):
             student_id = Director_gold.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(
@@ -203,12 +205,13 @@ def convener_view(request):
             student_id = Director_silver.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
-            scholarship_portal_notif(
-                convenor, recipient.id.user, 'Accept_Silver')
+            scholarship_portal_notif(convenor, recipient.id.user, 'Accept_Silver')
             request.session['last_clicked'] = 'Accept_Silver'
             messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -219,8 +222,7 @@ def convener_view(request):
             Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             convenor = request.user
             recipient = student_id
-            scholarship_portal_notif(
-                convenor, recipient.id.user, 'Reject_Silver')
+            scholarship_portal_notif(convenor, recipient.id.user, 'Reject_Silver')
             request.session['last_clicked'] = 'Reject_Silver'
             messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -231,8 +233,10 @@ def convener_view(request):
             student_id = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Accept_DM')
