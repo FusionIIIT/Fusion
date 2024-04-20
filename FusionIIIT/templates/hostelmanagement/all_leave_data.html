@@ -1,0 +1,115 @@
+{% block leave_requests %}
+<h2 align="center">All Leave Requests</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table border="1" class="ui table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Reason</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>Remark</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leave in all_leaves %}
+            <tr>
+                <td>{{ leave.student_name }}</td>
+                <td>{{ leave.roll_num }}</td>
+                <td>{{ leave.reason }}</td>
+                <td>{{ leave.start_date }}</td>
+                <td>{{ leave.end_date }}</td>
+                <td>{{ leave.status }}</td>
+                
+                <td class="">
+
+                    <!-- {%if leave.status == 'pending' %} -->
+                    <form class="status-form">
+
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="Approved">
+                        {%if leave.status == 'pending' %}
+                        <button type="button" class="ui status-update positive button mini">Approve</button>
+                        {%endif%}
+                    </form>
+                    <form class="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                        <input type="hidden" name="status" value="Rejected">
+                        <textarea name="remark" placeholder="Enter Remark" style="display: none;" required></textarea>
+                        <button type="button" style="margin-top: 10px;"
+                            class="ui status-update negative button tiny reject-button">Reject</button>
+                    </form>
+                    <!-- {%else%}
+                        <p>to be hidden</p>
+                    {%endif%} -->
+
+
+                </td>
+                <td>{{leave.remark}}</td>
+                <td>{{leave.phone_number}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<style>
+    .flex-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('.reject-button').click(function () {
+            // Show the remark field when Reject button is clicked
+            $(this).closest('form').find('textarea[name="remark"]').show();
+        });
+
+        $('.status-update').click(function () {
+            var form = $(this).closest('form');
+            var formData = form.serialize();
+            var status = form.find('input[name="status"]').val();
+            if (status === 'Rejected') {
+                var remark = form.find('textarea[name="remark"]').val().trim();
+                if (!remark) {
+                    alert('Please enter a remark to reject the leave.');
+                    return;
+                }
+                // Append remark to formData
+                formData += '&remark=' + encodeURIComponent(remark);
+            }
+
+            // Disable the buttons to prevent multiple submissions
+            form.find('button').prop('disabled', true);
+
+            $.ajax({
+                type: 'POST',
+                url: '/hostelmanagement/update_leave_status/',
+                data: formData,
+                success: function (response) {
+                    // Update the status cell text
+                    var statusCell = form.closest('tr').find('td:nth-child(6)');
+                    statusCell.text(response.status);
+                    // Show success message
+                    alert('Leave status updated successfully.');
+                },
+                error: function (xhr, status, error) {
+                    // Show error message
+                    alert('Error occurred while updating status.');
+                    // Re-enable the buttons in case of an error
+                    form.find('button').prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

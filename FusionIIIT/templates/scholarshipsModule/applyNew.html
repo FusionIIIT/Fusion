@@ -33,7 +33,7 @@
             <a class="right floated item" style="padding-left:50px" href="https://drive.google.com/open?id=1Ylcj_ZX_h-0TTZ_zOGVF1JLEJE1_YQGD" target="_blank">
                 <button class="ui primary button">
                     Form A
-                    <i class="right floated download icon"></i>
+                    <i class="right floated download icon"></i> 
                 </button>
             </a>
             <a class="right floated item" href="https://drive.google.com/open?id=1AfSw3S5xXgbDn81hg6f2qgQiT_digXT9" target="_blank">
@@ -318,7 +318,7 @@
                 </div>
               {% endif %}
             {% else %}
-            <div class="ui disabled button">
+            <div class="ui  button">
               Applications not invited or has already been submitted
             </div>
             {% endif %}
@@ -368,7 +368,7 @@
                  </div>
                {% endif %}
                {% else %}
-               <div class="ui disabled button">
+               <div class="ui  button" id="apply_convocation_btn">
                  Apply
                </div>
                {% endif %}
@@ -957,7 +957,7 @@
                             <div class="field">
                               <a class="right floated item">
                                         <label><br></label>
-                                        <button type="submit" name="Submit_Silver" class="ui primary large right floated button">
+                                        <button type="submit" name="Submit_Silver" class="ui primary large right floated button" id="submit_silver">
                                             Submit
                                         </button>
                                 </a>
@@ -1077,7 +1077,7 @@
                             success: function (response) {
                                 if(response.result==='Success'){
                                   location.reload();
-                                    console.log(response.result)
+                                    console.log("reuk", response.result)
                                 }
                                 else{
                                     console.log(response.result);
@@ -1104,6 +1104,12 @@
                                 }
                             });
                         });
+
+                    $(document).on('click', '#submit_silver', function (event){
+                        event.preventDefault();
+                        $.ajax()
+                    })
+                    
         </script>
     <script>
     function dis(aval) {

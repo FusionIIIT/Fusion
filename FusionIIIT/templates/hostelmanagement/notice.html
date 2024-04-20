@@ -14,7 +14,7 @@
         {% endfor %}
         </div>
     </div>
-{% if user in hall_caretaker or hall_warden %}
+{% if user in hall_caretaker or user in hall_warden %}
 <div class="right menu">
     <a class="item" data-tab="notice">
         <i class="sticky note icon"></i>Notice

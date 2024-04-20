@@ -44,7 +44,7 @@
                                 <label>Room Bill </label>
                             </td>
                             <td>
-                                <input  type="text" value=" {{ value.room_bill }} " readonly >
+                                <input  type="text" value=" {{ value.room_bill }} "  >
                             </td>
                         </tr>
                         <tr>
@@ -52,7 +52,7 @@
                                 <label>Mess Bill</label>
                             </td>
                             <td>
-                                <input  type="text" value=" {{ value.mess_bill }} " readonly >
+                                <input  type="text" value=" {{ value.mess_bill }} "  >
                             </td>
                         </tr>
                         <tr>
@@ -60,7 +60,7 @@
                                 <label>Total Amount</label>
                             </td>
                             <td>
-                                <input type="text" value=" {{ value.total_bill }} " readonly>
+                                <input type="text" value=" {{ value.total_bill }} " >
                             </td>
                         </tr>
                         </tbody>
@@ -91,7 +91,7 @@
                         </thead>
 
                         <tbody>
-                        {% for visitor in booking.visitor.all %}
+                        {% for visitor in booking.visitor.all|slice:"1:" %}
                         <tr>
                             <td>
                                 {{ visitor.visitor_name }}
