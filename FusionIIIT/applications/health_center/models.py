@@ -1,7 +1,9 @@
+
 from django.db import models
 from datetime import date
 
 from applications.globals.models import ExtraInfo
+
 
 # Create your models here.
 
@@ -168,6 +170,7 @@ class Prescription(models.Model):
     details = models.CharField(max_length=100)
     date = models.DateField()
     test = models.CharField(max_length=200, null=True, blank=True)
+    file_id=models.IntegerField(default=0)
     # appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
@@ -224,4 +227,12 @@ class SpecialRequest(models.Model):
     request_receiver = models.CharField(max_length=30, default="--")
 
     def __str__(self):
-        return str(self.request_ann_maker.user.username)
+        return str(self.request_ann_maker.user.username)    
+
+class medical_relief(models.Model):
+    description = models.CharField(max_length=200)
+    file = models.FileField(upload_to='medical_files/') 
+    file_id=models.IntegerField(default=0)
+    compounder_forward_flag = models.BooleanField(default=False)
+    acc_admin_forward_flag = models.BooleanField(default=False)
+    

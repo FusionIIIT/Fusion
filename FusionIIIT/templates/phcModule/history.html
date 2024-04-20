@@ -36,11 +36,15 @@
                         Date
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Details
+                        Details
                     </td>
                     <td style="font-weight:bold;color:black;">
-                          Test
+                        Test
                     </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
+                    </td>
+
 
                     <td style="font-weight:bold;color:black;">
 
@@ -76,6 +80,14 @@
                     </td>
                     <td>
                         {{pre.test}}
+                    </td>
+                   
+                    <td style="white-space:nowrap;">
+                        {% if pre.file != None %}
+                        <a href="{{ pre.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
                     </td>
 
                     <td>

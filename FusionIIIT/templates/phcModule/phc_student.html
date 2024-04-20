@@ -56,6 +56,13 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
+                    {% if 'student' != request.user.extrainfo.user_type %}
+                        <a class="item" data-tab="fourth">
+                            Medical Relief
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
+
                     {% comment %} {% if usertype == "fx" %}
                         <a class="item" data-tab="fifth">
                             Medical Relief
@@ -102,18 +109,33 @@
                     {% include 'phcModule/schedule_student.html'%}
                 {% endblock %}
             </div>
-            {% comment %} {% if global_var=="faculty"%} {% endcomment %}
-            {% comment %} <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fifth" >
-                {% block medical_relief %}
-                    {% include 'phcModule/medical_relief.html'%}
-                {% endblock %}
-            </div> {% endcomment %}
+                {% if global_var != 'Accounts Admin' %}
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block medical_relief %}
+                        {% include 'phcModule/medical_relief.html'%}
+                    {% endblock %}
+                </div> 
+                {% endif %}
+
+                {% if global_var == 'Accounts Admin' %}
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block account_admin_medical_relief %}
+                        {% include 'phcModule/account_admin_medical_relief.html' with acc_admin_inbox=acc_admin_inbox medicalRelief=medicalRelief %}
+                    {% endblock %}
+                </div> 
+                {% endif %}
+
+           
             {% comment %}The complaint/feedback ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
+            {% comment %} <div class="row">
+                {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
+                {% endblock %}
+            </div> {% endcomment %}
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
