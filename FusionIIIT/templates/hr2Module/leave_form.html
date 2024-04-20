@@ -36,37 +36,8 @@ Module
                 {% comment %}
                 TODO: Add a If-Else here!
                 {% endcomment %}
-                <!-- {% if employee %}
-                <div class="ui large header" href="">
-                    {{ employee.user.first_name}}
-                    {{ employee.user.last_name}}
-                    <span class="right floated meta">
-                        {{ employee.department.name}}
-                    </span>
-                </div>
-                {% else %}
-                <div class="ui large header" href="">
-                    {{ request.user.first_name}}
-                    {{ request.user.last_name}}
-                    <span class="right floated meta">
-                        {{ request.user.extrainfo.department.name}}
-                    </span>
-                </div>
-                {% endif %} -->
+               
 
-                <!-- <div class="meta">
-                    {% for i in Curr_desig %}
-                    <span> {% comment %}Should this be inside if else?{% endcomment %}
-                        {% if i == "co-ordinator" or i == "co co-ordinator" %}
-                        {{ i }} of {{ club_details }} club
-                        {% else %}
-                        {{ i }}
-                        {% endif %}
-                    </span>
-                    <br>
-                    {% endfor %}
-                </div>
-            </div> -->
         </div>
 
 
@@ -163,9 +134,9 @@ Module
                 </div>
                 {% endcomment %}
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                    <!-- {% block fourth_tab_alerts %}
-                        {% include 'hr2Module/view_leave_requests.html' %}
-                    {% endblock %} -->
+                    {% block fourth_tab_alerts %}
+                        {% include 'hr2Module/leave_archieve.html' %}
+                    {% endblock %}
                 </div>
             </div>
         </div>
@@ -216,18 +187,7 @@ Module
         }
     });
 
-    /*$(document).ready(function(){
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        setTimeout(loader, 1750);
-    });
 
-    function loader() {
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        $("#loader").removeClass("active");
-        $("#loader").addClass("disabled");
-    }*/
 </script>
 
 

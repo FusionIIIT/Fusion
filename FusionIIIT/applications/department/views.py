@@ -298,7 +298,7 @@ def faculty_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        # department_notif(usrnm, recipients , message)
+        department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,
@@ -343,7 +343,7 @@ def staff_view(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-        # department_notif(usrnm, recipients , message)
+        department_notif(usrnm, recipients , message)
         
     context = browse_announcements()
     return render(request, 'department/dep_request.html', {"user_designation":user_info.user_type,

@@ -1,5 +1,3 @@
-
-
 <style>
     table {
         border-collapse: collapse;
@@ -22,8 +20,7 @@
 
         <form method="post" id="editDetail" enctype="multipart/form-data">
             {% csrf_token %}
-            <!-- <input type="hidden" name="csrfmiddlewaretoken"
-                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+           
 
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
@@ -31,31 +28,31 @@
 
                 <div class="eight wide field">
                     <label for="post_title">Name</label>
-                    <input type="text" name="name" maxlength="40" required id="id_name" value="{{ employee.user }}">
+                    <input type="text" name="name" maxlength="40" required id="name" value="{{ employee.user }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Designation</label>
-                    <input type="text" name="designation" maxlength="40" id="id_designation" value="{{ employee.user_type }}">
+                    <input type="text" name="designation" maxlength="40" id="designation" value="{{ designation }}">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Application Date</label>
-                    <input type="Date" name="application_date" id="application_date">
+                    <input type="Date" name="submissionDate" id="submissionDate">
                 </div>
                 <div class="fifteen wide field">
                     <label for="post_title">PF Number</label>
-                    <input type="number" name="application_pf_no" maxlength="40" id="pf_no">
+                    <input type="number" name="pfNo" maxlength="40" id="pfNo">
                 </div>
                 <div class="eight wide field">
                     <label for="post_title">Department/Discipline</label>
-                    <input type="text" name="discipline" maxlength="40" id="discipline">
+                    <input type="text" name="departmentInfo" maxlength="40" id="departmentInfo">
                 </div>
 
 
 
                <div style="text-align: center;">
                 <div class="field">
-                    <label for="nature_of_leave">Nature of leave :</label>
-                    <select id="nature_of_leave" name="nature_of_leave">
+                    <label for="natureOfLeave">Nature of leave :</label>
+                    <select id="natureOfLeave" name="natureOfLeave">
                         <option value="Casual">Casual</option>
                         <option value="vacaction">Vacation</option>
                         <option value="earned">Earned</option>
@@ -71,158 +68,42 @@
 
 
                 <div class="eight wide field">
-                    <label for="post_title"> </label>
-                    <input type="date" name="nature_leave_start_date" maxlength="40"  id="nature_leave_start_date">
+                    <label for="post_title">Leave Start Date </label>
+                    <input type="date" name="leaveStartDate" maxlength="40"  id="leaveStartDate">
                 </div>
 
                 <div class="eight wide field">
-                    <label for="post_title"> </label>
-                    <input type="date" name="nature_leave_end_date" maxlength="40"  id="nature_leave_end_date">
-                </div>
-
-                <div class="eight wide field">
-                    <label for="post_title"> Station Leave </label>
-                    <input type="text" name="station_leave" maxlength="40" id="station_leave">
-                </div>
-
-                <div class="eight wide field">
-                    <label for="post_title"> </label>
-                    <input type="date" name="station_leave_start_date" maxlength="40"  id="station_leave_start_date">
-                </div>
-
-                <div class="eight wide field">
-                    <label for="post_title"> </label>
-                    <input type="date" name="station_leave_end_date" maxlength="40"  id="station_leave_end_date">
+                    <label for="post_title"> Leave End Date</label>
+                    <input type="date" name="leaveEndDate" maxlength="40"  id="leaveEndDate">
                 </div>
 
                 <div class="eight wide field">
                     <label for="post_title">Purpose</label>
-                    <input type="text" name="purpose" maxlength="40" id="purpose">
+                    <input type="text" name="purposeOfLeave" maxlength="40" id="purposeOfLeave">
                 </div>
 
                 <div class="eight wide field">
                     <label for="post_title">Leave Address</label>
-                    <input type="text" name="leave_address" maxlength="40" id="leave_address">
+                    <input type="text" name="addressDuringLeave" maxlength="40" id="addressDuringLeave">
                 </div>
 
                 <div class="eight wide field">
                     <label for="post_title">Academic Responsibility Assigned to </label>
-                    <input type="text" name="academic_responsibility" maxlength="40" id="academic_responsibility">
+                    <input type="text" name="academicResponsibility" maxlength="40" id="academicResponsibility">
                 </div>
 
                 <div class="eight wide field">
                     <label for="post_title">Administrative Responsibility Assigned to </label>
-                    <input type="text" name="addministrative_responsibilty_assigned" maxlength="40" id="addministrative_responsibilty_assigned">
+                    <input type="text" name="addministrativeResponsibiltyAssigned" maxlength="40" id="addministrativeResponsibiltyAssigned">
                 </div>
 
-               
-
-                 <div class="four wide field" style="float: right;">
-                    <label for="sign_director_registrar">Head/Officer/Convener/In-Charge of Discipline</label>
-                    <input type="text" name="sign_dir_reg_r_name" maxlength="40" placeholder="Name of reccomendor"  id="sign_dir_reg_r_name">
-                    <input type="text" name="sign_dir_reg_r_desgination" maxlength="40" placeholder="Designation"  id="sign_dir_reg_r_desgination">
-
-                </div>
-
-
-               <br>
-               <br>
-               <br>
-               <br>
-               <br>
-               <br>
-               <br>
-               <br>
-               <br>
+             
                <hr>
 
                <br>
                <br>
                <br>
-               <br>
-               <div>
-             <h3 style="text-align: center;">For Office Use</h3>
-               </div>
-
-               <label for="office_use"></label>
-               <div>
-                <table>
-                    <tr>
-                      <th rowspan="2"></th>
-                      <th colspan="6"></th> 
-                    </tr>
-                    <tr>
-                      <th>CL</th>
-                      <th>RH</th>
-                      <th>EL/VL</th>
-                      <th>SCL</th>
-                      <th>SCL(Project)</th>
-                      <th>Commuted Leave</th>
-                    </tr>
-                    <tr>
-                      <td>Credit Leave</td>
-                      <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"></td>
-                      <td><input type="number" name="info_1_2" maxlength="40" id="id_info_1_2"></td>
-                      <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"></td>
-                      <td><input type="number" name="info_1_4" maxlength="40" id="id_info_1_4"></td>
-                      <td><input type="number" name="info_1_5" maxlength="40" id="id_info_1_5"></td>
-                      <td><input type="number" name="info_1_6" maxlength="40" id="id_info_1_6"></td>
-                    </tr>
-                    <tr>
-                      <td>Leave Applied</td>
-                      <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"></td>
-                      <td><input type="number" name="info_2_2" maxlength="40" id="id_info_2_2"></td>
-                      <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"></td>
-                      <td><input type="number" name="info_2_4" maxlength="40" id="id_info_2_4"></td>
-                      <td><input type="number" name="info_2_5" maxlength="40" id="id_info_2_5"></td>
-                      <td><input type="number" name="info_2_6" maxlength="40" id="id_info_2_6"></td>
-                    </tr>
-                    <tr>
-                      <td>Balance after availing Leave Applied</td>
-                      <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1"></td>
-                      <td><input type="number" name="info_3_2" maxlength="40" id="id_info_3_2"></td>
-                      <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3"></td>
-                      <td><input type="number" name="info_3_4" maxlength="40" id="id_info_3_4"></td>
-                      <td><input type="number" name="info_3_5" maxlength="40" id="id_info_3_5"></td>
-                      <td><input type="number" name="info_3_6" maxlength="40" id="id_info_3_6"></td>
-                    </tr>
-                  </table>
-                </div>
-
-                <br>
-                <br>
-
-
-
-                <div class="eight wide field">
-                    <label for="post_title">Dealing Assistant : </label>
-                    <input type="text" name="dealing_assistant" placeholder="Enter name" maxlength="40" id="dealing_assistant" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
-                </div>
-                
-                <div class="eight wide field">
-                    <label for="post_title">Deputy Registrar (Estt.)</label>
-                    <input type="text" name="deputy_registrar" placeholder="Enter name" maxlength="40" id="deputy_registrar" {% if global_var != "asst. registrar fa" %}disabled{% endif %}>
-                </div>
-
-                <div style="text-align: center;">
-                    <div class="field">
-                        <label for="sanction_status">Leave Sanction Status:</label>
-                        <select id="sanction_status" name="sanction_status" {% if global_var != "Director" and global_var != "CSE HOD" %} disabled{% endif %}>
-                            <option value="True">Sanctioned</option>
-                            <option value="False">Not Sanctioned</option>
-                        </select>
-                    </div>
-                    
-                </div>
-
-                <div class="four wide field" style="float: right;">
-                    <label for="sign_director_registrar">Dean / Head of Discipline / Registrar / Deputy Registrar</label>
-                    <input type="text" name="r_name" maxlength="40" placeholder="Name of recommender" id="r_name" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
-                    <input type="text" name="r_desgination" maxlength="40" placeholder="Designation" id="r_desgination" {% if global_var != "Director" and global_var != "CSE HOD" and global_var != "asst. registrar fa" %}disabled{% endif %}>
-                </div>
-                
-                
-               
+               <br>           
                 <br><br><br><br><br><br><br><br>
                 
                 

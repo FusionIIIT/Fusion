@@ -27,7 +27,7 @@
                                     <td>{{ leave_request.id }}</td>
                                     <td>{{ leave_request.sent_by_user }}</td>
                                     <td>{{ leave_request.sent_by_designation }}</td>
-                                    <td>{{ leave_request.upload_date }}</td>
+                                    <td>{{ leave_request.upload_date  }}</td>
                                     <td><a href="http://127.0.0.1:8000/hr2/form_view_leave/{{ leave_request.src_object_id }}?param1={{ leave_request.sent_by_user }}&param2={{ leave_request.sent_by_designation }}&param3={{ leave_request.id }}">View</a></td>
 
                                     <td><a href="http://127.0.0.1:8000/hr2/track_file/{{ leave_request.id }}">Track</a></td>

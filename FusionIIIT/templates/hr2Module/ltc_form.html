@@ -37,51 +37,12 @@ Module
                         {% comment %}
                         TODO: Add a If-Else here!
                         {% endcomment %}
-                        <!-- {% if employee %}
-                        <div class="ui large header" href="">
-                            {{ employee.user.first_name}}
-                            {{ employee.user.last_name}}
+                        
 
-                            <span class="right floated meta">
-                                {{ employee.department.name}}
-                            </span>
-                        </div>
-                        {% else %}
-                        <div class="ui large header" href="">
-                            {{ request.user.first_name}}
-                            {{ request.user.last_name}}
-                            <span class="right floated meta">
-                                {{ request.user.extrainfo.department.name}}
-                            </span>
-                        </div>
-                        {% endif %} -->
-
-                        <!-- <div class="meta">
-                            {% for i in Curr_desig %}
-                            <span> {% comment %}Should this be inside if else?{% endcomment %}
-                                {% if i == "co-ordinator" or i == "co co-ordinator" %}
-                                {{ i }} of {{ club_details }} club
-                                {% else %}
-                                {{ i }}
-                                {% endif %}
-                            </span>
-                            <br>
-                            {% endfor %}
-                        </div> -->
-                    <!-- </div> -->
+                       
                 </div>
 
             
-                <!-- <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                    <a class="item" href="http://127.0.0.1:8000/hr2/cpda_form/{{ user_id }}">
-                        CPDA
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" href="http://127.0.0.1:8000/hr2/ltc_form/{{ user_id }}">
-                        LTC
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                </div> -->
             </div>
 
 
@@ -178,9 +139,9 @@ Module
                 </div>
                 {% endcomment %}
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                    <!-- {% block fourth_tab_alerts %}
-                        {% include 'hr2Module/view_ltc_requests.html' %}
-                    {% endblock %} -->
+                    {% block fourth_tab_alerts %}
+                        {% include 'hr2Module/ltc_archieve.html' %}
+                    {% endblock %}
                 </div>
             </div>
         </div>
@@ -212,24 +173,7 @@ Module
 {% endblock %}
 
 {% block javascript %}
-<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-<script>
-    $(document).ready(function(){
-        $('.menu .item').tab();
 
-        $('.menu .item').on('click', function() {
-            // Get the data-tab attribute value of the clicked item
-            var tab = $(this).data('tab');
-
-            // Hide all tab segments
-            $('.tab.segment').removeClass('active');
-
-            // Show the tab segment corresponding to the clicked item
-            $('div[data-tab="' + tab + '"]').addClass('active');
-        });
-    });
-</script> -->
 <script
     src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 <script>

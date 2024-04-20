@@ -2,35 +2,35 @@
 {% load static %}
 
 {% block filetracking_tab %}
-    <div class="ui pointing secondary menu">
-        <h3>
-            <a class="active item" data-tab="inward">
+<div class="ui pointing secondary menu">
+    <h3>
+        <a class="active item" data-tab="inward">
             Inward Indent Files
-            </a>
-        </h3>
+        </a>
+    </h3>
 
+</div>
+
+<div class="ui divider"></div>
+
+<table class="ui very basic celled sortable table" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+    <div class="field">
+        <label>Select designation:
+            <!--                        <select required class="ui fluid search selection dropdown" name="designation">-->
+            <!--                           <option selected hidden>Select</option>-->
+            <!--                         <form action="/filetracking/fileview/" method="get">-->
+            {% for designation in designation %}
+            <td> <a href="{% url 'ps1:indentview2' designation.id %}"><button class="ui primary button">
+                        {{designation}}
+                    </button></a></td>
+            {% endfor %}
+            <!--                         </form>-->
+            </select>
+        </label>
     </div>
 
-    <div class="ui divider"></div>
+</table>
 
-    <table class="ui very basic celled sortable table">
-        <div class="field">
-                    <label>Select designation:
-<!--                        <select required class="ui fluid search selection dropdown" name="designation">-->
-<!--                           <option selected hidden>Select</option>-->
-<!--                         <form action="/filetracking/fileview/" method="get">-->
-                             {% for designation in designation %}
-                             <td> <a href="{% url 'ps1:indentview2' designation.id %}"><button class="ui primary button">
-                                 {{designation}}
-                             </button></a></td>
-                            {% endfor %}
-<!--                         </form>-->
-                        </select>
-                    </label>
-                </div>
-
-    </table>
-
-    <br>
+<br>
 
 {% endblock %}
