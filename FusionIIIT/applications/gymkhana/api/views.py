@@ -1,4 +1,6 @@
+import genericpath
 import json
+import tempfile
 from venv import logger
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -9,46 +11,155 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
 from applications.gymkhana.models import Voting_choices, Registration_form, Student ,Club_info,Club_member,Core_team,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
-from .serializers import Club_memberSerializer,Core_teamSerializer,Club_infoSerializer,Club_DetailsSerializer,Session_infoSerializer, Voting_choicesSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer
+from .serializers import Club_memberSerializer,Core_teamSerializer,Club_DetailsSerializer,Session_infoSerializer, Voting_choicesSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer, Club_infoSerializer
+
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
+from rest_framework import generics
+from django.core.files.base import ContentFile
+import base64
 
-class ActCalendarAPIView(APIView):
-    """
-    API endpoint to upload the activity calendar of a club.
-    """
+from rest_framework.parsers import MultiPartParser
 
-    def post(self, request):
-        """
-        Handles POST requests to upload the activity calendar.
-        """
+class UploadActivityCalendarAPIView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, format=None):
+        # Get the club name from the request data
+        club_name = request.data.get('club_name')
+
+        # Retrieve the club object from the database
         try:
-            # Getting form data
-            club = request.data.get("club")
-            act_calender = request.FILES.get("act_file")
-            act_calender.name = f"{club}_act_calender.pdf"
+            club = Club_info.objects.get(club_name=club_name)
+        except Club_info.DoesNotExist:
+            return Response({'error': f'Club with name {club_name} does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Update club's activity calendar
-            club_info = get_object_or_404(Club_info, club_name=club)
-            club_info.activity_calender = act_calender
-            club_info.save()
+        # Update the activity calendar file
+        club.activity_calender = request.data.get('activity_calender')
 
-            message = f"Successfully uploaded the calendar for {club} !!!"
+        # Save the updated club object
+        club.save()
 
-            # Prepare response JSON
-            content = {
-                'status': "success",
-                'message': message,
-            }
-            return Response(content, status=201)  # HTTP 201 Created
-        except Exception as e:
-            error_message = "Some error occurred"
-            logger.error(f"Error in uploading activity calendar: {e}")
-            content = {
-                'status': "error",
-                'message': error_message,
-            }
-            return Response(content, status=500)
+        return Response({'message': 'Activity calendar updated successfully'}, status=status.HTTP_200_OK)
+
+
+class VoteIncrementAPIView(APIView):
+    def post(self, request):
+        serializer = Voting_choicesSerializer(data=request.data, many=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = serializer.validated_data
+        for choice_data in data:
+            poll_event_id = choice_data.get('poll_event')
+            title = choice_data.get('title')
+            try:
+                choice_instance = Voting_choices.objects.get(poll_event_id=poll_event_id, title=title)
+                choice_instance.votes += 1
+                choice_instance.save()
+            except Voting_choices.DoesNotExist:
+                pass  # Do nothing if the choice with the given poll_event and title doesn't exist
+        
+        return Response({'message': 'Votes incremented successfully'}, status=status.HTTP_200_OK)
+
+
+class VotingPollsDeleteAPIView(APIView):
+   def post(self, request):
+        Voting_poll_id = request.data.get('id')  # Assuming the ID is sent in the request body
+        try:
+            Voting_poll  = Voting_polls.objects.get(id=Voting_poll_id)
+        except Voting_polls.DoesNotExist:
+            return Response({"error": "Voting Poll not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Delete the club member object
+        Voting_poll.delete()
+
+        return Response({"message": "POll deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ShowVotingChoicesAPIView(APIView):
+    def get(self, request):
+        voting_choices = Voting_choices.objects.all()
+        serializer = Voting_choicesSerializer(voting_choices, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ClubMemberApproveView(generics.UpdateAPIView):
+    def post(self, request):
+        club_member_id = request.data.get('id')  # Assuming the ID is sent in the request body
+        try:
+            club_member = Club_member.objects.get(id=club_member_id)
+        except Club_member.DoesNotExist:
+            return Response({"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Update the status of the club member
+        club_member.status = 'confirmed'  # Assuming 'confirmed' is the status for approval
+        club_member.save()
+
+        return Response({"message": "Status updated successfully."}, status=status.HTTP_200_OK)
+
+
+class ClubMemberDeleteAPIView(APIView):
+    def post(self, request):
+        club_member_id = request.data.get('id')  # Assuming the ID is sent in the request body
+        try:
+            club_member = Club_member.objects.get(id=club_member_id)
+        except Club_member.DoesNotExist:
+            return Response({"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Delete the club member object
+        club_member.delete()
+
+        return Response({"message": "Club member deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+class UpdateClubDetailsAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        club_name = request.data.get('club_name')
+        co_coordinator = request.data.get('co_coordinator')
+        co_ordinator = request.data.get('co_ordinator')
+        
+        print(f"Received request data: club_name={club_name}, co_coordinator={co_coordinator}, co_ordinator={co_ordinator}")
+
+        # Retrieve the Club_info object by club_name
+        try:
+            club_info = Club_info.objects.get(club_name=club_name)
+        except Club_info.DoesNotExist:
+            return Response({"message": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        print(f"Found Club_info object: {club_info}")
+        
+        # Update the details provided in the request
+        serializer = Club_infoSerializer(instance=club_info, data={'co_coordinator': co_coordinator, 'co_ordinator': co_ordinator}, partial=True)
+        if serializer.is_valid():
+            print("Serializer is valid. Saving...")
+            serializer.save()
+            print("Data saved successfully.")
+            return Response(serializer.data)
+        else:
+            print(f"Serializer errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AddMemberToClub(APIView):
+    def post(self, request):
+        serializer = Club_memberSerializer(data=request.data)
+        if serializer.is_valid():
+            club_id = request.data.get('club')  # Assuming 'club_id' is passed in the request data
+            try:
+                club_member = serializer.save()
+                # Implement logic to add member to the club here
+                # For example, you can retrieve the club instance and add the member to it
+                # club = Club.objects.get(pk=club_id)
+                # club.members.add(club_member)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ClubMemberAPIView(APIView):
+    def get(self, request):
+        club_members = Club_member.objects.all()
+        serializer = Club_memberSerializer(club_members, many=True)
+        return Response(serializer.data)
+    
 class RegistrationFormAPIView(APIView):
     """
     API endpoint to handle registration form submissions.
@@ -95,12 +206,10 @@ class RegistrationFormAPIView(APIView):
         
 def coordinator_club(request):
     club_info = []
-    for i in Club_info.objects.all():
-        co = (str(i.co_ordinator)).split(" ")
-        co_co=(str(i.co_coordinator)).split(" ")
-        if co[0]==str(request.user) or co_co[0] == str(request.user):
-            club_info.append(serializers.ClubInfoSerializer(i).data)
-	
+    for club in Club_info.objects.all():
+        if str(request.user) in [club.co_ordinator, club.co_coordinator]:
+            serialized_club = Club_infoSerializer(club).data
+            club_info.append(serialized_club)
     return club_info
 
 class core(APIView):
@@ -109,8 +218,6 @@ class core(APIView):
         serializer=Core_teamSerializer(co, many=True)
         print(serializer.data)
         return Response(serializer.data)
-    
-   
 
 class clubname(APIView):
     permission_classes = [IsAuthenticated]
@@ -173,113 +280,34 @@ class Voting_Polls(APIView):
         serializer=Voting_pollSerializer(votingpolls, many=True)
         return Response(serializer.data)
 
-class ClubMemberAPIView(APIView):
-    def get(self, request):
-        club_members = Club_member.objects.all()
-        serializer = Club_memberSerializer(club_members, many=True)
-        return Response(serializer.data)        
-    
-class VotingPollAPIView(APIView):
-    """
-    API endpoint to create a new voting poll.
-    """
-
-    def post(self, request):
-        """
-        This method handles POST requests to create a new voting poll.
-        """
-        try:
-            # Initialize serializers
-            poll_serializer = Voting_pollSerializer(data=request.data)
-            choices_serializer = Voting_choicesSerializer(data=request.data.get('choices'), many=True)
-
-            # Validate both serializers
-            poll_valid = poll_serializer.is_valid()
-            choices_valid = choices_serializer.is_valid()
-
-            if poll_valid and choices_valid:
-                # Save the validated data
-                poll_instance = poll_serializer.save()
-
-                # Save choices associated with the poll
-                choices_serializer.save(poll_event=poll_instance)
-
-                # Print success message
-                print("Voting poll created successfully")
-
-                # Redirect to a different URL only if necessary
-                # Modify this logic based on your requirements
-                if request.accepted_renderer.format == 'html':
-                    return redirect('/gymkhana/')
-                else:
-                    # Return serialized poll data along with choices
-                    poll_data = poll_serializer.data
-                    poll_data['choices'] = choices_serializer.data
-                    return Response(poll_data, status=status.HTTP_201_CREATED)
-            else:
-                # If serializer validation fails, return errors
-                errors = {}
-                if not poll_valid:
-                    errors['poll_errors'] = poll_serializer.errors
-                if not choices_valid:
-                    errors['choices_errors'] = choices_serializer.errors
-                print(errors)  # Log errors to console
-                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            # Log any exceptions that occur during the process
-            print("Exception occurred:", str(e))
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 ##logger = logging.getLogger(_NamedFuncPointer)
-
 class NewSessionAPIView(APIView):
-    """
-    API endpoint to create a new session for a club.
-    """
-
+    def get(self, request):
+        sessions = Session_info.objects.all()
+        serializer = Session_infoSerializer(sessions, many=True)
+        return Response(serializer.data)
+    
     def post(self, request):
-        """
-        Handle POST requests to create a new session.
-        """
-        try:
-            serializer = Session_infoSerializer(data=request.data)
-            if serializer.is_valid():
-                # Save the validated data
-                session_instance = serializer.save()
+        serializer =Session_infoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # Check for conflicts with existing sessions
-                result = conflict_algorithm_session(session_instance.date,
-                                                     session_instance.start_time,
-                                                     session_instance.end_time,
-                                                     session_instance.venue)
-                if result == "success":
-                    # Notify users about the new session
-                    getstudents = ExtraInfo.objects.select_related('user', 'department').filter(user_type='student')
-                    recipients = User.objects.filter(extrainfo__in=getstudents)
-                    gymkhana_session(request.user, recipients, 'new_session', session_instance.club,
-                                     session_instance.details, session_instance.venue)
 
-                    # Print success message
-                    print("Session booked successfully")
-
-                    # Redirect to a different URL only if necessary
-                    # Modify this logic based on your requirements
-                    if request.accepted_renderer.format == 'html':
-                        return redirect('/gymkhana/')
-                    else:
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                else:
-                    return Response({"error": "The selected time slot for the given date and venue conflicts with an already booked session"},
-                                    status=status.HTTP_409_CONFLICT)
-            else:
-                # If serializer validation fails, return errors
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            # Log any exceptions that occur during the process
-            logger.exception("Exception occurred: %s", str(e))
-            return Response({"error": "Some error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+class NewEventAPIView(APIView):
+    def get(self, request):
+        events = Event_info.objects.all()
+        serializer = event_infoserializer(events, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = event_infoserializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class DeleteEventsView(APIView):
     """
@@ -327,6 +355,43 @@ class DeleteEventsView(APIView):
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class SessionUpdateAPIView(APIView):
+    def post(self, request):
+        session_id = request.data.get('id')
+        if session_id is None:
+            return Response({'error': 'Session ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            session_instance = Session_info.objects.get(id=session_id)
+        except Session_info.DoesNotExist:
+            return Response({'error': 'Session not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = Session_infoSerializer(instance=session_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class EventUpdateAPIView(APIView):
+    def post(self, request):
+        event_id = request.data.get('id')
+        if event_id is None:
+            return Response({'error': 'Event ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            event_instance = Event_info.objects.get(id=event_id)
+        except Event_info.DoesNotExist:
+            return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = event_infoserializer(instance=event_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class DeleteSessionsView(APIView):
     """
@@ -350,7 +415,6 @@ class DeleteSessionsView(APIView):
                 date = session_data.get('date')
                 start_time = session_data.get('start_time')
                 end_time = session_data.get('end_time')
-                details = session_data.get('details')
 
                 # Query Session_info based on the provided parameters
                 session = Session_info.objects.filter(
@@ -358,7 +422,6 @@ class DeleteSessionsView(APIView):
                     date=date,
                     start_time=start_time,
                     end_time=end_time,
-                    details=details
                 ).first()
 
                 if session:
@@ -375,49 +438,141 @@ class DeleteSessionsView(APIView):
             return JsonResponse(response_data, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+
+
+class CreateVotingPollAPIView(APIView):
+    def post(self, request):
+        voting_poll_serializer = Voting_pollSerializer(data=request.data)
+        if voting_poll_serializer.is_valid():
+            voting_poll_instance = voting_poll_serializer.save()
+
+            # Extract ID of the created Voting_poll instance
+            voting_poll_id = voting_poll_instance.id
+
+            # Modify the request data to include poll_event ID for each choice
+            choices_data = request.data.get('choices', [])
+            for choice_data in choices_data:
+                choice_data['poll_event'] = voting_poll_id
+
+            voting_choices_serializer = Voting_choicesSerializer(data=choices_data, many=True)
+            if voting_choices_serializer.is_valid():
+                voting_choices_serializer.save()
+                return Response({'message': 'Voting poll created successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'voting_choices_errors': voting_choices_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'voting_poll_errors': voting_poll_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
-
-
-
-class NewSessionAPIView(APIView):
-    def get(self, request):
-        sessions = Session_info.objects.all()
-        serializer = Session_infoSerializer(sessions, many=True)
-        return Response(serializer.data)
-    
+class UpdateClubBudgetAPIView(APIView):
     def post(self, request):
-        serializer =Session_infoSerializer(data=request.data)
+        budget_id = request.data.get('id')
+        if budget_id is None:
+            return Response({'error': 'Club budget ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            budget_instance = Club_budget.objects.get(pk=budget_id)
+        except Club_budget.DoesNotExist:
+            return Response({'error': 'Club budget not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = club_budgetserializer(instance=budget_instance, data=request.data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+class AddClub_BudgetAPIView(APIView):
+    def post(self, request):
+        # Get the string representation of the file content
+        budget_file_content = request.data.get('budget_file')
+
+        # Convert the string to a file object
+        file_obj = None
+        if budget_file_content:
+    # Create a ContentFile object
+            file_obj = ContentFile(budget_file_content.encode(), name='temp_file.txt')
+
+# Update the request data with the File object
+            request.data['budget_file'] = file_obj
+
+        # Update the request data with the file object
+        request.data['budget_file'] = file_obj
+
+        # Initialize the serializer with the modified request data
+        serializer = club_budgetserializer(data=request.data)
+
+        # Validate and save the serializer data
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
 
 
-class NewEventAPIView(APIView):
-    def get(self, request):
-        events = Event_info.objects.all()
-        serializer = event_infoserializer(events, many=True)
-        return Response(serializer.data)
-    
+class DeleteClubBudgetAPIView(APIView):
     def post(self, request):
-        serializer = event_infoserializer(data=request.data)
+        budget_id = request.data.get('id')
+        if budget_id is None:
+            return Response({'error': 'Club budget ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            budget_instance = Club_budget.objects.get(pk=budget_id)
+        except Club_budget.DoesNotExist:
+            return Response({'error': 'Club budget not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        budget_instance.delete()
+        return Response({'message': 'Club budget deleted successfully'}, status=status.HTTP_200_OK)    
+
+
+class DeleteClubAPIView(APIView):
+    def post(self, request):
+        # Retrieve data from request
+        club_data = request.data
+
+        # Extract fields for filtering
+        club_name = club_data.get('club_name')
+        category = club_data.get('category')
+        co_ordinator = club_data.get('co_ordinator')
+        co_coordinator = club_data.get('co_coordinator')
+        faculty_incharge = club_data.get('faculty_incharge')
+
+        # Check if all required fields are provided
+        if not all([club_name, category, co_ordinator, co_coordinator, faculty_incharge]):
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find the club based on provided fields
+        try:
+            club = Club_info.objects.get(
+                club_name=club_name,
+                category=category,
+                co_ordinator=co_ordinator,
+                co_coordinator=co_coordinator,
+                faculty_incharge=faculty_incharge
+            )
+        except Club_info.DoesNotExist:
+            return Response({"error": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the club from the database
+        club.delete()
+
+        return Response({"message": "Club deleted successfully"}, status=status.HTTP_200_OK)
+    
+
+class ClubCreateAPIView(APIView):
+    def post(self, request, format=None):
+        data = {
+            'club_name': request.data.get('club_name'),
+            'category': request.data.get('category'),
+            'co_ordinator': request.data.get('co_ordinator'),
+            'co_coordinator': request.data.get('co_coordinator'),
+            'faculty_incharge': request.data.get('faculty_incharge'),
+            'club_file': request.data.get('club_file'),
+            'activity_calender': request.data.get('activity_calender'),
+            'description': request.data.get('description'),
+            'status': request.data.get('status'),
+            'head_changed_on': request.data.get('head_changed_on'),
+            'created_on': request.data.get('created_on')
+        }
+        serializer = Club_infoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class AddMemberToClub(APIView):
-    def post(self, request):
-        serializer = Club_memberSerializer(data=request.data)
-        if serializer.is_valid():
-            club_id = request.data.get('club')  # Assuming 'club_id' is passed in the request data
-            try:
-                club_member = serializer.save()
-                # Implement logic to add member to the club here
-                # For example, you can retrieve the club instance and add the member to it
-                # club = Club.objects.get(pk=club_id)
-                # club.members.add(club_member)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    

@@ -7,7 +7,7 @@
     <a class="active item" data-tab="club">
         Club Details
     </a>
-    {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig and "Counsellor" not in Curr_desig and "Convener" not in Curr_desig %}
+    {% comment %} {% if "Junior Superintendent" not in Curr_desig and "Dean_s" in Curr_desig and "Counsellor" in Curr_desig and "Convener" in Curr_desig %} {% endcomment %}
     <a class="item" data-tab="session">
         Club Sessions
     </a>
@@ -16,7 +16,7 @@
         Club Events
     </a>
     
-    {% endif %}
+    {% comment %} {% endif %} {% endcomment %}
 </div>
 
 {% for i in Club_name %}
@@ -73,43 +73,41 @@
 
 
 {% for i in Club_event %}
-<div class="ui modal {{ i.id }}_">
-    <i class="close icon"></i>
-    <div class="header">
-        Event Info
-    </div>
-    <div class="image content">
-        <div class="ui medium image">
-
-            <img src="/media/{{ i.event_poster }}">
-        </div>
-        <div class="description">
-            <div class="ui header">
-                <p>
-                <H1><u>{{ i.club.club_name }}&nbsp; club </u></H1>
-                </p>
+    
+        <div class="ui modal {{ i.id }}_">
+            <i class="close icon"></i>
+            <div class="header">
+                Event Info
             </div>
-            <b>Event Name </b> : {{ i.event_name }}<br />
-            <b>Incharge </b> : {{ i.incharge }}<br />
-            <b>Date </b> : {{ i.date }}<br />
-
-
-            <b>Start Time </b> : {{ i.start_time }}<br />
-
-            <b>End Time </b> : {{ i.end_time}}<br />
-
-            <b>Description : </b>
-            {{ i.details }} <br />
-
+            <div class="image content">
+                <div class="ui medium image">
+                    <img src="/media/{{ i.event_poster }}">
+                </div>
+                <div class="description">
+                    <div class="ui header">
+                        <p>
+                            <H1><u>{{ i.club.club_name }}&nbsp; club </u></H1>
+                        </p>
+                    </div>
+                    <b>Event Name </b> : {{ i.event_name }}<br />
+                    <b>Incharge </b> : {{ i.incharge }}<br />
+                    <b>Date </b> : {{ i.date }}<br />
+                    <b>Start Time </b> : {{ i.start_time }}<br />
+                    <b>End Time </b> : {{ i.end_time}}<br />
+                    <b>Description : </b>
+                    {{ i.details }} <br />
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui black deny button">
+                    Close
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="actions">
-        <div class="ui black deny button">
-            Close
-        </div>
-    </div>
-</div>
+    
 {% endfor %}
+
+
 
 
 
@@ -375,6 +373,7 @@
                 {% endif %}
                 {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                 {% for i in Club_event%}
+                {% if i.status == "confirmed" %}
                 <tr>
                     <td onclick="view_event_('{{ i.id }}_')">
                         {{ i.club.club_name }}
@@ -392,6 +391,7 @@
                     </td>
 
                 </tr>
+                {% endif %}
                 {% empty %}
                 <tr>
                     <td colspan="4" class="text-center bg-warning">No Events</td>

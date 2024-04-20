@@ -510,3 +510,20 @@ class Voting_voters(models.Model):
 
     def __str__(self):
         return self.student_id
+
+
+class Inventory(models.Model):
+    club_name = models.OneToOneField(
+        Club_info,
+        primary_key=True,
+        on_delete=models.CASCADE,
+        related_name="club_inventory",
+        unique=True,
+    )
+    inventory = models.FileField(upload_to="gymkhana/inventory")
+
+    def __str__(self):
+        return str(self.club_name)
+
+    class Meta:
+        db_table = "Inventory"

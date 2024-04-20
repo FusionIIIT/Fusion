@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -16,6 +17,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
+from django.core.exceptions import ObjectDoesNotExist
 from notification.views import (
     gymkhana_voting,
     office_module_notif,
@@ -131,7 +133,8 @@ def editsession(request, session_id):
             end_time = body.get("end_time")
             desc = body.get("d_d")
             club_name = coordinator_club(request)
-            result = conflict_algorithm_session(date, start_time, end_time, venue)
+            result = conflict_algorithm_session(
+                date, start_time, end_time, venue)
             message = ""
             if result == "success":
                 event = Session_info.objects.select_related(
@@ -167,7 +170,7 @@ def editsession(request, session_id):
             message = "Some error occurred"
             logger.info(message, e)
 
-    ##Get Request
+    # Get Request
     #  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
     venue = []
     event = Session_info.objects.select_related(
@@ -285,7 +288,8 @@ def edit_event(request, event_id):
             end_time = body.get("end_time")
             desc = body.get("d_d")
             club_name = coordinator_club(request)
-            result = conflict_algorithm_event(date, start_time, end_time, venue)
+            result = conflict_algorithm_event(
+                date, start_time, end_time, venue)
             message = ""
             if result == "success":
                 event = Event_info.objects.select_related(
@@ -312,6 +316,7 @@ def edit_event(request, event_id):
                 event.end_time = end_time
                 event.event_poster = event_poster
                 event.details = desc
+                event.status = 'confirmed'
                 event.save()
                 # e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
                 message += "Your form has been dispatched for further process"
@@ -323,7 +328,7 @@ def edit_event(request, event_id):
             message = "Some error occurred"
             logger.info(message, e)
 
-    ##Get Request
+    # Get Request
     #  Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
     venue = []
     event = Event_info.objects.select_related(
@@ -462,6 +467,31 @@ def studentsData(request):
             .all()
             .filter(user_type="student")
             .filter(id__startswith=current_value)
+        )
+        students = serializers.serialize("json", students)
+        return HttpResponse(students)
+    except Exception as e:
+        return HttpResponse("error")
+
+
+def studentsClubMembers(request):
+    """
+        studentsData:
+                this function is used to return the students data from the ExtraInfo of the requested value
+    @param:
+                request - trivial
+    @variables:
+                students- contains the Extrainfo of the faculty for the required current value
+
+    """
+    club_filter = request.POST["club_name"]
+    print(club_filter)
+    try:
+        # students = ExtraInfo.objects.all().filter(user_type="student").filter(id__startswith=current_value)
+        students = (
+            Club_member.objects.select_related()
+            .all()
+            .filter(club=club_filter)
         )
         students = serializers.serialize("json", students)
         return HttpResponse(students)
@@ -713,7 +743,8 @@ def registration_form(request):
         try:
             # getting form data
             info = (
-                Student.objects.select_related("id", "id__user", "id__department")
+                Student.objects.select_related(
+                    "id", "id__user", "id__department")
                 .get(id__user=request.user)
                 .cpi
             )
@@ -747,7 +778,7 @@ def registration_form(request):
     # return redirect('/gymkhana/')
 
 
-def return_content(request, roll, name, desig, club__):
+def return_content(request, roll, name, desig, club__, student_clubs, notifications):
     """
     return_content
     This view returns all data regarding the parameters that sent through function
@@ -874,6 +905,7 @@ def return_content(request, roll, name, desig, club__):
         "incharge__user",
         "incharge__department",
     ).all()
+    inventory1 = Inventory.objects.all()
     if "student" in desig or "Convenor" in desig:
         registration_form = Registration_form.objects.all()
         cpi = (
@@ -888,9 +920,11 @@ def return_content(request, roll, name, desig, club__):
         )
 
         try:
-            form_name = Form_available.objects.get(roll=request.user.username).form_name
+            form_name = Form_available.objects.get(
+                roll=request.user.username).form_name
             logger.info(f"{form_name} MKNCjncknisncs")
-            status = Form_available.objects.get(roll=request.user.username).status
+            status = Form_available.objects.get(
+                roll=request.user.username).status
         except Exception as e:
             forms = Form_available.objects.all()
             for form in forms:
@@ -915,30 +949,30 @@ def return_content(request, roll, name, desig, club__):
 
     # creating the data for the active voting polls
     voting_polls = []
-    for poll in Voting_polls.objects.all():
-        event = {}
-        choices = []
-        event["id"] = poll.id
-        event["title"] = poll.title
-        event["desc"] = poll.description
-        event["exp_date"] = (
-            (poll.exp_date - datetime.datetime.now()).days
-            if (datetime.datetime.now() - poll.exp_date).days <= 0
-            else "expire"
-        )
-        event["pub_date"] = poll.exp_date.strftime("%d/%m/%Y")
-        event["created_by"] = poll.created_by.split(":")
-        for choice in poll.voting_choices_set.all():
-            choices.append(
-                {"title": choice.title, "id": choice.id, "votes": choice.votes}
-            )
+    # for poll in Voting_polls.objects.all():
+    #     event = {}
+    #     choices = []
+    #     event["id"] = poll.id
+    #     event["title"] = poll.title
+    #     event["desc"] = poll.description
+    #     event["exp_date"] = (
+    #         (poll.exp_date - datetime.datetime.now()).days
+    #         if (datetime.datetime.now() - poll.exp_date).days <= 0
+    #         else "expire"
+    #     )
+    #     event["pub_date"] = poll.exp_date.strftime("%d/%m/%Y")
+    #     event["created_by"] = poll.created_by.split(":")
+    #     for choice in poll.voting_choices_set.all():
+    #         choices.append(
+    #             {"title": choice.title, "id": choice.id, "votes": choice.votes}
+    #         )
 
-        event["choices"] = choices
-        event["max"] = poll.voting_choices_set.latest()
-        event["voters"] = poll.voting_voters_set.values_list("student_id", flat=True)
-        event["groups"] = json.loads(poll.groups)
+    #     event["choices"] = choices
+    #     event["max"] = poll.voting_choices_set.latest()
+    #     event["voters"] = poll.voting_voters_set.values_list("student_id", flat=True)
+    #     event["groups"] = json.loads(poll.groups)
 
-        voting_polls.append(event)
+    #     voting_polls.append(event)
 
     content = {
         "Students": students,
@@ -956,6 +990,9 @@ def return_content(request, roll, name, desig, club__):
         "club_details": club__,
         "voting_polls": voting_polls,
         "roll": str(roll),
+        "Inventory": inventory1,
+        "student_clubs": student_clubs,
+        "notifications": notifications,
     }
     # print(club__)
     if "student" in desig or "Convenor" in desig:
@@ -1004,8 +1041,24 @@ def getVenue(request):
     return HttpResponse(content)
 
 
+def sc(request):
+    # Assuming Club_member is a model representing the club memberships
+    clubs = Club_member.objects.filter(member=request.user.username)
+
+    # Initialize an empty list to store club names
+    clubinfo = []
+
+    # Iterate over the clubs associated with the user
+    for club in clubs:
+
+        clubinfo.append(club.club)
+
+    return clubinfo
+
+
 @login_required
 def gymkhana(request):
+    notifications = request.user.notifications.all()
     """
     gymkhana
     This view gives us the complete information regarding various clubs and it
@@ -1025,7 +1078,8 @@ def gymkhana(request):
     roll = request.user
     name = request.user.first_name + "_" + request.user.last_name
     designations = list(
-        HoldsDesignation.objects.select_related("user", "working", "designation")
+        HoldsDesignation.objects.select_related(
+            "user", "working", "designation")
         .all()
         .filter(working=request.user)
         .values_list("designation")
@@ -1056,10 +1110,11 @@ def gymkhana(request):
         Types = lines.split(" ")
     club__ = coordinator_club(request)
     print(club__)
+    student_clubs = sc(request)
     return render(
         request,
         "gymkhanaModule/gymkhana.html",
-        return_content(request, roll, name, roll_, club__),
+        return_content(request, roll, name, roll_, club__, student_clubs, notifications),
     )
 
 
@@ -1334,88 +1389,59 @@ def club_report(request):
 
 @login_required
 def change_head(request):
-    """
-    This  used to change the heads of club.
-    It gets the old co_ordinator and co_cordinator and replaces them with new co and co_co.
-    And adds to the database.
-
-    @param:
-          request - trivial
-
-    @variables:
-
-           club - name of the club
-               co_ordinator - new co_ordinator of the club
-               co_coordinator - new co_cordinator of the club
-               date - date at which the heads of the clubs changes
-       time - time at which the heads changes
-               desc - description on change of heads
-               old_co_ordinator - HoldsDesignation object and after deletes this co_ordinator
-               old_co_coordinator - HoldsDesignation object and after deletes this co_coordinator
-               new_co_ordinator - HoldsDesignation object and after saves this object as co_ordinator
-               new_co_coordinator - HoldsDesignation object and after saves this object as co_coordinator
-    """
-
     if request.method == "POST":
         club = request.POST.get("club")
-        co_ordinator = request.POST.get("co")
-        co_coordinator = request.POST.get("coco")
+        co_ordinator = request.POST.get('co')
+        co_coordinator = request.POST.get('coco')
 
-        desc = "co-ordinator and co co-ordinator changed on " + str(timezone.now())
+        desc = "co-ordinator and co co-ordinator changed on " + \
+            str(timezone.now())
         message = ""
 
-        # club_name = get_object_or_404(Club_info, club_name=club)
+        club_info = Club_info.objects.get(club_name=club)
 
-        co_ordinator_student = get_object_or_404(
-            Student, id__user__username=co_ordinator
-        )
+        if co_ordinator:
+            check = Club_member.objects.filter(
+                club_id=club, member_id=co_ordinator).exists()
+            if check == False:
+                return HttpResponse(json.dumps({'status': 'error', 'message': 'Selected student is not a member of the club'}))
+            co_ordinator_student = Student.objects.get(id_id=co_ordinator)
+            old_co_ordinator = club_info.co_ordinator_id
+            club_info.co_ordinator_id = co_ordinator_student
+            new_co_ordinator = HoldsDesignation(user=User.objects.get(username=co_ordinator), working=User.objects.get(
+                username=co_ordinator), designation=Designation.objects.get(name="co-ordinator"))
+            new_co_ordinator.save()
+            old_co_ordinator_obj = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(
+                user__username=old_co_ordinator, designation=Designation.objects.get(name="co-ordinator"))
+            old_co_ordinator_obj.delete()
+            message += "Successfully changed co-ordinator !!!"
 
-        co_coordinator_student = get_object_or_404(
-            Student, id__user__username=co_coordinator
-        )
+        if co_coordinator:
+            check = Club_member.objects.filter(
+                club_id=club, member_id=co_coordinator).exists()
+            if check == False:
+                return HttpResponse(json.dumps({'status': 'error', 'message': 'Selected student is not a member of the club'}))
+            co_coordinator_student = Student.objects.get(id_id=co_coordinator)
+            old_co_coordinator = club_info.co_coordinator_id
+            club_info.co_coordinator_id = co_coordinator_student
+            new_co_coordinator = HoldsDesignation(user=User.objects.get(username=co_coordinator), working=User.objects.get(
+                username=co_coordinator), designation=Designation.objects.get(name="co co-ordinator"))
+            new_co_coordinator.save()
+            old_co_coordinator_obj = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(
+                user__username=old_co_coordinator, designation=Designation.objects.get(name="co co-ordinator"))
+            old_co_coordinator_obj.delete()
+            message += " Successfully changed co-coordinator !!!"
 
-        club_info = get_object_or_404(Club_info, club_name=club)
-
-        old_co_ordinator = club_info.co_ordinator
-        old_co_coordinator = club_info.co_coordinator
-        club_info.co_ordinator = co_ordinator_student
-        club_info.co_coordinator = co_coordinator_student
         club_info.head_changed_on = timezone.now()
         club_info.save()
 
-        message += "Successfully changed !!!"
-
-        new_co_ordinator = HoldsDesignation(
-            user=User.objects.get(username=co_ordinator),
-            working=User.objects.get(username=co_ordinator),
-            designation=Designation.objects.get(name="co-ordinator"),
-        )
-        new_co_ordinator.save()
-        new_co_coordinator = HoldsDesignation(
-            user=User.objects.get(username=co_coordinator),
-            working=User.objects.get(username=co_coordinator),
-            designation=Designation.objects.get(name="co co-ordinator"),
-        )
-        new_co_coordinator.save()
-
-        old_co_ordinator = HoldsDesignation.objects.select_related(
-            "user", "working", "designation"
-        ).filter(user__username=old_co_ordinator, designation__name="co-ordinator")
-        old_co_ordinator.delete()
-        old_co_coordinator = HoldsDesignation.objects.select_related(
-            "user", "working", "designation"
-        ).filter(user__username=old_co_coordinator, designation__name="co co-ordinator")
-        old_co_coordinator.delete()
-
         content = {
-            "status": "success",
-            "message": message,
+            'status': "success",
+            'message': message,
         }
 
         content = json.dumps(content)
         return HttpResponse(content)
-
-        # return redirect('/gymkhana/')
 
 
 @login_required
@@ -1454,7 +1480,8 @@ def new_session(request):
             end_time = request.POST.get("end_time")
             desc = request.POST.get("d_d")
             club_name = coordinator_club(request)
-            result = conflict_algorithm_session(date, start_time, end_time, venue)
+            result = conflict_algorithm_session(
+                date, start_time, end_time, venue)
             message = ""
             getstudents = ExtraInfo.objects.select_related("user", "department").filter(
                 user_type="student"
@@ -1529,7 +1556,8 @@ def new_event(request):
             end_time = request.POST.get("end_time")
             desc = request.POST.get("d_d")
             club_name = coordinator_club(request)
-            result = conflict_algorithm_event(date, start_time, end_time, venue)
+            result = conflict_algorithm_event(
+                date, start_time, end_time, venue)
             message = ""
             getstudents = ExtraInfo.objects.select_related("user", "department").filter(
                 user_type="student"
@@ -1662,13 +1690,15 @@ def club_approve(request):
             club_info.created_on = timezone.now()
             club_info.save()
 
-            user_name1 = get_object_or_404(User, username=club_info.co_ordinator)
+            user_name1 = get_object_or_404(
+                User, username=club_info.co_ordinator)
             extra1 = get_object_or_404(
                 ExtraInfo, id=club_info.co_ordinator, user=user_name1
             )
             student1 = get_object_or_404(Student, id=extra1)
 
-            user_name2 = get_object_or_404(User, username=club_info.co_coordinator)
+            user_name2 = get_object_or_404(
+                User, username=club_info.co_coordinator)
             extra2 = get_object_or_404(
                 ExtraInfo, id=club_info.co_coordinator, user=user_name2
             )
@@ -1747,7 +1777,7 @@ def reject(request):
     club_member.status = "rejected"
     club_member.remarks = remarks[0]
     club_member.save()
-    messages.success(request, "Successfully Rejected !!!")
+    messages.success(request, "Successfully Deleted !!!")
 
     return redirect("/gymkhana/")
 
@@ -1778,7 +1808,8 @@ def cancel(request):
         extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
         student = get_object_or_404(Student, id=extra1)
 
-        club_member = get_object_or_404(Club_member, club=user[1], member=student)
+        club_member = get_object_or_404(
+            Club_member, club=user[1], member=student)
 
         club_member.delete()
         messages.success(request, "Successfully deleted !!!")
@@ -1931,7 +1962,7 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
             return "error"
 
 
-##helper function to get the target user for the voting poll
+# helper function to get the target user for the voting poll
 def get_target_user(groups):
     """
     get_target_user:
@@ -1953,135 +1984,135 @@ def get_target_user(groups):
     return json.dumps(dic)
 
 
-## Voting Polls
-@login_required
-def voting_poll(request):
-    """
-    voting_poll:
-    This view creates new voting poll by taking the values from Front-end and add this poll details
-    to "Voting_polls" database and also it create and add object of "Voting_choices" contains
-    poll_event and title>. Finally it calls gymkhana_voting as per the data given to "groups"
-    @param:
-            request : trivial
-    @variables:
-            title : Title of the voting poll
-            description : It describes that what this poll is for
-            choices     : Choices of the voting poll
-            exp_data    : Expire date of the voting poll
-            groups      : This takes the info of which brach and batch can access(voting) this poll
-    """
-    if request.POST:
-        try:
-            body = request.POST
-            title = body.get("title")
-            description = body.get("desc")
-            choices = body.getlist("choices")
-            exp_date = body.get("expire_date")
-            groups = body.getlist("groups")
-            target_groups = get_target_user(groups)
-            name = request.user.first_name + " " + request.user.last_name
-            roll = request.user
-            created_by = str(name) + ":" + str(roll)
-            new_poll = Voting_polls(
-                title=title,
-                description=description,
-                exp_date=exp_date,
-                created_by=str(created_by),
-                groups=target_groups,
-            )
-            new_poll.save()
-            for choice in choices:
-                new_choice = Voting_choices(poll_event=new_poll, title=choice)
-                new_choice.save()
-            for i in range(len(groups)):
-                value = groups[i].split(":")
-                batch = value[0]
-                branch = value[1]
-                allbatch = User.objects.filter(username__contains=batch)
-                selbranch = ExtraInfo.objects.select_related(
-                    "user", "department"
-                ).filter(department__name=branch)
-                batchbranch = User.objects.filter(
-                    username__contains=batch, extrainfo__in=selbranch
-                )
-                if branch == "All":
-                    gymkhana_voting(
-                        request.user, allbatch, "voting_open", title, description
-                    )
-                else:
-                    gymkhana_voting(
-                        request.user, batchbranch, "voting_open", title, description
-                    )
-            return redirect("/gymkhana/")
-        except Exception as e:
-            res = "error"
-            message = "Some error occurred"
-            logger.info(e)
-            content = {"status": res, "message": message}
-            content = json.dumps(content)
-            return HttpResponse(content)
+# Voting Polls
+# @login_required
+# def voting_poll(request):
+#     """
+#     voting_poll:
+#     This view creates new voting poll by taking the values from Front-end and add this poll details
+#     to "Voting_polls" database and also it create and add object of "Voting_choices" contains
+#     poll_event and title>. Finally it calls gymkhana_voting as per the data given to "groups"
+#     @param:
+#             request : trivial
+#     @variables:
+#             title : Title of the voting poll
+#             description : It describes that what this poll is for
+#             choices     : Choices of the voting poll
+#             exp_data    : Expire date of the voting poll
+#             groups      : This takes the info of which brach and batch can access(voting) this poll
+#     """
+#     if request.POST:
+#         try:
+#             body = request.POST
+#             title = body.get("title")
+#             description = body.get("desc")
+#             choices = body.getlist("choices")
+#             exp_date = body.get("expire_date")
+#             groups = body.getlist("groups")
+#             target_groups = get_target_user(groups)
+#             name = request.user.first_name + " " + request.user.last_name
+#             roll = request.user
+#             created_by = str(name) + ":" + str(roll)
+#             new_poll = Voting_polls(
+#                 title=title,
+#                 description=description,
+#                 exp_date=exp_date,
+#                 created_by=str(created_by),
+#                 groups=target_groups,
+#             )
+#             new_poll.save()
+#             for choice in choices:
+#                 new_choice = Voting_choices(poll_event=new_poll, title=choice)
+#                 new_choice.save()
+#             for i in range(len(groups)):
+#                 value = groups[i].split(":")
+#                 batch = value[0]
+#                 branch = value[1]
+#                 allbatch = User.objects.filter(username__contains=batch)
+#                 selbranch = ExtraInfo.objects.select_related(
+#                     "user", "department"
+#                 ).filter(department__name=branch)
+#                 batchbranch = User.objects.filter(
+#                     username__contains=batch, extrainfo__in=selbranch
+#                 )
+#                 if branch == "All":
+#                     gymkhana_voting(
+#                         request.user, allbatch, "voting_open", title, description
+#                     )
+#                 else:
+#                     gymkhana_voting(
+#                         request.user, batchbranch, "voting_open", title, description
+#                     )
+#             return redirect("/gymkhana/")
+#         except Exception as e:
+#             res = "error"
+#             message = "Some error occurred"
+#             logger.info(e)
+#             content = {"status": res, "message": message}
+#             content = json.dumps(content)
+#             return HttpResponse(content)
 
-    return redirect("/gymkhana/")
-
-
-@login_required
-def vote(request, poll_id):
-    """
-    vote:
-    This view will update(increase) votes by 1 for particular 'submitted_choice' then it adds the
-    voter(student)ID and poll_event for which he/she votes. Finally it saves to the database
-    redirect to '/gymkhana/'. In case of any exception it return "error"
-    @param:
-            poll_id : ID of the poll
-            request : trivial
-    @variables:
-            submitted_choice : Choice of the user selected for poll_event
-            choice           : It is a object contains all data of "submitted_choice" from Voting_choices
-            new_voter        : creating object of Voting_voter to save the voter info
-    """
-    poll = Voting_polls.objects.get(pk=poll_id)
-    if request.POST:
-        try:
-            body = request.POST
-            submitted_choice = body.get("choice")
-            choice = Voting_choices.objects.select_related("poll_event").get(
-                pk=submitted_choice
-            )
-            choice.votes += 1
-            choice.save()
-            new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
-            new_voter.save()
-            return redirect("/gymkhana/")
-        except Exception as e:
-            logger.info(e)
-            return HttpResponse("error")
-    data = serializers.serialize(
-        "json", Voting_choices.objects.select_related("poll_event").all()
-    )
-    return redirect("/gymkhana/")
+#     return redirect("/gymkhana/")
 
 
-@login_required
-def delete_poll(request, poll_id):
-    """
-    delete_poll:
-    This view delete the particular voting poll which is passed through function and redirect
-    to "/gymkhana/" if there is an exception then it return the HttpResponse of "error"
-    @param:
-            request : trivial
-            poll_id : id of the poll in Voting_polls
-    @variables:
-            poll : It is an object stores the all data of poll_id  from Voting_poll
-    """
-    try:
-        poll = Voting_polls.objects.filter(pk=poll_id)
-        poll.delete()
-        return redirect("/gymkhana/")
-    except Exception as e:
-        logger.info(e)
-        return HttpResponse("error")
+# @login_required
+# def vote(request, poll_id):
+#     """
+#     vote:
+#     This view will update(increase) votes by 1 for particular 'submitted_choice' then it adds the
+#     voter(student)ID and poll_event for which he/she votes. Finally it saves to the database
+#     redirect to '/gymkhana/'. In case of any exception it return "error"
+#     @param:
+#             poll_id : ID of the poll
+#             request : trivial
+#     @variables:
+#             submitted_choice : Choice of the user selected for poll_event
+#             choice           : It is a object contains all data of "submitted_choice" from Voting_choices
+#             new_voter        : creating object of Voting_voter to save the voter info
+#     """
+#     poll = Voting_polls.objects.get(pk=poll_id)
+#     if request.POST:
+#         try:
+#             body = request.POST
+#             submitted_choice = body.get("choice")
+#             choice = Voting_choices.objects.select_related("poll_event").get(
+#                 pk=submitted_choice
+#             )
+#             choice.votes += 1
+#             choice.save()
+#             new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
+#             new_voter.save()
+#             return redirect("/gymkhana/")
+#         except Exception as e:
+#             logger.info(e)
+#             return HttpResponse("error")
+#     data = serializers.serialize(
+#         "json", Voting_choices.objects.select_related("poll_event").all()
+#     )
+#     return redirect("/gymkhana/")
 
-    return redirect("/gymkhana/")
+
+# @login_required
+# def delete_poll(request, poll_id):
+#     """
+#     delete_poll:
+#     This view delete the particular voting poll which is passed through function and redirect
+#     to "/gymkhana/" if there is an exception then it return the HttpResponse of "error"
+#     @param:
+#             request : trivial
+#             poll_id : id of the poll in Voting_polls
+#     @variables:
+#             poll : It is an object stores the all data of poll_id  from Voting_poll
+#     """
+#     try:
+#         poll = Voting_polls.objects.filter(pk=poll_id)
+#         poll.delete()
+#         return redirect("/gymkhana/")
+#     except Exception as e:
+#         logger.info(e)
+#         return HttpResponse("error")
+
+#     return redirect("/gymkhana/")
 
 
 # this algorithm checks if the passed slot time coflicts with any of already booked events
@@ -2104,9 +2135,15 @@ def budget_approve(request):
 
         for club in first_words:
             print(club)
-            club_budget = Club_budget.objects.get(club_id=club, status="open")  # Ensure status is open
-            club_budget.status = "confirmed"
-            club_budget.save()  
+            club_budget_list = Club_budget.objects.filter(
+                club_id=club, status="open")  # Ensure status is open
+            print(club_budget)
+            for single_club in club_budget_list:
+                single_club.status = "confirmed"
+                # single_club = get_object_or_404(Club_info, club_name=club)
+                # single_club.alloted_budget = single_club.alloted_budget + single_club.budget_amt
+                single_club.save()
+                # club_budget.save()
             messages.success(
                 request, f"Successfully budget approved for club."
             )
@@ -2135,10 +2172,11 @@ def budget_reject(request):
             print(club)
             club_budget = Club_budget.objects.get(
                 club_id=club, status="open"
-            )  # Ensure status is open
+            )
             club_budget.status = "rejected"
             club_budget.save()
-            messages.success(request, f"Successfully budget rejected for club.")
+            messages.success(
+                request, f"Successfully budget rejected for club.")
     return redirect("/gymkhana/")
 
 
@@ -2423,3 +2461,206 @@ def forward(request, id):
     }
 
     return render(request, "filetracking/forward.html", context)
+
+
+@login_required
+def inventory_update(request):
+    """
+    act_calender:
+    This view gets the date from the club if there is any wrong info it shows the error
+    otherwise it shows Successfully uploaded the calendar in the form of Json object
+    and adds to the calendar
+    @params:
+            request : trivial
+    @variables:
+            club : Name of the club
+            act_calender : File that contains the active calender of the club
+    """
+    if request.method == "POST":
+        message = ""
+        club = request.POST.get("club")
+        act_calender = request.FILES["act_file"]
+        act_calender.name = club + "_act_calender.pdf"
+
+        # club_name = get_object_or_404(Club_info, club_name = club)
+
+        club_info = get_object_or_404(Club_info, club_name=club)
+        club_info.activity_calender = act_calender
+        club_info.save()
+        message += "Successfully uploaded the calender !!!"
+
+        content = {
+            "status": "success",
+            "message": message,
+        }
+        content = json.dumps(content)
+        return HttpResponse(content)
+
+
+def del_mem(request):
+    reject_list = list(request.POST.getlist("check"))
+    for club in reject_list:
+        club_info = get_object_or_404(Club_member, member_id=club)
+        club_info.status = "rejected"
+        club_info.save()
+
+    return redirect("/gymkhana/")
+
+
+def del_club(request):
+    print("hi")
+    reject_list = request.POST.getlist("check")  # No need to convert to list
+    for club in reject_list:
+        # Get the club info object
+        club_info = Club_info.objects.get(club_name=club)
+
+        # Update budget status to "rejected"
+        try:
+            budgets = Club_budget.objects.filter(club_id=club)
+            for budget in budgets:
+                budget.status = "rejected"
+                budget.save()
+        except Club_budget.DoesNotExist:
+            pass
+
+        # Update club info status to "rejected"
+        club_info.status = "rejected"
+
+        # Delete coordinator and co-coordinator
+        co_user = User.objects.get(username=club_info.co_ordinator_id)
+        co_co_user = User.objects.get(username=club_info.co_coordinator_id)
+
+        # Delete old coordinator designation
+        old_co_ordinator = HoldsDesignation.objects.filter(
+            user_id=co_user, working_id=co_user, designation_id=56
+        )
+        old_co_ordinator.delete()
+
+        # Delete old co-coordinator designation
+        old_co_coordinator = HoldsDesignation.objects.filter(
+            user_id=co_co_user, working_id=co_co_user, designation_id=57
+        )
+        old_co_coordinator.delete()
+        club_info.delete()
+
+    return redirect("/gymkhana/")
+
+def approve_events(request):
+    selected_ids = request.POST.get("ids")
+
+    if not selected_ids:
+        return JsonResponse({"status": "error", "message": "No event IDs provided"})
+
+    try:
+        selected_ids = json.loads(selected_ids)
+        for event_id in selected_ids:
+            try:
+                event = Event_info.objects.get(pk=event_id)
+                event.status = "confirmed"
+                event.save()
+            except ObjectDoesNotExist:
+                return JsonResponse({"status": "error", "message": f"Event with ID {event_id} does not exist"})
+
+        return JsonResponse({"status": "success"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
+
+def update_club_name(request):
+    club_id = request.POST.get('club_id')
+    new_name = request.POST.get('new_name')
+
+    if club_id and new_name:
+        try:
+            with transaction.atomic():
+
+                club = Club_info.objects.get(club_name=club_id)
+
+                co_ordinator_id = club.co_ordinator_id
+                co_coordinator_id = club.co_coordinator_id
+                faculty_incharge_id = club.faculty_incharge_id
+                status = club.status
+                description = club.description
+                activity_calender = club.activity_calender
+                category = club.category
+
+                club.delete()
+
+                new_club = Club_info(
+                    club_name=new_name,
+                    co_ordinator_id=co_ordinator_id,
+                    co_coordinator_id=co_coordinator_id,
+                    faculty_incharge_id=faculty_incharge_id,
+                    status="open",
+                    description=description,
+                    activity_calender=activity_calender,
+                    category=category
+
+
+                )
+                new_club.save()
+
+            return JsonResponse({'status': 'success'})
+        except Club_info.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Club not found'})
+        
+        
+  
+@csrf_exempt
+def update_budget_amount(request):
+    print("inside function")
+    if request.method == 'POST':
+        budget_id = request.POST.get('budget_id')
+        req_id=request.POST.get('req_id')
+        
+        print(budget_id)
+        print(req_id)
+        # Fetch the budget object
+        
+        budget = Club_budget.objects.get(id=budget_id)
+        if req_id=="spent":
+            new_budget = float(request.POST.get('new_budget'))  # convert new_budget to float
+
+        # Fetch the budget object
+            budget = Club_budget.objects.get(id=budget_id)
+
+        # Update the budget amount
+            if new_budget > budget.budget_amt:
+                return JsonResponse({'status': 'error', 'message': 'Spent amount cannot be greater than available amount!'})
+            budget.budget_amt = budget.budget_amt - new_budget
+            budget.save()
+            
+        else:
+        # Update the budget amount
+            new_budget = request.POST.get('new_budget')
+            budget.budget_amt = new_budget
+            budget.save()
+
+        # Return a success response
+            return JsonResponse({'status': 'success', 'message': 'Budget amount updated successfully'})
+
+    # Return an error response if not a POST request
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+
+@csrf_exempt
+def update_spent_amount(request):
+    if request.method == 'POST':
+        budget_id = request.POST.get('budget_id')
+        new_budget = float(request.POST.get('new_budget'))  # convert new_budget to float
+
+        # Fetch the budget object
+        budget = Club_budget.objects.get(id=budget_id)
+
+        # Update the budget amount
+        if new_budget > budget.budget_amt:
+            return JsonResponse({'status': 'error', 'message': 'Spent amount cannot be greater than available amount!'})
+        budget.budget_amt = budget.budget_amt - new_budget
+        budget.save()
+
+        # Return a success response
+        return redirect('/gymkhana/')
+
+    # Return an error response if not a POST request
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})

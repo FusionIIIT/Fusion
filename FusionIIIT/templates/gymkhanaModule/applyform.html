@@ -5,7 +5,7 @@
         <a class="active item" data-tab="clubmembershipform">
             Club Membership Form
         </a>
-        {% if "Convenor" in Curr_desig   or "Dean_s" in Curr_desig or "Convener" in Curr_desig or "Counsellor" in Curr_desig or "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+        {% if "Convenor" in Curr_desig   or "Dean_s" in Curr_desig or "Convener" in Curr_desig or "Counsellor" in Curr_desig or "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig or "student" in Curr_desig %}
          <a class="item" data-tab="newclubform">
             New Club Form
         </a>
@@ -40,7 +40,7 @@
                             <div class="default text">Select</div>
                             <div class="menu">
                                 {% for i in Club_name %}
-                                {% if i.status == "confirmed" %}
+                                {% if i.status == "confirmed"  and i not in student_clubs%}
                                     <div class="item" data-value="{{i.club_name}}">{{i.club_name}}</div>
                                     {% endif %}
                                 {% endfor %}
