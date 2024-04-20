@@ -194,6 +194,7 @@ def drafts_view(request, id):
 
 
 
+
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
         'user', 'working', 'designation').get(pk=id)
@@ -235,6 +236,7 @@ def outbox_view(request, id):
         @variables:
                 outward_files - File objects filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
+
 
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
@@ -614,11 +616,6 @@ def archive_view(request, id):
     return render(request, 'filetracking/archive.html', context)
 
 
-@login_required(login_url="/accounts/login")
-def archive_view(request, id):
-    """
-    The function is used to fetch the files in the user's archive 
-    (those which have passed by user and been archived/finished) 
 
 @login_required(login_url="/accounts/login")
 def archive_finish(request, id):
