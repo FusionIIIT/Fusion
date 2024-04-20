@@ -148,8 +148,10 @@ def convener_view(request):
             year = datetime.datetime.now().year
             Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Accept')
             request.session['last_clicked'] = 'Accept_MCM'
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Accept_MCM')
