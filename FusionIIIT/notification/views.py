@@ -397,16 +397,16 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
 
 
 def research_procedures_notif(sender,recipient,type):
-    url = 'research_procedures'
+    url = 'research_procedures:patent_registration'
     module = 'Research Procedures'
     sender = sender
     recipient = recipient
     verb = ""
 
-    if type == "Project Added":
-        verb = "Your Project has been Added"
-    elif type == "Request update":
-        verb = "Your Request has been Updated"+ " by "+ str(sender)
+    if type == "Approved":
+        verb = "Your Patent has been Approved"
+    elif type == "Disapproved":
+        verb = "Your Patent has been Rejected"
     elif type == "Pending":
         verb = "Your Patent has been Pending, wait for the response"
     elif type == "submitted":
