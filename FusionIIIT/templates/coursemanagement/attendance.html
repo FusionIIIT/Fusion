@@ -116,7 +116,7 @@ input:checked + .slider:before {
 </div>
 </div>
 <div class="ui tab segment" id="refresh_submit_tab" data-tab="submit">
-    <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{curriculum.course_code}}/attendance">
+    <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{course.code}}/{{course.version}}/attendance">
     {% csrf_token %}
 
     	<div class="field">

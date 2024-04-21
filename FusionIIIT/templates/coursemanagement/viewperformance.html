@@ -11,7 +11,7 @@
 
 </div>
 <!-- Assignment -->
- <div class="ui bottom attached vptabdata active tab segment" id="assignmenttabdata" data-tab="assignment" >
+ <div class="ui bottom attached vptabdata active tab segment" id="assignmenttabdata" data-tab="assignment" {% if Lecturer is 0 %} style="height: 65vh;"{% endif %}>
   {% if Lecturer is 0 %}
     <h4>Results</h4>
     {% if assignment|length  %}
@@ -244,8 +244,8 @@
         </table>
         
     </div>
-      
-   
+
+
 <div class="ui bottom attached tab vptabdata segment" id="attendancetabdata" data-tab="attendance">
   <!-- <p> Total Attendance = {{total_attendance}} </p>
 	<p> Total Present = {{present_attendance}} </p>
