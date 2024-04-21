@@ -472,6 +472,7 @@
                             <th class="three wide column">CheckOut</th>
                             <th class="three wide column">Category</th>
                             <th class="three wide column">Status</th>
+                            <!-- <th class="three wide column">View Bill</th> -->
                         </tr>
                     </thead>
 
@@ -518,6 +519,11 @@
                                 {% endif %}
 
                             </td>
+                            <!-- <td>
+                                <div onclick="hostelBillModal('{{ booking.id }}')" class="ui large grey right floated button" >
+                                    Print Bill
+                                </div>
+                            </td> -->
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -578,6 +584,8 @@
 {% include 'vhModule/booking-details.html' %}
 
 {% include 'vhModule/check-out-modal.html' %}
+
+{% include 'vhModule/hostel-bill.html' %}
 
 {% include 'vhModule/request-booking.html' %}
 

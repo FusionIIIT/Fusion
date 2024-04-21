@@ -64,3 +64,12 @@ function checkOutModal(id) {
         $('#check-out-modal-'.concat(id)).modal('show');
     });
 }
+
+function hostelBillModal(id) {
+    console.log("in modal.js")
+
+    $(document).ready(function() {
+        $('#hostel-bill-'.concat(id)).modal('show');
+    });
+  
+}

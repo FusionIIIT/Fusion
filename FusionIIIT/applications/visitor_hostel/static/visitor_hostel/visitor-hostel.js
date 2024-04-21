@@ -987,6 +987,10 @@ function checkInModal (id, booking_from) {
 function checkOutModal(id) {
     $('#check-out-modal-'.concat(id)).modal('show');
 }
+function hostelBillModal(id) {
+    console.log("in visitor-hostel.js")
+    $('#hostel-bill-'.concat(id)).modal('show');
+}
 
 function alertModal(alert) {
     $('#append-alert').html(alert);
