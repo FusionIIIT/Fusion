@@ -941,7 +941,6 @@ def bill_range(date1, date2):
 
 
 def booking_details(date1, date2):
-    
     bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(booking_from__lte=date1, booking_to__gte=date1, status="Confirmed") | Q(booking_from__gte=date1,
                                                                                                                                                               booking_to__lte=date2, status="Confirmed") | Q(booking_from__lte=date2, booking_to__gte=date2, status="Confirmed") | Q(booking_from__lte=date1, booking_to__gte=date1, status="Forward") | Q(booking_from__gte=date1,
                                                                                                                                                                                                                                                                                                                                                            booking_to__lte=date2, status="Forward") | Q(booking_from__lte=date2, booking_to__gte=date2, status="Forward") | Q(booking_from__lte=date1, booking_to__gte=date1, status="CheckedIn") | Q(booking_from__gte=date1, booking_to__lte=date2, status="CheckedIn") | Q(booking_from__lte=date2, booking_to__gte=date2, status="CheckedIn"))
