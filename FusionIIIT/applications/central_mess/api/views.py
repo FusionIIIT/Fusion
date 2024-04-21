@@ -138,25 +138,31 @@ class Monthly_billApi(APIView):
         amount = data['amount']
         rebate_count = data['rebate_count']
         rebate_amount = data['rebate_amount']
-        #nonveg_total_bill = data['nonveg_total_bill']
+        total_bill = data['amount']-(data['rebate_count']*data['rebate_amount'])
         paid = data['paid']
 
         username = get_object_or_404(User,username=request.user.username)
         idd = ExtraInfo.objects.get(user=username)
         student = Student.objects.get(id=idd.id)
 
-        
-        obj = Monthly_bill(
-            student_id = student,
-            month = month,
-            year = year,
-            amount = amount,
-            rebate_count = rebate_count,
-            rebate_amount = rebate_amount,
-            # nonveg_total_bill = nonveg_total_bill,
-            paid = paid
-        )
-        obj.save()
+        try:
+            reg_main = Monthly_bill.objects.get(student_id=student, year = year, month = month)
+            reg_main.amount = amount
+            reg_main.rebate_count = rebate_count
+            reg_main.rebate_amount = rebate_amount
+            reg_main.total_bill = total_bill
+        except Monthly_bill.DoesNotExist:
+            reg_main = Monthly_bill.objects.create(
+                student_id=student,
+                month = month,
+                year = year,
+                amount = amount,
+                rebate_amount = rebate_amount,
+                rebate_count = rebate_count,
+                total_bill = total_bill,
+                paid = paid
+            )
+        reg_main.save()
         return Response({'status':200})                       
 
 class PaymentsApi(APIView):
