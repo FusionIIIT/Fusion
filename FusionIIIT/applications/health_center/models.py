@@ -1,6 +1,7 @@
 
 from django.db import models
 from datetime import date
+from django.contrib.auth.models import User
 
 from applications.globals.models import ExtraInfo
 
@@ -236,3 +237,26 @@ class medical_relief(models.Model):
     compounder_forward_flag = models.BooleanField(default=False)
     acc_admin_forward_flag = models.BooleanField(default=False)
     
+    
+class MedicalProfile(models.Model):
+    user_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, null=True) 
+    date_of_birth = models.DateField()
+    gender_choices = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+    ]
+    gender = models.CharField(max_length=1, choices=gender_choices)
+    blood_type_choices = [
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+', 'O+'),
+        ('O-', 'O-'),
+    ]
+    blood_type = models.CharField(max_length=3, choices=blood_type_choices)
+    height = models.DecimalField(max_digits=5, decimal_places=2)  
+    weight = models.DecimalField(max_digits=5, decimal_places=2)  

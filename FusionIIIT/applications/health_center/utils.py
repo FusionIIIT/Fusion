@@ -9,7 +9,7 @@ from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
                      Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief)
+                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief, MedicalProfile)
 from applications.filetracking.sdk.methods import *
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
@@ -654,9 +654,14 @@ def student_view_handler(request):
         return JsonResponse({'status':1})
         
     elif 'announcement' in request.POST:
-        print("lsahflkushdfkhjshdfkghsdkhkfhg")
         anno_id = request.POST.get('anno_id')
         Announcements.objects.select_related('user_id','user_id__user','user_id__department', 'message', 'upload_announcement').filter(pk=anno_id).delete()
         data = {'status': 1}
         healthcare_center_notif(request.user,user.user,'new_announce')
+        return JsonResponse({'status':1})
+    
+    elif 'medical_profile' in request.POST:
+        user_id = request.POST.get('user_id')
+        MedicalProfile.objects.select_related('user_id','user_id__user','user_id__department', 'date_of_birth', 'gender', 'blood_type', 'height', 'weight').filter(pk=user_id).delete()
+        data = {'status': 1}
         return JsonResponse({'status':1})

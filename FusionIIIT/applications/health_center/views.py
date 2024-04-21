@@ -15,7 +15,7 @@ from applications.health_center.api.serializers import MedicalReliefSerializer
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
                      Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
                      Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock,SpecialRequest,Announcements,medical_relief)
+                     Stock,SpecialRequest,Announcements,medical_relief,MedicalProfile)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
 from applications.filetracking.sdk.methods import *
 
@@ -188,7 +188,22 @@ def student_view(request):
             appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
             announcements_data=Announcements.objects.all().values()
-            
+            medical_profile=MedicalProfile.objects.filter(user_id=request.user.username)
+            usrnm = get_object_or_404(User, username=request.user.username)
+            user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+            mp=[]
+            for mr in medical_profile:                   
+                # if mr.user_id == user_info: 
+                dic={}
+                # dic['user_id']=user_info
+                dic['date_of_birth']=mr.date_of_birth                      
+                dic['gender']=mr.gender
+                dic['blood_type']=mr.blood_type                   
+                dic['height']=mr.height
+                dic['weight']=mr.weight
+                    
+                mp.append(dic)
+                
             medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
             complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
             days = Constants.DAYS_OF_WEEK
@@ -273,7 +288,7 @@ def student_view(request):
                           {'complaints': complaints, 'medicines': medicines,
                            'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
                            'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'announcements':announcements_data,})
+                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'announcements':announcements_data,'medical_profile':mp})
     else:
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
@@ -570,4 +585,51 @@ def announcement(request):
         #                             department = department,
         #                             ann_date=ann_date)
      
-        
+@login_required(login_url='/accounts/login')      
+def medical_profile(request): 
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_id_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    num = 1
+    user_id = user_id_info.id
+    requests_received = get_to_request(usrnm)
+    user = request.user
+    # medical_profile, created = MedicalProfile.objects.get_or_create(user_id==request.user.username)
+    medical_profile=MedicalProfile.objects.filter(user_id=request.user.username)
+    usrnm = get_object_or_404(User, username=request.user.username)
+    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+    # mp=[]/
+    cnt=0
+    for mr in medical_profile:                   
+        cnt += 1
+    if request.method == 'POST':
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=user_id)
+   
+        if cnt==0:
+            medical_profile = MedicalProfile()
+            medical_profile.user_id = user_info
+            medical_profile.date_of_birth = request.POST.get('date_of_birth')
+            medical_profile.gender = request.POST.get('gender')
+            medical_profile.blood_type = request.POST.get('blood_type')
+            medical_profile.height = request.POST.get('height')
+            medical_profile.weight = request.POST.get('weight')
+            # medical_profile.form_submitted = True
+            medical_profile.save()
+            return redirect('../../compounder/')    
+            
+        else:
+            # Process the form submission for the first time
+            medical_profile1=MedicalProfile.objects.filter(user_id=user_info).first()
+            
+            medical_profile1.date_of_birth = request.POST.get('date_of_birth')
+            medical_profile1.gender = request.POST.get('gender')
+            medical_profile1.blood_type = request.POST.get('blood_type')
+            medical_profile1.height = request.POST.get('height')
+            medical_profile1.weight = request.POST.get('weight')
+            # medical_profile.form_submitted = True
+            medical_profile1.save()
+            return redirect('../../compounder/')    
+            
+    return render(request, 'health_center/medical_profile.html', {"user_designation":user_info.user_type,
+                                                            'medical_profile':medical_profile,
+                                                            "request_to":requests_received
+                                                        })  
