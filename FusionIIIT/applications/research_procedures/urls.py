@@ -36,6 +36,7 @@ urlpatterns = [
       path('update_time_period/<id>/',views.update_time_period,name="update_time_period"),
       path('change_year/<id>/',views.change_year,name="change_year"),
       path('change_end_date/<id>/',views.change_end_date,name="change_end_date"),
+      path('download_project_pdf/<int:project_id>/', views.download_project_pdf, name='download_project_pdf'),
       #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       

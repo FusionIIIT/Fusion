@@ -168,9 +168,10 @@
                     </div>
                 </div>
             </div>
+            
             <!-- <div class="item"> -->
 
-            {% if global_var == "aculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
+            {% if global_var == "faculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
             <div style=" font-size:22px; padding:8px; font-weight:bold"> Raise Staff / Expenditure request  </div>
             <form class="ui form" action="{% url 'research_procedures:add_staff_request' project.project_id %}"  method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -204,8 +205,15 @@
                 </div>
             </form> 
         <!-- </div> -->
+        
         </div>
+        
         {% endif %}
+        
+        <form action="{% url 'research_procedures:download_project_pdf' project.project_id %}" method="get">
+            {% csrf_token %}
+            <button class="ui small grey large-size-button button" style=" margin: 0.5rem " type="submit">GENERATE PROJECT SUMMARY</button>
+        </form>
 <script>
   function changeText(pid) {
     if(pid[0]=='h'){
