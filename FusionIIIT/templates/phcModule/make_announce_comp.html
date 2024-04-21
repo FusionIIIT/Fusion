@@ -3,7 +3,7 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        {% if global_var == 'Compounder' %}
+        {% if 'compounder' == request.user.extrainfo.user_type %}
             <a class="active item" data-tab="dep">
                 Announcement
             </a>
@@ -15,7 +15,7 @@
 
     </div>
 
-    {% if global_var == 'Compounder' %}
+    {% if 'compounder' == request.user.extrainfo.user_type %}
     <div class="ui active tab" data-tab="dep">
         
         <div class="ui vertical segment">
@@ -201,6 +201,7 @@
                 </tr>
                 </thead>
                     <h1>{{ user_designation }}</h1>
+                    
                 <tbody>
                 {% for anno in announcement %}
                 <tr>
