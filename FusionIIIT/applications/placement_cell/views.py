@@ -3168,6 +3168,7 @@ def placement(request):
             notify.save()
             schedule.save()
             messages.success(request, "Schedule Added Successfull!!")
+            return redirect('/placement/student_records/')
 
 
     schedules = PlacementSchedule.objects.select_related('notify_id').all()
@@ -3184,6 +3185,7 @@ def placement(request):
     }
 
     return render(request, 'placementModule/placement.html', context)
+    
 
 
 @login_required
