@@ -334,7 +334,7 @@ class PlacementRecord(models.Model):
     name = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(decimal_places=2, max_digits=5, default=0)
     year = models.IntegerField(default=0)
-    test_score = models.IntegerField(default=0, null=True, blank=True)
+    test_score = models.CharField(max_length=100,default='', null=True, blank=True)
     test_type = models.CharField(max_length=30, default='', null=True, blank=True)
 
     def __str__(self):

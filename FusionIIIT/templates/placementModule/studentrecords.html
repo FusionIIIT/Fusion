@@ -165,11 +165,11 @@
                     Search
                 </a>-->
 
-                <a class="{% if invitation_status_tab %}active item{% else %}item{% endif %}" data-tab="sendinvite">
+                <a class="{% if invitation_status_tab %} item{% else %} active item{% endif %}" data-tab="sendinvite">
                     Send Invitation
                 </a>
 
-                <a class="{% if invitation_status_tab %}item{% else %}active item{% endif %}" data-tab="invitation_status">
+                <a class="{% if invitation_status_tab %} active item{% else %} item{% endif %}" data-tab="invitation_status">
                     Invitation Status
                 </a>
             </div>
@@ -534,7 +534,7 @@
             </div>-->
 
 
-            <div id="sendTab" class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="sendinvite">
+            <div id="sendTab" class="{% if invitation_status_tab %}ui  tab{% else %}ui  active tab{% endif %}" data-tab="sendinvite">
               <form method="post" action="{% url 'placement:student_records' %}" class="ui form" role="form">
                 {{ form13.non_field_errors }}
                       {% csrf_token %}
@@ -631,7 +631,7 @@
               </form>
             </div>
 
-            <div class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="invitation_status">
+            <div class="{% if invitation_status_tab %}ui active tab{% else %}ui  tab{% endif %}" data-tab="invitation_status">
               <div class="ui vertical segment">
                 <div class="ui two item menu">
                     <a class="{% if mnpbi_post %}item{% else %}active item{% endif %}" data-tab="Placement">
@@ -773,7 +773,8 @@
 
                             <tbody>
                               {% for student in placementstatus_placement %}
-                                {% if student.notify_id.placement_type == 'PLACEMENT' and student.invitation == "ACCEPTED" %}
+                                {% if student.notify_id.placement_type == 'PLACEMENT'  %}
+                                
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">
@@ -967,7 +968,7 @@
 
                             <tbody>
                             {% for student in placementstatus_pbi %}
-                              {% if student.notify_id.placement_type == 'PBI' %}
+                              {% if student.notify_id.placement_type == 'PBI'  %}
                               <tr>
                                 <td>
                                     <h4 class="ui image header">

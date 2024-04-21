@@ -229,7 +229,7 @@
                                           <div class="field">
                                             {{ form3.stuname.errors }}
                                                   <label for="{{ form3.cname.id_for_label }}" class="required">
-                                                      Student Name
+                                                      Roll No
                                                   </label>
 
                                                   <div class="ui large input">
@@ -244,7 +244,7 @@
                                                       <span style="color:#ff0000">*</span>Year
                                                   </label>
 
-                                                  <input type="number" min="1900" max="2099" step="1" value="2016" required name="year"/>
+                                                  <input type="number" min="1900" max="2100" step="1" value="2024"  name="year"/>
                                               </div>
                                           </div>
                                           <div class="two fields">
@@ -371,7 +371,36 @@
                               <hr style="width:100%;text-align:left;margin-left:0; margin-top:2rem;">
                                 <center>
                                     {% if placement_search_record != " " %}
-                                    <table id="tab" style="border:1px solid black; width:100%;">
+                                    <table style="border:1px solid black; width:100%;">
+                                      <th style="border:1px solid black; ">Placement Type</th>
+                                      <th style="border:1px solid black;">Roll No</th>
+                                      <th style="border:1px solid black;">Name</th>
+                                      <th style="border:1px solid black;">CTC</th>
+                                      <th style="border:1px solid black;">Year</th>
+                                      <th style="border:1px solid black;">Company</th>
+                                     
+                                  </tr>
+                                  {% for rec in placement_search_record %}
+                                  <tr style="border:1px solid black; width:10rem;">
+                                    <td style="border:1px solid black;text-align: center; ">{{ rec.placement_type }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.test_type }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.ctc }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.year }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.test_score }}</td>
+                                          <td>
+                                          <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
+                                            {% csrf_token %}
+                                            <button name="delete_stats" value="{{ rec.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                <i class="delete red icon"></i>
+                                            </button>
+                                          </form>
+                                        </td>
+                                      </tr>
+
+                                      {% endfor %}
+                                  </table>
+                                    <!-- <table id="tab" style="border:1px solid black; width:100%;">
                                         <tr style="border:1px solid black;">
                                             <th style="border:1px solid black; ">Roll No.</th>
                                             <th style="border:1px solid black;">Name</th>
@@ -387,7 +416,7 @@
                                         </tr>
 
                                         {% endfor %}
-                                    </table>
+                                    </table> -->
                                    {% else %}
                                 <h2>No Data Found.</h2>
                                     {% if current2 %}
@@ -420,7 +449,7 @@
                                                     <div class="field">
                                                       {{ form3.stuname.errors }}
                                                             <label for="{{ form3.cname.id_for_label }}">
-                                                                Student Name
+                                                              Roll No
                                                             </label>
 
                                                             <div class="ui large input">
@@ -434,7 +463,7 @@
                                                                   <span style="color:#ff0000">*</span>Year
                                                               </label>
 
-                                                              <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
+                                                              <input type="number" min="2005" max="2100" step="1" value="2024"  name="year"/>
                                                           </div>
 
                                                     </div>
@@ -567,20 +596,23 @@
                                     <table style="border:1px solid black; width:100%;">
                                         <tr style="border:1px solid black;">
                                             <th style="border:1px solid black; ">Placement Type</th>
+                                            <th style="border:1px solid black;">Roll No</th>
                                             <th style="border:1px solid black;">Name</th>
                                             <th style="border:1px solid black;">CTC</th>
                                             <th style="border:1px solid black;">Year</th>
-                                            <th style="border:1px solid black;">Test Score</th>
-                                            <th style="border:1px solid black;">Test Type</th>
+                                            <th style="border:1px solid black;">Company</th>
+                                           
                                         </tr>
                                         {% for rec in pbi_search_record %}
                                         <tr style="border:1px solid black; width:10rem;">
-                                            <td style="border:1px solid black; ">{{ rec.placement_type }}</td>
-                                            <td style="border:1px solid black;">{{ rec.name }}</td>
-                                            <td style="border:1px solid black;">{{ rec.ctc }}</td>
-                                            <td style="border:1px solid black;">{{ rec.year }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
+                                          <td style="border:1px solid black;text-align: center; ">{{ rec.placement_type }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.test_type }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.ctc }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.year }}</td>
+                                          <td style="border:1px solid black;text-align: center;">{{ rec.test_score }}</td>
+                                            <!-- <td style="border:1px solid black;">{{ rec.test_score }}</td> -->
+                                           
                                             <td>
                                             <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
                                               {% csrf_token %}
@@ -623,7 +655,7 @@
                                     <div class="field">
                                       {{ form4.stuname.errors }}
                                         <label for="{{ form4.stuname.id_for_label }}">
-                                            Student Name
+                                          Roll No
                                         </label>
                                         <div class="ui large input">
                                             {{ form4.stuname }}
@@ -636,7 +668,7 @@
                                                 <span style="color:#ff0000">*</span>Year
                                             </label>
 
-                                            <input type="number" min="2005" max="2022" step="1" value="2016" required name="year"/>
+                                            <input type="number" min="2005" max="2400" step="1" value="2024"  name="year"/>
                                         </div>
 
 
@@ -774,23 +806,22 @@
                                 <center>
                                     {% if higher_search_record != " " %}
                                     <table style="border:1px solid black; width:100%;">
-                                        <tr style="border:1px solid black;">
-                                            <th style="border:1px solid black; ">Placement Type</th>
-                                            <th style="border:1px solid black;">Name</th>
-                                            <th style="border:1px solid black;">CTC</th>
-                                            <th style="border:1px solid black;">Year</th>
-                                            <th style="border:1px solid black;">Test Score</th>
-                                            <th style="border:1px solid black;">Test Type</th>
-                                        </tr>
-                                        {% for rec in higher_search_record %}
-
-                                        <tr style="border:1px solid black; width:10rem;">
-                                            <td style="border:1px solid black; ">{{ rec.placement_type }}</td>
-                                            <td style="border:1px solid black;">{{ rec.name }}</td>
-                                            <td style="border:1px solid black;">{{ rec.ctc }}</td>
-                                            <td style="border:1px solid black;">{{ rec.year }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_score }}</td>
-                                            <td style="border:1px solid black;">{{ rec.test_type }}</td>
+                                      <th style="border:1px solid black; ">Placement Type</th>
+                                      <th style="border:1px solid black;">Roll No</th>
+                                      <th style="border:1px solid black;">Name</th>
+                                      <th style="border:1px solid black;">CTC</th>
+                                      <th style="border:1px solid black;">Year</th>
+                                      <th style="border:1px solid black;">Company</th>
+                                     
+                                  </tr>
+                                  {% for rec in higher_search_record %}
+                                  <tr style="border:1px solid black; width:10rem;">
+                                    <td style="border:1px solid black;text-align: center; ">{{ rec.placement_type }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.name }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.test_type }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.ctc }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.year }}</td>
+                                    <td style="border:1px solid black;text-align: center;">{{ rec.test_score }}</td>
                                             <td>
                                             <form method="post" action="{% url 'placement:delete_placement_record' %}" class="ui form" role="form">
                                               {% csrf_token %}
