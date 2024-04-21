@@ -30,7 +30,7 @@ Course Management
 
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-              <h3 style="margin-left:15px; margin-top:10px;"> {{course.course_name}}  </h3>
+              <h3 style="margin-left:15px; margin-top:10px;"> {{course.name}}  </h3>
                 <a class="active item sidetab" data-tab="first" data-num="11">
                   Course Content
                   <i class="right floated chevron right icon"></i>
@@ -352,7 +352,7 @@ Course Management
                   </div>
                   {% else %}
                  
-                 <div class="ui active tab segment box" id="21" data-tab="submitassignment">
+                 <div class="ui active tab segment box" id="21" data-tab="submitassignment" style="height: 60vh;">
                   
                     <h4 class="ui dividing header">Assignments </h4>
                     
@@ -442,10 +442,10 @@ Course Management
                             </div>
                         {% else %}
                         <div class="row" style="margin-left:20px">
-                            <h4 class="ui dividing header">{{course.course_name}}</h4>
+                            <h4 class="ui dividing header">{{course.name}}</h4>
 
                         </div>
-                        <div class="ui accordion styled row" style="display: block;">
+                        <div class="ui accordion styled row" style="display: block; height: 60vh;">
                           {% for module, slides in modules.items %}
                           <div class="title">
                             <i class="dropdown icon"></i>
@@ -489,7 +489,6 @@ Course Management
                             <div class="row">     
                               <div class="column">
                                 <button class="ui primary button" style="mae">
-                                  {{slide.document_url}}
                                  <a id='visualize' href="{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
 
                                </button>
@@ -645,7 +644,7 @@ Course Management
         // alert(pk);
         $.ajax({
             type: 'POST',
-            url: '/ocms/{{curriculum.course_code}}/ajax_assess',
+            url: '/ocms/{{course.code}}/{{course.version}}/ajax_assess',
             data: {
                 'pk': pk,
                 'marks':element.value,
@@ -669,7 +668,7 @@ Course Management
         // alert(pk);
         $.ajax({
             type: 'POST',
-            url: '/ocms/{{curriculum.course_code}}/ajax_feedback',
+            url: '/ocms/{{course.code}}/{{course.version}}/ajax_feedback',
             data: {
                 'pk': pk,
                 'feedback':element.value,
@@ -692,7 +691,7 @@ Course Management
  
       $.ajax({
           type: 'POST',
-          url: '/ocms/{{curriculum.course_code}}/remove_bank',
+          url: '/ocms/{{course.code}}/remove_bank',
           data: {
               'pk': pk,
               'csrfmiddlewaretoken': csrf
@@ -722,7 +721,7 @@ Course Management
  
       $.ajax({
           type: 'POST',
-          url: '/ocms/{{curriculum.course_code}}/remove_topic',
+          url: '/ocms/{{course.code}}/remove_topic',
           data: {
               'pk': pk,
               'csrfmiddlewaretoken': csrf
@@ -786,7 +785,7 @@ Course Management
         var csrf = $('input[name=csrfmiddlewaretoken]').val();
         $.ajax({
             type: 'POST',
-            url: '/ocms/{{curriculum.course_code}}/remove_quiz',
+            url: '/ocms/{{course.code}}/remove_quiz',
             data: {
                 'pk': pk,
                 'csrfmiddlewaretoken': csrf
@@ -830,7 +829,7 @@ Course Management
         var number = list[2];
         $.ajax({
             type: 'POST',
-            url: '/ocms/{{curriculum.course_code}}/delete/',
+            url: '/ocms/{{course.code}}/{{course.version}}/delete/',
             data: {
                 'type': type,
                 'pk':pk,
@@ -989,7 +988,7 @@ Course Management
         if (question != "") {
             $.ajax({
                 type: 'POST',
-                url: '/ocms/{{curriculum.course_code}}/ajax_new',
+                url: '/ocms/{{course.code}}/{{course.version}}/ajax_new',
                 data: {
                     'question': question,
                     'csrfmiddlewaretoken': csrf
@@ -1026,7 +1025,7 @@ Course Management
         if (reply != "") {
           $.ajax({
             type:'POST',
-            url:'/ocms/{{curriculum.course_code}}/ajax_reply',
+            url:'/ocms/{{course.code}}/{{course.version}}/ajax_reply',
             data:{ 'question':pk,
                    'reply': reply,
                    'csrfmiddlewaretoken':csrf
@@ -1058,7 +1057,7 @@ Course Management
         if (reply != "") {
           $.ajax({
             type:'POST',
-            url:'/ocms/{{curriculum.course_code}}/ajax_reply',
+            url:'/ocms/{{course.code}}/{{course.version}}/ajax_reply',
             data:{ 'question':pk,'reply': reply,'csrfmiddlewaretoken':'{{ csrf_token }}'},
             success:function(data){
               $('#reply_n_'+pk).val("");
@@ -1102,7 +1101,7 @@ Course Management
           {
             $.ajax({
               type:'POST',
-              url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+              url:'/ocms/{{coure.code}}/ajax_remove',
               data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
               success:function(data){
                 $('#comment'+pk).hide();
@@ -1122,7 +1121,7 @@ Course Management
           {
               $.ajax({
               type:'POST',
-              url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+              url:'/ocms/{{course.code}}/{{course.version}}/ajax_remove',
               data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
               success:function(data){
                 $('#question'+pk).hide();
@@ -1139,7 +1138,7 @@ Course Management
         var pk = btn.getAttribute('data-pk');
         $.ajax({
           type:'POST',
-          url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+          url:'/ocms/{{course.code}}/{{course.version}}/ajax_remove',
           data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
           success:function(data){
             btn.parentNode.parentNode.parentNode.style.display="none";
@@ -1155,7 +1154,7 @@ Course Management
         var pk=btn.getAttribute('data-pk');
         $.ajax({
           type:'POST',
-          url:'/ocms/{{curriculum.course_code}}/ajax_remove',
+          url:'/ocms/{{course.code}}/{{course.version}}/ajax_remove',
           data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
           success:function(data){
             btn.parentNode.parentNode.parentNode.parentNode.style.display="none";
@@ -1184,7 +1183,7 @@ Course Management
         });
         $('#load_submit_vid').show();
         $.ajax({
-            url: "/ocms/{{curriculum.course_code}}/add_video",
+            url: "/ocms/{{course.code}}/add_video",
             processData: false,
             contentType: false,
             type: 'POST',
@@ -1214,7 +1213,7 @@ Course Management
         });
         $('#load_submit_doc').show();
         $.ajax({
-            url: "/ocms/{{curriculum.course_code}}/add_documents",
+            url: "/ocms/{{course.code}}/{{course.version}}/add_documents",
             processData: false,
             contentType: false,
             type: 'POST',
@@ -1245,7 +1244,7 @@ Course Management
         });
         $('#load_att_doc').show();
         $.ajax({
-            url: "/ocms/{{curriculum.course_code}}/add_attendance",
+            url: "/ocms/{{course.code}}/{{course.version}}/add_attendance",
             processData: false,
             contentType: false,
             type: 'POST',
@@ -1274,7 +1273,7 @@ Course Management
     var formData = $('#module_form').serialize();
     $('#load_submit_module').show();
     $.ajax({
-        url: "/ocms/{{curriculum.course_code}}/add_modules",
+        url: "/ocms/{{course.code}}/{{course.version}}/add_modules",
         type: 'POST',
         data: formData,
         success: function(data) {
@@ -1304,7 +1303,7 @@ Course Management
         });
         $('#load_add_assignment').show();
         $.ajax({
-            url: "/ocms/{{curriculum.course_code}}/add_assignment",
+            url: "/ocms/{{course.code}}/{{course.version}}/add_assignment",
             processData: false,
             contentType: false,
             type: 'POST',
@@ -1336,7 +1335,7 @@ Course Management
         $('#load_submit_assign').show();
         data.append('assignment_topic',selectedValue);
         $.ajax({
-            url: "/ocms/{{curriculum.course_code}}/upload_assignment",
+            url: "/ocms/{{course.code}}/{{course.version}}/upload_assignment",
             processData: false,
             contentType: false,
             type: 'POST',
@@ -1409,7 +1408,7 @@ Course Management
         alert(pk);
         $.ajax({
             type: 'POST',
-            url: '/ocms/{{curriculum.course_code}}/edit_marks',
+            url: '/ocms/{{course.code}}/edit_marks',
             dataType : "json",
             data: {
                 'pk': pk,

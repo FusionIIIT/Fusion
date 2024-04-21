@@ -7,7 +7,7 @@
 <div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
     <h3 class="ui dividing header">Manage Evaluations</h3>
 
-    <form class="ui form" id="manageEval" method="post" action="/ocms/{{ curriculum.course_code }}/submit_marks">
+    <form class="ui form" id="manageEval" method="post" action="/ocms/{{ course.code }}/{{course.version}}/submit_marks">
         {% csrf_token %}
         
         <div style="overflow-x:hidden; margin-top:15px; margin-right:0.75em;">

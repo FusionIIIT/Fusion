@@ -2,7 +2,7 @@
 {% load humanize %}
 {% block comments %}
 
-<div class="ui segment comments" id="comments_refresh" style="height:68vh;overflow:auto;overflow-x:hidden;">
+<div class="ui segment comments" id="comments_refresh" style="height:68vh; overflow:auto;overflow-x:hidden;">
     <h3 class="ui dividing header">Announcements</h3>
     {% for key, value in answers.items %}
     <div class="question" id="question{{key.pk}}">
@@ -54,7 +54,9 @@
         </div> -->
     </div>
     {% endfor %}
-    {% if Lecturer == 1%}
+    
+</div>
+{% if Lecturer == 1%}
     <form class="ui form" id="new" method="post" style="margin-bottom:10px">
         {% csrf_token %}
         <div class="field">
@@ -62,9 +64,7 @@
         </div>
         <input type="submit" class="ui blue submit button submit_new" data-pk="{{key.pk}}" name="submit" value="Send">
     </form>
-    {% endif %}
-</div>
-
+{% endif %}
 
 
 {% endblock %}
