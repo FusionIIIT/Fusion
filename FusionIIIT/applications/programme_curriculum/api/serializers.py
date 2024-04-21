@@ -118,14 +118,6 @@ class CourseInstructorSerializer(serializers.ModelSerializer):
 
 
 class ProgrammePostSerializer(serializers.ModelSerializer):
-    discipline = serializers.CharField()
-
     class Meta:
         model = Programme
-        fields = ['category', 'name', 'programme_begin_year', 'discipline']
-
-    def create(self, validated_data):
-        discipline_name = validated_data.pop('discipline')
-        discipline, _ = Discipline.objects.get_or_create(name=discipline_name)
-        programme = Programme.objects.create(discipline=discipline, **validated_data)
-        return programme
+        fields = ['id', 'category', 'name', 'programme_begin_year']
