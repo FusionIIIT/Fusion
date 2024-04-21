@@ -6,21 +6,25 @@
         <!-- <a class="ui active item" data-tab="mess committee" id="mm">
             Mess Committee
         </a> -->
-        <a class="ui active item" data-tab="monthly bill">
+        {% for d in desig %}
+        {% if d.designation.name == 'mess_manager' %}
+        <a class="ui {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %} item item" data-tab="monthly bill">
 
             Bill Base and Excel Upload
 
         </a>
-        <a class="ui item" data-tab="View Student Bills">
-            View Students Bills
-        </a>
         <a class="ui item" data-tab="Update Bill">
             Update Bill 
+        </a>
+        {% endif %}
+        {% endfor %}
+        <a class="ui {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %} item" data-tab="View Student Bills">
+            View Students Bills
         </a>
     </div>
 
         
-        <div class="ui tab" data-tab="View Student Bills">
+        <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %}" data-tab="View Student Bills">
             
             {% block reg_list_bills %}
             {% include 'messModule/view_payments_bills.html' %}
@@ -75,7 +79,7 @@
                 
             </div>
         </div>
-        <div class="ui tab active" data-tab="monthly bill" id="mbs">
+        <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %}" data-tab="monthly bill" id="mbs">
             <div class="ui vertical segment">
 
                 <form method="post">

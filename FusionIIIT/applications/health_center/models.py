@@ -1,7 +1,9 @@
+
 from django.db import models
 from datetime import date
 
 from applications.globals.models import ExtraInfo
+
 
 # Create your models here.
 
@@ -31,7 +33,7 @@ class Constants:
 
 class Doctor(models.Model):
     doctor_name = models.CharField(choices=Constants.NAME_OF_DOCTOR, max_length=50)
-    doctor_phone = models.IntegerField(max_length=10)
+    doctor_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
@@ -40,7 +42,7 @@ class Doctor(models.Model):
 
 class Pathologist(models.Model):
     pathologist_name = models.CharField(choices=Constants.NAME_OF_PATHOLOGIST, max_length=50)
-    pathologist_phone = models.IntegerField(max_length=10)
+    pathologist_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
@@ -94,15 +96,23 @@ class Expiry(models.Model):
     def __str__(self):
         return self.medicine_id.medicine_name
 
-class Schedule(models.Model):
-    doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE, default=0)
-    pathologist_id = models.ForeignKey(Pathologist,on_delete=models.CASCADE, default=0)
+class Doctors_Schedule(models.Model):
+    doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE)
+    # pathologist_id = models.ForeignKey(Pathologist,on_delete=models.CASCADE, default=0)
+    day = models.CharField(choices=Constants.DAYS_OF_WEEK, max_length=10)
+    from_time = models.TimeField(null=True,blank=True)  
+    to_time = models.TimeField(null=True,blank=True)
+    room = models.IntegerField()
+    date = models.DateField(auto_now=True)
+    
+class Pathologist_Schedule(models.Model):
+    # doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE)
+    pathologist_id = models.ForeignKey(Pathologist,on_delete=models.CASCADE)
     day = models.CharField(choices=Constants.DAYS_OF_WEEK, max_length=10)
     from_time = models.TimeField(null=True,blank=True)
     to_time = models.TimeField(null=True,blank=True)
     room = models.IntegerField()
     date = models.DateField(auto_now=True)
-    
 
 
 class Counter(models.Model):
@@ -147,7 +157,7 @@ class Appointment(models.Model):
     user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
     doctor_id = models.ForeignKey(Doctor,on_delete=models.CASCADE)
     description = models.CharField(max_length=50)
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE,null=True, blank=True)
+    schedule = models.ForeignKey(Doctors_Schedule, on_delete=models.CASCADE,null=True, blank=True)
     date = models.DateField()
 
     def __str__(self):
@@ -160,7 +170,8 @@ class Prescription(models.Model):
     details = models.CharField(max_length=100)
     date = models.DateField()
     test = models.CharField(max_length=200, null=True, blank=True)
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE,null=True, blank=True)
+    file_id=models.IntegerField(default=0)
+    # appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
         return self.details
@@ -216,4 +227,12 @@ class SpecialRequest(models.Model):
     request_receiver = models.CharField(max_length=30, default="--")
 
     def __str__(self):
-        return str(self.request_ann_maker.user.username)
+        return str(self.request_ann_maker.user.username)    
+
+class medical_relief(models.Model):
+    description = models.CharField(max_length=200)
+    file = models.FileField(upload_to='medical_files/') 
+    file_id=models.IntegerField(default=0)
+    compounder_forward_flag = models.BooleanField(default=False)
+    acc_admin_forward_flag = models.BooleanField(default=False)
+    

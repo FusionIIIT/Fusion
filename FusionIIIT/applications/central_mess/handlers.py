@@ -84,7 +84,7 @@ def add_mess_feedback(request, student):
         data: to record success or any errors
     """
     date_today = datetime.now().date()
-    mess_optn = Messinfo.objects.get(student_id=student)
+    mess_optn = Reg_main.objects.get(student_id=student)
     description = request.POST.get('description')
     feedback_type = request.POST.get('feedback_type')
     feedback_object = Feedback(student_id=student, fdate=date_today,
