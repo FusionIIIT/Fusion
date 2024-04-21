@@ -119,6 +119,23 @@
             {% endfor %}
         </tbody>
     </table>
+    <div class="pagination" style="margin-top: 2rem;">
+        {% if current_page > 1 %}
+            <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
+        {% endif %}
+        
+        {% for page_num in total_pages %}
+            {% if page_num == current_page %}
+            <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
+            {% else %}
+            <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages|length %}
+         <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
+        {% endif %}
+    </div>
     
 {% endblock %}
 </div>
