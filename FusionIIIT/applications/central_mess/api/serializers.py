@@ -89,3 +89,13 @@ class reg_recordSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Reg_records
         fields=('__all__')
+
+class RegistrationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registration_Request
+        fields = ('__all__')
+
+class DeregistrationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deregistration_Request
+        fields = ('__all__')
