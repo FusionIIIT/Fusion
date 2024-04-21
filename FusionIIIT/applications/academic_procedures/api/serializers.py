@@ -3,7 +3,9 @@ from rest_framework import serializers
 
 from applications.academic_procedures.models import (ThesisTopicProcess, InitialRegistrations,InitialRegistration, 
                                                      FinalRegistration, FinalRegistrations, SemesterMarks,
-                                                     BranchChange , StudentRegistrationChecks, Semester, backlog_course , CourseSlot , FeePayments  , Course,  course_registration)
+                                                     BranchChange , StudentRegistrationChecks, Semester, backlog_course , CourseSlot , FeePayments ,  course_registration)
+
+from applications.programme_curriculum.models import Course
 
 from applications.academic_information.api.serializers import (CurriculumInstructorSerializer,
                                                                CurriculumSerializer , CourseSerializer  , StudentSerializers   )
@@ -73,7 +75,10 @@ class CourseSlotSerializer(serializers.ModelSerializer):
         model = CourseSlot
         fields = ('__all__')
         
+        
 class CourseSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Course
-        fields = ('__all__')
+        fields = ['id','code','name','credit']
+        
