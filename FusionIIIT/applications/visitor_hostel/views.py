@@ -36,6 +36,7 @@ from notification.views import visitors_hostel_notif
 @login_required(login_url='/accounts/login/')
 def visitorhostel(request):
 
+    notifs = request.user.notifications.all()
     # intenders
     intenders = User.objects.all()
     user = request.user
@@ -276,18 +277,20 @@ def visitorhostel(request):
                    'rejected_bookings': rejected_bookings,
                    'cancel_booking_request': cancel_booking_request,
                    'cancel_booking_requested': cancel_booking_requested,
-                   'user_designation': user_designation})
+                   'user_designation': user_designation,
+                   'notifications': notifs})
 
 # Get methods for bookings
 
 
 @login_required(login_url='/accounts/login/')
 def get_booking_requests(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         pending_bookings = BookingDetail.objects.select_related(
             'intender', 'caretaker').filter(status="Pending")
 
-        return render(request, "vhModule/visitorhostel.html", {'pending_bookings': pending_bookings})
+        return render(request, "vhModule/visitorhostel.html", {'pending_bookings': pending_bookings,'notifications': notifs})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
@@ -296,22 +299,24 @@ def get_booking_requests(request):
 
 @login_required(login_url='/accounts/login/')
 def get_active_bookings(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         active_bookings = BookingDetail.objects.select_related(
             'intender', 'caretaker').filter(status="Confirmed")
 
-        return render(request, "vhModule/visitorhostel.html", {'active_bookings': active_bookings})
+        return render(request, "vhModule/visitorhostel.html", {'active_bookings': active_bookings,'notifications': notifs})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
 
 @login_required(login_url='/accounts/login/')
 def get_inactive_bookings(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         inactive_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
             Q(status="Cancelled") | Q(status="Rejected") | Q(status="Complete"))
 
-        return render(request, "vhModule/visitorhostel.html", {'inactive_bookings': inactive_bookings})
+        return render(request, "vhModule/visitorhostel.html", {'inactive_bookings': inactive_bookings,'notifications': notifs})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
@@ -320,9 +325,10 @@ def get_inactive_bookings(request):
 
 @login_required(login_url='/accounts/login/')
 def get_booking_form(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         intenders = User.objects.all()
-        return render(request, "vhModule/visitorhostel.html", {'intenders': intenders})
+        return render(request, "vhModule/visitorhostel.html", {'intenders': intenders,'notifications': notifs})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
@@ -331,7 +337,7 @@ def get_booking_form(request):
 
 @login_required(login_url='/accounts/login/')
 def request_booking(request):
-
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         flag = 0
 
@@ -463,6 +469,7 @@ def request_booking(request):
 
 @login_required(login_url='/accounts/login/')
 def update_booking(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         user = request.user
         print(request.POST)
@@ -507,7 +514,7 @@ def update_booking(request):
             forwarded_rooms[booking.id] = temp2
         return render(request, "visitorhostel/",
                       {
-                          'forwarded_rooms': forwarded_rooms})
+                          'forwarded_rooms': forwarded_rooms,'notifications': notifs})
 
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -517,6 +524,7 @@ def update_booking(request):
 
 @login_required(login_url='/accounts/login/')
 def confirm_booking(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         booking_id = request.POST.get('booking-id')
         intender = request.POST.get('intender'),
@@ -551,6 +559,7 @@ def confirm_booking(request):
 
 @login_required(login_url='/accounts/login/')
 def cancel_booking(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         user = request.user
         print(request.POST)
@@ -587,6 +596,7 @@ def cancel_booking(request):
 
 @login_required(login_url='/accounts/login/')
 def cancel_booking_request(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         intender = request.user.holds_designations.filter(
             designation__name='VhIncharge')
@@ -611,6 +621,7 @@ def cancel_booking_request(request):
 
 @login_required(login_url='/accounts/login/')
 def reject_booking(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         booking_id = request.POST.get('booking-id')
         remark = request.POST.get('remark')
@@ -629,6 +640,7 @@ def reject_booking(request):
 
 @login_required(login_url='/accounts/login/')
 def check_in(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         booking_id = request.POST.get('booking-id')
         visitor_name = request.POST.get('name')
@@ -659,6 +671,7 @@ def check_in(request):
 
 @login_required(login_url='/accounts/login/')
 def check_out(request):
+    notifs = request.user.notifications.all()
     user = get_object_or_404(User, username=request.user.username)
     c = ExtraInfo.objects.select_related('department').all().filter(user=user)
 
@@ -708,6 +721,7 @@ def check_out(request):
 
 @login_required(login_url='/accounts/login/')
 def record_meal(request):
+    notifs = request.user.notifications.all()
     user = get_object_or_404(User, username=request.user.username)
     c = ExtraInfo.objects.select_related('department').all().filter(user=user)
 
@@ -765,6 +779,7 @@ def record_meal(request):
 
 @login_required(login_url='/accounts/login/')
 def bill_generation(request):
+    notifs = request.user.notifications.all()
     user = get_object_or_404(User, username=request.user.username)
     c = ExtraInfo.objects.all().filter(user=user)
 
@@ -798,6 +813,7 @@ def bill_generation(request):
 
 @login_required(login_url='/accounts/login/')
 def room_availabity(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         date_1 = request.POST.get('start_date')
         date_2 = request.POST.get('end_date')
@@ -809,13 +825,14 @@ def room_availabity(request):
 
         available_rooms_array = np.asarray(available_rooms_list)
         print(available_rooms_array)
-        return render(request, "vhModule/room-availability.html", {'available_rooms': available_rooms_array})
+        return render(request, "vhModule/room-availability.html", {'available_rooms': available_rooms_array,'notifications': notifs})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
 
 @login_required(login_url='/accounts/login/')
 def add_to_inventory(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         item_name = request.POST.get('item_name')
         bill_number = request.POST.get('bill_number')
@@ -841,6 +858,7 @@ def add_to_inventory(request):
 
 @login_required(login_url='/accounts/login/')
 def update_inventory(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         id = request.POST.get('id')
         quantity = int(request.POST.get('quantity'))
@@ -857,6 +875,7 @@ def update_inventory(request):
 
 @login_required(login_url='/accounts/login/')
 def edit_room_status(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         room_number = request.POST.get('room_number')
         room_status = request.POST.get('room_status')
@@ -869,6 +888,7 @@ def edit_room_status(request):
 
 @login_required(login_url='/accounts/login/')
 def bill_between_dates(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         date_1 = request.POST.get('start_date')
         date_2 = request.POST.get('end_date')
@@ -892,6 +912,7 @@ def bill_between_dates(request):
             'total_bill': total_bill,
             'individual_total': individual_total,
             'booking_bw_dates': zip(bill_range_bw_dates, individual_total)
+            ,'notifications': notifs
         })
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -920,7 +941,6 @@ def bill_range(date1, date2):
 
 
 def booking_details(date1, date2):
-
     bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(booking_from__lte=date1, booking_to__gte=date1, status="Confirmed") | Q(booking_from__gte=date1,
                                                                                                                                                               booking_to__lte=date2, status="Confirmed") | Q(booking_from__lte=date2, booking_to__gte=date2, status="Confirmed") | Q(booking_from__lte=date1, booking_to__gte=date1, status="Forward") | Q(booking_from__gte=date1,
                                                                                                                                                                                                                                                                                                                                                            booking_to__lte=date2, status="Forward") | Q(booking_from__lte=date2, booking_to__gte=date2, status="Forward") | Q(booking_from__lte=date1, booking_to__gte=date1, status="CheckedIn") | Q(booking_from__gte=date1, booking_to__lte=date2, status="CheckedIn") | Q(booking_from__lte=date2, booking_to__gte=date2, status="CheckedIn"))
@@ -963,6 +983,7 @@ def forwarded_booking_details(date1, date2):
 
 @login_required(login_url='/accounts/login/')
 def forward_booking(request):
+    notifs = request.user.notifications.all()
     if request.method == 'POST':
         user = request.user
         booking_id = request.POST.get('id')
