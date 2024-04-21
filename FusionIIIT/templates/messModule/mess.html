@@ -219,62 +219,9 @@ Central Mess
     {% comment %}The right-rail segment starts here!{% endcomment %}
     <div class="three wide column">
         <div class="row">
-            
-            <!-- Right Rail code starts here -->
-    {% for d in desig %}
-        {% if d.designation.name == 'student' %}
-            <div class="eight wide column">
-                <div class="ui top attached tabular large menu">
-                    <a class="active item" data-tab="first_alert">Notifications</a>
-                    <!-- <a class="item" data-tab="second">News</a> -->
-                    <a class="item" data-tab="second_alert">Announcements</a>
-                </div>
-                <div class="ui bottom attached active tab segment" data-tab="first_alert">
-                    <div id="textSegmentDiv">
-        
-                        {% comment %}
-                        TODO: Loader required?
-                        <div class="ui active large text loader" id="loader">
-                            Loading ...
-                        </div>
-                        {% endcomment %}
-        
-                        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                            {% block alerts_2 %}
-                            {% include 'messModule/alerts.html' %}
-                            {% endblock %}
-                        </div>
-                    </div>
-        
-                </div>
-               
-                <div class="ui bottom attached tab segment" data-tab="second_alert">
-                        <div id="textSegmentDiv">
-        
-                            <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                                <!-- {% block alerts1 %} -->
-
-                                <h1>Announcements will be displayed here...</h1>
-                                    <!-- {% include 'dashboard/alerts1.html' %} -->
-                                <!-- {% endblock %} -->
-                            </div>
-                        </div>
-                    </div>
-            </div>
-        {% endif %}
-    {% endfor %}        
-
-
-
-            <!-- ye pehle ka code h -->
-
-            
-
-            <!-- RIGHT Rail ka code ends here -->
-
-            {% comment %}
-            TODO: the right rail!
-            {% endcomment %}
+            {% block sidepanel%}
+            {% include 'notifications/messModule_sidepanel.html'%}
+            {% endblock %}
         </div>
     </div>
     {% comment %}The right-rail segment ends here!{% endcomment %}

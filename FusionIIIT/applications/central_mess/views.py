@@ -255,6 +255,7 @@ def mess(request):
                     'reg_main':mess_optn,
                     'reg_record':reg_record,
                     'de_reg_request':de_reg_request,
+                    'notifications': notifs,
 
                 }
                 return render(request, "messModule/mess.html", context)
