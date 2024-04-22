@@ -133,6 +133,7 @@ class Monthly_billApi(APIView):
     def post(self, request):
         data = request.data
         
+        student_id = data['student_id']
         month = data['month']
         year = data['year']
         amount = data['amount']
@@ -141,7 +142,7 @@ class Monthly_billApi(APIView):
         total_bill = data['amount']-(data['rebate_count']*data['rebate_amount'])
         paid = data['paid']
 
-        username = get_object_or_404(User,username=request.user.username)
+        username = get_object_or_404(User,username=student_id)
         idd = ExtraInfo.objects.get(user=username)
         student = Student.objects.get(id=idd.id)
 
