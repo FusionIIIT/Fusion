@@ -759,8 +759,9 @@ def inbox(request):
 def view_file(request, id):
     file1= File.objects.get(id=id)
     tracks= Tracking.objects.filter(file_id=file1)
+    current_user = Tracking.objects.filter(file_id=file1).order_by('-receive_date')[0].current_id
 
-    return render(request, "rs/view_file.html", context= {"file": file1, "tracks": tracks})
+    return render(request, "rs/view_file.html", context= {"file": file1, "tracks": tracks, "current_user": current_user})
 
 @login_required
 def add_staff_request(request,id):
