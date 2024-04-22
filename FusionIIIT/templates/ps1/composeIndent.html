@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="field">
-                    <label>Estimated Cost Per Piece*</label>
+                    <label>Estimated Cost*</label>
                     <input type="number"  name="estimated_cost" required></input>
                 </div>
 
@@ -61,26 +61,16 @@
                     <textarea rows="3" name="purpose" required></textarea>
                 </div>
 
-                <!-- this is for mentioning very specific specifications  -->
+
                 <div class="field">
                     <label>Specification</label>
                     <textarea rows="3" name="specification"></textarea>
                 </div>
 
-                <!-- grade will classify item based on it's configuration like a 32 GB Ram computer = A ,8 GB Ram  = B  -->
-                <div class="field">
-                    <label>Item Grade Required*</label>
-                    <select name="grade">  
-                        <option value = "A">A</option>  
-                        <option value = "B">B</option>  
-                        <option value = "C">C</option>  
-                    </select>  
-                </div>
-
 
                 <div class="field">
                     <label>Item Type*</label>
-                    <select name="item_type">  
+                    <select name="indent_type">  
                         <option value = "Equipment">Equipment</option>  
                         <option value = "Machinery">Machinery</option>  
                         <option value = "Furniture">Furniture</option>  
@@ -97,7 +87,7 @@
 
                 <div class="field">
                     <label>Expected Delivery*</label>
-                    <input type="date" id="start" name="expected_delivery" min="{{ today }}">
+                    <input type="date" id="start" name="expected_delivery">
                 </div>
 
 
@@ -156,7 +146,7 @@
 
                 <div class = "left floated item">
                       <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
-                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" multiple>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
                 <br>
@@ -176,52 +166,28 @@
                             <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
                 </div>
 
-                {% comment %} <div class="field">
+                <div class="field">
                             <label>Forward To:
 
-                                    <select name="receiver" id="forward_to">
-                                        {% for option in forwardto %}
-                                        <option value="{{ option.username }}">{{ option.username }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <datalist  id="input_list">
+
+                                    </datalist>
+                               
                             </label>
-                </div> {% endcomment %}
-
-                {% comment %} <div class="field">
-                    <label>Receiver Designation:
-                        <select name="receive" id="receiver_design">
-                            <option value="{{ receiver }}">{{ receiver }}</option>
-                        </select>
-
-
-                       
-                    </label>
-                </div> {% endcomment %}
-
+                </div>
 
                 <div class="field">
-                    <label>Forward To:
-
-                            <input type ="search" id="input_search" list = "input_list" name = "receiver">
-                            <datalist  id="input_list">
+                    <label>Receiver Designation:
+                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                            <datalist  id="input_list1">
 
                             </datalist>
+
+
                        
                     </label>
-        </div>
-
-        <div class="field">
-            <label>Receiver Designation:
-                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                    <datalist  id="input_list1">
-
-                    </datalist>
-
-
-               
-            </label>
-        </div>
-
+                </div>
 
 
                 <div>
@@ -328,4 +294,5 @@
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
+
 

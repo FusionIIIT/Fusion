@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from requests import Response
 from notifications.signals import notify
+
 # Create your views here.
 
 
@@ -76,7 +76,6 @@ def central_mess_notif(sender, recipient, type, message=None):
     sender = sender
     recipient = recipient
     verb = ''
-
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
     elif type == 'menu_change_accepted':
@@ -92,37 +91,9 @@ def central_mess_notif(sender, recipient, type, message=None):
     elif type == 'added_committee':
         verb = "You have been added to the mess committee. "
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-    
-def placement_cellNotif(sender, recipient, type):
-    url = 'placement:placement'
-    module = 'Placement Cell'
-    sender = sender
-    recipient = recipient
-    verb = ''
+    notify.send(sender=sender, recipient=recipient,
+                url=url, module=module, verb=verb)
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-
-def visitors_hostel_notif(sender, recipient, type):
-    url='visitorhostel:visitorhostel'
-    module="Visitor's Hostel"
-    sender = sender
-    recipient = recipient
-    verb = ''
-    if type =='booking_confirmation':
-        verb='Your booking has been confirmed '
-    elif type =='booking_cancellation_request_accepted':
-        verb='Your Booking Cancellation Request has been accepted '
-    elif type =='booking_request':
-        verb='New Booking Request '
-    elif type =='cancellation_request_placed':
-        verb='New Booking Cancellation Request '
-    elif type =='booking_forwarded':
-        verb='New Forwarded Booking Request '
-    elif type =='booking_rejected':
-        verb='Your Booking Request has been rejected '
-
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type):
     url = 'visitorhostel:visitorhostel'
@@ -153,23 +124,20 @@ def healthcare_center_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ''
-    
     if type == 'appoint':
         verb = "Your Appointment has been booked"
-    elif type == 'amb_request':
+    if type == 'amb_request':
         verb = "Your Ambulance request has been placed"
-    elif type == 'Presc':
+    if type == 'Presc':
         verb = "You have been prescribed some medicine"
-    elif type == 'appoint_req':
+    if type == 'appoint_req':
         verb = "You have a new appointment request"
-    elif type == 'amb_req':
+    if type == 'amb_req':
         verb = "You have a new ambulance request"
-    elif type == 'rel_forward':
-        verb = "You have a new medical relief forward request"
-    elif type == 'rel_approve':
-        verb = "You have a new medical relief approval request"
-    elif type == 'rel_approved':
-        verb = 'Your medical relief request has been approved' 
+
+    notify.send(sender=sender, recipient=recipient,
+                url=url, module=module, verb=verb)
+
 
 def file_tracking_notif(sender, recipient, title):
     url = 'filetracking:inward'
@@ -191,8 +159,6 @@ def scholarship_portal_notif(sender, recipient, type):
 
     if type.startswith('award'):
         s = type.split('_')
-        # print("psss")
-        # print(type, s)
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
@@ -401,38 +367,20 @@ def department_notif(sender, recipient, type):
                 module=module,
                 verb=verb,
                 flag=flag)
+
 def examination_notif(sender, recipient, type):
-    url='examination:examination'
-    module='examination'
+    url = 'examination:updateGrades'
+    module = 'examination'
     sender = sender
     recipient = recipient
     verb = type
     flag = "announcement"
-
     notify.send(sender=sender,
                 recipient=recipient,
                 url=url,
                 module=module,
                 verb=verb,
                 flag=flag)
-def examination_notif(sender, recipient, type,request):
-    url='examination:examination'
-    module='examination'
-    sender = sender
-    recipient = recipient
-    verb = type
-    flag = "examination"
-
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
-    print("test3")
-    # return render(request, 'examination/announcement_req.html')
-
-
 
 
 def office_module_DeanRSPC_notif(sender, recipient, type):
@@ -471,36 +419,5 @@ def research_procedures_notif(sender, recipient, type):
     elif type == "created":
         verb = "A new Patent has been Created"
 
-    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
-
-def hostel_notifications(sender, recipient, type):
-    url = 'hostelmanagement:hostel_view'
-    module = 'Hostel Management'
-    
-    sender = sender
-    recipient = recipient
-    verb = ""
-    if type == "leave_accept":
-        verb = "Your leave request has been Accepted."
-    elif type == "leave_reject":
-        verb = "Your leave request has been Rejected."
-    elif type == "guestRoom_accept":
-        verb = "Your Guest Room request has been Accepted."
-    elif type == "guestRoom_reject":
-        verb = "Your Guest Room request has been Rejected."
-    elif type == "leave_request":
-        verb = "You have a new Leave Request."
-    elif type == "guestRoom_request":
-        verb = "You have a new Guest Room Request."
-    elif type == "fine_imposed":
-        verb = "A fine has been imposed on you."
-    
-    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
-    
-def prog_and_curr_notif(sender, recipient,title):
-    url='programme_curriculum:inward_files'
-    module='Programme and Curriculum'
-    sender = sender
-    recipient = recipient
-    verb = title
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    notify.send(sender=sender, recipient=recipient,
+                url=url, module=module, verb=verb)

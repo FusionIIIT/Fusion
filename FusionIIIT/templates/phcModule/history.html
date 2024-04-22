@@ -6,7 +6,7 @@
         <a class="active item" data-tab="prescriptionhistory">
             Prescription
         </a>
-        {% comment %} <a class="item" data-tab="ambulancehistory">
+        <a class="item" data-tab="ambulancehistory">
             Ambulance
         </a>
         <a class="item" data-tab="hospitalhistory">
@@ -14,7 +14,7 @@
         </a>
         <a class="item" data-tab="appointmenthistory">
             Appointments
-        </a> {% endcomment %}
+        </a>
         <a class="item" data-tab="complainthistory">
             Feedback
         </a>
@@ -36,15 +36,11 @@
                         Date
                     </td>
                     <td style="font-weight:bold;color:black;">
-                        Details
+                          Details
                     </td>
                     <td style="font-weight:bold;color:black;">
-                        Test
+                          Test
                     </td>
-                    <td style="font-weight:bold;color:black;">
-                        Report
-                    </td>
-
 
                     <td style="font-weight:bold;color:black;">
 
@@ -81,14 +77,6 @@
                     <td>
                         {{pre.test}}
                     </td>
-                   
-                    <td style="white-space:nowrap;">
-                        {% if pre.file != None %}
-                        <a href="{{ pre.file }}" download>
-                            <i class="ui download icon right floated"></i>
-                        </a>
-                        {% endif %}
-                    </td>
 
                     <td>
                       <table>
@@ -107,7 +95,7 @@
 
           </div>
         </div>
-{% comment %} 
+
     <div class="ui tab" data-tab="ambulancehistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <table class="ui very basic collapsing celled large sortable table"
@@ -167,7 +155,7 @@
                 </tbody>
             </table>
         </div>
-    </div> {% endcomment %}
+    </div>
 
 <script>
             function rem(id){
@@ -196,7 +184,7 @@
             
       }
       </script>
-{% comment %} 
+
     <div class="ui tab" data-tab="hospitalhistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <table class="ui very basic collapsing celled large sortable table"
@@ -274,7 +262,7 @@
             </table>
         </div>
 
-    </div> {% endcomment %}
+    </div>
 
   <!--  <div class="ui tab" data-tab="appointmenthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -341,7 +329,7 @@
             </table>
         </div>
     </div> -->
-    {% comment %} <div class="ui tab" data-tab="appointmenthistory">
+    <div class="ui tab" data-tab="appointmenthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <table class="ui very basic collapsing celled large sortable table"
                    style="padding-left: 2.5%;
@@ -396,7 +384,7 @@
                 </tbody>
             </table>
         </div>
-    </div> {% endcomment %}
+    </div>
 	
 	<script type="text/javascript">
             function rm(id){

@@ -206,7 +206,7 @@ class ForumReply(models.Model):
 
 class Student_grades(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    semester = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
     roll_no = models.TextField(max_length=2000)
     total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)

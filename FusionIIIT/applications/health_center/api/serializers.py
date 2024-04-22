@@ -41,24 +41,10 @@ class ExpirySerializer(serializers.ModelSerializer):
         model=Expiry
         fields=('__all__')
 
-class DoctorsScheduleSerializer(serializers.ModelSerializer):
+class ScheduleSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model=Doctors_Schedule
-        fields=('__all__')
-class PathologistScheduleSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model=Pathologist_Schedule
-        fields=('__all__')
-
-
-        
-        
-class AnnouncementSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model=Announcements
+        model=Schedule
         fields=('__all__')
 
 
@@ -99,10 +85,4 @@ class HospitalAdmitSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=Hospital_admit
-        fields=('__all__')
-
-class MedicalReliefSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model=medical_relief
         fields=('__all__')
