@@ -396,3 +396,4 @@ def approve_thesis(request, id):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'error':'Cannot approve thesis'}, status=status.HTTP_400_BAD_REQUEST)
+  
