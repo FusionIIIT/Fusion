@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect,render
 
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-
+from django.core import serializers
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
