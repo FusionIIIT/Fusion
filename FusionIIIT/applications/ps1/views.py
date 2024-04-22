@@ -1135,9 +1135,11 @@ def current_stock_view(request):
         print(dept_admin_to_dept[request.session['currentDesignationSelected']]);
         deptId = DepartmentInfo.objects.values('id', 'name').get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
 
+
+
         departments=[deptId]
 
-        StockItems = StockItem.objects.filter(department=deptId)
+        StockItems = StockItem.objects.filter(department=deptId['id'])
 
     elif request.session['currentDesignationSelected'] == "ps_admin":
         departments=DepartmentInfo.objects.values('id','name').all()
@@ -1169,6 +1171,9 @@ def stock_item_view(request):
 
     if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
+
+    if request.method=="GET":
+        return HttpResponseRedirect('../current_stock_view')
 
     if request.method=="POST":
         departmentId = request.POST.get('departmentId')
@@ -1447,7 +1452,7 @@ def perform_transfer(request):
                 dest_location=dest_location
             )
 
-            messages.success(request,'Stock Transfer Done Successfully.!')
+        messages.success(request,'Stock Transfer Done Successfully.!')
         # if the quantity required for this indent file is fulfilled we should mark this indentfile as done.
         if(moreStocksRequired<=0):
             myIndent.purchased=True
@@ -1458,7 +1463,7 @@ def perform_transfer(request):
         
         department = request.user.extrainfo.department.name
             
-        return HttpResponseRedirect('../view_transfer') 
+        return JsonResponse({'success':True})
 
 # This is to get the list of all the available stock items for transfer.
 @login_required(login_url = "/accounts/login")
@@ -1539,6 +1544,10 @@ def outboxview(request):
 def updateStockItemInUse(request):
     if request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
+    
+    if request.method=="GET":
+        return redirect('../current_stock_view')
+        
 
     if request.method == "POST":
 
@@ -1557,4 +1566,6 @@ def updateStockItemInUse(request):
             stock_item.inUse = checked
             stock_item.save()
 
-        return redirect('/purchase-and-store/current_stock_view')
+        return JsonResponse({'success': True})
+
+        # return HttpResponseRedirect('../current_stock_view')
