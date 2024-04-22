@@ -36,10 +36,10 @@
             <h2 class="ui header">Leave Form</h2>
             <div class="ui active tab segment" data-tab="leavePG" id="leavePG">
                 <h2>Leave Form</h2>
-                <form method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leavePgSubmit' %}" >
+                <form id="leavepg" method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leavePgSubmit' %}" >
                     {% csrf_token %}
                     <div class="ui form">
-                        <div class="field">
+                        {% comment %} <div class="field">
                             <label>Name</label>
                             <input type="text" name="student_name" required>
                         </div>
@@ -54,7 +54,7 @@
                         <div class="field">
                             <label>Discipline</label>
                             <input type="text" name="discipline" required>
-                        </div>
+                        </div> {% endcomment %}
                         <div class="field">
                             <label>Semester</label>
                             <input type="text" name="Semester" required>
@@ -62,11 +62,11 @@
                         <div class="fields">
                             <div class="field">
                                 <label>Date From</label>
-                                <input type="date" name="date_from" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="datefrom" name="date_from" style="display: inline-block; width: auto;" required>
                             </div>
                             <div class="field">
                                 <label>Date To</label>
-                                <input type="date" name="date_to" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="dateto" name="date_to" style="display: inline-block; width: auto;" required>
                             </div>
                         </div>
                         <div class="field">
@@ -96,6 +96,10 @@
                             <input type="text" name="ta_supervisor" required>
                         </div>
                         <div class="field">
+                            <label>Thesis Supervisor (Credential)</label>
+                            <input type="text" name="thesis_credential" required>
+                        </div>
+                        <div class="field">
                             <label>HOD (Credential)</label>
                             <input type="text" name="hod_credential" required>
                         </div>
@@ -111,10 +115,10 @@
                             <label>Mobile No. during Leave</label>
                             <input type="text" name="alt_mobile_no" required>
                         </div>
-                        <div class="field">
+                        {% comment %} <div class="field">
                             <label>Date of Application</label>
                             <input type="date" name="date_of_application" style="display: inline-block; width: auto;" required>
-                        </div>
+                        </div> {% endcomment %}
                         <button class="ui primary button" type="submit">Submit</button>
                     </div>
                 </form>
@@ -132,4 +136,17 @@
 
         <div class="column"></div>
     </div>
+
+
+    <script>
+        document.getElementById('leavepg').addEventListener('submit', function(event) {
+            var dateFrom = document.getElementById('datefrom').value;
+            var dateTo = document.getElementById('dateto').value;
+        
+            if (dateTo <= dateFrom) {
+                alert('End date must be later than start date');
+                event.preventDefault();  // Prevent form submission
+            }
+        });
+    </script>
 {% endblock %}

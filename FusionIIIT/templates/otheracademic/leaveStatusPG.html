@@ -70,6 +70,7 @@
                                     <th>Parent Mobile No. </th>
                                     <th>Mobile No. during leave </th>
                                     <th>TA Supervisor </th>
+                                    <th>Thesis Supervisor </th>
                                     <th>HOD </th>
                                 </tr>
                             </thead>
@@ -88,8 +89,11 @@
                                     <td>{{ entry.date_to }}</td>
                                     <td>{{ entry.leave_type }}</td>
                                     <td>
-                                        <a href='{{ entry.upload_file.url }}'>{{entry.upload_file}}</a>
-                                    </td>
+                                        {%if entry.upload_file == ""%}
+                                        {%else%}
+                                            <a href={{ entry.upload_file.url }}>Download</a>
+                                        {%endif%}
+                                    </td> 
                                     <td>{{ entry.purpose }}</td>
                                     <td>{{ entry.address }}</td>
                                     <td>{{ entry.mobile_no }}</td>
@@ -102,8 +106,15 @@
                                         {%endif%}
                                     </td>
                                     <td>
+                                        {%if entry.thesis_approved%} Approved
+                                        {%elif entry.thesis_rejected or entry.ta_rejected%} Rejected
+                                        {% else%} Pending
+                                        {% endif%}
+
+                                    </td>  
+                                    <td>
                                         {%if entry.hod_approved%} Approved
-                                        {%elif entry.hod_rejected or entry.ta_rejected%} Rejected
+                                        {%elif entry.hod_rejected or entry.ta_rejected or entry.thesis_rejected%} Rejected
                                         {% else%} Pending
                                         {% endif%}
 

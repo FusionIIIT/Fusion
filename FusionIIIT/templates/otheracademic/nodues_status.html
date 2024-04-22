@@ -37,6 +37,7 @@
             <div class="ui active tab segment" data-tab="first">
                 <h2 class="ui header">No Dues Status</h2>
                 {% for entry in form_data %}
+                {% if entry.roll_no_id == roll_no%}
                 <div class="ui fluid card">
                     <div class="content">
                         <div class="header">{{ entry.roll_no }}</div>
@@ -296,6 +297,7 @@
                         </div>
                     </div>
                 </div>
+                {%endif%}
                 {% endfor %}
             </div>
         </div>

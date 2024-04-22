@@ -31,31 +31,23 @@
         <div class="eight wide column">
             <h2 class="ui header">Leave Form</h2>
             <div class="ui active tab segment" data-tab="leave_form" id="leave_form">
-                <h2>Leave Form</h2>
+                {% comment %} <h2>Leave Form</h2> {% endcomment %}
                 <form id="leaveForm" method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leave_form_submit' %}" >
                     {% csrf_token %}
                     <div class="ui form">
-                        <div class="field">
-                            <label>Name</label>
-                            <input type="text" name="name" required>
-                        </div>
-                        <div class="field">
-                            <label>Roll No. (In Capital Letter) </label>
-                            <input type="text" name="roll_no">
-                        </div>
                         <div class="fields">
                             <div class="field">
                                 <label>Date From</label>
-                                <input type="date" name="date_from" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="datefrom" name="date_from" style="display: inline-block; width: auto;" required>
                             </div>
                             <div class="field">
                                 <label>Date To</label>
-                                <input type="date" name="date_to" style="display: inline-block; width: auto;" required>
+                                <input type="date" id="dateto" name="date_to" style="display: inline-block; width: auto;" required>
                             </div>
                         </div>
                         <div class="field">
                             <label>Leave Type</label>
-                            <select class="ui dropdown" name="leave_type" required>
+                            <select class="ui dropdown" name="leave_type" id="leaveType" >
                                 <option value="">Select Leave Type</option>
                                 <option value="casual">Casual</option>
                                 <option value="medical">Medical</option>
@@ -63,7 +55,7 @@
                         </div>
                         <div class="field">
                             <label>Doc</label>
-                            <input type="file" name="related_document" accept=".pdf" >
+                            <input type="file" name="related_document" accept=".pdf">
                         </div>
                         <div class="field">
                             <label>Address</label>
@@ -101,20 +93,24 @@
 
     <script>
         document.getElementById('leaveForm').addEventListener('submit', function(event) {
-            var form = event.target;
-            var inputs = form.querySelectorAll('input, select, textarea');
-            var emptyFields = [];
+            var leaveTypeSelect = document.getElementById('leaveType').value;
+            if (leaveTypeSelect=== "") {
+                alert('Please select a leave type ');
+                event.preventDefault(); 
+              
+            }
+        });
 
-            inputs.forEach(function(input) {
-                if (!input.value.trim()) {
-                    emptyFields.push(input.name);
+ 
+            document.getElementById('leaveForm').addEventListener('submit', function(event) {
+                var dateFrom = document.getElementById('datefrom').value;
+                var dateTo = document.getElementById('dateto').value;
+            
+                if (dateTo <= dateFrom) {
+                    alert('End date must be later than start date');
+                    event.preventDefault();  // Prevent form submission
                 }
             });
 
-            if (emptyFields.length > 0) {
-                alert('Please fill in all required fields: ' + emptyFields.join(', '));
-                event.preventDefault();
-            }
-        });
     </script>
 {% endblock %}

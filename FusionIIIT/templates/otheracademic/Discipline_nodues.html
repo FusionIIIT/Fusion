@@ -19,10 +19,10 @@
             {% endblock %}
             <div class="ui divider"></div>
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <a href="/otheracademic/ME_nodues" class="active item">No Dues Approve
+                <a href="/otheracademic/discipline_nodues" class="active item">No Dues Approve
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a href="/otheracademic/ME_nodues_not" class="item">Clear No Dues
+                <a href="/otheracademic/discipline_nodues_not" class="item">Clear No Dues
                     <i class="right floated chevron right icon"></i>
                 </a>
                 
@@ -31,16 +31,15 @@
 
         <div class="eight wide column">
             <div class="ui active tab segment" data-tab="first">
-                <h2 class="ui header">Approve No Dues (ME)</h2>
+                <h2 class="ui header">Approve No Dues (Discipline Office)</h2>
                 <table class="ui celled table">
                     <thead>
                         <tr>
                             <th>Roll No.</th>
                             <th>Name </th>
-                            <th>Workshop</th>
-                            <th>Mechatronics Lab<th>
-                           
-
+                            <th>Discipline Office</th>
+                            
+                         
 
                             
                         </tr>
@@ -48,49 +47,31 @@
                     <tbody>
                         {% for entry in form_data %}
                         <tr>
-                            {% comment %} {% if not entry.workshop_clear and not entry.workshop_notclear or not entry.mechatronics_lab_clear and entry.mechatronics_lab_notclear %} {% endcomment %}
+                            {%if not entry.discipline_office_clear and not entry.discipline_office_notclear  %}
                         
                                 <td>{{ entry.roll_no}}</td>
                                 <td>{{ entry.name }}</td>
-                                {%if entry.workshop_clear%}
-                                <td> clear </td>
-                                {%elif entry.workshop_notclear%}
-                                <td> not clear </td>
-                                {%else%}
                                 <td>
-                                    <form action="{% url 'otheracademic:approve_workshop' no_dues_id=entry.id %}" method="post">
+                                    {% if entry.discipline_office_clear %}
+                                        clear
+                                    {% elif entry.discipline_office_notclear %}
+                                        not clear
+                                    {% else %}
+                                    <form action="{% url 'otheracademic:approve_discipline' no_dues_id=entry.id %}" method="post">
                                         {% csrf_token %}
-                                        <button class="ui green button approve-button" style="margin-bottom : 10px; width:80%" type="submit">Clear</button>
+                                        <button class="ui green button approve-button" style="margin-bottom : 10px; width:100%" type="submit">Clear</button>
                                     </form>
-                                    <form action="{% url 'otheracademic:reject_workshop' no_dues_id=entry.id %}" method="post">
+                                    <form action="{% url 'otheracademic:reject_discipline' no_dues_id=entry.id %}" method="post">
                                         {% csrf_token %}
-                                        <button class="ui red button reject-button" style="width:80%" type="submit">Not Clear</button>
+                                        <button class="ui red button reject-button" style="width:100%" type="submit">Not Clear</button>
                                     </form>
                                     
+                                    {% endif %}
                                 </td>
-                                {%endif%}
-
-                                {%if entry.mechatronics_lab_clear%}
-                                <td> clear </td>
-                                {%elif entry.mechatronics_lab_notclear%}
-                                <td> not clear </td>
-                                {%else%}
-                                <td>
-                                    <form action="{% url 'otheracademic:approve_mecha' no_dues_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui green button approve-button" style="margin-bottom : 10px; width:80%" type="submit">Clear</button>
-                                    </form>
-                                    <form action="{% url 'otheracademic:reject_mecha' no_dues_id=entry.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="ui red button reject-button" style="width:80%" type="submit">Not Clear</button>
-                                    </form>
-                                    
-                                </td>
-                                {%endif%}
 
                                 
                             
-                            {% comment %} {% endif %} {% endcomment %}
+                            {% endif %}
                         </tr>
                         {% endfor%}
                         <!-- Add more rows for other departments as needed -->

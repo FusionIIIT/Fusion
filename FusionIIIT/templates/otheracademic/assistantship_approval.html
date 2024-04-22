@@ -39,6 +39,7 @@
 
         <div class="eight wide column">
             <div class="ui active tab segment" data-tab="first">
+                <h2 class="ui header">Assistanship Approve (TA)</h2>
                 <table class="ui celled table">
                     <thead>
                         <tr>
@@ -55,6 +56,7 @@
                     </thead>
                     <tbody>
                         {% for entry in form_data %}
+                        {%if entry.ta_supervisor == roll_no%}
                         <tr>
                             <td>{{ entry.roll_no_id }}</td>
                             <td>{{ entry.student_name }}</td>
@@ -82,6 +84,7 @@
 
                             </td>
                         </tr>
+                        {%endif%}
                         {% endfor %}
                     </tbody>
                 </table>

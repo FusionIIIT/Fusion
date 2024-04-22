@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect,render
 
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-
+from django.core import serializers
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -52,6 +52,7 @@ def leaveform(request):
 
 
 @csrf_exempt  # Exempt CSRF verification for this view
+@login_required
 def leave_form_submit(request):
     """
     View function for submitting a leave form.
@@ -68,7 +69,7 @@ def leave_form_submit(request):
         
         # Create a new LeaveFormTable instance and save it to the database
         leave = LeaveFormTable.objects.create(
-            student_name=data.get('name'),
+            student_name=request.user.first_name+request.user.last_name,
             roll_no=request.user.extrainfo,
             date_from=data.get('date_from'),
             date_to=data.get('date_to'),
@@ -76,7 +77,7 @@ def leave_form_submit(request):
             upload_file=file,
             address=data.get('address'),
             purpose=data.get('purpose'),
-            date_of_application=data.get('date_of_application'),
+            date_of_application=date.today(),
             approved=False,  # Initially not approved
             rejected=False,  # Initially not rejected
             hod=data.get('hod_credential')
@@ -130,7 +131,8 @@ def leaveStatus(request):
         This function retrieves and displays the leave status of the currently logged-in student.
     """
     form_data = LeaveFormTable.objects.filter(roll_no=request.user.extrainfo)
-    return render(request, 'otheracademic/leaveStatus.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/leaveStatus.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
 def leaveStatus_Dip(request):
@@ -145,7 +147,7 @@ def leaveStatus_Dip(request):
     form_data = LeaveFormTable.objects.filter(id__in=leave_ids)
     return render(request, 'otheracademic/leaveStatus_Dip.html', {'form_data': form_data})
 
-
+@login_required
 def approve_leave(request, leave_id):
     """
     View function for approving a leave request.
@@ -160,6 +162,12 @@ def approve_leave(request, leave_id):
     leave_entry.approved = True
     leave_entry.save()
     messages.success(request, "Successfully Approved")
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Leave Application Status approve/rejected'
+    otheracademic_notif(request.user,leave_receive, 'ug_leave_hod_approve', leave_entry.id, 'student', message)
+    
+    
+
     return redirect('/otheracademic/leaveApproveForm')
 
 
@@ -177,6 +185,10 @@ def reject_leave(request, leave_id):
     leave_entry.rejected = True
     leave_entry.save()
     messages.success(request, "Successfully Rejected")
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Leave Application Status approve/rejected'
+    otheracademic_notif(request.user,leave_receive, 'ug_leave_hod_approve', leave_entry.id, 'student', message)
+    
     return redirect('/otheracademic/leaveApproveForm')
 
 
@@ -217,16 +229,17 @@ def leavePgSubmit(request):
         file = request.FILES.get('related_document')
         hodname = data.get('hod_credential')
         ta = data.get('ta_supervisor')
+        thesis = data.get('thesis_credential')
         
         leave = LeavePG.objects.create(
-            student_name=data.get('student_name'),
+            student_name=request.user.first_name+request.user.last_name,
             roll_no=request.user.extrainfo,
-            programme=data.get('programme'),
-            discipline=data.get('discipline'),
+            programme=request.user.extrainfo.student.programme,
+            discipline=request.user.extrainfo.department,
             Semester=data.get('Semester'),
             date_from=data.get('date_from'),
             date_to=data.get('date_to'),
-            date_of_application=data.get('date_of_application'),
+            date_of_application=date.today(),
             upload_file=file,
             address=data.get('address'),
             purpose=data.get('purpose'),
@@ -237,11 +250,14 @@ def leavePgSubmit(request):
             alt_mobile_no=data.get('alt_mobile_no'),
             ta_approved=False,
             ta_rejected=False,
+            thesis_approved=False,
+            thesis_rejected=False,
             hod_approved=False,
             hod_rejected=False,
-            hod=hodname
+            hod=hodname,
+            thesis_supervisor = thesis,
         )
-        
+    
         tasupervisor = User.objects.get(username=ta)
         receiver_value = User.objects.get(username=request.user.username)
         receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
@@ -279,7 +295,8 @@ def leaveApproveTA(request):
     leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
     
     form_data = LeavePG.objects.filter(id__in=leave_ids)
-    return render(request, 'otheracademic/leaveApproveTA.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/leaveApproveTA.html', {'form_data': form_data,'roll_no' : roll_no})
 
 
 def approve_leave_ta(request, leave_id):
@@ -289,8 +306,82 @@ def approve_leave_ta(request, leave_id):
     Description:
         This function approves the leave request with the specified ID by TA supervisor and updates its status accordingly and forwarded to hod.
     """
-    leave_entry = LeavePG.objects.get(id=leave_id)
+    leave_entry = get_object_or_404(LeavePG, id=leave_id)
     leave_entry.ta_approved = True
+    leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Leave Application Status approve/rejected'
+    otheracademic_notif(request.user,leave_receive, 'pg_leave_ta_approve', leave_entry.id, 'student', message)
+
+    
+    
+    receiver_value = User.objects.get(username=request.user.username)
+    receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
+    lis = list(receiver_value_designation)
+    obj = lis[0].designation
+    
+        
+    file_id_forward = create_file(
+        uploader=request.user.username,
+        uploader_designation=obj,
+        receiver=leave_entry.thesis_supervisor,
+        receiver_designation="student",
+        src_module="otheracademic",
+        src_object_id=leave_id,
+        file_extra_JSON={"value": 2},
+        attached_file=None,
+        subject='pg_leave'
+    )
+   
+    message = "A new leave application forwarded of PG student"
+    thesis_user = User.objects.get(username=leave_entry.thesis_supervisor)
+    otheracademic_notif(request.user, thesis_user, 'pg_leave_thesis', leave_id, 'student', message)
+   
+
+    return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after approval
+
+
+def reject_leave_ta(request, leave_id):
+    """
+    View function for rejecting a leave request by TA supervisor.
+
+    Description:
+        This function rejects the leave request with the specified ID by TA supervisor and updates its status accordingly.
+    """
+    leave_entry = LeavePG.objects.get(id=leave_id)
+    leave_entry.ta_rejected = True
+    leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Leave Application Status approve/rejected'
+    otheracademic_notif(request.user,leave_receive, 'pg_leave_ta_approve', leave_entry.id, 'student', message)
+   
+
+    return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after rejection
+
+def leaveApproveThesis(request):
+    """
+    View function for accessing the leave approval page for TA supervisors.
+
+    Description:
+        This function retrieves leave requests for approval by the TA supervisor and displays them in a list.
+    """
+    inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
+    leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
+    
+    form_data = LeavePG.objects.filter(id__in=leave_ids)
+    roll_no = request.user.username
+    return render(request, 'otheracademic/leaveApproveThesis.html', {'form_data': form_data, 'roll_no' : roll_no})
+
+
+def approve_leave_thesis(request, leave_id):
+    """
+    View function for approving a leave request by TA supervisor.
+
+    Description:
+        This function approves the leave request with the specified ID by TA supervisor and updates its status accordingly and forwarded to hod.
+    """
+    leave_entry = LeavePG.objects.get(id=leave_id)
+    leave_entry.thesis_approved = True
     leave_entry.save()
     
     receiver_value = User.objects.get(username=request.user.username)
@@ -315,10 +406,10 @@ def approve_leave_ta(request, leave_id):
     otheracademic_notif(request.user, hod_user, 'pg_leave_hod', leave_id, 'student', message)
    
 
-    return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after approval
+    return redirect('/otheracademic/leaveApproveThesis')  # Redirect to appropriate page after approval
 
 
-def reject_leave_ta(request, leave_id):
+def reject_leave_thesis(request, leave_id):
     """
     View function for rejecting a leave request by TA supervisor.
 
@@ -326,11 +417,11 @@ def reject_leave_ta(request, leave_id):
         This function rejects the leave request with the specified ID by TA supervisor and updates its status accordingly.
     """
     leave_entry = LeavePG.objects.get(id=leave_id)
-    leave_entry.ta_rejected = True
+    leave_entry.thesis_rejected = True
     leave_entry.save()
    
 
-    return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after rejection
+    return redirect('/otheracademic/leaveApproveThesis')  # Redirect to appropriate page after rejection
 
 
 def leaveApproveHOD(request):
@@ -344,7 +435,8 @@ def leaveApproveHOD(request):
     leave_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'pg_leave']
     
     form_data = LeavePG.objects.filter(id__in=leave_ids)
-    return render(request, 'otheracademic/leaveApproveHOD.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/leaveApproveHOD.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
 def approve_leave_hod(request, leave_id):
@@ -492,7 +584,7 @@ def bonafide_form_submit(request):
         
             # Create a new LeaveFormTable instance and save it to the database
         bonafide=BonafideFormTableUpdated.objects.create(
-                student_names=data.get('name'),
+                student_names=request.user.first_name+request.user.last_name,
                 roll_nos=request.user.extrainfo,
                 branch_types = data.get('branch'),
                 semester_types = data.get('semester'),
@@ -504,6 +596,9 @@ def bonafide_form_submit(request):
             )
         messages.success(request,'form submitted successfully')
         bonafide.save()
+        bonafide_receiver = User.objects.get(username='acadadmin')
+        message='A Bonafide applicationn received'
+        otheracademic_notif(request.user,bonafide_receiver, 'bonafide', 1, 'student', message)
         return HttpResponseRedirect('/otheracademic/bonafide')
 
 
@@ -528,6 +623,9 @@ def approve_bonafide(request, leave_id):
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.approve = True
     leave_entry.save()
+    bonafide_aceptor = User.objects.get(username=leave_entry.roll_nos_id)
+    message='A Bonafide uploaded'
+    otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after approval
 
 def reject_bonafide(request, leave_id):
@@ -537,6 +635,9 @@ def reject_bonafide(request, leave_id):
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.reject = True
     leave_entry.save()
+    bonafide_aceptor = User.objects.get(username=leave_entry.roll_no_id)
+    message='A Bonafide rejected'
+    otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after rejection
 
 def bonafideStatus(request):
@@ -567,9 +668,9 @@ def upload_file(request, entry_id):
         bonafide_entry.download_file = related_document
         bonafide_entry.save()
         
-        return JsonResponse({'message': 'File uploaded successfully'}, status=200)
+        return HttpResponse("File Uploaded Successfuly")
     else:
-        return JsonResponse({'error': 'No file provided'}, status=400)
+        return HttpResponse("No File Attached")
 
 
 
@@ -599,7 +700,9 @@ def noduesStatus_acad(request):
 
 
 def nodues_apply(request):
-    return render(request,'otheracademic/nodues_apply.html')
+    form_data = NoDues.objects.all()
+    roll_no = request.user.username
+    return render(request,'otheracademic/nodues_apply.html', {'form_data' : form_data, 'roll_no' : roll_no})
 
 
 
@@ -712,8 +815,8 @@ def submit_nodues_form(request):
             discipline_office_notclear=False,
             student_gymkhana_clear=False,
             student_gymkhana_notclear=False,
-            discipline_office_dsa_clear=False,
-            discipline_office_dsa_notclear=False,
+            # discipline_office_dsa_clear=False,
+            # discipline_office_dsa_notclear=False,
             alumni_clear=False,
             alumni_notclear=False,
             placement_cell_clear=False,
@@ -752,7 +855,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new hostel application of no dues"
         otheracademic_notif(request.user,hostel_receiver, 'hostel_nodues', nodues.id, 'student', message)
 
 
@@ -770,7 +873,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new bank application of no dues"
         otheracademic_notif(request.user,bank_receiver, 'bank_nodues', nodues.id, 'student', message)
 
         #btp_receiver
@@ -787,7 +890,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new btp application of no dues"
         otheracademic_notif(request.user,btp_receiver, 'btp_nodues', nodues.id, 'student', message)
 
         #cse_receiver
@@ -804,7 +907,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new cse application of no dues"
         otheracademic_notif(request.user,cse_receiver, 'cse_nodues', nodues.id, 'student', message)
         #design_receiver
         design_receiver=User.objects.get(username=data.get('design_credential'))
@@ -820,7 +923,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new design application of no dues"
         otheracademic_notif(request.user,design_receiver, 'design_nodues', nodues.id, 'student', message)
 
         #acad_receiver
@@ -837,7 +940,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new acad application of no dues"
         otheracademic_notif(request.user,acad_receiver, 'acad_nodues', nodues.id, 'student', message)
 
         #ece_receiver
@@ -854,7 +957,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new ece application of no dues"
         otheracademic_notif(request.user,ece_receiver, 'ece_nodues', nodues.id, 'student', message)
 
         #library_receiver
@@ -871,7 +974,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new library application of no dues"
         otheracademic_notif(request.user,library_receiver, 'library_nodues', nodues.id, 'student', message)
         #  me_receiver
         me_receiver=User.objects.get(username=data.get('me_credential'))
@@ -887,7 +990,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new ME application of no dues"
         otheracademic_notif(request.user,me_receiver, 'me_nodues', nodues.id, 'student', message)
 
         #mess_receiver
@@ -904,7 +1007,7 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new mess application of no dues"
         otheracademic_notif(request.user,mess_receiver, 'mess_nodues', nodues.id, 'student', message)
 
         #physics_receiver
@@ -921,8 +1024,26 @@ def submit_nodues_form(request):
             subject='no_dues'
         )
         
-        message = "A new leave application of no dues"
+        message = "A new physics application of no dues"
         otheracademic_notif(request.user,physics_receiver, 'physics_nodues', nodues.id, 'student', message)
+        
+
+        #discipline_receiver
+        discipline_receiver=User.objects.get(username=data.get('discipline_credential'))
+        file_bank= create_file(
+            uploader=request.user.username,
+            uploader_designation=obj,
+            receiver=discipline_receiver,
+            receiver_designation="student",
+            src_module="otheracademic",
+            src_object_id=nodues.id,
+            file_extra_JSON={"value": 2},
+            attached_file=None,
+            subject='no_dues'
+        )
+        
+        message = "A new discipline application of no dues"
+        otheracademic_notif(request.user,discipline_receiver, 'discipline_nodues', nodues.id, 'student', message)
         messages.success(request,'You successfully applied for no_dues')
         
 
@@ -937,6 +1058,13 @@ def approve_BTP(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.btp_supervisor_clear= True
     leave_entry.btp_supervisor_notclear = False
+    btp_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Btp nodues approved"
+    otheracademic_notif(request.user,btp_receiver , 'nodues_approve', leave_entry.id, "student", message)
+
+    # Display success message
+    messages.success(request, "Successfully approved and forwarded.")
+            
     leave_entry.save()
     return redirect('/otheracademic/BTP_nodues')  # Red 
 
@@ -953,6 +1081,9 @@ def reject_BTP(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.btp_supervisor_clear= False
     leave_entry.btp_supervisor_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Btp nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/BTP_nodues')  # Red    
     
@@ -964,6 +1095,9 @@ def approve_bank(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.bank_clear= True
     leave_entry.bank_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "bank nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red   
 
@@ -980,6 +1114,10 @@ def reject_bank(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.bank_clear= False
     leave_entry.bank_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "bank nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
+  
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red    
 
@@ -987,6 +1125,9 @@ def approve_CSE(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.cc_clear= True
     leave_entry.cc_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Cse nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/CSE_nodues')  # Red    
 
@@ -1003,6 +1144,9 @@ def reject_CSE(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.cc_clear= False
     leave_entry.cc_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Cse nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/CSE_nodues')  # Red  
 
@@ -1010,6 +1154,9 @@ def approve_design_project(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_project_clear= True
     leave_entry.design_project_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Design project nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red    
 
@@ -1026,6 +1173,9 @@ def reject_design_project(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_project_clear= False
     leave_entry.design_project_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Design project nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red      
 
@@ -1033,6 +1183,9 @@ def approve_design_studio(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_studio_clear= True
     leave_entry.design_studio_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Design studio nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red  
 
@@ -1047,6 +1200,9 @@ def reject_design_studio(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_studio_clear= False
     leave_entry.design_studio_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Design studio nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red    
     
@@ -1056,6 +1212,9 @@ def approve_icard(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.icard_dsa_clear= True
     leave_entry.icard_dsa_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "icard nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
@@ -1072,6 +1231,9 @@ def reject_icard(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.icard_dsa_clear= False
     leave_entry.icard_dsa_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "icard nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
@@ -1079,6 +1241,9 @@ def approve_placement(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.placement_cell_clear= True
     leave_entry.placement_cell_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "placement nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red  
 
@@ -1095,6 +1260,9 @@ def reject_placement(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.placement_cell_clear= False
     leave_entry.placement_cell_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "placement nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
@@ -1102,6 +1270,9 @@ def approve_account(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.account_clear= True
     leave_entry.account_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "account nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red 
 
@@ -1118,6 +1289,9 @@ def reject_account(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.account_clear= False
     leave_entry.account_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "account nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red    
 
@@ -1125,6 +1299,9 @@ def approve_alumni(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.alumni_clear= True
     leave_entry.alumni_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "alumni nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Realumni
 
@@ -1141,6 +1318,9 @@ def reject_alumni(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.alumni_clear= False
     leave_entry.alumni_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "alumni nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
@@ -1148,6 +1328,9 @@ def approve_gym(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.student_gymkhana_clear= True
     leave_entry.student_gymkhana_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "gym nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
@@ -1164,6 +1347,9 @@ def reject_gym(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.student_gymkhana_clear= False
     leave_entry.student_gymkhana_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "gym nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red     
 
@@ -1171,15 +1357,18 @@ def approve_discipline(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= True
     leave_entry.discipline_office_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Discipline office nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
-    return redirect('/otheracademic/dsa_nodues')  # Red   
+    return redirect('/otheracademic/discipline_nodues')  # Red   
 
 def approve_discipline_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= True
     leave_entry.discipline_office_notclear = False
     leave_entry.save()
-    return redirect('/otheracademic/dsa_nodues_not')  # Red   
+    return redirect('/otheracademic/discipline_nodues_not')  # Red   
     
 
 
@@ -1187,6 +1376,9 @@ def reject_discipline(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= False
     leave_entry.discipline_office_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Discipline office nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
@@ -1194,6 +1386,9 @@ def approve_signal(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.signal_processing_lab_clear= True
     leave_entry.signal_processing_lab_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "signal nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
@@ -1210,6 +1405,9 @@ def reject_signal(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.signal_processing_lab_clear= False
     leave_entry.signal_processing_lab_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "signal nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
@@ -1218,6 +1416,9 @@ def approve_vlsi(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.vlsi_clear= True
     leave_entry.vlsi_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "vlsi nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
@@ -1234,6 +1435,9 @@ def reject_vlsi(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.vlsi_clear= False
     leave_entry.vlsi_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Vlsi nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
@@ -1241,6 +1445,9 @@ def approve_ece(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.ece_clear= True
     leave_entry.ece_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Ece nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
@@ -1257,6 +1464,9 @@ def reject_ece(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.ece_clear= False
     leave_entry.ece_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "Ece nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
@@ -1265,6 +1475,9 @@ def approve_hostel(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.hostel_clear= True
     leave_entry.hostel_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "hostel nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/hostel_nodues')  # Realumni
 
@@ -1281,6 +1494,9 @@ def reject_hostel(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.hostel_clear= False
     leave_entry.hostel_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "hostel nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/hostel_nodues')  # Red  
 
@@ -1290,6 +1506,9 @@ def approve_library(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.library_clear= True
     leave_entry.library_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "library nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/library_nodues')  # Realumni
 
@@ -1306,6 +1525,9 @@ def reject_library(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.library_clear= False
     leave_entry.library_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "library nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/library_nodues')  # Red  
 
@@ -1314,6 +1536,9 @@ def approve_workshop(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.workshop_clear= True
     leave_entry.workshop_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "workshop nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Realumni
 
@@ -1330,6 +1555,9 @@ def reject_workshop(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.workshop_clear= False
     leave_entry.workshop_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "workshop nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Red  
 
@@ -1338,6 +1566,9 @@ def approve_mecha(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mechatronics_lab_clear= True
     leave_entry.mechatronics_lab_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "mecha nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Realumni
 
@@ -1354,6 +1585,9 @@ def reject_mecha(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mechatronics_lab_clear= False
     leave_entry.mechatronics_lab_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "mecha nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Red  
 
@@ -1362,6 +1596,9 @@ def approve_mess(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mess_clear= True
     leave_entry.mess_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "mess nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/mess_nodues')  # Realumni
 
@@ -1378,6 +1615,9 @@ def reject_mess(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mess_clear= False
     leave_entry.mess_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "mess nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/mess_nodues')  # Red  
 
@@ -1385,6 +1625,9 @@ def approve_physics(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= True
     leave_entry.physics_lab_notclear = False
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "physics nodues approved"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Physics_nodues')  # Realumni
 
@@ -1401,6 +1644,9 @@ def reject_physics(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= False
     leave_entry.physics_lab_notclear = True
+    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
+    message = "physics nodues rejected"
+    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
     leave_entry.save()
     return redirect('/otheracademic/Physics_nodues')  # Red  
 
@@ -1553,6 +1799,20 @@ def Physics_nodues_not(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Physics_nodues_not.html',{'form_data': form_data})
 
+def discipline_nodues(request): 
+    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
+    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
+    
+    form_data = NoDues.objects.filter(id__in=leave_ids)
+    return render(request,'otheracademic/Discipline_nodues.html',{'form_data': form_data})
+
+def discipline_nodues_not(request):
+    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
+    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
+    
+    form_data = NoDues.objects.filter(id__in=leave_ids)
+    return render(request,'otheracademic/Discipline_nodues_not.html',{'form_data': form_data})
+
 def library_nodues(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1650,12 +1910,13 @@ def assistantship_form_submission(request):
         thesis_supervisor = request.POST.get('thesis_supervisor')
         date_applied = request.POST.get('date_of_application'),
         hod=request.POST.get('hod_credential')
+        
 
         current_date = date.today()
         
         
         
-        assistant = AssistantshipClaimFormStatusUpd.objects.create(student_name=student_name,roll_no=request.user.extrainfo,
+        assistant = AssistantshipClaimFormStatusUpd.objects.create(student_name=request.user.first_name+request.user.last_name,roll_no=request.user.extrainfo,
             discipline=discipline,
             dateFrom=date_from,
             dateTo=date_to,
@@ -1690,6 +1951,9 @@ def assistantship_form_submission(request):
         print(file_id)
         message="A new assistantship application raised"
         otheracademic_notif(request.user,ta_supervisor_id ,'ast_ta',assistant.id,"student",message)
+        # if date_from>=date_to:
+        #     messages.warning(request,"enter")
+        #     return HttpResponseRedirect('/otheracademic/assistantship')
         # Redirect to a success page or return a success message
         messages.success(request,"Your form is successfully submitted")
         return HttpResponseRedirect('/otheracademic/assistantship')  # Replace '/otheracademic/assistantship' with the actual URL you want to redirect to
@@ -1714,8 +1978,8 @@ def assistantship_form_approval(request):
     
     # Filter form_data queryset based on the ids found
     form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
-    
-    return render(request, 'otheracademic/assistantship_approval.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/assistantship_approval.html', {'form_data': form_data, 'roll_no' : roll_no})
      
 def assistantship_thesis(request):
     # Retrieve data from the database
@@ -1725,8 +1989,8 @@ def assistantship_thesis(request):
     
     # Filter form_data queryset based on the ids found
     form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
-    
-    return render(request, 'otheracademic/thesis_supervisor_approve.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/thesis_supervisor_approve.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
 def assistantship_hod(request):
@@ -1737,8 +2001,8 @@ def assistantship_hod(request):
     
     # Filter form_data queryset based on the ids found
     form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
-    
-    return render(request, 'otheracademic/hod_approval.html', {'form_data': form_data})
+    roll_no = request.user.username
+    return render(request, 'otheracademic/hod_approval.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
 
@@ -1779,6 +2043,9 @@ def assistanship_ta_approve(request, ass_id):
     # Update TA_approved field to True
     leave_entry.TA_approved = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
     print(ass_id_from_inbox)
     a=get_object_or_404(User,username=request.user.username)
@@ -1788,7 +2055,7 @@ def assistanship_ta_approve(request, ass_id):
     
     forwarded_file_id = create_file(uploader = request.user.username, uploader_designation=des[0].designation, receiver =leave_entry.thesis_supervisor, receiver_designation = "student", src_module = "otheracademic", src_object_id =ass_id, file_extra_JSON = {"value": 2}, attached_file = None,subject="assistantship")
   
-    message = "Assistantship status received"
+    message = "Assistantship status form forwarded"
     otheracademic_notif(request.user, thesis_supervisor_user, 'ast_thesis', ass_id, "student", message)
 
     # Display success message
@@ -1803,6 +2070,9 @@ def assistanship_ta_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.TA_rejected = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     messages.success(request, "Successfully rejected.")
     return redirect('/otheracademic/approveform')
 
@@ -1817,6 +2087,9 @@ def assistanship_thesis_approve(request, ass_id):
     # Update TA_approved field to True
     leave_entry.Ths_approved = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     # ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
     # print(ass_id_from_inbox)
     a=get_object_or_404(User,username=request.user.username)
@@ -1843,6 +2116,9 @@ def assistanship_thesis_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.Ths_rejected = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     messages.success(request, "Successfully rejected.")
     return redirect('/otheracademic/assitantship/thesis_approveform')
 
@@ -1861,6 +2137,9 @@ def assistanship_hod_approve(request, ass_id):
     # Update TA_approved field to True
     leave_entry.HOD_approved = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
     print(ass_id_from_inbox)
     a=get_object_or_404(User,username=request.user.username)
@@ -1886,6 +2165,9 @@ def assistanship_hod_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.HOD_rejected = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     messages.success(request, "Successfully rejected.")
     
     return redirect('/otheracademic/assitantship/hod_approveform')
@@ -1897,9 +2179,12 @@ def assistantship_acad_approveform(request):
     assistantship_ids = [msg['src_object_id'] for msg in inbox if msg['subject'] == 'assistantship']
     
     # Filter form_data queryset based on the ids found
-    form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
-    
-    return render(request, 'otheracademic/acadadmin_approval.html', {'form_data': form_data})
+    user=get_object_or_404(User,username=request.user.username)
+    if(user.extrainfo.department.name == 'Academics'):
+        form_data = AssistantshipClaimFormStatusUpd.objects.filter(id__in=assistantship_ids)
+        return render(request, 'otheracademic/acadadmin_approval.html', { 'form_data' : form_data})
+    else:
+        return HttpResponse("Not Avalable For You.")
 
 
 def assistanship_acad_approve(request, ass_id):
@@ -1916,6 +2201,9 @@ def assistanship_acad_approve(request, ass_id):
     # Update TA_approved field to True
     leave_entry.Acad_approved = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     ass_id_from_inbox = find_id_from_inbox(inbox, ass_id)
     print(ass_id_from_inbox)
     a=get_object_or_404(User,username=request.user.username)
@@ -1941,6 +2229,9 @@ def assistanship_acad_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.Acad_rejected = True
     leave_entry.save()
+    leave_receive = User.objects.get(username=leave_entry.roll_no_id)
+    message='Assistanstship Claim form status'
+    otheracademic_notif(request.user,leave_receive, 'ast_ta_accept', leave_entry.id, 'student', message)
     messages.success(request, "Successfully rejected.")
     
     return redirect('/otheracademic/assitantship/hod_approveform')

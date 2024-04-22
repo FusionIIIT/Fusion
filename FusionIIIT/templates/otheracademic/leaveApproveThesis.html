@@ -52,10 +52,10 @@
                 <a href="/otheracademic/leaveApproveHOD/" class="item">Leave Approve HOD (PG)
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a href="/otheracademic/leaveApproveTA/" class="active item">Leave Approve (TA)
+                <a href="/otheracademic/leaveApproveTA/" class=" item">Leave Approve (TA)
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a href="/otheracademic/leaveApproveThesis/" class=" item">Leave Approve (Thesis)
+                <a href="/otheracademic/leaveApproveThesis/" class="active item">Leave Approve (Thesis)
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a href="/otheracademic/leaveStatus_Dip/" class="item">Leave Log (UG)
@@ -68,7 +68,7 @@
         </div>
 
         <div class="ten wide column">
-            <h2 class="ui header">Leave Approve (TA)</h2>
+            <h2 class="ui header">Leave Approve (Thesis)</h2>
             <div class="scrollable-boundary">
                 <div class="scrollable-container">
                     <table class="ui celled table">
@@ -96,9 +96,9 @@
                         </thead>
                         <tbody>
                             {% for entry in form_data %}
-                            {% if entry.ta_supervisor == roll_no%}
+                            {% if entry.thesis_supervisor == roll_no%}
                             <tr>
-                                {% if not entry.ta_approved and not entry.ta_rejected %}
+                                {% if not entry.thesis_approved and not entry.thesis_rejected %}
                                     
                                     <td>{{ entry.roll_no_id }}</td>
                                     <td>{{ entry.student_name }}</td>
@@ -121,11 +121,11 @@
                                     <td>{{ entry.parent_mobile_no }}</td>
                                     <td>{{ entry.alt_mobile_no }}</td>
                                     <td>
-                                        <form action="{% url 'otheracademic:approve_leave_ta'  leave_id=entry.id %}" method="post">
+                                        <form action="{% url 'otheracademic:approve_leave_thesis'  leave_id=entry.id %}" method="post">
                                             {% csrf_token %}
                                             <button class="ui green button approve-button" style="margin-bottom : 10px; width:100%"  type="submit">Approve</button>
                                         </form>
-                                        <form action="{% url 'otheracademic:reject_leave_ta' leave_id=entry.id %}" method="post">
+                                        <form action="{% url 'otheracademic:reject_leave_thesis' leave_id=entry.id %}" method="post">
                                             {% csrf_token %}
                                             <button class="ui red button reject-button" style="width:100%" type="submit">Reject</button>
                                         </form>
@@ -134,7 +134,7 @@
                                     
                                 {% endif %}
                             </tr>
-                            {% endif %}
+                            {%endif%}
                             {% endfor %}
                         </tbody>
                     </table>

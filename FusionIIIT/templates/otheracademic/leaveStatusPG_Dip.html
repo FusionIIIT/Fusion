@@ -43,6 +43,9 @@
                     <a href="/otheracademic/leaveApproveTA/" class="item">Leave Approve (TA)
                         <i class="right floated chevron right icon"></i>
                     </a>
+                    <a href="/otheracademic/leaveApproveThesis/" class=" item">Leave Approve (Thesis)
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     <a href="/otheracademic/leaveStatus_Dip/" class="item">Leave Log (UG)
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -95,8 +98,11 @@
                                     <td>{{ entry.date_to }}</td>
                                     <td>{{ entry.leave_type }}</td>
                                     <td>
-                                        {% comment %} <a href='{{ entry.upload_file.url }}'>{{entry.upload_file}}</a> {% endcomment %}
-                                    </td>
+                                        {%if entry.upload_file == ""%}
+                                        {%else%}
+                                            <a href={{ entry.upload_file.url }}>Download</a>
+                                        {%endif%}
+                                    </td> 
                                     <td>{{ entry.purpose }}</td>
                                     <td>{{ entry.address }}</td>
                                     <td>{{ entry.mobile_no }}</td>
@@ -110,7 +116,14 @@
                                     </td>
                                     <td>
                                         {%if entry.hod_approved%} Approved
-                                        {%elif entry.hod_rejected or entry.ta_rejected%} Rejected
+                                        {%elif entry.thesis_rejected or entry.ta_rejected%} Rejected
+                                        {% else%} Pending
+                                        {% endif%}
+
+                                    </td>  
+                                    <td>
+                                        {%if entry.hod_approved%} Approved
+                                        {%elif entry.hod_rejected or entry.ta_rejected or entry.thesis_rejected%} Rejected
                                         {% else%} Pending
                                         {% endif%}
 

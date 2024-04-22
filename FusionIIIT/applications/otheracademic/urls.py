@@ -24,6 +24,9 @@ urlpatterns = [
     url(r'^leaveApproveTA/$', views.leaveApproveTA, name='leaveApproveTA'),
     url(r'^approve_leave_ta(?P<leave_id>\d+)/$', views.approve_leave_ta, name='approve_leave_ta'),
     url(r'^reject_leave_ta(?P<leave_id>\d+)/$', views.reject_leave_ta, name='reject_leave_ta'),
+    url(r'^leaveApproveThesis/$', views.leaveApproveThesis, name='leaveApproveThesis'),
+    url(r'^approve_leave_thesis(?P<leave_id>\d+)/$', views.approve_leave_thesis, name='approve_leave_thesis'),
+    url(r'^reject_leave_thesis(?P<leave_id>\d+)/$', views.reject_leave_thesis, name='reject_leave_thesis'),
     url(r'^leaveApproveHOD/$', views.leaveApproveHOD, name='leaveApproveHOD'),
     url(r'^approve_leave_hod(?P<leave_id>\d+)/$', views.approve_leave_hod, name='approve_leave_hod'),
     url(r'^reject_leave_hod(?P<leave_id>\d+)/$', views.reject_leave_hod, name='reject_leave_hod'),
@@ -60,6 +63,7 @@ urlpatterns = [
       url(r'^library_nodues/$', views.library_nodues, name='library_nodues'),
       url(r'^mess_nodues/$', views.mess_nodues, name='mess_nodues'),
       url(r'^Physics_nodues/$', views.Physics_nodues, name='Physics_nodues'),
+      url(r'^discipline_nodues/$', views.discipline_nodues, name='discipline_nodues'),
 
       url(r'^nodues_apply/$', views.nodues_apply, name='nodues_apply'),
       url(r'^nodues_status/$', views.nodues_status, name='nodues_status'),
@@ -166,6 +170,9 @@ urlpatterns = [
     url(r'^library_nodues_not/$', views.library_nodues_not, name='library_nodues_not'),
     url(r'^mess_nodues_not/$', views.mess_nodues_not, name='mess_nodues_not'),
     url(r'^Physics_nodues_not/$', views.Physics_nodues_not, name='Physics_nodues_not'),
+    url(r'^discipline_nodues_not/$', views.discipline_nodues_not, name='discipline_nodues_not'),
+    
+
 
     url(r'^noduesStatus_acad/$', views.noduesStatus_acad, name='noduesStatus_acad'),
   
