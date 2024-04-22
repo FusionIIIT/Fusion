@@ -959,14 +959,14 @@ def verify_course(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='adminstrator').first()
+        desig_id = Designation.objects.all().filter(name='acadadmin').first()
         temp = HoldsDesignation.objects.all().select_related().filter(
             designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
 
-        if (str(acadadmin) != str(final_user)):
+        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
@@ -1088,7 +1088,7 @@ def acad_branch_change(request):
     k = str(user_details).split()
     final_user = k[2]
 
-    if (str(acadadmin) != str(final_user)):
+    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
         return HttpResponseRedirect('/academic-procedures/')
 
     # year = datetime.datetime.now().year
@@ -1630,7 +1630,7 @@ def user_check(request):
         final_user=""
         pass
 
-    if (str(acadadmin) != str(final_user)):
+    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
         return True
     else:
         return False
@@ -3896,14 +3896,14 @@ def replaceSwayam(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='adminstrator').first()
+        desig_id = Designation.objects.all().filter(name='acadadmin').first()
         temp = HoldsDesignation.objects.all().select_related().filter(
             designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
 
-        if (str(acadadmin) != str(final_user)):
+        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
