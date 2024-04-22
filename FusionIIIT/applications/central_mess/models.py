@@ -321,3 +321,16 @@ class Semdates(models.Model):
     end_date = models.DateField(blank=False,default=datetime.date.today)
     class Meta:
         unique_together = (('start_date', 'end_date'),)
+
+
+class Update_Payment(models.Model):
+    student_id = models.ForeignKey(Reg_main, on_delete=models.CASCADE)
+    Txn_no =models.CharField(max_length=20)
+    img = models.ImageField(upload_to='images/',default=None)
+    amount=models.IntegerField(default=0)
+    status=models.CharField(max_length=10,default='pending')
+    update_remark=models.CharField(max_length=50,default='NA')
+    payment_date= models.DateField(default=None, null=True)
+    def __str__(self):
+        return str(self.student_id.id)
+    
