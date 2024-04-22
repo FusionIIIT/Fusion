@@ -83,6 +83,12 @@ Central Mess
             {% endblock %}
         </div>
         {% comment %}The ... end here!{% endcomment %}
+        <div class="ui tab segment" data-tab="updatePayment">
+            {% block updatePayment %}
+            {% include 'messModule/updatePayment.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... end here!{% endcomment %}
 
         {% comment %}The ... start here!{% endcomment %}
         <div class="ui tab segment" data-tab="Deregistration">

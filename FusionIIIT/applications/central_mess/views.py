@@ -14,12 +14,12 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm, MessInfoForm,RegistrationRequest, UpdatePaymentRequest
+from .forms import MinuteForm, MessInfoForm,RegistrationRequest,UpdatePaymentRequest
 from .tasks import *
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request,Semdates)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request,Semdates,Update_Payment)
 from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -82,9 +82,10 @@ def mess(request):
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         
         reg_form = RegistrationRequest()
+        update_form=UpdatePaymentRequest()
 
         reg_request = Registration_Request.objects.filter(student_id=student)
-
+        update_payment_request = Update_Payment.objects.filter(student_id=student)
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
 
         menu_data = Menu.objects.all()
@@ -352,6 +353,8 @@ def mess(request):
                 #    'minutes': minutes,
                 #    'meeting': meeting,
                    'reg_form':reg_form,
+                   'update_form':update_form,
+                   'update_payment_request':update_payment_request,
                    'reg_main_stud':mess_optn,
                    'reg_request':reg_request,
                    'reg_record':reg_record,
@@ -418,6 +421,7 @@ def mess(request):
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
 
                 reg_request = Registration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
+                update_pay_request=Update_Payment.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
                 de_reg_request = Deregistration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
                 reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(current_mess_status='Registered')
                 reg_record = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
@@ -448,7 +452,8 @@ def mess(request):
                     'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
                     'de_reg_request':de_reg_request,
                     'bill': bills,
-                    'reg_form':reg_form
+                    'reg_form':reg_form,
+                    'update_pay_request':update_pay_request
                 }
                 return render(request, "messModule/mess.html", context)
 
