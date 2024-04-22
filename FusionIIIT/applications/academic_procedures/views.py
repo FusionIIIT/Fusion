@@ -41,7 +41,7 @@ from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
 from .api import serializers
 from django.core.serializers import serialize
-
+import datetime
 
 """every newfuncitons that have been created with name auto_ in start of their original name is to implement new logic of registraion .. 
 unlike the previous registration logic that was done with priority """
@@ -959,14 +959,14 @@ def verify_course(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='adminstrator').first()
+        desig_id = Designation.objects.all().filter(name='acadadmin').first()
         temp = HoldsDesignation.objects.all().select_related().filter(
             designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
 
-        if (str(acadadmin) != str(final_user)):
+        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
@@ -1050,7 +1050,7 @@ def acad_add_course(request):
         sem_id = request.POST['semester_id']
         semester = Semester.objects.get(id=sem_id)
         cr = course_registration(
-            course_id=course, student_id=student, semester_id=semester)
+            course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year,)
         cr.save()
 
     return HttpResponseRedirect('/academic-procedures/')
@@ -1088,7 +1088,7 @@ def acad_branch_change(request):
     k = str(user_details).split()
     final_user = k[2]
 
-    if (str(acadadmin) != str(final_user)):
+    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
         return HttpResponseRedirect('/academic-procedures/')
 
     # year = datetime.datetime.now().year
@@ -1630,7 +1630,7 @@ def user_check(request):
         final_user=""
         pass
 
-    if (str(acadadmin) != str(final_user)):
+    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
         return True
     else:
         return False
@@ -1718,7 +1718,8 @@ def add_courses(request):
                             course_id = course_id,
                             student_id=current_user,
                             course_slot_id = courseslot_id,
-                            semester_id=sem_id
+                            semester_id=sem_id,
+                            working_year = datetime.datetime.now().year,
                             )
                         if p not in reg_curr:
                             reg_curr.append(p)
@@ -1924,6 +1925,7 @@ def get_add_course_options(branch_courses, current_register, batch):
         if courseslot not in slots:
             lis = []
             for course in courseslot.courses.all():
+                print(course)
                 if course_registration.objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
                     lis.append(course)
             course_option.append((courseslot, lis))
@@ -2560,7 +2562,8 @@ def verify_registration(request):
                     course_id=obj.course_id,
                     student_id=student,
                     semester_id=obj.semester_id,
-                    course_slot_id = obj.course_slot_id
+                    course_slot_id = obj.course_slot_id,
+                    working_year = datetime.datetime.now().year,
                     )
                 ver_reg.append(p)
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
@@ -3836,7 +3839,8 @@ def add_one_course(request):
                         course_id=course_id,
                         student_id=current_user,
                         course_slot_id=courseslot_id,
-                        semester_id=sem_id
+                        semester_id=sem_id,
+                        working_year = datetime.datetime.now().year,
                     )
                     p.save()
                     return JsonResponse({'message': 'Course added successfully'})
@@ -3892,14 +3896,14 @@ def replaceSwayam(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='adminstrator').first()
+        desig_id = Designation.objects.all().filter(name='acadadmin').first()
         temp = HoldsDesignation.objects.all().select_related().filter(
             designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
 
-        if (str(acadadmin) != str(final_user)):
+        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
@@ -4041,7 +4045,7 @@ def swayam_replace(request):
                     semester_id = semester_id_model,
                     student_id = student_id_model,
                     course_slot_id = course_slot_id_model,
-                    working_year = 1
+                    working_year = datetime.datetime.now().year,
                     )
                 obj.save()
             
@@ -4086,7 +4090,8 @@ def register_backlog_course(request):
                             course_id=course_id,
                             student_id=current_user,
                             course_slot_id=course_slot_id,
-                            semester_id=sem_id
+                            semester_id=sem_id,
+                            working_year = datetime.datetime.now().year,
                         )
                     p.save()
                     return JsonResponse({'message': 'Successfully Registered Backlog course' }, status=200)
