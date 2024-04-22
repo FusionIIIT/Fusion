@@ -1,5 +1,5 @@
 import datetime
-
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
@@ -17,7 +17,7 @@ from applications.programme_curriculum.models import ( CourseSlot, Course as Cou
 
 
 from applications.academic_procedures.models import (Course, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
-                                                     FinalRegistrations, SemesterMarks,backlog_course,
+                                                     FinalRegistration, SemesterMarks,backlog_course,
                                                      BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
@@ -33,6 +33,8 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
 
+from applications.academic_procedures.views import get_sem_courses, get_student_registrtion_check, get_cpi, academics_module_notif
+
 from . import serializers
 
 User = get_user_model()
@@ -43,6 +45,7 @@ date_time = datetime.datetime.now()
 
 #--------------------------------------- APIs of student----------------------------------------------------------
 
+demo_date = timezone.now()
 
 # with this student can get all his details in one api call 
 @api_view(['GET'])
@@ -102,6 +105,10 @@ def academic_procedures_student(request):
         else:
             return Response({'message':'Student has no record'}, status=status.HTTP_400_BAD_REQUEST)
 
+    
+        current_date = demo_date.date()
+        year = demo_date.year
+
         current_date = date_time.date()
         current_year = date_time.year
         batch = obj.batch_id
@@ -132,9 +139,39 @@ def academic_procedures_student(request):
             final_registered_courses = obj.finalregistrations_set.all().filter(semester = user_sem)
         except:
             final_registered_courses = None
+            
+        try:    
+            pre_registered_courses = InitialRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            pre_registered_course_show = {}
+            pre_registration_timestamp=None
+            for pre_registered_course in pre_registered_courses:
+                pre_registration_timestamp=pre_registered_course.timestamp
+                if(pre_registered_course.course_slot_id.name not in pre_registered_course_show):
+                    pre_registered_course_show[pre_registered_course.course_slot_id.name] = [{"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority}]
+                else:
+                    pre_registered_course_show[pre_registered_course.course_slot_id.name].append({"course_code":pre_registered_course.course_id.code,"course_name":pre_registered_course.course_id.name,"course_credit":pre_registered_course.course_id.credit,"priority":pre_registered_course.priority})
+            pre_registration_timestamp=str(pre_registration_timestamp)
+        except Exception as e:
+            pre_registered_courses =  None
+            pre_registered_course_show = None
+            
+        try:
+            final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
+            final_registered_course_show=[]
+            for final_registered_course in final_registered_courses:
+                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
+            # add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
+            # drop_courses_options = get_drop_course_options(currently_registered_course)
+            # replace_courses_options = get_replace_course_options(currently_registered_course, batch.year)
+        except Exception as e:
+            final_registered_courses = None
+            final_registered_course_show = None
+            # drop_courses_options = None
+            add_courses_options = None
+            replace_courses_options = None
 
-        pre_registered_courses_data = serializers.InitialRegistrationsSerializer(pre_registered_courses, many=True).data
-        pre_registered_courses_show_data = serializers.InitialRegistrationsSerializer(pre_registered_courses_show, many=True).data
+        # pre_registered_courses_data = serializers.InitialRegistrationsSerializer(pre_registered_courses, many=True).data
+        # pre_registered_courses_show_data = serializers.InitialRegistrationsSerializer(pre_registered_courses_show, many=True).data
         final_registered_courses_data = serializers.FinalRegistrationsSerializer(final_registered_courses, many=True).data
 
         current_credits = get_current_credits(currently_registered_courses)
@@ -178,6 +215,42 @@ def academic_procedures_student(request):
         pre_registration_date_flag = get_pre_registration_eligibility(current_date , user_sem , acad_year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
 
+        add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
+
+        curr_id = batch.curriculum
+        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
+
+        try:
+            semester_no = obj.curr_semester_no+1
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
+            user_sem = semester_no
+            
+        except Exception as e:
+            user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
+            next_sem_id = curr_sem_id
+
+        student_registration_check_pre = get_student_registrtion_check(obj,next_sem_id)
+        student_registration_check_final = get_student_registrtion_check(obj,next_sem_id)
+
+        cpi = get_cpi(user_details.id)
+
+        next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
+        print(next_sem_registration_courses)
+
+        next_sem_courses = []
+
+        for course_slot in next_sem_registration_courses:
+            courses = course_slot.courses.all()
+            courselist = []
+            for course in courses:
+                courselist.append({'course_id': course.id, 'name': course.name, 'credit': course.credit, 'course_code': course.code});
+            next_sem_courses.append({'slot_id': course_slot.id,'slot_name':course_slot.name, 'slot_type': course_slot.type, 'semester': course_slot.semester.semester_no, 'slot_info': course_slot.course_slot_info, 'courses': courselist })
+        
+        print(next_sem_courses)
+
+        print(current_date, user_sem, year)
+        pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
+        final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
 
         student_registration_check_pre = obj.studentregistrationcheck_set.all().filter(semester=user_sem+1)
@@ -226,14 +299,17 @@ def academic_procedures_student(request):
         resp = {
             'details': details,
             'currently_registered': currently_registered_courses_data,
-            'pre_registered_courses' : pre_registered_courses_data,
-            'pre_registered_courses_show' : pre_registered_courses_show_data,
-            'final_registered_courses' : final_registered_courses_data,
+            'pre_registered_courses' : pre_registered_courses,
+            'pre_registered_courses_show' : pre_registered_course_show,
+            'final_registered_course' : final_registered_courses,
+            'final_registered_course_show' : final_registered_course_show,
             'current_credits' : current_credits,
             'courses_list': next_sem_branch_courses_data,
             'fee_payment_mode_list' : fee_payment_mode_list,
+            'next_sem_registration_courses': next_sem_courses,
             'next_sem_branch_registration_courses' : next_sem_branch_registration_courses_data,
             'final_registration_choices' : final_registration_choices_data,
+            'final_registration_flag': final_registration_flag,
                         
 
             'student_flag' : student_flag,
@@ -242,6 +318,11 @@ def academic_procedures_student(request):
             'phd_flag' : phd_flag,
             'fac_flag' : fac_flag,
             'des_flag' : des_flag,
+            
+            'prd': pre_registration_date_flag,
+            'prd_start_date': prd_start_date,
+            'frd': final_registration_date_flag,
+            'adc_date_flag': add_or_drop_course_date_flag,
             
             'drop_courses_options' : currently_registered_courses_data,
             'pre_registration_date_flag': pre_registration_date_flag,
@@ -255,6 +336,38 @@ def academic_procedures_student(request):
             'Branch_Change_Flag':branchchange_flag
         }
     return Response(data=resp, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_all_courses(request):
+    try:
+        obj = Course.objects.all()
+        serializer = serializers.CourseSerializer(obj, many=True).data
+        return Response(serializer, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def gen_roll_list(request):
+    try:
+        batch = request.data['batch']
+        course_id = request.data['course']
+        course = Courses.objects.get(id = course_id)
+        #obj = course_registration.objects.all().filter(course_id = course)
+        obj=course_registration.objects.filter(course_id__id=course_id, student_id__batch=batch).select_related(
+        'student_id__id__user','student_id__id__department').only('student_id__batch', 
+        'student_id__id__user__first_name', 'student_id__id__user__last_name',
+        'student_id__id__department__name','student_id__id__user__username')
+    except Exception as e:
+        batch=""
+        course=""
+        obj=""
+    students = []
+    for i in obj:
+        students.append({"rollno":i.student_id.id.user.username, 
+        "name":i.student_id.id.user.first_name+" "+i.student_id.id.user.last_name, 
+        "department":i.student_id.id.department.name})
+    # {'students': students, 'batch':batch, 'course':course_id}
+    return JsonResponse({'students': students, 'batch':batch, 'course':course_id}, status=200)
 
 
 # api for student for adding courses  
@@ -338,7 +451,7 @@ def get_user_info(request):
 
 
 # with this api student can see the list of courses offered to him in upcoming semester
-@api_view(['GET'])
+@api_view(['POST'])
 def view_offered_courses(request):
     try : 
         obj = Curriculum.objects.filter(
@@ -458,7 +571,52 @@ def student_pre_registration(request):
             return Response(data = {"message" : "Error in Registration." , "error" : str(e)} , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
         return Response(data = {"message" : "Error in Registration." , "error" : str(e)} , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@api_view(['POST'])
+def final_registration(request):
+    try:    
+        print(request.data)
+        current_user = get_object_or_404(User, username=request.data.get('user'))
+        current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id=current_user.id).first()
+
+        sem_id = Semester.objects.get(id = request.data.get('semester'))
+
+        mode = str(request.data.get('mode'))
+        transaction_id = str(request.data.get('transaction_id'))
+        deposit_date = request.data.get('deposit_date')
+        utr_number = str(request.data.get('utr_number'))
+        fee_paid = request.data.get('fee_paid')
+        actual_fee = request.data.get('actual_fee')
+        reason = str(request.data.get('reason'))
+        if reason=="":
+            reason=None
+        # fee_receipt = request.FILES['fee_receipt']
+
+        obj = FeePayments(
+            student_id = current_user,
+            semester_id = sem_id,
+            mode = mode,
+            transaction_id = transaction_id,
+            # fee_receipt = fee_receipt,
+            deposit_date = deposit_date,
+            utr_number = utr_number,
+            fee_paid = fee_paid,
+            actual_fee = actual_fee,
+            reason = reason
+            )
+        obj.save()
+        
+        try:
+            semester = Semester.objects.get(id = request.data.get('semester'))
+            student = StudentRegistrationChecks.objects.filter(student_id = current_user, semester_id = semester).update(final_registration_flag = True)
+            return JsonResponse({'message': 'Final Registration Successfull'})
+        except Exception as e:
+            return JsonResponse({'message': 'Final Registration Failed '}, status=500)
+            
+    except Exception as e:
+        return JsonResponse({'message': 'Final Registration Failed '}, status=500)
+        
         
 # with this student can do his final registration for the upcoming semester
 @api_view(['POST'])
@@ -481,9 +639,8 @@ def student_final_registration(request):
         registration_status = StudentRegistrationChecks.objects.filter(student_id = current_user["id"], semester_id = sem_id)
         registration_status = serializers.StudentRegistrationChecksSerializer(registration_status , many = True ).data
         
-        if(registration_status[0] and registration_status[0]["pre_registration_flag"] == False):
+        if(len(registration_status)>0 and registration_status[0]["pre_registration_flag"] == False):
             return Response(data = {"message" : "Student haven't done pre registration yet."} , status= status.HTTP_400_BAD_REQUEST )
-
         mode = str(request.data.get('mode'))
         transaction_id = str(request.data.get('transaction_id'))
         deposit_date = request.data.get('deposit_date')
@@ -493,15 +650,15 @@ def student_final_registration(request):
         reason = str(request.data.get('reason'))
         if reason=="":
             reason=None
-        fee_receipt = request.FILES['fee_receipt']
+        # fee_receipt = request.FILES['fee_receipt']
 
-        print(fee_receipt)
+        # print(fee_receipt)
         obj = FeePayments(
             student_id = current_user_instance,
             semester_id = sem_id_instance,
             mode = mode,
             transaction_id = transaction_id,
-            fee_receipt = fee_receipt,
+            # fee_receipt = fee_receipt,
             deposit_date = deposit_date,
             utr_number = utr_number,
             fee_paid = fee_paid,
@@ -545,7 +702,7 @@ def student_backlog_courses(request):
 
 
 # with this acad admin can fetch the list of courses for any batch , semester and brach
-@api_view(['GET'])
+@api_view(['POST'])
 def get_course_list(request):
     
     programme = request.data['programme']
@@ -689,7 +846,16 @@ def faculty_assigned_courses(request):
         print(current_user.id)
         for curriculum_id in curriculum_ids:
             course_info = Curriculum.objects.filter(curriculum_id=curriculum_id).values_list('course_code','course_type','programme','branch','sem','course_id_id').first()
-            course_infos.append(course_info)
+            # course_infos.append(course_info)
+            context = {
+                "course_code": course_info[0],
+                "course_type": course_info[1],
+                "programme": course_info[2],
+                "branch": course_info[3],
+                "sem": course_info[4],
+                "course_id": course_info[5]
+            }
+            course_infos.append(context)
     
         return Response(data= course_infos , status=status.HTTP_200_OK)
     except Exception as e:
@@ -716,12 +882,102 @@ def get_next_sem_courses(request):
     except Exception as e:
         return Response(data = {"error" : str(e)} , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def add_one_course(request):
+    try:    
+        print(request.data)
+        current_user = get_object_or_404(User, username=request.data.get('user'))
+        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id=current_user.id).first()
 
+        sem_id = Semester.objects.get(id=request.data.get('semester'))
+        choice = request.data.get('choice')
+        slot = request.data.get('slot')
 
+        try:
+            course_id = Courses.objects.get(id=choice)
+            courseslot_id = CourseSlot.objects.get(id=slot)
+            print(courseslot_id.id)
+            print(courseslot_id.type)
+            print(courseslot_id.max_registration_limit)
+            if course_registration.objects.filter(course_slot_id_id=courseslot_id, student_id=current_user).count() == 1 and courseslot_id.type != "Swayam":
+                already_registered_course_id = course_registration.objects.filter(course_slot_id_id=courseslot_id, student_id=current_user)[0].course_id
+                print(already_registered_course_id)
+                msg = 'Already Registered in the course : ' +already_registered_course_id.code + '-'+ already_registered_course_id.name
+                return JsonResponse({'message' : msg})
+            if((course_registration.objects.filter(course_id=course_id, student_id=current_user).count() >= 1)):
+                return JsonResponse({'message': 'Already registered in this course!'}, status=200)
+            # Check if maximum course registration limit has not been reached
+            if course_registration.objects.filter(student_id__batch_id__year=current_user.batch_id.year, course_id=course_id).count() < courseslot_id.max_registration_limit and \
+                    (course_registration.objects.filter(course_id=course_id, student_id=current_user).count() == 0):
+                p = course_registration(
+                    
+                    course_id=course_id,
+                    student_id=current_user,
+                    course_slot_id=courseslot_id,
+                    semester_id=sem_id
+                )
+                p.save()
+                return JsonResponse({'message': 'Course added successfully'}, status=200)
+            else:
+                return JsonResponse({'message': 'Course not added because seats are full!'}, status=404)
+        except Exception as e:
+            print(e)
+            return JsonResponse({'message': 'Error adding course'}, status=500)
+    except Exception as e:
+        return JsonResponse({'message': 'Error adding course'}, status=500)
+    
 
-
-
-
+@transaction.atomic
+@api_view(['POST'])
+def verify_registration(request):
+    if request.data.get('status_req') == "accept" :
+        student_id = request.data.get('student_id')
+        student = Student.objects.get(id = student_id)
+        batch = student.batch_id
+        curr_id = batch.curriculum
+        
+        if(student.curr_semester_no+1 >= 9):
+            # print('----------------------------------------------------------------' , student.curr_semester_no)
+            sem_no = 8
+        else:
+            # print('----------------------------------------------------------------' , student.curr_semester_no)
+            sem_no = student.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
+        # print('----------------------------------------------------------------' , student.curr_semester_no)
+        
+        final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False, semester_id = sem_id)
+        
+        # final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False)
+        
+        with transaction.atomic():
+            for obj in final_register_list:
+                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+            academics_module_notif(request.user, student.id.user, 'registration_approved')
+            
+            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
+            return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
+         
+    elif request.data.get('status_req') == "reject" :
+        reject_reason = request.data.get('reason')
+        student_id = request.data.get('student_id')
+        student_id = Student.objects.get(id = student_id)
+        batch = student_id.batch_id
+        curr_id = batch.curriculum
+        if(student_id.curr_semester_no+1 >= 9):
+            sem_no = 8
+        else:
+            sem_no = student_id.curr_semester_no+1
+        sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
+        with transaction.atomic():
+            academicadmin = get_object_or_404(User, username = "acadadmin")
+            # FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
+            StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
+            FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
+            academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
+            return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
+        
+    return JsonResponse({'status': 'error', 'message': 'Error in processing'})
 
 
 

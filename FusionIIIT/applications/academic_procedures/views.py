@@ -400,7 +400,7 @@ def academic_procedures_student(request):
         except Exception as e:
             final_registered_courses = None
             final_registered_course_show = None
-            # drop_courses_options = None
+            drop_courses_options = None
             add_courses_options = None
             replace_courses_options = None
 
