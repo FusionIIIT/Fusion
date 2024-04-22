@@ -183,10 +183,10 @@
                     {%  include 'academic_procedures/registeredCourse.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="pre_registration">
-                    {%  include 'academic_procedures/register.html' %}
+                    {%  include 'academic_procedures/auto_pre_registration.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="final_registration">
-                    {%  include 'academic_procedures/finalregister.html' %}
+                    {%  include 'academic_procedures/auto_finalregister.html' %}
                 </div>
             </div>
             
@@ -204,7 +204,12 @@
                     <a class="item" data-tab="miscellaneous_5" >
                         Add/drop courses
                     </a>
-                    
+                    <a class="item" data-tab="miscellaneous_6" >
+                        Backlogs
+                    </a>
+                    <a class="item" data-tab="miscellaneous_7" >
+                        Replace
+                    </a>
                 </div>
                 <div class="ui active tab segment " data-tab="miscellaneous_2" >
                     <div class="ui pointing secondary menu">
@@ -270,7 +275,12 @@
                         {%  include 'academic_procedures/dropCourse.html' %}
                     </div>                
                 </div>
-                
+                <div class="ui tab segment" data-tab="miscellaneous_6" >
+                    {%  include 'academic_procedures/backlog.html' %}
+                </div>  
+                <div class="ui tab segment" data-tab="miscellaneous_7" >
+                    {%  include 'academic_procedures/replace.html' %}
+                </div>  
                 
             </div>
             
@@ -325,6 +335,9 @@
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
+                {% block sidepanel%} 
+                {% include 'notifications/academic_procedures_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}

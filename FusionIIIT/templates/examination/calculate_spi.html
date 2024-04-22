@@ -1,0 +1,4 @@
+{% with total_credits=total_credits|add:course_credits %}
+    {% with total_grade_points=total_grade_points|add:((grade_points * course_credits)) %}
+    {% endwith %}
+{% endwith %}
