@@ -37,7 +37,7 @@
                     </a>
                     <div class="active content">
                         <div class="link items">
-			    {% if request.user.extrainfo.user_type == 'faculty' %}
+			    {% if request.user.extrainfo.user_type == 'faculty' or 'student'%}
 			    <a class = "item" href="/ocms">
 			        <h4> Course Management </h4>
 			    </a>
@@ -121,9 +121,6 @@
 			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
-                 <a class="item" href="{% url 'hostelmanagement:hostel_view' %}">
-                        <h4>Examination</h4>
-                    </a> 
                         </div>
                     </div>
                 </div>
