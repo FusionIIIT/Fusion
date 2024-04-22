@@ -88,15 +88,15 @@
           <tr>
                <td>{{ registration.student_id_id}}</td>
                 <td>{{ registration.student_id.batch }}</td>
-                <td>{{ registration.curr_id.course_id_id }}</td>
-                <td>{{ registration.semester }}</td>
+                <td>{{ registration.course_id.name }}</td>
+                <td>{{ registration.semester_id_id }}</td>
                 <td>{{ year}}</td>
 
             <td>
               <input type="hidden" name="student_ids[]" value="{{registration.student_id_id }}">
               <input type="hidden" name="batch_ids[]" value="{{  registration.student_id.batch }}">
-              <input type="hidden" name="course_ids[]" value="{{ registration.curr_id.course_id_id }}">
-              <input type="hidden" name="semester_ids[]" value="{{ registration.semester }}">
+              <input type="hidden" name="course_ids[]" value="{{ registration.course_id_id }}">
+              <input type="hidden" name="semester_ids[]" value="{{ registration.semester_id_id }}">
               <input type="hidden" name="year_ids[]" value="{{ year }}">
               <input type="text" name="marks[]" value="75">
               

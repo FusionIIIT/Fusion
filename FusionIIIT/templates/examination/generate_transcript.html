@@ -74,14 +74,14 @@
             <div class="eight wide column">
                 {% for course, grade in courses_grades.items %}
                     {% if forloop.first %}
-                        <div class="ui dividing header">Roll No: {{ grade.roll_no }}</div>
+                        <div class="ui dividing header">Roll No: {{ grade.grade.roll_no }}</div>
                     {% endif %}
                 {% endfor %}
             </div>
             <div class="eight wide right aligned column">
                 {% for course, grade in courses_grades.items %}
                     {% if forloop.first %}
-                        <div class="ui dividing header">Semester: {{ grade.semester }}</div>
+                        <div class="ui dividing header">Semester: {{ grade.grade.semester }}</div>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -103,9 +103,9 @@
                 <tbody>
                     {% for course_detail, data in courses_grades.items %}
                         <tr>
-                            <td>{{ course_detail.course_id.course_name }}</td>
-                            <td>{{ course_detail.course_code }}</td>
-                            <td>{{ course_detail.credits }}</td>
+                            <td>{{ course_detail.name }}</td>
+                            <td>{{ course_detail.code }}</td>
+                            <td>{{ course_detail.credit }}</td>
                             <td>
     {% if data.all_authenticators_true %}
         {{ data.grade.grade }}
@@ -131,7 +131,7 @@
                 // Calculate SPI when page is loaded
                 window.onload = function() {
                     const courseGrades = [{% for course_detail, data in courses_grades.items %}
-                        { "credits": {{ course_detail.credits }}, "grade": "{{ data.grade.grade }}" },
+                        { "credits": {{ course_detail.credit }}, "grade": "{{ data.grade.grade }}" },
                     {% endfor %}];
                     const totalCredits = courseGrades.reduce((sum, { credits }) => sum + credits, 0);
                     let totalGradePoints = 0;

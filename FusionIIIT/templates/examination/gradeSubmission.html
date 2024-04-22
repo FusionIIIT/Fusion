@@ -38,7 +38,7 @@
                 <div class="default text">Select Item</div>
                 <div class="menu">
                   {% for course in courses_info %}
-                  <div class="item" data-value="{{ course.curriculum_id }}"> {{ course.course_id.course_name }} - {{ course.course_code}}</div>
+                  <div class="item" data-value="{{ course.id }}"> {{ course.code }}- {{ course.name }} -{{ course.version    }}</div>
               {% empty %}   
                   <div class="item">No Courses Available</div>
               {% endfor %}
@@ -54,16 +54,11 @@
                 <i class="dropdown icon"></i>
                 <div class="default text">Select Item</div>
                 <div class="menu">
-                    <div class="item" data-value="2016">2016</div>
-                    <div class="item" data-value="2017">2017</div>
-                    <div class="item" data-value="2018">2018</div>
-                    <div class="item" data-value="2019">2019</div>
-                    <div class="item" data-value="2020">2020</div>
-                    <div class="item" data-value="2021">2021</div>
-                    <div class="item" data-value="2022">2022</div>
-                    <div class="item" data-value="2023">2023</div>
-                    <div class="item" data-value="2024">2024</div>
-                   
+                  {% for working_year in working_years %}
+                  <div class="item" data-value="{{working_year.working_year }}"> {{ working_year.working_year }}</div>
+              {% empty %}   
+                  <div class="item">No Courses Available</div>
+              {% endfor %}
                 </div>
             </div>
         </div>
