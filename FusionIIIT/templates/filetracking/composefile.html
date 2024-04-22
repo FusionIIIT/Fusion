@@ -21,12 +21,12 @@
 
                     <div class="field">
                         <label>Title of File</label>
-                        <textarea rows="1" name="title" required></textarea>
+                        <textarea rows="1" name="title"></textarea>
                     </div>
 
                     <div class="field">
                         <label>Description</label>
-                        <textarea rows="3" name="desc" required></textarea>
+                        <textarea rows="3" name="desc"></textarea>
                     </div>
 
                     <div class="field" style="margin-top: 30px">
@@ -80,10 +80,6 @@
 
 <script type="text/javascript">
 
-
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
             value = $('#input_search1').val();
 
               $.ajax({
@@ -95,12 +91,8 @@
                 },
                 dataType: 'json',
                 success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
 
                     all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
                     app = []
                     $('#input_list1').html('');
                     for(var i=0;i<all_designations.length;i++){
@@ -111,14 +103,12 @@
                     console.log('error-------');
                 },
             });
-            console.log("dsfagdfdshadf");
         });
     </script>
 
     <script type="text/javascript">
         $('#input_search').keyup(function(){
 
-            console.log('asdasd');
             value = $('#input_search').val();
 
               $.ajax({
@@ -130,12 +120,8 @@
                 },
                 dataType: 'json',
                 success: function(response){
-                    console.log('coming-----------------------');
-
-
 
                     all_users = JSON.parse(response.users);
-                    console.log(all_users[0].fields.username);
                     app = []
                     $('#input_list').html('');
                     for(var i=0;i<all_users.length;i++){
@@ -146,7 +132,6 @@
                     console.log('error-------');
                 },
             });
-            console.log("dsfagdfdshadf");
         });
 </script>
 
@@ -171,7 +156,6 @@
         }
         
         function populateDropdown(values) {
-            console.log(values)
             var dropdown = $('#receiver_dropdown');
             dropdown.empty();
             $.each(values, function(index, value) {
@@ -179,15 +163,44 @@
             });
         }
     });
+
+    function preventUnsavedUnload(e) {
+        if (formIsModified() && notSaving(e)) { 
+            e.preventDefault();
+        } 
+    };
+
+    document.getElementById('form1').addEventListener('submit', function(event) {
+        window.removeEventListener('beforeunload', preventUnsavedUnload);
+    });
+
+    window.addEventListener('beforeunload', preventUnsavedUnload);
+
+    function notSaving(event) { 
+        if(event.target.tagName == "BUTTON" && event.target.hasAttribute('name')) {
+            if(event.target.getAttribute('name') == 'send' || event.target.getAttribute('name') == 'save')
+                return false;    
+            else    
+                return true;
+        } else {
+            return true;
+        } 
+    } 
+    
+    function formIsModified() {
+        var formInputs = document.querySelectorAll('input, textarea');
+        var hasValue = false;
+        const input_names = ['title', 'description', 'remarks', 'receiver', 'myfile']
+        
+        formInputs.forEach(function(input) {
+            if (input.hasAttribute('name') && input_names.includes(input.getAttribute('name')) && input.value.trim() !== '') { 
+                hasValue = true;
+                return;
+            }   
+        });
+        return hasValue;
+    }
+    
 </script>
 
 {% endblock %}
-
-<script type="text/javascript">
-    function ShowHideDiv() {
-        var chkAddress = document.getElementById("chkAddress");
-        var leaveAddress = document.getElementById("leaveAddress");
-        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
-    }
-</script>
-
