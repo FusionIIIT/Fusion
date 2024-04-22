@@ -850,14 +850,13 @@ def update_month_bill(request):
     """
     student = str(request.POST.get("rollNo")).upper()
     studentHere = Student.objects.get(id = student)
-    rebate_count = int(request.POST.get("RebateCount"))
-    print(rebate_count)
-    rebate_amount = int(request.POST.get("RebateAmount"))
-    print(rebate_amount)
     new_amount = int(request.POST.get("new_amount"))
     month = request.POST.get("Month")
     year = int(request.POST.get("Year"))
-    bill_base_amount = int(MessBillBase.objects.latest('timestamp').bill_amount)
+    try:
+        bill_base_amount = int(MessBillBase.objects.latest('timestamp').bill_amount)
+    except:
+        bill_base_amount = 150
     fixed_amount_per_month = int(bill_base_amount)*int(30)
 
     reg_main_obj = Reg_main.objects.get(student_id=student)
@@ -872,7 +871,7 @@ def update_month_bill(request):
         reg_main_obj.save() 
         existing_monthly_bill_object.save()
     except:
-        new_monthly_bill_obj = Monthly_bill(student_id = studentHere, rebate_amount=rebate_amount, rebate_count=rebate_count, month=month, year= year, total_bill = new_amount, amount=fixed_amount_per_month)
+        new_monthly_bill_obj = Monthly_bill(student_id = studentHere, month=month, year= year, total_bill = new_amount, amount=fixed_amount_per_month)
         curr_balance = curr_balance - new_amount
         reg_main_obj.balance = curr_balance
         reg_main_obj.save()
