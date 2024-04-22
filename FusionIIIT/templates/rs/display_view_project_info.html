@@ -1,9 +1,9 @@
-{% extends 'globals/base.html' %}
+
 
 {% load static %}
 
 {% block title %}
-IPR
+
 {% endblock %}
 
 {% block project_info %}
@@ -17,7 +17,7 @@ IPR
             
     </script>
     <div class="ui pointing secondary menu" style="font-size: 25px;">
-  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+  <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
     &nbsp;<span class="ui blue text header">{{ project.project_name }}</span>
   </label>
 </div>
@@ -58,16 +58,15 @@ IPR
         <div class="ui segments">
             <div class="ui segment">
                 <div class="ui relaxed divided list">
-                    
-                    
+       
                     <div class="item"  >
                         <div class="flexy">
                             <div class="content" id="width-half"> 
-                                <div class="header" >Project Investigator ID</div>
+                                <div class="header" >PROJECT INVESTIGATOR ID</div>
                                 <div class="description" >{{ project.project_investigator_id }}</div>
                             </div>
                             <div class="content" id="width-half" > 
-                                <div class="header " >Co-Project Investigator ID</div>
+                                <div class="header " >CO-PROJECT INVESTIGATOR ID</div>
                                 <div class="description" >{{ project.co_project_investigator_id }}</div>
                             </div>
                         </div>
@@ -76,11 +75,11 @@ IPR
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header" >Project Type</div>
+                            <div class="header" >PROJECT TYPE</div>
                             <div class="description" >{{ project.project_type }}</div>
                         </div>
                         <div class="content" id="width-half" >
-                            <div class="header" >Sponsored Agency</div>
+                            <div class="header" >SPONSORED AGENCY</div>
                             <div class="description" >{{ project.sponsored_agency }}</div>
                         </div>
                         </div>
@@ -89,11 +88,11 @@ IPR
                     <div class="item" >
                         <div class="flexy">
                             <div class="content" id="width-half">
-                                <div class="header" >Years</div>
+                                <div class="header" >YEARS</div>
                                 <div class="description" >{{ project.years }} years</div>
                             </div>
                             <div class="content" id="width-half" >
-                                <div class="header" >Project Status</div>
+                                <div class="header" >PROJECT STATUS</div>
                                 <br>
                                 {% if project.status == 0 %}
                                 <div class="ui teal label">OnGoing</div>
@@ -108,11 +107,11 @@ IPR
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header" >Start Date</div>
+                            <div class="header" >START DATE</div>
                             <div class="description" >{{ project.start_date }}</div>
                         </div>
                         <div class="content" id="width-half" >
-                            <div class="header" >Finish Date</div>
+                            <div class="header" >FINISH DATE</div>
                             <div class="description" >{{ project.finish_date }}</div>
                         </div>
                         </div>
@@ -121,7 +120,7 @@ IPR
                     <div class="item" >
                         <div class="flexy">
                         <div class="content" id="width-half">
-                            <div class="header"  >Financial Outlay</div>
+                            <div class="header"  >FINANCIAL OUTLAY</div>
                             <div class="description"  >
                                 {% if project.financial_outlay_status == 0 and request.user.extrainfo.user_type == "staff" %}
                                 <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
@@ -135,7 +134,7 @@ IPR
                             </div>
                         </div>
                         <div class="content" >
-                            <div class="header"  >Staff Allotment</div>
+                            <div class="header"  >STAFF ALLOTMENT</div>
                             <div class="description"  >
                                 {% if request.user.extrainfo.user_type == "staff" %}
                                 <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})"  onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
@@ -150,7 +149,7 @@ IPR
                     <div class="item">
                         <div class="flexy">
                         <div class="content" id="width-half" >
-                            <div class="header">Project Information file</div>
+                            <div class="header">PROJECT INFORMATION FILE</div>
                             <div class="description"  >
                                <a class="ui small grey equal-size-button button " id="k{{ project.project_id }}" onmouseover="changeText('k{{ project.project_id }}')" onmouseout="restoreText('k{{ project.project_id }}')" href="{{ project.project_info_file.url }}"><i class="eye icon"></i> </a>
                             </div>
@@ -158,9 +157,9 @@ IPR
                         {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
                         {% comment %} <div class="item"> {% endcomment %}
                             <div class="content" >
-                                <div class="header"  >Update Financial Outlay</div>
+                                <div class="header"  >UPDATE FINANCIAL OUTLAY</div>
                                 <div class="description"  >
-                                    <button class="ui small grey equal-size-button button " id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
+                                    <button class="ui small grey equal-size-button button" id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
                                 </div>
                             </div>
                             {% comment %} </div> {% endcomment %}
@@ -169,9 +168,10 @@ IPR
                     </div>
                 </div>
             </div>
+            
             <!-- <div class="item"> -->
 
-            {% if global_var == "aculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
+            {% if global_var == "faculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
             <div style=" font-size:22px; padding:8px; font-weight:bold"> Raise Staff / Expenditure request  </div>
             <form class="ui form" action="{% url 'research_procedures:add_staff_request' project.project_id %}"  method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -182,7 +182,7 @@ IPR
                         <select id="receiver" name="receiver" class="ui selection dropdown">
                             <option value="dean_rspc">RSPC Dean</option>
                             <option value="rspc_admin">RSPC Admin</option>
-                            <option value="CSE HOD">HOD (CSE)</option>
+                            <option value="HOD (CSE)">HOD (CSE)</option>
                             <option value="HOD (ME)">HOD (ME)</option>
                             <option value="HOD (ECE)">HOD (ECE)</option>
                             <option value="HOD (Design)">HOD (Design)</option>
@@ -194,6 +194,10 @@ IPR
                         <label  for="file_to_forward">Choose a file:</label>
                         <input type="file" id="file_to_forward" name="file_to_forward" required >
                     </div> 
+                    <div class="four wide field">
+                        <label  for="subject">Add Subject</label>
+                        <input type="text" id="subject" name="subject" required >
+                    </div> 
                     <div class="four wide field">   
                         <br>
                         <input class="submit-button" style="background-color: #007bff; color: #fff;border-radius:5px; border: none; padding: 10px 20px;margin-top:5px; cursor: pointer; width: 100%; transition: background-color 0.3s;"onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'" type="submit">
@@ -201,8 +205,15 @@ IPR
                 </div>
             </form> 
         <!-- </div> -->
+        
         </div>
+        
         {% endif %}
+        
+        <form action="{% url 'research_procedures:download_project_pdf' project.project_id %}" method="get">
+            {% csrf_token %}
+            <button class="ui small grey large-size-button button" style=" margin: 0.5rem " type="submit">GENERATE PROJECT SUMMARY</button>
+        </form>
 <script>
   function changeText(pid) {
     if(pid[0]=='h'){

@@ -1,7 +1,7 @@
-{% extends 'globals/base.html' %}
+
 {% load static %}
 {% block title %}
-IPR
+
 {% endblock %}
 {% block projects %}
 {% block body %}
@@ -141,6 +141,15 @@ IPR
   </label>
 </div>
 
+<form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_time_period' project_id %}" >
+
+  {% csrf_token %}
+  Change Project Duration
+  <div class="ui labeled input">
+  <input  name="updated_year" type="number" />
+  </div>
+  <button class="ui small grey equal-size-button button"  type="submit" > Update </button>
+</form>
 
 <form method="post" enctype="multipart/form-data"
   action="{% url 'research_procedures:add_financial_outlay' project_id %}">

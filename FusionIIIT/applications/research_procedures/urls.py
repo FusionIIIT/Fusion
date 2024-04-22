@@ -15,7 +15,6 @@ urlpatterns = [
       # path('add_requests/<id>/<pj_id>/',views.add_requests,name='add_requests'),
       url(r'^api/',include('applications.research_procedures.api.urls')),
       # path('view_requests/<id>/',views.view_requests),
-      
       path('view_project_info/<id>/',views.view_project_info),
       # path('submit_closure_report/<id>/',views.submit_closure_report, name="submit_closure_report"),
       # path('add_fund_requests/<pj_id>/',views.add_fund_requests, name="add_fund_requests"),
@@ -30,10 +29,14 @@ urlpatterns = [
       path('add_staff_request/<id>/',views.add_staff_request, name="add_staff_request"),
       path('inbox',views.inbox, name="inbox"),
       path('view_request_inbox',views.view_request_inbox, name="view_request_inbox"),
-      path('forward_request',views.forward_request, name="forward_request"),
+      path('forward_request/<id>/',views.forward_request, name="forward_request"),
       path('update_financial_outlay/<pid>/',views.update_financial_outlay,name="update_financial_outlay"),
       path('approve_request/<id>/',views.approve_request,name="approve_request"),
-      
+      path('view_file/<id>/',views.view_file,name="view_file"),
+      path('update_time_period/<id>/',views.update_time_period,name="update_time_period"),
+      path('change_year/<id>/',views.change_year,name="change_year"),
+      path('change_end_date/<id>/',views.change_end_date,name="change_end_date"),
+      path('download_project_pdf/<int:project_id>/', views.download_project_pdf, name='download_project_pdf'),
       #  path('serve-pdf/<str:filename>/', serve_pdf, name='serve_pdf'),
       
       

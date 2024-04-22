@@ -1,9 +1,8 @@
-{% extends 'globals/base.html' %}
 
 {% load static %}
 
 {% block title %}
-IPR
+
 {% endblock %}
 
 {% block view_projects %}
@@ -70,93 +69,73 @@ IPR
     </style>
 <div style="max-width:700px">
     <div class="ui pointing secondary menu" style="font-size:25px;">
-        <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+        <label style="text-transform: uppercase" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
             Inbox             
         </label>      
     </div>
-
-    <table class="ui celled table  custom-table">
+    <table class="ui celled table  custom-table medium">
         <thead>
             <tr style="background-color: grey; color: white; " >
-                <th style="text-align: center;">S.No.</th>
-                <th style="text-align: center;">From</th>
-                <th style="text-align: center;">Context</th>
-                {% comment %} <th style="text-align: center;">Attachments</th> {% endcomment %}
-                <th style="text-align: center;">File</th>
-                {% if global_var == "director" or global_var == "CSE HOD" or global_var == "rspc_admin" or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
-
-                <th style="text-align: center;">Forward</th>
-                {% endif %}
-                {% if global_var == "director" or global_var == "CSE HOD"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
-                <th style="text-align: center;">Approve</th>
-                {% endif %}
-                
+                <th style="text-align: center;text-transform: uppercase;">S.No.</th>
+                <th style="text-align: center;text-transform: uppercase">Request Author</th>
+                <th style="text-align: center;text-transform: uppercase">Context</th>
+                <th style="text-align: center;text-transform: uppercase">File</th>
+                <th style="text-align: center;text-transform: uppercase">Recive Date</th>
+                <th style="text-align: center;text-transform: uppercase">View File Tracking</th>
+                {% comment %} {% if global_var == "director" or global_var == "HOD (CSE)"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %} {% endcomment %}
+                {% comment %} <th style="text-align: center;">Approve</th> {% endcomment %}
+                {% comment %} {% endif %} {% endcomment %}
             </tr>
         </thead>
         <tbody>
-            {% comment %} {{files}} {% endcomment %}
             {% for data in files %}
-            
             <tr>
-                <td>{{forloop.counter}}</td>
-                <td>{{data.uploader.user}}</td>
-                <td>{{data.file_extra_JSON.message}}</td>
-                {% comment %} <td><button></button></td> {% endcomment %}
-                 {% comment %} <td><button class="ui small blue equal-size-button button" onclick="openFile(event,{{forloop.counter}})" >{{data.id}}</button> </td>  {% endcomment %}
+                <td>{{forloop.counter}}.</td>
+                <td>{{data.file_id.uploader.user}}</td>
+                <td>{{data.remarks}}</td>
             <td>
-                {% if data.upload_file %}
-               
-                <a id="fileLink" class="ui small grey equal-size-button button" href="{{data.upload_file.url}}" ><i class="large download icon"></i></a>
+                {% if data.file_id.upload_file %}
+                <a id="fileLink" class="ui small grey equal-size-button button" href="{{data.file_id.upload_file.url}}" ><i class="large download icon"></i></a>
                 {% else %}
                 <p>No file uploaded</p>
                 {% endif %}
             </td>
-            {% if global_var == "director" or global_var == "CSE HOD" or global_var == "rspc_admin" or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
-
-                 <td>
-                    
-                    <form method="post" enctype="multipart/form-data" action="{% url 'research_procedures:forward_request'  %}" >
-                        {% csrf_token %}
-                        
-                        <input name="file_id" value="{{data.id}}" type="hidden" >
-                        <input name="message" value="{{data.file_extra_JSON.message}}" type="hidden" >
-                        <div style="display:flex;flex-direction:row;">
-                            <div class="eight wide field">
-
-                                {% comment %} <label  for="receiver">select a role :</label> {% endcomment %}
-                                <select id="receiver" name="receiver_designation" class="ui selection dropdown small">
-                                    <option value="dean_rspc">RSPC Dean</option>
-                                    <option value="rspc_admin">RSPC Admin</option>
-                                    <option value="CSE HOD">HOD (CSE)</option>
-                                    <option value="HOD (ME)">HOD (ME)</option>
-                                    <option value="HOD (ECE)">HOD (ECE)</option>
-                                    <option value="HOD (Design)">HOD (Design)</option>
-                                    <option value="HOD (NS)">HOD (NS)</option>
-                                    <option value="Director">Director</option>
-                                </select>
-                            </div>
-                           
-                            <button style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"  type="submit"><i class="large share icon"></i></button>
-                        </div>
-                    </form>
+                <td>
+                    {{data.receive_date}}
                 </td>
-                {% endif %}
-
-                {% if global_var == "director" or global_var == "CSE HOD" or  global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
-            <td>
+                <td>
+                    <button onclick="window.location='/research_procedures/view_file/{{ data.file_id.id }}'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"
+                        >View File</button>
+                </td>
+                {% comment %} {% if global_var == "director" or global_var == "HOD (CSE)" or  global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %} {% endcomment %}
+            {% comment %} <td>
                 <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:approve_request' data.id  %}">
                     {% csrf_token %}
                     <button style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"  type="submit" >Approve</button>
-                    {% comment %} <input name = "receiver" >{% endcomment %}
                 </form>
-            </td>
-            {% endif %}
-
-                 {% comment %} <td><a href="{{ files }}"   >{{ data.id }}</a></td> {% endcomment %}
+            </td> {% endcomment %}
+            {% comment %} {% endif %} {% endcomment %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <div class="pagination" style="margin-top: 2rem;">
+        {% if current_page > 1 %}
+            <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
+        {% endif %}
+        
+        {% for page_num in total_pages %}
+            {% if page_num == current_page %}
+            <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
+            {% else %}
+            <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages|length %}
+         <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
+        {% endif %}
+    </div>
     
 {% endblock %}
 </div>

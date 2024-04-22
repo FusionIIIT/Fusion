@@ -13,6 +13,12 @@ from django.utils import timezone
 from .models import *
 from collections import defaultdict
 from applications.filetracking.sdk.methods import *
+from io import BytesIO
+from django.http import HttpResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle,Spacer
+from .models import projects, financial_outlay
 
 # Faculty can file patent and view status of it.
 
@@ -163,8 +169,6 @@ def add_projects(request):
         check = User.objects.filter(username=pid) 
 
         # print(check[0].username)
-
-
         
         check= HoldsDesignation.objects.filter(user__username= pid, designation__name= "Professor") #checking for pid to exist
 
@@ -229,13 +233,22 @@ def add_projects(request):
             uploader=request.user.username,
             uploader_designation="rspc_admin",
             receiver= pid,
+            subject= projectname,
             receiver_designation=project_investigator_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
             file_extra_JSON= { "message": "Project added successfully"},
             attached_file= project_info_file, 
         )
+        
+        research_procedures_notif(request.user, userpi_instance, "Project Added")
 
+        tracking_obj = Tracking.objects.get(file_id__id=file_x)
+        file_obj= File.objects.get(id=file_x)
+ 
+        tracking_obj.upload_file= file_obj.upload_file
+        tracking_obj.remarks= "Project added by RSPC Admin" 
+        tracking_obj.save()
         messages.success(request,"Project added successfully")
         categories = category.objects.all()
 
@@ -357,22 +370,44 @@ def add_requests(request,id,pj_id):
 @login_required
 def view_projects(request):
     queryset= projects.objects.all()
+    projects_per_page = 6
+    page_number = request.GET.get('page')
+
+    start_index = (int(page_number) - 1) * projects_per_page if page_number else 0
+    end_index = start_index + projects_per_page
+
+    paginated_projects = queryset[start_index:end_index]
+
+    # Calculate total pages
+    total_pages = (queryset.count() + projects_per_page - 1) // projects_per_page
 
     rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
     rspc_admin =rspc_admin.user.username
     if request.user.username == rspc_admin:
         notifs = request.user.notifications.all()
+        total_pages_list = [i for i in range(1, total_pages + 1)]
         data = {
         'notifications': notifs,
-        "projects": queryset,
+        'projects': paginated_projects,
+        'total_pages': total_pages_list,
+        'current_page': int(page_number) if page_number else 1,
         "username": request.user.username,
         }
         return render(request,"rs/view_projects_rspc.html", context= data)
 
     queryset= projects.objects.filter(project_investigator_id__username= request.user.username)
-   
+    start_index = (int(page_number) - 1) * projects_per_page if page_number else 0
+    end_index = start_index + projects_per_page
+
+    paginated_projects = queryset[start_index:end_index]
+
+    # Calculate total pages
+    total_pages = (queryset.count() + projects_per_page - 1) // projects_per_page
+    total_pages_list = [i for i in range(1, total_pages + 1)]
     data= {
-        "projects": queryset,
+        'projects': paginated_projects,
+        'total_pages': total_pages_list,
+        'current_page': int(page_number) if page_number else 1,
         "username": request.user.username,
     }
     # print(data)
@@ -437,6 +472,9 @@ def view_financial_outlay(request,pid):
 
     # print(data)
     return render(request,"rs/view_financial_outlay.html", context= data)
+
+
+
 
 @login_required
 def submit_closure_report(request,id):
@@ -607,10 +645,13 @@ def view_staff_details(request,pid):
         if year not in data_by_year:
             data_by_year[year] = []
         data_by_year[year].append({
+            'staff_allocation_id': record.staff_allocation_id,
             'staff_id' : record.staff_id,
             'staff_name': record.staff_name,
             'qualification': record.qualification,
-            'stipend': record.stipend
+            'stipend': record.stipend,
+            'start_date': record.start_date,
+            'end_date': record.end_date,
         })
 # Pass the organized data to the template
     context = {
@@ -673,7 +714,15 @@ def add_financial_outlay(request,pid):
 
 @login_required
 def inbox(request):
- 
+    
+    projects_per_page = 6
+    page_number = request.GET.get('page')
+
+    start_index = (int(page_number) - 1) * projects_per_page if page_number else 0
+    end_index = start_index + projects_per_page
+
+
+
     user_designation= request.session.get('currentDesignationSelected')
    
     print(user_designation)
@@ -684,7 +733,7 @@ def inbox(request):
     
     # There was some issue using view_inbox function, so I had to write the code here
     
-    data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures")
+    data= Tracking.objects.filter(receiver_id=user_obj, receive_design=user_designation, file_id__src_module="research_procedures").order_by('-receive_date')
     print(data)
     files= []
     count =0
@@ -693,14 +742,25 @@ def inbox(request):
         files.append( File.objects.get(id=file.file_id.id) )
 
     print(files)
+    paginated_projects = data[start_index:end_index]
+    
+    # Calculate total pages
+    total_pages = (data.count() + projects_per_page - 1) // projects_per_page
+    total_pages_list = [i for i in range(1, total_pages + 1)]
     data1={
-        "inbox": data,
-        "files": files
+        'inbox': paginated_projects,
+        'total_pages': total_pages_list,
+        'current_page': int(page_number) if page_number else 1,
+        "files": paginated_projects,
     }
     # print(data)
     return render(request, "rs/inbox.html",context= data1)
   
-  
+def view_file(request, id):
+    file1= File.objects.get(id=id)
+    tracks= Tracking.objects.filter(file_id=file1)
+
+    return render(request, "rs/view_file.html", context= {"file": file1, "tracks": tracks})
 
 @login_required
 def add_staff_request(request,id):
@@ -708,13 +768,11 @@ def add_staff_request(request,id):
         obj= request.POST
         projectid = int(id)
         receiver_designation = obj.get('receiver')
-
-        
         
         receiver_designation= get_designation_instance(receiver_designation)
         receiver = get_user_by_designation(receiver_designation).username
 
-
+        subject= obj.get('subject')
         sender = request.user.username
         file_to_forward= request.FILES.get('file_to_forward')
         project_instance=projects.objects.get(project_id=projectid)
@@ -729,9 +787,19 @@ def add_staff_request(request,id):
             receiver_designation=receiver_designation, 
             src_module="research_procedures",
             src_object_id= projectid,
+            subject= subject,
             file_extra_JSON= { "message": "Request Added." },
             attached_file= file_to_forward, 
         )
+
+        tracking_obj = Tracking.objects.get(file_id__id=file_x)
+        file_obj= File.objects.get(id=file_x)
+    
+        tracking_obj.upload_file= file_obj.upload_file
+        tracking_obj.remarks= "Request Added by " + request.user.username
+        tracking_obj.save()
+        
+
         messages.success(request,"request added successfully")
 
     return redirect("/research_procedures/view_project_info/"+ str(projectid))
@@ -759,40 +827,67 @@ def view_request_inbox(request):
     return render(request, "rs/view_request_inbox.html",context= data)
 
 @login_required
-def forward_request(request):
+def forward_request(request,id):
+    # forward_file(
+    #     file_id: int,
+    #     receiver: str,
+    #     receiver_designation: str,
+    #     file_extra_JSON: dict,
+    #     remarks: str = "",
+    #     file_attachment: Any = None) -> int:
     if request.method == 'POST':
         obj= request.POST
-        fileid = int(obj.get('file_id'))
         
-        message= obj.get('message')
-        designation = get_designation_instance(obj.get('receiver_designation'))
-        receiver_instance= get_user_by_designation(designation)
+        fileid = int(id)
+        filez= File.objects.get(id=fileid)
         
-        receiver_designation= designation
-
+        remarks = obj.get('remarks')
+        receiver_designation =obj.get('receiver_designation')
+        if receiver_designation == 'project_investigator':
+            project= projects.objects.get(project_id= filez.src_object_id )
+            receiver_instance= project.project_investigator_id
+            receiver_designation= getDesignation(receiver_instance.username)
+        else:
+            receiver_instance= HoldsDesignation.objects.get(designation__name=receiver_designation).user
+        attachment= request.FILES.get('attachment')
         receiver= receiver_instance.username
-        sender = request.user.username
-        
-        filex= get_file_by_id(fileid)
 
-        file2=create_file(
-            uploader=sender,
-            uploader_designation= getDesignation(sender),
+        filex= forward_file(
+            file_id= fileid,
             receiver= receiver,
             receiver_designation=receiver_designation, 
-            src_module="research_procedures",
-            src_object_id= filex.src_object_id,
-            file_extra_JSON= { "message": message },
-            attached_file= filex.upload_file, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
         )
-        
-        delete_file(fileid)
-        messages.success(request,"Request forwarded successfully")
+        if(receiver_designation == 'Professor' or receiver_designation == 'Assistant Professor' or receiver_designation == 'rspc_admin'):
+            research_procedures_notif(request.user, receiver_instance, "Request update")
+        messages.success(request,"Request forwarded successfully") 
+
+
     return redirect("/research_procedures/inbox")
 
     
     return redirect("/research_procedures/view_request_inbox")
         
+
+
+
+def update_time_period(request,id):
+    if request.method== "POST":
+
+        obj = request.POST
+        up_year= obj.get('updated_year')
+
+        project = get_object_or_404(projects, project_id=id)
+
+        project.years=up_year
+
+        project.save()
+
+        return redirect("/research_procedures/financial_outlay/"+str(id))
+
+
 @login_required
 def update_financial_outlay(request,pid):
 
@@ -873,6 +968,85 @@ def approve_request(request,id):
     return redirect("/research_procedures/inbox")
 
 
+
+def download_project_pdf(request, project_id):
+    # Retrieve project and financial outlay information
+    project = projects.objects.get(project_id=project_id)
+    financial_outlays = financial_outlay.objects.filter(project_id=project_id)
+
+    # Create a buffer for the PDF
+    buffer = BytesIO()
+
+    # Create a PDF document
+    pdf = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+
+    # Construct project info table data
+    project_data = [['Project ID', 'Project Name', 'Project Type', 'Sponsored Agency', 'Start Date', 'Finish Date'],
+                    [project.project_id, project.project_name, project.project_type, project.sponsored_agency,
+                     project.start_date, project.finish_date]]
+
+    # Construct financial outlay table data
+    financial_outlay_data = [['Financial Outlay ID', 'Category', 'Subcategory', 'Amount', 'Year']]
+    for outlay in financial_outlays:
+        financial_outlay_data.append([outlay.financial_outlay_id, outlay.category, outlay.sub_category, outlay.amount, outlay.year])
+
+    # Create project info table
+    project_table = Table(project_data)
+    project_table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                       ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                       ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                       ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                       ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                       ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                       ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+
+    # Create financial outlay table
+    financial_outlay_table = Table(financial_outlay_data)
+    financial_outlay_table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                                ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+
+    # Add tables to elements
+    elements.append(project_table)
+    elements.append(Spacer(1, 20)) 
+    elements.append(financial_outlay_table)
+
+    # Build the PDF
+    pdf.build(elements)
+
+    # Close the PDF buffer and return the response with PDF content for download
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=project_{project_id}.pdf'
+    return response
+
+
+def change_year(request,id):
+    if request.method == 'POST':
+        obj= request.POST
+        projectid = int(id)
+        year = obj.get('year')
+        project_instance=projects.objects.get(project_id=projectid)
+        project_instance.years= year
+        project_instance.save()
+        messages.success(request,"Year changed successfully")
+    return redirect("/research_procedures/view_financial_outlay/"+str(projectid))
+
+def change_end_date(request,id):
+    if request.method == "POST":
+        obj= request.POST
+        staff_allocations_id = int(id)
+        end_date = obj.get('end_date')
+        staff_allocation_instance = staff_allocations.objects.get(staff_allocation_id=staff_allocations_id)
+        staff_allocation_instance.end_date = end_date
+        staff_allocation_instance.save()
+        messages.success(request,"End date changed successfully")
+    return redirect("/research_procedures/view_staff_details/"+str(staff_allocation_instance.project_id.project_id))
 
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
