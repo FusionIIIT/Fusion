@@ -115,36 +115,39 @@ IPR
   </label>
 </div>
 
+<div class="ui active tab" style="width:100%">
 
-<form  method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_staff_details' project_id %}" >
+  
+  <form  method="post" enctype="multipart/form-data" action="{% url 'research_procedures:add_staff_details' project_id %}" >
   {% csrf_token %}
- 
-  <div class="container" id="container-{{year}}" >
-    <div class="staff-{{year}} catt">
-        <div >
-          <div class="ui labeled input" style="margin:5px;">
+  
+  <div class="container" id="container-{{year}}" style="margin: 5px;"  >
+    <div class="staff-{{year}} catt" style="display:flex;flex-direction:row;justify-content: space-between; margin: 7px;" >
+      <div style="display:flex;flex-direction:row;justify-content: space-between; margin: 5px;">
+      <!-- <div  > -->
+          <div class="ui labeled input" >
             <label for="staff_id" class="ui label">STAFF ID</label>
             <input name="staff_id-{{year}}-1" required id="staff_id-{{year}}-1" class="staff_id-{{year}}">
           </div>
-          <div class="ui labeled input" style="margin:5px;">
+          <div class="ui labeled input">
             <label for="staff_name" class="ui label">STAFF NAME</label>
             <input name="staff_name-{{year}}-1" required id="staff_name-{{year}}-1" class="staff_name-{{year}}">
           </div>
-        </div>
-        <div>
-          <div class="ui labeled input" style="margin:5px;">
+          <div class="ui labeled input">
             <label for="stipend" class="ui label">STIPEND</label>
             <input type="number" name="stipend-{{year}}-1" required id="stipend-{{year}}-1" class="stipend-{{year}}">
           </div>
-          <div class="ui labeled input" style="margin:5px;">
+          <div class="ui labeled input">
             <label for="amount" class="ui label">QUALIFICATION</label>
             <input name="qualification-{{year}}-1"  id="qualification-{{year}}-1" class="qualification-{{year}}">
           </div>
           
         </div>
-          <div class="ui labeled input" style="margin:5px">
-            <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})">REMOVE</button>
+          <div class="ui labeled input" style="margin: 5px;" >
+            <button class="remove_button-{{year}} invisible small" id="remove_button-{{year}}-1"  onclick="removeStaffsection(event, {{year}})"><i class="close icon large" ></i></button>
           </div>
+        <!-- </div> -->
+
       </div> 
       
     </div>
@@ -156,7 +159,8 @@ IPR
     {% comment %} <!-- {% endfor %} --> {% endcomment %}
     <br>
     <center><input type="submit" value="Submit" class="ui blue button" style="width:20%"></center>
-</form>
-
-{% endblock %} 
-{% endblock %}
+  </form>
+  
+</div>
+  {% endblock %} 
+  {% endblock %}

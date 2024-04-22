@@ -10,7 +10,7 @@
 
 {% block body %}
 
-<div class="ui active tab" data-tab="notesheet" style="width:830px;">
+<div class="ui active tab" data-tab="notesheet" style="width:100%;">
     <div class="ui two item menu">
         <a class="item"><b>Created By :-</b><b class="meta"
                 style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
@@ -26,7 +26,7 @@
                 <div class="content" style="padding-left: 26px; padding-top: 0.1px; height: auto; overflow-y: auto;">
                     <div class="item">
                         {% for t in tracks %}
-                        <div class="ui card" style="padding: 12px; width:750px;">
+                        <div class="ui card" style="padding: 12px; width:100%;">
                             <div class="comment">
                                 <div class="content">
                                     <div style="display:flex;justify-content: space-between;flex-direction: row; font-weight:normal">

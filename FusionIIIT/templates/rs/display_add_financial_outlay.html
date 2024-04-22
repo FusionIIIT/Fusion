@@ -141,19 +141,23 @@
   </label>
 </div>
 
-<form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_time_period' project_id %}" >
 
-  {% csrf_token %}
-  Change Project Duration
-  <div class="ui labeled input">
-  <input  name="updated_year" type="number" />
-  </div>
-  <button class="ui small grey equal-size-button button"  type="submit" > Update </button>
-</form>
+<div class="ui active tab" style="width:100%">
 
+  
+  <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_time_period' project_id %}" >
+    
+    {% csrf_token %}
+    Change Project Duration
+    <div class="ui labeled input">
+      <input  name="updated_year" type="number" />
+    </div>
+    <button class="ui small grey equal-size-button button"  type="submit" > Update </button>
+  </form>
+  
 <form method="post" enctype="multipart/form-data"
-  action="{% url 'research_procedures:add_financial_outlay' project_id %}">
-  {% csrf_token %}
+action="{% url 'research_procedures:add_financial_outlay' project_id %}">
+{% csrf_token %}
   {% for year in years %}
   <h3>Year - {{year}}</h3>
   <div class="container" id="container-{{year}}">
@@ -161,11 +165,11 @@
       <div class="f-group" style="position: relative; display: inline-block; vertical-align: middle;" >
         <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Category</label>
         <select name="category-select-{{year}}-1" required id="category-select-{{year}}-1" class="category-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; ;margin-left: 96px;"
-          onchange="populate(this.id,{{ category_subcategory_map|safe }},{{year|safe}})">
-          <option value="" > -- Choose Category -- </option>
-          {% for category , subcategories in category_subcategory_map.items %}
-          <option class="item" value="{{category}}">{{category}}</option>
-          {% endfor %}
+        onchange="populate(this.id,{{ category_subcategory_map|safe }},{{year|safe}})">
+        <option value="" > -- Choose Category -- </option>
+        {% for category , subcategories in category_subcategory_map.items %}
+        <option class="item" value="{{category}}">{{category}}</option>
+        {% endfor %}
         </select>
       </div>
       &nbsp;&nbsp;&nbsp;
@@ -182,21 +186,22 @@
       &nbsp;&nbsp;&nbsp;
       <div class="f-group ">
         <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"
-          onclick="removeCategorySection(event,{{year}},{{category_subcategory_map}})">Remove category</button>
+        onclick="removeCategorySection(event,{{year}},{{category_subcategory_map}})">Remove category</button>
       </div>
     </div>
   </div>
   <button class="f-group ui secondary button"style="background-color:grey"onmouseover="this.style.backgroundColor='grey'"
-                    onmouseout="this.style.backgroundColor='#9c9a9a'"
-    onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add category</button>
+  onmouseout="this.style.backgroundColor='#9c9a9a'"
+  onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add category</button>
   {% endfor %}
   <br>
   <br>
   <div style="display:flex;justify-content:center;">
-  <input type="submit" value="Submit"
+    <input type="submit" value="Submit"
     style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 20%;border-radius:5px;font-size:15px">
-    </div>
+  </div>
 </form>
 
+</div>
 {% endblock %}
 {% endblock %}

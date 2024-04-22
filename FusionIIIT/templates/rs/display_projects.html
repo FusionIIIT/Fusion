@@ -11,11 +11,24 @@
 {% block body %}
 
 
-
 <script>
-   
-        
+    $(document).ready(function(){
+        $('#sort-by-date-btn').click(function(){
+            sortByStartDate();
+        });
+
+        function sortByStartDate() {
+            var rows = $('tbody > tr');
+            rows.sort(function(a, b) {
+                var dateA = new Date($(a).find('.start-date').text()); // Get the start date from the start date column
+                var dateB = new Date($(b).find('.start-date').text());
+                return dateA - dateB;
+            });
+            $('tbody').empty().append(rows); // Replace the existing rows with the sorted rows
+        }
+    });
 </script>
+
 
 <style>
     .equal-size-button {
@@ -63,16 +76,25 @@
         <h2>No Projects</h2>
     </div>
     {% else %}
-<table class="ui celled table">
-    <thead>
-        <tr style="background-color: #4CAF50; color: white;">
-            <th style="text-transform: uppercase">Project Name</th>
-            <th style="text-transform: uppercase">Sponsored Agency</th>
-            <th style="text-transform: uppercase">Status</th>
-            {% if global_var == "rspc_admin" %}
-            <th style="text-transform: uppercase">Financial Outlay</th>
-            {% endif %}
-            <th style="text-transform: uppercase">Staff Details</th>
+<div class="ui active tab" style="width:100%">
+
+    <table class="ui celled table">
+        <thead>
+            <tr style="background-color: #4CAF50; color: white;">
+                <th style="text-transform: uppercase">
+                    <div style="display:flex">
+                        <div>
+                            Project Name 
+                        </div>
+                        
+                    </div>
+                </th>
+                <th style="text-transform: uppercase">Sponsored Agency</th>
+                <th style="text-transform: uppercase">Status</th>
+                {% if global_var == "rspc_admin" %}
+                <th style="text-transform: uppercase">Financial Outlay</th>
+                {% endif %}
+                <th style="text-transform: uppercase">Staff Details</th>
             <th style="text-transform: uppercase">Project Info</th>
             
         </tr>
@@ -112,10 +134,12 @@
             </td>
             {% endif %}
             <td>
+                <div>
                 {% if request.user.extrainfo.user_type == "staff" %}
                 <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})" onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
                 {% endif %}
-                <button id="hello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_staff_details/{{ project.project_id }}'"><i class="eye icon"></i></button>
+                <button style="margin-top:5px;" id="hello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_staff_details/{{ project.project_id }}'"><i class="eye icon"></i></button>
+                </div>
             </td>
             
             <td>
@@ -125,37 +149,38 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div class="pagination" style="margin-top: 2rem;">
+    {% if current_page > 1 %}
+    <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
+    {% endif %}
     
-    <div class="pagination" style="margin-top: 2rem;">
-        {% if current_page > 1 %}
-            <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
-        {% endif %}
-        
-        {% for page_num in total_pages %}
-            {% if page_num == current_page %}
-            <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
-            {% else %}
-            <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
-            {% endif %}
+    {% for page_num in total_pages %}
+    {% if page_num == current_page %}
+    <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
+    {% else %}
+    <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
+    {% endif %}
         {% endfor %}
         
         {% if current_page < total_pages|length %}
-         <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
+        <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
         {% endif %}
     </div>
-
     
-
-
-{% endif %}
+</div>
+    
+    
+    
+    {% endif %}
 </div>
 <script>
-  function changeText(pid) {
-    console.log(pid);
-    if(pid[0]=='h'){
-
-        document.getElementById(pid).innerHTML = "View";
-    }
+    function changeText(pid) {
+        console.log(pid);
+        if(pid[0]=='h'){
+            
+            document.getElementById(pid).innerHTML = "View";
+        }
     else if(pid[0]=='f')document.getElementById(pid).innerHTML = "Add";
     else if(pid[0]=='v')document.getElementById(pid).innerHTML = "View";
     else document.getElementById(pid).innerHTML = "Add";
