@@ -72,7 +72,4 @@ node_modules/
 
 FusionIIIT/static/
 package-lock.json
-
-
-.DS_Store
-
+# **/**/migrations/*

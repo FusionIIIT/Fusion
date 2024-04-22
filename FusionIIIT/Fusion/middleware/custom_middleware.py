@@ -19,10 +19,8 @@ def user_logged_in_middleware(get_response):
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
                 designation=[]
-                if str(user.extrainfo.user_type) == "student":
-                    designation.append(str(user.extrainfo.user_type))
-
-
+                
+                designation.append(str(user.extrainfo.user_type))
                 for i in design:
                     if str(i.designation) != str(user.extrainfo.user_type):
                         print('-------')
