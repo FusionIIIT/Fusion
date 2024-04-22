@@ -469,12 +469,13 @@ def generate_transcript(request):
     # Initialize a dictionary to store course grades
     course_grades = {}
 
-    total_course_registered = Register.objects.filter(
-        student_id=student_id, semester=semester)
-
+    total_course_registered = Student_grades.objects.filter(
+        roll_no=student_id, semester__lte=semester)
     # for each_course in total_course_registered:
     #     course_name = Curriculum.objects.filter(
     #         curriculum_id=each_course.curr_id_id)
+    
+    
 
     for course in courses_registered:
         try:
@@ -515,6 +516,7 @@ def generate_transcript(request):
 
     context = {
         'courses_grades': course_grades,
+        'total_course_registered':total_course_registered
     }
     #   print(context)
 
