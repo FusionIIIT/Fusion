@@ -2,6 +2,7 @@ from django.db import models
 from applications.academic_procedures.models import (course_registration)
 from applications.online_cms.models import (Student_grades)
 from applications.academic_information.models import Course
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
 # Create your models here.
 
 
@@ -20,7 +21,7 @@ class authentication(models.Model):
     authenticator_2 = models.BooleanField(default=False)
     authenticator_3 = models.BooleanField(default=False)
     year = models.DateField(auto_now_add=True)
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE, default=1)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, default=1)
     course_year = models.IntegerField(default=2024)
 
     @property
