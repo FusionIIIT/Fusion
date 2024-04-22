@@ -698,7 +698,7 @@ def submitEntergrades(request):
     students = course_registration.objects.filter(
         course_id_id=course_id, working_year=year)
 
-    print(students)
+    # print(students)
 
     context = {
         'registrations': students,
