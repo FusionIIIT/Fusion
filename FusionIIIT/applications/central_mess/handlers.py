@@ -15,7 +15,7 @@ from .forms import MinuteForm
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
+                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill, Update_Payment,
                       Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request, Semdates)
 from notification.views import central_mess_notif
 
@@ -765,6 +765,40 @@ def handle_reg_response(request):
     }
     return data
 
+
+def handle_update_payment_response(request):
+    id = request.POST['id_reg']
+    status = request.POST['status']
+    remark = request.POST['remark']
+    payment_req = Update_Payment.objects.get(pk=id)
+    payment_date = payment_req.payment_date
+    student = payment_req.student_id
+    payment_req.status = status
+    payment_req.update_remark=remark
+    
+    payment_req.save()
+    
+    if(status == 'accept'):
+        amount = payment_req.amount
+        reg_main_obj= Reg_main.objects.get(student_id=student)
+        new_balance = reg_main_obj.balance + amount
+        reg_main_obj.balance = new_balance
+        reg_main_obj.save()
+        new_payment_record = Payments(student_id=student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year= current_year())
+        new_payment_record.save()
+        
+        message = 'Your update payment request has been accepted.'
+        
+    else:
+        message = 'Your update payment request has been rejected.'    
+    
+    receiver = payment_req.student_id.id.user
+    central_mess_notif(request.user, receiver, 'leave_request', message)
+    data = {
+        'message': 'success'
+    }
+    return data
+    
 
 def handle_dreg_response(request):
     """

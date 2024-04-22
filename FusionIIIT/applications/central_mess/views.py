@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm, MessInfoForm,RegistrationRequest
+from .forms import MinuteForm, MessInfoForm,RegistrationRequest, UpdatePaymentRequest
 from .tasks import *
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
@@ -23,7 +23,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
 from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
-                       handle_rebate_response, add_special_food_request,
+                       handle_rebate_response, add_special_food_request, handle_update_payment_response,
                        handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response, update_month_bill,handle_add_reg)
 
 from notification.views import central_mess_notif
@@ -1567,6 +1567,21 @@ def respond_to_reg(request):
                 data = handle_dreg_response(request)    
     return JsonResponse(data)
     
+@csrf_exempt
+@login_required
+def respond_to_update_payment(request):
+    data = {
+        'status': 1
+    }
+    user = request.user
+    designation = HoldsDesignation.objects.select_related().filter(user=user)
+    for d in designation:
+        if d.designation.name == 'mess_manager':
+            data = handle_update_payment_response(request)
+            
+    return JsonResponse(data)
+
+
 
 def reg_request(request):
 
@@ -1597,6 +1612,18 @@ def reg_request(request):
                 return HttpResponseRedirect("/mess")  
 
             
+def update_payment(request):
+    user = request.user
+    extra_info = ExtraInfo.objects.select_related().get(user=user)    
+    student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+    if request.method == 'POST':
+        form = UpdatePaymentRequest(request.POST, request.FILES)
+
+        if form.is_valid():
+            temp=form.save(commit=False)
+            temp.student_id=student
+            temp.save()
+            return HttpResponseRedirect("/mess")
 
 @csrf_exempt
 def update_bill_excel(request):

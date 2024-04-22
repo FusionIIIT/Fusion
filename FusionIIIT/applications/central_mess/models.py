@@ -324,7 +324,7 @@ class Semdates(models.Model):
 
 
 class Update_Payment(models.Model):
-    student_id = models.ForeignKey(Reg_main, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     Txn_no =models.CharField(max_length=20)
     img = models.ImageField(upload_to='images/',default=None)
     amount=models.IntegerField(default=0)
