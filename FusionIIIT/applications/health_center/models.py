@@ -32,7 +32,7 @@ class Constants:
     )
 
 class Doctor(models.Model):
-    doctor_name = models.CharField(choices=Constants.NAME_OF_DOCTOR, max_length=50)
+    doctor_name = models.CharField(max_length=50)
     doctor_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
@@ -41,7 +41,7 @@ class Doctor(models.Model):
         return self.doctor_name
 
 class Pathologist(models.Model):
-    pathologist_name = models.CharField(choices=Constants.NAME_OF_PATHOLOGIST, max_length=50)
+    pathologist_name = models.CharField(max_length=50)
     pathologist_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
