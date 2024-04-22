@@ -24,7 +24,10 @@ urlpatterns = [
     #  create for GetForms
     url('getForms/', form_views.GetFormHistory.as_view(), name='getForms'),
     url('leaveBalance/', form_views.CheckLeaveBalance.as_view(), name='leaveBalance'),
-   
+    url('getDesignations/', form_views.DropDown.as_view(), name="designations"),
+    url('getOutbox/', form_views.GetOutbox.as_view(), name='outbox'),
+    url('getArchive/', form_views.ViewArchived.as_view(), name='archive'),
+    url('getuserbyid/', form_views.UserById.as_view(), name='userById'),
     # url(r'^$', views.service_book, name='hr2'),
     # url(r'^hradmin/$', views.hr_admin, name='hradmin'),
     # url(r'^edit/(?P<id>\d+)/$', views.edit_employee_details,
