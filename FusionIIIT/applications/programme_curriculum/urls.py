@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path, include
 from . import views
 from django.contrib import admin
-
+from applications.programme_curriculum.api import views as v2
 app_name = 'programme_curriculum'
 
 urlpatterns = [
@@ -66,4 +66,12 @@ urlpatterns = [
     path('forward_course_forms/<ProposalId>/',views.forward_course_forms,name='forward_course_forms'),
     path('view_inward_files/<ProposalId>/',views.view_inward_files,name='view_inward_files'),
     path('outward_files/',views.outward_files,name='outward_files'),
+
+    # urls for api view
+    path('api/programmes_ug/', v2.view_ug_programmes, name='view_ug_programmes_api'),
+    path('api/programmes_pg/', v2.view_pg_programmes, name='view_pg_programmes_api'),
+    path('api/programmes_phd/', v2.view_phd_programmes, name='view_phd_programmes_api'),
+    path('api/programme_info/', v2.get_programme_info, name='programme_info_api'),
+    path('api/curriculumns/', v2.view_curriculumns, name='curriculumns_api'),
+    path('api/add_programme/', v2.create_programme, name='add_programme_api'),
 ]
