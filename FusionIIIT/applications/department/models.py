@@ -5,7 +5,6 @@ from datetime import date
 # Create your models here.
 from applications.globals.models import ExtraInfo
 
-
 class SpecialRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     request_date = models.DateTimeField(default=date.today)

@@ -1,0 +1,100 @@
+{% block hall_all_students %}
+    <h2 align="center">Student Details</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+   
+
+    <div id="addStudentForm" style="display: none;">
+        <form id="studentForm" class="ui form">
+            <!-- Input fields for student details -->
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required>
+            <!-- Add more input fields for other student details -->
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    <table class="ui table" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                
+                <th>Programme</th>
+                <th>Batch</th>
+                
+                <th>Hall Number</th>
+                <th>Room Number</th>
+                <th>Specialization</th>
+                <th>Contact number</th>              
+                <th>Address</th>
+                <th>Edit info</th>
+                <th>Remove</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for stu in hostel_students_details %}
+            <tr>
+                <td>{{ stu.student_id }}</td>
+                <td>{{ stu.first_name }}</td>
+                <td>{{ stu.programme }}</td>
+                <td>{{ stu.batch }}</td>
+                <td>hall {{ stu.hall_number }}</td>
+                <td>{{ stu.room_number }}</td>
+                <td>{{ stu.specialization }}</td>              
+                <td>{{ stu.phone_number }}</td>
+                <td>{{ stu.address }}</td>
+                <td>
+                    
+                    
+                    <a href="{% url 'hostelmanagement:edit_student' stu.student_id %}" class="btn btn-primary">Edit</a>
+                </td>
+                <td>
+                    <a href="#" class="remove-student-btn btn btn-primary" data-student-id="{{ stu.student_id }}">Remove</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get all remove student buttons
+            const removeStudentBtns = document.querySelectorAll('.remove-student-btn');
+        
+            // Add click event listener to each button
+            removeStudentBtns.forEach(btn => {
+                btn.addEventListener('click', function (event) {
+                    event.preventDefault(); // Prevent default link behavior
+        
+                    const studentId = this.dataset.studentId;
+                    const confirmation = confirm('Are you sure you want to remove this student?');
+        
+                    if (confirmation) {
+                        // Create a form element
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/hostelmanagement/remove-student/${studentId}/`;
+        
+                        // Add CSRF token input
+                        const csrfTokenInput = document.createElement('input');
+                        csrfTokenInput.type = 'hidden';
+                        csrfTokenInput.name = 'csrfmiddlewaretoken';
+                        csrfTokenInput.value = '{{ csrf_token }}';
+                        form.appendChild(csrfTokenInput);
+        
+                        // Submit the form
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+
+        
+    </script>
+    
+    
+    
+{% endblock %}

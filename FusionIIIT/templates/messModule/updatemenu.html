@@ -1,0 +1,519 @@
+{% block update_menu %}
+{% load static %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu"> 
+        <a class=" ui active item" data-tab="" id="m1_update">
+            Menu : Mess1
+        </a>
+        <a class=" ui item" data-tab="" id="m2_update">
+            Menu : Mess2
+        </a>
+    </div>
+
+    
+    <div class="ui tab" data-tab="" id="m2_update_form">
+        <form class="ui form" method="post" action="{% url 'mess:update_menu2'%}">
+            <!--<form class="ui form" method="post" >-->
+                {% csrf_token %}
+        <div class="ui vertical segment">
+            <table class="ui definition table" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                </tr>
+            </thead>
+
+                <tbody>
+
+                <tr>
+                    
+                    <td>Monday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'MB' %}
+                                <td> <input placeholder="Food" name = "MB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'ML' %}
+                            <td> <input placeholder="Food" name = "ML2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'MD' %}
+                            <td> <input placeholder="Food" name = "MD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Tuesday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TB' %}
+                            <td> <input placeholder="Food" name = "TB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TL' %}
+                            <td> <input placeholder="Food" name = "TL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'TD' %}
+                            <td> <input placeholder="Food" name = "TD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Wednesday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WB' %}
+                            <td> <input placeholder="Food" name = "WB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WL' %}
+                            <td> <input placeholder="Food" name = "WL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'WD' %}
+                            <td> <input placeholder="Food" name = "WD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    
+                    <td>Thursday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THB' %}
+                            <td> <input placeholder="Food" name = "THB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THL' %}
+                            <td> <input placeholder="Food" name = "THL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'THD' %}
+                            <td> <input placeholder="Food" name = "THD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    
+
+                    <td>Frnameay</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FB' %}
+                            <td> <input placeholder="Food" name = "FB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FL' %}
+                            <td> <input placeholder="Food" name = "FL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'FD' %}
+                            <td> <input placeholder="Food" name = "FD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+
+                <tr>
+                   
+                    <td>Saturday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SB' %}
+                            <td> <input placeholder="Food" name = "SB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SL' %}
+                            <td> <input placeholder="Food" name = "SL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SD' %}
+                            <td> <input placeholder="Food" name = "SD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Sunday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUB' %}
+                            <td> <input placeholder="Food" name = "SUB2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUL' %}
+                            <td> <input placeholder="Food" name = "SUL2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for item in menu %}
+                        {% if item.mess_option == 'mess2' %}
+                            {% if item.meal_time == 'SUD' %}
+                            <td> <input placeholder="Food" name = "SUD2" value="{{item.dish}}" ></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+                
+            </tbody>
+            
+        </table>
+        <div class="ui row" style="margin-bottom: 4rem;">
+            <br>
+            <button type="submit" class="ui primary button right floated">
+                Save Menu
+            </button>
+        </div>
+
+            <br>
+            <div class="ui divider"></div>
+
+            
+        </div>
+        
+    </form>
+    </div>
+
+<div class="ui active tab" data-tab="" id="m1_update_form">
+    <form class="ui form" method="post" action="{% url 'mess:update_menu1'%}">
+        <!--<form class="ui form" method="post" >-->
+            {% csrf_token %}
+    <div class="ui vertical segment">
+        <table class="ui definition table" style="margin: auto;">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Breakfast</th>
+                <th>Lunch</th>
+                <th>Dinner</th>
+            </tr>
+        </thead>
+
+            <tbody>
+
+            <tr>
+                
+                <td>Monday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'MB' %}
+                            <td> <input placeholder="Food" name = "MB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'ML' %}
+                        <td> <input placeholder="Food" name = "ML1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'MD' %}
+                        <td> <input placeholder="Food" name = "MD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+
+            </tr>
+
+            <tr>
+                
+                <td>Tuesday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'TB' %}
+                        <td> <input placeholder="Food" name = "TB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'TL' %}
+                        <td> <input placeholder="Food" name = "TL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'TD' %}
+                        <td> <input placeholder="Food" name = "TD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+
+            </tr>
+
+            <tr>
+                
+                <td>Wednesday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'WB' %}
+                        <td> <input placeholder="Food" name = "WB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'WL' %}
+                        <td> <input placeholder="Food" name = "WL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'WD' %}
+                        <td> <input placeholder="Food" name = "WD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+
+            <tr>
+                
+                <td>Thursday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'THB' %}
+                        <td> <input placeholder="Food" name = "THB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'THL' %}
+                        <td> <input placeholder="Food" name = "THL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'THD' %}
+                        <td> <input placeholder="Food" name = "THD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+
+            <tr>
+                
+
+                <td>Frnameay</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'FB' %}
+                        <td> <input placeholder="Food" name = "FB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'FL' %}
+                        <td> <input placeholder="Food" name = "FL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'FD' %}
+                        <td> <input placeholder="Food" name = "FD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+            </tr>
+
+            <tr>
+               
+                <td>Saturday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SB' %}
+                        <td> <input placeholder="Food" name = "SB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SL' %}
+                        <td> <input placeholder="Food" name = "SL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SD' %}
+                        <td> <input placeholder="Food" name = "SD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+            </tr>
+
+            <tr>
+                
+                <td>Sunday</td>
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SUB' %}
+                        <td> <input placeholder="Food" name = "SUB1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SUL' %}
+                        <td> <input placeholder="Food" name = "SUL1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for item in menu %}
+                    {% if item.mess_option == 'mess1' %}
+                        {% if item.meal_time == 'SUD' %}
+                        <td> <input placeholder="Food" name = "SUD1" value="{{item.dish}}" ></td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+            </tr>
+            
+        </tbody>
+        
+    </table>
+    <div class="ui row" style="margin-bottom: 4rem;">
+        <br>
+        <button type="submit" class="ui primary button right floated">
+            Save Menu
+        </button>
+    </div>
+
+        <br>
+        <div class="ui divider"></div>
+
+        
+    </div>
+    
+</form>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function(){
+     $('#m1_update').on('click',function(){
+        $(this).addClass('active');
+         $('#m2_update').removeClass('active');
+         $('#m1_update_form').show();
+          $('#m2_update_form').hide();
+
+     });
+
+ });
+ $(document).ready(function(){
+     $('#m2_update').on('click',function(){
+        $(this).addClass('active');
+         $('#m1_update').removeClass('active');
+        $('#m2_update_form').show();
+          $('#m1_update_form').hide();
+
+     });
+
+ });
+</script>
+{% endblock %}

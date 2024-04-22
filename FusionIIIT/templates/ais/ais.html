@@ -47,7 +47,7 @@ Academic Information System
 
         <div class="ui large fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item" data-tab="first">
+            <a class="active item" data-tab="generateStudenList">
                 Generate Student List
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -59,6 +59,10 @@ Academic Information System
                 Allot Courses
                 <i class="right floated chevron right icon"></i>
             </a>
+            <a class="item" data-tab="allot_swayam">
+                Allot Swayam
+                <i class="right floated chevron right icon"></i>
+            </a>
             <a class="item" data-tab="third">
                 Academic Calendar
                 <i class="right floated chevron right icon"></i>
@@ -67,50 +71,52 @@ Academic Information System
                 Verify Registered Students
                 <i class="right floated chevron right icon"></i>
             </a>
-                <a class="item" data-tab="fourth">
-                    Time Tables
+            <a class="item" data-tab="fourth">
+                Time Tables
 
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                <i class="right floated chevron right icon"></i>
+            </a>
 
 
 
-                <a class="item" data-tab="second">
-                    Manage Students Profile
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class=" item" data-tab="proced_verify">
-                    Verify Registered Courses
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class=" item" data-tab="proced_results">
-                    Results
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <!-- <a class="item" data-tab="fifth">
-                Float Courses for Next Sem
+            <a class="item" data-tab="second">
+                Manage Students Profile
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <!-- <a class=" item" data-tab="proced_verify">
+                Verify Registered Courses
                 <i class="right floated chevron right icon"></i>
             </a> -->
-                <a class="item disabled" data-tab="sixth">
-                    Curriculum
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="seventh">
-                    Approve Branch Change
-                    <i class="right floated chevron right icon"></i>
-                </a>
+            <a class=" item" data-tab="proced_results">
+                Results
+                <i class="right floated chevron right icon"></i>
+            </a>
 
-                <a class="item" data-tab="ninth">
-                    Student Dashboard
-                    <i class="right floated chevron right icon"></i>
-                </a>
+            <a class="item" data-tab="fifth">
+                Pre Registration Courses
+                <i class="right floated chevron right icon"></i>
+            </a>
 
-                <!-- <a class="item" disabled="disabled" href="/aims">
+            <a class="item" data-tab="sixth">
+                Config Pre Registration Courses
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item" data-tab="seventh">
+                Approve Branch Change
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item" data-tab="ninth">
+                Student Dashboard
+                <i class="right floated chevron right icon"></i>
+            </a>
+            
+            <!-- <a class="item" disabled="disabled" href="/aims">
                 Manage Student Profile
                 <i class="right floated chevron right icon"></i>
             </a> -->
-                <!-- <a class="item" href="/aims">
+            <!-- <a class="item" href="/aims">
                 Senate
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -123,10 +129,15 @@ Academic Information System
                 <i class="right floated chevron right icon"></i>
             </a> -->
 
-                <a class="item disabled" data-tab="vassis" id="va">Verify Assistantship &ensp; <span
-                        class="circle">{{assistant_list_length}}</span>
-                    <i class="right floated chevron right icon"></i>
-                </a>
+            <a class="item" data-tab="tenth">
+                Curriculum
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item" data-tab="vassis" id="va">Verify Assistantship &ensp; <span
+                    class="circle">{{assistant_list_length}}</span>
+                <i class="right floated chevron right icon"></i>
+            </a>
 
         </div>
         <br><br>
@@ -135,7 +146,7 @@ Academic Information System
 
     <div class="eight wide column">
 
-        <div class="ui active tab segment" data-tab="first">
+        <div class="ui active tab segment" data-tab="generateStudenList">
             {% block generateSheet %}
             {% include 'ais/generateSheet.html' %}
             {% endblock %}
@@ -170,17 +181,25 @@ Academic Information System
             {% endblock %}
         </div>
 
-        <div class="ui tab segment" data-tab="fifth">
-            {% block min_credfloat_courses %}
-            {% include 'ais/new.html' %}
+        <!-- <div class="ui tab segment" data-tab="fifth"> -->
+        <!-- {% block min_credfloat_courses %} -->
+        <!-- {% include 'ais/new.html' %} -->
+        <!-- {% include 'ais/add_course.html' %} -->
+        <!-- {% endblock %} -->
+        <!-- </div> -->
+
+        <div class="ui tab segment" style="width: 100%;" data-tab="fifth">
+            {% block config_pre_registration %}
+            {% include 'ais/pre_registration_courses.html' %}
             {% endblock %}
         </div>
 
         <div class="ui tab segment" data-tab="sixth">
-            {% block curriculum %}
-            {% include 'ais/curriculum.html' %}
+            {% block config_pre_reg_courses %}
+            {% include 'ais/config_courseslot_courses.html' %}
             {% endblock %}
         </div>
+
 
         <div class="ui tab segment" data-tab="seventh">
             {% block branch_change %}
@@ -206,17 +225,33 @@ Academic Information System
             {% include 'ais/student_dashboard.html' %}
             {% endblock %}
         </div>
+        
+        <div class="ui tab segment" data-tab="allot_swayam">
+            {% block allot_swayam %}
+            {% include 'academic_procedures/swayam_list.html' %}
+            {% endblock %}
+        </div>
+
+
+        <div class="ui tab segment" data-tab="tenth">
+            {% block curriculum %}
+            {% include 'ais/curriculum.html' %}
+            {% endblock %}
+        </div>
     </div>
 
     <div class="three wide column">
 
-        <!-- <div class="row">
-        <div class="ui tab segment" data-tab="ninth">
+        <div class="row">
+        <!-- <div class="ui tab segment" data-tab="ninth">
         {% block filter_stu %}
             {% include 'ais/filter_student.html' %}
+            {% endblock %} -->
+            {% block sidepanel%} 
+            {% include 'notifications/academic_procedures_sidepanel.html' %} 
             {% endblock %}
         </div>
-    </div> -->
+    </div> 
     </div>
 </div>
 {% endblock %}

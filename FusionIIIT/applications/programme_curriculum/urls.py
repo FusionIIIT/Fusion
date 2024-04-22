@@ -49,4 +49,21 @@ urlpatterns = [
     path('admin_edit_discipline/<discipline_id>/', views.edit_discipline_form, name='edit_discipline_form'),
     path('admin_instigate_semester/<semester_id>/', views.instigate_semester, name='instigate_semester'),
     path('admin_replicate_curriculum/<curriculum_id>/', views.replicate_curriculum, name='replicate_curriculum'),
+    
+    
+    
+    #new
+    path('view_course_proposal_forms/',views.view_course_proposal_forms,name='view_course_proposal_forms'),
+    path('faculty_view_all_courses/', views.faculty_view_all_courses, name='faculty_view_all_courses'),
+    path('faculty_view_a_course/<course_id>/',views.faculty_view_a_course,name="faculty_view_a_course"),
+    path('reject_form/<ProposalId>/', views.reject_form, name='reject_form'),
+    path('new_course_proposal_file/',views.new_course_proposal_file,name='new_course_proposal_file'),
+    path('update_course_proposal_file/<course_id>/',views.update_course_proposal_file,name='update_course_proposal_file'),
+    
+    path('view_a_course_proposal_form/<CourseProposal_id>/',views.view_a_course_proposal_form,name='view_a_course_proposal_form'),
+    path('filetracking/<proposal_id>/',views.filetracking,name='filetracking'),
+    path('inward_files/',views.inward_files,name='inward_files'),
+    path('forward_course_forms/<ProposalId>/',views.forward_course_forms,name='forward_course_forms'),
+    path('view_inward_files/<ProposalId>/',views.view_inward_files,name='view_inward_files'),
+    path('outward_files/',views.outward_files,name='outward_files'),
 ]
