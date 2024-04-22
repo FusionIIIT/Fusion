@@ -18,9 +18,24 @@
         <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
             <i class="right floated chevron right icon"></i>
         </a>
-        <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
-            <i class="right floated chevron right icon"></i>
-        </a>
+        <div class="ui dropdown">
+            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
+            
+            <div class="menu">
+              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+          </div>
+          <script>
+            $('.ui.dropdown').dropdown();
+          </script>
     </div>
 {% endblock %} 
 

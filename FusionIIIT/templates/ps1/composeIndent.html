@@ -1,3 +1,4 @@
+
 {% extends 'ps1/ps1.html' %}
 {% load static %}
 
@@ -67,16 +68,7 @@
                     <textarea rows="3" name="specification"></textarea>
                 </div>
 
-                <!-- grade will classify item based on it's configuration like a 32 GB Ram computer = A ,8 GB Ram  = B  -->
-                <div class="field">
-                    <label>Item Grade Required*</label>
-                    <select name="grade">  
-                        <option value = "A">A</option>  
-                        <option value = "B">B</option>  
-                        <option value = "C">C</option>  
-                    </select>  
-                </div>
-
+                
 
                 <div class="field">
                     <label>Item Type*</label>
@@ -139,7 +131,7 @@
                    </label>
                 </div>
 
-                <div class="field">
+                <!-- <div class="field">
                     <label>Create as:
                         <select required class="ui fluid search selection dropdown" name="design">
                            <option selected hidden>Select</option>
@@ -150,13 +142,17 @@
 
                         </select>
                     </label>
-                </div>
+                </div> -->
 
                 <br>
 
                 <div class = "left floated item">
-                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
-                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" multiple>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                        <label for="file" style="flex: 1;">Attach Files (PDF, JPEG, PNG, JPG)</label>
+                        <label for="file-warning" style="color: red; font-size: smaller;">*Select only one file</label>
+                      </div>
+                      
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
                 <br>
@@ -194,7 +190,7 @@
                         </select>
 
 
-                       
+                       
                     </label>
                 </div> {% endcomment %}
 
@@ -206,19 +202,19 @@
                             <datalist  id="input_list">
 
                             </datalist>
-                       
+                       
                     </label>
         </div>
 
         <div class="field">
             <label>Receiver Designation:
-                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                    <datalist  id="input_list1">
+                <!-- <input type ="search" id="input_search1" list = "input_list1" name = "recieve"> -->
+                    <select  id="input_search1" name="recieve">
 
-                    </datalist>
+                    </select>
 
 
-               
+               
             </label>
         </div>
 
@@ -247,42 +243,7 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 
-<script type="text/javascript">
 
-
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
-            value = $('#input_search1').val();
-
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
-            });
-            console.log("dsfagdfdshadf");
-        });
-    </script>
 
     <script type="text/javascript">
         $('#input_search').keyup(function(){
@@ -317,6 +278,39 @@
             });
             console.log("dsfagdfdshadf");
         });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+            console.log(inputValue,"inputValue")
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    console.log(data,"data")
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            console.log(values)
+            var dropdown = $('#input_search1');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+            console.log(dropdown)
+        }
+    });
 </script>
 
 {% endblock %}

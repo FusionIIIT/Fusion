@@ -36,9 +36,8 @@
                         <th>Nomenclature</th>
                         <th>Item Type</th>
                         <th>Current Location</th>
-                        <th>Current Department</th>
+                        <th>Current Department/Section</th>
                         <th>Vendor</th>
-                        <th>Grade</th>
                         <th>Choose For Transfer</th>
                 </tr>
                 </thead>
@@ -56,7 +55,6 @@
                         <td>{{item.department}}</td>
                         <td>{{item.StockEntryId.vendor}}</td>
                         
-                        <td>{{item.StockEntryId.item_id.grade}}</td>
 
                         <td><input type="checkbox" value="{{item.id}}" name="selected_stock_item"></td>
                     </tr>
@@ -71,12 +69,11 @@
             <div class="field">
                 <label>Location of Storage</label><br>
                 <select name="dest_location">
-                    <option value="H1" selected>Vashistha Hostel</option>
-                    <option value="H3">Vivekananda Hostel</option>
-                    <option value="H4">AryaBhatta Hostel</option>
-                    <option value="SR1">Storage Room 1</option>
-                    <option value="SR2">Storage Room 2</option>
-                    <option value="SR3">Storage Room 3</option>
+                    <option value="SR1">LHTC</option>  
+                        <option value="SR2">Computer Center</option>  
+                        <option value="SR3">Panini Hostel</option>  
+                        <option value="SR4">Lab Complex</option>  
+                        <option value="SR5">Admin Block</option>  
                 </select>
             </div>
 
