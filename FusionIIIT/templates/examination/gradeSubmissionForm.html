@@ -216,10 +216,11 @@
 
     function finalizeGrades() {
         // Submit the form
+       
         document.querySelector('form').submit();
 
         // Redirect to the URL that handles Excel download
-        window.location.href = "{% url 'examination:submit' %}";
+        window.location.href = "{% url 'examination:updateGrades' %}";
     }
 </script>
 {% endblock %}
