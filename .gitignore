@@ -72,5 +72,5 @@ node_modules/
 
 FusionIIIT/static/
 package-lock.json
-
+*migrations/
 
