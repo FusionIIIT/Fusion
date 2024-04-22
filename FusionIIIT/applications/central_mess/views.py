@@ -959,26 +959,13 @@ class MenuPDF(View):
         extra_info = ExtraInfo.objects.select_related().get(user=user)
         y = Menu.objects.all()
 
-        if extra_info.user_type=='student':
-            student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-            mess_info = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
-            mess_option = mess_info.mess_option
-            context = {
-                'menu': y,
-                'mess_option': mess_option,
-                'date':str(today_g.date())
-            }
-            if mess_option=='mess2':
-                return render_to_pdf('messModule/menudownloadable2.html', context)
-            else:
-                return render_to_pdf('messModule/menudownloadable1.html', context)
-        else:
-            context = {
-                'menu': y,
-                'mess_option': 'mess2'
-            }
-            return render_to_pdf('messModule/menudownloadable2.html', context)
-        # return HttpResponse(pdf, content_type='application/pdf')
+        context = {
+            'menu': y,
+            'mess_option': 'mess2',
+            'date':str(today_g.date())
+        }
+        return render_to_pdf('messModule/menudownloadable2.html', context)
+    # return HttpResponse(pdf, content_type='application/pdf')
 
 
 class MenuPDF1(View):
