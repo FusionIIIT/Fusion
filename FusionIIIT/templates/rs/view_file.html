@@ -57,13 +57,15 @@ IPR
     The central-rail segment starts here!
     {% endcomment %}
 
-     <div >
-        {% block view_file %}
-        {% include 'rs/display_view_file.html' %}
-        {% endblock %}
-        </div>
+   
 
     <div class="eight wide column">
+
+        <div >
+            {% block view_file %}
+            {% include 'rs/display_view_file.html' %}
+            {% endblock %}
+            </div>
 
         {% comment %} <div class="ui tab segment" data-tab="fourth">
             {% block views %}
