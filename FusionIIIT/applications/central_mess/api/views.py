@@ -1,4 +1,5 @@
     #APIs
+from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
@@ -19,18 +20,46 @@ class FeedbackApi(APIView):
         data = request.data
         
         mess = data['mess']
-        _type = data['type']
-        desc = data['desc']
+        feedback_type = data['feedback_type']
+        description = data['description']
         username = get_object_or_404(User,username=request.user.username)
         idd = ExtraInfo.objects.get(user=username)
         student = Student.objects.get(id=idd.id)
         obj = Feedback(
             student_id = student,
             mess =mess,
-            feedback_type=_type,
-            description=desc
+            feedback_type=feedback_type,
+            description=description
         )
         obj.save()
+        return Response({'status':200})
+    
+    def put(self, request):
+        data = request.data
+
+        print(data)
+        
+        student_id = data['student_id']
+        mess = data['mess']
+        feedback_type = data['feedback_type']
+        description = data['description']
+        fdate = data['fdate']
+        new_remark = data['feedback_remark']
+
+        # username = get_object_or_404(User,username=request.user.username)
+        # idd = ExtraInfo.objects.get(user=username)
+        # student = Student.objects.get(id=idd.id)
+
+        feedback_request = get_object_or_404(Feedback,
+            student_id = student_id,
+            mess = mess,
+            feedback_type = feedback_type,
+            description = description,
+            fdate = fdate,
+        )
+        feedback_request.feedback_remark = new_remark
+        feedback_request.save()
+
         return Response({'status':200})
 
 
@@ -109,25 +138,31 @@ class Monthly_billApi(APIView):
         amount = data['amount']
         rebate_count = data['rebate_count']
         rebate_amount = data['rebate_amount']
-        #nonveg_total_bill = data['nonveg_total_bill']
+        total_bill = data['amount']-(data['rebate_count']*data['rebate_amount'])
         paid = data['paid']
 
         username = get_object_or_404(User,username=request.user.username)
         idd = ExtraInfo.objects.get(user=username)
         student = Student.objects.get(id=idd.id)
 
-        
-        obj = Monthly_bill(
-            student_id = student,
-            month = month,
-            year = year,
-            amount = amount,
-            rebate_count = rebate_count,
-            rebate_amount = rebate_amount,
-            # nonveg_total_bill = nonveg_total_bill,
-            paid = paid
-        )
-        obj.save()
+        try:
+            reg_main = Monthly_bill.objects.get(student_id=student, year = year, month = month)
+            reg_main.amount = amount
+            reg_main.rebate_count = rebate_count
+            reg_main.rebate_amount = rebate_amount
+            reg_main.total_bill = total_bill
+        except Monthly_bill.DoesNotExist:
+            reg_main = Monthly_bill.objects.create(
+                student_id=student,
+                month = month,
+                year = year,
+                amount = amount,
+                rebate_amount = rebate_amount,
+                rebate_count = rebate_count,
+                total_bill = total_bill,
+                paid = paid
+            )
+        reg_main.save()
         return Response({'status':200})                       
 
 class PaymentsApi(APIView):
@@ -210,7 +245,33 @@ class RebateApi(APIView):
             start_date = start_date
         )
         obj.save()
-        return Response({'status':200})       
+        return Response({'status':200})     
+
+    def put(self, request):
+        data = request.data
+
+        student_id = data['student_id']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        purpose = data['purpose']
+        new_status = data['status']
+        app_date = data['app_date']
+        leave_type = data['leave_type']
+        rebate_remark = data['rebate_remark']
+
+        # username = get_object_or_404(User,username=student_id)
+        # idd = ExtraInfo.objects.get(user=username)
+        # student = Student.objects.get(id=idd.id)
+        
+        rebate_request = get_object_or_404(Rebate, student_id=student_id, end_date=end_date, start_date=start_date, app_date=app_date, purpose=purpose, leave_type=leave_type)
+
+        # Update the status
+        rebate_request.status = new_status
+        rebate_request.rebate_remark = rebate_remark
+        rebate_request.save()
+
+        return Response({'status': 200})
+
 class Vacation_foodApi(APIView):
     def get(self, request):
         vacation_food_obj = Vacation_food.objects.all();
@@ -241,7 +302,45 @@ class Vacation_foodApi(APIView):
             start_date = start_date
         )
         obj.save()
-        return Response({'status':200})       
+        return Response({'status':200})   
+
+    def put(self, request):
+        print(request.data)
+        data = request.data
+        
+        student_id = data['student_id']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        purpose = data['purpose']
+        new_status = data['status']
+        app_date = data['app_date']
+
+
+        # username = get_object_or_404(User,username=request.user.username)
+        # idd = ExtraInfo.objects.get(user=username)
+        # student = Student.objects.get(id=idd.id)
+
+        try:
+            vacation_food_request = get_object_or_404(Vacation_food,
+                student_id = student_id,
+                app_date = app_date,
+                purpose = purpose,
+                end_date= end_date,
+                start_date = start_date
+            )
+            vacation_food_request.status = new_status
+            vacation_food_request.save()
+            return Response({'status':200})      
+        except:
+            vacation_food_request = Vacation_food.objects.filter(student_id = student_id,
+                app_date = app_date,
+                purpose = purpose,
+                end_date= end_date,
+                start_date = start_date
+            ).latest('app_date')
+            vacation_food_request.status = new_status
+            vacation_food_request.save()
+            return Response({'status':200})      
 
 class Nonveg_menuApi(APIView):
     def get(self, request):
@@ -331,7 +430,32 @@ class Special_requestApi(APIView):
             request = request_
         )
         obj.save()
-        return Response({'status':200})        
+        return Response({'status':200})    
+
+    def put(self, request):
+        print(request.data)
+        data = request.data
+        student_id = data['student_id']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        app_date = data['app_date']
+        request_= data['request']
+        item1 = data['item1']
+        item2 = data['item2']
+        new_status = data['status']
+
+        # Fetch the Special_request object you want to update
+        # username = get_object_or_404(User, username=request.user.username)
+        # idd = ExtraInfo.objects.get(user=username)
+        # student = Student.objects.get(id=idd.id)
+
+        special_request = get_object_or_404(Special_request, student_id=student_id, app_date=app_date, item1=item1, item2=item2, end_date=end_date, start_date=start_date, request=request_)
+
+        # Update the status
+        special_request.status = new_status
+        special_request.save()
+
+        return Response({'status': 200})    
 
 class Mess_meetingApi(APIView):
     def get(self, request):
@@ -485,3 +609,113 @@ class Get_Student_Details(APIView):
         serialized_obj = GetFilteredSerialzer(reg_main)
         data={'payment':payment_serialized_obj.data,'bill':bill_serialized_obj.data,'reg_records':reg_record_serialized_obj.data,'student_details':serialized_obj.data}
         return Response({'payload':data}) 
+    
+class RegistrationRequestApi(APIView):
+    def get(self, request):
+        registration_requests = Registration_Request.objects.all()
+        serializer = RegistrationRequestSerializer(registration_requests, many=True)
+        return Response({'status': 200, 'payload': serializer.data})
+
+    def post(self, request):
+        serializer = RegistrationRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 200})
+        return Response(serializer.errors, status=400)
+    
+    def put(self, request):
+        try:
+            data = request.data
+            print(data)
+            student_id = data['student_id']
+            start_date = data['start_date']
+            payment_date = data['payment_date']
+            amount = data['amount']
+            Txn_no = data['Txn_no']
+            img = data['img']
+            new_status = data['status']
+            new_remark = data['registration_remark']
+            mess_option = data['mess_option']
+
+            username = get_object_or_404(User, username=student_id)
+            idd = ExtraInfo.objects.get(user=username)
+            student = Student.objects.get(id=idd.id)
+
+            registration_request = get_object_or_404(Registration_Request, student_id = student_id,  start_date = start_date, payment_date = payment_date, amount = amount, Txn_no = Txn_no)
+            
+            registration_request.status = new_status
+            registration_request.registration_remark = new_remark
+            registration_request.save()
+
+            if (new_status == 'accept'):
+                new_payment_record = Payments(student_id = student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year=current_year())
+                new_payment_record.save()
+
+                try:
+                    reg_main = Reg_main.objects.get(student_id=student)
+                    reg_main.current_mess_status = "Registered"
+                    reg_main.balance = F('balance') + amount
+                except Reg_main.DoesNotExist:
+                    reg_main = Reg_main.objects.create(
+                        student_id=student,
+                        program=student.programme,
+                        current_mess_status="Registered",
+                        balance=amount,
+                        mess_option=mess_option
+                    )
+                reg_main.save()
+
+                new_reg_record = Reg_records(student_id=student, start_date=start_date, end_date=None)
+                new_reg_record.save()
+
+
+            return Response({'status': 200})
+        except Exception as e:
+            print({'error': str(e)})
+            return Response({'error': str(e)}, status=400)
+    
+class DeregistrationRequestApi(APIView):
+    def get(self, request):
+        deregistration_requests = Deregistration_Request.objects.all()
+        serializer = DeregistrationRequestSerializer(deregistration_requests, many=True)
+        return Response({'status': 200, 'payload': serializer.data})
+
+    def post(self, request):
+        serializer = DeregistrationRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 200})
+        return Response(serializer.errors, status=400)
+    
+    def put(self, request):
+        try:
+            data = request.data
+            print(data)
+            student_id = data['student_id']
+            end_date = data['end_date']
+            new_status = data['status']
+            new_remark = data['deregistration_remark']
+
+            username = get_object_or_404(User, username=student_id)
+            idd = ExtraInfo.objects.get(user=username)
+            student = Student.objects.get(id=idd.id)
+
+            deregistration_request = get_object_or_404(Deregistration_Request, student_id = student_id,  end_date = end_date)
+            
+            deregistration_request.status = new_status
+            deregistration_request.deregistration_remark = new_remark
+            deregistration_request.save()
+
+            if (new_status == 'accept'):
+
+                reg_main = Reg_main.objects.get(student_id=student)
+                reg_main.current_mess_status = "Deregistered"
+                reg_main.save()
+
+                reg_record = Reg_records.objects.filter(student_id=student).latest('start_date')
+                reg_record.end_date = end_date
+                reg_record.save()
+            return Response({'status': 200})
+        except Exception as e:
+            print({'error': str(e)})
+            return Response({'error': str(e)}, status=400)
