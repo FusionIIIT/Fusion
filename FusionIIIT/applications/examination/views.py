@@ -1,3 +1,4 @@
+from notifications.signals import notify
 from django.views import View
 from django.views.generic import View
 from django.http import HttpResponse
@@ -44,6 +45,9 @@ from .models import hidden_grades, authentication
 from rest_framework.permissions import AllowAny
 from applications.online_cms.models import (Student_grades)
 
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+
+
 @login_required(login_url='/accounts/login')
 def exam(request):
     """
@@ -68,7 +72,7 @@ def exam(request):
 
 @login_required(login_url='/accounts/login')
 def submit(request):
-    
+
     unique_course_ids = course_registration.objects.values(
         'course_id').distinct()
 
@@ -167,7 +171,6 @@ def entergrades(request):
     registrations = course_registration.objects.filter(
         course_id__id=course_id, semester_id=semester_id)
 
-
     context = {
         'registrations': registrations
     }
@@ -189,8 +192,6 @@ def verifygrades(request):
     return render(request, 'examination/verifygrades.html', context)
 
 
-
-
 def authenticate(request):  # new
     # Retrieve unique course IDs from hidden_grades
     unique_course_ids = Student_grades.objects.values('course_id').distinct()
@@ -200,14 +201,16 @@ def authenticate(request):  # new
         course_id_int=Cast('course_id', IntegerField()))
 
     # Retrieve course names and course codes based on unique course IDs
-    courses_info = Course.objects.filter(
+    courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list('course_id_int', flat=True))
-
-    
+    working_years = Student_grades.objects.values(
+        'year').distinct()
     context = {
         'courses_info': courses_info,
+        'working_years':working_years
 
     }
+    print(working_years)
     return render(request, '../templates/examination/authenticate.html', context)
 
 
@@ -216,7 +219,10 @@ def authenticategrades(request):  # new
     course_id = request.GET.get('course')
     year = request.GET.get('year')
 
-    course_instance = Course.objects.get(id=course_id)
+    print(course_id)
+    print(year)
+
+    course_instance = Courses.objects.get(id=course_id)
     registrations = authentication.objects.filter(
         course_id=course_instance, course_year=year)
 
@@ -227,7 +233,7 @@ def authenticategrades(request):  # new
             'year': year
         }
     else:
-        course_instance = Course.objects.get(id=course_id)
+        course_instance = Courses.objects.get(id=course_id)
         course_present = Student_grades.objects.filter(
             course_id=course_id, year=year)
         if (course_present):
@@ -235,7 +241,7 @@ def authenticategrades(request):  # new
                 course_id=course_instance, course_year=year)
             registrations = authentication.objects.filter(
                 course_id=course_instance, course_year=year)
-            
+
             context = {
                 'registrations': registrations,
                 'course_year': year,
@@ -248,7 +254,7 @@ def authenticategrades(request):  # new
 
     return render(request, 'examination/authenticategrades.html', context)
 
-from notifications.signals import notify
+
 # def examination_notif(sender, recipient, type):
 #     try:
 #         url = 'examination:examination'
@@ -262,9 +268,10 @@ from notifications.signals import notify
 #                     module=module,
 #                     verb=verb,
 #                     flag=flag)
-        
+
 #     except Exception as e:
 #         print("Error sending notification:", e)
+
 
 @login_required(login_url='/accounts/login')
 def announcement(request):
@@ -286,7 +293,7 @@ def announcement(request):
         user_info = usrnm.extrainfo
         ann_maker_id = user_info.id
         requests_received = get_to_request(usrnm)
-        
+
         if request.method == 'POST':
             batch = request.POST.get('batch', '')
             programme = request.POST.get('programme', '')
@@ -294,7 +301,7 @@ def announcement(request):
             upload_announcement = request.FILES.get('upload_announcement')
             department = request.POST.get('department')
             ann_date = date.today()
-            
+
             obj1, created = Announcements.objects.get_or_create(
                 maker_id=user_info,
                 batch=batch,
@@ -304,7 +311,7 @@ def announcement(request):
                 department=department,
                 ann_date=ann_date
             )
-            
+
             recipients = User.objects.all()  # Modify this query as per your requirements
             examination_notif(sender=usrnm, recipient=recipients, type=message)
 
@@ -315,10 +322,8 @@ def announcement(request):
             "request_to": requests_received
         })
     except Exception as e:
-        
+
         return render(request, 'examination/announcement_req.html', {"error_message": "An error occurred. Please try again later."})
-
-
 
 
 class Updatehidden_gradesMultipleView(APIView):
@@ -346,7 +351,7 @@ class Updatehidden_gradesMultipleView(APIView):
                 hidden_grade = hidden_grades.objects.create(
                     course_id=course_id, student_id=student_id, semester_id=semester_id, grade=grade)
                 hidden_grade.save()
-            
+
             hidden_grade.save()
 
         response = HttpResponse(content_type='text/csv')
@@ -387,7 +392,7 @@ class Submithidden_gradesMultipleView(APIView):
                 hidden_grade = hidden_grades.objects.create(
                     course_id=course_id, student_id=student_id, semester_id=semester_id, grade=grade)
                 hidden_grade.save()
-            
+
             hidden_grade.save()
 
         return render(request, '../templates/examination/grades_updated.html', {})
@@ -402,12 +407,10 @@ class update_authentication(View):
         authenticator2 = request.POST.get('authenticator2')
         authenticator3 = request.POST.get('authenticator3')
 
-        
-
         # Retrieve the registration object
         try:
-            
-            course_instance = Course.objects.get(id=course)
+
+            course_instance = Courses.objects.get(id=course)
             registration = authentication.objects.get(
                 course_id=course_instance, course_year=course_year)
         except authentication.DoesNotExist:
@@ -456,8 +459,6 @@ class DownloadExcelView(View):
         return response
 
 
-
-
 def generate_transcript(request):
 
     student_id = request.GET.get('student')
@@ -468,15 +469,13 @@ def generate_transcript(request):
     # Initialize a dictionary to store course grades
     course_grades = {}
 
-    total_course_registered = Register.objects.filter(
-        student_id=student_id, semester=semester)
-
+    total_course_registered = Student_grades.objects.filter(
+        roll_no=student_id, semester__lte=semester)
+    # for each_course in total_course_registered:
+    #     course_name = Curriculum.objects.filter(
+    #         curriculum_id=each_course.curr_id_id)
     
-
-    for each_course in total_course_registered:
-        course_name = Curriculum.objects.filter(
-            curriculum_id=each_course.curr_id_id)
-        
+    
 
     for course in courses_registered:
         try:
@@ -484,9 +483,9 @@ def generate_transcript(request):
             grade = Student_grades.objects.get(
                 roll_no=student_id, course_id=course.course_id)
 
-            course_detail = Curriculum.objects.get(
-                course_id=course.course_id, batch=grade.batch)
-            course_instance = Course.objects.get(id=course.course_id_id)
+            # course_detail = Curriculum.objects.get(
+            #     course_id=course.course_id, batch=grade.batch)
+            course_instance = Courses.objects.get(id=course.course_id_id)
             check_authentication_object = authentication.objects.filter(
                 course_id=course_instance, course_year=grade.year)
             all_authenticators_true = True
@@ -507,8 +506,7 @@ def generate_transcript(request):
                     course_id=course_instance, course_year=grade.year)
                 all_authenticators_true = False
 
-            
-            course_grades[course_detail] = {
+            course_grades[course_instance] = {
                 'grade': grade,
                 'all_authenticators_true': all_authenticators_true
             }  # Store the grade
@@ -516,12 +514,11 @@ def generate_transcript(request):
             # Grade not available
             course_grades[course] = "Grading not done yet"
 
-    
     context = {
         'courses_grades': course_grades,
+        'total_course_registered':total_course_registered
     }
-
-    
+    #   print(context)
 
     return render(request, 'examination/generate_transcript.html', context)
 
@@ -534,7 +531,6 @@ def generate_transcript_form(request):
         batch = request.POST.get('batch')
         specialization = request.POST.get('specialization')
         semester = request.POST.get('semester')
-        
 
         if specialization == None:
             students = Student.objects.filter(
@@ -568,14 +564,15 @@ def generate_transcript_form(request):
 def updateGrades(request):
     unique_course_ids = Student_grades.objects.values(
         'course_id').distinct()
-    
 
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
         course_id_int=Cast('course_id', IntegerField()))
 
     # Retrieve course names and course codes based on unique course IDs
-    courses_info = Course.objects.filter(
+
+    print(unique_course_ids)
+    courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list('course_id_int', flat=True))
 
     unique_batch_ids = Student_grades.objects.values(
@@ -593,8 +590,6 @@ def updateEntergrades(request):
     course_id = request.GET.get('course')
     semester_id = request.GET.get('semester')
     batch = request.GET.get('batch')
-
-    
 
     course_present = Student_grades.objects.filter(
         course_id=course_id, semester=semester_id, batch=batch)
@@ -619,7 +614,6 @@ class moderate_student_grades(APIView):
             return Response({'error': 'Invalid grade data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         for student_id, semester_id, course_id, grade in zip(student_ids, semester_ids, course_ids, grades):
-            
 
             try:
                 grade_of_student = Student_grades.objects.get(
@@ -631,8 +625,6 @@ class moderate_student_grades(APIView):
                 hidden_grade = hidden_grades.objects.create(
                     course_id=course_id, student_id=student_id, semester_id=semester_id, grade=grade)
                 hidden_grade.save()
-
-            
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="grades.csv"'
@@ -649,21 +641,30 @@ class moderate_student_grades(APIView):
 
 @login_required(login_url='/accounts/login')
 def submitGrades(request):
-    unique_course_ids = Register.objects.values(
-        'curr_id').distinct()
 
-    course_ids = [entry['curr_id'] for entry in unique_course_ids]
+    unique_course_ids = course_registration.objects.values(
+        'course_id').distinct()
+    working_years = course_registration.objects.values(
+        'working_year').distinct()
 
-    
 
-    courses_info = Curriculum.objects.filter(
-        curriculum_id__in=course_ids)
 
-   
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast('course_id', IntegerField()))
+
+    # Retrieve course names and course codes based on unique course IDs
+
+    print(unique_course_ids)
+    courses_info = Courses.objects.filter(
+        id__in=unique_course_ids.values_list('course_id_int', flat=True))
 
     context = {
         'courses_info': courses_info,
+        'working_years': working_years
     }
+
+    print(working_years)
 
     return render(request, '../templates/examination/gradeSubmission.html', context)
 
@@ -671,14 +672,20 @@ def submitGrades(request):
 def submitEntergrades(request):
     course_id = request.GET.get('course')
     year = request.GET.get('year')
+    if year is None or not year.isdigit():
+        message = "YEAR SHOULD NOT BE NONE"
+        context = {
+            'message': message
+        }
 
-    
-
-    courses_info = Curriculum.objects.get(
-        curriculum_id=course_id)
+        return render(request, '../templates/examination/message.html', context)
+        return HttpResponse("Invalid year parameter")
+        # Handle invalid year parameter
+        # You can return an error response or redirect the user to an error page
+    courses_info = Courses.objects.get(id=course_id)
 
     courses = Student_grades.objects.filter(
-        course_id=courses_info.course_id, year=year)
+        course_id=courses_info.id, year=year)
 
     if courses:
         message = "THIS Course was Already Submitted"
@@ -688,15 +695,16 @@ def submitEntergrades(request):
 
         return render(request, '../templates/examination/message.html', context)
 
-    students = Register.objects.filter(
-        curr_id=course_id, year=year)
+    students = course_registration.objects.filter(
+        course_id_id=course_id, working_year=year)
+
+    print(students)
 
     context = {
         'registrations': students,
         'curr_id': course_id,
         'year': year
     }
-
 
     return render(request, '../templates/examination/gradeSubmissionForm.html', context)
 
@@ -718,18 +726,16 @@ class submitEntergradesStoring(APIView):
 
         for student_id, batch_id, course_id, semester_id, year_id, mark, grade in zip(student_ids, batch_ids, course_ids, semester_ids, year_ids, marks, grades):
             # Create an instance of hidden_grades model and save the data
-            
+
             try:
                 grade_of_student = Student_grades.objects.get(
                     course_id=course_id, roll_no=student_id, semester=semester_id)
             except Student_grades.DoesNotExist:
                 # If the grade doesn't exist, create a new one
-                course_instance = Course.objects.get(id=course_id)
+                course_instance = Courses.objects.get(id=course_id)
                 student_grade = Student_grades.objects.create(
                     course_id=course_instance, roll_no=student_id, semester=semester_id, grade=grade, batch=batch_id, year=year_id, total_marks=mark)
                 student_grade.save()
-
-            
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="grades.csv"'

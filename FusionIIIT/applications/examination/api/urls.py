@@ -21,6 +21,7 @@ urlpatterns = [
 
     url(r'^generate_transcript_form/' , views.generate_transcript_form , name = 'generate_transcript_form'),
 
+# Here error
     url(r'^generate_transcript/' , views.generate_transcript , name = 'generate_transcript'),
 
     url(r'^getGrades/' , views.get_grade_for_course , name='get_grade_for_course'),
@@ -41,5 +42,10 @@ urlpatterns = [
     url(r'^announce/' , views.announce , name='announce/'),
 
     url(r'^submit_grades/$' , views.submit_grades , name='submit_grades/'),
+
+
+    # Delete this 
+
+    url(r'^add_student_details/' , views.add_student_details , name='add_student_details/'),
 
 ]

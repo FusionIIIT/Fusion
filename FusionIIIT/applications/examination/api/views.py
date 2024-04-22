@@ -13,7 +13,8 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from applications.academic_procedures.models import(course_registration , Register)
-from applications.academic_information.models import Course , Curriculum
+# from applications.academic_information.models import Course , Curriculum
+from applications.programme_curriculum.models import Course , Curriculum
 from applications.examination.models import(hidden_grades , authentication , grade)
 from applications.department.models import(Announcements , SpecialRequest)
 from applications.academic_information.models import(Student)
@@ -73,30 +74,64 @@ def fetch_roll_of_courses(request):
 
 
 
-@api_view(['GET', 'POST'])
+# @api_view(['GET', 'POST'])
+# def fetch_student_details(request):
+#     """
+#     This function is used to fetch student details based on course, semester, and batch.
+
+#     @variables:
+#         course_id - ID of the course for which student details are being fetched
+#         semester_id - ID of the semester for which student details are being fetched
+#         batch - Batch for which student details are being fetched
+#         course_present - Queryset containing student grades filtered by course, semester, and batch
+#         data - Dictionary containing the data to be returned in JSON format
+#     """
+#     if request.method == 'GET':
+#         # Retrieve query parameters
+#         course_id = int(request.query_params.get('course'))
+#         semester_id = int(request.query_params.get('semester'))
+#         year = int(request.query_params.get('batch'))
+#         print(course_id,semester_id,year)
+#         if course_id is None or semester_id is None or year is None:
+#             return JsonResponse({'error': 'Incomplete parameters provided'}, status=400)
+
+#         # Filter student grades based on provided parameters
+#         course_present = Student_grades.objects.filter(course_id=course_id, semester=semester_id, year=year)
+
+#         # Prepare data to return in JSON format
+#         data = {
+#             'registrations': list(course_present.values())  # Convert queryset to list of dictionaries
+#         }
+
+#         # Return JSON response
+#         return JsonResponse(data)
+
+
+
+@api_view(['GET'])
 def fetch_student_details(request):
     """
     This function is used to fetch student details based on course, semester, and batch.
-
-    @variables:
-        course_id - ID of the course for which student details are being fetched
-        semester_id - ID of the semester for which student details are being fetched
-        batch - Batch for which student details are being fetched
-        course_present - Queryset containing student grades filtered by course, semester, and batch
-        data - Dictionary containing the data to be returned in JSON format
     """
     if request.method == 'GET':
         # Retrieve query parameters
-        course_id = int(request.query_params.get('course'))
+        course_id = request.query_params.get('course')
         semester_id = request.query_params.get('semester')
-        batch = request.query_params.get('batch')
-        print(course_id,semester_id,batch)
-        if course_id is None or semester_id is None or batch is None:
+        year = request.query_params.get('year')
+        
+        if course_id is None or semester_id is None or year is None:
             return JsonResponse({'error': 'Incomplete parameters provided'}, status=400)
 
-        # Filter student grades based on provided parameters
-        course_present = Student_grades.objects.filter(course_id=course_id, semester=semester_id, batch=batch)
+        # Convert parameters to appropriate types
+        try:
+            course_id = int(course_id)
+            semester_id = (semester_id)
+            year = year
+        except ValueError:
+            return JsonResponse({'error': 'Invalid parameter types'}, status=400)
 
+        # Filter student grades based on provided parameters
+        course_present = Student_grades.objects.filter(course_id=course_id, semester=semester_id, year=year)
         # Prepare data to return in JSON format
         data = {
             'registrations': list(course_present.values())  # Convert queryset to list of dictionaries
@@ -104,6 +139,76 @@ def fetch_student_details(request):
 
         # Return JSON response
         return JsonResponse(data)
+    else:
+        return JsonResponse({'error': 'Only GET requests are allowed'}, status=405)
+
+
+
+
+
+@api_view(['GET', 'POST'])
+def add_student_details(request):
+    """
+    This function is used to add student details to the database.
+
+    @variables:
+        course_id - ID of the course for which student details are being added
+        semester - Semester for which student details are being added
+        year - Year for which student details are being added
+        roll_no - Roll number of the student
+        total_marks - Total marks obtained by the student
+        grade - Grade obtained by the student
+        batch - Batch for which student details are being added
+        student_data_list - List of dictionaries containing student details
+        success_count - Counter to keep track of successfully added students
+    """
+    if request.method == 'POST':
+        # Extract list of student details from the request
+        student_data_list = request.data.get('students', [])
+
+        # Validate data
+        if not student_data_list:
+            return Response({'error': 'No student data provided'}, status=400)
+
+        # Counter for successfully added students
+        success_count = 0
+
+        # Loop through each student data and add to database
+        for student_data in student_data_list:
+            # Extract data for each student
+            course_id = student_data.get('course_id')
+            semester = student_data.get('semester')
+            year = student_data.get('year')
+            roll_no = student_data.get('roll_no')
+            total_marks = student_data.get('total_marks')
+            grade = student_data.get('grade')
+            batch = student_data.get('batch')
+
+            # Validate data for each student
+            if not all([course_id, semester, year, roll_no, total_marks, grade, batch]):
+                continue  # Skip this student if data is incomplete
+
+            try:
+                # Get the Course instance
+                course_instance = Course.objects.get(pk=course_id)
+
+                # Create new Student_grades instance
+                Student_grades.objects.create(
+                    course_id=course_instance,
+                    semester=semester,
+                    year=year,
+                    roll_no=roll_no,
+                    total_marks=total_marks,
+                    grade=grade,
+                    batch=batch
+                )
+
+                success_count += 1  # Increment success count
+            except Course.DoesNotExist:
+                continue  # Skip this student if course does not exist
+
+        # Return response with success count
+        return Response({'success': f'{success_count} student(s) added successfully'}, status=201)
 
 
 
@@ -418,6 +523,75 @@ def generate_transcript_form(request):
 
 
 
+# @api_view(['POST', 'GET'])
+# def generate_transcript(request):
+#     """
+#     This function is used to generate a transcript for a student.
+
+#     @variables:
+#         student_id - ID of the student for whom the transcript is being generated
+#         semester - Semester for which the transcript is being generated
+#         student_grades - Queryset containing grades for the student in the specified semester
+#         transcript_data - List to hold transcript data for each course
+#         grade - Grade object for each course in the specified semester
+#         course_info - Dictionary containing course information to be included in the transcript
+#         student_info - Information about the student, such as CPI (Cumulative Performance Index)
+#         cpi - Cumulative Performance Index of the student
+#         course_detail - Details of the course obtained from Curriculum
+#     """
+#     if request.method == 'POST':
+#         student_id = request.data.get('student_id')
+#         semester = request.data.get('semester')
+        
+#         # Fetch the courses and grades for the student in the specified semester
+#         student_grades = Student_grades.objects.filter(roll_no=student_id, semester=semester)
+#         print(student_id,semester)
+
+#         total_course_registered = Student_grades.objects.filter(
+#         roll_no=student_id, semester__lte=semester)
+        
+#         # Prepare data to be returned
+#         transcript_data = []
+#         for grade in student_grades:
+#             # Access fields of each object
+#             course_info = {
+#                 'course_id': grade.course_id.name,
+#                 'total_marks': grade.total_marks,
+#                 'grade': grade.grade,
+#                 'batch': grade.batch,
+#             }
+            
+#             student_info = Student.objects.filter(id=student_id).first()
+
+#             ##### Student  Grades fetch all courses before semester find spi and update cpi in student table
+#             print(student_info.cpi)
+#             if student_info:
+#                 cpi = student_info.cpi
+#                 course_info['cpi'] = cpi
+#             else:
+#                 # Handle case where student info is not found
+#                 print("cpi is not there")
+#                 pass
+#             # Fetch course details from Curriculum
+#             course_detail = Course.objects.filter(id=grade.course_id.id).first()
+#             if course_detail:
+#                 # Include additional attributes
+#                 course_info['course_code'] = course_detail.code
+#                 course_info['credits'] = course_detail.credit
+#             else:
+#                 # If course details not found, assign default values
+#                 course_info['course_code'] = "Unknown"
+#                 course_info['credits'] = 0
+            
+#             transcript_data.append(course_info)
+        
+#         return JsonResponse({'transcript': transcript_data})
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'})
+
+
+
+
 @api_view(['POST', 'GET'])
 def generate_transcript(request):
     """
@@ -440,19 +614,27 @@ def generate_transcript(request):
         
         # Fetch the courses and grades for the student in the specified semester
         student_grades = Student_grades.objects.filter(roll_no=student_id, semester=semester)
-        print(student_id,semester)
+        print(student_id, semester)
+
+        # Fetch all courses registered by the student up to the specified semester
+        total_courses_registered = Student_grades.objects.filter(
+            roll_no=student_id, semester__lte=semester
+        ).values_list('course_id', flat=True).distinct().count()
+
         # Prepare data to be returned
         transcript_data = []
         for grade in student_grades:
             # Access fields of each object
             course_info = {
-                'course_id': grade.course_id.course_name,
+                'course_id': grade.course_id.name,
                 'total_marks': grade.total_marks,
                 'grade': grade.grade,
                 'batch': grade.batch,
             }
             
             student_info = Student.objects.filter(id=student_id).first()
+
+            ##### Student  Grades fetch all courses before semester find spi and update cpi in student table
             print(student_info.cpi)
             if student_info:
                 cpi = student_info.cpi
@@ -462,11 +644,11 @@ def generate_transcript(request):
                 print("cpi is not there")
                 pass
             # Fetch course details from Curriculum
-            course_detail = Curriculum.objects.filter(course_id=grade.course_id).first()
+            course_detail = Course.objects.filter(id=grade.course_id.id).first()
             if course_detail:
                 # Include additional attributes
-                course_info['course_code'] = course_detail.course_code
-                course_info['credits'] = course_detail.credits
+                course_info['course_code'] = course_detail.code
+                course_info['credits'] = course_detail.credit
             else:
                 # If course details not found, assign default values
                 course_info['course_code'] = "Unknown"
@@ -474,10 +656,53 @@ def generate_transcript(request):
             
             transcript_data.append(course_info)
         
-        return JsonResponse({'transcript': transcript_data})
+        return JsonResponse({'transcript': transcript_data, 'total_courses_registered': total_courses_registered})
     else:
         return JsonResponse({'error': 'Invalid request method'})
 
+
+
+
+
+
+
+
+# @api_view(['POST', 'GET'])
+# def get_curriculum_values(request):
+#     """
+#     This function is used to retrieve curriculum values for a given course.
+
+#     @variables:
+#         course_id - ID of the course for which curriculum values are being retrieved
+#         curriculum_values - Curriculum object corresponding to the course_id
+#     """
+#     try:
+#         course_id = request.data.get('course_id')
+        
+#         curriculum_values = Course.objects.get(id=course_id)
+#         print(Curriculum.objects.all())
+#         return JsonResponse({
+#             'course_code': curriculum_values.course_code,
+#             'credits': curriculum_values.credits,
+#             'course_type': curriculum_values.course_type,
+#             'programme': curriculum_values.programme,
+#             'branch': curriculum_values.branch,
+#             'sem': curriculum_values.sem,
+#             'optional': curriculum_values.optional,
+#             'floated': curriculum_values.floated
+#         })
+#     except Curriculum.DoesNotExist:
+#         print(Curriculum.objects.all())
+#         return JsonResponse({
+#             'course_code': 'Unknown',
+#             'credits': 0,
+#             'course_type': 'Unknown',
+#             'programme': 'Unknown',
+#             'branch': 'Unknown',
+#             'sem': 0,
+#             'optional': False,
+#             'floated': False
+#         })
 
 
 
@@ -486,40 +711,32 @@ def generate_transcript(request):
 def get_curriculum_values(request):
     """
     This function is used to retrieve curriculum values for a given course.
-
+    
     @variables:
         course_id - ID of the course for which curriculum values are being retrieved
-        curriculum_values - Curriculum object corresponding to the course_id
+        curriculum_values - Course object corresponding to the course_id
     """
     try:
         course_id = request.data.get('course_id')
         
-        curriculum_values = Curriculum.objects.get(course_id=course_id)
-        print(Curriculum.objects.all())
+        course_values = Course.objects.get(id=course_id)
+        
         return JsonResponse({
-            'course_code': curriculum_values.course_code,
-            'credits': curriculum_values.credits,
-            'course_type': curriculum_values.course_type,
-            'programme': curriculum_values.programme,
-            'branch': curriculum_values.branch,
-            'sem': curriculum_values.sem,
-            'optional': curriculum_values.optional,
-            'floated': curriculum_values.floated
+            'code': course_values.code,
+            'name': course_values.name,
+            'credit': course_values.credit,
+            'lecture_hours': course_values.lecture_hours,
+            'tutorial_hours': course_values.tutorial_hours,
+            'pratical_hours': course_values.pratical_hours,
+            'discussion_hours': course_values.discussion_hours,
+            'project_hours': course_values.project_hours,
+            'pre_requisits': course_values.pre_requisits,
+            # Add other fields as needed
         })
-    except Curriculum.DoesNotExist:
-        print(Curriculum.objects.all())
+    except Course.DoesNotExist:
         return JsonResponse({
-            'course_code': 'Unknown',
-            'credits': 0,
-            'course_type': 'Unknown',
-            'programme': 'Unknown',
-            'branch': 'Unknown',
-            'sem': 0,
-            'optional': False,
-            'floated': False
+            'error': 'Course not found for the given ID',
         })
-
-
 
 
 
@@ -570,7 +787,7 @@ def get_course_names(request):
     if request.method == 'GET':
         # Retrieve all course names and IDs
         courses = Course.objects.all()
-        course_data = [{'id': course.id, 'name': course.course_name} for course in courses]
+        course_data = [{'id': course.id, 'name': course.name} for course in courses]
         
         if not course_data:
             return JsonResponse({'error': 'No courses found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -765,11 +982,14 @@ def get_registered_students_roll_no(request):
 
     try:
         # Filter course registrations by course_id and year
-        registrations = Register.objects.filter(curr_id=course_id, year=year)
+        registrations = course_registration.objects.filter(course_id=course_id, working_year=year)
+        # registrations = Register.objects.filter(curr_id=course_id)
+        print(registrations)
         # Serialize the queryset
         data = []
         for registration in registrations:
             # Access fields of the related Student instance
+            print(registration)
             student_data = {
                 'roll_no': registration.student_id.id.user.username,
                 'name': registration.student_id.id.user.first_name,  # Assuming first_name is a field of the User model
@@ -786,11 +1006,11 @@ def get_registered_students_roll_no(request):
                 student_data['grade'] = student_grade.grade
                 student_data['marks'] = student_grade.total_marks
                 
-                print(student_grade)
+                # print(student_grade)
             except Student_grades.DoesNotExist:
                 print("Didn't find grades for roll_no:", registration.student_id.id, "and course_id:", course_id)
                 pass
-            print(student_data)
+            # print(student_data)
             data.append(student_data)
         # Return the serialized data in the response
         return JsonResponse({'registrations': data}, status=200)
