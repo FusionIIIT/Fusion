@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation
+from .sdk.methods import get_HoldsDesignation_obj
 
 
 def user_check(request):
@@ -36,3 +37,15 @@ def user_is_student(view_func):
             return view_func(request, *args, **kwargs)  
     return _wrapped_view  
 
+def dropdown_designation_valid(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        designation_name = request.session.get('currentDesignationSelected', 'default_value') #from dropdown
+        username = request.user
+        try:
+            designation_id = get_HoldsDesignation_obj(
+            username, designation_name).id 
+        except:
+            return render(request, 'filetracking/invalid_designation.html', {'curr_des' : designation_name})
+        else:
+            return view_func(request, *args, **kwargs)  
+    return _wrapped_view  

@@ -351,4 +351,3 @@ def compounder_view_api(request):                                               
     else:
         resp = {'message': 'invalid request'}
         return Response(data=resp,status=status.HTTP_404_NOT_FOUND)                                   # compounder view ends
-

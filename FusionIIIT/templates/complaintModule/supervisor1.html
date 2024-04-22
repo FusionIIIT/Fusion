@@ -33,7 +33,6 @@
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             
-            {% if  request.user.extrainfo.user_type == "faculty"    %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
@@ -51,7 +50,7 @@
                     Feedback
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                
                 <!-- <a class=" item" data-tab="fourth">
                     View Caretaker
                     <i class="right floated chevron right icon"></i>
@@ -60,7 +59,7 @@
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i> 
                 </a> -->
-                {% if global_var == "ccsupervisor" %}
+                {% if "supervisor" in global_var %}
                 <a class="item" data-tab="fourth">
                     Redirected Complaints
                     <i class="right floated chevron right icon"></i>

@@ -86,7 +86,15 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb = "You have been added to the mess committee. "
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    
+def placement_cellNotif(sender, recipient, type):
+    url = 'placement:placement'
+    module = 'Placement Cell'
+    sender = sender
+    recipient = recipient
+    verb = ''
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type):
     url='visitorhostel:visitorhostel'
@@ -109,7 +117,7 @@ def visitors_hostel_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def healthcare_center_notif(sender, recipient, type):
+def healthcare_center_notif(sender, recipient, type,message):
     url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
@@ -117,17 +125,28 @@ def healthcare_center_notif(sender, recipient, type):
     verb = ''
     if type == 'appoint':
         verb = "Your Appointment has been booked"
-    if type == 'amb_request':
+    elif type == 'amb_request':
         verb = "Your Ambulance request has been placed"
-    if type == 'Presc':
+    elif type == 'presc':
         verb = "You have been prescribed some medicine"
-    if type == 'appoint_req':
+    elif type == 'appoint_req':
         verb = "You have a new appointment request"
-    if type == 'amb_req':
+    elif type == 'feedback_submitted':
+        verb = "Your feedback has been submitted"
+    elif type == 'feedback_res':
+        verb = "You have a new feedback"
+    elif type == 'amb_req':
         verb = "You have a new ambulance request"
-
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-
+    elif type == 'new_announce':
+        verb = message
+        flag='announcement'
+    elif type == 'rel_forward':
+        verb = "You have a new medical relief forward request"
+    elif type == 'rel_approve':
+        verb = "You have a new medical relief approval request"
+    elif type == 'rel_approved':
+        verb = 'Your medical relief request has been approved' 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
 
 def file_tracking_notif(sender, recipient,title):
     url='filetracking:inward'
@@ -136,6 +155,13 @@ def file_tracking_notif(sender, recipient,title):
     recipient = recipient
     verb = title
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+def prog_and_curr_notif(sender, recipient,title):
+    url='programme_curriculum:inward_files'
+    module='Programme and Curriculum'
+    sender = sender
+    recipient = recipient
+    verb = title
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
@@ -167,7 +193,6 @@ def scholarship_portal_notif(sender, recipient, type):
     elif type == 'Reject_Silver':
         verb = "Your Convocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-
 
 
 
@@ -346,7 +371,7 @@ def department_notif(sender, recipient, type):
                 verb=verb,
                 flag=flag)
 def examination_notif(sender, recipient, type):
-    url='examination:examination'
+    url='examination:updateGrades'
     module='examination'
     sender = sender
     recipient = recipient
@@ -379,19 +404,16 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
 
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-
-
 def research_procedures_notif(sender,recipient,type):
-    url = 'research_procedures:patent_registration'
+    url = 'research_procedures'
     module = 'Research Procedures'
     sender = sender
     recipient = recipient
     verb = ""
-
-    if type == "Approved":
-        verb = "Your Patent has been Approved"
-    elif type == "Disapproved":
-        verb = "Your Patent has been Rejected"
+    if type == "Project Added":
+        verb = "Your Project has been Added"
+    elif type == "Request update":
+        verb = "Your Request has been Updated"+ " by "+ str(sender)
     elif type == "Pending":
         verb = "Your Patent has been Pending, wait for the response"
     elif type == "submitted":
@@ -400,4 +422,14 @@ def research_procedures_notif(sender,recipient,type):
         verb = "A new Patent has been Created"
 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+    
+def course_management_notif(sender, recipient, type,  course, course_name, course_code, flag):
+    url = 'online_cms:course'
+    module="Course Management"
+    sender = sender
+    recipient = recipient
+    verb = type
+ 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag, course_code=course_code, course=course, cname = course_name)
 
