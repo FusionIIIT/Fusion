@@ -1,21 +1,31 @@
+from sqlite3 import IntegrityError
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import File, Tracking
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.template.defaulttags import csrf_token
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
-from django.http import JsonResponse
-from timeit import default_timer as time
-from notification.views import office_module_notif, file_tracking_notif
-from .utils import *
+from django.views.decorators.http import require_POST
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+
+from .models import File, Tracking
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from .utils import *
 from .sdk.methods import *
 from .decorators import *
+
+from timeit import default_timer as time
+from notification.views import office_module_notif, file_tracking_notif
+
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 import json
+import zipfile
+import os
 
 
 @login_required(login_url="/accounts/login/")
@@ -58,8 +68,9 @@ def filetracking(request):
                         request, "File should not be greater than 10MB")
                     return redirect("/filetracking")
 
+                form_remarks = request.POST.get('remarks')
                 extraJSON = {
-                    'remarks': request.POST.get('remarks'),
+                    'remarks': form_remarks if form_remarks is not None else '',
                 }
 
                 File.objects.create(
@@ -154,7 +165,8 @@ def filetracking(request):
         'holdsdesignations': holdsdesignations,
         'designation_name': designation_name,
         'designation_id': designation_id,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'compose'
     }
     return render(request, 'filetracking/composefile.html', context)
 
@@ -214,7 +226,8 @@ def drafts_view(request, id):
     context = {
         'draft_files': draft_files,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'draft'
     }
     return render(request, 'filetracking/drafts.html', context)
 
@@ -268,7 +281,8 @@ def outbox_view(request, id):
     context = {
         'out_files': outward_files,
         'viewer_designation': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'outbox'
     }
     return render(request, 'filetracking/outbox.html', context)
 
@@ -316,7 +330,8 @@ def inbox_view(request, id):
     context = {
         'in_file': inward_files,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'inbox'
     }
     return render(request, 'filetracking/inbox.html', context)
 
@@ -427,13 +442,15 @@ def view_file(request, id):
     if current_owner == request.user and file_uploader == request.user and file.is_read is False:
         archive_enable = True
 
+    parent_of_prev_path = request.META.get('HTTP_REFERER').strip("/").split('/')[-2]
     context = {
         'designations': designations,
         'file': file,
         'track': track,
         'forward_enable': forward_enable, 
         'archive_enable': archive_enable,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': parent_of_prev_path
     }
     return render(request, 'filetracking/viewfile.html', context)
 
@@ -513,11 +530,15 @@ def forward(request, id):
                     'user', 'working', 'designation').filter(user=request.user)
 
                 context = {
-
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'designation_name': designation_name,
+                    'designation_id': designation_id,
+                    'notifications': request.user.notifications.all(),
+                    'path_parent': 'inbox'
                 }
+
                 return render(request, 'filetracking/forward.html', context)
             receive = request.POST.get('receive')
             try:
@@ -527,11 +548,15 @@ def forward(request, id):
                 designations = get_designation(request.user)
 
                 context = {
-
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'designation_name': designation_name,
+                    'designation_id': designation_id,
+                    'notifications': request.user.notifications.all(),
+                    'path_parent': 'inbox'
                 }
+
                 return render(request, 'filetracking/forward.html', context)
 
             upload_file = request.FILES.get('myfile')
@@ -564,7 +589,8 @@ def forward(request, id):
         'track': track,
         'designation_name': designation_name,
         'designation_id': designation_id,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'inbox'
     }
 
     return render(request, 'filetracking/forward.html', context)
@@ -628,7 +654,8 @@ def archive_view(request, id):
     context = {
         'archive_files': archive_files,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'archive'
     }
     return render(request, 'filetracking/archive.html', context)
 
@@ -693,8 +720,14 @@ def finish(request, id):
             track.update(is_read=True)
             messages.success(request, 'File Archived')
 
-    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id,
-                                                        'notifications': request.user.notifications.all()})
+    context = {
+        'file': file1, 
+        'track': track, 
+        'fileid': id,
+        'notifications': request.user.notifications.all()
+        }
+
+    return render(request, 'filetracking/finish.html', )
 
 def AjaxDropdown1(request):
 
@@ -886,6 +919,11 @@ def edit_draft_view(request, id, *args, **kwargs):
 
             upload_file = request.FILES.get('myfile')
 
+            # since frontend isnt reflecting uploaded file in edit draft, but upload_file may exist in File
+            # (this feature isnt working atm, duplicate is still stored)
+            if upload_file == file.upload_file:
+                upload_file = None
+
             Tracking.objects.create(
                 file_id=file,
                 current_id=current_id,
@@ -931,4 +969,63 @@ def edit_draft_view(request, id, *args, **kwargs):
     return render(request, 'filetracking/editdraft.html', context)
 
 
-    
+@login_required(login_url="/accounts/login/")
+@user_is_student
+@dropdown_designation_valid
+@require_POST
+def download_file(request, id):
+    file = get_object_or_404(File, id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=id).order_by('receive_date')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    style_heading = styles['Heading1']
+    style_paragraph = styles['BodyText']
+
+    elements.append(
+        Paragraph(f"<center><b>Subject - {file.subject}</b></center>", style_heading))
+    elements.append(Spacer(1, 12))
+    elements.append(
+        Paragraph(f"<b>Description:</b> {file.description}", style_paragraph))
+    elements.append(Spacer(1, 12))
+
+    for t in track:
+        sent_by = f"<b>Sent by:</b> {t.current_design} - {t.forward_date.strftime('%B %d, %Y %I:%M %p')}"
+        received_by = f"<b>Received by:</b> {t.receiver_id} - {t.receive_design}"
+        combined_info = f"{sent_by} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {received_by}"
+        elements.append(Paragraph(combined_info, style_paragraph))
+        elements.append(Spacer(1, 12))
+        remarks = f"<b>Remarks:</b> {t.remarks}" if t.remarks else "<b>Remarks:</b> No Remarks"
+        elements.append(Paragraph(remarks, style_paragraph))
+        elements.append(Spacer(1, 12))
+        attachment = f"<b>Attachment:</b> {os.path.basename(t.upload_file.name)}" if t.upload_file else "<b>Attachment:</b> No attachments"
+        elements.append(Paragraph(attachment, style_paragraph))
+        elements.append(Paragraph('<hr width="100%" style="border-top: 1px solid #ccc;">', style_paragraph))
+        elements.append(Spacer(2, 12))
+
+    doc.build(elements)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    formal_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}'
+    output_filename = f'iiitdmj-fts-{formal_filename}'
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        pdf_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}-notesheet.pdf'
+        zip_file.writestr(output_filename+'.pdf', pdf_data)
+        for t in track:
+            if t.upload_file:
+                zip_file.write(t.upload_file.path,
+                               os.path.basename(t.upload_file.name))
+
+    zip_data = zip_buffer.getvalue()
+    zip_buffer.close()
+
+    response = HttpResponse(zip_data, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{output_filename}.zip"'
+
+    return response
