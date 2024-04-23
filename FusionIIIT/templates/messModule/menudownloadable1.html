@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Mess Menu</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Mess Menu</title>
+    </head>
+    <body>
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="margin: auto;">
+            <center><h1 style='font:24px'>PDPM Indian Institute of Information Technology Design and Manufacturing, Jabalpur</h1></center>
+            <table class="ui definition padded table" border="1" cellpadding="8" style="margin: auto;">
                 <thead>
                 <tr>
                     <th></th>
@@ -179,9 +180,15 @@
 
             </table>
 
-
+       
         </div>
-        </div>
+    </div>
+    <div style="margin-top:10;font:'18px' text-align:right">
+        Date:
+        {% block menu1 %}
+        {{date}}
+        {% endblock %}    
+    </div>   
 
-</body>
-</html>
+    </body>
+</html>  
