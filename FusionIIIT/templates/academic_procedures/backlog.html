@@ -1,0 +1,76 @@
+{% load static %}
+<center><b>Backlog Courses</b></center>
+<div class="ui vertical segment" style="width: 100%">
+    <!-- <table class="ui very basic celled sortable table" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+            <th style="10%">Course Name</th>
+            <th style="10%">Faculty</th>
+            <th style="10%">Semester ID</th>
+            <th style="10%">Available Summer Course</th>
+            </tr>
+        </thead>
+        {% for i in backlogCourseList %}
+            <tr>
+            {% for j in i %}
+                <td style="10%">{{ j }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table> -->
+    <table class="ui celled medium table orange" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+            <th style="10%">Course Name</th>
+            <th style="10%">Course Code</th>
+            <th style="10%">Version</th>
+            <th style="10%">Credit</th>
+            <th style="10%">Grade</th>
+            <th style="10%"><center> Apply For Registration </center> </th>
+            </tr>
+        </thead>
+        {% for i in auto_backlog_courses_list %}
+            <tr>
+            {% for j in i %}
+                <td style="10%">{{ j }}</td>
+            {% endfor %}
+            <td><center>
+                {%if adc_date_flag%}
+                <button class="ui button green" onclick="applyForBacklogRegistration('{{ i.0 }}', '{{ i.1 }}', '{{ i.2 }}' )" >Apply</button>
+                {%else %}
+                <button class="ui button grey" >Can't Register Now</button>
+                {%endif%}
+            </center></td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+    function applyForBacklogRegistration(courseName, courseCode, Version) {
+        let requestData = {
+            courseName: courseName,
+            courseCode: courseCode,
+            Version : Version,
+            semester: '{{curr_sem.id}}',
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        };
+
+        $.ajax({
+            url: '/academic-procedures/register_backlog_course/',
+            type: 'POST',
+            data: requestData,
+            success: function(response) {
+                if(response.message === 'Wait for Next Semester !'){
+                    alert('Wait for Next Semester !')
+                }else{
+                    location.reload(); 
+                }
+                // console.log(response.message);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error registering the course:', error);
+            }
+        });
+    }
+</script>
