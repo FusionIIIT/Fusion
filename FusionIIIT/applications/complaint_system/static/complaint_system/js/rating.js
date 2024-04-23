@@ -22,7 +22,7 @@ $(document).ready(function(){
         var complaint_type =  $('input[name="complaint_type"]').val() ;
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
-        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
+        if(complaint_type=="" || Location=="" || details=="" || specific_location=="")
         {
             alert("Please fill all the details!");
             return;

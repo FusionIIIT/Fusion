@@ -802,8 +802,7 @@ def   profile(request, username=None):
     "co co-ordinator",
     "Convenor",
     "Convener",
-    "cc1convener",
-    "CC2 convener",
+    "ccconvener",
     "mess_convener_mess2",
     "mess_committee_mess2"
 ]

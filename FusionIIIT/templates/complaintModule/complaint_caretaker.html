@@ -60,7 +60,7 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             {% comment %}A single modules row starts here!{% endcomment %}
                
-                        {% if  request.user.extrainfo.user_type == "staff"    %}
+            <!-- {% if  request.user.extrainfo.user_type == "staff"    %} -->
              
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
@@ -78,11 +78,11 @@
                     Feedback
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                <!-- {% endif %} -->
                 
                 {% comment %}A single modules row ends here!{% endcomment %}
                 
-                {% if  global_var == "hall4caretaker" or global_var == "hall3caretaker" or global_var == "shyams"  %}
+                {% if  "caretaker" in global_var %}
                 <a class=" item" data-tab="fourth">
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i>
