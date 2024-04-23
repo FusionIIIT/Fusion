@@ -2,8 +2,13 @@
 {% load static %}
 
 {% block filetracking_tab %}
-
-    <div class="ui pointing secondary menu">
+<div class="ui pointing secondary menu">
+        <form id="download-form" action="{% url 'filetracking:download_file' file.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="item" style="position:absolute;right:10px; cursor: pointer;">
+                <b style="color:rgb(22, 82, 129)"> Download as ZIP</b>
+            </button>
+        </form>
         <a class="active item" data-tab="notesheet">
             Note Sheet
         </a>

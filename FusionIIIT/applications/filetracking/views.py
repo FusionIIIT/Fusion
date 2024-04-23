@@ -1,21 +1,31 @@
+from sqlite3 import IntegrityError
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import File, Tracking
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.template.defaulttags import csrf_token
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
-from django.http import JsonResponse
-from timeit import default_timer as time
-from notification.views import office_module_notif, file_tracking_notif
-from .utils import *
+from django.views.decorators.http import require_POST
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+
+from .models import File, Tracking
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from .utils import *
 from .sdk.methods import *
 from .decorators import *
+
+from timeit import default_timer as time
+from notification.views import office_module_notif, file_tracking_notif
+
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 import json
+import zipfile
+import os
 
 
 @login_required(login_url="/accounts/login/")
@@ -909,6 +919,11 @@ def edit_draft_view(request, id, *args, **kwargs):
 
             upload_file = request.FILES.get('myfile')
 
+            # since frontend isnt reflecting uploaded file in edit draft, but upload_file may exist in File
+            # (this feature isnt working atm, duplicate is still stored)
+            if upload_file == file.upload_file:
+                upload_file = None
+
             Tracking.objects.create(
                 file_id=file,
                 current_id=current_id,
@@ -954,4 +969,63 @@ def edit_draft_view(request, id, *args, **kwargs):
     return render(request, 'filetracking/editdraft.html', context)
 
 
-    
+@login_required(login_url="/accounts/login/")
+@user_is_student
+@dropdown_designation_valid
+@require_POST
+def download_file(request, id):
+    file = get_object_or_404(File, id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=id).order_by('receive_date')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    style_heading = styles['Heading1']
+    style_paragraph = styles['BodyText']
+
+    elements.append(
+        Paragraph(f"<center><b>Subject - {file.subject}</b></center>", style_heading))
+    elements.append(Spacer(1, 12))
+    elements.append(
+        Paragraph(f"<b>Description:</b> {file.description}", style_paragraph))
+    elements.append(Spacer(1, 12))
+
+    for t in track:
+        sent_by = f"<b>Sent by:</b> {t.current_design} - {t.forward_date.strftime('%B %d, %Y %I:%M %p')}"
+        received_by = f"<b>Received by:</b> {t.receiver_id} - {t.receive_design}"
+        combined_info = f"{sent_by} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {received_by}"
+        elements.append(Paragraph(combined_info, style_paragraph))
+        elements.append(Spacer(1, 12))
+        remarks = f"<b>Remarks:</b> {t.remarks}" if t.remarks else "<b>Remarks:</b> No Remarks"
+        elements.append(Paragraph(remarks, style_paragraph))
+        elements.append(Spacer(1, 12))
+        attachment = f"<b>Attachment:</b> {os.path.basename(t.upload_file.name)}" if t.upload_file else "<b>Attachment:</b> No attachments"
+        elements.append(Paragraph(attachment, style_paragraph))
+        elements.append(Paragraph('<hr width="100%" style="border-top: 1px solid #ccc;">', style_paragraph))
+        elements.append(Spacer(2, 12))
+
+    doc.build(elements)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    formal_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}'
+    output_filename = f'iiitdmj-fts-{formal_filename}'
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        pdf_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}-notesheet.pdf'
+        zip_file.writestr(output_filename+'.pdf', pdf_data)
+        for t in track:
+            if t.upload_file:
+                zip_file.write(t.upload_file.path,
+                               os.path.basename(t.upload_file.name))
+
+    zip_data = zip_buffer.getvalue()
+    zip_buffer.close()
+
+    response = HttpResponse(zip_data, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{output_filename}.zip"'
+
+    return response
