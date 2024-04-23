@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 # from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from applications.hr2.models import LTCform, CPDAAdvanceform, CPDAReimbursementform, LeaveForm, Appraisalform, LeaveBalance
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
@@ -15,7 +15,7 @@ from applications.filetracking.models import *
 
 class LTC(APIView):
     serializer_class = LTC_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         print("hello")
@@ -72,7 +72,7 @@ class LTC(APIView):
 
 
 class FormManagement(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("username")
@@ -96,7 +96,7 @@ class FormManagement(APIView):
 
 class CPDAAdvance(APIView):
     serializer_class = CPDAAdvance_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         print(request.data[0])
@@ -161,7 +161,7 @@ class CPDAAdvance(APIView):
 
 class CPDAReimbursement(APIView):
     serializer_class = CPDAReimbursement_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -219,7 +219,7 @@ class CPDAReimbursement(APIView):
 
 class Leave(APIView):
     serializer_class = Leave_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -275,7 +275,7 @@ class Leave(APIView):
 
 class Appraisal(APIView):
     serializer_class = Appraisal_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -337,7 +337,7 @@ class Appraisal(APIView):
 
 
 class GetFormHistory(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         print(request.query_params)
@@ -404,7 +404,7 @@ class GetFormHistory(APIView):
 
 
 class TrackProgress(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         file_id = request.query_params.get("id")
@@ -413,7 +413,7 @@ class TrackProgress(APIView):
 
 
 class FormFetch(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         fileId = request.query_params.get("file_id")
@@ -469,7 +469,7 @@ class FormFetch(APIView):
 
 
 class CheckLeaveBalance(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
     serializer_class = LeaveBalanace_serializer
 
     def get(self, request, *args, **kwargs):
@@ -499,7 +499,7 @@ class CheckLeaveBalance(APIView):
 
 
 class DropDown(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("username")
@@ -516,7 +516,7 @@ class DropDown(APIView):
 
 
 class UserById(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("id")
@@ -525,7 +525,7 @@ class UserById(APIView):
 
 
 class ViewArchived(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_name = request.query_params.get("username")
@@ -536,7 +536,7 @@ class ViewArchived(APIView):
 
 
 class GetOutbox(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("username")
