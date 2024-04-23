@@ -23,5 +23,7 @@ urlpatterns = [
     # url("billDashboard", views.Bill_dashboard.as_view(), name="billDashboard"),
     url("get_student_bill",views.Get_Student_bill.as_view(),name="student_bill_API"),
     url("get_student_payment",views.Get_Student_Payments.as_view(),name="student_payment_API"),
-    url("get_student_all_details",views.Get_Student_Details.as_view(),name="get_student_details_API")
+    url("get_student_all_details",views.Get_Student_Details.as_view(),name="get_student_details_API"),
+    url('registrationRequestApi', views.RegistrationRequestApi.as_view(), name='registrationRequestApi'),
+    url('deRegistrationRequestApi', views.DeregistrationRequestApi.as_view(), name='deRegistrationRequestApi'),
 ]
