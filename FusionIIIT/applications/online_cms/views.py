@@ -63,9 +63,7 @@ def viewcourses(request):
                        'extrainfo': extrainfo,
                        'curriculum_list': curriculum_list})
     
-    elif extrainfo.id == 'id_admin':
-        if request.session.get('currentDesignationSelected') != 'acadadmin':
-            return HttpResponseRedirect('/dashboard/')
+    elif request.session.get('currentDesignationSelected') == 'acadadmin':
         acadTtForm = AcademicTimetableForm()
         calendar = Calendar.objects.all()
         timetable = Timetable.objects.all()
@@ -73,7 +71,8 @@ def viewcourses(request):
                       {'acadTtForm': acadTtForm,
                        'academic_calendar':calendar,
                        'timetable':timetable})
-
+    else:
+        return HttpResponseRedirect('/dashboard/')
 
 
 

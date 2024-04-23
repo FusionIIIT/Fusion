@@ -32,7 +32,7 @@
         <div class="grouped fields">
           <input type="hidden" name="course" value="{{ registration.course_id.id }}">
           <input type="hidden" name="course_year" value="{{registration.course_year}}">
-          <h1 class="ui header">{{ registration.course_id.course_name  }} - {{ registration.course_id.id }}-{{ registration.course_year}}</h1>
+          <h1 class="ui header">{{ registration.course_id.name  }} - {{ registration.course_id.code }}-  [v-{{ registration.course_id.version  }}]-{{ registration.course_year}}</h1>
           <div class="field">
             <div class="ui checkbox">
               <input type="checkbox" name="authenticator1" tabindex="0" class="hidden" value="1" {% if registration.authenticator_1 %} checked {% endif %}>
