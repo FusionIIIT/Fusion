@@ -1,9 +1,9 @@
 {% load static %} {% block approvalrequests %} {% comment %}The tab menu starts
 here!{% endcomment %}
 <div class="ui pointing secondary menu">
-  {% if "dean_s" not in global_var and "Counsellor" in global_var %}
+  {% if "Dean_s" not in global_var and "Counsellor" in global_var %}
   <a class="item" data-tab="clubbudget">Club Budget</a>
-  {%endif%} {%if "dean_s" in global_var and "Counsellor" not in global_var %}
+  {%endif%} {%if "Dean_s" in global_var and "Counsellor" not in global_var %}
   <a class="active item" data-tab="newclub">New Club Formation</a>
   {%endif%}
 </div>
