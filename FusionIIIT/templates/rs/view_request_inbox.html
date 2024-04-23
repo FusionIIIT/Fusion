@@ -12,9 +12,10 @@ IPR
     {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    
-
-    
+   
+    <script>
+      
+    </script>
 
 {% comment %}The grid starts here!{% endcomment %}
 <div class="ui stackable doubling grid">
@@ -55,14 +56,13 @@ IPR
     The central-rail segment starts here!
     {% endcomment %}
 
-
-    <div class="eight wide column">
-        
      <div >
-        {% block projects %}
-        {% include 'rs/display_add_projects.html' %}
+        {% block inbox %}
+        {% include 'rs/display_view_request_inbox.html' %}
         {% endblock %}
         </div>
+
+    <div class="eight wide column">
 
         {% comment %} <div class="ui tab segment" data-tab="fourth">
             {% block views %}

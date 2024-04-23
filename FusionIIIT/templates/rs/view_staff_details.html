@@ -12,9 +12,10 @@ IPR
     {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    
 
-    
+    <script>
+      
+    </script>
 
 {% comment %}The grid starts here!{% endcomment %}
 <div class="ui stackable doubling grid">
@@ -55,15 +56,14 @@ IPR
     The central-rail segment starts here!
     {% endcomment %}
 
-
+    
     <div class="eight wide column">
         
-     <div >
-        {% block projects %}
-        {% include 'rs/display_add_projects.html' %}
-        {% endblock %}
-        </div>
-
+        <div >
+           {% block view_staff_details %}
+           {% include 'rs/display_staff_details.html' %}
+           {% endblock %}
+           </div>
         {% comment %} <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'rs/patent.html' %}
@@ -110,7 +110,7 @@ IPR
 
 {% comment %}The grid ends here!{% endcomment %}
 
-{% endblock %}
+{% endblock %}  
 
 {% block javascript %}
 <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
