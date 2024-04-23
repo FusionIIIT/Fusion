@@ -22,28 +22,10 @@
                         Announcement Details
                     </td>
 
-                    <td style="font-weight:bold;color:black;" >
+                    {% comment %} <td style="font-weight:bold;color:black;" >
                         Announcement Files
-                    </td>
-                    {% comment %} <td style="font-weight:bold;color:black;">
-                        Details
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                        Test
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                        Report
-                    </td>
-
-
-                    <td style="font-weight:bold;color:black;">
-
-                      <table>
-
-                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
-
-                      </table>
                     </td> {% endcomment %}
+                  
 
                 </tr>
                 </thead>
@@ -61,24 +43,14 @@
 
                     </td>
 
-                    {% comment %} <td>
-                        {{pre.date}}
-                    </td>
-
-                    <td>
-                        {{pre.details}}
-                    </td>
-                    <td>
-                        {{pre.test}}
-                    </td> {% endcomment %}
                    
-                    <td style="white-space:nowrap;">
+                    {% comment %} <td style="white-space:nowrap;">
                         {% if anno.upload_announcement != None %}
                         <a href="{{ anno.upload_announcement }}" download>
                             <i class="ui download icon right floated"></i>
                         </a>
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
 
                     {% comment %} <td>
                       <table>
@@ -97,34 +69,6 @@
 
           </div>
         </div>
-
-<script>
-            function rem(id){
-           
-			var dis = this;
-            var d = window.confirm('Are you sure, you want to delete the Request?');
-            if(d == false){
-                return;
-            }
-            $('#'+id).parent().parent().remove();
-                                             alert("Ambulance request cancelled");
-
-					$.ajax({
-                            type:'POST',
-                            url:'/healthcenter/student/',
-                            data: {'cancel_amb':id},
-
-                            beforeSend: function(xhr) {
-               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-            },
-                            success: function(data){
-
-                                                    }
-                          });
-
-            
-      }
-      </script>
 
 
 {% endblock %}

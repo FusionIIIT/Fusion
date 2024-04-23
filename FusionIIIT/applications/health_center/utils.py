@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,date
 from applications.globals.models import ExtraInfo
 from django.core import serializers
 from applications.filetracking.models import File
@@ -485,8 +485,7 @@ def compounder_view_handler(request):
         usrnm = get_object_or_404(User, username=request.user.username)
         user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
         num = 1
-        ann_anno_id = user_info.id
-        requests_received = get_to_request(usrnm)    
+        ann_anno_id = user_info.id        
         formObject = Announcements()       
         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
         getstudents = ExtraInfo.objects.select_related('user')

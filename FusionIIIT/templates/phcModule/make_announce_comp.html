@@ -20,8 +20,7 @@
         
         <div class="ui vertical segment">
             <!-- fill the form details -->
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
-                  action="../views/announcement/">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;">
                 {% csrf_token %}
 
                 <div class="ui header", >
@@ -70,7 +69,7 @@
             
                 // Append the CSRF token and other form data
                 formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-                formData.append('announcemt', $('#announcement').val())
+                formData.append('announcement', $('#announcement').val())
                 formData.append('comp_announce', $('#announce').val())
                
             
@@ -113,10 +112,10 @@
                     <td style="font-weight:bold;color:black; ">
                         Announcement Details
                     </td>
-
+{% comment %} 
                     <td style="font-weight:bold;color:black;" >
                         Announcement Files
-                    </td>
+                    </td> {% endcomment %}
                    
 
                 </tr>
@@ -136,13 +135,13 @@
 
                     </td>
                    
-                    <td style="white-space:nowrap;">
+                    {% comment %} <td style="white-space:nowrap;">
                         {% if anno.upload_announcement != None %}
                         <a href="{{ anno.upload_announcement }}" download>
                             <i class="ui download icon right floated"></i>
                         </a>
                         {% endif %}
-                    </td>                    
+                    </td>                     {% endcomment %}
                 </tr>
 
                 {% endfor %}
