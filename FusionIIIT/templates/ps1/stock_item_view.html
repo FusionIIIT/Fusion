@@ -41,6 +41,7 @@
                 <th >Current Location</th>
                 <th >Transferred</th>
                 <th >InUse</th>
+                <!-- <th >Transfer History</th> -->
             
         </tr>
         </thead>
@@ -49,7 +50,10 @@
             {% for s in stocks %}
                 {% if s.StockEntryId.item_id.purchased %}
             <tr>
-                <td> {{s.nomenclature}} </td>
+                <td>
+                    <a href="/purchase-and-store/item_detail/{{ s.id }}/">{{ s.nomenclature }}</a>
+                </td>
+                <!-- <td> {{s.nomenclature}} </td> -->
                 <td> {{s.StockEntryId.item_id.item_name}} </td>
                 <td>{{s.department.name}}</td>
                 <td>{{s.location}}</td>
@@ -61,6 +65,15 @@
                         {% else %}
                             <input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %}>
                         {% endif %}
+                    </td>
+
+                    <td>
+                            <!-- {% if s.isTransferred %}
+                            <Button type="submit" class="ui primary button" value="{{s.id}}" name="selected_stock_item_for_history" >Track History</Button>
+                            {% else %}
+                                <Button type="submit" class="ui primary button" value="{{s.id}}" name="selected_stock_item_for_history" disabled>Track History</Button>
+                            {% endif %} -->
+
                     </td>
             
             </tr>
@@ -92,7 +105,7 @@
             $('#form').on('submit', function (event) {
                 event.preventDefault(); // Prevent default form submission
                 var selectedItems = []; // Array to store selected item IDs
-    
+
                 // Iterate over each checked checkbox and add its value to the array
                 $('input[name="selected_stock_item"]').each(function () {
                     var itemId = $(this).val();

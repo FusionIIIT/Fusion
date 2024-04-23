@@ -82,6 +82,7 @@
             <thead>
             <tr>
                     <th>Item Type</th>
+                    <th>Item Subtype</th>
                     <th>department/section</th>
                     <th>Quantity</th>
                     <th>View Stocks</th>
@@ -94,12 +95,14 @@
                 <tr>
                     
                     <td> {{s.item_type}} </td>
+                    <td> {{s.item_subtype}} </td>
                     <td> {{s.department.name}} </td>
                     <td>{{s.total_quantity}}</td>
 
                     <td>
                         <form action="/purchase-and-store/stock_item_view/" method="POST" >{% csrf_token %}
                         <input hidden  name = 'item_type' value="{{ s.item_type}}">
+                        <input hidden  name = 'item_subtype' value="{{ s.item_subtype}}">
                         <input hidden  name = 'departmentId' value="{{ s.departmentId}}">
                         <button class="ui primary button" >View Stocks</button>
                         </form>

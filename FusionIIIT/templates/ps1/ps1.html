@@ -36,7 +36,8 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 {% with dept_admin_designations="['ps_admin', 'deptadmin_cse', 'deptadmin_ece', 'deptadmin_me', 'deptadmin_sm', 'deptadmin_design', 'deptadmin_liberalarts', 'deptadmin_ns']" %}
+                 {% with dept_admin_designations="['ps_admin', 'deptadmin_cse', 'deptadmin_ece', 'deptadmin_me', 'deptadmin_sm', 'deptadmin_design', 'deptadmin_liberalarts', 'deptadmin_ns',
+                 'Admin IWD','Compounder']" %}
 
              
                  {% if request.session.currentDesignationSelected  not in dept_admin_designations %}
