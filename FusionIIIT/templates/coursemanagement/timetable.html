@@ -1,0 +1,122 @@
+{% load static %}
+{% block timetable %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="academic">
+        Academic Time Table
+    </a>
+</div>
+
+<div class="ui active tab segment" data-tab="academic" id="add_timetable_refresh">
+
+  <h4 class="ui dividing header">Add Time Table</h4>
+
+  <form class="ui form" method="POST" id="form7" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="field">
+      <label>Programme</label>
+      <select name="programme" id="programme" required>
+        <option value="B.Tech">B.Tech</option>
+        <option value="B.Des">B.Des</option>
+        <option value="M.Des">M.Des</option>
+        <option value="M.Tech">M.Tech</option>
+        <option value="Phd">PhD</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Batch</label>
+      <input type="number" id="batch" name="batch" required>
+    </div>
+
+    <div class="field">
+        <label>Branch</label>
+        <select name="branch" id="branch" required>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">ME</option>
+            <option value="Design">Design</option>
+            <option value="Common">Common</option>
+        </select>
+    </div>
+    
+    <div class="field">
+      <label>Upload Time Table</label>
+      <input placeholder="Upload Time Table" type="file" id="time_table" name="time_table" required>
+    </div>
+
+    <div class="field">
+      <div class="ui labeled button" id="add_timetable" tabindex="0">
+        <div class="ui blue button">
+          <i class="upload icon"></i>
+        </div>
+        <a class="ui basic blue left pointing label">Upload</a>
+      </div>
+      <div class="load" id="load_add_timetable" style="display:none">
+        <!-- <img src="{% static 'globals/img/loading.gif'%}" alt="#loading"> -->
+        <span >Your file is being uploaded!</span>
+      </div>
+    </div>
+    
+
+  </form>
+  {% if timetable %}
+  <form class="ui form" method="post" enctype="multipart/form-data" action="/ocms/delete_timetable/">
+    {% csrf_token %}
+    <table class="ui fixed sortable celled table">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Upload Time</th>
+          <th style="width: 17%;">Programme</th>
+          <th style="width: 12%;">Batch</th>
+          <th style="width: 15%;">Branch</th>
+          <th style="width: 46%;"> Timetable File</th>
+          <th style="width:12%">Action</th>
+
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for c in timetable %}
+        <tr id="visualize_{{forloop.counter}}">
+          <td>{{ c.upload_date }}</td>
+          <td>{{c.programme}}</td>
+          <td>{{ c.batch }}</td>
+          <td>{{ c.branch }}</td>
+          <td>
+            <div class="content">
+              <a href="../media/{{ c.time_table }}" class="header">Download</a>
+            </div>
+          </td>
+
+          <!-- <div style="width:100%;height:100%" id='pdf_modal_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
+            <i class="close  icon"></i>
+            <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.time_table}}" type="application/pdf">
+          </div>
+
+
+          <script type="text/javascript">
+            $(document).ready(
+              function () {
+                $('#visualize_{{forloop.counter}}').click(function () {
+                  $('#pdf_modal_{{forloop.counter}}').modal('show');
+                });
+              })
+          </script> -->
+
+          <!-- <td><button type="submit" value="{{ c.time_table }}" name="delete">
+          <i class="trash icon" style="font-size:1.3vw;color:red;"></i></button></td> -->
+          <td> <a href="#"><i class="trash icon" data-pk="{{c.pk}}" style="font-size:1.3vw;color:red;"></i></a></td>
+
+        </tr>
+        {% endfor %}
+
+
+      </tbody>
+    </table>
+  </form>
+  {% endif %}
+</div>
+
+{% endblock %}

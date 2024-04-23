@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,date
 from applications.globals.models import ExtraInfo
 from django.core import serializers
 from applications.filetracking.models import File
@@ -9,8 +9,10 @@ from notification.views import  healthcare_center_notif
 from .models import (Ambulance_request, Appointment, Complaint, Doctor, 
                      Expiry, Hospital, Hospital_admit, Medicine, 
                      Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief)
+                     Stock, Announcements, SpecialRequest, Pathologist, medical_relief, MedicalProfile)
 from applications.filetracking.sdk.methods import *
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 def datetime_handler(date):
     '''
@@ -27,11 +29,14 @@ def compounder_view_handler(request):
     '''
 
     # compounder response to patients feedback
-    if 'feed_com' in request.POST:                                    
+    if 'feed_com' in request.POST:                                 
         pk = request.POST.get('com_id')
         feedback = request.POST.get('feed')
+        comp_id = ExtraInfo.objects.select_related('user','department').filter(user_type='compounder')
         Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(id=pk).update(feedback=feedback)
         data = {'feedback': feedback}
+        for cmp in comp_id:
+                healthcare_center_notif(request.user, cmp.user, 'feedback_res')
         return JsonResponse(data)
 
     elif 'end' in request.POST:
@@ -83,16 +88,7 @@ def compounder_view_handler(request):
         data={'status':1, 'pathologist_name':doctor, 'specialization':specialization, 'pathologist_phone':phone}
         return JsonResponse(data)
     
-    # making announcements from compounder 
-    elif 'add' in request.POST:                                         
-        ven=request.POST.get('venue')
-        announcement=request.POST.get('announcement')
-        Announcement.objects.create(
-        venue=ven,
-        announcement=announcement,
-        )
-        data={ 'venue':ven, 'announcement':announcement }
-        return JsonResponse(data)
+    
 
     # remove doctor by changing active status
     elif 'remove_doctor' in request.POST:                              
@@ -453,8 +449,8 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
-        prescription=Prescription.objects.filter(pk=presc_id)
-        is_deleted = delete_file(id=presciption.file_id)
+        prescription=Prescription.objects.get(pk=presc_id)       
+        is_deleted = delete_file(file_id=prescription.file_id)
         prescription.delete()
         
         
@@ -481,15 +477,29 @@ def compounder_view_handler(request):
        
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.compounder_forward_flag = True
-        medical_relief_instance.save()
-        
-        healthcare_center_notif(request.user,user.user,'rel_approve')
-        
-        
-
-       
+        medical_relief_instance.save()        
+        healthcare_center_notif(request.user,user.user,'rel_approve')      
         data = {'status': 1}
         return JsonResponse(data)
+    elif 'comp_announce' in request.POST:
+        usrnm = get_object_or_404(User, username=request.user.username)
+        user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+        num = 1
+        ann_anno_id = user_info.id        
+        formObject = Announcements()       
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)       
+        formObject.anno_id=user_info     
+        formObject.message = request.POST['announcement']
+        formObject. upload_announcement = request.FILES.get('upload_announcement')       
+        formObject.ann_date = date.today()     
+        formObject.save()
+        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
+        data = {'status': 1}
+        return JsonResponse(data)       
+        
+
         
         
         
@@ -576,7 +586,10 @@ def student_view_handler(request):
             date=datetime.now()
         )
         data = {'status': 1}
+        healthcare_center_notif(request.user, request.user,'feedback_submitted')
+        
         return JsonResponse(data)
+    
     elif 'cancel_amb' in request.POST:
         amb_id = request.POST.get('cancel_amb')
         Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(pk=amb_id).delete()
@@ -593,7 +606,7 @@ def student_view_handler(request):
         # print(designation)
         user=ExtraInfo.objects.get(pk=designation)
         description = request.POST.get('description')
-        
+         
         # Retrieve the uploaded file from request.FILES
         uploaded_file = request.FILES.get('file')
 
@@ -654,5 +667,15 @@ def student_view_handler(request):
         
         return JsonResponse({'status':1})
         
+    elif 'announcement' in request.POST:
+        anno_id = request.POST.get('anno_id')
+        Announcements.objects.select_related('user_id','user_id__user','user_id__department', 'message', 'upload_announcement').filter(pk=anno_id).delete()
+        data = {'status': 1}
+        healthcare_center_notif(request.user,user.user,'new_announce')
+        return JsonResponse({'status':1})
     
-        
+    elif 'medical_profile' in request.POST:
+        user_id = request.POST.get('user_id')
+        MedicalProfile.objects.select_related('user_id','user_id__user','user_id__department', 'date_of_birth', 'gender', 'blood_type', 'height', 'weight').filter(pk=user_id).delete()
+        data = {'status': 1}
+        return JsonResponse({'status':1})

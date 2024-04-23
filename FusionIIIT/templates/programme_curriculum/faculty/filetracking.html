@@ -1,0 +1,126 @@
+{% extends 'programme_curriculum/common.html' %}
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+        style="max-width: 320px;">
+
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_discplines' %}">Disciplines
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <div class="ui dropdown">
+            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
+            
+            <div class="menu">
+              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+          </div>
+          <script>
+            $('.ui.dropdown').dropdown();
+          </script>
+    </div>
+{% endblock %} 
+
+{% block content %}
+<div class="ui segment" >
+    <div class="header"><h1>New Course Proposal Form</h1></div>
+    <div class="ui divider"></div>
+    <form class="ui large form error" method="POST">
+        
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+         <div class="ui message">
+            <div class="header">We had some issues</div>
+            {% for error in form.non_field_errors %}
+            <ul class="list">
+                <li>{{ error }}</li>
+            </ul>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="field">
+            {% if form.current_id.errors or form.file_id.errors or form.current_design.errors %}
+            <div class="ui error message">
+                <p>{{ form.current_id.errors }}</p>
+                <p>{{ form.file_id.errors }}</p>
+                <p>{{ form.current_design.errors }}</p>
+                <p>{{ form.receive_id.errors }}</p>
+                <p>{{ form.receive_design.errors }}</p>
+                <p>{{ form.remarks.errors }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="field">
+            <label for="{{ form.file_id.id_for_label }}">File Id:</label>
+            {{ form.file_id }}
+        </div>
+        <div class="field">
+            <label for="{{ form.current_id.id_for_label }}">Uploader:</label>
+            {{ form.current_id }}
+        <div class="field">
+            <label for="{{ form.current_design.id_for_label }}">Uploader Designation:</label>
+            {{ form.current_design }}
+        </div>
+        <div class="field">
+            <label for="{{ form.receive_id.id_for_label }}">Receiver ID:</label>
+            {{ form.receive_id }}
+        </div>
+        <div class="field">
+            <label for="{{ form.receive_design.id_for_label }}">Receiver Designation:</label>
+            {{ form.receive_design }}
+        </div>
+        <div class="field">
+            <label for="{{ form.remarks.id_for_label }}">Remarks:</label>
+            {{ form.remarks }}
+        </div>
+        <div class="field">
+            <label for="{{ form.disciplines.id_for_label }}"> Disciplines:</label>
+            {{ form.disciplines }}
+        </div>
+
+        <td>
+            <div class="ui large right floated buttons">
+                <a class="ui button" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Cancel</a>
+                <div class="or"></div>
+                 
+                <input class="ui primary button" type="Submit" name="Submit">
+            </div>
+        </td>
+    </form>
+</div>
+<div class="ui hidden divider"></div>
+    <script>
+        $(window).load(function() {
+            $('form').get(0).reset(); //clear form data on page load
+        });
+        $('.ui.checkbox')
+            .checkbox()
+        ;
+        $('select.dropdown')
+            .dropdown()
+        ;
+    </script>
+
+{% endblock %}
+{% block rightcontent %}
+<br>
+
+{% endblock %}

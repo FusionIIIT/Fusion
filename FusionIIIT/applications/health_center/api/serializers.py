@@ -9,6 +9,12 @@ class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
         model=Doctor
         fields=('__all__')
+        
+class PathologistSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Pathologist
+        fields=('__all__')
 
 class ComplaintSerializer(serializers.ModelSerializer):
 
@@ -53,6 +59,7 @@ class PathologistScheduleSerializer(serializers.ModelSerializer):
         fields=('__all__')
 
 
+        
         
 class AnnouncementSerializer(serializers.ModelSerializer):
     
