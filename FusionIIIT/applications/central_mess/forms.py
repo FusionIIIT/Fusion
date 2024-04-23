@@ -2,7 +2,7 @@ from django import forms
 
 from .models import Mess_minutes
 from .models import Registration_Request
-from .models import Semdates
+from .models import Update_Payment
 
 
 class MinuteForm(forms.ModelForm):
@@ -32,9 +32,22 @@ class RegistrationRequest(forms.ModelForm):
             'img':forms.FileInput(attrs={'class':'ui big input'}),
             'start_date':forms.widgets.DateInput(attrs={'type':'date'}),
             'payment_date':forms.widgets.DateInput(attrs={'type':'date'}),
-        }  
-
-
+        } 
+        
+ 
+class UpdatePaymentRequest(forms.ModelForm):
+    
+    class Meta:
+        model = Update_Payment
+        fields = ('Txn_no','amount','img','payment_date')  
+        
+        widgets={
+            'Txn_no':forms.TextInput(attrs={'class':'ui big input','style':'border-radius:4px', 'initial':'590'}),
+            'amount':forms.TextInput(attrs={'class':'ui big input'}),
+            'img':forms.FileInput(attrs={'class':'ui big input'}),
+            'payment_date':forms.widgets.DateInput(attrs={'type':'date'}),
+        } 
+        
 class UpdateBalanceRequest(forms.ModelForm):
 
     class Meta:
