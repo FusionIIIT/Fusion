@@ -140,7 +140,7 @@
 </div>
 {% else %}
 
-<div style=" max-width:600px" >
+<div class="ui active tab" style=" width:100%" >
     <div class="ui pointing secondary menu" style="font-size: 20px; max-width:60%;">
         <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
             Staff Details for Project : &nbsp;<span class="ui blue text header">{{ project_name }}</span>
@@ -155,11 +155,11 @@
                     <thead>
                         <tr>
                             <th>STAFF ID</th>
-                            <th>STAFF NAME</th>
+                            <th>NAME</th>
                             <th>QUALIFICATION</th>
-                            <th>STIPEND</th>
-                            <th>START DATE</th>
-                            <th>END DATE</th>
+                            <th >STIPEND</th>
+                            <th style="width: 120px">JOINING  DATE</th>
+                            <th style="width: 120px">END DATE</th>
                             {% if global_var == "rspc_admin" %}
                             <th>CHANGE END DATE</th>
                             {% endif %}

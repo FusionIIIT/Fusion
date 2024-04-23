@@ -10,7 +10,7 @@
 
 {% block body %}
 
-<div class="ui active tab" data-tab="notesheet" style="width:830px;">
+<div class="ui active tab" data-tab="notesheet" style="width:100%;">
     <div class="ui two item menu">
         <a class="item"><b>Created By :-</b><b class="meta"
                 style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
@@ -26,7 +26,7 @@
                 <div class="content" style="padding-left: 26px; padding-top: 0.1px; height: auto; overflow-y: auto;">
                     <div class="item">
                         {% for t in tracks %}
-                        <div class="ui card" style="padding: 12px; width:750px;">
+                        <div class="ui card" style="padding: 12px; width:100%;">
                             <div class="comment">
                                 <div class="content">
                                     <div style="display:flex;justify-content: space-between;flex-direction: row; font-weight:normal">
@@ -69,17 +69,19 @@
                         {% endfor %}
 
                         <div class="ui divider"></div>
+                        {% if request.user != current_user.user  %}
                         
-                        <form method="post" enctype="multipart/form-data" action="{% url 'research_procedures:forward_request' file.id  %}">
-                            {% csrf_token %}
-                        <div class="field" style="max-width: 100%;">
-                            <label for="receiver_designation">Forward to :</label>
-                                <div class="eight wide field">                                
-                                    <select id="receiver_designation" name="receiver_designation" class="ui selection dropdown small">
-                                        <option value="dean_rspc">RSPC Dean</option>
-                                        <option value="rspc_admin">RSPC Admin</option>
-                                        <option value="project_investigator">Project Investigator</option>
-                                        <option value="HOD (CSE)">HOD (CSE)</option>
+
+                            <form method="post" enctype="multipart/form-data" action="{% url 'research_procedures:forward_request' file.id  %}">
+                                {% csrf_token %}
+                                <div class="field" style="max-width: 100%;">
+                                    <label for="receiver_designation">Forward to :</label>
+                                    <div class="eight wide field">                                
+                                        <select id="receiver_designation" name="receiver_designation" class="ui selection dropdown small">
+                                            <option value="dean_rspc">RSPC Dean</option>
+                                            <option value="rspc_admin">RSPC Admin</option>
+                                            <option value="project_investigator">Project Investigator</option>
+                                            <option value="HOD (CSE)">HOD (CSE)</option>
                                         <option value="HOD (ME)">HOD (ME)</option>
                                         <option value="HOD (ECE)">HOD (ECE)</option>
                                         <option value="HOD (Design)">HOD (Design)</option>
@@ -89,7 +91,7 @@
                                 </div>                             
                         </div>
 
-
+                        
                         
                         <div class="field">
                             <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
@@ -111,8 +113,9 @@
                             style="text-decoration: none; color: inherit;"> Forward File <i
                             class="ui send icon right floated"></i> </a>
                         </button>
-                        </form>
-                    </div>
+                    </form>
+                {% endif %}
+                </div>
                     <br>
                 </div>
             </div>
