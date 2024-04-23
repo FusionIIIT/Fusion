@@ -449,8 +449,8 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
         presc_id = request.POST.get('cancel_presc')
-        prescription=Prescription.objects.filter(pk=presc_id)
-        is_deleted = delete_file(id=presciption.file_id)
+        prescription=Prescription.objects.get(pk=presc_id)       
+        is_deleted = delete_file(file_id=prescription.file_id)
         prescription.delete()
         
         
@@ -477,15 +477,30 @@ def compounder_view_handler(request):
        
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.compounder_forward_flag = True
-        medical_relief_instance.save()
-        
-        healthcare_center_notif(request.user,user.user,'rel_approve')
-        
-        
-
-       
+        medical_relief_instance.save()        
+        healthcare_center_notif(request.user,user.user,'rel_approve')      
         data = {'status': 1}
         return JsonResponse(data)
+    elif 'comp_announce' in request.POST:
+        usrnm = get_object_or_404(User, username=request.user.username)
+        user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+        num = 1
+        ann_anno_id = user_info.id
+        requests_received = get_to_request(usrnm)    
+        formObject = Announcements()       
+        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
+        getstudents = ExtraInfo.objects.select_related('user')
+        recipients = User.objects.filter(extrainfo__in=getstudents)       
+        formObject.anno_id=user_info     
+        formObject.message = request.POST['announcement']
+        formObject. upload_announcement = request.FILES.get('upload_announcement')       
+        formObject.ann_date = date.today()     
+        formObject.save()
+        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
+        data = {'status': 1}
+        return JsonResponse(data)       
+        
+
         
         
         
