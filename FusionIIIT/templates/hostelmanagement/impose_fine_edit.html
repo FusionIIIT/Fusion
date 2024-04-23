@@ -1,0 +1,129 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Hostel
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+
+    <div class="three wide column">
+
+    <div class="row">
+        {% block userCard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+    </div>
+
+    </div>
+
+
+    <div class="eight wide column">
+
+    <h2 align="center">Hostel Fine Form</h2>
+    <form class="ui form" id="fineForm" action="/hostelmanagement/fine/impose/update/{{fines.fine_id}}/" method="POST">
+        {% csrf_token %}
+        <div class="field">
+            <label for="student_id">Student ID:</label>
+            <input id="student_id" value="{{ fines.student_id }}" required readonly />
+        </div>
+        {% if fines %}
+        <div class="field">
+            <label for="student_name">Student Name:</label>
+            <input type="text" id="student_fine_name" name="student_fine_name" value="{{ fines.student_name }}" required
+                readonly />
+        </div>
+        {% endif %}
+        <div class="field">
+            <label for="amount">Amount:</label>
+            <input value="{{fines.amount}}" type="number" id="amount" name="amount" min="0" step="1" required />
+        </div>
+
+        
+        <div class="field">
+            <label for="status">Status:</label>
+            <select name="status" onchange="updateStatus('{{ fines.fine_id }}', this.value)">
+                <option value="Pending" {% if fines.status == 'Pending' %} selected {% endif %}>Pending</option>
+                <option value="Paid" {% if fines.status == 'Paid' %} selected {% endif %} >Paid</option>
+            </select>
+        </div>
+
+
+        <div class="field">
+            <label for="reason">Reason:</label>
+            <textarea id="reason" name="reason" required>{{ fines.reason }}</textarea><br />
+        </div>
+
+        <button type="submit" class="ui primary button">Submit</button>
+        <a href="{% url 'hostelmanagement:hostel_view' %}" class=" ui button  ">Back To Homepage</a>
+    </form>
+
+    <br/>
+
+    <div id="responseMessage"></div>
+    </div>
+</div>
+
+    <script>
+
+        function updateStatus(fineId, status) {
+                fetch(`/hostelmanagement/fine/impose/list/update/${fineId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        fine_id: fineId,
+                        status: status
+                    })
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // Handle successful response if needed
+                            console.log('Status updated successfully');
+                        } else {
+                            // Handle error response if needed
+                            console.error('Error updating status');
+                        }
+                    })
+                    .catch(error => {
+                        // Handle fetch error if needed
+                        console.error('Fetch error:', error);
+                    });
+            }
+
+        document.getElementById("fineForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            var studentId = document.getElementById("student_id").value;
+            if (!studentId) {
+                alert("Please select a student ID.");
+                return;
+            }
+
+            var formData = new FormData(this);
+            fetch(this.action, {
+                method: this.method,
+                body: formData,
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = "/hostelmanagement/";
+                    } else {
+                        console.error("Error updating status");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        });
+    </script>
+
+{% endblock %}
