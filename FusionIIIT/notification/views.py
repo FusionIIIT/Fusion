@@ -124,7 +124,7 @@ def visitors_hostel_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def healthcare_center_notif(sender, recipient, type):
+def healthcare_center_notif(sender, recipient, type, message):
     url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
