@@ -95,7 +95,7 @@
                 <div class="default text">Select Item</div>
                 <div class="menu">
                     {% for course in courses_info %}
-                        <div class="item" data-value="{{ course.id }}">{{  course.course_name  }} - {{ course.course_details  }}</div>
+                        <div class="item" data-value="{{ course.id }}">{{  course.code }} -{{  course.name }}- {{ course.version  }}</div>
                     {% empty %}
                         <div class="item">No Courses Available</div>
                     {% endfor %}
@@ -107,20 +107,17 @@
                 <label>Year</label>
             </div>
             <div class="ui selection dropdown" id="year-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
-                    <div class="item" data-value="2018">2018</div>
-                    <div class="item" data-value="2019">2019</div>
-                    <div class="item" data-value="2020">2020</div>
-                    <div class="item" data-value="2021">2021</div>
-                    <div class="item" data-value="2022">2022</div>
-                    <div class="item" data-value="2023">2023</div>
-                    <div class="item" data-value="2024">2024</div>
-                    
-                </div>
-            </div>
+              <input type="hidden" name="gender">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Item</div>
+              <div class="menu">
+                {% for working_year in working_years %}
+                <div class="item" data-value="{{working_year.year }}"> {{ working_year.year }}</div>
+            {% empty %}   
+                <div class="item">No Courses Available</div>
+            {% endfor %}
+              </div>
+          </div>
         </div>
         
     </div>
