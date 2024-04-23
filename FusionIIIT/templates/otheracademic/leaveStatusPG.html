@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Approve</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <style>
+        .scrollable-boundary {
+            width: 80%;
+            overflow-x: auto; /* Enable horizontal scrolling */
+            white-space: nowrap; /* Prevent line breaks */
+            border: 1px solid #ccc; /* Optional: border for visualization */
+            margin: 10 auto; /* Center the boundary */
+        }
+        .scrollable-container {
+            display: inline-block; /* Allow the boundary to expand with content */
+        }
+    </style>
+</head>
+<body>
+    {% block body %}
+        {% block navBar %}
+            {% include 'dashboard/navbar.html' %}
+        {% endblock %}
+
+        <div class="ui stackable doubling grid">
+            <div class="column"></div>
+    
+            <div class="three wide column">
+                {%block usercard%}
+                {% include 'globals/usercard.html' %}
+                {%endblock%}
+                <div class="ui divider"></div>
+    
+                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                        <a href="/otheracademic/leavePG" class="item">Leave Form
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        <a href="/otheracademic/leaveStatusPG" class="active item">Leave Status
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        
+        
+                </div>
+                
+            </div>
+
+            <div class="twelve wide column">
+                <h2 class="ui header">Leave Status</h2>
+                <div class="scrollable-boundary">
+                    <div class="scrollable-container">
+                        <table class="ui celled table">
+                            <thead>
+                                <tr>
+                                    
+                                    <th>Roll No.</th>
+                                    <th>Student Name</th>
+                                    <th>Programme</th>
+                                    <th>Discipline</th>
+                                    <th>Semester</th>
+                                    <th>Applied Date</th>
+                                    <th>Date From</th>
+                                    <th>Date to</th>
+                                    <th>Leave Type</th>
+                                    <th>Attachment</th>
+                                    <th>Purpose</th>
+                                    <th>address</th>
+                                    <th>Mobile No.</th>
+                                    <th>Parent Mobile No. </th>
+                                    <th>Mobile No. during leave </th>
+                                    <th>TA Supervisor </th>
+                                    <th>Thesis Supervisor </th>
+                                    <th>HOD </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in form_data %}
+                                {% if entry.roll_no_id == roll_no%}
+                                <tr>
+                                    
+                                    <td>{{ entry.roll_no_id }}</td>
+                                    <td>{{ entry.student_name }}</td>
+                                    <td>{{ entry.programme}}</td>
+                                    <td>{{ entry.discipline }}</td>
+                                    <td>{{ entry.Semester }}</td>
+                                    <td>{{ entry.date_of_application }}</td>
+                                    <td>{{ entry.date_from }}</td>
+                                    <td>{{ entry.date_to }}</td>
+                                    <td>{{ entry.leave_type }}</td>
+                                    <td>
+                                        {%if entry.upload_file == ""%}
+                                        {%else%}
+                                            <a href={{ entry.upload_file.url }}>Download</a>
+                                        {%endif%}
+                                    </td> 
+                                    <td>{{ entry.purpose }}</td>
+                                    <td>{{ entry.address }}</td>
+                                    <td>{{ entry.mobile_no }}</td>
+                                    <td>{{ entry.parent_mobile_no }}</td>
+                                    <td>{{ entry.alt_mobile_no }}</td>
+                                    <td>
+                                        {%if entry.ta_approved%} Approved
+                                        {% elif entry.ta_rejected%} Rejected
+                                        {% else%} Pending
+                                        {%endif%}
+                                    </td>
+                                    <td>
+                                        {%if entry.thesis_approved%} Approved
+                                        {%elif entry.thesis_rejected or entry.ta_rejected%} Rejected
+                                        {% else%} Pending
+                                        {% endif%}
+
+                                    </td>  
+                                    <td>
+                                        {%if entry.hod_approved%} Approved
+                                        {%elif entry.hod_rejected or entry.ta_rejected or entry.thesis_rejected%} Rejected
+                                        {% else%} Pending
+                                        {% endif%}
+
+                                    </td>    
+                                    
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="three wide column">
+                <!-- Right rail content -->
+            </div>
+
+            <div class="column"></div>
+        </div>
+    {% endblock %}
+</body>
+</html>
