@@ -902,7 +902,8 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'track': track,
                     'notifications': request.user.notifications.all()
                 }
-                return render(request, 'filetracking/editdraft.html', context)
+                return redirect(reverse('filetracking:filetracking'))
+
             receive = request.POST.get('receive')
             try:
                 receive_design = Designation.objects.get(name=receive)
@@ -916,7 +917,7 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'file': file,
                     'notifications': request.user.notifications.all()
                 }
-                return render(request, 'filetracking/editdraft.html', context)
+                return redirect(reverse('filetracking:filetracking'))
 
             upload_file = request.FILES.get('myfile')
 
