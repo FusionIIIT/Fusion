@@ -12,11 +12,13 @@ class Constants:
         ('hall-1', 'hall-1'),
         ('hall-3', 'hall-3'),
         ('hall-4', 'hall-4'),
-        ('CC1', 'CC1'),
-        ('CC2', 'CC2'),
+        ('library', 'CC1'),
+        ('computer center', 'CC2'),
         ('core_lab', 'core_lab'),
         ('LHTC', 'LHTC'),
         ('NR2', 'NR2'),
+        ('NR3', 'NR3'),
+        ('Admin building', 'Admin building'),
         ('Rewa_Residency', 'Rewa_Residency'),
         ('Maa Saraswati Hostel', 'Maa Saraswati Hostel'),
         ('Nagarjun Hostel', 'Nagarjun Hostel'),
@@ -42,11 +44,18 @@ class Caretaker(models.Model):
     # no_of_comps = models.CharField(max_length=1000)
 
     def __str__(self):
-        return str(self.id) + '-' + self.area
+        return str(self.id) + '-' + str(self.area)
 
+class SectionIncharge(models.Model):
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    work_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
+                                   max_length=20, default='Electricity')
+
+    def __str__(self):
+        return str(self.id) + '-' + self.work_type
 
 class Workers(models.Model):
-    caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
+    secincharge_id = models.ForeignKey(SectionIncharge, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
@@ -82,7 +91,7 @@ class StudentComplain(models.Model):
 
 class Supervisor(models.Model):
     sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    area = models.CharField(choices=Constants.AREA, max_length=20)
+    type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
     def __str__(self):
-        return str(self.sup_id.user.username)
+        return str(self.sup_id) + '-' + str(self.type)

@@ -8,6 +8,27 @@
             .modal('show')
             ;
         });  
+        function courseDropCalled(event) {
+        // Prevent the default action of the link
+        event.preventDefault();
+        
+        // Get the URL from the link's href attribute
+        let url = event.target.href;
+
+        // Perform AJAX request
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data) {
+                // Reload the page after successful deletion
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                // Handle errors if needed
+                console.error(error);
+            }
+        });
+    }
 </script>
 
 
@@ -81,7 +102,7 @@
                     </td>
                     <td>
                         <A class="ui blue label"
-                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}">
+                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" onclick="courseDropCalled(event)" >
                             DROP </A>
                     </td>
 

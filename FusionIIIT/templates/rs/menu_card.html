@@ -1,6 +1,25 @@
 {% block menucard %}
 
-<a class="item"  data-tab="fourth">Patents</a>
-<a class="item"  data-tab="second">Projects</a>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        // Get the current URL path and compare with menu links
+        var path = window.location.pathname;
+        $('.item').each(function(){
+            var href = $(this).attr('href');
+            if (path === href) {
+                $(this).addClass('active');
+            }
+        });
+    });
+</script>
+
+
+{% comment %} <a class="item"  data-tab="fourth">Patents</a> {% endcomment %}
+{% if global_var == "rspc_admin" %}
+<a class="item"  href="/research_procedures/add_projects">Add Projects</a>
+{% endif %}
+<a class="item"  href="/research_procedures/view_projects" >View Projects</a>
+<a class="item"  href="/research_procedures/inbox" >Inbox</a>
 
 {% endblock %}

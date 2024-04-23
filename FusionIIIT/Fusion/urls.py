@@ -62,4 +62,5 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
   
+    url(r'^examination/', include('applications.examination.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

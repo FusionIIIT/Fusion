@@ -1,0 +1,83 @@
+{% block manage_Caretaker %}
+<form class="ui form">
+    {% csrf_token %}
+    <h2 class="text-center" align="center">Assign Caretaker</h2>
+    <div class="field">
+
+        <label for="hall_id" class="form-label">Hall ID:</label>
+        <select name="hall_id" class="form-control" id="_hall__id" required>
+            <!-- Add an option for each hall ID dynamically -->
+            {% for hall in all_hall %}
+            <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="caretaker_username" class="form-label">caretaker_username :</label>
+
+        <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
+        <select name="caretaker_username" class="form-control" id="caretaker_username" required>
+
+            {% for c in staff %}
+            <option value="{{ c.id.user.username }}">{{ c.id.user.username }}</option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+    <button type="submit" onclick="assignCaretaker()" class="ui primary button">Assign</button>
+</form>
+
+
+
+
+<script>
+
+   
+    function assignCaretaker() {
+
+        var hall_id = document.getElementById('_hall__id').value;
+        var caretaker_username = document.getElementById('caretaker_username').value;
+        // console.log('~~~~~~~~~~~', hall_id);
+     
+        // Perform AJAX request to assign caretaker
+        fetch('/hostelmanagement/assign-caretaker', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token in headers
+            },
+            body: JSON.stringify({
+                hall_id: hall_id,
+                caretaker_username: caretaker_username,
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning caretaker.');
+            });
+
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Check if the cookie name matches the expected format
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+{% endblock %}

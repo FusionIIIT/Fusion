@@ -1,0 +1,507 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+                <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+                
+
+               
+            </div>
+
+
+
+
+
+        </div>
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Leave Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+
+
+
+
+
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        th,
+                        td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: center;
+                        }
+
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+
+
+
+                            <form method="post" id="editDetail" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                                    value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Name</label>
+                                        <input type="text" name="name" maxlength="40" required id="name"
+                                            value="{{ leave_request.name }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Designation</label>
+                                        <input type="text" name="designation" maxlength="40" id="designation"
+                                            value="{{ leave_request.designation }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Application Date</label>
+                                        <input type="Date" name="submissionDate" id="submissionDate"
+                                            value="{{ leave_request.submissionDate|date:'Y-m-d' }}" readonly>
+                                    </div>
+                                    <div class="fifteen wide field">
+                                        <label for="post_title">PF Number</label>
+                                        <input type="number" name="pfNo" maxlength="40" id="pfNo"
+                                            value="{{ leave_request.pfNo }}" readonly>
+                                    </div>
+                                    <div class="eight wide field">
+                                        <label for="post_title">Department/Discipline</label>
+                                        <input type="text" name="departmentInfo" maxlength="40" id="departmentInfo"
+                                            value="{{ leave_request.departmentInfo }}" readonly>
+                                    </div>
+
+
+
+                                    <div style="text-align: center;">
+                                        <div class="field">
+                                            <label for="natureOfLeave">Nature of leave :</label>
+                                            <select id="natureOfLeave" name="natureOfLeave">
+                                                <option value="Casual">Casual</option>
+                                                <option value="vacaction">Vacation</option>
+                                                <option value="earned">Earned</option>
+                                                <option value="commuted leave">Commuted Leave</option>
+                                                <option value="specail casual leave">Special Casual Leave</option>
+                                                <option value="restricted leave">Restricted Holiday</option>
+                                                <option value="station leave">Station Leave</option>
+
+                                            </select>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> Leave Start Date</label>
+                                        <input type="date" name="leaveStartDate" maxlength="40"
+                                            id="leaveStartDate"
+                                            value="{{ leave_request.leaveStartDate|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title"> Leave End Date</label>
+                                        <input type="date" name="leaveEndDate" maxlength="40"
+                                            id="leaveEndDate"
+                                            value="{{ leave_request.leaveEndDate|date:'Y-m-d' }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Purpose</label>
+                                        <input type="text" name="purposeOfLeave" maxlength="40" id="purposeOfLeave"
+                                            value="{{ leave_request.purposeOfLeave }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Leave Address</label>
+                                        <input type="text" name="addressDuringLeave" maxlength="40" id="addressDuringLeave"
+                                            value="{{ leave_request.addressDuringLeave }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Academic Responsibility Assigned to </label>
+                                        <input type="text" name="academicResponsibility" maxlength="40"
+                                            id="academicResponsibility"
+                                            value="{{ leave_request.academicResponsibility }}" readonly>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="post_title">Administrative Responsibility Assigned to </label>
+                                        <input type="text" name="addministrativeResponsibiltyAssigned" maxlength="40"
+                                            id="addministrativeResponsibiltyAssigned"
+                                            value="{{ leave_request.addministrativeResponsibiltyAssigned }}" readonly>
+                                    </div>
+
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <hr>
+
+
+                                    <br>
+                                    {% if button == 1 %}
+                                    <div class="ui container center aligned">
+                                        <div class="two fields">
+                                            <div class="eight wide field">
+                                                <label for="username_employee">Username:</label>
+                                                <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                                            </div>
+                                            <div class="eight wide field">
+                                                <label for="designation_employee">Designation:</label>
+                                                <input type="text" name="designation_employee" id="designation_employee" readonly>
+                                            </div>
+                                            <div class="six wide field">
+                                                <h1></h1>   
+                                                <button id="check_button" class="ui primary button">Check</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="two fields">
+                                        <button id="forward-btn" class="ui primary button right floated" type="submit"
+                                            value="Forward">
+                                            Forward
+                                        </button>
+                                        <button id="reject-btn" class="ui primary red button right floated"
+                                            type="submit" value="Reject">
+                                            Reject
+                                        </button>
+                                        <button id="approve-btn" class="ui primary red button right floated"
+                                            type="submit" value="Approve">
+                                            Approve
+                                        </button>
+                                        <button id="archive-btn" class="ui primary red button right floated"
+                                        type="submit" value="Approve">
+                                        Archive
+                                    </button>
+                                    <button id="getAllForms-btn" class="ui primary red button right floated"
+                                            type="submit" value="getAllForms">
+                                            PreviousForms
+                                        </button>
+                                    </div>
+                                    <label>Remarks</label>
+                                    <input id="remark_id" name="remark_id"></input>
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+                                <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+                                <input type="hidden" id="from_designation" name="from_designation" value="{{ from_designation }}">
+                                <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
+                                <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
+                            </form>
+
+                            <div id="data-of-past">
+                              
+                            </div>
+
+                            <br>
+                            <br>
+
+
+                        </div>
+                        <br>
+                        <div class="extra content"></div>
+                    </div>
+
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#check_button').click(function (event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function (data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#getAllForms-btn').click(function(event) {
+            event.preventDefault();
+
+            var user_id = '{{ user_id }}';
+
+           //  var user_id = 5332;
+
+            console.log(user_id)
+       
+            var type = 'Leave'; 
+           $.ajax({
+            type: 'GET',
+               url: '/hr2/getformLeave/',
+               data: {
+                   'id': user_id,
+                   'type': type
+               },
+               success: function(response) {
+                   // Construct HTML table from response data
+                   var tableHtml = '<table style="border: 1px solid black"><thead><tr><th>S.No</th><th>Full Name</th><th>designation</th><th>submissionDate</th></tr></thead><tbody>';
+                   for (var i = 0; i < response.length; i++) {
+                       var form = response[i];
+                       var approvedColor = form.is_approved ? 'green' : 'red'; // Change color based on is_approved field
+
+                       tableHtml += '<tr style="color: ' + approvedColor + '">';
+                       tableHtml += '<td><input type="number" name="info_' + (i+1) + '_1" maxlength="40" id="id_info_' + (i+1) + '_1" value="' + form.id + '" readonly></td>';
+                       tableHtml += '<td><input type="text" name="info_' + (i+1) + '_2" maxlength="40" id="id_info_' + (i+1) + '_2" value="' + form.name + '" readonly></td>';
+                       tableHtml += '<td><input type="text" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.designation + '" readonly></td>';
+                       tableHtml += '<td><input type="date" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.submissionDate + '" readonly></td>';
+                       tableHtml += '</tr>';
+                   }
+                   tableHtml += '</tbody></table>';
+
+                   // Populate data into the specified div and show it
+                   $('#data-of-past').html(tableHtml).show();
+               },
+
+               error: function(xhr, status, error) {
+                   // Handle errors here
+                   console.error(xhr.responseText);
+               }
+           });
+       });
+   });
+  
+</script>
+
+<script>
+    $(document).ready(function () {
+
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            handleForwardOrReject(1);
+        });
+
+        $('#approve-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to approve the request?")
+
+            if(confirmation){
+                handleForwardOrReject(2);   
+            }
+        });
+        $('#archive-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to archive the file")
+
+            if(confirmation){
+                handleForwardOrReject(3);   
+            }
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#leave_form').serialize(); // Serialize the form data
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject)
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            var username_employee = $('#username_employee').val();
+            var designation_employee = $('#designation_employee').val();
+            var form_id = $('#form_id').val();
+            var remark_id = $('#remark_id').val();
+            
+
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation,
+                username_employee:username_employee,
+                designation_employee:designation_employee,
+                form_id : form_id,
+                remark_id : remark_id
+                
+            });
+            // Fire an AJAX request to handle the action
+            $.ajax({
+                url: '/hr2/file_handle_leave/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                 },  
+                data: formData, // Send the serialized form data
+                success: function (data) {
+                    // Handle success response, if needed
+                    alert("Request it succefull.");
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}
