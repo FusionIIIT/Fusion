@@ -34,6 +34,7 @@
                     <th>Nomenclature</th>
                         <th>Item Name</th>
                         <th>Item Type</th>
+                        <th>Item SubType</th>
                         <th>Current Location</th>
                         <th>Current Department/Section</th>
                         <th>Vendor</th>
@@ -49,8 +50,9 @@
                         <td> {{item.StockEntryId.item_id.item_name}} </td>
                     
                         <td>{{item.StockEntryId.item_id.item_type}}</td>
+                        <td>{{item.StockEntryId.item_id.item_subtype}}</td>
                         <td>{{item.StockEntryId.location}}</td>
-                        <td>{{item.department}}</td>
+                        <td>{{item.department.name}}</td>
                         <td>{{item.StockEntryId.vendor}}</td>
                         
 
