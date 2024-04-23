@@ -921,10 +921,13 @@ def edit_draft_view(request, id, *args, **kwargs):
 
             upload_file = request.FILES.get('myfile')
 
+            if upload_file is None and file.upload_file is not None: 
+                upload_file = file.upload_file
+
             # since frontend isnt reflecting uploaded file in edit draft, but upload_file may exist in File
             # (this feature isnt working atm, duplicate is still stored)
-            if upload_file == file.upload_file:
-                upload_file = None
+            #if upload_file == file.upload_file:
+            #    upload_file = None
 
             Tracking.objects.create(
                 file_id=file,
