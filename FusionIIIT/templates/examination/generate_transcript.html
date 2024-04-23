@@ -1,0 +1,215 @@
+{% extends 'examination/base.html' %}
+
+{% block sidetabmenu %}
+<style>
+    /* Define your CSS styles here */
+    .box {
+        width: 200px;
+        height: 20px;
+        position: absolute;
+        top: 50px;
+        left: 20px;
+        text-align: center; 
+        line-height: 40px; 
+    }
+
+    /* Default styling */
+    .flex-container {
+        display: flex;
+        flex-direction: row;
+        gap: 50px;
+    }
+
+    .flex-item {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .label-container {
+        margin-top: 8px;
+    }
+
+    /* Responsive styling */
+    @media only screen and (max-width: 767px) {
+        .flex-container {
+            flex-direction: column;
+            gap: 20px; /* Adjust spacing for smaller screens */
+        }
+
+        .flex-item {
+            gap: 0; /* Reset gap for smaller screens */
+        }
+
+        .label-container {
+            margin-top: 0; /* Reset margin-top for smaller screens */
+        }
+    }
+</style>
+
+<div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
+    <a class="item" href="{% url 'examination:submitGrades' %}">Submit
+        <i class="right floated chevron right icon"></i>
+      </a>
+    <a class="item" href="{% url 'examination:updateGrades' %}">Verify
+        <i class="right floated chevron right icon"></i>
+    </a>
+    <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+        <i class="right floated chevron right icon"></i>
+    </a>
+
+    <a class="item" href="{% url 'examination:announcement' %}">Announcement
+        <i class="right floated chevron right icon"></i>
+    </a>
+    <a class="active item" href="{% url 'examination:generate_transcript_form' %}"><B>Generate Transcript</B>
+        <i class="right floated chevron right icon"></i>
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="ui segment">
+    <h1 class="ui header aligned center">Transcript</h1>
+    <div class="ui grid">
+        <div class="eight wide column">
+            {% for course, grade in courses_grades.items %}
+                {% if forloop.first %}
+                    <div class="ui dividing header">Roll No: {{ grade.grade.roll_no }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="eight wide right aligned column">
+            {% for course, grade in courses_grades.items %}
+                {% if forloop.first %}
+                    <div class="ui dividing header">Semester: {{ grade.grade.semester }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if not courses_grades %}
+        <div class="ui message">Marks not yet submitted.</div>
+    {% else %}
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th>Course Name</th>
+                    <th>Course Code</th>
+                    <th>Credits</th>
+                    <th>Grade</th>
+                    <th>all_auth</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course_detail, data in courses_grades.items %}
+                    <tr>
+                        <td>{{ course_detail.name }}</td>
+                        <td>{{ course_detail.code }}</td>
+                        <td>{{ course_detail.credit }}</td>
+                        <td>
+                            {% if data.all_authenticators_true %}
+                                {{ data.grade.grade }}
+                            {% else %}
+                                Course must be authenticated to generate grade
+                            {% endif %}
+                        </td>
+                        <td>{{data.all_authenticators_true}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="ui segment">
+            <h2 class="ui header">Semester Performance Index (SPI)</h2>
+            <div class="ui statistic">
+                <div class="value" id="spi-value">
+                    <!-- SPI value will be inserted here -->
+                </div>
+                <div class="label">SPI</div>
+            </div>
+        </div>
+        <div class="ui segment">
+            <h2 class="ui header">Cumulative Performance Index (CPI)</h2>
+            <div class="ui statistic">
+                <div class="value" id="cpi-value">
+                    <!-- CPI value will be inserted here -->
+                </div>
+                <div class="label">CPI</div>
+            </div>
+        </div>
+        <script>
+            // Calculate SPI and CPI when page is loaded
+            window.onload = function() {
+                // Calculate SPI
+                const courseGrades = [{% for course_detail, data in courses_grades.items %}
+                    { "credits": {{ course_detail.credit }}, "grade": "{{ data.grade.grade }}" },
+                {% endfor %}];
+                let totalCredits = 0;
+                let totalGradePoints = 0;
+                for (const { credits, grade } of courseGrades) {
+                    let gradePoints = 0;
+                    if (grade === "O") {
+                        gradePoints = 10;
+                    } else if (grade === "A+") {
+                        gradePoints = 10;
+                    } else if (grade === "A") {
+                        gradePoints = 9;
+                    } else if (grade === "B+") {
+                        gradePoints = 8;
+                    } else if (grade === "B") {
+                        gradePoints = 7;
+                    } else if (grade === "C+") {
+                        gradePoints = 6;
+                    } else if (grade === "C") {
+                        gradePoints = 5;
+                    } else if (grade === "D+") {
+                        gradePoints = 4;
+                    } else if (grade === "D") {
+                        gradePoints = 3;
+                    } else if (grade === "F") {
+                        gradePoints = 2;
+                    }
+                    totalGradePoints += gradePoints * credits;
+                    totalCredits += parseFloat(credits);
+                }
+                const spi = totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : "N/A";
+                document.getElementById('spi-value').textContent = spi; // Set SPI value
+
+                // Calculate CPI
+                const courseGradesTotal = [{% for course_detail in total_course_registered %}
+                    { "credits": {{ course_detail.course_id.credit }}, "grade": "{{ course_detail.grade }}" },
+                {% endfor %}];
+                let totalCreditsCPI = 0;
+                let totalGradePointsCPI = 0;
+                for (const { credits, grade } of courseGradesTotal) {
+                    let gradePoints = 0;
+                    if (grade === "O") {
+                        gradePoints = 10;
+                    } else if (grade === "A+") {
+                        gradePoints = 10;
+                    } else if (grade === "A") {
+                        gradePoints = 9;
+                    } else if (grade === "B+") {
+                        gradePoints = 8;
+                    } else if (grade === "B") {
+                        gradePoints = 7;
+                    } else if (grade === "C+") {
+                        gradePoints = 6;
+                    } else if (grade === "C") {
+                        gradePoints = 5;
+                    } else if (grade === "D+") {
+                        gradePoints = 4;
+                    } else if (grade === "D") {
+                        gradePoints = 3;
+                    } else if (grade === "F") {
+                        gradePoints = 2;
+                    }
+                    totalGradePointsCPI += gradePoints * credits;
+                    totalCreditsCPI += parseFloat(credits);
+                }
+                const cpi = totalCreditsCPI > 0 ? (totalGradePointsCPI / totalCreditsCPI).toFixed(2) : "N/A";
+                document.getElementById('cpi-value').textContent = cpi; // Set CPI value
+            };
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block view_file %}
+
+{% block body %}
+
+<div class="ui active tab" data-tab="notesheet" style="width:100%;">
+    <div class="ui two item menu">
+        <a class="item"><b>Created By :-</b><b class="meta"
+                style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+        {% comment %} <a class="item"><b>File ID :</b><b class="meta"
+                style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a> {% endcomment %}
+    </div>
+    <div class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+        {% csrf_token %}
+        <div class="ui fluid card" >
+            <div class="content">
+                <center><span class="ui blue header"><b> {{file.subject}}</b></span></center>
+                <div class="ui divider"></div>
+                <div class="content" style="padding-left: 26px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                    <div class="item">
+                        {% for t in tracks %}
+                        <div class="ui card" style="padding: 12px; width:100%;">
+                            <div class="comment">
+                                <div class="content">
+                                    <div style="display:flex;justify-content: space-between;flex-direction: row; font-weight:normal">
+                                        <div style="padding: 5px;">   
+                                            <b>Sent by:</b>
+                                            <a class="author"style="text-decoration: none;color:inherit; font-weight:normal">{{ t.current_design }}
+                                            </a>
+                                            <b class="metadata" style="font-size: 12px;margin-left:10px ;color: grey;">
+                                                <span class="date">{{ t.forward_date }}</span>
+                                            </b>
+                                        </div>
+                                        <div class="right floated" style="font-color: black; padding: 5px;">
+                                            <b>Received by:</b>&nbsp{{ t.receiver_id }}-{{ t.receive_design }}
+                                        </div>
+                                    </div>
+                                    <div class="text">
+                                        <div style="display: flex; padding: 5px;">
+                                            <div style="font-weight:bold">
+                                                Remarks :
+                                            </div>
+                                            <div class="overflow-visible"
+                                                style="margin-left:5px; font-family: 'Arial'; font-weight:normal">
+                                                {% if t.remarks %}
+                                                    {{ t.remarks }}
+                                                {% else %}
+                                                    <span class="meta">No Remarks</span>
+                                                {% endif %}
+                                                </div>
+                                        </div>    
+                                        {% if t.upload_file %}
+                                        <span class="meta" style="color: grey; padding: 5px;"><b style="color:black;">Attachment:<b> <a href="{{t.upload_file.url}}" > {{ t.upload_file }} </a> </span>
+                                       
+                                        {% else %}
+                                        <span class="meta" style="color: grey; padding: 5px;">No attachments</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="ui divider"></div>
+                        {% if request.user != current_user.user  %}
+                        
+
+                            <form method="post" enctype="multipart/form-data" action="{% url 'research_procedures:forward_request' file.id  %}">
+                                {% csrf_token %}
+                                <div class="field" style="max-width: 100%;">
+                                    <label for="receiver_designation">Forward to :</label>
+                                    <div class="eight wide field">                                
+                                        <select id="receiver_designation" name="receiver_designation" class="ui selection dropdown small">
+                                            <option value="dean_rspc">RSPC Dean</option>
+                                            <option value="rspc_admin">RSPC Admin</option>
+                                            <option value="project_investigator">Project Investigator</option>
+                                            <option value="HOD (CSE)">HOD (CSE)</option>
+                                        <option value="HOD (ME)">HOD (ME)</option>
+                                        <option value="HOD (ECE)">HOD (ECE)</option>
+                                        <option value="HOD (Design)">HOD (Design)</option>
+                                        <option value="HOD (NS)">HOD (NS)</option>
+                                        <option value="Director">Director</option>
+                                    </select>
+                                </div>                             
+                        </div>
+
+                        
+                        
+                        <div class="field">
+                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                        </div>
+                        
+                        <div class="field">
+                            <label for="attachment">Attach File: (Maximum File Size 10 MB) </label>
+                            <input type="file" id="file" name="attachment" accept=".pdf, .jpg, .jpeg, .png">
+                        </div>
+                        {% if global_var == "director" or global_var == "HOD (CSE)"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %}
+                        <button type="submit" class="ui large right floated primary button" style="margin-top:20px; float: right;">
+                            <a
+                            style="text-decoration: none; color: inherit;"> Approve File <i
+                            class="ui send icon right floated"></i> </a>
+                        </button>
+                        {% endif %}
+                        <button type="submit" class="ui large right floated primary button" style="margin-top:20px; float: right;">
+                            <a
+                            style="text-decoration: none; color: inherit;"> Forward File <i
+                            class="ui send icon right floated"></i> </a>
+                        </button>
+                    </form>
+                {% endif %}
+                </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+</div>
+
+{% endblock %}
+{% endblock %}

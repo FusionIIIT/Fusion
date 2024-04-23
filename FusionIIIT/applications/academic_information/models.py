@@ -69,7 +69,7 @@ class Student(models.Model):
     '''
         Current Purpose : To store information pertinent to a user who is also a student
         
-        
+         
 
         ATTRIBUTES :
 
@@ -93,15 +93,12 @@ class Student(models.Model):
     batch_id = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.CASCADE)
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
-    father_name = models.CharField(max_length=40, default='')
-    mother_name = models.CharField(max_length=40, default='')
+    father_name = models.CharField(max_length=40, default='',null=True)
+    mother_name = models.CharField(max_length=40, default='',null=True)
     hall_no = models.IntegerField(default=0)
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
     curr_semester_no = models.IntegerField(default=1)
-#     pwd_status = models.BooleanField(null=True, blank=True,default=False)
-#     father_mobile_no = models.CharField(max_length=10, null=True, blank=True, default='9999999999')
-#     mother_mobile_no = models.CharField(max_length=10, null=True, blank=True, default='9999999999')
 
     def __str__(self):
         username = str(self.id.user.username)
@@ -110,17 +107,7 @@ class Student(models.Model):
 
 
 class Course(models.Model):
-    '''
-        Current Purpose : To store information of a course
-        
-        
-
-        ATTRIBUTES :
-
-        course_name(char) - to store the name of the course
-        course_details(TextField) -  to store the course details
-
-    '''
+   
     course_name = models.CharField(max_length=600)
     course_details = models.TextField(max_length=500)
 
@@ -132,25 +119,7 @@ class Course(models.Model):
 
 
 class Curriculum(models.Model):
-    '''
-        Current Purpose : Currently this table stores mapping of a course to a particular semester and relevant details
-
-        ! - the table does not follow the conventional definition of the term Curriculum 
-        ATTRIBUTES :
-
-        curriculum_id(AutoField) - to store the automatically generated course id which will be the primary key
-        course_code(CharField) -  stores the course code (can be null)
-        course_id(academic_information.Course) - foreign key to the course 
-        credits(integer) - stores credits assigned for the course
-        course_type(char) - to select the type of the course(eg : Professional Core/Project)
-        programme(char) - to store the programme for which the course is being offered
-        branch(char) - to store the branch/discipline for which the course is being offered(eg CSE)
-        batch(integer) - to store the batch for which the course is available(eg:2019)
-        sem(Integer) - the semester in which the course is offered for a batch
-        optional(Boolean) - denotes whether the course is optional or not
-        floated(Boolean) - denotes whether a course is floated for a particular semester or not
-
-    '''
+   
     curriculum_id = models.AutoField(primary_key=True)
     course_code = models.CharField(max_length = 20)
     course_id = models.ForeignKey(Course,on_delete= models.CASCADE)
@@ -172,23 +141,7 @@ class Curriculum(models.Model):
 
 
 class Curriculum_Instructor(models.Model):
-    '''
-        Current Purpose : Currently this table stores mapping of a course in a semester to the faculty who will teach the course
-
-        ! - the table does not follow the conventional definition of the term Curriculum 
-
-        
-        
-        
-
-        ATTRIBUTES :
-
-        curriculum_id(academic_information.Curriculum) - reference to the course details 
-        instructor_id(globals.ExtraInfo) - reference to the faculty who will teach the course
-        chief_inst(Bool) - denotes whether the faculty is the chief instructor of the course or not
-
-
-    '''
+    
     curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     chief_inst = models.BooleanField(default=False)
@@ -205,27 +158,11 @@ class Curriculum_Instructor(models.Model):
 
 
 class Student_attendance(models.Model):
-    '''
-        Current Purpose : Currently this table stores mapping of a student's attendance for a particular course in a semester
-
-
-        
-        
-        
-
-        ATTRIBUTES :
-
-        student_id(academic_information.Student) - referene to the student for whom the attendance is being recorded
-        instructor_id(academic_information.Curriculum_Instructor) - reference to the faculty and course 
-        date(DateField) - the date for which the attendance will be recorded
-        present(Boolean) - to denote whether the student was present or not
-
-    '''
+   
     student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
-#    course_id = models.ForeignKey(Course)
-#    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
+
     instructor_id = models.ForeignKey(Curriculum_Instructor, on_delete=models.CASCADE)
-#    curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
+
     date = models.DateField()
     present = models.BooleanField(default=False)
 
@@ -237,18 +174,7 @@ class Student_attendance(models.Model):
 
 
 class Meeting(models.Model):
-    '''
-        Current Purpose : stores the information regarding a meeting which was conducted by the academic department
-
-        ATTRIBUTES:
-        
-        venue(char) - venue where the meeting will be held(eg:L-103)
-        date(DateField) - the date on which the meeting was held
-        time(char) -  time at the meeting was held
-        agenga(text) - the points of discussion for the meeting
-        minutes_file(char) - the summary of the meeting
-
-    '''
+   
     venue = models.CharField(max_length=50)
     date = models.DateField()
     time = models.CharField(max_length=20)
@@ -263,15 +189,7 @@ class Meeting(models.Model):
 
 
 class Calendar(models.Model):
-    '''
-        Current Purpose : stores the information regarding an academic event(eg : course registrations etc)
-
-        ATTRIBUTES:
-        
-        from_date(DateField) -  start date of the event
-        to_date(DateField) - end date of the event
-        description(Char) - description about the event
-    '''
+    
     from_date = models.DateField()
     to_date = models.DateField()
     description = models.CharField(max_length=40)
@@ -284,14 +202,7 @@ class Calendar(models.Model):
 
 
 class Holiday(models.Model):
-    '''
-        Current Purpose : stores the information regarding a holiday 
-
-        ATTRIBUTES
-        holiday_date(DateField) - the date of the holidar
-        holiday_name(char) - to denote the name of the holiday(eg : Republic Day)
-        holiday_type - to store whether the holiday is restricted or closed
-    '''
+   
     holiday_date = models.DateField()
     holiday_name = models.CharField(max_length=40)
     holiday_type = models.CharField(default='restricted', max_length=30,
@@ -305,14 +216,7 @@ class Holiday(models.Model):
 
 
 class Grades(models.Model):
-    '''
-        Current Purpose : stores the information regarding the gradees of a student for a course in a semester
-
-        ATTRIBUTES
-        student_id(academic_information.Student) - Reference to the student for whom the grades is about to be stores
-        curriculum_id(academic_information.Curriculum) - Reference to the course for which the graded are to be given
-        grade(Char) - denotes whether the grade given to the student is verified or not
-    '''
+    
     student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
     curriculum_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
     grade = models.CharField(max_length=4)
@@ -323,14 +227,7 @@ class Grades(models.Model):
 
 
 class Spi(models.Model):
-    '''
-        Current Purpose : stores the information regarding the SPI of a student for a semester
-
-        ATTRIBUTES
-        sem(Integer) - the semester to which the spi refers to
-        student_id(academic_information.Student) - the student for whom the spi is stored
-        spi(float) - the spi value achieved
-    '''
+    
     sem = models.IntegerField()
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     spi = models.FloatField(default=0)
@@ -344,18 +241,7 @@ class Spi(models.Model):
 
 
 class Timetable(models.Model):
-    '''
-        Current Purpose : stores the class-schedule timetable for a batch (eg CSE -2019-Btech)
-
-        ATTRIBUTES
-
-        upload_date(DateTime) - stores the upload date and time 
-        time_table(File) -  the file which contains the timetable
-        batch(Integer) -  stores the batch for which the timetable is valid
-        programme(Char) - stores the programme for which the time table is valid
-        branch(char) - the branch for which the time table is valid
-    '''
-
+    
     upload_date = models.DateTimeField(auto_now_add=True)
     time_table = models.FileField(upload_to='Administrator/academic_information/')
     batch = models.IntegerField(default="2016")
@@ -366,17 +252,7 @@ class Timetable(models.Model):
 
 
 class Exam_timetable(models.Model):
-    '''
-        Current Purpose : stores the exam-schedule timetable for a batch (2019-Btech)
-
-        ATTRIBUTES
-
-        upload_date(DateTime) - stores the upload date and time 
-        exam_time_table(File) -  the file which contains the timetable
-        batch(Integer) -  stores the batch for which the timetable is valid
-        programme(Char) - stores the programme for which the time table is valid
-        
-    '''
+   
     upload_date = models.DateField(auto_now_add=True)
     exam_time_table = models.FileField(upload_to='Administrator/academic_information/')
     batch = models.IntegerField(default="2016")

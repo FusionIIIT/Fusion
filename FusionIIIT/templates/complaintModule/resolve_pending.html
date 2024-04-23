@@ -68,8 +68,8 @@ Resolve Pending
                           action=".">
                         {% csrf_token %}
                         <div class="ui header">
-                            Update The status
-                            <div>Complaint ID :{{ thiscomplaint.id }}</div>
+                            Update the status of 
+         Complaint ID :{{ thiscomplaint.id }}
                         </div>
                         <br>
 
@@ -99,18 +99,18 @@ Resolve Pending
                             </div>
                             <div class="eight wide field">
                                 <label>Details</label>
-                                <a href="/complaint/caretaker/detail2/{{ thiscomplaint.id }}/"> Click here!</a>
+                                <a href="/complaint/caretaker/detail/{{ thiscomplaint.id }}/"> Click here!</a>
                             </div>
-                            <div class="eight wide field">
+                            <!-- <div class="eight wide field">
                                 <label>Worker ID</label>
                                 <b>{{ thiscomplaint.worker_id }}</b>
 
-                            </div>
+                            </div> -->
                         </div>
                         <div class="fields">
                             <div class="field">
-                                Did The Assigned Worker Resolved The Issue?</br>
-                                <b>If You Say No, The status of the complaint will automatically be set to
+                                Has the issue been resolved?</br>
+                                <b>If you say no, the status of the complaint will automatically be set to
                                     "Declined"</b>></br></br>
                                 <div class="ten field">
                                     <div class="ui selection dropdown">
@@ -125,6 +125,7 @@ Resolve Pending
                                     </div>
                                     <br>
                                 </div>
+                                <br>
                                 <b>
                                     Any Comments (Optional)
                                     </b>
