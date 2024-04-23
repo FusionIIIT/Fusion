@@ -1,7 +1,7 @@
 from sqlite3 import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.contrib.auth.models import User
@@ -508,6 +508,16 @@ def forward(request, id):
     track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
                                             'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file).order_by('receive_date')
 
+    designations = get_designation(request.user)
+
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
+
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
     if request.method == "POST":
         if 'finish' in request.POST:
             file.is_read = True
@@ -572,16 +582,7 @@ def forward(request, id):
             )
         file_tracking_notif(request.user, receiver_id, file.subject)
         messages.success(request, 'File sent successfully')
-
-    designations = get_designation(request.user)
-
-    designation_name = request.session.get('currentDesignationSelected', 'default_value')
-    all_available_designations = request.session.get(
-        'allDesignations', 'default_value2')
-
-    username = request.user
-    designation_id = get_HoldsDesignation_obj(
-        username, designation_name).id
+        return redirect(reverse('filetracking:filetracking'))
 
     context = {
         'designations': designations,
