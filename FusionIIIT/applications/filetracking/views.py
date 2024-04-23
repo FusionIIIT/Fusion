@@ -463,7 +463,7 @@ def archive_file(request, id):
        and the current owner of the file
     '''
     if request.method == "POST":
-        file = get_object_or_404(File, id=id);
+        file = get_object_or_404(File, id=id)
         current_owner = get_current_file_owner(file.id)
         file_uploader = get_user_object_from_username(file.uploader.user.username)
         if current_owner == request.user and file_uploader == request.user:
