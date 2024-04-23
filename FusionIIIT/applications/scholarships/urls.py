@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^getConvocationFlag/$', views.getConvocationFlag, name='getConvocationFlag'),
     url(r'^getContent/$', views.getContent, name='getContent'),
     url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
+    url(r'^deleteRelease/$', views.deleteRelease, name='deleteRelease'),
 
 ]

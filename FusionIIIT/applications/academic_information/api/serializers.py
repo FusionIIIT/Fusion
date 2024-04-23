@@ -18,7 +18,6 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class CurriculumSerializer(serializers.ModelSerializer):
     course_id = CourseSerializer()
-
     class Meta:
         model = Curriculum
         fields = ('curriculum_id','course_code','course_id','credits','course_type',

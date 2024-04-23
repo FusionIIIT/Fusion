@@ -1,153 +1,212 @@
 {% extends 'ps1/ps2.html' %}
 {% load static %}
 
-{% block filetracking_tab %} 
+{% block filetracking_tab %}
 
 
-    <div class="ui pointing secondary menu">
-        <h3>
-            <a class="active item" data-tab="composefile">
-            Compose New Procurement File
-            </a>
-        </h3>
-    </div>
-    <div class="ui active tab" data-tab="composefile">
-        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+<div class="ui pointing secondary menu">
+    <h3>
+        <a class="active item" data-tab="composefile">
+            Add Stock
+        </a>
+    </h3>
+</div>
+<div class="ui active tab" data-tab="composefile">
+    <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form" method="POST" action="/purchase-and-store/StockEntry/" enctype="multipart/form-data" id="stock1">
+        <form class="ui large form" method="POST" action="/purchase-and-store/StockEntry/" enctype="multipart/form-data"
+            id="stock1">
             {% csrf_token %}
-            <input hidden  name = 'id' value="{{id}}">
-             <div class="field">
-                        <label>Name of the purchasing Item/Equipment</label><br>
-                        <input type="text" name="item_name"  value="{{indent.item_name}}" readonly>
-                </div>
+
+            <div class="field">
+                <label>Indent File Creator</label><br>
+                <input type="text" value="{{RequestFile.uploader.user.username}}" readonly>
+            </div>
+
+            <!-- this represents the id  of the File Object  -->
+            <input hidden name='id' value="{{id}}">
+
+            <input hidden name='id' value="{{id}}">
+
+            <div class="field">
+                <label>Name of the purchasing Item/Equipment</label><br>
+                <input type="text" value="{{indent.item_name}}" readonly>
+            </div>
+
+            <div class="field">
+                <label>Type of the purchasing Item/Equipment</label><br>
+                <input type="text" value="{{indent.item_type}}"  readonly>
+            </div>
+            
+            <div class="field">
+                <label for="directorApproval">Director Approval: <input type="checkbox" checked readonly/> </label><br>
+            </div>
+
+            <div class="field">
+                <label for="directorApproval">Financial Approval: <input type="checkbox" checked readonly/></label><br>
+            </div>
+
+            <div class="field">
+                <label for="directorApproval">Head Approval:<input type="checkbox" checked readonly/></label><br>
+            </div>
+            
+            
+            
+
+            <div class="field">
+                <label>Transfer to Department/Section</label><br>
+                <input type="text" value="{{RequestFile.uploader.department.name}}" readonly>
+            </div>
+
+            <!-- <div class="field">
+                <label>Dealing Assistant ID * </label><br>
+                <select id="local_DA_select" name="dealing_assistant_id">
+                    {% for person in persons %}
+                    <option value="{{person}}" >{{person}}</option>
+                    {% endfor %}
+                </select>
+            </div> -->
 
 
-        
-                <div class="field">
-                        <label>Vendor</label><br>
-                        <input type="text" name="vendor" required>
-                </div>
+            <div class="field">
+                <label>Stock Required</label><br>
+                <input type="text"  value="{{indent.quantity}}" readonly>
+            </div>
+
+            <div class="field">
+                <label>Vendor Providing Stock</label><br>
+                <input type="text" name="vendor" required>
+            </div>
+
+            <div class="field">
+                <label>Stock Quantity to be added</label><br>
+                <input type="number" name="current_stock" required>
+            </div>
 
 
-                <div class="field">
-                        <label>Current stock</label><br>
-                        <input type="number" name="current_stock"  required>
-                </div>
-
-        
-                <div class="field">
-                        <label>Received date</label><br>
-                        <input type="date" name="recieved_date"  >
-                </div>
+            <div class="field">
+                <label>Received date</label><br>
+                <input type="date" name="recieved_date" required>
+            </div>
 
 
-                <br>
+            <div class="field">
+                <label>Location of Storage</label><br>
+                <select name="location">
+                        <option value="SR1">LHTC</option>  
+                        <option value="SR2">Computer Center</option>  
+                        <option value="SR3">Panini Hostel</option>  
+                        <option value="SR4">Lab Complex</option>  
+                        <option value="SR5">Admin Block</option>  
+                </select>
+            </div>
 
-    
-                <div class = "left floated item">
-                      <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
-                      <input type="file" id="file" name="bill" accept=".pdf, .jpg, .jpeg, .png" >
-                </div>
+            <br>
 
-                <br>
 
-        
-                <div>
-                    <a class="right floated item">
+            <div class="left floated item">
+                <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
+                <input type="file" id="file" name="bill" accept=".pdf, .jpg, .jpeg, .png" >
+            </div>
 
-                        <button type="submit" name="save" class="ui large right floated primary button">
-                            Save to drafts<i class="ui save icon right floated"></i>
-                        </button>
-                    </a>
-                </div>
+            <br>
 
-                <br>
-                <br>
+
+            <div>
+                <a class="right floated item">
+
+                    <button type="submit" name="save" class="ui large right floated primary button">
+                        Add Stock<i class="ui save icon right floated"></i>
+                    </button>
+                </a>
+            </div>
+
+            <br>
+            <br>
 
 
         </form>
 
-            <br>
+        <br>
 
-        </div>
-
-
-        <script type="text/javascript">
+    </div>
 
 
-            $('#input_search1').keyup(function(){
-    
-                console.log('asdasd');
-                value = $('#input_search1').val();
-    
-                  $.ajax({
-                    type: 'POST',
-                    url: '/filetracking/ajax/',
-                    data: {
-                        'value': value,
-                        'csrfmiddlewaretoken': '{{csrf_token}}'
-                    },
-                    dataType: 'json',
-                    success: function(response){
-                        console.log('coming-----------------------');
-    
-                        console.log(response.holds[0]);
-    
-                        all_designations = JSON.parse(response.holds);
-                        console.log(all_designations[0].fields.name);
-                        app = []
-                        $('#input_list1').html('');
-                        for(var i=0;i<all_designations.length;i++){
-                           $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                        }
-                    },
-                    error: function(rs, e){
-                        console.log('error-------');
-                    },
-                });
-                console.log("dsfagdfdshadf");
+    <script type="text/javascript">
+
+
+        $('#input_search1').keyup(function () {
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for (var i = 0; i < all_designations.length; i++) {
+                        $('#input_list1').append('<option value="' + all_designations[i].fields.name + '">' + all_designations[i].fields.name + '</option>');
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error-------');
+                },
             });
-        </script>
-    
-        <script type="text/javascript">
-            $('#input_search').keyup(function(){
-    
-                console.log('asdasd');
-                value = $('#input_search').val();
-    
-                  $.ajax({
-                    type: 'POST',
-                    url: '/filetracking/ajax_dropdown/',
-                    data: {
-                        'value': value,
-                        'csrfmiddlewaretoken': '{{csrf_token}}'
-                    },
-                    dataType: 'json',
-                    success: function(response){
-                        console.log('coming-----------------------');
-    
-    
-    
-                        all_users = JSON.parse(response.users);
-                        console.log(all_users[0].fields.username);
-                        app = []
-                        $('#input_list').html('');
-                        for(var i=0;i<all_users.length;i++){
-                           $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
-                        }
-                    },
-                    error: function(rs, e){
-                        console.log('error-------');
-                    },
-                });
-                console.log("dsfagdfdshadf");
-            });
+            console.log("dsfagdfdshadf");
+        });
     </script>
-    
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function () {
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for (var i = 0; i < all_users.length; i++) {
+                        $('#input_list').append('<option value="' + all_users[i].fields.username + '">' + all_users[i].fields.username + '</option>');
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
     {% endblock %}
-    
+
     <script type="text/javascript">
         function ShowHideDiv() {
             var chkAddress = document.getElementById("chkAddress");
