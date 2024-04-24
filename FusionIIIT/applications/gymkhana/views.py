@@ -905,7 +905,7 @@ def return_content(request, roll, name, desig, club__, student_clubs, notificati
         "incharge__user",
         "incharge__department",
     ).all()
-    inventory1 = Inventory.objects.all()
+    # inventory1 = Inventory.objects.all()
     if "student" in desig or "Convenor" in desig:
         registration_form = Registration_form.objects.all()
         cpi = (
@@ -990,7 +990,7 @@ def return_content(request, roll, name, desig, club__, student_clubs, notificati
         "club_details": club__,
         "voting_polls": voting_polls,
         "roll": str(roll),
-        "Inventory": inventory1,
+        # "Inventory": inventory1,
         "student_clubs": student_clubs,
         "notifications": notifications,
     }
