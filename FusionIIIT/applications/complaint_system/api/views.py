@@ -44,22 +44,22 @@ def student_complain_api(request):
     user = get_object_or_404(User,username = request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
 
-    user_type = USER_TYPE.student
+    user_type = USER_TYPE.student.value
     extra_info_id = ExtraInfo.objects.get(id=user.id)
     caretaker = Caretaker.objects.filter(staff_id=extra_info_id)
     supervisor = Supervisor.objects.filter(sup_id=extra_info_id)
     if caretaker.exists():
         complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.caretaker)
-        user_type = USER_TYPE.caretaker
+        user_type = USER_TYPE.caretaker.value
     elif supervisor.exists():
         complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.supervisor)
-        user_type = USER_TYPE.supervisor
+        user_type = USER_TYPE.supervisor.value
     else:
         complaints = StudentComplain.get_complaints_by_user(user, USER_TYPE.student)
 
     complaints = serializers.StudentComplainSerializers(complaints,many=True).data
 
-    if user_type == USER_TYPE.caretaker or user_type == USER_TYPE.supervisor:
+    if user_type == USER_TYPE.caretaker.value or user_type == USER_TYPE.supervisor.value:
         for complaint in complaints:
             last_forwarded = StudentComplain.get_complaint_owner(complaint['id'])
             if last_forwarded.username != request.user.username:
@@ -78,7 +78,13 @@ def student_complain_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def create_complain_api(request):
-    serializer = serializers.StudentComplainSerializers(data=request.data)
+    try:
+        request_user_extrainfo = ExtraInfo.objects.get(user=request.user);
+    except ExtraInfo.DoesNotExist:
+        return Response({'message' : 'No such user'}, status=status.HTTP_404_NOT_FOUND)
+    data = request.data.copy()
+    data.update({'complainer': request_user_extrainfo.id})
+    serializer = serializers.StudentComplainSerializers(data=data)
     if serializer.is_valid():
         serializer.save()
         StudentComplain.create_file_for_complaint(serializer.instance)

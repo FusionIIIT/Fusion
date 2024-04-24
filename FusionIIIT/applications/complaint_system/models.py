@@ -97,14 +97,14 @@ class StudentComplain(models.Model):
         return str(self.complainer.user.username)
 
     @staticmethod
-    def get_complaints_by_user(user: ExtraInfo, role: str):
+    def get_complaints_by_user(user: ExtraInfo, role: USER_TYPE):
         """
         user: ExtraInfo
         role: student, caretaker or supervisor
         """
-        if role == 'student':
+        if role == USER_TYPE.student:
             return StudentComplain.objects.filter(complainer=user)
-        elif role == 'caretaker' or role == 'supervisor':
+        elif role == USER_TYPE.caretaker or role == USER_TYPE.supervisor:
             designation = HoldsDesignation.objects.get(user=user.user).designation.name
             complaints = fts.view_inbox(
                 username=user.user.username,
@@ -115,9 +115,9 @@ class StudentComplain(models.Model):
             for complaint in complaints:
                 complaint_queryset |= StudentComplain.objects.filter(id=complaint['src_object_id'])
 
+            complaint_queryset = complaint_queryset | StudentComplain.objects.filter(complainer=user)
             return complaint_queryset
 
-    
     @staticmethod
     def create_file_for_complaint(complaint):
         """
@@ -126,10 +126,10 @@ class StudentComplain(models.Model):
 
         caretaker = Caretaker.objects.get(area=complaint.location)
         caretaker_designation = HoldsDesignation.objects.get(user=caretaker.staff_id.user).designation.name
-
+        user_designation = HoldsDesignation.objects.get(user=complaint.complainer.user).designation.name
         fts.create_file(
             uploader=complaint.complainer.user.username,
-            uploader_designation='student',
+            uploader_designation=user_designation,
             receiver=caretaker.staff_id.user.username,
             receiver_designation=caretaker_designation,
             src_module='complaint',
