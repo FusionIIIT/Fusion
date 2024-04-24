@@ -1,0 +1,116 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Leave Management
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% include 'globals/usercard.html' %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/leaveform" class="active item">Leave Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatus" class="item">Leave Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <h2 class="ui header">Leave Form</h2>
+            <div class="ui active tab segment" data-tab="leave_form" id="leave_form">
+                {% comment %} <h2>Leave Form</h2> {% endcomment %}
+                <form id="leaveForm" method="POST"  enctype="multipart/form-data" action="{% url 'otheracademic:leave_form_submit' %}" >
+                    {% csrf_token %}
+                    <div class="ui form">
+                        <div class="fields">
+                            <div class="field">
+                                <label>Date From</label>
+                                <input type="date" id="datefrom" name="date_from" style="display: inline-block; width: auto;" required>
+                            </div>
+                            <div class="field">
+                                <label>Date To</label>
+                                <input type="date" id="dateto" name="date_to" style="display: inline-block; width: auto;" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Leave Type</label>
+                            <select class="ui dropdown" name="leave_type" id="leaveType" >
+                                <option value="">Select Leave Type</option>
+                                <option value="casual">Casual</option>
+                                <option value="medical">Medical</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Doc</label>
+                            <input type="file" name="related_document" accept=".pdf">
+                        </div>
+                        <div class="field">
+                            <label>Address</label>
+                            <input type="text" name="address" style="width: 100%;" required>
+                        </div>
+                        <div class="field">
+                            <label>Purpose</label>
+                            <textarea name="purpose" style="width: 100%; height: 100px;" required></textarea>
+                        </div>
+                        <div class="field">
+                            <label>HOD (Credential)</label>
+                            <input type="text" name="hod_credential" required >
+                        </div>
+                        <div class="field">
+                            <label>Date of Application</label>
+                            <input type="date" name="date_of_application" style="display: inline-block; width: auto;" required>
+                        </div>
+                        <button class="ui primary button" type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="ui tab segment" data-tab="leave_status" id="leave_status">
+                <h2>Leave Status</h2>
+                <!-- Leave status content -->
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+    <script>
+        document.getElementById('leaveForm').addEventListener('submit', function(event) {
+            var leaveTypeSelect = document.getElementById('leaveType').value;
+            if (leaveTypeSelect=== "") {
+                alert('Please select a leave type ');
+                event.preventDefault(); 
+              
+            }
+        });
+
+ 
+            document.getElementById('leaveForm').addEventListener('submit', function(event) {
+                var dateFrom = document.getElementById('datefrom').value;
+                var dateTo = document.getElementById('dateto').value;
+            
+                if (dateTo <= dateFrom) {
+                    alert('End date must be later than start date');
+                    event.preventDefault();  // Prevent form submission
+                }
+            });
+
+    </script>
+{% endblock %}
