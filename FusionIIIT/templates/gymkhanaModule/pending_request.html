@@ -1,233 +1,153 @@
 {% load static %}
-
-{% block css %}
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-{% endblock %}
-
+{% block css %}<link rel="stylesheet"
+      href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">{% endblock %}
 {% block pendingrequest %}
-
     <div class="ui pointing secondary menu">
-
-         <!-- <a class=" ui active item" data-tab="otherrequests">
-                    Club Requests
-        </a> -->
-        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-            <a class="ui item" data-tab="sentrequests">
-                Club Session Requests
-            </a>
-        {% endif %}
-        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-        <a class="ui item" data-tab="senteventrequests">
-            Club Event Requests
-        </a>
-        {% endif %}
-
+        <!-- <a class=" ui active item" data-tab="otherrequests">Club Requests</a> -->
+        {% comment %} {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+            <a class="ui item" data-tab="sentrequests">Club Session Requests</a>
+        {% endif %} {% endcomment %}
+            <a class="ui active item" data-tab="senteventrequests">Club Event Requests</a>
+        
     </div>
-
-
     <div class="ui tab" data-tab="sentrequests">
         <div class="ui vertical segment">
-        <form method="post" action="" id="sentrequest">
-        {% csrf_token %}
-            <table id="mytable" class="ui very basic collapsing celled sortable table"
-                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                        Select
-                    </th>
-
-                    <th class="four wide column">
-                        Venue
-                    </th>
-
-                    <th>
-                        Date
-                    </th>
-
-                    <th>
-                        Start Time
-                    </th>
-
-                    <th>
-                        End Time
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-                    
-                </tr>
-                </thead>
-                <tbody>
-                    {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                        {% for i in Club_session%}
-                            {% if club_details.club_name|stringformat:"s" == i.club|stringformat:"s" %}
-                                <tr>
-                                    <td class="collapsing">
-                                        <div class="ui fitted checkbox">
-                                            <input type="checkbox" id="{{ i.id }}" value="{{ i.id }}" name="check"><label></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {{ i.venue }}
-                                    </td>
-
-                                    <td>
-                                        {{ i.date }}
-                                    </td>
-
-                                    <td>
-                                        {{ i.start_time}}
-                                    </td>
-
-                                    <td>
-                                        {{ i.end_time}}
-                                    </td>
-
-                                    <td>
-                                        {{ i.status }}
-                                    </td>
-                                    <td>
-                                        <a href='{% url "gymkhana:editsession" session_id=i.pk %}'><button type="button">Edit</button> </a>
-                                    </td>
-                                    
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
-
-
-            <br>
-
-            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
-            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
-            <div class="field">
-                <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteSessions()">
-                    Cancel Request
-                </button>
+            <form method="post" action="" id="sentrequest">
+                {% csrf_token %}
+                <table id="mytable"
+                       class="ui very basic collapsing celled sortable table"
+                       style="padding-top: 1%;
+                              padding-bottom: 1.5%;
+                              margin: auto">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th class="four wide column">Venue</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                            {% for i in Club_session %}
+                                {% if club_details.club_name|stringformat:"s" == i.club|stringformat:"s" %}
+                                    <tr>
+                                        <td class="collapsing">
+                                            <div class="ui fitted checkbox">
+                                                <input type="checkbox" id="{{ i.id }}" value="{{ i.id }}" name="check">
+                                                <label></label>
+                                            </div>
+                                        </td>
+                                        <td>{{ i.venue }}</td>
+                                        <td>{{ i.date }}</td>
+                                        <td>{{ i.start_time }}</td>
+                                        <td>{{ i.end_time }}</td>
+                                        <td>{{ i.status }}</td>
+                                        <td>
+                                            <a href='{% url "gymkhana:editsession" session_id=i.pk %}'>
+                                                <button type="button">Edit</button>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
                 <br>
-            </div>
-
-            <br>
-        </form>
+                <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div>
+                 {% comment %} <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div>  {% endcomment %}
+                <div class="field">
+                    <button class="ui primary button right floated"
+                            type="submit"
+                            onclick="event.preventDefault();deleteSessions()">
+                        Cancel Request
+                    </button>
+                    <br>
+                </div>
+                <br>
+            </form>
             <div class="ui divider"></div>
-
         </div>
     </div>
-    
-    <div class="ui tab" data-tab="senteventrequests">
-        <div class="ui vertical segment">
+<div class="ui tab active" data-tab="senteventrequests">
+    <div class="ui vertical segment">
         <form method="post" action="" id="senteventrequest">
-        {% csrf_token %}
-            <table id="mytable" class="ui very basic collapsing celled sortable table"
-                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
+            {% csrf_token %}
+            <table id="mytable"
+                   class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%;
+                          padding-bottom: 1.5%;
+                          margin: auto">
                 <thead>
-                <tr>
-                    <th>
-                        Select
-                    </th>
-                    <th>
-                        Club
-                    </th>
-                    <th>
-                        Event
-                    </th>
-                    <th>
-                        Incharge
-                    </th>
-
-                    <th>
-                        Venue
-                    </th>
-
-                    <th>
-                        Date
-                    </th>
-                    <th>
-                        Update
-                    </th>
+                    <tr>
+                        <th>Select</th>
+                        <th>Club</th>
+                        <th>Event</th>
+                        <th>Incharge</th>
+                        <th>Venue</th>
+                        <th>Date</th>
+                        <th>Update</th>
                     </tr>
                 </thead>
- 
                 <tbody>
-                    {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                        {% for i in Club_event%}
-                            {% if club_details.club_name|stringformat:"s" == i.club|stringformat:"s" %}
-                            <form method="post" enctype="multipart/form-data" >    
-                            {% csrf_token %}
-                                <tr>
-                                    <td class="collapsing">
-                                        <div class="ui fitted checkbox">
-                                            <input type="checkbox" id="{{ i.id }}" value="{{ i.id }}" name="check"><label></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {{ i.club.club_name }}
-                                    </td>
-                                    <td>
-                                        {{ i.event_name }}
-                                    </td>
-                                    <td>
-                                        {{ i.incharge }}
-
-                                    </td>
-                                    <td>
-                                        
-                                        {{i.venue}}
-                                       
-                                    </td>
-                                
-                                    <td>
-                                       {{i.date}}
-
-                                    </td >
-                                    <td>
-                                        <a href='{% url "gymkhana:edit_event" event_id=i.pk %}'><button type="button">Edit</button> </a>                                    
-                                    </td>
-                                    
+                    {% comment %} {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %} {% endcomment %}
+                        {% for event in Club_event %}
+                            {% if event.status == "open" %}
+                                <form method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <tr>
+                                        <td class="collapsing">
+                                            <div class="ui fitted checkbox">
+                                                <input type="checkbox" id="{{ event.id }}" value="{{ event.id }}" name="check">
+                                                <label></label>
+                                            </div>
+                                        </td>
+                                        <td>{{ event.club.club_name }}</td>
+                                        <td>{{ event.event_name }}</td>
+                                        <td>{{ event.incharge }}</td>
+                                        <td>{{ event.venue }}</td>
+                                        <td>{{ event.date }}</td>
+                                        <td>
+                                            <a href='{% url "gymkhana:edit_event" event_id=event.pk %}'>
+                                                <button type="button">Edit</button>
+                                            </a>
+                                        </td>
                                     </tr>
                                 </form>
                             {% endif %}
-                            {% empty %}
-                   <tr>
-                     <td colspan="6" class="text-center bg-warning">No Events</td>
-                   </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center bg-warning">No Events</td>
+                            </tr>
                         {% endfor %}
-
-                    {% endif %}
+                    {% comment %} {% endif %} {% endcomment %}
                 </tbody>
             </table>
-
-
-            <br>
-
-            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
-            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
-            <div class="field">
-                <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteEvents()">
-                    Cancel Request
-                </button>
                 <br>
+                <button class="ui primary right floated button" id="approve_button" type="submit" onclick="event.preventDefault();approveEvents()">Approve Event</button>
+                {% comment %} <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> {% endcomment %}
+                <div class="field">
+                    <button class="ui red right floated button"
+                            type="submit"
+                            onclick="event.preventDefault();deleteEvents()">
+                        Cancel Event
+                    </button>
+                    <br>
+                </div>
+                <br>
+            </form>
+            <div class="ui divider">
             </div>
-            <br>
-        </form>
-            <div class="ui divider"></div>
-
         </div>
     </div>
-    
-
-
-
     <!-- <div class="ui active tab" data-tab="otherrequests">
         <div class="ui vertical segment">
         <form method="post" action="" id="otherrequest">
         {% csrf_token %}
-            <table id="mytable" class="ui very basic collapsing celled sortable table"
-                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
+            <table id="mytable" class="ui very basic collapsing celled sortable table" style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
                     <th>
@@ -275,11 +195,10 @@
             </table>
 
 
-            <br> -->
-
-            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div>
+<br> -->
+    <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div>
             <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
-            <!-- <div class="field">
+    <!-- <div class="field">
                 <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteSessions()">
                     Cancel Request
                 </button>
@@ -290,87 +209,114 @@
             <div class="ui divider"></div>
 
         </div>
-    </div> -->
-    
+</div> -->
 {% endblock %}
-
 {% block javascript %}
+<script type="text/javascript">
+    function handleBudgetButtonClick(action) {
+        document.getElementById("senteventrequest").action = action;
+        document.getElementById("senteventrequest").submit();
+    }
 
-    <script type="text/javascript">
-        function deleteSessions(){
-            var selectedIds = new Array() ;
-            $.each($("input[name='check']:checked"), function(){            
-                selectedIds.push($(this).val());
-            });
-            if (selectedIds.length > 0){
-                var selectedIds = JSON.stringify(selectedIds);
-                $.ajax({
-                    url: '/gymkhana/delete_sessions/',
-                    type: "post",
-                    data: {"ids":selectedIds},
-                    success: function(response){
-                        $.each($("input[name='check']"), function(){  
-                            this.checked = false ;          
-                            // console.log($(this).attr("checked", false));
-                        });
-                        if(response == "success"){
-                            location.reload();
-                        }
-                        else
-                        {
-                            $("#errorContent").html("There was a system error. Please contact the admin.");
-                            $(".formErrors").modal("show") ;
-                        }
+    function deleteSessions() {
+        var selectedIds = [];
+        $.each($("input[name='check']:checked"), function() {
+            selectedIds.push($(this).val());
+        });
+        if (selectedIds.length > 0) {
+            var selectedIds = JSON.stringify(selectedIds);
+            $.ajax({
+                url: '/gymkhana/delete_sessions/',
+                type: "post",
+                data: {"ids": selectedIds},
+                success: function(response) {
+                    $.each($("input[name='check']"), function() {
+                        this.checked = false;
+                    });
+                    if (response == "success") {
+                        location.reload();
+                    } else {
+                        $("#errorContent").html("There was a system error. Please contact the admin.");
+                        $(".formErrors").modal("show");
                     }
-                });
-            }
-            else{
-                $("#errorContent").html("Please select atleast one session to delete");
-                $(".formErrors").modal("show") ;
-            }
-        }
-
-        function deleteEvents(){
-            var selectedIds = new Array() ;
-            $.each($("input[name='check']:checked"), function(){            
-                selectedIds.push($(this).val());
+                }
             });
-            if (selectedIds.length > 0){
-                var selectedIds = JSON.stringify(selectedIds);
-                $.ajax({
-                    url: '/gymkhana/delete_events/',
-                    type: "post",
-                    data: {"ids":selectedIds},
-                    success: function(response){
-                        $.each($("input[name='check']"), function(){  
-                            this.checked = false ;          
-                            // console.log($(this).attr("checked", false));
-                        });
-                        if(response == "success"){
-                            location.reload();
-                        }
-                        else
-                        {
-                            $("#errorContent").html("There was a system error. Please contact the admin.");
-                            $(".formErrors").modal("show") ;
-                        }
-                    }
-                });
-            }
-            else{
-                $("#errorContent").html("Please select atleast one session to delete");
-                $(".formErrors").modal("show") ;
-            }
+        } else {
+            $("#errorContent").html("Please select at least one session to delete");
+            $(".formErrors").modal("show");
         }
+    }
 
-    </script>
+    function deleteEvents() {
+        var selectedIds = [];
+        $.each($("input[name='check']:checked"), function() {
+            selectedIds.push($(this).val());
+        });
+        if (selectedIds.length > 0) {
+            var selectedIds = JSON.stringify(selectedIds);
+            $.ajax({
+                url: '/gymkhana/delete_events/',
+                type: "post",
+                data: {"ids": selectedIds},
+                success: function(response) {
+                    $.each($("input[name='check']"), function() {
+                        this.checked = false;
+                    });
+                    if (response == "success") {
+                        location.reload();
+                    } else {
+                        $("#errorContent").html("There was a system error. Please contact the admin.");
+                        $(".formErrors").modal("show");
+                    }
+                }
+            });
+        } else {
+            $("#errorContent").html("Please select at least one session to delete");
+            $(".formErrors").modal("show");
+        }
+    }
 
+function approveEvents() {
+    var selectedIds = [];
+    $("input[name='check']:checked").each(function() {
+        selectedIds.push($(this).val());
+    });
+
+    if (selectedIds.length === 0) {
+        $("#errorContent").html("Please select at least one event to approve");
+        $(".formErrors").modal("show");
+        return;
+    }
+
+    $.ajax({
+        url: '/gymkhana/approve_events/',
+        type: 'POST',
+        data: {'ids': JSON.stringify(selectedIds)},
+        success: function(response) {
+            if (response.status === 'success') {
+                // Update UI - remove approved events from the pending requests section
+                selectedIds.forEach(function(eventId) {
+                    $('#event_' + eventId).remove(); // Assuming each event row has an ID like 'event_<eventId>'
+                });
+            } else {
+                // Display error message if approval fails
+                $("#errorContent").html("Failed to approve events. Please try again later.");
+                $(".formErrors").modal("show");
+            }
+        },
+        error: function(xhr, status, error) {
+            // Display error message if AJAX request fails
+            $("#errorContent").html("An error occurred while processing your request. Please contact the admin.");
+            $(".formErrors").modal("show");
+        }
+    });
+}
+
+</script>
     <script>
         $( function() {
           $( "#datepicker" ).datepicker();
         } );
     </script>
-
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
 {% endblock %}
