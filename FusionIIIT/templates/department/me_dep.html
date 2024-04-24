@@ -65,110 +65,26 @@
             <div class="content">
                 <div class="description">
                     <span>
+                        <p>Phone Number: {{ department_info.me_info.phone_number }}</p>
+                        <p>Email: {{ department_info.me_info.email }}</p>
                         <h3>
-                            Central Library :
+                            Facilities :
                         </h3>
                         <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
+                            {{ department_info.me_info.facilites|linebreaks}}
+                         </p>
                         <h3>
                             Lab Infrastructure :
                         </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Health Monitoring, Measurement and Instrumentation Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Kinematics and Dynamics Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>PG Research Lab :</b>
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Fluid Mechaniccs Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Automobile Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>IT Workshop/Computational Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Material Characterization Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Machine Dynamics and Vibrations Lab :</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Mechatronics Lab:</b> 
-                              </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Robotics Lab:</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biomedical Engineering and Technology Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>CFD Lab :</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Dieless Manufacturing Center:</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Manufacturing Innovation Center:</b> 
-                                </p>
-                            </li>
-                        </ol>
+                        <p>
+                           {{ department_info.me_info.labs|linebreaks }}
+                        </p>
                     </span>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
     {% comment %} tabs content faculty {% endcomment %}
     {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">

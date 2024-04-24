@@ -22,6 +22,21 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 
+def department_information(request):
+
+    cse_info = Information.objects.filter(department_id=51).first()
+    ece_info = Information.objects.filter(department_id=30).first()
+    me_info = Information.objects.filter(department_id=37).first()
+    sm_info = Information.objects.filter(department_id=28).first()
+    department_context = {
+        "cse_info" : cse_info,
+        "ece_info" : ece_info,
+        "me_info" : me_info,
+        "sm_info" : sm_info
+    }
+    # print(department_context)
+    # print(me_info.phone_number,me_info.email,me_info.department_id)
+    return department_context
 
 def browse_announcements():
     """
@@ -50,7 +65,7 @@ def browse_announcements():
         "sm" : sm_ann,
         "all" : all_ann
     }
-
+    # print(context)
     return context
 
 def get_make_request(user_id):
@@ -107,7 +122,10 @@ def dep_main(request):
     context = browse_announcements()
     context_f = faculty()
     user_designation = ""
-    
+
+
+    department_context = department_information(request)
+
     if fac_view:
         user_designation = "faculty"
     elif student:
@@ -143,7 +161,9 @@ def dep_main(request):
         return render(request, template_name, {
             "announcements": context,
             "fac_list": context_f,
-            "requests_made": requests_made
+            "requests_made": requests_made,
+            "department_info": department_context
+
         })
        
     elif user_designation=="faculty":
@@ -173,6 +193,7 @@ def faculty_view(request):
     ann_maker_id = user_info.id
     requests_received = get_to_request(usrnm)
     user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+    department_context = department_information(request)
     
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
@@ -211,7 +232,8 @@ def faculty_view(request):
         "user_designation": user_info.user_type,
         "announcements": context,
         "request_to": requests_received,
-        "fac_list": context_f
+        "fac_list": context_f,
+        "department_info": department_context
     })
     
 
@@ -235,6 +257,8 @@ def staff_view(request):
     num = 1
     ann_maker_id = user_info.id
     user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+
+    department_context = department_information(request)
     
     requests_received = get_to_request(usrnm)
     if request.method == 'POST':
@@ -288,12 +312,8 @@ def staff_view(request):
                 )
             
         
-        
-    # update_department_info(request)
-    #find the name of designation in the table designation
-    # required_designation = Designation.objects.all().
-        
     context = browse_announcements()
+    
     
     department_templates = {
         51: 'department/csedep_request.html',
@@ -312,7 +332,8 @@ def staff_view(request):
             "user_designation": user_info.user_type,
             "announcements": context,
             "request_to": requests_received,
-            "fac_list": context_f
+            "fac_list": context_f,
+            "department_info": department_context
         }) 
     elif desig=='deptadmin_ece':
         template_name = 'department/admin_ece.html'
@@ -320,7 +341,8 @@ def staff_view(request):
             "user_designation": user_info.user_type,
             "announcements": context,
             "request_to": requests_received,
-            "fac_list": context_f
+            "fac_list": context_f,
+            "department_info": department_context
         }) 
     elif desig=='deptadmin_me':
         template_name = 'department/admin_me.html'
@@ -328,7 +350,8 @@ def staff_view(request):
             "user_designation": user_info.user_type,
             "announcements": context,
             "request_to": requests_received,
-            "fac_list": context_f
+            "fac_list": context_f,
+            "department_info": department_context
         }) 
     elif desig=='deptadmin_sm':
         template_name = 'department/admin_sm.html'
@@ -336,7 +359,8 @@ def staff_view(request):
             "user_designation": user_info.user_type,
             "announcements": context,
             "request_to": requests_received,
-            "fac_list": context_f
+            "fac_list": context_f,
+            "department_info": department_context
         }) 
          
     # if  desig == 'deptadmin_cse':
@@ -355,7 +379,8 @@ def staff_view(request):
         "user_designation": user_info.user_type,
         "announcements": context,
         "request_to": requests_received,
-        "fac_list": context_f
+        "fac_list": context_f,
+        "department_info": department_context
     })
     
    
@@ -465,6 +490,7 @@ def faculty():
     # print(cse_f)
     return context_f
 
+
 def alumni(request):
     """
     This function is used to Return data of Alumni Department-Wise.
@@ -505,6 +531,7 @@ def approved(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Approved", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
+
 
 def deny(request):
     """
