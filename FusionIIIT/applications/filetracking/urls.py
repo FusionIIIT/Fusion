@@ -44,4 +44,3 @@ urlpatterns = [
     url(r'^api/', include(urls))
 
 ]
-

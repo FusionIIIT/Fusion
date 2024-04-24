@@ -35,12 +35,12 @@
         <thead>
         <tr>
                 <th>File Id</th>
-                <th>Stock Item ID</th>
+                <!-- <th>Stock Item ID</th> -->
                 <th>Item Type</th>
                 <th>Item Name</th>
                 <th>Nomenclature</th>
-                <th>Src Dept</th>
-                <th>Dest Dept</th>
+                <th>Src Dept/Sec</th>
+                <th>Dest Dept/Sec</th>
                 <th>Src Location </th>
                 <th >Dest Location</th>
                 <th> dateTime </th>
@@ -54,15 +54,15 @@
         <tbody>
             {% for s in stockTransfers %}
             <tr>
-                <td> {{s.indent_file.file_info}} </td>
-                <td> {{s.stockItem}} </td>
+                <td> {{s.indent_file.file_info.id}} </td>
+                <!-- <td> {{s.stockItem}} </td> -->
                 <td> {{s.indent_file.item_type}} </td>
                 <td> {{s.indent_file.item_name}} </td>
                 <td> {{s.stockItem.nomenclature}} </td>
                 <!-- add the column for who did this transfer  -->
                 <!-- <td>{{s.StockEntryId.dealing_assistant_id}}</td> -->
-                <td>{{s.src_dept}}</td>
-                <td>{{s.dest_dept}}</td>
+                <td>{{s.src_dept.name}}</td>
+                <td>{{s.dest_dept.name}}</td>
                 <td>{{s.src_location}}</td>
                 <td>{{s.dest_location}}</td>
                 <td>{{s.dateTime}}</td>

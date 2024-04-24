@@ -11,7 +11,7 @@
 
 <div class="ui vertical segment">
     {% if adc_date_flag %}
-    {% if details.cpi >= 6.0 %}
+    {% if details.cpi >= 0.0 %}
     {% if add_courses_options %}
     <form id='add_course_form' action='/academic-procedures/addCourse/'> {% csrf_token %}
         <input type="text" hidden="true" id="credit_count" value="{{current_credits}}">

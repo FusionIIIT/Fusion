@@ -20,6 +20,7 @@ from .views import (
     DepartmentNotificationAPIView,
     OfficeDeanRSPCNotificationAPIView,
     ResearchProceduresNotificationAPIView,
+    HostelModuleNotificationAPIView,
     MarkAsRead,
     Delete,
     NotificationsList,
@@ -48,4 +49,5 @@ urlpatterns = [
     path('department_notification/', DepartmentNotificationAPIView.as_view(), name='department_notification'),
     path('office_dean_RSPC_notification/', OfficeDeanRSPCNotificationAPIView.as_view(), name='office_dean_RSPC_notification'),
     path('research_procedures_notification/', ResearchProceduresNotificationAPIView.as_view(), name='research_procedures_notification'),
+    path('hostel_notifications/', HostelModuleNotificationAPIView.as_view(), name='hostel_notifications'),
 ]
