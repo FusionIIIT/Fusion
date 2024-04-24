@@ -392,6 +392,7 @@ class NewProposalFile(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default = False)
     is_update= models.BooleanField(default = False)
+    is_archive = models.BooleanField(default = False)
     class Meta:
         unique_together = ('code', 'uploader','name') # if code and faculty code matches to another proposal name will take care of it         
     
@@ -412,6 +413,10 @@ class Proposal_Tracking(models.Model):
     is_added = models.BooleanField(default = False)
     is_submitted = models.BooleanField(default = False)
     is_rejected = models.BooleanField(default = False)
+    sender_archive = models.BooleanField(default = False)
+    receiver_archive = models.BooleanField(default = False)
+    
+
 
     class Meta:
         # unique_together = ('file_id', 'current_id','receive_id','receive_design')

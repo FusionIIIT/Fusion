@@ -5,6 +5,10 @@ from django.forms import Form, ValidationError
 from django.forms.models import ModelChoiceField
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
+from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
+from applications.filetracking.sdk.methods import *
+
 
 class ProgrammeForm(ModelForm):
     class Meta:
@@ -315,3 +319,56 @@ class CourseProposalTrackingFile(ModelForm):
             'remarks' : 'remarks',
             
         }
+        
+    def clean(self):
+
+        r_id = self.cleaned_data.get('receive_id')
+        r_des = self.cleaned_data.get('receive_design')
+        des=HoldsDesignation.objects.filter(user=r_id)
+        print(des)
+        data2=''
+        msg1=''
+        if des:
+            data2 = ', '.join(str(i) for i in des)
+            msg1 = f'{r_id} has only these working designations: {data2}'
+            
+        else:
+            msg1=f'{r_id} has no working designations'
+        data = HoldsDesignation.objects.select_related('designation').filter(user=r_id,designation=r_des)
+        
+        if not data:
+            msg = 'Invalid reciever id and reciever designation'
+            raise ValidationError({'receive_id': [msg, msg1]})
+        
+        name=""
+        name = name+str(r_des)
+        if "hod" in name.lower() :
+            pass
+        elif "professor" in name.lower() :
+            pass
+        elif "dean academic" in name.lower():
+            pass
+        else:
+            msg3 = f"You can't send Proposal Form to the user  {r_id}-{r_des}"
+            raise ValidationError({'receive_id': [msg3]})
+            
+        
+        
+        
+        return self.cleaned_data
+        
+        
+    # def sed(self):
+    #     r_id = self.cleaned_data.get('receive_id')
+    #     return r_id
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     des = HoldsDesignation.objects.select_related('working','designation').filter(user=5333)
+    #     self.fields['receive_design'].queryset = Designation.objects.filter(id=list(des.designation))
+        
+
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     user_id = cleaned_data.get('receive_id')
+    #     if user_id:
+    #         self.fields['receive_design'].queryset = HoldsDesignation.objects.select_related('designation').filter(user_id=user_id)
