@@ -90,7 +90,7 @@ def academic_procedures(request):
         return HttpResponseRedirect('/academic-procedures/fac/')
         # return HttpResponseRedirect('/logout/')
 
-    elif str(request.user) == "acadadmin" :
+    elif request.session.get('currentDesignationSelected') == "acadadmin" :
         return HttpResponseRedirect('/aims/')
 
     elif str(request.user) == "rizwan":
@@ -574,10 +574,10 @@ def academic_procedures_student(request):
                            }
                 )
 
-    elif str(des.designation) == "Associate Professor" :
+    elif request.session.get('currentDesignationSelected') == "Associate Professor" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(request.user) == "acadadmin" :
+    elif request.session.get('currentDesignationSelected') == "acadadmin" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
     else:
@@ -965,8 +965,7 @@ def verify_course(request):
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
-
-        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
+        if ('acadadmin' != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
@@ -1088,7 +1087,7 @@ def acad_branch_change(request):
     k = str(user_details).split()
     final_user = k[2]
 
-    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
+    if ('acadadmin' != request.session.get('currentDesignationSelected')):
         return HttpResponseRedirect('/academic-procedures/')
 
     # year = datetime.datetime.now().year
@@ -1630,7 +1629,7 @@ def user_check(request):
         final_user=""
         pass
 
-    if (str(acadadmin) != request.session.get('currentDesignationSelected')):
+    if ('acadadmin' != request.session.get('currentDesignationSelected')):
         return True
     else:
         return False
@@ -2066,13 +2065,13 @@ def acad_person(request):
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
 
 
-    if str(des.designation) == "student":
+    if request.session.get('currentDesignationSelected') == "student":
        return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(des.designation) == "Associate Professor" :
+    elif request.session.get('currentDesignationSelected') == "Associate Professor" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(request.user) == "acadadmin" :
+    elif request.session.get('currentDesignationSelected')== "acadadmin" :
 
 
         # year = datetime.datetime.now().year
@@ -3903,7 +3902,7 @@ def replaceSwayam(request):
         k = str(user_details).split()
         final_user = k[2]
 
-        if (str(acadadmin) != request.session.get('currentDesignationSelected')):
+        if ('acadadmin' != request.session.get('currentDesignationSelected')):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
