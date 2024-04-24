@@ -264,7 +264,11 @@ def academic_procedures_student(request):
         current_sem_branch_course = get_sem_courses(curr_sem_id, batch)
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
-        currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+        currently_registered_course = get_currently_registered_course(obj,next_sem_id)
+        
+        # currently_registered_course_show = []
+        # for registered_course in currently_registered_course:
+        #     currently_registered_course_show.append({"course_code":registered_course[1].code,"course_name":registered_course[1].name,"course_credit":registered_course[1].credit})
             
         try:
             final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
@@ -347,7 +351,7 @@ def academic_procedures_student(request):
         resp = {
             'details': details,
             'user_sem' : user_sem,
-            'currently_registered': currently_registered_courses_data,
+            # 'currently_registered_course': currently_registered_course,
             # 'pre_registered_courses' : pre_registered_courses,
             'pre_registered_courses_show' : pre_registered_course_show,
             # 'final_registered_courses' : final_registered_courses,
@@ -445,6 +449,7 @@ def add_course(request):
                 
                 print(courseslot_id_instance.max_registration_limit)
                 if course_registration.objects.filter(working_year = current_user.batch_id.year, course_id = course_id_instance).count() < courseslot_id_instance.max_registration_limit and (course_registration.objects.filter(course_id=course_id_instance, student_id=current_user).count() == 0):
+                    print("space left = True")
                     p = course_registration(
                         course_id=course_id_instance,
                         student_id=current_user,
@@ -466,6 +471,7 @@ def add_course(request):
         res = {'message' : 'Courses successfully added' , "courses_added" : course_registration_data }
         return Response(data = res , status = status.HTTP_200_OK)
     except Exception as e:
+        print(e)
         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
@@ -1031,7 +1037,91 @@ def verify_registration(request):
         
     return JsonResponse({'status': 'error', 'message': 'Error in processing'})
 
+@api_view(['POST'])
+def verify_course(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().select_related(
+        'user', 'department').filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='adminstrator').first()
+    temp = HoldsDesignation.objects.all().select_related().filter(
+        designation=desig_id).first()
+    # acadadmin = temp.working
+    k = str(user_details).split()
+    final_user = k[2]
 
+    # if (str(acadadmin) != str(final_user)):
+    #     return Response()
+    
+    roll_no = request.data["rollno"]
+    obj = ExtraInfo.objects.all().select_related(
+        'user', 'department').filter(id=roll_no).first()
+    firstname = obj.user.first_name
+    lastname = obj.user.last_name
+    dict2 = {'roll_no': roll_no,
+                'firstname': firstname, 'lastname': lastname}
+    obj2 = Student.objects.all().select_related(
+        'id', 'id__user', 'id__department').filter(id=roll_no).first()
+    
+    batch = obj2.batch_id
+    curr_id = batch.curriculum
+    curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj2.curr_semester_no)
+    # curr_sem_id = obj2.curr_semester_no
+    details = []
+
+    current_sem_courses = get_currently_registered_course(
+        roll_no, curr_sem_id)
+
+    idd = obj2
+    for z in current_sem_courses:
+        z = z[1]
+        print(z)
+        course_code = z.code
+        course_name = z.name
+        # course_code, course_name = str(z).split(" - ")
+        k = {}
+        # reg_ig has course registration id appended with the the roll number
+        # so that when we have removed the registration we can be redirected to this view
+        k['reg_id'] = roll_no+" - "+course_code
+        k['rid'] = roll_no+" - "+course_code
+        # Name ID Confusion here , be carefull
+        courseobj2 = Courses.objects.all().filter(code=course_code)
+        # if(str(z.student_id) == str(idd)):
+        for p in courseobj2:
+            k['course_id'] = course_code
+            k['course_name'] = course_name
+            k['sem'] = curr_sem_id.semester_no
+            k['credits'] = p.credit
+        details.append(k)
+
+    year = demo_date.year
+    month = demo_date.month
+    yearr = str(year) + "-" + str(year+1)
+    semflag = 0
+    if(month >= 7):
+        semflag = 1
+    else:
+        semflag = 2
+    # TO DO Bdes
+    date = {'year': yearr, 'semflag': semflag}
+    course_list = Courses.objects.all()
+    semester_list = Semester.objects.all()
+    semester_no_list=[]
+    for i in semester_list:
+        semester_no_list.append(int(i.semester_no))
+    # return JsonResponse(
+    #                 {'details': details,
+    #                     # 'dict2': dict2,
+    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
+    #                     # 'semester_list': semester_list,
+    #                     'date': date}
+    #                 )
+    
+    return JsonResponse({
+        'details': details,
+        'course_list': serializers.CourseSerializer(course_list, many=True).data,
+        'semester_list': serializers.SemesterSerializer(semester_list, many=True).data,
+        'date': date
+    })
 
 
 #  These apis were implemented before but now don't use them they have some errors
