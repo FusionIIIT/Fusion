@@ -128,7 +128,6 @@ INSTALLED_APPS = [
     'applications.ps1',
     'applications.programme_curriculum',
     'applications.placement_cell',
-    'applications.otheracademic',
     'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
