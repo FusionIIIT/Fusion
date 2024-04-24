@@ -3,7 +3,7 @@ from django.db.models import fields
 from django.forms import ModelForm, widgets
 from django.forms import Form, ValidationError
 from django.forms.models import ModelChoiceField
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,CourseProposal,UpdateCourseProposal
 from django.utils.translation import gettext_lazy as _
 
 class ProgrammeForm(ModelForm):
@@ -113,9 +113,7 @@ class CourseForm(ModelForm):
                 + cleaned_data.get("percent_lab_evaluation")
                 + cleaned_data.get("percent_course_attendance")
             )
-        
-        # credits = cleaned_data.get("credit")
-        
+
         if percentages_sum != 100:
             msg = 'Percentages must add up to 100%, they currently add up to ' + str(percentages_sum) + '%'
             self.add_error('percent_quiz_1', msg)
@@ -126,9 +124,10 @@ class CourseForm(ModelForm):
             self.add_error('percent_lab_evaluation', msg)
             self.add_error('percent_course_attendance', msg)
             
-        # if credits==0:
-        #     msg2="Credits can't be zero"
-        #     self.add_error('credits', msg2)
+        # version = cleaned_data.get('version')
+        # previous_version = self.instance.version if self.instance else None
+        # if  version < previous_version:
+        #     self.add_error('version', 'The version should be greater than the previous version.')
         return cleaned_data
     class Meta:
         model = Course
@@ -229,12 +228,40 @@ class CourseSlotForm(ModelForm):
         
 
 #new
-class NewCourseProposalFile(ModelForm):
+
+class Course_Proposal(ModelForm):
     
+    def clean(self):
+        cleaned_data = super().clean()
+
+        percentages_sum = (
+                cleaned_data.get("percent_quiz_1")
+                + cleaned_data.get("percent_midsem")
+                + cleaned_data.get("percent_quiz_2")
+                + cleaned_data.get("percent_endsem")
+                + cleaned_data.get("percent_project")
+                + cleaned_data.get("percent_lab_evaluation")
+                + cleaned_data.get("percent_course_attendance")
+            )
+
+        if percentages_sum != 100:
+            msg = 'Percentages must add up to 100%, they currently add up to ' + str(percentages_sum) + '%'
+            self.add_error('percent_quiz_1', msg)
+            self.add_error('percent_midsem', msg)
+            self.add_error('percent_quiz_2', msg)
+            self.add_error('percent_endsem', msg)
+            self.add_error('percent_project', msg)
+            self.add_error('percent_lab_evaluation', msg)
+            self.add_error('percent_course_attendance', msg)
+
+        return cleaned_data
+
     class Meta:
-        model = NewProposalFile
+        model = CourseProposal
         fields = '__all__'
         widgets = {
+            'faculty_name' : forms.TextInput(attrs={'max_length': 100,'readonly':'readonly'}),
+            'faculty_code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,'readonly':'readonly'}),
             'code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,}),
             'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,}),
             'credit' : forms.NumberInput(attrs={'placeholder': 'Course Credits',}, ), 
@@ -243,6 +270,7 @@ class NewCourseProposalFile(ModelForm):
             'pratical_hours' : forms.NumberInput(attrs={'placeholder': 'Practical hours',}, ), 
             'discussion_hours' : forms.NumberInput(attrs={'placeholder': 'Group Discussion hours',}, ), 
             'project_hours' : forms.NumberInput(attrs={'placeholder': 'Project hours',}, ), 
+            'disciplines' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
             'pre_requisits' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
             'pre_requisit_courses' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
             'syllabus' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
@@ -254,13 +282,176 @@ class NewCourseProposalFile(ModelForm):
             'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
-            'uploader' : forms.TextInput(attrs={'readonly':'readonly'},),
-            'designation' : forms.TextInput(attrs={'readonly':'readonly'},),
-            'subject' : forms.Textarea(attrs={'placeholder': 'Subject','class':'field',}),
-            'description' : forms.Textarea(attrs={'placeholder': 'Description','class':'field',}),
-            'upload_date' : forms.TextInput(),
+            'status':forms.NumberInput(attrs={'readonly':'readonly'},),
             
+        }
+        labels = {
+            'faculty_name':'Faculty name',
+            'faculty_code':'Faculty Code',
+            'code' : 'Course Code',
+            'name' : 'Course Name',
+            'credit' : 'Credits',
+            'lecture_hours' : 'Academic Loads', 
+            'tutorial_hours' : '',
+            'pratical_hours' : '',
+            'discussion_hours' : '',
+            'project_hours' : '',
+            'pre_requisits' : 'Pre-requisits',
+            'pre_requisit_courses' : 'Pre-requisit Courses',
+            'syllabus' : 'Syllabus',
+            'ref_books' : 'References & Books',
+            'percent_quiz_1' : 'percent_quiz_1',
+            'percent_midsem' : 'percent_midsem',
+            'percent_quiz_2' : 'percent_quiz_2',
+            'percent_endsem' : 'percent_endsem',
+            'percent_project' : 'percent_project',
+            'percent_lab_evaluation' : 'percent_lab_evaluation',
+            'percent_course_attendance' : 'percent_course_attendance',
+            'disciplines' : 'disciplines',
+            'status':'status'
+        }
+
+
+
+
+class Update_Course_Proposal(ModelForm):
+    
+    def clean(self):
+        cleaned_data = super().clean()
+
+        percentages_sum = (
+                cleaned_data.get("percent_quiz_1")
+                + cleaned_data.get("percent_midsem")
+                + cleaned_data.get("percent_quiz_2")
+                + cleaned_data.get("percent_endsem")
+                + cleaned_data.get("percent_project")
+                + cleaned_data.get("percent_lab_evaluation")
+                + cleaned_data.get("percent_course_attendance")
+            )
+
+        if percentages_sum != 100:
+            msg = 'Percentages must add up to 100%, they currently add up to ' + str(percentages_sum) + '%'
+            self.add_error('percent_quiz_1', msg)
+            self.add_error('percent_midsem', msg)
+            self.add_error('percent_quiz_2', msg)
+            self.add_error('percent_endsem', msg)
+            self.add_error('percent_project', msg)
+            self.add_error('percent_lab_evaluation', msg)
+            self.add_error('percent_course_attendance', msg)
+
+        return cleaned_data
+
+    class Meta:
+        model = UpdateCourseProposal
+        fields = '__all__'
+        widgets = {
+            'faculty_name' : forms.TextInput(attrs={'max_length': 100,'readonly':'readonly'}),
+            'faculty_code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,'readonly':'readonly'}),
+            'code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,'readonly':'readonly'}),
+            'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,}),
+            'credit' : forms.NumberInput(attrs={'placeholder': 'Course Credits',}, ), 
+            'lecture_hours' : forms.NumberInput(attrs={'placeholder': 'Lecture hours',}, ), 
+            'tutorial_hours' : forms.NumberInput(attrs={'placeholder': 'Tutorial hours',}, ), 
+            'pratical_hours' : forms.NumberInput(attrs={'placeholder': 'Practical hours',}, ),             
+            'discussion_hours' : forms.NumberInput(attrs={'placeholder': 'Group Discussion hours',}, ), 
+            'project_hours' : forms.NumberInput(attrs={'placeholder': 'Project hours',}, ), 
+            'working_course' : forms.CheckboxInput(attrs={'class': 'ui checkbox'}),
+            'disciplines' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
+            'pre_requisits' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
+            'pre_requisit_courses' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown',}),
+            'syllabus' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
+            'ref_books' : forms.Textarea(attrs={'placeholder': 'Text','class':'field'}),
+            'percent_quiz_1' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
+            'percent_midsem' : forms.NumberInput(attrs={'placeholder': '%'}, ), 
+            'percent_quiz_2' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_endsem' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'status':forms.NumberInput(attrs={'readonly':'readonly'},),
             
+        }
+        labels = {
+            'faculty_name':'Faculty name',
+            'faculty_code':'Faculty Code',
+            'code' : 'Course Code',
+            'name' : 'Course Name',
+            'credit' : 'Credits',
+            'lecture_hours' : 'Academic Loads', 
+            'tutorial_hours' : '',
+            'pratical_hours' : '',
+            'discussion_hours' : '',
+            'project_hours' : '',
+            'pre_requisits' : 'Pre-requisits',
+            'pre_requisit_courses' : 'Pre-requisit Courses',
+            'syllabus' : 'Syllabus',
+            'ref_books' : 'References & Books',
+            'percent_quiz_1' : 'percent_quiz_1',
+            'percent_midsem' : 'percent_midsem',
+            'percent_quiz_2' : 'percent_quiz_2',
+            'percent_endsem' : 'percent_endsem',
+            'percent_project' : 'percent_project',
+            'percent_lab_evaluation' : 'percent_lab_evaluation',
+            'percent_course_attendance' : 'percent_course_attendance',
+            'disciplines' : 'disciplines',
+            'working_course' : 'working_course',
+            'status':'status'
+        }
+
+
+class CourseProposalForm(ModelForm):
+    
+    def clean(self):
+        cleaned_data = super().clean()
+
+        percentages_sum = (
+                cleaned_data.get("percent_quiz_1")
+                + cleaned_data.get("percent_midsem")
+                + cleaned_data.get("percent_quiz_2")
+                + cleaned_data.get("percent_endsem")
+                + cleaned_data.get("percent_project")
+                + cleaned_data.get("percent_lab_evaluation")
+                + cleaned_data.get("percent_course_attendance")
+            )
+
+        if percentages_sum != 100:
+            msg = 'Percentages must add up to 100%, they currently add up to ' + str(percentages_sum) + '%'
+            self.add_error('percent_quiz_1', msg)
+            self.add_error('percent_midsem', msg)
+            self.add_error('percent_quiz_2', msg)
+            self.add_error('percent_endsem', msg)
+            self.add_error('percent_project', msg)
+            self.add_error('percent_lab_evaluation', msg)
+            self.add_error('percent_course_attendance', msg)
+
+        return cleaned_data
+
+    class Meta:
+        model = Course
+        fields = '__all__'
+        widgets = {
+            'code' : forms.TextInput(attrs={'placeholder': 'Course Code','max_length': 10,'readonly':'readonly'}),
+            'name' : forms.TextInput(attrs={'placeholder': 'Course/Project Name','max_length': 100,'readonly':'readonly'}),
+            'version' : forms.NumberInput(attrs={'placeholder': 'version_no',}, ), 
+            'credit' : forms.NumberInput(attrs={'placeholder': 'Course Credits','readonly':'readonly'}, ), 
+            'lecture_hours' : forms.NumberInput(attrs={'placeholder': 'Lecture hours','readonly':'readonly'}, ), 
+            'tutorial_hours' : forms.NumberInput(attrs={'placeholder': 'Tutorial hours','readonly':'readonly'}, ), 
+            'pratical_hours' : forms.NumberInput(attrs={'placeholder': 'Practical hours','readonly':'readonly'}, ), 
+            'discussion_hours' : forms.NumberInput(attrs={'placeholder': 'Group Discussion hours','readonly':'readonly'}, ), 
+            'project_hours' : forms.NumberInput(attrs={'placeholder': 'Project hours','readonly':'readonly'}, ), 
+            'working_course' : forms.CheckboxInput(attrs={'class': 'ui checkbox','disabled': 'disabled'}),
+            'disciplines' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown','disabled': 'disabled'}),
+            'pre_requisits' : forms.Textarea(attrs={'placeholder': 'Text','class':'field','readonly':'readonly'}),
+            'pre_requisit_courses' : forms.SelectMultiple(attrs={'class':'ui fluid search selection dropdown','disabled': 'disabled'}),
+            'syllabus' : forms.Textarea(attrs={'placeholder': 'Text','class':'field','readonly':'readonly'}),
+            'ref_books' : forms.Textarea(attrs={'placeholder': 'Text','class':'field','readonly':'readonly'}),
+            'percent_quiz_1' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ), 
+            'percent_midsem' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ), 
+            'percent_quiz_2' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ),
+            'percent_endsem' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ),
+            'percent_project' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ),
+            'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ),
+            'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%','readonly':'readonly'}, ),
         }
         labels = {
             'code' : 'Course Code',
@@ -282,36 +473,7 @@ class NewCourseProposalFile(ModelForm):
             'percent_project' : 'percent_project',
             'percent_lab_evaluation' : 'percent_lab_evaluation',
             'percent_course_attendance' : 'percent_course_attendance',
-            'uploader' : 'Uploader name',
-            'designation' : 'Uploader design',
-            'subject' : 'title',
-            'description' : 'Description',
-            'upload_date' : '',
-            
+            'working_course' : 'working_course',
+            'disciplines' : 'disciplines'
         }
-
-
-class CourseProposalTrackingFile(ModelForm):
-    
-    class Meta:
-        model = Proposal_Tracking 
-        fields = '__all__'
-        widgets = {
-            'file_id' :forms.NumberInput(attrs={'placeholder': 'Course Proposal id','readonly':'readonly'}, ),
-            'current_id' : forms.TextInput(attrs={'placeholder': 'Enter Uploader','class':'ui fluid search selection dropdown','readonly':'readonly'},),
-            'current_design' : forms.TextInput(attrs={'class':'ui fluid search selection dropdown','readonly':'readonly'},),
-            'receive_id' : forms.Select(attrs={'class':'ui fluid search selection dropdown',}),
-            'receive_design' : forms.Select(attrs={'class':'ui fluid search selection dropdown',}),
-            'disciplines' : forms.Select(attrs={'class':'ui fluid search selection dropdown',}),
-            'remarks' : forms.Textarea(attrs={'placeholder': 'Remarks','class':'field',}),
-        }
-        labels = {
-            'file_id' : 'file_id',
-            'current_id' : 'Uploader name',
-            'current_design' : 'Uploader design',
-            'receive_id' : 'receiver name',
-            'receive_design' : 'receiver design',
-            'disciplines':'disciplines',
-            'remarks' : 'remarks',
-            
-        }
+        

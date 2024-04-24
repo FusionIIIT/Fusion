@@ -53,6 +53,7 @@ def createProposal(request):
         designation = Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=design).designation_id)
         upload_file = request.FILES.get('myfile')
         item_name = request.data.get('item_name')
+        grade = request.data.get('grade')
         quantity = request.data.get('quantity')
         present_stock = request.data.get('present_stock')
         estimated_cost = request.data.get('estimated_cost')
@@ -88,6 +89,7 @@ def createProposal(request):
             estimated_cost=estimated_cost,
             purpose=purpose,
             specification=specification,
+            grade=grade,
             item_type=item_type,
             nature=nature,
             indigenous=indigenous,
@@ -443,11 +445,12 @@ def currentStockView(request,id):
         else:
             return Response({"message": "Invalid designation"}, status=status.HTTP_403_FORBIDDEN)
 
-        grouped_items = stocks.values('StockEntryId__item_id__item_type', 'department').annotate(total_quantity=Count('id'))
+        grouped_items = stocks.values('StockEntryId__item_id__item_type', 'StockEntryId__item_id__grade', 'department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
                 'item_type': item['StockEntryId__item_id__item_type'],
+                'grade': item['StockEntryId__item_id__grade'],
                 'department': DepartmentInfo.objects.get(id=item['department']).name,
                 'total_quantity': item['total_quantity']
             }
@@ -459,22 +462,25 @@ def currentStockView(request,id):
     elif request.method == 'POST':
         # Handle POST request
         department = request.data.get('department')
+        grade = request.data.get('grade')
         item_type = request.data.get('item_type')
 
-        if not department or not item_type:
+        if not department or not grade or not item_type:
             return Response({"message": "Missing required parameters"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Filter StockItem based on provided filters
         StockItems = StockItem.objects.filter(
             department=department,
+            StockEntryId__item_id__grade=grade,
             StockEntryId__item_id__item_type=item_type
         )
 
-        grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'department').annotate(total_quantity=Count('id'))
+        grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'StockEntryId__item_id__grade', 'department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
                 'item_type': item['StockEntryId__item_id__item_type'],
+                'grade': item['StockEntryId__item_id__grade'],
                 'department': DepartmentInfo.objects.get(id=department).name,
                 'total_quantity': item['total_quantity']
             }
@@ -538,9 +544,11 @@ def stockTransfer(request,id):
     temp1=IndentFile.objects.get(file_info=temp)
 
     item_type_required =temp1.item_type
+    item_grade_required = temp1.grade
 
     available_items=StockItem.objects.filter(
         StockEntryId__item_id__item_type=item_type_required,
+        StockEntryId__item_id__grade=item_grade_required,
         inUse=False  
     )
 

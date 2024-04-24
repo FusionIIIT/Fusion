@@ -268,7 +268,7 @@ Gymkhana Module
 
             {% endif %}
 
-            {%if "Dean_s" in global_var%}
+            {%if "dean_s" in global_var%}
             <a class="item" data-tab="delclub">
                 Delete Club
                 <i class="right floated chevron right icon"></i>
@@ -303,7 +303,7 @@ Gymkhana Module
             {% endif %}
 
             
-            {% if "Counsellor" in global_var or "Dean_s" in global_var%}
+            {% if "Counsellor" in global_var or "dean_s" in global_var%}
             <a class="item" data-tab="seventh">
                 Approval Requests
                 <i class="right floated chevron right icon"></i>
@@ -361,14 +361,14 @@ Gymkhana Module
             {% endif %}
            
 
-            {% if "co-ordinator" not in global_var and "Co-coordinator" not in global_var and "Counsellor" not in global_var and "student" not in global_var and "Convener" not in global_var and "Dean_s" not in global_var %}
+            {% if "co-ordinator" not in global_var and "Co-coordinator" not in global_var and "Counsellor" not in global_var and "student" not in global_var and "Convener" not in global_var and "dean_s" not in global_var %}
             <a class="item" data-tab="seventh">
                 Submitted requests
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endif %}
 
-            {% if "Counsellor" in global_var or "Convener" in global_var or "co-ordinator" in global_var or "Dean_s" in global_var  %}
+            {% if "Counsellor" in global_var or "Convener" in global_var or "co-ordinator" in global_var or "dean_s" in global_var  %}
             <a class="item" data-tab="second">
                 Club Budget
                 <i class="right floated chevron right icon"></i>
@@ -510,7 +510,7 @@ Gymkhana Module
         
         {% endif %}
         
-        {% if "Dean_s" in global_var %}
+        {% if "dean_s" in global_var %}
         <div class="ui tab segment" data-tab="delclub">
             {% block deleteclub %}
             {% include 'gymkhanaModule/delete_club.html' %}
@@ -549,7 +549,7 @@ Gymkhana Module
         </div>
         {% endif %}
 
-        {% if "Convener" in global_var or "Dean_s" in global_var or "Counsellor" in global_var%}
+        {% if "Convener" in global_var or "dean_s" in global_var or "Counsellor" in global_var%}
 
         <div class="ui tab segment" data-tab="seventh">
             {% block approvalrequests %}
@@ -565,7 +565,7 @@ Gymkhana Module
 
         {% endif %}
 
-        {% if "co-ordinator" in global_var or "co co-ordinator" in global_var or "Counsellor" in global_var or "Convener" in global_var or "Dean_s" in global_var or "FIC" in global_var %}
+        {% if "co-ordinator" in global_var or "co co-ordinator" in global_var or "Counsellor" in global_var or "Convener" in global_var or "dean_s" in global_var or "FIC" in global_var %}
 
         <div class="ui tab segment" data-tab="fifth">
             {% block newsession %}

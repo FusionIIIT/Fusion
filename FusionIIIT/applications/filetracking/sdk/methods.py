@@ -120,6 +120,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
+
     return received_files_serialized
 
 

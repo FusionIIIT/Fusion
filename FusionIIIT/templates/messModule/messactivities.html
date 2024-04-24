@@ -24,9 +24,8 @@
     </div>
 
         
-
         <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %}" data-tab="View Student Bills">
-      
+            
             {% block reg_list_bills %}
             {% include 'messModule/view_payments_bills.html' %}
             {% endblock %}
@@ -54,37 +53,14 @@
                         <div class ="two fields">
                             <div class= "field" style="width:100%;">
                                 <label for="Month">Month</label>   
-                                {% comment %} <input type="text" name="Month" placeholder="Month of bill update" style="border:1px solid black;" required="true" id="Month"> {% endcomment %}
-                                <select name="Month" class="ui fluid dropdown" required="true" id="Month">
-                                    <option value="january">January</option>
-                                    <option value="february">February</option>
-                                    <option value="march">March</option>
-                                    <option value="april">April</option>
-                                    <option value="may">May</option>
-                                    <option value="june">June</option>
-                                    <option value="july">July</option>
-                                    <option value="august">August</option>
-                                    <option value="september">September</option>
-                                    <option value="october">October</option>
-                                    <option value="november">November</option>
-                                    <option value="december">December</option>
-                            </select>
+                                <input type="text" name="Month" placeholder="Month of bill update" style="border:1px solid black;" required="true" id="Month">
                             </div>
                             <div class= "field" style="width:100%;">
                                 <label for="Year">Year</label>   
-                                {% comment %} <input type="text" name="Month" placeholder="Month of bill update" style="border:1px solid black;" required="true" id="Month"> {% endcomment %}
-                                <select name="Year" class="ui fluid dropdown" required="true" id="Year">
-                                    <option value="2020">2020</option>
-                                    <option value="2021">2021</option>
-                                    <option value="2022">2022</option>
-                                    <option value="2023">2023</option>
-                                    <option value="2024">2024</option>
-                                    
-                            </select>
+                                <input type="number" name="Year" placeholder="Year of bill update" style="border:1px solid black;" required="true" id="Year">
                             </div>
-                            
                         </div>
-                        {% comment %} <div class ="two fields">
+                        <div class ="two fields">
                             <div class= "field" style="width:100%;">
                                 <label for="RebateCount">Rebate Count</label>   
                                 <input type="number" name="RebateCount" placeholder="Rebate count for this month" style="border:1px solid black;" required="true" id="RebateCount">
@@ -93,7 +69,7 @@
                                 <label for="RebateAmount">Rebate Amount</label>   
                                 <input type="number" name="RebateAmount" placeholder="Rebate amount for this month" style="border:1px solid black;" required="true" id="RebateAmount">
                             </div>
-                        </div> {% endcomment %}
+                        </div>
                     </div>
                     <div class=" one field">
                         <button class="ui primary button right floated" type="submit" name="submit">Update
@@ -103,7 +79,6 @@
                 
             </div>
         </div>
-
         <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %}" data-tab="monthly bill" id="mbs">
             <div class="ui vertical segment">
 

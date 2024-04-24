@@ -21,125 +21,6 @@ from .models import SpecialRequest, Announcements
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-# API
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import AnnouncementSerializer, SpecialRequestSerializer
-
-# Announcement Api class to handle request related to announcements
-class AnnouncementAPI(APIView):
-    """
-        overriding the get method
-        if request body is empty then all the announcements will be fetched
-        else body should contain id of the Announcement that is to be fetched
-    """
-
-    def get(self , request):
-        data = request.data
-        if data:
-            id = data['id']
-            announcemets_obj = Announcements.objects.get(id=id)
-            serializer_obj = AnnouncementSerializer(announcemets_obj , partial=True)
-            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
-        else:
-            announcemets_obj = Announcements.objects.all()
-            serializer_obj = AnnouncementSerializer(announcemets_obj , many=True)
-            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
-        
-    """
-        body should contain following attributes
-        batch, programme, department, message and upload_announcement
-    """
-    def post(self , request):
-        data = request.data
-        batch = data['batch']
-        programme = data['programme']
-        department = data['department']
-        message = data['message']
-        upload_announcement = data['upload_announcement']
-        ann_date = date.today()
-
-        usrnm = get_object_or_404(User, username=request.user.username)
-        user_info = ExtraInfo.objects.all().select_related('user','department').get(user=usrnm)
-
-        announcement_obj = Announcements(
-                            maker_id=user_info,
-                            batch=batch,
-                            programme=programme,
-                            message=message,
-                            upload_announcement=upload_announcement,
-                            department = department,
-                            ann_date=ann_date
-                        )
-        if announcement_obj:
-            announcement_obj.save()
-            return Response({'status':HttpResponse.status_code , 'payload':'Announcement added successfully'})
-        else:
-            return Response({'status':HttpResponse.status_code , 'payload':'Unable to add announcement'})
-            
-# SpecialRequest Api class to handle request related to Request
-class SpecialRequestAPI(APIView):
-    """
-        overriding the get method
-        if api-request body is empty then all the requests will be fetched
-        else body should contain id of the requests that is to be fetched
-    """
-    def get(self , request):
-        data = request.data
-        if data:
-            id = data['id']
-            specialRequest_obj = SpecialRequest.objects.get(id=id)
-            serializer_obj = SpecialRequestSerializer(specialRequest_obj , partial=True)
-            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
-        else:
-            specialRequest_obj = SpecialRequest.objects.all()
-            serializer_obj = SpecialRequestSerializer(specialRequest_obj , many=True)
-            return Response({'status':HttpResponse.status_code , 'payload':serializer_obj.data})
-    
-    """
-        body should contain following attributes
-        request_type, request_to and request_details
-    """
-    def post(self , request):
-        data = request.data
-        request_type = data['request_type']
-        request_to = data['request_to']
-        request_details = data['request_details']
-        request_date = date.today()
-
-        usrnm = get_object_or_404(User, username=request.user.username)
-        user_info = ExtraInfo.objects.all().select_related('user','department').get(user=usrnm)
-
-        specialRequest_obj = SpecialRequest(
-                                request_maker=user_info,
-                                request_date=request_date,
-                                brief=request_type,
-                                request_details=request_details,
-                                status="Pending",
-                                remarks="--",
-                                request_receiver=request_to
-                            )
-        if specialRequest_obj:
-            specialRequest_obj.save()
-            return Response({'status':HttpResponse.status_code , 'payload':'Request added successfully'})
-        else:
-            return Response({'status':HttpResponse.status_code , 'payload':'Unable to add Request'})
-    """
-        body should contain following attributes
-        id, remark and status
-    """
-    def put(self, request):
-        data = request.data
-        request_id = data['id']
-        remark = data['remark']
-        status = data['status']
-
-        SpecialRequest.objects.filter(id=request_id).update(status=status, remarks=remark)
-
-        return Response({'status':HttpResponse.status_code , 'payload':status})
-
-    
-
 # Create your views here.
 
 
@@ -239,16 +120,15 @@ def dep_main(request):
         request_to = request.POST.get('request_to', '')
         request_details = request.POST.get('request_details', '')
         request_date = date.today()
-        
-        if request_type and request_to and request_details:
-            obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
-                                                        request_date=request_date,
-                                                        brief=request_type,
-                                                        request_details=request_details,
-                                                        status="Pending",
-                                                        remarks="--",
-                                                        request_receiver=request_to
-                                                        )
+
+        obj_sprequest, created_object = SpecialRequest.objects.get_or_create(request_maker=user_info,
+                                                    request_date=request_date,
+                                                    brief=request_type,
+                                                    request_details=request_details,
+                                                    status="Pending",
+                                                    remarks="--",
+                                                    request_receiver=request_to
+                                                    )
     
     if user_designation == "student":
         return render(request,"department/index.html", {"announcements":context,
@@ -707,5 +587,3 @@ def deny(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Denied", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
-
-

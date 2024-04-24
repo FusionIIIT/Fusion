@@ -24,12 +24,14 @@
         <div class="three wide column">
 
             {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
+            
+            
 
             <div class="ui divider"></div>
-
-
-            {% comment %} <div class="ui divider"></div> {% endcomment %}
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
@@ -54,12 +56,6 @@
                     SM Department
                     <i class="right floated chevron right icon"></i>
                 </a>
-
-                <!-- Added button for design department  -->
-                <a class="item" data-tab="fifth" id="DESIGN_Dep">
-                    Design Department
-                    <i class="right floated chevron right icon"></i>
-                </a>
             
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -74,7 +70,7 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
-        <div class="eleven wide column">
+        <div class="eight wide column">
 
             
             {% comment %}CSE Department!{% endcomment %}
@@ -109,14 +105,6 @@
                 {% endblock %}
             </div>
             {% comment %}SM{% endcomment %}
-
-            {% comment %}Design Department!{% endcomment %}
-            <div class="ui tab segment" data-tab="fifth">
-                {% block DESIGN_Dep %}
-                    {% include "department/design_dep.html" %}
-                {% endblock %}
-                {% comment %}Design Department!{% endcomment %}
-            </div>
         </div>
         
         <div class="three wide column">
